@@ -355,6 +355,23 @@
     let isHost = false;
     let monPseudo = '';
 
+
+    async function activerWakeLock() {
+      try {
+        if ('wakeLock' in navigator) {
+          wakeLock = await navigator.wakeLock.request('screen');
+          wakelockStatusEl.style.display = 'block';
+          console.log('Wake Lock actif : l\'écran ne s\'éteindra pas.');
+
+          wakeLock.addEventListener('release', () => {
+            console.log('Wake Lock relâché.');
+          });
+        }
+      } catch (err) {
+        console.warn(`Wake Lock non disponible ou refusé : ${err.message}`);
+      }
+    }
+
     new Vue({
       el: '#app',
       data: {
@@ -562,7 +579,12 @@
             y: posY
           };
 
-          this.cellsData[this.picker.key].selected = true;
+          // reset value pour faire simple dans un premier temps
+          this.$set(this.cellsData, this.picker.key, {
+            selected: true,
+            color: currentState.color || '#ffffff',
+            label: ''
+          });
 
         },
 
