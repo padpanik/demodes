@@ -470,6 +470,7 @@
             alert('Impossible de trouver ce salon.');
           });
         },
+
         creerPartie: function() {
           if (!this.validerPseudo()) return;
 
@@ -528,8 +529,8 @@
         setTab: function(tab) {
           this.actif_tab = tab;
         },
-        getGrid: function() {
 
+        getGrid: function() {
 
           var level = this.level;
           var totalCells = this.size * this.size;
@@ -594,7 +595,7 @@
         // Applique le chiffre choisi
         selectNumber: function(number) {
           if (!this.picker.key) return;
-          if (number != this.dice1 && number != this.dice2) return;
+          if (this.dice1 && this.dice2 && number != this.dice1 && number != this.dice2) return;
 
           var currentState = this.cellsData[this.picker.key] || {};
 
