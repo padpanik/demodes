@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dé Partagé P2P</title>
+  <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 500px; margin: 2rem auto; padding: 0 1rem; text-align: center; }
+    .card { border: 1px solid #ccc; padding: 1.5rem; border-radius: 8px; margin-bottom: 1rem; background: #f9f9f9; }
+    button { padding: 0.6rem 1.2rem; font-size: 1rem; cursor: pointer; border-radius: 4px; border: 1px solid #999; }
+    input { padding: 0.6rem; font-size: 1rem; width: 80%; margin-bottom: 0.8rem; box-sizing: border-box; }
+    #de { font-size: 4rem; margin: 1rem 0; font-weight: bold; height: 5rem; line-height: 5rem; }
+    .status { font-weight: bold; color: #555; }
+    .wakelock-status { font-size: 0.85rem; color: #2e7d32; font-weight: 600; margin-top: 0.3rem; }
+    ul { text-align: left; background: #fff; border: 1px solid #ddd; padding: 1rem 2rem; border-radius: 4px; max-height: 150px; overflow-y: auto; }
+    .sys-msg { font-style: italic; color: #666; }
+  </style>
+</head>
+<body>
+
+  <h1>Dé Partagé P2P</h1>
+
+  <!-- Zone de Configuration -->
+  <div class="card" id="setupCard">
+    <h3>Configuration</h3>
+    <input type="text" id="pseudoInput" placeholder="Ton pseudo (ex: Alex)" required><br>
+    <input type="text" id="channelInput" placeholder="Nom/ID du salon (ex: ma-partie-des)"><br><br>
+    
+    <button onclick="creerPartie()">Créer ce salon (Hôte)</button>
+    <p>— ou —</p>
+    <button onclick="rejoindrePartie()">Rejoindre ce salon</button>
+  </div>
+
+  <!-- Zone de Statut -->
+  <div class="card" id="statusCard" style="display:none;">
+    <p class="status" id="status">Statut : Connexion...</p>
+    <p id="roomCode"></p>
+    <p class="wakelock-status" id="wakelockStatus" style="display:none;">💡 Écran maintenu allumé</p>
+  </div>
+
+  <!-- Zone de Jeu -->
+  <div class="card">
+    <div id="de">🎲</div>
+    <button id="btnLancer" onclick="lancerDe()" disabled>Lancer le dé !</button>
+  </div>
+
+  <!-- Historique -->
+  <h3>Activité</h3>
+  <ul id="historique"></ul>
+
+  <script>
+    let peer = null;
+    let connections = []; // Pour l'hôte
+    let hostConn = null;  // Pour les clients
+    let isHost = false;
+    let monPseudo = '';
+    let wakeLock = null;
+
+    const setupCard = document.getElementById('setupCard');
+    const statusCard = document.getElementById('statusCard');
+    const statusEl = document.getElementById('status');
+    const roomCodeEl = document.getElementById('roomCode');
+    const wakelockStatusEl = document.getElementById('wakelockStatus');
+    const btnLancer = document.getElementById('btnLancer');
+    const deEl = document.getElementById('de');
+    const historiqueEl = document.getElementById('historique');
+
+    // --- Gestion du Wake Lock (Empêcher la mise en veille) ---
+    async function activerWakeLock() {
+      try {
+        if ('wakeLock' in navigator) {
+          wakeLock = await navigator.wakeLock.request('screen');
+          wakelockStatusEl.style.display = 'block';
+          console.log('Wake Lock actif : l\'écran ne s\'éteindra pas.');
+
+          wakeLock.addEventListener('release', () => {
+            console.log('Wake Lock relâché.');
+          });
+        }
+      } catch (err) {
+        console.warn(`Wake Lock non disponible ou refusé : ${err.message}`);
+      }
+    }
+
+    // Réactiver le Wake Lock si l'utilisateur quitte puis revient sur l'onglet
+    document.addEventListener('visibilitychange', async () => {
+      if (wakeLock !== null && document.visibilityState === 'visible') {
+        await activerWakeLock();
+      }
+    });
+
+    function validerPseudo() {
+      monPseudo = document.getElementById('pseudoInput').value.trim();
+      if (!monPseudo) {
+        alert('Merci de saisir un pseudo.');
+        return false;
+      }
+      return true;
+    }
+
+    // 1. Créer une partie (Hôte)
+    function creerPartie() {
+      if (!validerPseudo()) return;
+
+      const customChannel = document.getElementById('channelInput').value.trim();
+      peer = customChannel ? new Peer(customChannel) : new Peer();
+
+      peer.on('open', (id) => {
+        isHost = true;
+        afficherEcranJeu();
+        activerWakeLock(); // Empêche la mise en veille
+        statusEl.innerText = `Statut : Hôte (${monPseudo})`;
+        roomCodeEl.innerHTML = `Nom du salon : <strong>${id}</strong>`;
+        btnLancer.disabled = false;
+        ajouterLog(`${monPseudo} a créé la partie.`, true);
+      });
+
+      peer.on('connection', (conn) => {
+        connections.push(conn);
+
+        conn.on('data', (data) => {
+          if (data.action === 'REJOINDRE') {
+            conn.joueurPseudo = data.pseudo;
+            broadcast({ action: 'JOUEUR_REJOINT', pseudo: data.pseudo });
+            ajouterLog(`${data.pseudo} a rejoint la partie.`, true);
+          }
+          else if (data.action === 'DEMANDE_LANCER') {
+            traiterLancer(data.pseudo);
+          }
+        });
+
+        conn.on('close', () => {
+          const pseudoQuitte = conn.joueurPseudo || 'Un joueur';
+          connections = connections.filter(c => c !== conn);
+          broadcast({ action: 'JOUEUR_QUITTE', pseudo: pseudoQuitte });
+          ajouterLog(`${pseudoQuitte} a quitté la partie.`, true);
+        });
+      });
+
+      peer.on('error', (err) => {
+        if (err.type === 'unavailable-id') {
+          alert('Ce nom de salon est déjà utilisé. Choisis-en un autre.');
+        } else {
+          alert('Erreur : ' + err.message);
+        }
+      });
+    }
+
+    // 2. Rejoindre une partie (Client)
+    function rejoindrePartie() {
+      if (!validerPseudo()) return;
+
+      const targetChannel = document.getElementById('channelInput').value.trim();
+      if (!targetChannel) return alert('Saisis le nom du salon à rejoindre.');
+
+      isHost = false;
+      peer = new Peer();
+
+      peer.on('open', () => {
+        hostConn = peer.connect(targetChannel);
+
+        hostConn.on('open', () => {
+          afficherEcranJeu();
+          activerWakeLock(); // Empêche la mise en veille
+          statusEl.innerText = `Statut : Connecté (${monPseudo})`;
+          roomCodeEl.innerHTML = `Salon : <strong>${targetChannel}</strong>`;
+          btnLancer.disabled = false;
+
+          hostConn.send({ action: 'REJOINDRE', pseudo: monPseudo });
+        });
+
+        hostConn.on('data', (data) => {
+          if (data.action === 'RESULTAT') {
+            afficherResultat(data.joueur, data.valeur);
+          } 
+          else if (data.action === 'JOUEUR_REJOINT') {
+            ajouterLog(`${data.pseudo} a rejoint la partie.`, true);
+          }
+          else if (data.action === 'JOUEUR_QUITTE') {
+            ajouterLog(`${data.pseudo} a quitté la partie.`, true);
+          }
+        });
+
+        hostConn.on('close', () => {
+          statusEl.innerText = 'Statut : Déconnecté';
+          btnLancer.disabled = true;
+          ajouterLog('Connexion au salon perdue.', true);
+        });
+      });
+
+      peer.on('error', (err) => {
+        alert('Impossible de trouver ce salon.');
+      });
+    }
+
+    // 3. Action de Lancer
+    function lancerDe() {
+      if (isHost) {
+        traiterLancer(monPseudo);
+      } else if (hostConn) {
+        hostConn.send({ action: 'DEMANDE_LANCER', pseudo: monPseudo });
+      }
+    }
+
+    // 4. Traitement par l'hôte
+    function traiterLancer(joueur) {
+      const val = Math.floor(Math.random() * 6) + 1;
+      const payload = { action: 'RESULTAT', joueur: joueur, valeur: val };
+
+      afficherResultat(joueur, val);
+      broadcast(payload);
+    }
+
+    // Utilitaires
+    function broadcast(data) {
+      connections.forEach(c => c.send(data));
+    }
+
+    function afficherResultat(joueur, valeur) {
+      deEl.innerText = valeur;
+      ajouterLog(`${joueur} a fait un ${valeur}`);
+    }
+
+    function ajouterLog(msg, isSystem = false) {
+      const li = document.createElement('li');
+      li.innerText = msg;
+      if (isSystem) li.className = 'sys-msg';
+      historiqueEl.prepend(li);
+    }
+
+    function afficherEcranJeu() {
+      setupCard.style.display = 'none';
+      statusCard.style.display = 'block';
+    }
+  </script>
+</body>
+</html>
