@@ -148,6 +148,11 @@
       transform: scale(1.08);
     }
 
+    .num_inactif {
+      color: #b1b1b1 !important;
+    }
+
+
     /* Section dés centrée sous la grille */
     .dice-section {
       width: 100%;
@@ -221,9 +226,20 @@
     <div v-show='actif_tab=="config"' id="config">
       <!-- Zone de Configuration -->
       <div class="card" id="setupCard">
+
+        <label for="size-input" style="font-size: 1.5em;">{{ pseudoInput }} Niveau : </label>
+        <select id="level-input" v-model.number="level"  style="font-size: 1.5em; margin-bottom: 20px;">
+          <option value="1">1</option>
+          <option value="2">2</option>
+          <option value="3">3</option>
+          <option value="4">4</option>
+        </select>
+
         <input type="text" id="pseudoInput" v-model='pseudoInput' placeholder="Ton pseudo (ex: Alex)" required><br>
         <input type="text" id="channelInput" v-model='channelInput' placeholder="Nom/ID du salon (ex: ma-partie-des)"><br><br>
         
+
+
         <button @click="creerPartie()">Créer ce salon (Hôte)</button>
         <p>— ou —</p>
         <button @click="rejoindrePartie()">Rejoindre ce salon</button>
@@ -243,15 +259,6 @@
 
     <!-- PLAY -->
     <div v-show='actif_tab=="play"' id="play">
-      <div class="controls">
-        <label for="size-input" style="font-size: 2em;">{{ pseudoInput }} Niveau : </label>
-        <select id="level-input" v-model.number="level"  style="font-size: 2em;">
-          <option value="1">1</option>
-          <option value="2">2</option>
-          <option value="3">3</option>
-          <option value="4">4</option>
-        </select>
-      </div>
 
       <div 
         class="grid-container"
@@ -277,7 +284,7 @@
 
         <!-- Picker positionné sous le curseur -->
         <div v-if="picker.show" class="picker-box" :style="{ top: picker.y + 10 + 'px', left: picker.x + 10 + 'px'}">
-          <button v-for="num in 6" :key="num" @click="selectNumber(num)">{{ num }}</button>
+          <button v-for="num in 6" :key="num" @click="selectNumber(num)" :class="{num_inactif:num != dice1 && num != dice2}">{{ num }}</button>
         </div>
       </div>
 
@@ -579,18 +586,15 @@
             y: posY
           };
 
-          // reset value pour faire simple dans un premier temps
-          this.$set(this.cellsData, this.picker.key, {
-            selected: true,
-            color: currentState.color || '#ffffff',
-            label: ''
-          });
+          this.cellsData[this.picker.key].selected = true;
+          this.cellsData[this.picker.key].label = '';
 
         },
 
         // Applique le chiffre choisi
         selectNumber: function(number) {
           if (!this.picker.key) return;
+          if (number != this.dice1 && number != this.dice2) return;
 
           var currentState = this.cellsData[this.picker.key] || {};
 
