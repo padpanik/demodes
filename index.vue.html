@@ -94,7 +94,46 @@
       box-shadow: inset 0 -3px 0 rgba(0,0,0,0.18);
     }
     .zone-chip.actif { border-color: #1d2b36; }
-    .zone-chip.complete { opacity: 0.45; }
+    .zone-chip.complete { opacity: 0.55; }
+    .zone-chip .gains span { display: inline-block; min-width: 1.1em; margin: 0 1px; border-radius: 50%; }
+    .zone-chip .gains span.barre { text-decoration: line-through; opacity: 0.4; }
+    .zone-chip .gains span.entoure { box-shadow: 0 0 0 2px #1d2b36; background: #fff; }
+
+    /* ---------- Scores ---------- */
+    .scores {
+      width: 100%;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 6px;
+      font-size: 0.9em;
+    }
+    .scores .joueur { background: #eef1f3; border-radius: 12px; padding: 2px 10px; }
+    .scores .joueur.moi { background: #2c3e50; color: #fff; }
+    .scores .objectif { color: #8a5a00; font-weight: bold; }
+    .jauge { width: 100%; height: 6px; background: #eef1f3; border-radius: 3px; overflow: hidden; margin-bottom: 8px; }
+    .jauge div { height: 100%; background: #42b983; transition: width 0.4s; }
+
+    /* ---------- Fin de partie ---------- */
+    .fin-backdrop {
+      position: fixed; inset: 0; z-index: 2000;
+      background: rgba(0,0,0,0.45);
+      display: flex; align-items: center; justify-content: center;
+      padding: 16px;
+    }
+    .fin-box {
+      background: #fff; border-radius: 14px; padding: 20px 18px; width: 100%; max-width: 360px;
+      text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    }
+    .fin-box h2 { margin: 0 0 6px; }
+    .fin-box ol { text-align: left; margin: 12px auto; max-width: 240px; }
+    .fin-box button {
+      margin: 4px; padding: 10px 16px; font-size: 1em; border-radius: 8px;
+      border: 1px solid #999; background: #fff; cursor: pointer;
+    }
+    .fin-box button.principal { background: #2c3e50; color: #fff; border-color: #2c3e50; }
     .zone-chip .sym { font-size: 16px; line-height: 1; }
     .zone-chip .gains { font-size: 11px; font-weight: 600; white-space: nowrap; }
 
@@ -328,6 +367,24 @@
       </ul>
     </div>
 
+    <!-- FIN DE PARTIE -->
+    <div v-if="finPartie && !finMasquee" class="fin-backdrop">
+      <div class="fin-box">
+        <h2>🏆 {{ finPartie.gagnants.length > 1 ? 'Égalité !' : 'Victoire !' }}</h2>
+        <div>
+          <strong>{{ finPartie.gagnants.join(' et ') }}</strong>
+          {{ finPartie.gagnants.length > 1 ? 'se partagent la victoire' : 'remporte la partie' }}
+          (objectif {{ finPartie.seuil }} pts)
+        </div>
+        <ol>
+          <li v-for="j in scoresListe" :key="j.pseudo">{{ j.pseudo }} : <strong>{{ j.points }}</strong> pts</li>
+        </ol>
+        <button @click="masquerFin">Voir ma grille</button>
+        <button class="principal" v-if="role !== 'client'" @click="nouvellePartie">Nouvelle partie</button>
+        <div v-else class="sys-msg" style="margin-top:6px">L'hôte peut lancer une nouvelle partie.</div>
+      </div>
+    </div>
+
     <!-- PLAY -->
     <div v-show='actif_tab=="play"' id="play">
       <div class="controls">
@@ -337,6 +394,15 @@
         </select>
         <span v-if="role === 'client'" class="sys-msg"> (imposé par l'hôte)</span>
       </div>
+
+      <!-- Scores (piste de score) -->
+      <div class="scores" v-if="scoresListe.length">
+        <span v-for="j in scoresListe" :key="j.pseudo" class="joueur" :class="{ moi: j.moi }">
+          {{ j.pseudo }} <strong>{{ j.points }}</strong>
+        </span>
+        <span class="objectif">🎯 {{ seuil }}</span>
+      </div>
+      <div class="jauge" v-if="scoresListe.length"><div :style="{ width: Math.min(100, monScore / seuil * 100) + '%' }"></div></div>
 
       <!-- Bandeau des zones : règle + gains, comme les cases Décompte de la fiche -->
       <div class="zones-strip">
@@ -349,7 +415,7 @@
           @click="basculerZone(z.id)"
         >
           <span class="sym">{{ z.symbole }}</span>
-          <span class="gains">{{ z.gains.join(' · ') }}</span>
+          <span class="gains"><span v-for="(g, i) in z.gains" :key="i" :class="classeGain(z.id, i)">{{ g }}</span></span>
         </div>
       </div>
 
@@ -416,8 +482,12 @@
           <button @click="annulerCoup" :disabled="!dernierCoup">↶ Annuler mon coup</button>
         </div>
         <div v-if="attenteTexte" class="attente">{{ attenteTexte }}</div>
-        <div class="info-tour" v-if="role && prochainLanceur">🎲 À <strong>{{ prochainLanceur === monPseudoAffiche ? 'toi' : prochainLanceur }}</strong> de lancer</div>
-        <button class="roll-btn" @click="rollDice" :disabled="!peutLancerLocal">🎲 Lancer les dés</button>
+        <div class="info-tour" v-if="role && prochainLanceur && !partieTerminee">🎲 À <strong>{{ prochainLanceur === monPseudoAffiche ? 'toi' : prochainLanceur }}</strong> de lancer</div>
+        <button class="roll-btn" v-if="!partieTerminee" @click="rollDice" :disabled="!peutLancerLocal">🎲 Lancer les dés</button>
+        <template v-else>
+          <div class="info-tour">Partie terminée.</div>
+          <button class="roll-btn" v-if="role !== 'client'" @click="nouvellePartie">🔄 Nouvelle partie</button>
+        </template>
       </div>
     </div>
 
@@ -569,6 +639,14 @@
       }
     }
 
+    // Points à atteindre pour finir la partie, selon le nombre de joueurs
+    function seuilPour(nbJoueurs) {
+      if (nbJoueurs >= 5) return 20;
+      if (nbJoueurs === 4) return 22;
+      if (nbJoueurs === 3) return 24;
+      return 26;
+    }
+
     // Transforme 'J  V1 B1' en ['J','V1','B1']
     function lireLigne(ligne) { return ligne.trim().split(/\s+/); }
 
@@ -602,6 +680,13 @@
         aJoue: true,           // ai-je déjà joué (ou passé) sur le lancer en cours ?
         dernierCoup: null,     // clé de la case jouée sur ce lancer (pour annuler)
         prochainLanceur: null, // pseudo de celui qui doit lancer (null = n'importe qui)
+        mesCompletions: [],    // zones que mon coup du lancer en cours vient de compléter
+        scores: {},            // { pseudo: points }
+        prisIndex: {},         // { zone: index du prochain gain disponible (0, 1 ou 2) }
+        mesGains: {},          // { zone: index du gain que j'ai entouré }
+        lancerResolu: 0,       // dernier lancer dont les zones complétées ont été décomptées
+        finPartie: null,       // { gagnants: [...], seuil }
+        finMasquee: false,
         zoneSurlignee: null,   // id de la zone mise en évidence
         cellsData: {}          // clé 'x-y' -> { zone, color, label, selected, etoile, depart }
       },
@@ -626,6 +711,7 @@
         },
         aJoue: function() {
           if (this.role === 'hote') this.majJoueurs();
+          this.verifierResolution();
         }
       },
       computed: {
@@ -728,8 +814,21 @@
         monPseudoAffiche: function() {
           return this.pseudoInput.trim();
         },
+        partieTerminee: function() { return !!this.finPartie; },
+        seuil: function() {
+          return seuilPour(Math.max(this.joueurs.length, 1));
+        },
+        monScore: function() {
+          return this.scores[this.monPseudoAffiche || 'Moi'] || 0;
+        },
+        scoresListe: function() {
+          var noms = this.joueurs.length ? this.joueurs.map(j => j.pseudo) : Object.keys(this.scores);
+          var moi = this.monPseudoAffiche || 'Moi';
+          return noms.map(n => ({ pseudo: n, points: this.scores[n] || 0, moi: n === moi }))
+                     .sort((a, b) => b.points - a.points);
+        },
         peutLancerLocal: function() {
-          if (this.phase !== 'jeu') return false;
+          if (this.phase !== 'jeu' || this.finPartie) return false;
           if (!this.role) return this.aJoue; // solo : il faut avoir joué (ou passé)
           if (this.prochainLanceur && this.prochainLanceur !== this.monPseudoAffiche) return false;
           return this.enAttente.length === 0;
@@ -811,6 +910,13 @@
           this.dice2 = null;
           this.last_player = '';
           this.prochainLanceur = null;
+          this.mesCompletions = [];
+          this.scores = {};
+          this.prisIndex = {};
+          this.mesGains = {};
+          this.lancerResolu = 0;
+          this.finPartie = null;
+          this.finMasquee = false;
           this.signalerPret(false);
         },
 
@@ -883,6 +989,7 @@
         },
         // Côté hôte : renvoie la raison d'un refus de lancer, ou '' si c'est permis
         refusLancer: function(joueur) {
+          if (this.finPartie) return 'La partie est terminée.';
           if (!this.tousPrets()) return 'Tout le monde n\'a pas fini son départ.';
           if (this.lancerId > 0 && !this.tousOntJoue()) return 'Tout le monde n\'a pas encore joué ce lancer.';
           if (this.prochainLanceur && joueur !== this.prochainLanceur) return 'C\'est à ' + this.prochainLanceur + ' de lancer.';
@@ -892,12 +999,14 @@
         // ---------- Coups ----------
         signalerJoue: function() {
           if (this.role === 'client' && hostConn) {
-            hostConn.send({ action: 'JOUE', pseudo: monPseudo, lancerId: this.lancerId, joue: this.aJoue });
+            hostConn.send({ action: 'JOUE', pseudo: monPseudo, lancerId: this.lancerId,
+                            joue: this.aJoue, zones: this.mesCompletions });
           }
           // côté hôte, le watcher "aJoue" republie la liste
         },
         passer: function() {
           if (this.aJoue) return;
+          this.mesCompletions = [];
           this.aJoue = true;
           this.dernierCoup = null;
           this.zoneSurlignee = null;
@@ -907,10 +1016,99 @@
           if (!this.dernierCoup) return;
           var c = this.cellsData[this.dernierCoup];
           c.label = '';
+          this.mesCompletions = [];
           this.dernierCoup = null;
           this.aJoue = false;
           this.signalerJoue();
         },
+        // ---------- Zones complétées et score ----------
+        classeGain: function(zone, i) {
+          if (this.mesGains[zone] === i) return 'entoure';
+          // Les gains pris par quelqu'un sont barrés, sauf le 3e qui ne l'est jamais
+          if (i < 2 && i < (this.prisIndex[zone] || 0)) return 'barre';
+          return '';
+        },
+        zoneEstPleine: function(zone) {
+          return Object.values(this.cellsData).every(c => c.zone !== zone || c.label);
+        },
+        nomZone: function(zone) {
+          return 'zone ' + NOMS_COULEURS[zone[0]] + ' ' + REGLES[this.niveau.zones[zone].regle].symbole;
+        },
+        // Hôte (ou solo) : décompte des zones complétées dès que tout le monde a joué le lancer
+        verifierResolution: function() {
+          if (this.role === 'client' || this.finPartie) return;
+          if (this.lancerId === 0 || this.lancerResolu === this.lancerId) return;
+          if (this.role === 'hote' ? !this.tousOntJoue() : !this.aJoue) return;
+
+          var moi = monPseudo || this.monPseudoAffiche || 'Moi';
+          var participants = [{ pseudo: moi, zones: this.mesCompletions }].concat(
+            connections.filter(c => c.joueurPseudo).map(c => ({ pseudo: c.joueurPseudo, zones: c.completions || [] }))
+          );
+
+          // Regroupe par zone : ceux qui la complètent au même lancer prennent le même gain
+          var parZone = {};
+          participants.forEach(p => p.zones.forEach(z => { (parZone[z] = parZone[z] || []).push(p.pseudo); }));
+
+          var scores = Object.assign({}, this.scores);
+          participants.forEach(p => { if (scores[p.pseudo] === undefined) scores[p.pseudo] = 0; });
+          var prisIndex = Object.assign({}, this.prisIndex);
+          var attributions = [];
+          Object.keys(parZone).forEach(z => {
+            var idx = prisIndex[z] || 0;
+            var gain = this.niveau.zones[z].gains[idx];
+            parZone[z].forEach(pseudo => {
+              scores[pseudo] += gain;
+              attributions.push({ pseudo: pseudo, zone: z, index: idx, gain: gain });
+            });
+            prisIndex[z] = Math.min(idx + 1, 2);
+          });
+
+          // Fin de partie : quelqu'un atteint le seuil ; le plus haut score gagne (égalité partagée)
+          var seuil = seuilPour(participants.length);
+          var fin = null;
+          var atteints = Object.keys(scores).filter(p => scores[p] >= seuil);
+          if (atteints.length) {
+            var max = Math.max.apply(null, atteints.map(p => scores[p]));
+            fin = { gagnants: atteints.filter(p => scores[p] === max), seuil: seuil };
+          }
+
+          var payload = { action: 'SCORES', lancerId: this.lancerId, scores: scores,
+                          prisIndex: prisIndex, attributions: attributions, fin: fin };
+          this.appliquerScores(payload);
+          this.broadcast(payload);
+        },
+        appliquerScores: function(data) {
+          var moi = monPseudo || this.monPseudoAffiche || 'Moi';
+          this.lancerResolu = data.lancerId;
+          this.scores = data.scores;
+          this.prisIndex = data.prisIndex;
+          if (data.lancerId === this.lancerId) this.dernierCoup = null; // lancer décompté : plus d'annulation
+          var annonces = [];
+          data.attributions.forEach(a => {
+            var qui = a.pseudo === moi ? 'Tu complètes' : a.pseudo + ' complète';
+            if (a.pseudo === moi) this.$set(this.mesGains, a.zone, a.index);
+            annonces.push(qui + ' la ' + this.nomZone(a.zone) + ' : +' + a.gain);
+            this.ajouterLog(`${a.pseudo} complète la ${this.nomZone(a.zone)} : +${a.gain} pts`, true);
+          });
+          if (annonces.length) this.afficherMessage('🎉 ' + annonces.join(' · '));
+          if (data.fin && !this.finPartie) {
+            this.finPartie = data.fin;
+            this.finMasquee = false;
+            this.ajouterLog(`Fin de partie : ${data.fin.gagnants.join(' et ')} gagne(nt).`, true);
+          }
+        },
+        masquerFin: function() { this.finMasquee = true; },
+        nouvellePartie: function() {
+          if (this.role === 'client') return;
+          this.buildGrid();
+          if (this.role === 'hote') {
+            connections.forEach(c => { c.joueurPret = false; c.aJoue = true; c.completions = []; });
+            this.broadcast({ action: 'NIVEAU', level: this.level, reset: true });
+            this.majJoueurs();
+            this.ajouterLog('Nouvelle partie !', true);
+          }
+        },
+
         basculerZone: function(id) {
           this.zoneSurlignee = (this.zoneSurlignee === id) ? null : id;
         },
@@ -981,9 +1179,14 @@
                 this.joueurs = data.joueurs;
                 this.prochainLanceur = data.prochainLanceur || null;
               }
+              else if (data.action === 'SCORES') {
+                this.appliquerScores(data);
+              }
               else if (data.action === 'NIVEAU') {
                 if (data.level !== this.level) {
                   this.level = data.level; // le watcher reconstruit la grille
+                } else if (data.reset) {
+                  this.buildGrid();          // nouvelle partie au même niveau
                 }
                 this.ajouterLog(`L'hôte a fixé le niveau ${data.level}.`, true);
               }
@@ -1038,6 +1241,7 @@
                 conn.joueurPseudo = data.pseudo;
                 conn.joueurPret = false;
                 conn.aJoue = true; // un nouvel arrivant ne bloque pas le lancer en cours
+                conn.completions = [];
                 conn.send({ action: 'NIVEAU', level: this.level });
                 this.broadcast({ action: 'JOUEUR_REJOINT', pseudo: data.pseudo });
                 this.ajouterLog(`${data.pseudo} a rejoint la partie.`, true);
@@ -1049,9 +1253,12 @@
                 this.majJoueurs();
               }
               else if (data.action === 'JOUE') {
-                if (data.lancerId === this.lancerId) {
+                // On ignore les messages d'un lancer déjà décompté
+                if (data.lancerId === this.lancerId && this.lancerResolu !== this.lancerId) {
                   conn.aJoue = data.joue;
+                  conn.completions = data.joue ? (data.zones || []) : [];
                   this.majJoueurs();
+                  this.verifierResolution();
                 }
               }
               else if (data.action === 'DEMANDE_LANCER') {
@@ -1071,6 +1278,7 @@
               this.broadcast({ action: 'JOUEUR_QUITTE', pseudo: pseudoQuitte });
               this.ajouterLog(`${pseudoQuitte} a quitté la partie.`, true);
               this.majJoueurs();
+              this.verifierResolution();
             });
           });
 
@@ -1093,6 +1301,7 @@
           // Nouveau lancer : chacun doit jouer (ou passer)
           this.aJoue = (this.phase !== 'jeu');
           this.dernierCoup = null;
+          this.mesCompletions = [];
           this.zoneSurlignee = null;
           this.ajouterLog(`${joueur} a fait un ${valeur.dice1} - ${valeur.dice2}`);
         },
@@ -1154,7 +1363,12 @@
           c.depart = (this.phase === 'depart');
           this.zoneSurlignee = null;
           this.closePicker();
-          if (this.phase === 'jeu') this.signalerJoue();
+          if (this.phase === 'jeu') {
+            // Ce coup complète-t-il la zone ? (décomptée quand tout le monde aura joué)
+            this.mesCompletions = this.zoneEstPleine(c.zone) ? [c.zone] : [];
+            if (this.mesCompletions.length) this.afficherMessage('Zone complétée ! Les points arrivent quand tout le monde a joué.');
+            this.signalerJoue();
+          }
         },
         closePicker: function() {
           if (this.picker.key && this.cellsData[this.picker.key]) {
@@ -1175,6 +1389,7 @@
             monPseudo = this.pseudoInput.trim() || 'Moi';
             return this.traiterLancer(monPseudo);
           }
+          if (this.finPartie) return this.afficherMessage('La partie est terminée.');
           if (isHost) {
             var refus = this.refusLancer(monPseudo);
             if (refus) return this.afficherMessage(refus);
@@ -1196,7 +1411,7 @@
           var prochain = (this.role === 'hote' && idx !== -1) ? ordre[(idx + 1) % ordre.length] : null;
           var lancerId = this.lancerId + 1;
 
-          connections.forEach(c => { c.aJoue = false; });
+          connections.forEach(c => { c.aJoue = false; c.completions = []; });
           this.afficherResultat(joueur, val, lancerId, prochain);
           this.broadcast({ action: 'RESULTAT', joueur: joueur, valeur: val, lancerId: lancerId, prochainLanceur: prochain });
           this.majJoueurs();
