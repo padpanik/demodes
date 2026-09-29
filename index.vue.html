@@ -3,20 +3,21 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Grille Vue 2 avec Couleurs Initiales</title>
-  <!-- <script src="vue.global.js"></script> -->
+  <title>Brilliant en ligne</title>
   <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
-  <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>  
+  <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
   <style>
+    body { margin: 0; background: #fafafa; }
+
     #menu {
       display: flex;
-      gap: 20px;
-      margin-bottom: 30px;
+      gap: 12px;
+      margin-bottom: 12px;
     }
 
     #menu div {
       border: 1px solid;
-      padding: 10px 30px;
+      padding: 8px 22px;
       border-radius: 5px;
       background-color: #2c3e50;
       color: white;
@@ -25,86 +26,180 @@
       &.actif {
         background-color: #3387d0 !important;
       }
-
     }
 
-
     #config {
+      font-family: system-ui, sans-serif; width: 100%; text-align: center;
 
-      font-family: system-ui, sans-serif; width: 100%; text-align: center; 
-
-      .card { border: 1px solid #ccc; padding: 1.5rem; border-radius: 8px; margin-bottom: 1rem; background: #f9f9f9; }
+      .card { border: 1px solid #ccc; padding: 1.2rem; border-radius: 8px; margin-bottom: 1rem; background: #f9f9f9; }
       button { padding: 0.6rem 1.2rem; font-size: 1rem; cursor: pointer; border-radius: 4px; border: 1px solid #999; }
-      input { padding: 0.6rem; font-size: 1rem; width: 80%; margin-bottom: 0.8rem; box-sizing: border-box; }
-      #de { font-size: 4rem; margin: 1rem 0; font-weight: bold; height: 5rem; line-height: 5rem; }
+      input { padding: 0.6rem; font-size: 1rem; width: 90%; margin-bottom: 0.8rem; box-sizing: border-box; }
       .status { font-weight: bold; color: #555; }
       ul { text-align: left; background: #fff; border: 1px solid #ddd; padding: 1rem 2rem; border-radius: 4px; max-height: 150px; overflow-y: auto; }
       .sys-msg { font-style: italic; color: #666; }
+      .joueurs { margin: 0.5rem 0 0; color: #333; }
     }
 
     .grid-app {
-      font-family: sans-serif;
+      font-family: system-ui, sans-serif;
       display: flex;
       flex-direction: column;
-      align-items: center; /* Centre la grille et les contrôles */
+      align-items: center;
       width: 100%;
       max-width: 600px;
-      height: 100vh; 
+      min-height: 100dvh;
       margin: 0 auto;
-      padding: 16px;
+      padding: 10px;
       box-sizing: border-box;
+    }
+
+    #play {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
 
     .grid-app .controls {
       width: 100%;
-      margin-bottom: 16px;
+      margin-bottom: 8px;
       text-align: center;
+      font-size: 1.1em;
+    }
+    .grid-app .controls select { font-size: 1em; }
+    .sys-msg { font-style: italic; color: #666; font-size: 0.85em; }
+
+    /* ---------- Bandeau des zones (remplace les cases Décompte) ---------- */
+    .zones-strip {
+      width: 100%;
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      padding: 2px 2px 8px;
+      box-sizing: border-box;
+      -webkit-overflow-scrolling: touch;
+    }
+    .zone-chip {
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      padding: 4px 8px;
+      border: 2px solid transparent;
+      border-radius: 8px;
+      color: #1d2b36;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: inset 0 -3px 0 rgba(0,0,0,0.18);
+    }
+    .zone-chip.actif { border-color: #1d2b36; }
+    .zone-chip.complete { opacity: 0.45; }
+    .zone-chip .sym { font-size: 16px; line-height: 1; }
+    .zone-chip .gains { font-size: 11px; font-weight: 600; white-space: nowrap; }
+
+    .zone-info {
+      min-height: 3.9em; /* hauteur fixe : la grille ne saute pas quand le texte change */
+      width: 100%;
+      box-sizing: border-box;
+      padding: 3px 8px;
+      border-radius: 8px;
+      line-height: 1.3;
+      margin-bottom: 6px;
+      font-size: 0.95em;
+      text-align: center;
+      color: #333;
     }
 
-    .grid-app .controls input {
-      width: 60px;
-      padding: 4px;
-    }
-
+    /* ---------- Grille ---------- */
     .grid-app .grid-container {
       display: grid;
-      width: min(90vw, calc(100vh - 420px));  /* Limite en largeur (90vw) OU en hauteur restante */
-      height: min(90vw, calc(100vh - 420px)); 
-      gap: 4px;
-      background-color: #f0f0f0;
-      padding: 8px;
+      width: min(94vw, 560px, calc(100dvh - 330px));
+      height: min(94vw, 560px, calc(100dvh - 330px));
+      gap: 0;
+      background-color: #ffffff;
+      padding: 0;
+      overflow: hidden;
+      border: 1px solid #dde2e6;
       border-radius: 8px;
       box-sizing: border-box;
     }
 
     .grid-app .cell {
+      position: relative;
+      padding: 4px;
+      box-sizing: border-box;
+      cursor: pointer;
+      user-select: none;
+      container-type: inline-size;
+      transition: opacity 0.15s;
+    }
+    .grid-app .cell.estompee { opacity: 0.35; }
+
+    /* Fond pâle de la zone : il déborde vers les voisins de la même zone,
+       ce qui soude visuellement les cases d'une zone sans trait noir */
+
+    .gem {
+      z-index: 1;
       width: 100%;
       height: 100%;
-      background-color: #ffffff;
-      border: 1px solid #ccc;
-      border-radius: 4px;
+      border-radius: 18%;
       display: flex;
       align-items: center;
       justify-content: center;
-      cursor: pointer;
-      user-select: none;
-      font-weight: bold;
+      position: relative;
+      box-shadow: inset 0 -4px 0 rgba(0,0,0,0.2), inset 0 3px 0 rgba(255,255,255,0.35);
       box-sizing: border-box;
-      container-type: inline-size;
-      font-size: 2em;
     }
+    .cell.is-selected .gem { outline: 3px solid #1d2b36; outline-offset: -1px; }
+    /* Cases où l'on peut jouer avec le lancer en cours */
+    .cell.jouable .gem { box-shadow: 0 0 0 3px #fff, 0 0 0 5px #1d2b36; animation: pulse 1.2s ease-in-out infinite; }
+    @keyframes pulse { 50% { transform: scale(0.9); } }
 
-    .grid-app .cell:hover {
-      opacity: 0.8;
-      border-color: #000;
+    .gem .label { font-size: 62cqi; font-weight: bold; color: #1d2b36; line-height: 1; }
+    .gem .sym   { font-size: 36cqi; font-weight: bold; color: rgba(0,0,0,0.28); line-height: 1; }
+    .gem .sym.petit { font-size: 26cqi; }
+    .gem .label.depart { text-decoration: underline; text-decoration-thickness: 8%; text-underline-offset: 8%; }
+    .gem .star  { position: absolute; right: 6%; bottom: 4%; font-size: 26cqi; color: #fff; text-shadow: 0 0 2px rgba(0,0,0,0.4); line-height: 1; }
+
+    /* ---------- Phase de départ ---------- */
+    .depart-panel {
+      width: 100%;
+      box-sizing: border-box;
+      background: #fff8e1;
+      border: 1px solid #f0d98c;
+      border-radius: 8px;
+      padding: 6px 8px;
+      margin-bottom: 8px;
+      text-align: center;
+      font-size: 0.9em;
     }
-
-    .grid-app .cell.is-selected {
-      border: 2px solid #000;
-      box-shadow: 0 0 5px rgba(0,0,0,0.3);
-      opacity: 0.50;
+    .depart-panel .restants { display: flex; justify-content: center; gap: 6px; margin: 6px 0; }
+    .depart-panel .restants span {
+      width: 28px; height: 28px; line-height: 28px; border-radius: 6px;
+      background: #2c3e50; color: #fff; font-weight: bold;
     }
+    .depart-panel .restants span.pose { background: #d6dbdf; color: #9aa4ab; text-decoration: line-through; }
+    .depart-panel button {
+      font-size: 0.95em; padding: 6px 10px; margin: 0 2px;
+      border-radius: 6px; border: 1px solid #999; background: #fff; cursor: pointer;
+    }
+    .depart-panel button.principal { background: #2c3e50; color: #fff; border-color: #2c3e50; }
+    .depart-panel button:disabled { opacity: 0.4; cursor: default; }
+    .attente { font-size: 0.85em; color: #8a5a00; }
+    .zone-info .alerte { color: #c0392b; font-weight: bold; display: block; padding-top: 0.6em; }
+    .zone-info .titre { font-weight: bold; }
+    .zone-info .regle { font-size: 0.9em; }
+    .zone-info .regle b { letter-spacing: 1px; }
+    .actions-coup { display: flex; gap: 8px; }
+    .actions-coup button {
+      font-size: 0.95em; padding: 6px 12px; border-radius: 6px;
+      border: 1px solid #999; background: #fff; cursor: pointer;
+    }
+    .actions-coup button:disabled { opacity: 0.4; cursor: default; }
+    .info-tour { font-size: 0.9em; color: #2c3e50; min-height: 1.2em; }
 
+    /* ---------- Picker ---------- */
     .picker-backdrop {
       position: fixed;
       top: 0;
@@ -114,7 +209,6 @@
       z-index: 999;
     }
 
-    /* Le pavé 2x3 positionné près de la souris */
     .picker-box {
       position: fixed;
       z-index: 1000;
@@ -127,7 +221,6 @@
       gap: 6px;
     }
 
-    /* Boutons ajustés */
     .picker-box button {
       width: 40px;
       height: 40px;
@@ -148,71 +241,56 @@
       transform: scale(1.08);
     }
 
-    .num_inactif {
-      color: #b1b1b1 !important;
-    }
-
-
-    /* Section dés centrée sous la grille */
+    /* ---------- Dés ---------- */
     .dice-section {
       width: 100%;
-      margin-top: 24px;
+      margin-top: 14px;
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 12px;
+      gap: 8px;
     }
 
     .dice-container {
       display: flex;
-      gap: 16px;
+      gap: 14px;
     }
 
-    /* Style d'un dé */
     .dice {
-      width: 60px;
-      height: 60px;
+      width: 52px;
+      height: 52px;
       background-color: #ffffff;
       border: 2px solid #2c3e50;
       border-radius: 12px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 64px;
+      font-size: 36px;
       font-weight: bold;
       color: #2c3e50;
       box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
       user-select: none;
     }
 
-    /* Bouton de lancer */
     .roll-btn {
-      margin-top: 30px;
-      padding: 20px 40px;
-      font-size: 26px;
+      margin-top: 6px;
+      padding: 12px 28px;
+      font-size: 20px;
       font-weight: bold;
       color: #ffffff;
       background-color: #2c3e50;
       border: none;
-      border-radius: 16px;
+      border-radius: 14px;
       cursor: pointer;
       transition: background-color 0.2s ease, transform 0.1s ease;
     }
 
-    .roll-btn:hover {
-      background-color: #34495e;
-    }
-
-    .roll-btn:active {
-      transform: scale(0.96);
-    }
-
-
+    .roll-btn:hover { background-color: #34495e; }
+    .roll-btn:disabled { opacity: 0.4; cursor: default; }
+    .roll-btn:active { transform: scale(0.96); }
   </style>
 </head>
 <body>
-
-
 
   <div id="app" class="grid-app">
 
@@ -224,160 +302,282 @@
 
     <!-- CONFIG -->
     <div v-show='actif_tab=="config"' id="config">
-      <!-- Zone de Configuration -->
       <div class="card" id="setupCard">
-
-        <label for="size-input" style="font-size: 1.5em;">{{ pseudoInput }} Niveau : </label>
-        <select id="level-input" v-model.number="level"  style="font-size: 1.5em; margin-bottom: 20px;">
-          <option value="1">1</option>
-          <option value="2">2</option>
-          <option value="3">3</option>
-          <option value="4">4</option>
-        </select>
-
         <input type="text" id="pseudoInput" v-model='pseudoInput' placeholder="Ton pseudo (ex: Alex)" required><br>
         <input type="text" id="channelInput" v-model='channelInput' placeholder="Nom/ID du salon (ex: ma-partie-des)"><br><br>
-        
 
+        <label for="config-level">Niveau de la partie (hôte) : </label>
+        <select id="config-level" v-model.number="level" :disabled="role === 'client'" style="font-size: 1rem; padding: 0.4rem;">
+          <option v-for="n in 4" :key="n" :value="n">{{ n }}</option>
+        </select><br><br>
 
         <button @click="creerPartie()">Créer ce salon (Hôte)</button>
         <p>— ou —</p>
         <button @click="rejoindrePartie()">Rejoindre ce salon</button>
       </div>
 
-      <!-- Zone de Statut -->
       <div class="card" id="statusCard">
-        <p class="status" id="status" v-html="status"></p>
-        <p id="roomCode" v-html="roomCode"></p>
+        <p class="status" id="status">{{ status }}</p>
+        <p id="roomCode" v-if="roomCode">Salon : <strong>{{ roomCode }}</strong></p>
+        <p class="joueurs" v-if="joueurs.length">Joueurs : {{ joueursTexte }}</p>
       </div>
 
-      <!-- Historique -->
       <h3>Activité</h3>
-      <ul id="historique" v-html="historique"></ul>    
-
+      <ul id="historique">
+        <li v-for="(log, i) in historique" :key="i" :class="{ 'sys-msg': log.system }">{{ log.msg }}</li>
+      </ul>
     </div>
 
     <!-- PLAY -->
     <div v-show='actif_tab=="play"' id="play">
+      <div class="controls">
+        <label for="level-input"><template v-if="pseudoInput">{{ pseudoInput }} · </template>Niveau : </label>
+        <select id="level-input" v-model.number="level" :disabled="role === 'client'">
+          <option v-for="n in 4" :key="n" :value="n">{{ n }}</option>
+        </select>
+        <span v-if="role === 'client'" class="sys-msg"> (imposé par l'hôte)</span>
+      </div>
 
-      <div 
+      <!-- Bandeau des zones : règle + gains, comme les cases Décompte de la fiche -->
+      <div class="zones-strip">
+        <div
+          v-for="z in zonesListe"
+          :key="z.id"
+          class="zone-chip"
+          :class="{ actif: zoneSurlignee === z.id, complete: z.rempli === z.total }"
+          :style="{ backgroundColor: z.color }"
+          @click="basculerZone(z.id)"
+        >
+          <span class="sym">{{ z.symbole }}</span>
+          <span class="gains">{{ z.gains.join(' · ') }}</span>
+        </div>
+      </div>
+
+      <!-- Phase de départ : 1 à 6 dans 6 zones différentes -->
+      <div v-if="phase === 'depart'" class="depart-panel">
+        <div>Départ : place les chiffres 1 à 6, <strong>un par zone</strong></div>
+        <div class="restants">
+          <span v-for="n in 6" :key="n" :class="{ pose: departUtilises.indexOf(n) !== -1 }">{{ n }}</span>
+        </div>
+        <button @click="departEtoilesHasard">✦ Étoiles au hasard</button>
+        <button @click="effacerDepart" :disabled="!departUtilises.length">Effacer</button>
+        <button class="principal" @click="validerDepart" :disabled="departUtilises.length < 6">Valider</button>
+      </div>
+
+      <!-- Rappel de la zone choisie : règle + chiffres encore possibles -->
+      <div class="zone-info" :style="{ background: zoneInfo ? zoneInfo.fond : 'transparent' }">
+        <span v-if="message" class="alerte">{{ message }}</span>
+        <template v-else-if="zoneInfo">
+          <div class="titre">{{ zoneInfo.titre }}</div>
+          <div class="regle">{{ zoneInfo.regle }} <span v-html="zoneInfo.possibles"></span></div>
+        </template>
+        <span v-else class="sys-msg" style="display:block; padding-top:0.6em;">{{ aideGenerale }}</span>
+      </div>
+
+      <div
         class="grid-container"
         :style="{
           'grid-template-columns': 'repeat(' + size + ', 1fr)',
           'grid-template-rows': 'repeat(' + size + ', 1fr)'
         }"
       >
-        <!-- Cell -->
         <div
-          v-for="cell in getGrid()"
+          v-for="cell in grid"
           :key="cell.id"
           class="cell"
-          :class="{ 'is-selected': cell.selected }"
-          :style="{ backgroundColor: cell.color }"
+          :class="{ 'is-selected': cell.selected, estompee: zoneSurlignee && cell.zone !== zoneSurlignee, jouable: cell.jouable }"
+          :style="{ background: cell.fond }"
           @click="toggleCell(cell, $event)"
         >
-          {{ cell.label }}
+          <div class="gem" :style="{ backgroundColor: cell.color }">
+            <span v-if="cell.label" class="label" :class="{ depart: cell.depart }">{{ cell.label }}</span>
+            <span v-else class="sym" :class="{ petit: cell.symbole.length > 1 }">{{ cell.symbole }}</span>
+            <span v-if="cell.etoile && !cell.label" class="star">✦</span>
+          </div>
         </div>
 
         <!-- Zone invisible pour fermer le picker si on clique à côté -->
         <div v-if="picker.show" class="picker-backdrop" @click="closePicker"></div>
 
-        <!-- Picker positionné sous le curseur -->
-        <div v-if="picker.show" class="picker-box" :style="{ top: picker.y + 10 + 'px', left: picker.x + 10 + 'px'}">
-          <button v-for="num in 6" :key="num" @click="selectNumber(num)" :class="{num_inactif:num != dice1 && num != dice2}">{{ num }}</button>
+        <div v-if="picker.show" class="picker-box" :style="{ top: picker.y + 'px', left: picker.x + 'px'}">
+          <button v-for="num in pickerChoix" :key="num" @click="selectNumber(num)">{{ num }}</button>
         </div>
       </div>
 
-
-      <!-- Bloc Lanceur de Dés -->
+      <!-- Dés -->
       <div class="dice-section">
         <div class="dice-lanceur">{{ last_player }}</div>
-
         <div class="dice-container">
           <div class="dice">{{ dice1 !== null ? dice1 : '?' }}</div>
           <div class="dice">{{ dice2 !== null ? dice2 : '?' }}</div>
         </div>
-        
-        <button class="roll-btn" @click="rollDice">
-          🎲 Lancer les dés
-        </button>
+        <div class="actions-coup" v-if="phase === 'jeu' && lancerId > 0">
+          <button @click="passer" :disabled="aJoue">Je passe</button>
+          <button @click="annulerCoup" :disabled="!dernierCoup">↶ Annuler mon coup</button>
+        </div>
+        <div v-if="attenteTexte" class="attente">{{ attenteTexte }}</div>
+        <div class="info-tour" v-if="role && prochainLanceur">🎲 À <strong>{{ prochainLanceur === monPseudoAffiche ? 'toi' : prochainLanceur }}</strong> de lancer</div>
+        <button class="roll-btn" @click="rollDice" :disabled="!peutLancerLocal">🎲 Lancer les dés</button>
       </div>
     </div>
 
   </div>
 
   <script>
-    let palette = {
-      B: '#3498db',
-      V: '#2ecc71',
-      J: '#f1c40f',
-      R: '#e74c3c',
-      M: '#9b59b6',
-      O: '#f9a852',
-      G: '#aaaaaa',
+    // ================== DONNÉES DU JEU ==================
+
+    const PALETTE = {
+      B: '#5dc1ec', // bleu
+      V: '#7fcc8f', // vert
+      J: '#f7d24a', // jaune
+      R: '#ee7163', // rouge
+      M: '#b39ddb', // violet (mauve)
+      O: '#f9a15a', // orange
+      G: '#d3d3d3', // gris
     };
 
-    let grille = {
-      level_1: [
-        ['J','V','B','M','M','M','J'],
-        ['V','V','B','B','M','M','V'],
-        ['V','R','R','B','M','V','V'],
-        ['V','R','M','J','V','V','V'],
-        ['V','R','M','M','R','R','B'],
-        ['R','R','M','R','R','B','B'],
-        ['J','M','M','R','R','B','J'],
-      ],
-      level_2: [
-        ['M','M','M','G','V','V','V'],
-        ['M','J','B','B','B','J','V'],
-        ['M','R','R','B','B','R','V'],
-        ['R','R','R','J','R','R','R'],
-        ['V','R','B','B','R','R','M'],
-        ['V','J','B','B','B','J','M'],
-        ['V','V','V','G','M','M','M'],
-      ],
-      level_3: [
-        ['J','J','M','G','M','J','J'],
-        ['G','J','M','M','M','J','G'],
-        ['R','R','R','M','R','R','R'],
-        ['R','R','R','J','R','R','R'],
-        ['V','B','B','B','B','B','V'],
-        ['V','V','V','V','V','V','V'],
-        ['M','M','M','G','M','M','M'],
-      ],
-      level_4: [
-        ['O','O','O','O','O','O','O'],
-        ['J','R','B','V','B','R','J'],
-        ['R','R','M','M','M','R','R'],
-        ['J','V','B','M','B','V','J'],
-        ['R','R','M','M','M','R','R'],
-        ['J','R','B','V','B','R','J'],
-        ['O','O','O','O','O','O','O'],
-      ],
+    const NOMS_COULEURS = { B: 'bleue', V: 'verte', J: 'jaune', R: 'rouge', M: 'violette', O: 'orange', G: 'grise' };
+
+    // Règles possibles d'une zone
+    const REGLES = {
+      libre:     { symbole: '?',   texte: 'Aucune contrainte : tous les chiffres sont permis.' },
+      egal:      { symbole: '=',   texte: 'Tous les chiffres doivent être identiques.' },
+      different: { symbole: '≠',   texte: 'Tous différents : aucun chiffre en double.' },
+      deux:      { symbole: 'XO',  texte: '2 valeurs différentes au maximum.' },
+      bas:       { symbole: '1-3', texte: 'Uniquement des 1, 2 ou 3.' },
+      haut:      { symbole: '4-6', texte: 'Uniquement des 4, 5 ou 6.' },
     };
 
+    // Chaque niveau :
+    //  - grille : 7 lignes, un identifiant de zone par case. Même identifiant = même zone
+    //    (cases adjacentes, reliées par un trait, ou zone "toute la couleur").
+    //    La 1re lettre de l'identifiant donne la couleur.
+    //  - zones  : règle et 3 gains de chaque zone (case Décompte)
+    //  - etoiles: cases de départ conseillées, en [ligne, colonne]
+    const NIVEAUX = {
+      1: {
+        grille: [
+          'J  V1 B1 M1 M1 M1 J ',
+          'V1 V1 B1 B1 M1 M1 V2',
+          'V1 R1 R1 B1 M1 V2 V2',
+          'V1 R1 M2 J  V2 V2 V2',
+          'V1 R1 M2 M2 R2 R2 B2',
+          'R1 R1 M2 R2 R2 B2 B2',
+          'J  M2 M2 R2 R2 B2 J ',
+        ],
+        zones: {
+          B1: { regle: 'egal',      gains: [7, 5, 3] },
+          B2: { regle: 'egal',      gains: [7, 5, 3] },
+          M1: { regle: 'deux',      gains: [6, 4, 2] },
+          M2: { regle: 'deux',      gains: [6, 4, 2] },
+          R1: { regle: 'different', gains: [6, 4, 2] },
+          R2: { regle: 'different', gains: [6, 4, 2] },
+          V1: { regle: 'libre',     gains: [4, 3, 2] },
+          V2: { regle: 'libre',     gains: [4, 3, 2] },
+          J:  { regle: 'different', gains: [8, 6, 4] },
+        },
+        etoiles: [[0,2], [1,5], [3,1], [3,4], [5,2], [6,4]],
+      },
+      2: {
+        grille: [
+          'M1 M1 M1 G  V1 V1 V1',
+          'M1 J  B1 B1 B1 J  V1',
+          'M1 R1 R1 B1 B1 R2 V1',
+          'R1 R1 R1 J  R2 R2 R2',
+          'V2 R1 B2 B2 R2 R2 M2',
+          'V2 J  B2 B2 B2 J  M2',
+          'V2 V2 V2 G  M2 M2 M2',
+        ],
+        zones: {
+          J:  { regle: 'different', gains: [6, 4, 2] },
+          M1: { regle: 'deux',      gains: [6, 4, 2] },
+          M2: { regle: 'deux',      gains: [6, 4, 2] },
+          R1: { regle: 'different', gains: [6, 4, 2] },
+          R2: { regle: 'different', gains: [6, 4, 2] },
+          B1: { regle: 'egal',      gains: [7, 5, 3] },
+          B2: { regle: 'egal',      gains: [7, 5, 3] },
+          V1: { regle: 'libre',     gains: [4, 3, 2] },
+          V2: { regle: 'libre',     gains: [4, 3, 2] },
+          G:  { regle: 'egal',      gains: [3, 2, 1] },
+        },
+        etoiles: [[0,4], [2,0], [3,2], [4,5], [5,1], [6,4]],
+      },
+      3: {
+        grille: [
+          'J  J  M1 G  M1 J  J ',
+          'G  J  M1 M1 M1 J  G ',
+          'R1 R1 R1 M1 R2 R2 R2',
+          'R1 R1 R1 G  R2 R2 R2',
+          'V  B  B  B  B  B  V ',
+          'V  V  V  V  V  V  V ',
+          'M2 M2 M2 G  M2 M2 M2',
+        ],
+        zones: {
+          M1: { regle: 'deux',      gains: [7, 5, 3] },
+          M2: { regle: 'deux',      gains: [7, 5, 3] },
+          J:  { regle: 'different', gains: [7, 5, 3] },
+          R1: { regle: 'different', gains: [6, 4, 2] },
+          R2: { regle: 'different', gains: [6, 4, 2] },
+          B:  { regle: 'egal',      gains: [7, 5, 3] },
+          V:  { regle: 'libre',     gains: [6, 5, 4] },
+          G:  { regle: 'egal',      gains: [8, 6, 4] },
+        },
+        etoiles: [[1,2], [1,5], [3,3], [4,1], [4,6], [6,2]],
+      },
+      4: {
+        grille: [
+          'O1 O1 O1 O1 O1 O1 O1',
+          'J  R1 B  V  B  R2 J ',
+          'R1 R1 M  M  M  R2 R2',
+          'J  V  B  M  B  V  J ',
+          'R1 R1 M  M  M  R2 R2',
+          'J  R1 B  V  B  R2 J ',
+          'O2 O2 O2 O2 O2 O2 O2',
+        ],
+        zones: {
+          O1: { regle: 'haut',      gains: [6, 4, 3] },
+          O2: { regle: 'bas',       gains: [6, 4, 3] },
+          M:  { regle: 'deux',      gains: [7, 5, 3] },
+          B:  { regle: 'egal',      gains: [8, 6, 4] },
+          R1: { regle: 'different', gains: [6, 4, 2] },
+          R2: { regle: 'different', gains: [6, 4, 2] },
+          J:  { regle: 'different', gains: [8, 6, 4] },
+          V:  { regle: 'libre',     gains: [3, 2, 1] },
+        },
+        etoiles: [[0,4], [2,2], [2,5], [3,0], [5,4], [6,1]],
+      },
+    };
+
+    // Couleur pâle (mélange avec du blanc) pour le fond des zones
+    function palir(hex, t) {
+      var n = parseInt(hex.slice(1), 16);
+      var c = [(n >> 16) & 255, (n >> 8) & 255, n & 255].map(v => Math.round(v + (255 - v) * t));
+      return 'rgb(' + c.join(',') + ')';
+    }
+
+    // Valeurs encore permises dans une zone, d'après sa règle et les chiffres déjà inscrits
+    function valeursPermises(regle, presents) {
+      var tous = [1, 2, 3, 4, 5, 6];
+      var distincts = presents.filter((v, i) => presents.indexOf(v) === i);
+      switch (regle) {
+        case 'egal':      return distincts.length ? [distincts[0]] : tous;
+        case 'different': return tous.filter(v => distincts.indexOf(v) === -1);
+        case 'deux':      return distincts.length >= 2 ? distincts.slice().sort() : tous;
+        case 'bas':       return [1, 2, 3];
+        case 'haut':      return [4, 5, 6];
+        default:          return tous;
+      }
+    }
+
+    // Transforme 'J  V1 B1' en ['J','V1','B1']
+    function lireLigne(ligne) { return ligne.trim().split(/\s+/); }
+
+    // ================== RÉSEAU ==================
     let peer = null;
     let connections = []; // Pour l'hôte
     let hostConn = null;  // Pour les clients
     let isHost = false;
     let monPseudo = '';
-
-
-    async function activerWakeLock() {
-      try {
-        if ('wakeLock' in navigator) {
-          wakeLock = await navigator.wakeLock.request('screen');
-          wakelockStatusEl.style.display = 'block';
-          console.log('Wake Lock actif : l\'écran ne s\'éteindra pas.');
-
-          wakeLock.addEventListener('release', () => {
-            console.log('Wake Lock relâché.');
-          });
-        }
-      } catch (err) {
-        console.warn(`Wake Lock non disponible ou refusé : ${err.message}`);
-      }
-    }
 
     new Vue({
       el: '#app',
@@ -385,47 +585,368 @@
         actif_tab: 'config',
         pseudoInput: '',
         channelInput: 'toto',
-        historique: '',        
+        historique: [],        // [{ msg, system }]
+        joueurs: [],           // [{ pseudo, pret }] (hôte inclus)
+        phase: 'depart',       // 'depart' (placement 1 à 6) | 'jeu'
+        message: '',           // alerte temporaire affichée au-dessus de la grille
         roomCode: '',
-        status: 'Statut : Connexion...',
+        role: null,            // null (hors ligne) | 'hote' | 'client'
+        status: 'Statut : Non connecté',
         size: 7,
         level: 1,
-        curentLevel: 0,
         last_player: '',
         dice1: null,
-        dice2: null,        
-        picker: {
-          show: false,
-          key: null,
-          x: 0,
-          y: 0
-        },      
-        cellsData: {
+        dice2: null,
+        picker: { show: false, key: null, x: 0, y: 0 },
+        lancerId: 0,           // numéro du lancer en cours (0 = pas encore de lancer)
+        aJoue: true,           // ai-je déjà joué (ou passé) sur le lancer en cours ?
+        dernierCoup: null,     // clé de la case jouée sur ce lancer (pour annuler)
+        prochainLanceur: null, // pseudo de celui qui doit lancer (null = n'importe qui)
+        zoneSurlignee: null,   // id de la zone mise en évidence
+        cellsData: {}          // clé 'x-y' -> { zone, color, label, selected, etoile, depart }
+      },
+      watch: {
+        level: {
+          handler: function(nouveau, ancien) {
+            this.buildGrid();
+            // L'hôte impose le niveau : tout changement est diffusé et remet les grilles à zéro
+            if (this.role === 'hote' && ancien !== undefined) {
+              connections.forEach(c => { c.joueurPret = false; c.aJoue = true; });
+              this.prochainLanceur = null;
+              this.broadcast({ action: 'NIVEAU', level: nouveau });
+              this.majJoueurs();
+              this.ajouterLog(`Niveau ${nouveau} imposé à tous les joueurs.`, true);
+            }
+          },
+          immediate: true
+        },
+        // L'hôte republie la liste quand son propre état "prêt" change
+        phase: function() {
+          if (this.role === 'hote') this.majJoueurs();
+        },
+        aJoue: function() {
+          if (this.role === 'hote') this.majJoueurs();
         }
       },
-      created: function() {
-
-      },
       computed: {
+        niveau: function() { return NIVEAUX[this.level]; },
 
+        grid: function() {
+          var result = [];
+          var self = this;
+          var coups = this.coupsPossibles;
+          for (var y = 0; y < this.size; y++) {
+            for (var x = 0; x < this.size; x++) {
+              var key = x + '-' + y;
+              var data = this.cellsData[key];
+              if (!data) continue;
+              var z = data.zone;
+              result.push({
+                id: y * this.size + x,
+                key: key,
+                x: x,
+                y: y,
+                zone: z,
+                selected: data.selected,
+                color: data.color,
+                label: data.label,
+                etoile: data.etoile,
+                depart: data.depart,
+                symbole: REGLES[this.niveau.zones[z].regle].symbole,
+                fond: palir(data.color, 0.55), // toute la case prend la couleur pâle de sa zone
+                jouable: !!coups[key]
+              });
+            }
+          }
+          return result;
+        },
+
+        // Une entrée par zone, pour le bandeau
+        zonesListe: function() {
+          var self = this;
+          return Object.keys(this.niveau.zones).map(function(id) {
+            var z = self.niveau.zones[id];
+            var cases = Object.values(self.cellsData).filter(function(c) { return c.zone === id; });
+            return {
+              id: id,
+              color: PALETTE[id[0]],
+              symbole: REGLES[z.regle].symbole,
+              gains: z.gains,
+              total: cases.length,
+              rempli: cases.filter(function(c) { return c.label; }).length
+            };
+          });
+        },
+
+        // Chiffres de départ déjà posés
+        departUtilises: function() {
+          return Object.values(this.cellsData).filter(c => c.depart).map(c => c.label);
+        },
+        // Chiffres proposés dans le pavé
+        pickerChoix: function() {
+          if (this.phase === 'depart') {
+            return [1, 2, 3, 4, 5, 6].filter(n => this.departUtilises.indexOf(n) === -1);
+          }
+          return this.coupsPossibles[this.picker.key] || [];
+        },
+
+        // Chiffres présents par zone : { R1: [2,5], ... }
+        chiffresParZone: function() {
+          var res = {};
+          Object.values(this.cellsData).forEach(c => {
+            if (!res[c.zone]) res[c.zone] = [];
+            if (c.label) res[c.zone].push(c.label);
+          });
+          return res;
+        },
+
+        // Coups légaux pour le lancer en cours : { 'x-y': [valeurs possibles] }
+        // Règle : on inscrit la valeur d'un dé dans une case vide orthogonalement
+        // adjacente à une case contenant la valeur de l'autre dé, en respectant la zone.
+        coupsPossibles: function() {
+          var res = {};
+          if (this.phase !== 'jeu' || this.aJoue || this.dice1 === null) return res;
+          var paires = [[this.dice1, this.dice2], [this.dice2, this.dice1]];
+          Object.keys(this.cellsData).forEach(key => {
+            var c = this.cellsData[key];
+            if (c.label) return;
+            var permises = this.valeursZone(c.zone);
+            var voisins = this.valeursVoisines(key);
+            var vals = [];
+            paires.forEach(([v, autre]) => {
+              if (voisins.indexOf(autre) !== -1 && permises.indexOf(v) !== -1 && vals.indexOf(v) === -1) vals.push(v);
+            });
+            if (vals.length) res[key] = vals.sort();
+          });
+          return res;
+        },
+        aucunCoup: function() {
+          return this.phase === 'jeu' && !this.aJoue && this.dice1 !== null &&
+                 Object.keys(this.coupsPossibles).length === 0;
+        },
+
+        monPseudoAffiche: function() {
+          return this.pseudoInput.trim();
+        },
+        peutLancerLocal: function() {
+          if (this.phase !== 'jeu') return false;
+          if (!this.role) return this.aJoue; // solo : il faut avoir joué (ou passé)
+          if (this.prochainLanceur && this.prochainLanceur !== this.monPseudoAffiche) return false;
+          return this.enAttente.length === 0;
+        },
+        aideGenerale: function() {
+          if (this.phase === 'depart') return 'Touche une case pour y placer un chiffre de départ.';
+          if (this.dice1 === null) return 'Lance les dés pour commencer.';
+          if (this.aucunCoup) return 'Aucun coup possible avec ce lancer : passe ton tour.';
+          if (!this.aJoue) return 'Place un ' + this.dice1 + ' à côté d\'un ' + this.dice2 +
+            (this.dice1 !== this.dice2 ? ', ou un ' + this.dice2 + ' à côté d\'un ' + this.dice1 : '') +
+            ' (cases qui clignotent).';
+          return 'Coup joué. Touche une case ou une zone pour voir sa règle.';
+        },
+        joueursTexte: function() {
+          return this.joueurs.map(j => j.pseudo + (j.pret ? ' ✓' : ' (départ…)')).join(', ');
+        },
+        // Joueurs qui bloquent le prochain lancer (départ non validé, ou coup pas encore joué)
+        enAttente: function() {
+          if (!this.role) return [];
+          var pasPrets = this.joueurs.filter(j => !j.pret).map(j => j.pseudo);
+          if (pasPrets.length) return pasPrets;
+          if (this.lancerId === 0) return [];
+          return this.joueurs.filter(j => !j.joue).map(j => j.pseudo);
+        },
+        attenteTexte: function() {
+          if (!this.enAttente.length) return '';
+          var pasPrets = this.joueurs.some(j => !j.pret);
+          return (pasPrets ? 'En attente du départ de : ' : 'En attente du coup de : ') + this.enAttente.join(', ');
+        },
+
+        zoneInfo: function() {
+          if (!this.zoneSurlignee) return null;
+          var id = this.zoneSurlignee;
+          var z = this.zonesListe.find(c => c.id === id);
+          var def = this.niveau.zones[id];
+          var possibles;
+          if (z.rempli === z.total) {
+            possibles = '— <b>zone complète</b>';
+          } else {
+            var p = this.valeursZone(id);
+            possibles = p.length ? '→ possible ici : <b>' + p.join(' ') + '</b>' : '→ <b>plus aucun chiffre possible</b>';
+          }
+          return {
+            titre: 'Zone ' + NOMS_COULEURS[id[0]] + ' ' + REGLES[def.regle].symbole +
+                   ' · gains ' + def.gains.join('/') + ' · ' + z.rempli + '/' + z.total + ' cases',
+            regle: REGLES[def.regle].texte,
+            possibles: possibles,
+            fond: palir(PALETTE[id[0]], 0.7)
+          };
+        }
       },
       methods: {
+        // ---------- Grille ----------
+        buildGrid: function() {
+          var niv = NIVEAUX[this.level];
+          var lignes = niv.grille.map(lireLigne);
+          var etoiles = niv.etoiles.map(e => e[1] + '-' + e[0]); // [ligne, col] -> 'x-y'
+          var data = {};
+          for (var y = 0; y < this.size; y++) {
+            for (var x = 0; x < this.size; x++) {
+              var zone = lignes[y][x];
+              data[x + '-' + y] = {
+                zone: zone,
+                color: PALETTE[zone[0]],
+                label: '',
+                selected: false,
+                etoile: etoiles.indexOf(x + '-' + y) !== -1,
+                depart: false
+              };
+            }
+          }
+          this.zoneSurlignee = null;
+          this.cellsData = data;
+          this.phase = 'depart';
+          this.lancerId = 0;
+          this.aJoue = true;
+          this.dernierCoup = null;
+          this.dice1 = null;
+          this.dice2 = null;
+          this.last_player = '';
+          this.prochainLanceur = null;
+          this.signalerPret(false);
+        },
+
+        // ---------- Phase de départ ----------
+        afficherMessage: function(txt) {
+          this.message = txt;
+          clearTimeout(this._timerMsg);
+          this._timerMsg = setTimeout(() => { this.message = ''; }, 2500);
+        },
+        valeursZone: function(zone) {
+          return valeursPermises(this.niveau.zones[zone].regle, this.chiffresParZone[zone] || []);
+        },
+        valeursVoisines: function(key) {
+          var [x, y] = key.split('-').map(Number);
+          return [[x, y - 1], [x, y + 1], [x - 1, y], [x + 1, y]]
+            .map(([a, b]) => this.cellsData[a + '-' + b])
+            .filter(c => c && c.label)
+            .map(c => c.label);
+        },
+        // Explique pourquoi une case vide n'est pas jouable avec le lancer en cours
+        raisonInterdit: function(key) {
+          var d1 = this.dice1, d2 = this.dice2;
+          var voisins = this.valeursVoisines(key);
+          var aCoteDe1 = voisins.indexOf(d1) !== -1, aCoteDe2 = voisins.indexOf(d2) !== -1;
+          if (!aCoteDe1 && !aCoteDe2) {
+            return d1 === d2 ? 'Il faut être à côté d\'un ' + d1 + '.'
+                             : 'Il faut être à côté d\'un ' + d1 + ' ou d\'un ' + d2 + '.';
+          }
+          return 'La règle de cette zone interdit ce chiffre.';
+        },
+        zoneADejaUnDepart: function(zone) {
+          return Object.values(this.cellsData).some(c => c.depart && c.zone === zone);
+        },
+        effacerDepart: function() {
+          Object.values(this.cellsData).forEach(c => {
+            if (c.depart) { c.label = ''; c.depart = false; }
+          });
+        },
+        departEtoilesHasard: function() {
+          this.effacerDepart();
+          this.zoneSurlignee = null;
+          var etoiles = Object.values(this.cellsData).filter(c => c.etoile);
+          // On mélange jusqu'à respecter les zones à plage fixe (orange 1-3 / 4-6)
+          for (var essai = 0; essai < 200; essai++) {
+            var chiffres = [1, 2, 3, 4, 5, 6].sort(() => Math.random() - 0.5);
+            var ok = etoiles.every((c, i) =>
+              valeursPermises(this.niveau.zones[c.zone].regle, []).indexOf(chiffres[i]) !== -1);
+            if (ok) break;
+          }
+          etoiles.forEach((c, i) => { c.label = chiffres[i]; c.depart = true; });
+        },
+        validerDepart: function() {
+          if (this.departUtilises.length < 6) return;
+          this.phase = 'jeu';
+          this.zoneSurlignee = null;
+          this.signalerPret(true);
+          this.ajouterLog('Départ validé.', true);
+        },
+        signalerPret: function(pret) {
+          if (this.role === 'client' && hostConn) {
+            hostConn.send({ action: 'PRET', pseudo: monPseudo, pret: pret });
+          }
+          // côté hôte, le watcher "phase" republie la liste
+        },
+        tousPrets: function() {
+          return this.phase === 'jeu' && connections.every(c => !c.joueurPseudo || c.joueurPret);
+        },
+        tousOntJoue: function() {
+          return this.aJoue && connections.every(c => !c.joueurPseudo || c.aJoue);
+        },
+        // Côté hôte : renvoie la raison d'un refus de lancer, ou '' si c'est permis
+        refusLancer: function(joueur) {
+          if (!this.tousPrets()) return 'Tout le monde n\'a pas fini son départ.';
+          if (this.lancerId > 0 && !this.tousOntJoue()) return 'Tout le monde n\'a pas encore joué ce lancer.';
+          if (this.prochainLanceur && joueur !== this.prochainLanceur) return 'C\'est à ' + this.prochainLanceur + ' de lancer.';
+          return '';
+        },
+
+        // ---------- Coups ----------
+        signalerJoue: function() {
+          if (this.role === 'client' && hostConn) {
+            hostConn.send({ action: 'JOUE', pseudo: monPseudo, lancerId: this.lancerId, joue: this.aJoue });
+          }
+          // côté hôte, le watcher "aJoue" republie la liste
+        },
+        passer: function() {
+          if (this.aJoue) return;
+          this.aJoue = true;
+          this.dernierCoup = null;
+          this.zoneSurlignee = null;
+          this.signalerJoue();
+        },
+        annulerCoup: function() {
+          if (!this.dernierCoup) return;
+          var c = this.cellsData[this.dernierCoup];
+          c.label = '';
+          this.dernierCoup = null;
+          this.aJoue = false;
+          this.signalerJoue();
+        },
+        basculerZone: function(id) {
+          this.zoneSurlignee = (this.zoneSurlignee === id) ? null : id;
+        },
+
+        // ---------- Historique / réseau ----------
         ajouterLog: function(msg, isSystem = false) {
-          const li = document.createElement('li');
-          li.innerText = msg;
-          if (isSystem) li.className = 'sys-msg';
-          this.historique += li.outerHTML;
+          this.historique.push({ msg: msg, system: isSystem });
         },
         broadcast: function (data) {
           connections.forEach(c => c.send(data));
+        },
+        majJoueurs: function() {
+          if (this.role !== 'hote') return;
+          this.joueurs = [{ pseudo: monPseudo, pret: this.phase === 'jeu', joue: this.aJoue }].concat(
+            connections.filter(c => c.joueurPseudo)
+              .map(c => ({ pseudo: c.joueurPseudo, pret: !!c.joueurPret, joue: c.aJoue !== false }))
+          );
+          this.broadcast({ action: 'LISTE_JOUEURS', joueurs: this.joueurs, prochainLanceur: this.prochainLanceur });
         },
         validerPseudo: function() {
           monPseudo = this.pseudoInput.trim();
           if (!monPseudo) {
             alert('Merci de saisir un pseudo.');
-            return false; 
+            return false;
           }
           return true;
+        },
+        reinitialiserPeer: function() {
+          if (peer) peer.destroy();
+          peer = null;
+          connections = [];
+          hostConn = null;
+          isHost = false;
+          this.role = null;
+          this.joueurs = [];
+          this.roomCode = '';
         },
         rejoindrePartie: function() {
           if (!this.validerPseudo()) return;
@@ -433,7 +954,8 @@
           const targetChannel = this.channelInput.trim();
           if (!targetChannel) return alert('Saisis le nom du salon à rejoindre.');
 
-          isHost = false;
+          this.reinitialiserPeer();
+          this.status = 'Statut : Connexion...';
           peer = new Peer();
 
           peer.on('open', () => {
@@ -442,16 +964,29 @@
             hostConn.on('open', () => {
               this.actif_tab = 'play';
               this.status = `Statut : Connecté (${monPseudo})`;
-              this.roomCodeEl = `Salon : <strong>${targetChannel}</strong>`;
-
-              // Envoyer notre pseudo à l'hôte
+              this.roomCode = targetChannel;
+              this.role = 'client';
               hostConn.send({ action: 'REJOINDRE', pseudo: monPseudo });
+              if (this.phase === 'jeu') this.signalerPret(true);
             });
 
             hostConn.on('data', (data) => {
               if (data.action === 'RESULTAT') {
-                this.afficherResultat(data.joueur, data.valeur);
-              } 
+                this.afficherResultat(data.joueur, data.valeur, data.lancerId, data.prochainLanceur);
+              }
+              else if (data.action === 'REFUS') {
+                this.afficherMessage(data.message);
+              }
+              else if (data.action === 'LISTE_JOUEURS') {
+                this.joueurs = data.joueurs;
+                this.prochainLanceur = data.prochainLanceur || null;
+              }
+              else if (data.action === 'NIVEAU') {
+                if (data.level !== this.level) {
+                  this.level = data.level; // le watcher reconstruit la grille
+                }
+                this.ajouterLog(`L'hôte a fixé le niveau ${data.level}.`, true);
+              }
               else if (data.action === 'JOUEUR_REJOINT') {
                 this.ajouterLog(`${data.pseudo} a rejoint la partie.`, true);
               }
@@ -462,28 +997,36 @@
 
             hostConn.on('close', () => {
               this.status = 'Statut : Déconnecté';
+              this.role = null;
+              this.joueurs = [];
               this.ajouterLog('Connexion au salon perdue.', true);
             });
           });
 
           peer.on('error', (err) => {
-            alert('Impossible de trouver ce salon.');
+            this.status = 'Statut : Non connecté';
+            if (err.type === 'peer-unavailable') {
+              alert('Impossible de trouver ce salon.');
+            } else {
+              alert('Erreur : ' + err.message);
+            }
           });
         },
-
         creerPartie: function() {
           if (!this.validerPseudo()) return;
 
           const customChannel = this.channelInput.trim();
-          
-          // Si un nom de salon est fourni, on l'utilise comme ID Peer, sinon ID généré
+          this.reinitialiserPeer();
+          this.status = 'Statut : Création du salon...';
           peer = customChannel ? new Peer(customChannel) : new Peer();
 
           peer.on('open', (id) => {
             isHost = true;
+            this.role = 'hote';
             this.actif_tab = 'play';
             this.status = `Statut : Hôte (${monPseudo})`;
-            this.roomCodeEl = `Nom du salon : <strong>${id}</strong>`;
+            this.roomCode = id;
+            this.majJoueurs();
             this.ajouterLog(`${monPseudo} a créé la partie.`, true);
           });
 
@@ -493,24 +1036,46 @@
             conn.on('data', (data) => {
               if (data.action === 'REJOINDRE') {
                 conn.joueurPseudo = data.pseudo;
-                // Alerte l'hôte et redistribue l'info à tous les clients
+                conn.joueurPret = false;
+                conn.aJoue = true; // un nouvel arrivant ne bloque pas le lancer en cours
+                conn.send({ action: 'NIVEAU', level: this.level });
                 this.broadcast({ action: 'JOUEUR_REJOINT', pseudo: data.pseudo });
                 this.ajouterLog(`${data.pseudo} a rejoint la partie.`, true);
+                this.majJoueurs();
+              }
+              else if (data.action === 'PRET') {
+                conn.joueurPret = data.pret;
+                if (data.pret) this.ajouterLog(`${data.pseudo} a validé son départ.`, true);
+                this.majJoueurs();
+              }
+              else if (data.action === 'JOUE') {
+                if (data.lancerId === this.lancerId) {
+                  conn.aJoue = data.joue;
+                  this.majJoueurs();
+                }
               }
               else if (data.action === 'DEMANDE_LANCER') {
-                this.traiterLancer(data.pseudo);
+                var refus = this.refusLancer(data.pseudo);
+                if (refus) {
+                  conn.send({ action: 'REFUS', message: refus });
+                } else {
+                  this.traiterLancer(data.pseudo);
+                }
               }
             });
 
             conn.on('close', () => {
               const pseudoQuitte = conn.joueurPseudo || 'Un joueur';
               connections = connections.filter(c => c !== conn);
+              if (this.prochainLanceur === pseudoQuitte) this.prochainLanceur = null;
               this.broadcast({ action: 'JOUEUR_QUITTE', pseudo: pseudoQuitte });
               this.ajouterLog(`${pseudoQuitte} a quitté la partie.`, true);
+              this.majJoueurs();
             });
           });
 
           peer.on('error', (err) => {
+            this.status = 'Statut : Non connecté';
             if (err.type === 'unavailable-id') {
               alert('Ce nom de salon est déjà utilisé. Choisis-en un autre.');
             } else {
@@ -519,10 +1084,16 @@
           });
         },
 
-        afficherResultat: function(joueur, valeur) {
+        afficherResultat: function(joueur, valeur, lancerId, prochain) {
           this.last_player = joueur;
           this.dice1 = valeur.dice1;
           this.dice2 = valeur.dice2;
+          this.lancerId = lancerId;
+          this.prochainLanceur = prochain || null;
+          // Nouveau lancer : chacun doit jouer (ou passer)
+          this.aJoue = (this.phase !== 'jeu');
+          this.dernierCoup = null;
+          this.zoneSurlignee = null;
           this.ajouterLog(`${joueur} a fait un ${valeur.dice1} - ${valeur.dice2}`);
         },
 
@@ -530,106 +1101,106 @@
           this.actif_tab = tab;
         },
 
-        getGrid: function() {
-
-          var level = this.level;
-          var totalCells = this.size * this.size;
-          var result = [];
-
-          if(this.curentLevel != this.level) {
-            for(let lig = 0; lig < this.size; lig++) {
-              for(let col = 0; col < this.size; col++) {
-                this.cellsData[lig+'-'+col] = { color: palette[grille['level_'+this.level][col][lig]] };
-              }
-            }            
-            this.curentLevel = this.level;
-          }
-
-          for (var index = 0; index < totalCells; index++) {
-            var x = index % this.size;
-            var y = Math.floor(index / this.size);
-            var key = x + '-' + y;
-
-            var existingData = this.cellsData[key] || {};
-
-            result.push({
-              id: index,
-              x: x,
-              y: y,
-              selected: existingData.selected || false,
-              color: existingData.color || '#ffffff',
-              label: existingData.label || ''
-            });
-          }
-
-          return result;
-        },        
+        // ---------- Picker ----------
         toggleCell: function(cell, event) {
           var pickerWidth = 150;
           var pickerHeight = 110;
 
           var gridRect = event.currentTarget.parentElement.getBoundingClientRect();
-          
-          // Affiche à gauche si on dépasse le milieu de la grille
+
           var posX = (event.clientX > gridRect.left + gridRect.width / 2)
             ? event.clientX - pickerWidth - 10
             : event.clientX + 10;
 
-          // Affiche au-dessus si on est vers le bas de la grille
           var posY = (event.clientY > gridRect.top + gridRect.height / 2)
             ? event.clientY - pickerHeight - 10
             : event.clientY + 10;
 
-          this.picker = {
-            show: true,
-            key: cell.x + '-' + cell.y,
-            x: posX,
-            y: posY
-          };
+          var data = this.cellsData[cell.key];
 
-          this.cellsData[this.picker.key].selected = true;
-          this.cellsData[this.picker.key].label = '';
+          if (this.phase === 'depart') {
+            // Retoucher un chiffre de départ l'efface
+            if (data.depart) { data.label = ''; data.depart = false; return; }
+            if (data.label) return;
+            if (this.zoneADejaUnDepart(cell.zone)) {
+              this.zoneSurlignee = cell.zone;
+              return this.afficherMessage('Cette zone a déjà un chiffre de départ.');
+            }
+          } else {
+            this.zoneSurlignee = cell.zone;
+            // Case déjà remplie, pas de lancer, ou coup déjà joué : on montre juste la zone
+            if (data.label) return;
+            if (this.dice1 === null) return this.afficherMessage('Attends le premier lancer de dés.');
+            if (this.aJoue) return this.afficherMessage('Tu as déjà joué ce lancer.');
+            if (!this.coupsPossibles[cell.key]) return this.afficherMessage(this.raisonInterdit(cell.key));
+          }
 
+          this.picker = { show: true, key: cell.key, x: posX, y: posY };
+          this.zoneSurlignee = cell.zone;
+          this.cellsData[cell.key].selected = true;
         },
 
-        // Applique le chiffre choisi
         selectNumber: function(number) {
           if (!this.picker.key) return;
-          if (this.dice1 && this.dice2 && number != this.dice1 && number != this.dice2) return;
-
-          var currentState = this.cellsData[this.picker.key] || {};
-
-          this.$set(this.cellsData, this.picker.key, {
-            selected: currentState.selected || false,
-            color: currentState.color || '#ffffff',
-            label: number
-          });
-
+          var c = this.cellsData[this.picker.key];
+          if (this.phase === 'jeu') {
+            // Sécurité : on revérifie que le coup est légal
+            var legaux = this.coupsPossibles[this.picker.key] || [];
+            if (legaux.indexOf(number) === -1) return this.closePicker();
+            this.dernierCoup = this.picker.key;
+            this.aJoue = true;
+          }
+          c.label = number;
+          c.depart = (this.phase === 'depart');
+          this.zoneSurlignee = null;
           this.closePicker();
+          if (this.phase === 'jeu') this.signalerJoue();
         },
         closePicker: function() {
-          this.cellsData[this.picker.key].selected = false;
+          if (this.picker.key && this.cellsData[this.picker.key]) {
+            this.cellsData[this.picker.key].selected = false;
+          }
           this.picker.show = false;
           this.picker.key = null;
         },
+
+        // ---------- Dés ----------
         rollDice: function() {
+          if (this.phase === 'depart') {
+            return this.afficherMessage('Termine d\'abord ton placement de départ.');
+          }
+          if (!this.role) {
+            // Hors ligne (solo) : on lance localement
+            if (!this.aJoue) return this.afficherMessage('Joue ou passe avant de relancer.');
+            monPseudo = this.pseudoInput.trim() || 'Moi';
+            return this.traiterLancer(monPseudo);
+          }
           if (isHost) {
+            var refus = this.refusLancer(monPseudo);
+            if (refus) return this.afficherMessage(refus);
             this.traiterLancer(monPseudo);
           } else if (hostConn) {
             hostConn.send({ action: 'DEMANDE_LANCER', pseudo: monPseudo });
+          } else {
+            alert("Tu n'es connecté à aucun salon.");
           }
         },
         traiterLancer: function(joueur) {
-          this.dice1 = Math.floor(Math.random() * 6) + 1;
-          this.dice2 = Math.floor(Math.random() * 6) + 1;
+          const val = {
+            dice1: Math.floor(Math.random() * 6) + 1,
+            dice2: Math.floor(Math.random() * 6) + 1
+          };
+          // Le suivant dans l'ordre des joueurs (sens horaire = ordre d'arrivée)
+          var ordre = this.joueurs.map(j => j.pseudo);
+          var idx = ordre.indexOf(joueur);
+          var prochain = (this.role === 'hote' && idx !== -1) ? ordre[(idx + 1) % ordre.length] : null;
+          var lancerId = this.lancerId + 1;
 
-          let val = {dice1: this.dice1, dice2: this.dice2};
-          const payload = { action: 'RESULTAT', joueur: joueur, valeur: val };
-
-          this.afficherResultat(joueur, val);
-          this.broadcast(payload);
+          connections.forEach(c => { c.aJoue = false; });
+          this.afficherResultat(joueur, val, lancerId, prochain);
+          this.broadcast({ action: 'RESULTAT', joueur: joueur, valeur: val, lancerId: lancerId, prochainLanceur: prochain });
+          this.majJoueurs();
         }
-
       }
     });
   </script>
