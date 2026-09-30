@@ -167,7 +167,7 @@
       display: flex;
       gap: 5px;
       overflow-x: auto;
-      padding: 1px 1px 5px;
+      padding: 1px 1px 15px;
       box-sizing: border-box;
       -webkit-overflow-scrolling: touch;
     }
@@ -577,7 +577,7 @@
         </ul>
       </details>
 
-      <p class="version">Brilliant en ligne · version {{ version }}</p>
+      <p class="version">Brilliant en ligne · version {{  }}</p>
     </div>
 
     <!-- FIN DE PARTIE -->
@@ -879,7 +879,7 @@
     function lireLigne(ligne) { return ligne.trim().split(/\s+/); }
 
     // Numéro de version affiché sur l'accueil (à augmenter à chaque mise en ligne)
-    const VERSION = '0.11';
+    const VERSION = '1.00 beta';
 
     // ================== SONS ET VIBRATIONS ==================
     // Les sons sont fabriqués par le code (Web Audio API) : aucun fichier à charger.
