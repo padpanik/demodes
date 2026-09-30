@@ -7,39 +7,108 @@
   <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
   <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
   <style>
-    body { margin: 0; background: #fafafa; }
+    body { margin: 0; background: #f3f5f7; color: #1d2b36; }
 
+    /* ---------- Barre du haut : onglets + infos de partie ---------- */
+    .barre {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
     #menu {
       display: flex;
-      gap: 12px;
-      margin-bottom: 12px;
+      background: #e3e8ec;
+      border-radius: 11px;
+      padding: 3px;
     }
-
     #menu div {
-      border: 1px solid;
-      padding: 8px 22px;
-      border-radius: 5px;
-      background-color: #2c3e50;
-      color: white;
+      padding: 6px 16px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 0.95em;
+      color: #5b6b78;
       cursor: pointer;
-
-      &.actif {
-        background-color: #3387d0 !important;
-      }
+      user-select: none;
     }
+    #menu div.actif { background: #fff; color: #1d2b36; box-shadow: 0 1px 3px rgba(0,0,0,0.12); }
+    .barre-infos { display: flex; align-items: center; gap: 6px; font-size: 0.9em; }
+    .barre-infos .niveau { border: 1.5px solid #2c3e50; border-radius: 12px; padding: 1px 8px; font-weight: bold; }
+    .barre-infos .objectif { color: #8a5a00; font-weight: bold; }
+    .barre-infos .point-co { width: 9px; height: 9px; border-radius: 50%; background: #42b983; }
+    .barre-infos .point-co.attente { background: #f0a030; animation: clignote 1s infinite; }
+    @keyframes clignote { 50% { opacity: 0.3; } }
 
-    #config {
-      font-family: system-ui, sans-serif; width: 100%; text-align: center;
-
-      .card { border: 1px solid #ccc; padding: 1.2rem; border-radius: 8px; margin-bottom: 1rem; background: #f9f9f9; }
-      button { padding: 0.6rem 1.2rem; font-size: 1rem; cursor: pointer; border-radius: 4px; border: 1px solid #999; }
-      input { padding: 0.6rem; font-size: 1rem; width: 90%; margin-bottom: 0.8rem; box-sizing: border-box; }
-      .status { font-weight: bold; color: #555; }
-      ul { text-align: left; background: #fff; border: 1px solid #ddd; padding: 1rem 2rem; border-radius: 4px; max-height: 150px; overflow-y: auto; }
-      .sys-msg { font-style: italic; color: #666; }
-      .joueurs { margin: 0.5rem 0 0; color: #333; }
-      .version { color: #999; font-size: 0.8rem; margin: 1rem 0 0.5rem; }
+    /* ---------- Accueil ---------- */
+    #config { width: 100%; }
+    .hero { display: flex; align-items: center; gap: 14px; padding: 10px 4px 16px; }
+    .logo { display: grid; grid-template-columns: repeat(2, 24px); gap: 4px; transform: rotate(-8deg); }
+    .logo span {
+      width: 24px; height: 24px; border-radius: 6px;
+      box-shadow: inset 0 -3px 0 rgba(0,0,0,0.2), inset 0 2px 0 rgba(255,255,255,0.4);
     }
+    .hero h1 { margin: 0; font-size: 1.9em; letter-spacing: -0.5px; }
+    .hero p { margin: 2px 0 0; color: #6b7a86; font-size: 0.95em; }
+
+    .carte {
+      background: #fff;
+      border-radius: 16px;
+      padding: 14px 16px;
+      margin-bottom: 12px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.05), 0 4px 14px rgba(29,43,54,0.06);
+    }
+    .titre-carte { font-weight: 700; margin-bottom: 8px; }
+    .titre-carte small { font-weight: 400; color: #8a97a1; margin-left: 4px; }
+    .champ { display: block; font-size: 0.85em; font-weight: 600; color: #5b6b78; margin-bottom: 10px; }
+    .champ:last-of-type { margin-bottom: 0; }
+    .champ input {
+      display: block; width: 100%; box-sizing: border-box; margin-top: 4px;
+      padding: 11px 12px; font-size: 1.05rem; color: #1d2b36;
+      border: 1.5px solid #dde3e8; border-radius: 10px; background: #f8fafb; outline: none;
+    }
+    .champ input:focus { border-color: #3b82c4; background: #fff; }
+    .champ input:disabled { color: #8a97a1; }
+    .aide { font-size: 0.8em; color: #8a97a1; margin-top: 8px; }
+
+    .niveaux { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+    .niveau-btn {
+      display: flex; flex-direction: column; align-items: center; gap: 5px;
+      padding: 8px 4px 6px; border: 2px solid #e3e8ec; border-radius: 12px;
+      background: #fff; cursor: pointer; font-size: 0.8em; font-weight: 600; color: #5b6b78;
+    }
+    .niveau-btn.actif { border-color: #2c3e50; color: #1d2b36; background: #f3f6f9; }
+    .niveau-btn:disabled { cursor: default; }
+    .niveau-btn:disabled:not(.actif) { opacity: 0.4; }
+    .mini { display: grid; grid-template-columns: repeat(7, 1fr); gap: 1px; width: 100%; max-width: 56px; }
+    .mini span { aspect-ratio: 1; border-radius: 1.5px; }
+
+    .actions-accueil { display: flex; gap: 10px; margin-bottom: 8px; }
+    .btn {
+      flex: 1; padding: 13px 10px; font-size: 1rem; font-weight: 700; border-radius: 12px;
+      border: 1.5px solid #cfd7dd; background: #fff; color: #1d2b36; cursor: pointer;
+    }
+    .btn.principal { background: #2c3e50; border-color: #2c3e50; color: #fff; }
+    .btn:active { transform: scale(0.98); }
+    .statut { text-align: center; color: #6b7a86; font-size: 0.9em; margin: 4px 0 12px; }
+
+    .salon-tete { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+    .pastille { width: 12px; height: 12px; border-radius: 50%; background: #42b983; flex-shrink: 0;
+                box-shadow: 0 0 0 4px rgba(66,185,131,0.18); }
+    .pastille.attente { background: #f0a030; box-shadow: 0 0 0 4px rgba(240,160,48,0.2); animation: clignote 1s infinite; }
+    .salon-nom { font-weight: 700; font-size: 1.1em; }
+    .salon-role { font-size: 0.82em; color: #6b7a86; }
+    .chips-joueurs { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+    .chip { background: #eef2f5; border-radius: 14px; padding: 4px 10px; font-size: 0.9em; }
+    .chip.absent { opacity: 0.5; }
+    .salon-actif .actions-accueil { margin-bottom: 0; }
+
+    .journal summary { font-weight: 700; cursor: pointer; }
+    .journal ul { list-style: none; padding: 0; margin: 10px 0 0; max-height: 180px; overflow-y: auto; font-size: 0.88em; }
+    .journal li { padding: 4px 0; border-bottom: 1px solid #f0f2f4; }
+    .journal li.sys-msg { color: #6b7a86; }
+    .version { text-align: center; color: #a3adb5; font-size: 0.78rem; margin: 6px 0 4px; }
 
     .grid-app {
       font-family: system-ui, sans-serif;
@@ -50,7 +119,7 @@
       max-width: 600px;
       min-height: 100dvh;
       margin: 0 auto;
-      padding: 10px;
+      padding: 8px 10px;
       box-sizing: border-box;
     }
 
@@ -61,22 +130,15 @@
       align-items: center;
     }
 
-    .grid-app .controls {
-      width: 100%;
-      margin-bottom: 8px;
-      text-align: center;
-      font-size: 1.1em;
-    }
-    .grid-app .controls select { font-size: 1em; }
     .sys-msg { font-style: italic; color: #666; font-size: 0.85em; }
 
     /* ---------- Bandeau des zones (remplace les cases Décompte) ---------- */
     .zones-strip {
       width: 100%;
       display: flex;
-      gap: 6px;
+      gap: 5px;
       overflow-x: auto;
-      padding: 2px 2px 8px;
+      padding: 1px 1px 5px;
       box-sizing: border-box;
       -webkit-overflow-scrolling: touch;
     }
@@ -85,8 +147,8 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 2px;
-      padding: 4px 8px;
+      gap: 1px;
+      padding: 3px 7px;
       border: 2px solid transparent;
       border-radius: 8px;
       color: #1d2b36;
@@ -107,15 +169,15 @@
       flex-wrap: wrap;
       justify-content: center;
       align-items: center;
-      gap: 6px;
-      margin-bottom: 6px;
-      font-size: 0.9em;
+      gap: 5px;
+      margin-bottom: 4px;
+      font-size: 0.85em;
     }
-    .scores .joueur { background: #eef1f3; border-radius: 12px; padding: 2px 10px; }
+    .scores .joueur { background: #e6ebef; border-radius: 12px; padding: 1px 9px; }
     .scores .joueur.moi { background: #2c3e50; color: #fff; }
     .scores .objectif { color: #8a5a00; font-weight: bold; }
-    .scores .niveau { border: 1px solid #2c3e50; border-radius: 12px; padding: 1px 8px; font-weight: bold; color: #2c3e50; }
-    .jauge { width: 100%; height: 6px; background: #eef1f3; border-radius: 3px; overflow: hidden; margin-bottom: 8px; }
+    .scores .joueur.absent { opacity: 0.5; }
+    .jauge { width: 100%; height: 3px; background: #e3e8ec; border-radius: 2px; overflow: hidden; margin-bottom: 6px; }
     .jauge div { height: 100%; background: #42b983; transition: width 0.4s; }
 
     /* ---------- Fin de partie ---------- */
@@ -136,18 +198,22 @@
       border: 1px solid #999; background: #fff; cursor: pointer;
     }
     .fin-box button.principal { background: #2c3e50; color: #fff; border-color: #2c3e50; }
-    .zone-chip .sym { font-size: 16px; line-height: 1; }
-    .zone-chip .gains { font-size: 11px; font-weight: 600; white-space: nowrap; }
+    .zone-chip .sym { font-size: 13px; line-height: 1; }
+    .zone-chip .gains { font-size: 10px; font-weight: 600; white-space: nowrap; }
 
     .zone-info {
-      min-height: 3.9em; /* hauteur fixe : la grille ne saute pas quand le texte change */
+      height: 2.7em; /* hauteur fixe (2 lignes) : la grille ne saute pas quand le texte change */
+      overflow: hidden;
       width: 100%;
       box-sizing: border-box;
-      padding: 3px 8px;
+      padding: 2px 8px;
       border-radius: 8px;
       line-height: 1.3;
-      margin-bottom: 6px;
-      font-size: 0.95em;
+      margin-bottom: 5px;
+      font-size: 0.82em;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
       text-align: center;
       color: #333;
     }
@@ -155,8 +221,8 @@
     /* ---------- Grille ---------- */
     .grid-app .grid-container {
       display: grid;
-      width: min(94vw, 560px, calc(100dvh - 330px));
-      height: min(94vw, 560px, calc(100dvh - 330px));
+      width: min(100%, 560px, calc(100dvh - 300px));
+      aspect-ratio: 1 / 1; /* toujours carrée : la largeur suffit */
       gap: 0;
       background-color: #ffffff;
       padding: 0;
@@ -210,35 +276,28 @@
       background: #fff8e1;
       border: 1px solid #f0d98c;
       border-radius: 8px;
-      padding: 6px 8px;
-      margin-bottom: 8px;
+      padding: 5px 8px;
+      margin-bottom: 5px;
       text-align: center;
-      font-size: 0.9em;
+      font-size: 0.85em;
     }
-    .depart-panel .restants { display: flex; justify-content: center; gap: 6px; margin: 6px 0; }
+    .depart-panel .ligne { display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 5px; }
+    .depart-panel .restants { display: flex; gap: 4px; }
     .depart-panel .restants span {
-      width: 28px; height: 28px; line-height: 28px; border-radius: 6px;
+      width: 22px; height: 22px; line-height: 22px; border-radius: 5px; font-size: 0.95em;
       background: #2c3e50; color: #fff; font-weight: bold;
     }
     .depart-panel .restants span.pose { background: #d6dbdf; color: #9aa4ab; text-decoration: line-through; }
     .depart-panel button {
-      font-size: 0.95em; padding: 6px 10px; margin: 0 2px;
-      border-radius: 6px; border: 1px solid #999; background: #fff; cursor: pointer;
+      font-size: 0.95em; padding: 5px 10px; margin: 0 2px;
+      border-radius: 8px; border: 1px solid #b8c2ca; background: #fff; cursor: pointer;
     }
     .depart-panel button.principal { background: #2c3e50; color: #fff; border-color: #2c3e50; }
     .depart-panel button:disabled { opacity: 0.4; cursor: default; }
-    .attente { font-size: 0.85em; color: #8a5a00; }
-    .zone-info .alerte { color: #c0392b; font-weight: bold; display: block; padding-top: 0.6em; }
+    .zone-info .alerte { color: #c0392b; font-weight: bold; display: block; }
+    .zone-info .titre, .zone-info .regle { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .zone-info .titre { font-weight: bold; }
-    .zone-info .regle { font-size: 0.9em; }
-    .zone-info .regle b { letter-spacing: 1px; }
-    .actions-coup { display: flex; gap: 8px; }
-    .actions-coup button {
-      font-size: 0.95em; padding: 6px 12px; border-radius: 6px;
-      border: 1px solid #999; background: #fff; cursor: pointer;
-    }
-    .actions-coup button:disabled { opacity: 0.4; cursor: default; }
-    .info-tour { font-size: 0.9em; color: #2c3e50; min-height: 1.2em; }
+    .zone-info .possibles { font-weight: normal; }
 
     /* ---------- Picker ---------- */
     .picker-backdrop {
@@ -285,55 +344,59 @@
     /* ---------- Dés ---------- */
     .dice-section {
       width: 100%;
-      margin-top: 14px;
+      margin-top: 8px;
       display: flex;
       flex-direction: column;
-      align-items: center;
-      gap: 8px;
+      align-items: stretch;
+      gap: 6px;
     }
-
-    .dice-container {
-      display: flex;
-      gap: 14px;
-    }
-
+    .des-ligne { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+    .des-bloc { display: flex; align-items: center; gap: 8px; }
+    .dice-lanceur { font-size: 0.75em; color: #6b7a86; line-height: 1.2; max-width: 70px; }
+    .dice-container { display: flex; gap: 8px; }
     .dice {
-      width: 52px;
-      height: 52px;
+      width: 44px;
+      height: 44px;
       background-color: #ffffff;
       border: 2px solid #2c3e50;
-      border-radius: 12px;
+      border-radius: 10px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 36px;
+      font-size: 28px;
       font-weight: bold;
       color: #2c3e50;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 3px 5px rgba(0, 0, 0, 0.1);
       user-select: none;
     }
-
     .roll-btn {
-      margin-top: 6px;
-      padding: 12px 28px;
-      font-size: 20px;
+      flex-shrink: 0;
+      padding: 12px 18px;
+      font-size: 17px;
       font-weight: bold;
       color: #ffffff;
       background-color: #2c3e50;
       border: none;
-      border-radius: 14px;
+      border-radius: 12px;
       cursor: pointer;
       transition: background-color 0.2s ease, transform 0.1s ease;
     }
-
     .roll-btn:hover { background-color: #34495e; }
-    .roll-btn:disabled { opacity: 0.4; cursor: default; }
+    .roll-btn:disabled { opacity: 0.35; cursor: default; }
     .roll-btn:active { transform: scale(0.96); }
+    .actions-coup { display: flex; gap: 8px; }
+    .actions-coup button {
+      flex: 1; font-size: 0.9em; padding: 7px 8px; border-radius: 8px;
+      border: 1px solid #b8c2ca; background: #fff; cursor: pointer;
+    }
+    .actions-coup button:disabled { opacity: 0.4; cursor: default; }
+    .statut-tour { text-align: center; font-size: 0.85em; color: #2c3e50; min-height: 1.2em; }
+    .statut-tour .attente { color: #8a5a00; }
 
     /* ---------- Connexion ---------- */
     .bandeau-connexion {
-      width: 100%; box-sizing: border-box; margin-bottom: 8px; padding: 6px 10px;
-      border-radius: 8px; background: #fdebd0; color: #8a4b00; text-align: center; font-size: 0.9em;
+      width: 100%; box-sizing: border-box; margin-bottom: 6px; padding: 4px 10px;
+      border-radius: 8px; background: #fdebd0; color: #8a4b00; text-align: center; font-size: 0.82em;
     }
     .petit-btn {
       font-size: 0.85em; padding: 4px 10px; border-radius: 6px; border: 1px solid #999;
@@ -346,40 +409,84 @@
   <div id="app" class="grid-app">
 
     <!-- MENU -->
-    <div id="menu">
-      <div @click="setTab('config')" :class="{actif:actif_tab=='config'}">Accueil</div>
-      <div @click="setTab('play')" :class="{actif:actif_tab=='play'}">Jouer</div>
+    <div class="barre">
+      <div id="menu">
+        <div @click="setTab('config')" :class="{actif:actif_tab=='config'}">Accueil</div>
+        <div @click="setTab('play')" :class="{actif:actif_tab=='play'}">Jouer</div>
+      </div>
+      <div class="barre-infos" v-if="actif_tab === 'play'">
+        <span v-if="role" class="point-co" :class="{ attente: connexion !== 'ok' }" :title="connexionTexte"></span>
+        <span class="niveau">Niv. {{ level }}</span>
+        <span class="objectif" v-if="scoresListe.length">🎯 {{ seuil }}</span>
+      </div>
     </div>
 
     <!-- CONFIG -->
     <div v-show='actif_tab=="config"' id="config">
-      <div class="card" id="setupCard">
-        <input type="text" id="pseudoInput" v-model='pseudoInput' placeholder="Ton pseudo (ex: Alex)" required><br>
-        <input type="text" id="channelInput" v-model='channelInput' placeholder="Nom/ID du salon (ex: ma-partie-des)"><br><br>
+      <header class="hero">
+        <div class="logo"><span v-for="c in logoCouleurs" :key="c" :style="{ background: c }"></span></div>
+        <div>
+          <h1>Brilliant</h1>
+          <p>Le roll &amp; write à jouer ensemble</p>
+        </div>
+      </header>
 
-        <label for="config-level">Niveau de la partie : </label>
-        <select id="config-level" :value="level" @change="changerNiveau($event)" :disabled="role === 'client'" style="font-size: 1rem; padding: 0.4rem;">
-          <option v-for="n in 4" :key="n" :value="n">{{ n }}</option>
-        </select>
-        <div class="sys-msg" v-if="role === 'client'">Le niveau est choisi par l'hôte.</div>
-        <br><br>
+      <!-- Salon en cours -->
+      <section class="carte salon-actif" v-if="role">
+        <div class="salon-tete">
+          <span class="pastille" :class="{ attente: connexion !== 'ok' }"></span>
+          <div>
+            <div class="salon-nom">Salon « {{ roomCode }} »</div>
+            <div class="salon-role">{{ role === 'hote' ? 'Tu es l\'hôte' : 'Tu joues en tant que ' + pseudoInput }} · {{ connexionTexte }}</div>
+          </div>
+        </div>
+        <div class="chips-joueurs">
+          <span v-for="j in joueurs" :key="j.pseudo" class="chip" :class="{ absent: j.connecte === false }">
+            {{ j.pseudo }} <small>{{ j.connecte === false ? '💤' : (j.pret ? '✓' : '…') }}</small>
+          </span>
+        </div>
+        <div class="actions-accueil">
+          <button class="btn principal" @click="setTab('play')">Jouer →</button>
+          <button class="btn" @click="quitterSalon">Quitter</button>
+        </div>
+      </section>
 
-        <button @click="creerPartie()">Créer ce salon (Hôte)</button>
-        <p>— ou —</p>
-        <button @click="rejoindrePartie()">Rejoindre ce salon</button>
-      </div>
+      <section class="carte">
+        <label class="champ">Ton pseudo
+          <input type="text" id="pseudoInput" v-model="pseudoInput" placeholder="ex : Alex" :disabled="!!role" autocomplete="off">
+        </label>
+        <label class="champ">Nom du salon
+          <input type="text" id="channelInput" v-model="channelInput" placeholder="ex : partie-du-dimanche" :disabled="!!role" autocomplete="off">
+        </label>
+        <div class="aide" v-if="!role">L'hôte crée le salon, puis les autres joueurs le rejoignent avec le même nom.</div>
+      </section>
 
-      <div class="card" id="statusCard">
-        <p class="status" id="status">{{ status }}</p>
-        <p id="roomCode" v-if="roomCode">Salon : <strong>{{ roomCode }}</strong></p>
-        <p class="joueurs" v-if="joueurs.length">Joueurs : {{ joueursTexte }}</p>
-        <button v-if="role" class="petit-btn" @click="quitterSalon">Quitter le salon</button>
-      </div>
+      <section class="carte">
+        <div class="titre-carte">Niveau <small v-if="role === 'client'">choisi par l'hôte</small></div>
+        <div class="niveaux">
+          <button v-for="n in 4" :key="n" class="niveau-btn" :class="{ actif: level === n }"
+                  :disabled="role === 'client'" @click="changerNiveau(n)">
+            <div class="mini"><span v-for="(c, i) in miniCartes[n]" :key="i" :style="{ background: c }"></span></div>
+            Niveau {{ n }}
+          </button>
+        </div>
+      </section>
 
-      <h3>Activité</h3>
-      <ul id="historique">
-        <li v-for="(log, i) in historique" :key="i" :class="{ 'sys-msg': log.system }">{{ log.msg }}</li>
-      </ul>
+      <template v-if="!role">
+        <div class="actions-accueil">
+          <button class="btn principal" @click="creerPartie()">Créer la partie</button>
+          <button class="btn" @click="rejoindrePartie()">Rejoindre</button>
+        </div>
+        <p class="statut" v-if="connexion !== 'aucune'">{{ status }}</p>
+      </template>
+
+      <details class="carte journal">
+        <summary>Activité <small v-if="historique.length">({{ historique.length }})</small></summary>
+        <ul>
+          <li v-for="(log, i) in historiqueRecent" :key="i" :class="{ 'sys-msg': log.system }">{{ log.msg }}</li>
+          <li v-if="!historique.length" class="sys-msg">Rien pour l'instant.</li>
+        </ul>
+      </details>
 
       <p class="version">Brilliant en ligne · version {{ version }}</p>
     </div>
@@ -406,18 +513,16 @@
     <div v-show='actif_tab=="play"' id="play">
       <!-- Connexion perdue : reconnexion automatique en cours -->
       <div v-if="role && connexion !== 'ok'" class="bandeau-connexion">
-        ⚠ {{ role === 'hote' ? 'Salon hors ligne, récupération en cours…' : 'Connexion à l\'hôte perdue, reconnexion en cours…' }}
-        <br><small>Ta grille est sauvegardée sur ce téléphone.</small>
+        ⚠ {{ role === 'hote' ? 'Salon hors ligne, récupération…' : 'Hôte injoignable, reconnexion…' }}
+        <small>(ta grille est sauvegardée)</small>
       </div>
 
       <!-- Scores (piste de score) -->
       <!-- Ligne compacte : niveau, scores et objectif -->
-      <div class="scores">
-        <span class="niveau">Niv. {{ level }}</span>
-        <span v-for="j in scoresListe" :key="j.pseudo" class="joueur" :class="{ moi: j.moi }">
+      <div class="scores" v-if="scoresListe.length">
+        <span v-for="j in scoresListe" :key="j.pseudo" class="joueur" :class="{ moi: j.moi, absent: j.absent }">
           {{ j.pseudo }} <strong>{{ j.points }}</strong>
         </span>
-        <span class="objectif" v-if="scoresListe.length">🎯 {{ seuil }}</span>
       </div>
       <div class="jauge" v-if="scoresListe.length"><div :style="{ width: Math.min(100, monScore / seuil * 100) + '%' }"></div></div>
 
@@ -438,9 +543,11 @@
 
       <!-- Phase de départ : 1 à 6 dans 6 zones différentes -->
       <div v-if="phase === 'depart'" class="depart-panel">
-        <div>Départ : place les chiffres 1 à 6, <strong>un par zone</strong></div>
-        <div class="restants">
-          <span v-for="n in 6" :key="n" :class="{ pose: departUtilises.indexOf(n) !== -1 }">{{ n }}</span>
+        <div class="ligne">
+          <span>Départ : 1 à 6, <strong>un par zone</strong></span>
+          <span class="restants">
+            <span v-for="n in 6" :key="n" :class="{ pose: departUtilises.indexOf(n) !== -1 }">{{ n }}</span>
+          </span>
         </div>
         <button @click="departEtoilesHasard">✦ Étoiles au hasard</button>
         <button @click="effacerDepart" :disabled="!departUtilises.length">Effacer</button>
@@ -451,8 +558,8 @@
       <div class="zone-info" :style="{ background: zoneInfo ? zoneInfo.fond : 'transparent' }">
         <span v-if="message" class="alerte">{{ message }}</span>
         <template v-else-if="zoneInfo">
-          <div class="titre">{{ zoneInfo.titre }}</div>
-          <div class="regle">{{ zoneInfo.regle }} <span v-html="zoneInfo.possibles"></span></div>
+          <div class="titre">{{ zoneInfo.titre }} · <span class="possibles" v-html="zoneInfo.possibles"></span></div>
+          <div class="regle">{{ zoneInfo.regle }}</div>
         </template>
         <span v-else class="sys-msg" style="display:block; padding-top:0.6em;">{{ aideGenerale }}</span>
       </div>
@@ -487,28 +594,32 @@
         </div>
       </div>
 
-      <!-- Dés -->
+      <!-- Dés : une seule ligne (dés + bouton), puis les actions et l'état du tour -->
       <div class="dice-section">
-        <div class="dice-lanceur">{{ last_player }}</div>
-        <div class="dice-container">
-          <div class="dice">{{ dice1 !== null ? dice1 : '?' }}</div>
-          <div class="dice">{{ dice2 !== null ? dice2 : '?' }}</div>
+        <div class="des-ligne">
+          <div class="des-bloc">
+            <div class="dice-container">
+              <div class="dice">{{ dice1 !== null ? dice1 : '?' }}</div>
+              <div class="dice">{{ dice2 !== null ? dice2 : '?' }}</div>
+            </div>
+            <div class="dice-lanceur" v-if="last_player">lancés par<br><strong>{{ last_player }}</strong></div>
+          </div>
+          <button class="roll-btn" v-if="!partieTerminee" @click="rollDice" :disabled="!peutLancerLocal">🎲 Lancer</button>
+          <button class="roll-btn" v-else-if="role !== 'client'" @click="nouvellePartie">🔄 Rejouer</button>
         </div>
-        <div class="actions-coup" v-if="phase === 'jeu' && lancerId > 0">
+        <div class="actions-coup" v-if="phase === 'jeu' && lancerId > 0 && !partieTerminee">
           <button @click="passer" :disabled="aJoue">Je passe</button>
           <button @click="annulerCoup" :disabled="!dernierCoup">↶ Annuler mon coup</button>
         </div>
-        <div v-if="attenteTexte" class="attente">{{ attenteTexte }}</div>
-        <button v-if="absentsBloquants" class="petit-btn" @click="leverPatience">Ne plus attendre les absents 💤</button>
-        <div class="info-tour" v-if="role && prochainLanceur && !partieTerminee">
-          <template v-if="prochainAbsent">🎲 {{ prochainLanceur }} est absent : n'importe qui peut lancer</template>
-          <template v-else>🎲 À <strong>{{ prochainLanceur === monPseudoAffiche ? 'toi' : prochainLanceur }}</strong> de lancer</template>
+        <div class="statut-tour">
+          <span v-if="partieTerminee">Partie terminée.</span>
+          <span v-else-if="attenteTexte" class="attente">{{ attenteTexte }}</span>
+          <template v-else-if="role && prochainLanceur">
+            <template v-if="prochainAbsent">🎲 {{ prochainLanceur }} est absent : n'importe qui peut lancer</template>
+            <template v-else>🎲 À <strong>{{ prochainLanceur === monPseudoAffiche ? 'toi' : prochainLanceur }}</strong> de lancer</template>
+          </template>
         </div>
-        <button class="roll-btn" v-if="!partieTerminee" @click="rollDice" :disabled="!peutLancerLocal">🎲 Lancer les dés</button>
-        <template v-else>
-          <div class="info-tour">Partie terminée.</div>
-          <button class="roll-btn" v-if="role !== 'client'" @click="nouvellePartie">🔄 Nouvelle partie</button>
-        </template>
+        <button v-if="absentsBloquants" class="petit-btn" @click="leverPatience">Ne plus attendre les absents 💤</button>
       </div>
     </div>
 
@@ -672,7 +783,7 @@
     function lireLigne(ligne) { return ligne.trim().split(/\s+/); }
 
     // Numéro de version affiché sur l'accueil (à augmenter à chaque mise en ligne)
-    const VERSION = '0.7';
+    const VERSION = '0.8';
 
     // ================== SAUVEGARDE LOCALE ==================
     // Pas de serveur : chaque téléphone garde son état dans le navigateur (localStorage).
@@ -883,6 +994,19 @@
           return this.pseudoInput.trim();
         },
         partieTerminee: function() { return !!this.finPartie; },
+        connexionTexte: function() {
+          return this.connexion === 'ok' ? 'en ligne' : 'reconnexion…';
+        },
+        logoCouleurs: function() { return [PALETTE.B, PALETTE.J, PALETTE.R, PALETTE.V]; },
+        // Aperçu miniature de chaque fiche (7×7 couleurs) pour le choix du niveau
+        miniCartes: function() {
+          var res = {};
+          Object.keys(NIVEAUX).forEach(n => {
+            res[n] = NIVEAUX[n].grille.map(lireLigne).reduce((a, l) => a.concat(l), []).map(z => PALETTE[z[0]]);
+          });
+          return res;
+        },
+        historiqueRecent: function() { return this.historique.slice().reverse(); },
 
         // Tout ce qu'il faut pour reprendre la partie après un rechargement
         etatSauvegarde: function() {
@@ -920,7 +1044,8 @@
         scoresListe: function() {
           var noms = this.joueurs.length ? this.joueurs.map(j => j.pseudo) : Object.keys(this.scores);
           var moi = this.monPseudoAffiche || 'Moi';
-          return noms.map(n => ({ pseudo: n, points: this.scores[n] || 0, moi: n === moi }))
+          var absents = this.joueurs.filter(j => j.connecte === false).map(j => j.pseudo);
+          return noms.map(n => ({ pseudo: n, points: this.scores[n] || 0, moi: n === moi, absent: absents.indexOf(n) !== -1 }))
                      .sort((a, b) => b.points - a.points);
         },
         peutLancerLocal: function() {
@@ -967,14 +1092,13 @@
           var def = this.niveau.zones[id];
           var possibles;
           if (z.rempli === z.total) {
-            possibles = '— <b>zone complète</b>';
+            possibles = '<b>zone complète</b>';
           } else {
             var p = this.valeursZone(id);
-            possibles = p.length ? '→ possible ici : <b>' + p.join(' ') + '</b>' : '→ <b>plus aucun chiffre possible</b>';
+            possibles = p.length ? 'possible : <b>' + p.join(' ') + '</b>' : '<b>plus rien de possible</b>';
           }
           return {
-            titre: 'Zone ' + NOMS_COULEURS[id[0]] + ' ' + REGLES[def.regle].symbole +
-                   ' · gains ' + def.gains.join('/') + ' · ' + z.rempli + '/' + z.total + ' cases',
+            titre: 'Zone ' + NOMS_COULEURS[id[0]] + ' ' + REGLES[def.regle].symbole + ' · ' + z.rempli + '/' + z.total,
             regle: REGLES[def.regle].texte,
             possibles: possibles,
             fond: palir(PALETTE[id[0]], 0.7)
@@ -1702,17 +1826,14 @@
         },
 
         // Choix du niveau (accueil) : en cours de partie, on demande confirmation
-        changerNiveau: function(event) {
-          var n = Number(event.target.value);
+        changerNiveau: function(n) {
+          if (n === this.level || this.role === 'client') return;
           var enCours = this.phase === 'jeu' || this.lancerId > 0 ||
                         Object.values(this.cellsData).some(c => c.label);
           var msg = this.role === 'hote'
             ? 'Changer de niveau recommence la partie pour tous les joueurs. Continuer ?'
             : 'Changer de niveau efface ta grille. Continuer ?';
-          if (enCours && !confirm(msg)) {
-            event.target.value = this.level; // on remet l'ancien choix
-            return;
-          }
+          if (enCours && !confirm(msg)) return;
           this.level = n;
         },
         setTab: function(tab) {
