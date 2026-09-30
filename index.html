@@ -122,6 +122,15 @@
     .chip { background: #eef2f5; border-radius: 14px; padding: 4px 10px; font-size: 0.9em; }
     .chip.absent { opacity: 0.5; }
     .salon-actif .actions-accueil { margin-bottom: 0; }
+    .attente-partie {
+      background: #fff8e1; border: 1px solid #f0d98c; border-radius: 12px;
+      padding: 10px 12px; margin-bottom: 12px; font-size: 0.9em; line-height: 1.4;
+    }
+    .attente-partie .btn { width: 100%; margin-top: 8px; }
+    .case-a-cocher { display: flex; align-items: center; gap: 8px; margin-top: 8px; font-weight: 600; }
+    .case-a-cocher input { width: 18px; height: 18px; }
+    .panneau-attente { text-align: center; padding: 40px 16px; color: #5b6b78; }
+    .panneau-attente .grand { font-size: 2.5em; margin-bottom: 8px; }
 
     .journal summary { font-weight: 700; cursor: pointer; }
     .journal ul { list-style: none; padding: 0; margin: 10px 0 0; max-height: 180px; overflow-y: auto; font-size: 0.88em; }
@@ -491,16 +500,35 @@
           <span class="pastille" :class="{ attente: connexion !== 'ok' }"></span>
           <div>
             <div class="salon-nom">Salon « {{ roomCode }} »</div>
-            <div class="salon-role">{{ role === 'hote' ? 'Tu es l\'hôte' : 'Tu joues en tant que ' + pseudoInput }} · {{ connexionTexte }}</div>
+            <div class="salon-role">{{ role === 'hote' ? 'Tu es l\'hôte' : (enAttentePartie ? 'Tu es en attente' : 'Tu joues') + ' en tant que ' + pseudoInput }} · {{ connexionTexte }}</div>
           </div>
         </div>
+
+        <!-- Partie déjà commencée : on attend la suivante -->
+        <div v-if="enAttentePartie" class="attente-partie">
+          <template v-if="partieDisponible">
+            <strong>🎲 Une nouvelle partie commence !</strong>
+            <button class="btn principal" @click="rejoindreProchaine">Rejoindre la partie</button>
+          </template>
+          <template v-else>
+            <strong>⏳ Une partie est en cours dans ce salon</strong>
+            <div>{{ infoAttente }} Tu pourras jouer dès la prochaine partie.</div>
+            <label class="case-a-cocher">
+              <input type="checkbox" v-model="rejoindreAuto"> Rejoindre automatiquement la prochaine partie
+            </label>
+          </template>
+        </div>
+
         <div class="chips-joueurs">
           <span v-for="j in joueurs" :key="j.pseudo" class="chip" :class="{ absent: j.connecte === false }">
-            {{ j.pseudo }} <small>{{ j.connecte === false ? '💤' : (j.pret ? '✓' : '…') }}</small>
+            {{ j.pseudo }}
+            <small v-if="enAttentePartie">{{ scores[j.pseudo] || 0 }} pts</small>
+            <small v-else>{{ j.connecte === false ? '💤' : (j.pret ? '✓' : '…') }}</small>
           </span>
+          <span v-for="a in joueursEnAttente" :key="'att-' + a" class="chip absent">⏳ {{ a }}</span>
         </div>
         <div class="actions-accueil">
-          <button class="btn principal" @click="setTab('play')">Jouer →</button>
+          <button class="btn principal" v-if="!enAttentePartie" @click="setTab('play')">Jouer →</button>
           <button class="btn" @click="quitterSalon">Quitter</button>
         </div>
       </section>
@@ -571,7 +599,13 @@
     </div>
 
     <!-- PLAY -->
-    <div v-show='actif_tab=="play"' id="play">
+    <div v-show='actif_tab=="play" && enAttentePartie' class="panneau-attente">
+      <div class="grand">⏳</div>
+      <strong>Une partie est en cours.</strong><br>
+      Tu pourras jouer dès la prochaine partie.
+      <div style="margin-top:14px"><button class="btn" @click="setTab('config')">Voir le salon</button></div>
+    </div>
+    <div v-show='actif_tab=="play" && !enAttentePartie' id="play">
       <!-- Connexion perdue : reconnexion automatique en cours -->
       <div v-if="role && connexion !== 'ok'" class="bandeau-connexion">
         ⚠ {{ role === 'hote' ? 'Salon hors ligne, récupération…' : 'Hôte injoignable, reconnexion…' }}
@@ -845,7 +879,7 @@
     function lireLigne(ligne) { return ligne.trim().split(/\s+/); }
 
     // Numéro de version affiché sur l'accueil (à augmenter à chaque mise en ligne)
-    const VERSION = '0.10';
+    const VERSION = '0.11';
 
     // ================== SONS ET VIBRATIONS ==================
     // Les sons sont fabriqués par le code (Web Audio API) : aucun fichier à charger.
@@ -964,7 +998,8 @@
     //   ordre : pseudos dans l'ordre de jeu (hôte en premier)
     //   infos : pseudo -> { pret, aJoue, completions, connecte, patienceLevee, clientId }
     //   gains : pseudo -> { zone: index du gain obtenu }
-    let salle = { ordre: [], infos: {}, gains: {} };
+    //   attente : pseudo -> clientId des joueurs arrivés pendant une partie
+    let salle = { ordre: [], infos: {}, gains: {}, attente: {} };
 
     const DELAI_SILENCE = 15000; // sans nouvelles depuis 15 s -> connexion considérée perdue
 
@@ -973,6 +1008,11 @@
       data: {
         actif_tab: 'config',
         version: VERSION,
+        enAttentePartie: false,  // arrivé pendant une partie : on attend la suivante
+        partieDisponible: false, // une nouvelle partie commence (si pas de rejoindre auto)
+        infoAttente: '',         // ex. "Niveau 2, 12 lancers joués."
+        joueursEnAttente: [],    // pseudos qui attendent la prochaine partie
+        rejoindreAuto: lireStockage('brillant-rejoindre-auto') !== false,
         sonActif: lireStockage('brillant-son') !== false,  // sons + vibrations (oui par défaut)
         desRoulent: false,       // animation des dés en cours
         desAnim: [1, 1],         // valeurs affichées pendant l'animation
@@ -1063,6 +1103,7 @@
         actif_tab: function() { this.majVeille(); },
         garderEcran: function(v) { ecrireStockage('brillant-garder-ecran', v); this.majVeille(); },
         sonActif: function(v) { ecrireStockage('brillant-son', v); },
+        rejoindreAuto: function(v) { ecrireStockage('brillant-rejoindre-auto', v); },
         // Sauvegarde automatique à chaque changement
         etatSauvegarde: function(val) {
           ecrireStockage(CLE_SAUVEGARDE, JSON.parse(val));
@@ -1198,6 +1239,7 @@
             dice1: this.dice1, dice2: this.dice2, last_player: this.last_player,
             scores: this.scores, prisIndex: this.prisIndex, lancerResolu: this.lancerResolu,
             prochainLanceur: this.prochainLanceur, finPartie: this.finPartie, finMasquee: this.finMasquee,
+            enAttentePartie: this.enAttentePartie, infoAttente: this.infoAttente,
             joueurs: this.joueurs, historique: this.historique.slice(-80),
             // "salle" n'est pas réactive, mais elle change toujours en même temps que "joueurs"
             salle: this.role === 'hote' ? salle : null
@@ -1400,6 +1442,8 @@
         reinitialiserSalle: function() {
           Object.values(salle.infos).forEach(i => { i.pret = false; i.aJoue = true; i.completions = []; });
           salle.gains = {};
+          // la liste d'attente se vide : chacun se réinscrit en recevant l'annonce de la nouvelle partie
+          salle.attente = {};
         },
         estConnecte: function(pseudo) {
           if (pseudo === monPseudo) return true;
@@ -1571,7 +1615,9 @@
             return { pseudo: p, pret: !!i.pret, joue: i.aJoue !== false, connecte: !!i.connecte,
                      attendu: !!(i.connecte || !i.patienceLevee) };
           });
-          this.broadcast({ action: 'LISTE_JOUEURS', joueurs: this.joueurs, prochainLanceur: this.prochainLanceur });
+          this.joueursEnAttente = Object.keys(salle.attente || {});
+          this.broadcast({ action: 'LISTE_JOUEURS', joueurs: this.joueurs, prochainLanceur: this.prochainLanceur,
+                           attente: this.joueursEnAttente, scores: this.scores });
         },
         validerPseudo: function() {
           monPseudo = this.pseudoInput.trim();
@@ -1611,7 +1657,10 @@
           this.reinitialiserPeer(false);
           this.status = 'Statut : Non connecté';
           this.partieId = null;
-          salle = { ordre: [], infos: {}, gains: {} };
+          salle = { ordre: [], infos: {}, gains: {}, attente: {} };
+          this.enAttentePartie = false;
+          this.partieDisponible = false;
+          this.joueursEnAttente = [];
           this.buildGrid();
           this.ajouterLog('Tu as quitté le salon.', true);
           effacerStockage(CLE_SAUVEGARDE);
@@ -1697,7 +1746,25 @@
           this.planifierReconnexion(1500);
         },
         recevoirDeHote: function(data) {
+          // En attente : on ne suit que la vie du salon, pas le jeu
+          if (this.enAttentePartie && ['RESULTAT', 'SCORES', 'REFUS'].indexOf(data.action) !== -1 && !data.fatal) {
+            if (data.action === 'SCORES') this.scores = data.scores;
+            return;
+          }
+          if (this.enAttentePartie && data.action === 'NIVEAU') {
+            this.annoncerNouvellePartie();
+            return;
+          }
           switch (data.action) {
+            case 'ATTENTE':
+              this.enAttentePartie = true;
+              this.partieDisponible = false;
+              this.joueurs = data.joueurs || [];
+              this.scores = data.scores || {};
+              this.infoAttente = data.fin ? 'Elle vient de se terminer, l\'hôte va en relancer une.'
+                                          : 'Niveau ' + data.level + ', ' + data.lancerId + ' lancer' + (data.lancerId > 1 ? 's' : '') + ' déjà joué' + (data.lancerId > 1 ? 's' : '') + '.';
+              this.actif_tab = 'config';
+              break;
             case 'PING': break;
             case 'ETAT': this.appliquerEtat(data); break;
             case 'RESULTAT': this.afficherResultat(data.joueur, data.valeur, data.lancerId, data.prochainLanceur); break;
@@ -1713,6 +1780,8 @@
             case 'LISTE_JOUEURS':
               this.joueurs = data.joueurs;
               this.prochainLanceur = data.prochainLanceur || null;
+              this.joueursEnAttente = data.attente || [];
+              if (this.enAttentePartie && data.scores) this.scores = data.scores;
               break;
             case 'SCORES': this.appliquerScores(data); break;
             case 'NIVEAU':
@@ -1730,8 +1799,29 @@
               break;
           }
         },
+        // Nouvelle partie annoncée alors qu'on attendait
+        annoncerNouvellePartie: function() {
+          if (this.sonActif) { Sons.jouer('zone', true); vibrer([60, 50, 120]); }
+          if (this.rejoindreAuto) {
+            this.rejoindreProchaine();
+          } else {
+            this.partieDisponible = true;
+            this.actif_tab = 'config';
+          }
+        },
+        rejoindreProchaine: function() {
+          this.partieDisponible = false;
+          this.envoyerHote({ action: 'REJOINDRE', pseudo: monPseudo, clientId: clientId });
+        },
         // État complet envoyé par l'hôte à la connexion (ou à la reconnexion)
         appliquerEtat: function(data) {
+          if (this.enAttentePartie) {
+            // On entre enfin dans la partie
+            this.enAttentePartie = false;
+            this.partieDisponible = false;
+            this.actif_tab = 'play';
+            this.ajouterLog('Tu rejoins la nouvelle partie !', true);
+          }
           var memePartie = this.partieId === data.partieId && this.grilleLevel === data.level;
           var lancerLocal = this.lancerId;
           if (!memePartie) {
@@ -1791,7 +1881,7 @@
             } else {
               this.actif_tab = 'play';
               this.partieId = nouvelId();
-              salle = { ordre: [monPseudo], infos: {}, gains: {} };
+              salle = { ordre: [monPseudo], infos: {}, gains: {}, attente: {} };
               this.buildGrid();
               this.ajouterLog(`${monPseudo} a créé la partie.`, true);
             }
@@ -1861,6 +1951,21 @@
                 setTimeout(() => { try { conn.close(); } catch (e) {} }, 500);
                 return;
               }
+              // Partie déjà lancée : un nouveau venu attend la prochaine partie
+              if (!existant && this.lancerId > 0) {
+                salle.attente = salle.attente || {};
+                var dejaEnAttente = pseudo in salle.attente;
+                salle.attente[pseudo] = data.clientId;
+                conn.attentePseudo = pseudo;
+                try {
+                  conn.send({ action: 'ATTENTE', level: this.level, lancerId: this.lancerId,
+                              fin: !!this.finPartie, joueurs: this.joueurs, scores: this.scores });
+                } catch (e) {}
+                if (!dejaEnAttente) this.ajouterLog(`${pseudo} attend la prochaine partie.`, true);
+                this.majJoueurs();
+                return;
+              }
+              if (salle.attente && pseudo in salle.attente) { delete salle.attente[pseudo]; }
               // Un joueur qui revient remplace son ancienne connexion
               var ancienne = connParPseudo[pseudo];
               if (ancienne && ancienne !== conn) {
@@ -1901,6 +2006,7 @@
               this.verifierResolution();
               break;
             case 'DEMANDE_LANCER': {
+              if (!info) return; // pas (encore) joueur de cette partie
               var refus = this.refusLancer(p);
               if (refus) { try { conn.send({ action: 'REFUS', message: refus }); } catch (e) {} }
               else this.traiterLancer(p);
@@ -1912,6 +2018,11 @@
           if (conn._perdue) return;
           conn._perdue = true;
           connections = connections.filter(c => c !== conn);
+          if (conn.attentePseudo && salle.attente && salle.attente[conn.attentePseudo] !== undefined) {
+            delete salle.attente[conn.attentePseudo];
+            this.majJoueurs();
+            return;
+          }
           var p = conn.joueurPseudo;
           // Si le joueur s'est déjà reconnecté par une autre connexion, rien à faire
           if (!p || conn._remplacee || connParPseudo[p] !== conn) return;
@@ -1972,7 +2083,7 @@
               this.cellsData[k].depart = !!sv.cells[k][1];
             }
           });
-          ['partieId', 'phase', 'lancerId', 'aJoue', 'dernierCoup', 'mesCompletions', 'mesGains',
+          ['enAttentePartie', 'infoAttente', 'partieId', 'phase', 'lancerId', 'aJoue', 'dernierCoup', 'mesCompletions', 'mesGains',
            'dice1', 'dice2', 'last_player', 'scores', 'prisIndex', 'lancerResolu', 'prochainLanceur',
            'finPartie', 'finMasquee', 'joueurs', 'historique'].forEach(cle => {
             if (sv[cle] !== undefined) this[cle] = sv[cle];
