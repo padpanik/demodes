@@ -327,6 +327,16 @@
     .roll-btn:hover { background-color: #34495e; }
     .roll-btn:disabled { opacity: 0.4; cursor: default; }
     .roll-btn:active { transform: scale(0.96); }
+
+    /* ---------- Connexion ---------- */
+    .bandeau-connexion {
+      width: 100%; box-sizing: border-box; margin-bottom: 8px; padding: 6px 10px;
+      border-radius: 8px; background: #fdebd0; color: #8a4b00; text-align: center; font-size: 0.9em;
+    }
+    .petit-btn {
+      font-size: 0.85em; padding: 4px 10px; border-radius: 6px; border: 1px solid #999;
+      background: #fff; cursor: pointer; margin-top: 4px;
+    }
   </style>
 </head>
 <body>
@@ -359,6 +369,7 @@
         <p class="status" id="status">{{ status }}</p>
         <p id="roomCode" v-if="roomCode">Salon : <strong>{{ roomCode }}</strong></p>
         <p class="joueurs" v-if="joueurs.length">Joueurs : {{ joueursTexte }}</p>
+        <button v-if="role" class="petit-btn" @click="quitterSalon">Quitter le salon</button>
       </div>
 
       <h3>Activité</h3>
@@ -393,6 +404,12 @@
           <option v-for="n in 4" :key="n" :value="n">{{ n }}</option>
         </select>
         <span v-if="role === 'client'" class="sys-msg"> (imposé par l'hôte)</span>
+      </div>
+
+      <!-- Connexion perdue : reconnexion automatique en cours -->
+      <div v-if="role && connexion !== 'ok'" class="bandeau-connexion">
+        ⚠ {{ role === 'hote' ? 'Salon hors ligne, récupération en cours…' : 'Connexion à l\'hôte perdue, reconnexion en cours…' }}
+        <br><small>Ta grille est sauvegardée sur ce téléphone.</small>
       </div>
 
       <!-- Scores (piste de score) -->
@@ -482,7 +499,11 @@
           <button @click="annulerCoup" :disabled="!dernierCoup">↶ Annuler mon coup</button>
         </div>
         <div v-if="attenteTexte" class="attente">{{ attenteTexte }}</div>
-        <div class="info-tour" v-if="role && prochainLanceur && !partieTerminee">🎲 À <strong>{{ prochainLanceur === monPseudoAffiche ? 'toi' : prochainLanceur }}</strong> de lancer</div>
+        <button v-if="absentsBloquants" class="petit-btn" @click="leverPatience">Ne plus attendre les absents 💤</button>
+        <div class="info-tour" v-if="role && prochainLanceur && !partieTerminee">
+          <template v-if="prochainAbsent">🎲 {{ prochainLanceur }} est absent : n'importe qui peut lancer</template>
+          <template v-else>🎲 À <strong>{{ prochainLanceur === monPseudoAffiche ? 'toi' : prochainLanceur }}</strong> de lancer</template>
+        </div>
         <button class="roll-btn" v-if="!partieTerminee" @click="rollDice" :disabled="!peutLancerLocal">🎲 Lancer les dés</button>
         <template v-else>
           <div class="info-tour">Partie terminée.</div>
@@ -650,12 +671,40 @@
     // Transforme 'J  V1 B1' en ['J','V1','B1']
     function lireLigne(ligne) { return ligne.trim().split(/\s+/); }
 
+    // ================== SAUVEGARDE LOCALE ==================
+    // Pas de serveur : chaque téléphone garde son état dans le navigateur (localStorage).
+    // Au rechargement, la page restaure la grille et se reconnecte toute seule au salon.
+    const CLE_SAUVEGARDE = 'brillant-sauvegarde-v1';
+    function lireStockage(cle) {
+      try { var t = localStorage.getItem(cle); return t ? JSON.parse(t) : null; } catch (e) { return null; }
+    }
+    function ecrireStockage(cle, val) {
+      try { localStorage.setItem(cle, JSON.stringify(val)); } catch (e) { /* stockage indisponible */ }
+    }
+    function effacerStockage(cle) {
+      try { localStorage.removeItem(cle); } catch (e) {}
+    }
+    function nouvelId() { return Math.random().toString(36).slice(2, 10); }
+
+    // Identifiant propre à ce téléphone : permet à l'hôte de reconnaître un joueur qui revient
+    var clientId = lireStockage('brillant-client-id');
+    if (!clientId) { clientId = nouvelId() + nouvelId(); ecrireStockage('brillant-client-id', clientId); }
+
     // ================== RÉSEAU ==================
     let peer = null;
-    let connections = []; // Pour l'hôte
-    let hostConn = null;  // Pour les clients
+    let connections = [];   // Hôte : connexions ouvertes
+    let connParPseudo = {}; // Hôte : pseudo -> connexion actuelle
+    let hostConn = null;    // Client : connexion vers l'hôte
+    let dernierMsgHote = 0; // Client : heure du dernier message reçu de l'hôte
     let isHost = false;
     let monPseudo = '';
+    // Hôte : mémoire du salon, conservée même quand un joueur se déconnecte
+    //   ordre : pseudos dans l'ordre de jeu (hôte en premier)
+    //   infos : pseudo -> { pret, aJoue, completions, connecte, patienceLevee, clientId }
+    //   gains : pseudo -> { zone: index du gain obtenu }
+    let salle = { ordre: [], infos: {}, gains: {} };
+
+    const DELAI_SILENCE = 15000; // sans nouvelles depuis 15 s -> connexion considérée perdue
 
     new Vue({
       el: '#app',
@@ -669,6 +718,9 @@
         message: '',           // alerte temporaire affichée au-dessus de la grille
         roomCode: '',
         role: null,            // null (hors ligne) | 'hote' | 'client'
+        connexion: 'aucune',   // 'aucune' | 'connexion' | 'ok' | 'perdue'
+        partieId: null,        // identifiant de la partie en cours (change à chaque nouvelle partie)
+        grilleLevel: null,     // niveau pour lequel la grille actuelle a été construite
         status: 'Statut : Non connecté',
         size: 7,
         level: 1,
@@ -690,15 +742,23 @@
         zoneSurlignee: null,   // id de la zone mise en évidence
         cellsData: {}          // clé 'x-y' -> { zone, color, label, selected, etoile, depart }
       },
+      created: function() {
+        this.restaurer();
+        setInterval(() => this.battement(), 4000);
+        document.addEventListener('visibilitychange', () => this.auRetourPremierPlan());
+        window.addEventListener('online', () => this.auRetourPremierPlan());
+        window.addEventListener('pageshow', () => this.auRetourPremierPlan());
+      },
       watch: {
         level: {
           handler: function(nouveau, ancien) {
+            if (this.grilleLevel === nouveau) return; // grille déjà prête (restauration, message de l'hôte)
             this.buildGrid();
             // L'hôte impose le niveau : tout changement est diffusé et remet les grilles à zéro
             if (this.role === 'hote' && ancien !== undefined) {
-              connections.forEach(c => { c.joueurPret = false; c.aJoue = true; });
-              this.prochainLanceur = null;
-              this.broadcast({ action: 'NIVEAU', level: nouveau });
+              this.partieId = nouvelId();
+              this.reinitialiserSalle();
+              this.broadcast({ action: 'NIVEAU', level: nouveau, partieId: this.partieId });
               this.majJoueurs();
               this.ajouterLog(`Niveau ${nouveau} imposé à tous les joueurs.`, true);
             }
@@ -712,6 +772,10 @@
         aJoue: function() {
           if (this.role === 'hote') this.majJoueurs();
           this.verifierResolution();
+        },
+        // Sauvegarde automatique à chaque changement
+        etatSauvegarde: function(val) {
+          ecrireStockage(CLE_SAUVEGARDE, JSON.parse(val));
         }
       },
       computed: {
@@ -815,6 +879,34 @@
           return this.pseudoInput.trim();
         },
         partieTerminee: function() { return !!this.finPartie; },
+
+        // Tout ce qu'il faut pour reprendre la partie après un rechargement
+        etatSauvegarde: function() {
+          var cells = {};
+          Object.keys(this.cellsData).forEach(k => {
+            var c = this.cellsData[k];
+            if (c.label) cells[k] = [c.label, c.depart ? 1 : 0];
+          });
+          return JSON.stringify({
+            pseudo: this.pseudoInput, salon: this.roomCode, role: this.role,
+            level: this.level, partieId: this.partieId, phase: this.phase, cells: cells,
+            lancerId: this.lancerId, aJoue: this.aJoue, dernierCoup: this.dernierCoup,
+            mesCompletions: this.mesCompletions, mesGains: this.mesGains,
+            dice1: this.dice1, dice2: this.dice2, last_player: this.last_player,
+            scores: this.scores, prisIndex: this.prisIndex, lancerResolu: this.lancerResolu,
+            prochainLanceur: this.prochainLanceur, finPartie: this.finPartie, finMasquee: this.finMasquee,
+            joueurs: this.joueurs, historique: this.historique.slice(-80),
+            // "salle" n'est pas réactive, mais elle change toujours en même temps que "joueurs"
+            salle: this.role === 'hote' ? salle : null
+          });
+        },
+        absentsBloquants: function() {
+          return this.role === 'hote' && this.joueurs.some(j => j.connecte === false && j.attendu);
+        },
+        prochainAbsent: function() {
+          var j = this.joueurs.find(j => j.pseudo === this.prochainLanceur);
+          return !!(j && j.connecte === false);
+        },
         seuil: function() {
           return seuilPour(Math.max(this.joueurs.length, 1));
         },
@@ -830,7 +922,8 @@
         peutLancerLocal: function() {
           if (this.phase !== 'jeu' || this.finPartie) return false;
           if (!this.role) return this.aJoue; // solo : il faut avoir joué (ou passé)
-          if (this.prochainLanceur && this.prochainLanceur !== this.monPseudoAffiche) return false;
+          if (this.connexion !== 'ok') return false;
+          if (this.prochainLanceur && this.prochainLanceur !== this.monPseudoAffiche && !this.prochainAbsent) return false;
           return this.enAttente.length === 0;
         },
         aideGenerale: function() {
@@ -843,19 +936,23 @@
           return 'Coup joué. Touche une case ou une zone pour voir sa règle.';
         },
         joueursTexte: function() {
-          return this.joueurs.map(j => j.pseudo + (j.pret ? ' ✓' : ' (départ…)')).join(', ');
+          return this.joueurs.map(j => j.pseudo +
+            (j.connecte === false ? ' 💤' : (j.pret ? ' ✓' : ' (départ…)'))).join(', ');
         },
-        // Joueurs qui bloquent le prochain lancer (départ non validé, ou coup pas encore joué)
+        // Joueurs qui bloquent le prochain lancer (départ non validé, ou coup pas encore joué).
+        // Un joueur déconnecté bloque aussi, sauf si l'hôte a choisi de ne plus l'attendre.
         enAttente: function() {
           if (!this.role) return [];
-          var pasPrets = this.joueurs.filter(j => !j.pret).map(j => j.pseudo);
+          var nom = j => j.pseudo + (j.connecte === false ? ' 💤' : '');
+          var attendus = this.joueurs.filter(j => j.attendu !== false);
+          var pasPrets = attendus.filter(j => !j.pret).map(nom);
           if (pasPrets.length) return pasPrets;
-          if (this.lancerId === 0) return [];
-          return this.joueurs.filter(j => !j.joue).map(j => j.pseudo);
+          if (this.lancerId === 0 || this.lancerResolu === this.lancerId) return [];
+          return attendus.filter(j => !j.joue).map(nom);
         },
         attenteTexte: function() {
           if (!this.enAttente.length) return '';
-          var pasPrets = this.joueurs.some(j => !j.pret);
+          var pasPrets = this.joueurs.some(j => j.attendu !== false && !j.pret);
           return (pasPrets ? 'En attente du départ de : ' : 'En attente du coup de : ') + this.enAttente.join(', ');
         },
 
@@ -902,6 +999,7 @@
           }
           this.zoneSurlignee = null;
           this.cellsData = data;
+          this.grilleLevel = this.level;
           this.phase = 'depart';
           this.lancerId = 0;
           this.aJoue = true;
@@ -976,31 +1074,49 @@
           this.ajouterLog('Départ validé.', true);
         },
         signalerPret: function(pret) {
-          if (this.role === 'client' && hostConn) {
-            hostConn.send({ action: 'PRET', pseudo: monPseudo, pret: pret });
-          }
+          if (this.role === 'client') this.envoyerHote({ action: 'PRET', pseudo: monPseudo, pret: pret });
           // côté hôte, le watcher "phase" republie la liste
         },
+        // Hôte : les autres joueurs qu'on attend (connectés, ou absents qu'on n'a pas écartés)
+        autresAttendus: function() {
+          return Object.values(salle.infos).filter(i => i.connecte || !i.patienceLevee);
+        },
         tousPrets: function() {
-          return this.phase === 'jeu' && connections.every(c => !c.joueurPseudo || c.joueurPret);
+          return this.phase === 'jeu' && this.autresAttendus().every(i => i.pret);
         },
         tousOntJoue: function() {
-          return this.aJoue && connections.every(c => !c.joueurPseudo || c.aJoue);
+          return this.aJoue && this.autresAttendus().every(i => i.aJoue);
+        },
+        leverPatience: function() {
+          Object.values(salle.infos).forEach(i => { if (!i.connecte) i.patienceLevee = true; });
+          this.ajouterLog('L\'hôte n\'attend plus les joueurs absents.', true);
+          this.majJoueurs();
+          this.verifierResolution();
+        },
+        reinitialiserSalle: function() {
+          Object.values(salle.infos).forEach(i => { i.pret = false; i.aJoue = true; i.completions = []; });
+          salle.gains = {};
+        },
+        estConnecte: function(pseudo) {
+          if (pseudo === monPseudo) return true;
+          var i = salle.infos[pseudo];
+          return !!(i && i.connecte);
         },
         // Côté hôte : renvoie la raison d'un refus de lancer, ou '' si c'est permis
         refusLancer: function(joueur) {
           if (this.finPartie) return 'La partie est terminée.';
           if (!this.tousPrets()) return 'Tout le monde n\'a pas fini son départ.';
           if (this.lancerId > 0 && !this.tousOntJoue()) return 'Tout le monde n\'a pas encore joué ce lancer.';
-          if (this.prochainLanceur && joueur !== this.prochainLanceur) return 'C\'est à ' + this.prochainLanceur + ' de lancer.';
+          if (this.prochainLanceur && joueur !== this.prochainLanceur && this.estConnecte(this.prochainLanceur))
+            return 'C\'est à ' + this.prochainLanceur + ' de lancer.';
           return '';
         },
 
         // ---------- Coups ----------
         signalerJoue: function() {
-          if (this.role === 'client' && hostConn) {
-            hostConn.send({ action: 'JOUE', pseudo: monPseudo, lancerId: this.lancerId,
-                            joue: this.aJoue, zones: this.mesCompletions });
+          if (this.role === 'client') {
+            this.envoyerHote({ action: 'JOUE', pseudo: monPseudo, lancerId: this.lancerId,
+                               joue: this.aJoue, zones: this.mesCompletions });
           }
           // côté hôte, le watcher "aJoue" republie la liste
         },
@@ -1042,7 +1158,9 @@
 
           var moi = monPseudo || this.monPseudoAffiche || 'Moi';
           var participants = [{ pseudo: moi, zones: this.mesCompletions }].concat(
-            connections.filter(c => c.joueurPseudo).map(c => ({ pseudo: c.joueurPseudo, zones: c.completions || [] }))
+            Object.keys(salle.infos).map(p => ({
+              pseudo: p, zones: salle.infos[p].aJoue ? (salle.infos[p].completions || []) : []
+            }))
           );
 
           // Regroupe par zone : ceux qui la complètent au même lancer prennent le même gain
@@ -1071,6 +1189,12 @@
             var max = Math.max.apply(null, atteints.map(p => scores[p]));
             fin = { gagnants: atteints.filter(p => scores[p] === max), seuil: seuil };
           }
+
+          // L'hôte mémorise les gains de chacun (pour les renvoyer à un joueur qui se reconnecte)
+          attributions.forEach(a => {
+            salle.gains[a.pseudo] = salle.gains[a.pseudo] || {};
+            salle.gains[a.pseudo][a.zone] = a.index;
+          });
 
           var payload = { action: 'SCORES', lancerId: this.lancerId, scores: scores,
                           prisIndex: prisIndex, attributions: attributions, fin: fin };
@@ -1102,8 +1226,9 @@
           if (this.role === 'client') return;
           this.buildGrid();
           if (this.role === 'hote') {
-            connections.forEach(c => { c.joueurPret = false; c.aJoue = true; c.completions = []; });
-            this.broadcast({ action: 'NIVEAU', level: this.level, reset: true });
+            this.partieId = nouvelId();
+            this.reinitialiserSalle();
+            this.broadcast({ action: 'NIVEAU', level: this.level, partieId: this.partieId });
             this.majJoueurs();
             this.ajouterLog('Nouvelle partie !', true);
           }
@@ -1116,16 +1241,26 @@
         // ---------- Historique / réseau ----------
         ajouterLog: function(msg, isSystem = false) {
           this.historique.push({ msg: msg, system: isSystem });
+          if (this.historique.length > 200) this.historique.splice(0, this.historique.length - 200);
         },
         broadcast: function (data) {
-          connections.forEach(c => c.send(data));
+          connections.forEach(c => { try { if (c.open) c.send(data); } catch (e) {} });
+        },
+        envoyerHote: function(data) {
+          if (hostConn && hostConn.open && this.connexion === 'ok') {
+            try { hostConn.send(data); } catch (e) {}
+          }
         },
         majJoueurs: function() {
           if (this.role !== 'hote') return;
-          this.joueurs = [{ pseudo: monPseudo, pret: this.phase === 'jeu', joue: this.aJoue }].concat(
-            connections.filter(c => c.joueurPseudo)
-              .map(c => ({ pseudo: c.joueurPseudo, pret: !!c.joueurPret, joue: c.aJoue !== false }))
-          );
+          this.joueurs = salle.ordre.map(p => {
+            if (p === monPseudo) {
+              return { pseudo: p, pret: this.phase === 'jeu', joue: this.aJoue, connecte: true, attendu: true };
+            }
+            var i = salle.infos[p];
+            return { pseudo: p, pret: !!i.pret, joue: i.aJoue !== false, connecte: !!i.connecte,
+                     attendu: !!(i.connecte || !i.patienceLevee) };
+          });
           this.broadcast({ action: 'LISTE_JOUEURS', joueurs: this.joueurs, prochainLanceur: this.prochainLanceur });
         },
         validerPseudo: function() {
@@ -1136,160 +1271,416 @@
           }
           return true;
         },
-        reinitialiserPeer: function() {
-          if (peer) peer.destroy();
+        // garder = true : reconnexion, on conserve le salon, le rôle et les joueurs
+        reinitialiserPeer: function(garder) {
+          clearTimeout(this._timerReco);
+          var ancien = peer;
           peer = null;
           connections = [];
+          connParPseudo = {};
           hostConn = null;
           isHost = false;
-          this.role = null;
-          this.joueurs = [];
-          this.roomCode = '';
+          if (ancien) { try { ancien.destroy(); } catch (e) {} }
+          if (!garder) {
+            this.role = null;
+            this.joueurs = [];
+            this.roomCode = '';
+            this.connexion = 'aucune';
+          }
         },
-        rejoindrePartie: function() {
-          if (!this.validerPseudo()) return;
+        planifierReconnexion: function(delai) {
+          clearTimeout(this._timerReco);
+          this._timerReco = setTimeout(() => {
+            if (!this.role || this.connexion === 'ok') return;
+            if (this.role === 'hote') this.creerPartie(true);
+            else this.rejoindrePartie(true);
+          }, delai || 3000);
+        },
+        quitterSalon: function() {
+          if (!confirm('Quitter le salon ? Ta grille sera effacée de ce téléphone.')) return;
+          this.reinitialiserPeer(false);
+          this.status = 'Statut : Non connecté';
+          this.partieId = null;
+          salle = { ordre: [], infos: {}, gains: {} };
+          this.buildGrid();
+          this.ajouterLog('Tu as quitté le salon.', true);
+          effacerStockage(CLE_SAUVEGARDE);
+        },
 
-          const targetChannel = this.channelInput.trim();
-          if (!targetChannel) return alert('Saisis le nom du salon à rejoindre.');
+        // ---------- Client ----------
+        rejoindrePartie: function(reprise) {
+          var target;
+          if (reprise) {
+            target = this.roomCode;
+          } else {
+            if (!this.validerPseudo()) return;
+            target = this.channelInput.trim();
+            if (!target) return alert('Saisis le nom du salon à rejoindre.');
+          }
 
-          this.reinitialiserPeer();
-          this.status = 'Statut : Connexion...';
-          peer = new Peer();
+          this.reinitialiserPeer(!!reprise);
+          this.connexion = reprise ? 'perdue' : 'connexion';
+          this.status = reprise ? 'Statut : Reconnexion…' : 'Statut : Connexion...';
+          var monPeer = peer = new Peer();
 
-          peer.on('open', () => {
-            hostConn = peer.connect(targetChannel);
+          monPeer.on('open', () => {
+            if (peer !== monPeer) return;
+            var conn = hostConn = monPeer.connect(target, { reliable: true });
 
-            hostConn.on('open', () => {
-              this.actif_tab = 'play';
-              this.status = `Statut : Connecté (${monPseudo})`;
-              this.roomCode = targetChannel;
+            // Si l'hôte ne répond pas, on réessaie (ou on abandonne pour une 1re connexion)
+            var delaiOuverture = setTimeout(() => {
+              if (hostConn !== conn || this.connexion === 'ok') return;
+              if (this.role) { this.status = 'Statut : Hôte injoignable, nouvelle tentative…'; this.planifierReconnexion(); }
+              else { this.status = 'Statut : Non connecté'; alert('Impossible de joindre ce salon.'); this.reinitialiserPeer(false); }
+            }, 10000);
+
+            conn.on('open', () => {
+              if (hostConn !== conn) return;
+              clearTimeout(delaiOuverture);
+              dernierMsgHote = Date.now();
+              this.connexion = 'ok';
               this.role = 'client';
-              hostConn.send({ action: 'REJOINDRE', pseudo: monPseudo });
-              if (this.phase === 'jeu') this.signalerPret(true);
+              this.roomCode = target;
+              this.status = `Statut : Connecté (${monPseudo})`;
+              if (!reprise) this.actif_tab = 'play';
+              conn.send({ action: 'REJOINDRE', pseudo: monPseudo, clientId: clientId });
             });
 
-            hostConn.on('data', (data) => {
-              if (data.action === 'RESULTAT') {
-                this.afficherResultat(data.joueur, data.valeur, data.lancerId, data.prochainLanceur);
-              }
-              else if (data.action === 'REFUS') {
-                this.afficherMessage(data.message);
-              }
-              else if (data.action === 'LISTE_JOUEURS') {
-                this.joueurs = data.joueurs;
-                this.prochainLanceur = data.prochainLanceur || null;
-              }
-              else if (data.action === 'SCORES') {
-                this.appliquerScores(data);
-              }
-              else if (data.action === 'NIVEAU') {
-                if (data.level !== this.level) {
-                  this.level = data.level; // le watcher reconstruit la grille
-                } else if (data.reset) {
-                  this.buildGrid();          // nouvelle partie au même niveau
-                }
-                this.ajouterLog(`L'hôte a fixé le niveau ${data.level}.`, true);
-              }
-              else if (data.action === 'JOUEUR_REJOINT') {
-                this.ajouterLog(`${data.pseudo} a rejoint la partie.`, true);
-              }
-              else if (data.action === 'JOUEUR_QUITTE') {
-                this.ajouterLog(`${data.pseudo} a quitté la partie.`, true);
-              }
+            conn.on('data', (data) => {
+              if (hostConn !== conn) return;
+              dernierMsgHote = Date.now();
+              this.recevoirDeHote(data);
             });
 
-            hostConn.on('close', () => {
-              this.status = 'Statut : Déconnecté';
-              this.role = null;
-              this.joueurs = [];
-              this.ajouterLog('Connexion au salon perdue.', true);
-            });
+            conn.on('close', () => { if (hostConn === conn) this.perteHote(); });
+            conn.on('error', () => { if (hostConn === conn) this.perteHote(); });
           });
 
-          peer.on('error', (err) => {
-            this.status = 'Statut : Non connecté';
-            if (err.type === 'peer-unavailable') {
-              alert('Impossible de trouver ce salon.');
+          monPeer.on('disconnected', () => {
+            // Perte du serveur de mise en relation : la connexion directe à l'hôte peut continuer
+            if (peer === monPeer && !monPeer.destroyed) { try { monPeer.reconnect(); } catch (e) {} }
+          });
+
+          monPeer.on('error', (err) => {
+            if (peer !== monPeer) return;
+            if (this.role) {
+              // Déjà dans un salon : on réessaie sans déranger
+              this.status = 'Statut : Hôte injoignable, nouvelle tentative…';
+              this.connexion = 'perdue';
+              this.planifierReconnexion();
             } else {
-              alert('Erreur : ' + err.message);
+              this.status = 'Statut : Non connecté';
+              this.reinitialiserPeer(false);
+              if (err.type === 'peer-unavailable') alert('Impossible de trouver ce salon.');
+              else alert('Erreur : ' + err.message);
             }
           });
         },
-        creerPartie: function() {
-          if (!this.validerPseudo()) return;
+        perteHote: function() {
+          if (this.connexion === 'perdue' && this._timerReco) return;
+          if (this.connexion === 'ok') this.ajouterLog('Connexion à l\'hôte perdue, reconnexion…', true);
+          var c = hostConn;
+          hostConn = null;
+          if (c) { try { c.close(); } catch (e) {} }
+          this.connexion = 'perdue';
+          this.status = 'Statut : Reconnexion…';
+          this.planifierReconnexion(1500);
+        },
+        recevoirDeHote: function(data) {
+          switch (data.action) {
+            case 'PING': break;
+            case 'ETAT': this.appliquerEtat(data); break;
+            case 'RESULTAT': this.afficherResultat(data.joueur, data.valeur, data.lancerId, data.prochainLanceur); break;
+            case 'REFUS':
+              if (data.fatal) {
+                alert(data.message);
+                this.reinitialiserPeer(false);
+                this.status = 'Statut : Non connecté';
+              } else {
+                this.afficherMessage(data.message);
+              }
+              break;
+            case 'LISTE_JOUEURS':
+              this.joueurs = data.joueurs;
+              this.prochainLanceur = data.prochainLanceur || null;
+              break;
+            case 'SCORES': this.appliquerScores(data); break;
+            case 'NIVEAU':
+              // Nouvelle partie (ou nouveau niveau) décidée par l'hôte
+              this.partieId = data.partieId;
+              this.level = data.level;
+              this.buildGrid(); // fixe grilleLevel : le watcher ne reconstruit pas une 2e fois
+              this.ajouterLog(`Nouvelle partie au niveau ${data.level}.`, true);
+              break;
+            case 'JOUEUR_REJOINT':
+              this.ajouterLog(`${data.pseudo} ${data.retour ? 'est revenu' : 'a rejoint la partie'}.`, true);
+              break;
+            case 'JOUEUR_QUITTE':
+              this.ajouterLog(`${data.pseudo} s'est déconnecté.`, true);
+              break;
+          }
+        },
+        // État complet envoyé par l'hôte à la connexion (ou à la reconnexion)
+        appliquerEtat: function(data) {
+          var memePartie = this.partieId === data.partieId && this.grilleLevel === data.level;
+          var lancerLocal = this.lancerId;
+          if (!memePartie) {
+            this.partieId = data.partieId;
+            this.level = data.level;
+            this.buildGrid();
+          }
+          this.dice1 = data.dice1;
+          this.dice2 = data.dice2;
+          this.last_player = data.last_player;
+          this.lancerId = data.lancerId;
+          this.scores = data.scores;
+          this.prisIndex = data.prisIndex;
+          this.lancerResolu = data.lancerResolu;
+          this.prochainLanceur = data.prochainLanceur;
+          this.mesGains = Object.assign({}, data.gains || {});
+          if (data.joueurs) this.joueurs = data.joueurs;
+          if (data.fin) { if (!this.finPartie) this.finMasquee = false; this.finPartie = data.fin; }
+          else this.finPartie = null;
 
-          const customChannel = this.channelInput.trim();
-          this.reinitialiserPeer();
-          this.status = 'Statut : Création du salon...';
-          peer = customChannel ? new Peer(customChannel) : new Peer();
+          var resolu = data.lancerId === 0 || data.lancerResolu === data.lancerId;
+          if (this.phase !== 'jeu') {
+            this.aJoue = true;
+          } else if (!memePartie || lancerLocal !== data.lancerId) {
+            // Des lancers ont eu lieu pendant l'absence : on peut encore jouer le lancer en cours
+            this.aJoue = resolu;
+            this.dernierCoup = null;
+            this.mesCompletions = [];
+          }
+          if (resolu) this.dernierCoup = null;
 
-          peer.on('open', (id) => {
+          // On renvoie à l'hôte où on en est (départ validé, coup du lancer en cours)
+          if (this.phase === 'jeu') this.signalerPret(true);
+          if (this.phase === 'jeu' && this.lancerId > 0 && !resolu) this.signalerJoue();
+          if (lancerLocal || memePartie) this.ajouterLog('Reconnecté au salon.', true);
+        },
+
+        // ---------- Hôte ----------
+        creerPartie: function(reprise) {
+          if (!reprise && !this.validerPseudo()) return;
+
+          var customChannel = reprise ? this.roomCode : this.channelInput.trim();
+          this.reinitialiserPeer(!!reprise);
+          this.connexion = reprise ? 'perdue' : 'connexion';
+          this.status = reprise ? 'Statut : Récupération du salon…' : 'Statut : Création du salon...';
+          var monPeer = peer = customChannel ? new Peer(customChannel) : new Peer();
+
+          monPeer.on('open', (id) => {
+            if (peer !== monPeer) return;
             isHost = true;
             this.role = 'hote';
-            this.actif_tab = 'play';
-            this.status = `Statut : Hôte (${monPseudo})`;
+            this.connexion = 'ok';
             this.roomCode = id;
+            this.status = `Statut : Hôte (${monPseudo})`;
+            if (reprise) {
+              this.ajouterLog('Salon récupéré, les joueurs vont se reconnecter.', true);
+            } else {
+              this.actif_tab = 'play';
+              this.partieId = nouvelId();
+              salle = { ordre: [monPseudo], infos: {}, gains: {} };
+              this.buildGrid();
+              this.ajouterLog(`${monPseudo} a créé la partie.`, true);
+            }
             this.majJoueurs();
-            this.ajouterLog(`${monPseudo} a créé la partie.`, true);
           });
 
-          peer.on('connection', (conn) => {
-            connections.push(conn);
+          monPeer.on('connection', (conn) => this.brancherClient(conn));
 
-            conn.on('data', (data) => {
-              if (data.action === 'REJOINDRE') {
-                conn.joueurPseudo = data.pseudo;
-                conn.joueurPret = false;
-                conn.aJoue = true; // un nouvel arrivant ne bloque pas le lancer en cours
-                conn.completions = [];
-                conn.send({ action: 'NIVEAU', level: this.level });
-                this.broadcast({ action: 'JOUEUR_REJOINT', pseudo: data.pseudo });
-                this.ajouterLog(`${data.pseudo} a rejoint la partie.`, true);
-                this.majJoueurs();
-              }
-              else if (data.action === 'PRET') {
-                conn.joueurPret = data.pret;
-                if (data.pret) this.ajouterLog(`${data.pseudo} a validé son départ.`, true);
-                this.majJoueurs();
-              }
-              else if (data.action === 'JOUE') {
-                // On ignore les messages d'un lancer déjà décompté
-                if (data.lancerId === this.lancerId && this.lancerResolu !== this.lancerId) {
-                  conn.aJoue = data.joue;
-                  conn.completions = data.joue ? (data.zones || []) : [];
-                  this.majJoueurs();
-                  this.verifierResolution();
-                }
-              }
-              else if (data.action === 'DEMANDE_LANCER') {
-                var refus = this.refusLancer(data.pseudo);
-                if (refus) {
-                  conn.send({ action: 'REFUS', message: refus });
-                } else {
-                  this.traiterLancer(data.pseudo);
-                }
-              }
-            });
-
-            conn.on('close', () => {
-              const pseudoQuitte = conn.joueurPseudo || 'Un joueur';
-              connections = connections.filter(c => c !== conn);
-              if (this.prochainLanceur === pseudoQuitte) this.prochainLanceur = null;
-              this.broadcast({ action: 'JOUEUR_QUITTE', pseudo: pseudoQuitte });
-              this.ajouterLog(`${pseudoQuitte} a quitté la partie.`, true);
-              this.majJoueurs();
-              this.verifierResolution();
-            });
+          monPeer.on('disconnected', () => {
+            // Serveur de mise en relation perdu : on s'y réinscrit (les parties en cours continuent)
+            if (peer === monPeer && !monPeer.destroyed) {
+              setTimeout(() => { try { if (monPeer.disconnected && !monPeer.destroyed) monPeer.reconnect(); } catch (e) {} }, 1000);
+            }
           });
 
-          peer.on('error', (err) => {
+          monPeer.on('error', (err) => {
+            if (peer !== monPeer) return;
+            if (reprise || this.role === 'hote') {
+              // Après un rechargement, l'ancien identifiant du salon peut rester réservé quelques
+              // secondes sur le serveur de mise en relation : on réessaie jusqu'à le récupérer.
+              if (err.type === 'peer-unavailable') return; // un joueur injoignable : sans gravité
+              this.connexion = 'perdue';
+              this.status = 'Statut : Récupération du salon… (nouvelle tentative)';
+              this.planifierReconnexion(3000);
+              return;
+            }
             this.status = 'Statut : Non connecté';
+            this.reinitialiserPeer(false);
             if (err.type === 'unavailable-id') {
               alert('Ce nom de salon est déjà utilisé. Choisis-en un autre.');
             } else {
               alert('Erreur : ' + err.message);
             }
           });
+        },
+        brancherClient: function(conn) {
+          connections.push(conn);
+          conn.dernierMsg = Date.now();
+          conn.on('data', (data) => {
+            conn.dernierMsg = Date.now();
+            this.recevoirDeClient(conn, data);
+          });
+          conn.on('close', () => this.perteClient(conn));
+          conn.on('error', () => this.perteClient(conn));
+        },
+        etatPour: function(pseudo) {
+          var i = salle.infos[pseudo] || {};
+          return {
+            action: 'ETAT', level: this.level, partieId: this.partieId,
+            lancerId: this.lancerId, dice1: this.dice1, dice2: this.dice2, last_player: this.last_player,
+            scores: this.scores, prisIndex: this.prisIndex, lancerResolu: this.lancerResolu,
+            prochainLanceur: this.prochainLanceur, fin: this.finPartie, joueurs: this.joueurs,
+            gains: salle.gains[pseudo] || {}, vous: { pret: !!i.pret, aJoue: i.aJoue !== false }
+          };
+        },
+        recevoirDeClient: function(conn, data) {
+          var p = conn.joueurPseudo;
+          var info = p ? salle.infos[p] : null;
+          switch (data.action) {
+            case 'PING': break;
+            case 'REJOINDRE': {
+              var pseudo = data.pseudo;
+              var existant = salle.infos[pseudo];
+              if (pseudo === monPseudo || (existant && existant.connecte && existant.clientId !== data.clientId
+                                           && connParPseudo[pseudo] && connParPseudo[pseudo] !== conn)) {
+                try { conn.send({ action: 'REFUS', fatal: true, message: 'Ce pseudo est déjà utilisé dans ce salon.' }); } catch (e) {}
+                setTimeout(() => { try { conn.close(); } catch (e) {} }, 500);
+                return;
+              }
+              // Un joueur qui revient remplace son ancienne connexion
+              var ancienne = connParPseudo[pseudo];
+              if (ancienne && ancienne !== conn) {
+                ancienne._remplacee = true;
+                connections = connections.filter(c => c !== ancienne);
+                try { ancienne.close(); } catch (e) {}
+              }
+              conn.joueurPseudo = pseudo;
+              connParPseudo[pseudo] = conn;
+              var retour = !!existant;
+              if (!existant) {
+                salle.infos[pseudo] = { pret: false, aJoue: true, completions: [], connecte: true,
+                                        patienceLevee: false, clientId: data.clientId };
+                salle.ordre.push(pseudo);
+              } else {
+                existant.connecte = true;
+                existant.patienceLevee = false;
+                existant.clientId = data.clientId;
+              }
+              this.majJoueurs();
+              try { conn.send(this.etatPour(pseudo)); } catch (e) {}
+              this.broadcast({ action: 'JOUEUR_REJOINT', pseudo: pseudo, retour: retour });
+              this.ajouterLog(`${pseudo} ${retour ? 'est revenu' : 'a rejoint la partie'}.`, true);
+              break;
+            }
+            case 'PRET':
+              if (!info) return;
+              info.pret = data.pret;
+              if (data.pret) this.ajouterLog(`${p} a validé son départ.`, true);
+              this.majJoueurs();
+              break;
+            case 'JOUE':
+              // On ignore les messages d'un lancer déjà décompté
+              if (!info || data.lancerId !== this.lancerId || this.lancerResolu === this.lancerId) return;
+              info.aJoue = data.joue;
+              info.completions = data.joue ? (data.zones || []) : [];
+              this.majJoueurs();
+              this.verifierResolution();
+              break;
+            case 'DEMANDE_LANCER': {
+              var refus = this.refusLancer(p);
+              if (refus) { try { conn.send({ action: 'REFUS', message: refus }); } catch (e) {} }
+              else this.traiterLancer(p);
+              break;
+            }
+          }
+        },
+        perteClient: function(conn) {
+          if (conn._perdue) return;
+          conn._perdue = true;
+          connections = connections.filter(c => c !== conn);
+          var p = conn.joueurPseudo;
+          // Si le joueur s'est déjà reconnecté par une autre connexion, rien à faire
+          if (!p || conn._remplacee || connParPseudo[p] !== conn) return;
+          delete connParPseudo[p];
+          if (salle.infos[p]) salle.infos[p].connecte = false;
+          this.broadcast({ action: 'JOUEUR_QUITTE', pseudo: p });
+          this.ajouterLog(`${p} s'est déconnecté (il peut revenir).`, true);
+          this.majJoueurs();
+          this.verifierResolution();
+        },
+
+        // ---------- Surveillance de la connexion ----------
+        // Toutes les 4 s : petit message "PING" pour garder le lien et détecter les coupures
+        // (un téléphone mis en veille ne prévient pas toujours qu'il est parti).
+        battement: function() {
+          var maintenant = Date.now();
+          if (this.role === 'hote' && peer) {
+            connections.slice().forEach(c => {
+              try { if (c.open) c.send({ action: 'PING' }); } catch (e) {}
+              if (maintenant - (c.dernierMsg || maintenant) > DELAI_SILENCE) {
+                try { c.close(); } catch (e) {}
+                this.perteClient(c);
+              }
+            });
+            if (peer.destroyed) this.planifierReconnexion(500);
+            else if (peer.disconnected) { try { peer.reconnect(); } catch (e) {} }
+          } else if (this.role === 'client' && this.connexion === 'ok') {
+            this.envoyerHote({ action: 'PING' });
+            if (maintenant - dernierMsgHote > DELAI_SILENCE) this.perteHote();
+          }
+        },
+        // Retour au premier plan (écran rallumé, onglet réaffiché) : on vérifie tout de suite
+        auRetourPremierPlan: function() {
+          if (document.visibilityState === 'hidden' || !this.role) return;
+          if (this.role === 'hote') {
+            if (!peer || peer.destroyed) this.creerPartie(true);
+            else if (peer.disconnected) { try { peer.reconnect(); } catch (e) {} }
+          } else if (this.connexion !== 'ok' || Date.now() - dernierMsgHote > 8000) {
+            this.connexion = 'perdue';
+            this.rejoindrePartie(true);
+          }
+        },
+
+        // ---------- Restauration au chargement de la page ----------
+        restaurer: function() {
+          var sv = lireStockage(CLE_SAUVEGARDE);
+          if (!sv) return;
+          this.pseudoInput = sv.pseudo || '';
+          if (sv.salon) this.channelInput = sv.salon;
+          monPseudo = (sv.pseudo || '').trim();
+
+          this.level = sv.level || 1;
+          this.buildGrid();
+          Object.keys(sv.cells || {}).forEach(k => {
+            if (this.cellsData[k]) {
+              this.cellsData[k].label = sv.cells[k][0];
+              this.cellsData[k].depart = !!sv.cells[k][1];
+            }
+          });
+          ['partieId', 'phase', 'lancerId', 'aJoue', 'dernierCoup', 'mesCompletions', 'mesGains',
+           'dice1', 'dice2', 'last_player', 'scores', 'prisIndex', 'lancerResolu', 'prochainLanceur',
+           'finPartie', 'finMasquee', 'joueurs', 'historique'].forEach(cle => {
+            if (sv[cle] !== undefined) this[cle] = sv[cle];
+          });
+
+          if (sv.role && sv.salon) {
+            this.role = sv.role;
+            this.roomCode = sv.salon;
+            this.actif_tab = 'play';
+            this.connexion = 'perdue';
+            if (sv.role === 'hote' && sv.salle) {
+              salle = sv.salle;
+              // Tous les joueurs sont considérés absents jusqu'à ce qu'ils se reconnectent
+              Object.values(salle.infos).forEach(i => { i.connecte = false; });
+            }
+            this.ajouterLog('Partie restaurée, reconnexion au salon…', true);
+            if (sv.role === 'hote') this.creerPartie(true);
+            else this.rejoindrePartie(true);
+          }
         },
 
         afficherResultat: function(joueur, valeur, lancerId, prochain) {
@@ -1394,10 +1785,10 @@
             var refus = this.refusLancer(monPseudo);
             if (refus) return this.afficherMessage(refus);
             this.traiterLancer(monPseudo);
-          } else if (hostConn) {
-            hostConn.send({ action: 'DEMANDE_LANCER', pseudo: monPseudo });
+          } else if (this.connexion === 'ok') {
+            this.envoyerHote({ action: 'DEMANDE_LANCER', pseudo: monPseudo });
           } else {
-            alert("Tu n'es connecté à aucun salon.");
+            this.afficherMessage('Connexion perdue : reconnexion en cours…');
           }
         },
         traiterLancer: function(joueur) {
@@ -1405,13 +1796,19 @@
             dice1: Math.floor(Math.random() * 6) + 1,
             dice2: Math.floor(Math.random() * 6) + 1
           };
-          // Le suivant dans l'ordre des joueurs (sens horaire = ordre d'arrivée)
-          var ordre = this.joueurs.map(j => j.pseudo);
-          var idx = ordre.indexOf(joueur);
-          var prochain = (this.role === 'hote' && idx !== -1) ? ordre[(idx + 1) % ordre.length] : null;
+          // Le suivant dans l'ordre des joueurs (sens horaire = ordre d'arrivée), en sautant les absents
+          var prochain = null;
+          if (this.role === 'hote') {
+            var ordre = salle.ordre;
+            var idx = ordre.indexOf(joueur);
+            for (var k = 1; k <= ordre.length; k++) {
+              var cand = ordre[(idx + k) % ordre.length];
+              if (this.estConnecte(cand)) { prochain = cand; break; }
+            }
+          }
           var lancerId = this.lancerId + 1;
 
-          connections.forEach(c => { c.aJoue = false; c.completions = []; });
+          Object.values(salle.infos).forEach(i => { i.aJoue = false; i.completions = []; });
           this.afficherResultat(joueur, val, lancerId, prochain);
           this.broadcast({ action: 'RESULTAT', joueur: joueur, valeur: val, lancerId: lancerId, prochainLanceur: prochain });
           this.majJoueurs();
