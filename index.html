@@ -577,8 +577,8 @@
       <section class="carte reglages">
         <div class="titre-carte">Réglages</div>
         <label class="case-a-cocher"><input type="checkbox" v-model="sonActif"> 🔊 Sons et vibrations</label>
-        <label class="case-a-cocher" v-if="voixSupportee"><input type="checkbox" v-model="voixActive"> 🗣️ Annoncer qui doit lancer (en salon)</label>
-        <label class="case-a-cocher" v-if="veilleSupportee"><input type="checkbox" v-model="garderEcran"> ☀️ Garder l'écran allumé pendant la partie</label>
+        <label class="case-a-cocher" v-if="voixSupportee"><input type="checkbox" v-model="voixActive"> 🗣️ Annoncer mon tour</label>
+        <label class="case-a-cocher" v-if="veilleSupportee"><input type="checkbox" v-model="garderEcran"> ☀️ Garder l'écran allumé</label>
       </section>
 
       <!-- Installation comme une application -->
@@ -936,7 +936,7 @@
     function lireLigne(ligne) { return ligne.trim().split(/\s+/); }
 
     // Numéro de version affiché sur l'accueil (à augmenter à chaque mise en ligne)
-    const VERSION = '1.02 beta';
+    const VERSION = '1.03 beta';
 
     // ================== SONS ET VIBRATIONS ==================
     // Les sons sont fabriqués par le code (Web Audio API) : aucun fichier à charger.
@@ -1189,7 +1189,7 @@
         actif_tab: function() { this.majVeille(); },
         garderEcran: function(v) { ecrireStockage('brillant-garder-ecran', v); this.majVeille(); },
         sonActif: function(v) { ecrireStockage('brillant-son', v); },
-        voixActive: function(v) { ecrireStockage('brillant-voix', v); if (v) Voix.dire('Annonces vocales activées'); },
+        voixActive: function(v) { ecrireStockage('brillant-voix', v); if (v) Voix.dire('Annonce de ton tour activée'); },
         // Quand le prochain lancer devient possible, on annonce qui doit lancer
         cleAnnonce: function(cle) { if (cle) this.annoncerLanceur(); },
         rejoindreAuto: function(v) { ecrireStockage('brillant-rejoindre-auto', v); },
@@ -2293,11 +2293,16 @@
           var cle = this.cleAnnonce;
           if (!cle || this._derniereAnnonce === cle) return; // une seule annonce par lancer
           this._derniereAnnonce = cle;
+          // Seul le téléphone concerné parle (sinon, dans la même pièce, tout le monde parle en même temps).
+          // Quand n'importe qui peut lancer (début de partie, lanceur absent), c'est l'hôte qui l'annonce.
           var nom = this.prochainLanceur, moi = this.monPseudoAffiche, texte;
-          if (!nom) texte = 'Tout le monde est prêt. Lancez les dés !';
-          else if (this.prochainAbsent) texte = nom + ' est absent. N\'importe qui peut lancer.';
-          else if (nom === moi) texte = nom + ', à toi de lancer !';
-          else texte = 'À ' + nom + ' de lancer.';
+          if (nom && !this.prochainAbsent) {
+            if (nom !== moi) return;
+            texte = nom + ', à toi de lancer !';
+          } else {
+            if (this.role !== 'hote') return;
+            texte = nom ? nom + ' est absent. N\'importe qui peut lancer.' : 'Tout le monde est prêt. Lancez les dés !';
+          }
           // petit délai : on laisse finir le son des dés ou de la zone complétée
           clearTimeout(this._timerVoix);
           this._timerVoix = setTimeout(() => { if (this.cleAnnonce === cle) Voix.dire(texte); }, 700);
