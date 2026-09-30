@@ -38,6 +38,7 @@
       ul { text-align: left; background: #fff; border: 1px solid #ddd; padding: 1rem 2rem; border-radius: 4px; max-height: 150px; overflow-y: auto; }
       .sys-msg { font-style: italic; color: #666; }
       .joueurs { margin: 0.5rem 0 0; color: #333; }
+      .version { color: #999; font-size: 0.8rem; margin: 1rem 0 0.5rem; }
     }
 
     .grid-app {
@@ -113,6 +114,7 @@
     .scores .joueur { background: #eef1f3; border-radius: 12px; padding: 2px 10px; }
     .scores .joueur.moi { background: #2c3e50; color: #fff; }
     .scores .objectif { color: #8a5a00; font-weight: bold; }
+    .scores .niveau { border: 1px solid #2c3e50; border-radius: 12px; padding: 1px 8px; font-weight: bold; color: #2c3e50; }
     .jauge { width: 100%; height: 6px; background: #eef1f3; border-radius: 3px; overflow: hidden; margin-bottom: 8px; }
     .jauge div { height: 100%; background: #42b983; transition: width 0.4s; }
 
@@ -345,7 +347,7 @@
 
     <!-- MENU -->
     <div id="menu">
-      <div @click="setTab('config')" :class="{actif:actif_tab=='config'}">Config</div>
+      <div @click="setTab('config')" :class="{actif:actif_tab=='config'}">Accueil</div>
       <div @click="setTab('play')" :class="{actif:actif_tab=='play'}">Jouer</div>
     </div>
 
@@ -355,10 +357,12 @@
         <input type="text" id="pseudoInput" v-model='pseudoInput' placeholder="Ton pseudo (ex: Alex)" required><br>
         <input type="text" id="channelInput" v-model='channelInput' placeholder="Nom/ID du salon (ex: ma-partie-des)"><br><br>
 
-        <label for="config-level">Niveau de la partie (hôte) : </label>
-        <select id="config-level" v-model.number="level" :disabled="role === 'client'" style="font-size: 1rem; padding: 0.4rem;">
+        <label for="config-level">Niveau de la partie : </label>
+        <select id="config-level" :value="level" @change="changerNiveau($event)" :disabled="role === 'client'" style="font-size: 1rem; padding: 0.4rem;">
           <option v-for="n in 4" :key="n" :value="n">{{ n }}</option>
-        </select><br><br>
+        </select>
+        <div class="sys-msg" v-if="role === 'client'">Le niveau est choisi par l'hôte.</div>
+        <br><br>
 
         <button @click="creerPartie()">Créer ce salon (Hôte)</button>
         <p>— ou —</p>
@@ -376,6 +380,8 @@
       <ul id="historique">
         <li v-for="(log, i) in historique" :key="i" :class="{ 'sys-msg': log.system }">{{ log.msg }}</li>
       </ul>
+
+      <p class="version">Brilliant en ligne · version {{ version }}</p>
     </div>
 
     <!-- FIN DE PARTIE -->
@@ -398,14 +404,6 @@
 
     <!-- PLAY -->
     <div v-show='actif_tab=="play"' id="play">
-      <div class="controls">
-        <label for="level-input"><template v-if="pseudoInput">{{ pseudoInput }} · </template>Niveau : </label>
-        <select id="level-input" v-model.number="level" :disabled="role === 'client'">
-          <option v-for="n in 4" :key="n" :value="n">{{ n }}</option>
-        </select>
-        <span v-if="role === 'client'" class="sys-msg"> (imposé par l'hôte)</span>
-      </div>
-
       <!-- Connexion perdue : reconnexion automatique en cours -->
       <div v-if="role && connexion !== 'ok'" class="bandeau-connexion">
         ⚠ {{ role === 'hote' ? 'Salon hors ligne, récupération en cours…' : 'Connexion à l\'hôte perdue, reconnexion en cours…' }}
@@ -413,11 +411,13 @@
       </div>
 
       <!-- Scores (piste de score) -->
-      <div class="scores" v-if="scoresListe.length">
+      <!-- Ligne compacte : niveau, scores et objectif -->
+      <div class="scores">
+        <span class="niveau">Niv. {{ level }}</span>
         <span v-for="j in scoresListe" :key="j.pseudo" class="joueur" :class="{ moi: j.moi }">
           {{ j.pseudo }} <strong>{{ j.points }}</strong>
         </span>
-        <span class="objectif">🎯 {{ seuil }}</span>
+        <span class="objectif" v-if="scoresListe.length">🎯 {{ seuil }}</span>
       </div>
       <div class="jauge" v-if="scoresListe.length"><div :style="{ width: Math.min(100, monScore / seuil * 100) + '%' }"></div></div>
 
@@ -671,6 +671,9 @@
     // Transforme 'J  V1 B1' en ['J','V1','B1']
     function lireLigne(ligne) { return ligne.trim().split(/\s+/); }
 
+    // Numéro de version affiché sur l'accueil (à augmenter à chaque mise en ligne)
+    const VERSION = '0.7';
+
     // ================== SAUVEGARDE LOCALE ==================
     // Pas de serveur : chaque téléphone garde son état dans le navigateur (localStorage).
     // Au rechargement, la page restaure la grille et se reconnecte toute seule au salon.
@@ -710,6 +713,7 @@
       el: '#app',
       data: {
         actif_tab: 'config',
+        version: VERSION,
         pseudoInput: '',
         channelInput: 'toto',
         historique: [],        // [{ msg, system }]
@@ -1697,6 +1701,20 @@
           this.ajouterLog(`${joueur} a fait un ${valeur.dice1} - ${valeur.dice2}`);
         },
 
+        // Choix du niveau (accueil) : en cours de partie, on demande confirmation
+        changerNiveau: function(event) {
+          var n = Number(event.target.value);
+          var enCours = this.phase === 'jeu' || this.lancerId > 0 ||
+                        Object.values(this.cellsData).some(c => c.label);
+          var msg = this.role === 'hote'
+            ? 'Changer de niveau recommence la partie pour tous les joueurs. Continuer ?'
+            : 'Changer de niveau efface ta grille. Continuer ?';
+          if (enCours && !confirm(msg)) {
+            event.target.value = this.level; // on remet l'ancien choix
+            return;
+          }
+          this.level = n;
+        },
         setTab: function(tab) {
           this.actif_tab = tab;
         },
