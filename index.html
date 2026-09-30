@@ -50,6 +50,12 @@
     .barre-infos { display: flex; align-items: center; gap: 6px; font-size: 0.9em; }
     .barre-infos .niveau { border: 1.5px solid #2c3e50; border-radius: 12px; padding: 1px 8px; font-weight: bold; }
     .barre-infos .objectif { color: #8a5a00; font-weight: bold; }
+    .btn-veille {
+      border: none; background: transparent; font-size: 1.05em; line-height: 1;
+      padding: 3px 4px; border-radius: 8px; cursor: pointer;
+    }
+    .btn-veille.off { opacity: 0.45; }
+    .btn-veille.actif { background: #fff5d6; }
     .barre-infos .point-co { width: 9px; height: 9px; border-radius: 50%; background: #42b983; }
     .barre-infos .point-co.attente { background: #f0a030; animation: clignote 1s infinite; }
     @keyframes clignote { 50% { opacity: 0.3; } }
@@ -429,6 +435,10 @@
         <div @click="setTab('play')" :class="{actif:actif_tab=='play'}">Jouer</div>
       </div>
       <div class="barre-infos" v-if="actif_tab === 'play'">
+        <button v-if="veilleSupportee" class="btn-veille" :class="{ actif: veilleActive, off: !garderEcran }"
+                @click="basculerVeille" :title="garderEcran ? 'Écran toujours allumé' : 'Mise en veille normale'">
+          {{ garderEcran ? '☀️' : '🌙' }}
+        </button>
         <span v-if="role" class="point-co" :class="{ attente: connexion !== 'ok' }" :title="connexionTexte"></span>
         <span class="niveau">Niv. {{ level }}</span>
         <span class="objectif" v-if="scoresListe.length">🎯 {{ seuil }}</span>
@@ -804,7 +814,7 @@
     function lireLigne(ligne) { return ligne.trim().split(/\s+/); }
 
     // Numéro de version affiché sur l'accueil (à augmenter à chaque mise en ligne)
-    const VERSION = '0.9';
+    const VERSION = '0.9.1';
 
     // ================== SAUVEGARDE LOCALE ==================
     // Pas de serveur : chaque téléphone garde son état dans le navigateur (localStorage).
@@ -846,6 +856,9 @@
       data: {
         actif_tab: 'config',
         version: VERSION,
+        veilleSupportee: 'wakeLock' in navigator,
+        garderEcran: lireStockage('brillant-garder-ecran') !== false, // préférence (oui par défaut)
+        veilleActive: false,     // le verrou "écran allumé" est-il en place ?
         installPossible: false,  // Android/Chrome : le navigateur propose l'installation
         estInstallee: window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true,
         estIOS: /iphone|ipad|ipod/i.test(navigator.userAgent),
@@ -917,11 +930,16 @@
         // L'hôte republie la liste quand son propre état "prêt" change
         phase: function() {
           if (this.role === 'hote') this.majJoueurs();
+          this.majVeille();
         },
         aJoue: function() {
           if (this.role === 'hote') this.majJoueurs();
           this.verifierResolution();
         },
+        // Écran allumé : on réévalue dès que la situation change
+        role: function() { this.majVeille(); },
+        actif_tab: function() { this.majVeille(); },
+        garderEcran: function(v) { ecrireStockage('brillant-garder-ecran', v); this.majVeille(); },
         // Sauvegarde automatique à chaque changement
         etatSauvegarde: function(val) {
           ecrireStockage(CLE_SAUVEGARDE, JSON.parse(val));
@@ -1797,6 +1815,7 @@
         },
         // Retour au premier plan (écran rallumé, onglet réaffiché) : on vérifie tout de suite
         auRetourPremierPlan: function() {
+          this.majVeille();
           if (document.visibilityState === 'hidden' || !this.role) return;
           if (this.role === 'hote') {
             if (!peer || peer.destroyed) this.creerPartie(true);
@@ -1869,6 +1888,51 @@
             : 'Changer de niveau efface ta grille. Continuer ?';
           if (enCours && !confirm(msg)) return;
           this.level = n;
+        },
+        // ---------- Écran toujours allumé (Screen Wake Lock) ----------
+        // Actif dès qu'on est dans un salon (quel que soit l'onglet, pour ne pas perdre la connexion),
+        // ou pendant une partie solo commencée, sur l'onglet Jouer.
+        // Le navigateur relâche le verrou quand l'appli passe en arrière-plan : on le reprend au retour.
+        veilleVoulue: function() {
+          if (!this.veilleSupportee || !this.garderEcran || document.visibilityState !== 'visible') return false;
+          return !!this.role || (this.phase === 'jeu' && this.actif_tab === 'play');
+        },
+        majVeille: function() {
+          if (!this.veilleSupportee) return;
+          if (this.veilleVoulue()) {
+            if (this._verrou || this._demandeVerrou) return;
+            this._demandeVerrou = true;
+            navigator.wakeLock.request('screen').then(verrou => {
+              this._demandeVerrou = false;
+              if (!this.veilleVoulue()) { verrou.release(); return; }
+              this._verrou = verrou;
+              this.veilleActive = true;
+              verrou.addEventListener('release', () => {
+                if (this._verrou === verrou) { this._verrou = null; this.veilleActive = false; }
+              });
+            }).catch(() => {
+              // Refusé (souvent : il faut un geste de l'utilisateur) -> on réessaie au prochain toucher
+              this._demandeVerrou = false;
+              if (!this._attenteGeste) {
+                this._attenteGeste = () => {
+                  document.removeEventListener('pointerup', this._attenteGeste);
+                  this._attenteGeste = null;
+                  this.majVeille();
+                };
+                document.addEventListener('pointerup', this._attenteGeste);
+              }
+            });
+          } else if (this._verrou) {
+            var v = this._verrou;
+            this._verrou = null;
+            this.veilleActive = false;
+            v.release().catch(() => {});
+          }
+        },
+        basculerVeille: function() {
+          this.garderEcran = !this.garderEcran;
+          this.afficherMessage(this.garderEcran ? '☀️ L\'écran restera allumé pendant la partie.'
+                                                : '🌙 L\'écran se mettra en veille normalement.');
         },
         installer: function() {
           var invit = this._invitationInstall;
