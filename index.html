@@ -38,7 +38,7 @@
       padding: 3px;
     }
     #menu div {
-      padding: 6px 16px;
+      padding: 6px 13px;
       border-radius: 8px;
       font-weight: 600;
       font-size: 0.95em;
@@ -47,7 +47,7 @@
       user-select: none;
     }
     #menu div.actif { background: #fff; color: #1d2b36; box-shadow: 0 1px 3px rgba(0,0,0,0.12); }
-    .barre-infos { display: flex; align-items: center; gap: 6px; font-size: 0.9em; }
+    .barre-infos { display: flex; align-items: center; gap: 4px; font-size: 0.9em; }
     .barre-infos .niveau { border: 1.5px solid #2c3e50; border-radius: 12px; padding: 1px 8px; font-weight: bold; }
     .barre-infos .objectif { color: #8a5a00; font-weight: bold; }
     .btn-veille {
@@ -408,6 +408,13 @@
       box-shadow: 0 3px 5px rgba(0, 0, 0, 0.1);
       user-select: none;
     }
+    .dice.roule { animation: rouler 0.15s linear infinite; color: #7a8a96; }
+    .dice.roule + .dice.roule { animation-direction: reverse; }
+    @keyframes rouler {
+      0% { transform: rotate(-12deg) translateY(0); }
+      50% { transform: rotate(10deg) translateY(-4px); }
+      100% { transform: rotate(-12deg) translateY(0); }
+    }
     .roll-btn {
       flex-shrink: 0;
       padding: 12px 18px;
@@ -454,6 +461,10 @@
         <div @click="setTab('play')" :class="{actif:actif_tab=='play'}">Jouer</div>
       </div>
       <div class="barre-infos" v-if="actif_tab === 'play'">
+        <button class="btn-veille" :class="{ off: !sonActif }" @click="basculerSon"
+                :title="sonActif ? 'Sons et vibrations activés' : 'Sons et vibrations coupés'">
+          {{ sonActif ? '🔊' : '🔇' }}
+        </button>
         <button v-if="veilleSupportee" class="btn-veille" :class="{ actif: veilleActive, off: !garderEcran }"
                 @click="basculerVeille" :title="garderEcran ? 'Écran toujours allumé' : 'Mise en veille normale'">
           {{ garderEcran ? '☀️' : '🌙' }}
@@ -650,8 +661,8 @@
         <div class="des-ligne">
           <div class="des-bloc">
             <div class="dice-container">
-              <div class="dice">{{ dice1 !== null ? dice1 : '?' }}</div>
-              <div class="dice">{{ dice2 !== null ? dice2 : '?' }}</div>
+              <div class="dice" :class="{ roule: desRoulent }">{{ desRoulent ? desAnim[0] : (dice1 !== null ? dice1 : '?') }}</div>
+              <div class="dice" :class="{ roule: desRoulent }">{{ desRoulent ? desAnim[1] : (dice2 !== null ? dice2 : '?') }}</div>
             </div>
             <div class="dice-lanceur" v-if="last_player">lancés par<br><strong>{{ last_player }}</strong></div>
           </div>
@@ -834,7 +845,93 @@
     function lireLigne(ligne) { return ligne.trim().split(/\s+/); }
 
     // Numéro de version affiché sur l'accueil (à augmenter à chaque mise en ligne)
-    const VERSION = '0.9.2';
+    const VERSION = '0.10';
+
+    // ================== SONS ET VIBRATIONS ==================
+    // Les sons sont fabriqués par le code (Web Audio API) : aucun fichier à charger.
+    // Les navigateurs n'autorisent le son qu'après un premier toucher de l'écran :
+    // on "débloque" donc l'audio au premier toucher (voir created()).
+    const Sons = {
+      ctx: null,
+      tamponBruit: null,
+      obtenir: function() {
+        var AC = window.AudioContext || window.webkitAudioContext;
+        if (!AC) return null;
+        if (!this.ctx) this.ctx = new AC();
+        if (this.ctx.state === 'suspended') this.ctx.resume().catch(function () {});
+        return this.ctx;
+      },
+      bruit: function(ctx) {
+        if (!this.tamponBruit || this.tamponBruit.sampleRate !== ctx.sampleRate) {
+          var b = ctx.createBuffer(1, ctx.sampleRate * 0.5, ctx.sampleRate), d = b.getChannelData(0);
+          for (var i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+          this.tamponBruit = b;
+        }
+        return this.tamponBruit;
+      },
+      // Un choc de dé : petit bruit filtré (le "clac") + un son grave très court (le "toc")
+      choc: function(ctx, dest, t, force) {
+        var src = ctx.createBufferSource(); src.buffer = this.bruit(ctx);
+        var filtre = ctx.createBiquadFilter(); filtre.type = 'bandpass';
+        filtre.frequency.value = 1800 + Math.random() * 1600; filtre.Q.value = 2.5;
+        var g = ctx.createGain();
+        g.gain.setValueAtTime(0.0001, t);
+        g.gain.exponentialRampToValueAtTime(0.9 * force, t + 0.004);
+        g.gain.exponentialRampToValueAtTime(0.0001, t + 0.05);
+        src.connect(filtre); filtre.connect(g); g.connect(dest);
+        src.start(t, Math.random() * 0.4); src.stop(t + 0.06);
+        var o = ctx.createOscillator(); o.type = 'sine';
+        o.frequency.setValueAtTime(260 + Math.random() * 80, t);
+        o.frequency.exponentialRampToValueAtTime(90, t + 0.06);
+        var g2 = ctx.createGain();
+        g2.gain.setValueAtTime(0.5 * force, t);
+        g2.gain.exponentialRampToValueAtTime(0.0001, t + 0.07);
+        o.connect(g2); g2.connect(dest); o.start(t); o.stop(t + 0.08);
+      },
+      // Deux dés qui roulent : une série de chocs de plus en plus espacés et doux
+      des: function(ctx, dest, t0) {
+        var t = t0;
+        for (var i = 0; i < 9; i++) {
+          this.choc(ctx, dest, t, Math.max(0.25, 1 - i * 0.08));
+          if (i % 2 === 0) this.choc(ctx, dest, t + 0.012 + Math.random() * 0.02, 0.6 - i * 0.04); // le 2e dé
+          t += 0.045 + i * 0.022 + Math.random() * 0.02;
+        }
+      },
+      note: function(ctx, dest, t, freq, duree, volume, type) {
+        var o = ctx.createOscillator(); o.type = type || 'triangle'; o.frequency.value = freq;
+        var g = ctx.createGain();
+        g.gain.setValueAtTime(0.0001, t);
+        g.gain.exponentialRampToValueAtTime(volume, t + 0.01);
+        g.gain.exponentialRampToValueAtTime(0.0001, t + duree);
+        o.connect(g); g.connect(dest); o.start(t); o.stop(t + duree + 0.02);
+      },
+      // Zone complétée : petit arpège brillant (plus discret quand c'est un autre joueur)
+      zone: function(ctx, dest, t0, moi) {
+        var notes = moi ? [1046.5, 1318.5, 1568, 2093] : [784, 987.8];
+        var vol = moi ? 0.35 : 0.18;
+        notes.forEach((f, i) => {
+          this.note(ctx, dest, t0 + i * 0.08, f, 0.5, vol, 'triangle');
+          this.note(ctx, dest, t0 + i * 0.08, f * 2, 0.25, vol * 0.25, 'sine'); // scintillement
+        });
+      },
+      // Fin de partie : courte fanfare
+      victoire: function(ctx, dest, t0) {
+        [523.3, 659.3, 784, 1046.5].forEach((f, i) => this.note(ctx, dest, t0 + i * 0.12, f, 0.35, 0.3, 'square'));
+        this.note(ctx, dest, t0 + 0.5, 1046.5, 0.9, 0.3, 'triangle');
+        this.note(ctx, dest, t0 + 0.5, 1318.5, 0.9, 0.22, 'triangle');
+        this.note(ctx, dest, t0 + 0.5, 1568, 0.9, 0.18, 'triangle');
+      },
+      jouer: function(nom, arg) {
+        var ctx = this.obtenir();
+        if (!ctx || ctx.state !== 'running') return; // audio pas encore débloqué par un toucher
+        var master = ctx.createGain(); master.gain.value = 1.4; master.connect(ctx.destination);
+        this[nom](ctx, master, ctx.currentTime + 0.02, arg);
+      }
+    };
+    // Vibration : Android uniquement (iPhone ne la propose pas aux pages web)
+    function vibrer(motif) {
+      try { if (navigator.vibrate) navigator.vibrate(motif); } catch (e) {}
+    }
 
     // ================== SAUVEGARDE LOCALE ==================
     // Pas de serveur : chaque téléphone garde son état dans le navigateur (localStorage).
@@ -876,6 +973,9 @@
       data: {
         actif_tab: 'config',
         version: VERSION,
+        sonActif: lireStockage('brillant-son') !== false,  // sons + vibrations (oui par défaut)
+        desRoulent: false,       // animation des dés en cours
+        desAnim: [1, 1],         // valeurs affichées pendant l'animation
         veilleSupportee: 'wakeLock' in navigator,
         garderEcran: lireStockage('brillant-garder-ecran') !== false, // préférence (oui par défaut)
         veilleActive: false,     // le verrou "écran allumé" est-il en place ?
@@ -915,6 +1015,8 @@
         cellsData: {}          // clé 'x-y' -> { zone, color, label, selected, etoile, depart }
       },
       created: function() {
+        // L'audio ne peut démarrer qu'après un geste : chaque toucher le (re)débloque si besoin
+        document.addEventListener('pointerdown', function () { if (Sons.ctx === null || Sons.ctx.state !== 'running') Sons.obtenir(); }, true);
         // Android/Chrome : on garde la proposition d'installation pour notre bouton
         window.addEventListener('beforeinstallprompt', (e) => {
           e.preventDefault();
@@ -960,6 +1062,7 @@
         role: function() { this.majVeille(); },
         actif_tab: function() { this.majVeille(); },
         garderEcran: function(v) { ecrireStockage('brillant-garder-ecran', v); this.majVeille(); },
+        sonActif: function(v) { ecrireStockage('brillant-son', v); },
         // Sauvegarde automatique à chaque changement
         etatSauvegarde: function(val) {
           ecrireStockage(CLE_SAUVEGARDE, JSON.parse(val));
@@ -1416,7 +1519,13 @@
             this.ajouterLog(`${a.pseudo} complète la ${this.nomZone(a.zone)} : +${a.gain} pts`, true);
           });
           if (annonces.length) this.afficherMessage('🎉 ' + annonces.join(' · '));
+          if (this.sonActif && data.attributions.length && !(data.fin && !this.finPartie)) {
+            var pourMoi = data.attributions.some(a => a.pseudo === moi);
+            Sons.jouer('zone', pourMoi);
+            vibrer(pourMoi ? [60, 50, 120] : 40);
+          }
           if (data.fin && !this.finPartie) {
+            if (this.sonActif) { Sons.jouer('victoire'); vibrer([100, 60, 100, 60, 250]); }
             this.finPartie = data.fin;
             this.finMasquee = false;
             this.ajouterLog(`Fin de partie : ${data.fin.gagnants.join(' et ')} gagne(nt).`, true);
@@ -1897,6 +2006,23 @@
           this.mesCompletions = [];
           this.zoneSurlignee = null;
           this.ajouterLog(`${joueur} a fait un ${valeur.dice1} - ${valeur.dice2}`);
+          this.animerDes();
+        },
+        // Dés qui roulent : son, vibration et chiffres qui défilent pendant ~0,6 s
+        animerDes: function() {
+          if (this.sonActif) { Sons.jouer('des'); vibrer([25, 35, 25, 45, 20, 70, 15]); }
+          clearInterval(this._timerDes);
+          this.desRoulent = true;
+          var debut = Date.now();
+          this._timerDes = setInterval(() => {
+            this.desAnim = [1 + Math.floor(Math.random() * 6), 1 + Math.floor(Math.random() * 6)];
+            if (Date.now() - debut > 600) { clearInterval(this._timerDes); this.desRoulent = false; }
+          }, 70);
+        },
+        basculerSon: function() {
+          this.sonActif = !this.sonActif;
+          if (this.sonActif) { Sons.jouer('zone', true); vibrer(40); }
+          this.afficherMessage(this.sonActif ? '🔊 Sons et vibrations activés.' : '🔇 Sons et vibrations coupés.');
         },
 
         // Choix du niveau (accueil) : en cours de partie, on demande confirmation
