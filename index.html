@@ -137,6 +137,7 @@
     .journal li { padding: 4px 0; border-bottom: 1px solid #f0f2f4; }
     .journal li.sys-msg { color: #6b7a86; }
     .installer .btn { width: 100%; }
+    .reglages .case-a-cocher { font-weight: 500; }
     .solo-btn { width: 100%; margin-bottom: 8px; }
     .solo-btn small { font-weight: 400; color: #6b7a86; }
     .scores .joueur.penalite { background: #fdebd0; color: #8a4b00; }
@@ -572,6 +573,14 @@
         <p class="statut" v-if="connexion !== 'aucune'">{{ status }}</p>
       </template>
 
+      <!-- Réglages -->
+      <section class="carte reglages">
+        <div class="titre-carte">Réglages</div>
+        <label class="case-a-cocher"><input type="checkbox" v-model="sonActif"> 🔊 Sons et vibrations</label>
+        <label class="case-a-cocher" v-if="voixSupportee"><input type="checkbox" v-model="voixActive"> 🗣️ Annoncer qui doit lancer (en salon)</label>
+        <label class="case-a-cocher" v-if="veilleSupportee"><input type="checkbox" v-model="garderEcran"> ☀️ Garder l'écran allumé pendant la partie</label>
+      </section>
+
       <!-- Installation comme une application -->
       <section class="carte installer" v-if="!estInstallee && (installPossible || estIOS)">
         <div class="titre-carte">📲 Installer l'application</div>
@@ -927,7 +936,7 @@
     function lireLigne(ligne) { return ligne.trim().split(/\s+/); }
 
     // Numéro de version affiché sur l'accueil (à augmenter à chaque mise en ligne)
-    const VERSION = '1.01 beta';
+    const VERSION = '1.02 beta';
 
     // ================== SONS ET VIBRATIONS ==================
     // Les sons sont fabriqués par le code (Web Audio API) : aucun fichier à charger.
@@ -1010,6 +1019,30 @@
         this[nom](ctx, master, ctx.currentTime + 0.02, arg);
       }
     };
+    // ================== ANNONCE VOCALE ==================
+    // Synthèse vocale intégrée au navigateur (Web Speech API) : utilise la voix du téléphone.
+    const Voix = {
+      supportee: 'speechSynthesis' in window && 'SpeechSynthesisUtterance' in window,
+      debloquee: false,
+      // iPhone : la voix ne peut démarrer qu'après un toucher -> on "amorce" avec une phrase vide
+      debloquer: function() {
+        if (!this.supportee || this.debloquee) return;
+        try { speechSynthesis.speak(new SpeechSynthesisUtterance('')); this.debloquee = true; } catch (e) {}
+      },
+      dire: function(texte) {
+        if (!this.supportee) return;
+        try {
+          speechSynthesis.cancel(); // on coupe l'annonce précédente si elle n'est pas finie
+          var phrase = new SpeechSynthesisUtterance(texte);
+          phrase.lang = 'fr-FR';
+          var fr = speechSynthesis.getVoices().find(v => /^fr(-|_|$)/i.test(v.lang));
+          if (fr) phrase.voice = fr;
+          phrase.rate = 1.05;
+          speechSynthesis.speak(phrase);
+        } catch (e) {}
+      }
+    };
+
     // Vibration : Android uniquement (iPhone ne la propose pas aux pages web)
     function vibrer(motif) {
       try { if (navigator.vibrate) navigator.vibrate(motif); } catch (e) {}
@@ -1065,6 +1098,8 @@
         joueursEnAttente: [],    // pseudos qui attendent la prochaine partie
         rejoindreAuto: lireStockage('brillant-rejoindre-auto') !== false,
         sonActif: lireStockage('brillant-son') !== false,  // sons + vibrations (oui par défaut)
+        voixSupportee: Voix.supportee,
+        voixActive: lireStockage('brillant-voix') !== false, // annonce vocale de qui doit lancer (oui par défaut)
         desRoulent: false,       // animation des dés en cours
         desAnim: [1, 1],         // valeurs affichées pendant l'animation
         veilleSupportee: 'wakeLock' in navigator,
@@ -1107,7 +1142,7 @@
       },
       created: function() {
         // L'audio ne peut démarrer qu'après un geste : chaque toucher le (re)débloque si besoin
-        document.addEventListener('pointerdown', function () { if (Sons.ctx === null || Sons.ctx.state !== 'running') Sons.obtenir(); }, true);
+        document.addEventListener('pointerdown', function () { if (Sons.ctx === null || Sons.ctx.state !== 'running') Sons.obtenir(); Voix.debloquer(); }, true);
         // Android/Chrome : on garde la proposition d'installation pour notre bouton
         window.addEventListener('beforeinstallprompt', (e) => {
           e.preventDefault();
@@ -1154,6 +1189,9 @@
         actif_tab: function() { this.majVeille(); },
         garderEcran: function(v) { ecrireStockage('brillant-garder-ecran', v); this.majVeille(); },
         sonActif: function(v) { ecrireStockage('brillant-son', v); },
+        voixActive: function(v) { ecrireStockage('brillant-voix', v); if (v) Voix.dire('Annonces vocales activées'); },
+        // Quand le prochain lancer devient possible, on annonce qui doit lancer
+        cleAnnonce: function(cle) { if (cle) this.annoncerLanceur(); },
         rejoindreAuto: function(v) { ecrireStockage('brillant-rejoindre-auto', v); },
         // Sauvegarde automatique à chaque changement
         etatSauvegarde: function(val) {
@@ -1262,6 +1300,13 @@
           return this.pseudoInput.trim();
         },
         partieTerminee: function() { return !!this.finPartie; },
+        // Clé unique par lancer à annoncer : non vide seulement quand tout le monde est prêt à lancer
+        cleAnnonce: function() {
+          if (!this.role || this.phase !== 'jeu' || this.finPartie || this.enAttentePartie) return '';
+          if (this.connexion !== 'ok' || this.enAttente.length) return '';
+          if (this.lancerId > 0 && this.lancerResolu !== this.lancerId) return '';
+          return this.partieId + ':' + this.lancerId + ':' + (this.prochainLanceur || '*');
+        },
         modeSolo: function() { return !this.role; },
         soloScore: function() {
           return Object.keys(this.mesGains).reduce((t, z) => t + this.niveau.zones[z].gains[this.mesGains[z]], 0);
@@ -2242,6 +2287,20 @@
             this.desAnim = [1 + Math.floor(Math.random() * 6), 1 + Math.floor(Math.random() * 6)];
             if (Date.now() - debut > 600) { clearInterval(this._timerDes); this.desRoulent = false; }
           }, 70);
+        },
+        annoncerLanceur: function() {
+          if (!this.voixActive || !this.voixSupportee) return;
+          var cle = this.cleAnnonce;
+          if (!cle || this._derniereAnnonce === cle) return; // une seule annonce par lancer
+          this._derniereAnnonce = cle;
+          var nom = this.prochainLanceur, moi = this.monPseudoAffiche, texte;
+          if (!nom) texte = 'Tout le monde est prêt. Lancez les dés !';
+          else if (this.prochainAbsent) texte = nom + ' est absent. N\'importe qui peut lancer.';
+          else if (nom === moi) texte = nom + ', à toi de lancer !';
+          else texte = 'À ' + nom + ' de lancer.';
+          // petit délai : on laisse finir le son des dés ou de la zone complétée
+          clearTimeout(this._timerVoix);
+          this._timerVoix = setTimeout(() => { if (this.cleAnnonce === cle) Voix.dire(texte); }, 700);
         },
         basculerSon: function() {
           this.sonActif = !this.sonActif;
