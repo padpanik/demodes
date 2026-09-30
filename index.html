@@ -137,6 +137,13 @@
     .journal li { padding: 4px 0; border-bottom: 1px solid #f0f2f4; }
     .journal li.sys-msg { color: #6b7a86; }
     .installer .btn { width: 100%; }
+    .solo-btn { width: 100%; margin-bottom: 8px; }
+    .solo-btn small { font-weight: 400; color: #6b7a86; }
+    .scores .joueur.penalite { background: #fdebd0; color: #8a4b00; }
+    .depart-panel.penalite-panel { background: #fdecea; border-color: #f2b8b0; display: flex; align-items: center; justify-content: space-between; gap: 8px; text-align: left; }
+    .penalite-panel button { flex-shrink: 0; }
+    .score-solo { font-size: 2.6em; font-weight: 800; margin: 4px 0; }
+    .score-solo small { font-size: 0.35em; font-weight: 600; color: #6b7a86; }
     .version { text-align: center; color: #a3adb5; font-size: 0.78rem; margin: 6px 0 4px; }
 
     .grid-app {
@@ -480,7 +487,7 @@
         </button>
         <span v-if="role" class="point-co" :class="{ attente: connexion !== 'ok' }" :title="connexionTexte"></span>
         <span class="niveau">Niv. {{ level }}</span>
-        <span class="objectif" v-if="scoresListe.length">🎯 {{ seuil }}</span>
+        <span class="objectif" v-if="role && scoresListe.length">🎯 {{ seuil }}</span>
       </div>
     </div>
 
@@ -559,6 +566,9 @@
           <button class="btn principal" @click="creerPartie()">Créer la partie</button>
           <button class="btn" @click="rejoindrePartie()">Rejoindre</button>
         </div>
+        <button class="btn solo-btn" @click="demarrerSolo">🧩 Jouer seul
+          <small v-if="recordNiveau">· record niveau {{ level }} : {{ recordNiveau }} pts</small>
+        </button>
         <p class="statut" v-if="connexion !== 'aucune'">{{ status }}</p>
       </template>
 
@@ -577,23 +587,35 @@
         </ul>
       </details>
 
-      <p class="version">Brilliant en ligne · version {{  }}</p>
+      <p class="version">Brilliant en ligne · version {{ version }}</p>
     </div>
 
     <!-- FIN DE PARTIE -->
     <div v-if="finPartie && !finMasquee" class="fin-backdrop">
       <div class="fin-box">
-        <h2>🏆 {{ finPartie.gagnants.length > 1 ? 'Égalité !' : 'Victoire !' }}</h2>
-        <div>
-          <strong>{{ finPartie.gagnants.join(' et ') }}</strong>
-          {{ finPartie.gagnants.length > 1 ? 'se partagent la victoire' : 'remporte la partie' }}
-          (objectif {{ finPartie.seuil }} pts)
-        </div>
-        <ol>
-          <li v-for="j in scoresListe" :key="j.pseudo">{{ j.pseudo }} : <strong>{{ j.points }}</strong> pts</li>
-        </ol>
+        <template v-if="finPartie.solo">
+          <h2>{{ finPartie.nouveauRecord ? '🏆 Nouveau record !' : '🧩 Partie solo terminée' }}</h2>
+          <div class="score-solo">{{ finPartie.score }} <small>points</small></div>
+          <div class="sys-msg" style="margin-bottom:10px">
+            Niveau {{ level }} ·
+            <template v-if="finPartie.nouveauRecord && finPartie.ancienRecord">ancien record : {{ finPartie.ancienRecord }} pts</template>
+            <template v-else-if="!finPartie.nouveauRecord">record : {{ finPartie.record }} pts</template>
+            <template v-else>premier record sur ce niveau</template>
+          </div>
+        </template>
+        <template v-else>
+          <h2>🏆 {{ finPartie.gagnants.length > 1 ? 'Égalité !' : 'Victoire !' }}</h2>
+          <div>
+            <strong>{{ finPartie.gagnants.join(' et ') }}</strong>
+            {{ finPartie.gagnants.length > 1 ? 'se partagent la victoire' : 'remporte la partie' }}
+            (objectif {{ finPartie.seuil }} pts)
+          </div>
+          <ol>
+            <li v-for="j in scoresListe" :key="j.pseudo">{{ j.pseudo }} : <strong>{{ j.points }}</strong> pts</li>
+          </ol>
+        </template>
         <button @click="masquerFin">Voir ma grille</button>
-        <button class="principal" v-if="role !== 'client'" @click="nouvellePartie">Nouvelle partie</button>
+        <button class="principal" v-if="role !== 'client'" @click="nouvellePartie">{{ finPartie.solo ? 'Rejouer' : 'Nouvelle partie' }}</button>
         <div v-else class="sys-msg" style="margin-top:6px">L'hôte peut lancer une nouvelle partie.</div>
       </div>
     </div>
@@ -614,12 +636,19 @@
 
       <!-- Scores (piste de score) -->
       <!-- Ligne compacte : niveau, scores et objectif -->
-      <div class="scores" v-if="scoresListe.length">
+      <div class="scores solo-ligne" v-if="modeSolo">
+        <span class="joueur moi"><strong>{{ soloScore }}</strong> pts</span>
+        <span class="joueur">🎲 <strong>{{ soloTraits }}</strong>/{{ soloLancersTotal }}</span>
+        <span class="joueur penalite" v-if="soloProchainePenalite" title="Prochaine case Solo">⚠ au {{ soloProchainePenalite }}<sup>e</sup></span>
+        <span class="joueur" v-if="recordNiveau">🏆 {{ recordNiveau }}</span>
+      </div>
+      <div class="jauge" v-if="modeSolo"><div :style="{ width: (soloTraits / soloLancersTotal * 100) + '%' }"></div></div>
+      <div class="scores" v-if="!modeSolo && scoresListe.length">
         <span v-for="j in scoresListe" :key="j.pseudo" class="joueur" :class="{ moi: j.moi, absent: j.absent }">
           {{ j.pseudo }} <strong>{{ j.points }}</strong>
         </span>
       </div>
-      <div class="jauge" v-if="scoresListe.length"><div :style="{ width: Math.min(100, monScore / seuil * 100) + '%' }"></div></div>
+      <div class="jauge" v-if="!modeSolo && scoresListe.length"><div :style="{ width: Math.min(100, monScore / seuil * 100) + '%' }"></div></div>
 
       <!-- Bandeau des zones : règle + gains, comme les cases Décompte de la fiche -->
       <div class="zones-strip">
@@ -635,6 +664,14 @@
           <span class="sym">{{ z.symbole }}</span>
           <span class="gains"><span v-for="(g, i) in z.gains" :key="i" :class="classeGain(z.id, i)">{{ g }}</span></span>
         </div>
+      </div>
+
+      <!-- Solo : pénalité à choisir -->
+      <div v-if="modeSolo && soloPenalite" class="depart-panel penalite-panel">
+        <span>⚠ <strong>Case Solo</strong> : barre le plus gros gain d'une zone</span>
+        <button class="principal" @click="appliquerPenaliteSolo" :disabled="!soloPenaliteChoix">
+          {{ soloPenaliteChoix ? 'Barrer le ' + soloPenaliteChoix.gain : 'Touche une zone' }}
+        </button>
       </div>
 
       <!-- Phase de départ : 1 à 6 dans 6 zones différentes -->
@@ -710,6 +747,9 @@
         <div class="statut-tour">
           <span v-if="partieTerminee">Partie terminée.</span>
           <span v-else-if="attenteTexte" class="attente">{{ attenteTexte }}</span>
+          <span v-else-if="modeSolo && phase === 'jeu'">
+            {{ soloLancersTotal - soloTraits }} lancer{{ soloLancersTotal - soloTraits > 1 ? 's' : '' }} restant{{ soloLancersTotal - soloTraits > 1 ? 's' : '' }}
+          </span>
           <template v-else-if="role && prochainLanceur">
             <template v-if="prochainAbsent">🎲 {{ prochainLanceur }} est absent : n'importe qui peut lancer</template>
             <template v-else>🎲 À <strong>{{ prochainLanceur === monPseudoAffiche ? 'toi' : prochainLanceur }}</strong> de lancer</template>
@@ -875,11 +915,19 @@
       return 26;
     }
 
+    // ----- Variante solo (livret p. 15) -----
+    // La piste de score sert de compteur : un trait par lancer, 2 traits par case, fin après la 22e case.
+    // Au 2e trait d'une case portant le symbole Solo, on barre le plus gros gain d'une zone au choix.
+    const SOLO_CASES_TOTAL = 22;
+    const SOLO_LANCERS = SOLO_CASES_TOTAL * 2;                  // 44 lancers
+    const SOLO_CASES_PENALITE = [9, 12, 14, 16, 18, 20, 22];      // cases marquées du symbole Solo
+    const SOLO_LANCERS_PENALITE = SOLO_CASES_PENALITE.map(c => c * 2); // 18, 24, 28, 32, 36, 40, 44
+
     // Transforme 'J  V1 B1' en ['J','V1','B1']
     function lireLigne(ligne) { return ligne.trim().split(/\s+/); }
 
     // Numéro de version affiché sur l'accueil (à augmenter à chaque mise en ligne)
-    const VERSION = '1.00 beta';
+    const VERSION = '1.01 beta';
 
     // ================== SONS ET VIBRATIONS ==================
     // Les sons sont fabriqués par le code (Web Audio API) : aucun fichier à charger.
@@ -1008,6 +1056,9 @@
       data: {
         actif_tab: 'config',
         version: VERSION,
+        soloTraits: 0,           // solo : nombre de lancers déjà faits (traits sur la piste)
+        soloPenalite: false,     // solo : une zone doit être pénalisée avant le prochain lancer
+        records: lireStockage('brillant-records') || {},  // solo : meilleur score par niveau
         enAttentePartie: false,  // arrivé pendant une partie : on attend la suivante
         partieDisponible: false, // une nouvelle partie commence (si pas de rejoindre auto)
         infoAttente: '',         // ex. "Niveau 2, 12 lancers joués."
@@ -1187,6 +1238,7 @@
         coupsPossibles: function() {
           var res = {};
           if (this.phase !== 'jeu' || this.aJoue || this.dice1 === null) return res;
+          if (!this.role && this.soloPenalite) return res; // solo : pénalité à régler avant de jouer
           var paires = [[this.dice1, this.dice2], [this.dice2, this.dice1]];
           Object.keys(this.cellsData).forEach(key => {
             var c = this.cellsData[key];
@@ -1210,6 +1262,25 @@
           return this.pseudoInput.trim();
         },
         partieTerminee: function() { return !!this.finPartie; },
+        modeSolo: function() { return !this.role; },
+        soloScore: function() {
+          return Object.keys(this.mesGains).reduce((t, z) => t + this.niveau.zones[z].gains[this.mesGains[z]], 0);
+        },
+        soloProchainePenalite: function() {
+          return SOLO_LANCERS_PENALITE.find(n => n > this.soloTraits) || null;
+        },
+        soloLancersTotal: function() { return SOLO_LANCERS; },
+        // Zones qu'on peut pénaliser : pas encore complétées, et dont le 1er ou 2e gain est encore libre
+        soloZonesPenalisables: function() {
+          return Object.keys(this.niveau.zones).filter(z =>
+            this.mesGains[z] === undefined && !this.zoneEstPleine(z) && (this.prisIndex[z] || 0) < 2);
+        },
+        soloPenaliteChoix: function() {
+          var z = this.zoneSurlignee;
+          if (!z || this.soloZonesPenalisables.indexOf(z) === -1) return null;
+          return { zone: z, gain: this.niveau.zones[z].gains[this.prisIndex[z] || 0], nom: this.nomZone(z) };
+        },
+        recordNiveau: function() { return this.records[this.level] || 0; },
         connexionTexte: function() {
           return this.connexion === 'ok' ? 'en ligne' : 'reconnexion…';
         },
@@ -1240,6 +1311,7 @@
             scores: this.scores, prisIndex: this.prisIndex, lancerResolu: this.lancerResolu,
             prochainLanceur: this.prochainLanceur, finPartie: this.finPartie, finMasquee: this.finMasquee,
             enAttentePartie: this.enAttentePartie, infoAttente: this.infoAttente,
+            soloTraits: this.soloTraits, soloPenalite: this.soloPenalite,
             joueurs: this.joueurs, historique: this.historique.slice(-80),
             // "salle" n'est pas réactive, mais elle change toujours en même temps que "joueurs"
             salle: this.role === 'hote' ? salle : null
@@ -1267,14 +1339,15 @@
         },
         peutLancerLocal: function() {
           if (this.phase !== 'jeu' || this.finPartie) return false;
-          if (!this.role) return this.aJoue; // solo : il faut avoir joué (ou passé)
+          if (!this.role) return this.aJoue && !this.soloPenalite && this.soloTraits < SOLO_LANCERS; // solo
           if (this.connexion !== 'ok') return false;
           if (this.prochainLanceur && this.prochainLanceur !== this.monPseudoAffiche && !this.prochainAbsent) return false;
           return this.enAttente.length === 0;
         },
         aideGenerale: function() {
           if (this.phase === 'depart') return 'Touche une case pour y placer un chiffre de départ.';
-          if (this.dice1 === null) return 'Lance les dés pour commencer.';
+          if (this.dice1 === null) return this.modeSolo ? 'Partie solo : ' + SOLO_LANCERS + ' lancers pour marquer un maximum de points.'
+                                                        : 'Lance les dés pour commencer.';
           if (this.aucunCoup) return 'Aucun coup possible avec ce lancer : passe ton tour.';
           if (!this.aJoue) return 'Place un ' + this.dice1 + ' à côté d\'un ' + this.dice2 +
             (this.dice1 !== this.dice2 ? ', ou un ' + this.dice2 + ' à côté d\'un ' + this.dice1 : '') +
@@ -1361,6 +1434,8 @@
           this.lancerResolu = 0;
           this.finPartie = null;
           this.finMasquee = false;
+          this.soloTraits = 0;
+          this.soloPenalite = false;
           this.signalerPret(false);
         },
 
@@ -1530,9 +1605,20 @@
           });
 
           // Fin de partie : quelqu'un atteint le seuil ; le plus haut score gagne (égalité partagée)
+          // En solo : pas de seuil, la partie s'arrête après le dernier lancer (44e)
           var seuil = seuilPour(participants.length);
           var fin = null;
-          var atteints = Object.keys(scores).filter(p => scores[p] >= seuil);
+          var atteints = this.modeSolo ? [] : Object.keys(scores).filter(p => scores[p] >= seuil);
+          if (this.modeSolo && this.soloTraits >= SOLO_LANCERS) {
+            var score = scores[moi] || 0;
+            var ancien = this.records[this.level] || 0;
+            fin = { solo: true, gagnants: [moi], score: score, record: Math.max(ancien, score),
+                    nouveauRecord: score > ancien, ancienRecord: ancien };
+            if (score > ancien) {
+              this.$set(this.records, this.level, score);
+              ecrireStockage('brillant-records', this.records);
+            }
+          }
           if (atteints.length) {
             var max = Math.max.apply(null, atteints.map(p => scores[p]));
             fin = { gagnants: atteints.filter(p => scores[p] === max), seuil: seuil };
@@ -1572,7 +1658,8 @@
             if (this.sonActif) { Sons.jouer('victoire'); vibrer([100, 60, 100, 60, 250]); }
             this.finPartie = data.fin;
             this.finMasquee = false;
-            this.ajouterLog(`Fin de partie : ${data.fin.gagnants.join(' et ')} gagne(nt).`, true);
+            this.ajouterLog(data.fin.solo ? `Partie solo terminée : ${data.fin.score} points.`
+                                          : `Fin de partie : ${data.fin.gagnants.join(' et ')} gagne(nt).`, true);
           }
         },
         masquerFin: function() { this.finMasquee = true; },
@@ -1586,6 +1673,32 @@
             this.majJoueurs();
             this.ajouterLog('Nouvelle partie !', true);
           }
+        },
+
+        // ---------- Variante solo ----------
+        demarrerSolo: function() {
+          var enCours = this.phase === 'jeu' || Object.values(this.cellsData).some(c => c.label);
+          if (enCours && !this.finPartie && !confirm('Recommencer une partie solo ? Ta grille actuelle sera effacée.')) return;
+          monPseudo = this.pseudoInput.trim() || 'Moi';
+          this.buildGrid();
+          this.actif_tab = 'play';
+          this.ajouterLog(`Nouvelle partie solo, niveau ${this.level}.`, true);
+        },
+        // Appelé à chaque lancer solo : un trait sur la piste, et peut-être une pénalité
+        soloApresLancer: function() {
+          this.soloTraits++;
+          if (SOLO_LANCERS_PENALITE.indexOf(this.soloTraits) !== -1 && this.soloZonesPenalisables.length) {
+            this.soloPenalite = true;
+            if (this.sonActif) vibrer([40, 40, 40]);
+          }
+        },
+        appliquerPenaliteSolo: function() {
+          var choix = this.soloPenaliteChoix;
+          if (!choix) return;
+          this.$set(this.prisIndex, choix.zone, (this.prisIndex[choix.zone] || 0) + 1);
+          this.soloPenalite = false;
+          this.zoneSurlignee = null;
+          this.ajouterLog(`Pénalité solo : le ${choix.gain} de la ${choix.nom} est barré.`, true);
         },
 
         basculerZone: function(id) {
@@ -2083,7 +2196,7 @@
               this.cellsData[k].depart = !!sv.cells[k][1];
             }
           });
-          ['enAttentePartie', 'infoAttente', 'partieId', 'phase', 'lancerId', 'aJoue', 'dernierCoup', 'mesCompletions', 'mesGains',
+          ['soloTraits', 'soloPenalite', 'enAttentePartie', 'infoAttente', 'partieId', 'phase', 'lancerId', 'aJoue', 'dernierCoup', 'mesCompletions', 'mesGains',
            'dice1', 'dice2', 'last_player', 'scores', 'prisIndex', 'lancerResolu', 'prochainLanceur',
            'finPartie', 'finMasquee', 'joueurs', 'historique'].forEach(cle => {
             if (sv[cle] !== undefined) this[cle] = sv[cle];
@@ -2229,6 +2342,8 @@
             }
           } else {
             this.zoneSurlignee = cell.zone;
+            // Solo : la pénalité se choisit avant d'inscrire son chiffre (toucher une case choisit sa zone)
+            if (this.modeSolo && this.soloPenalite) return;
             // Case déjà remplie, pas de lancer, ou coup déjà joué : on montre juste la zone
             if (data.label) return;
             if (this.dice1 === null) return this.afficherMessage('Attends le premier lancer de dés.');
@@ -2278,8 +2393,11 @@
           if (!this.role) {
             // Hors ligne (solo) : on lance localement
             if (!this.aJoue) return this.afficherMessage('Joue ou passe avant de relancer.');
+            if (this.soloPenalite) return this.afficherMessage('Choisis d\'abord la zone à pénaliser.');
+            if (this.soloTraits >= SOLO_LANCERS) return this.afficherMessage('Les ' + SOLO_LANCERS + ' lancers sont joués.');
             monPseudo = this.pseudoInput.trim() || 'Moi';
-            return this.traiterLancer(monPseudo);
+            this.traiterLancer(monPseudo);
+            return this.soloApresLancer();
           }
           if (this.finPartie) return this.afficherMessage('La partie est terminée.');
           if (isHost) {
