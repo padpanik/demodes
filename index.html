@@ -38,7 +38,7 @@
       padding: 3px;
     }
     #menu div {
-      padding: 6px 13px;
+      padding: 6px 11px;
       border-radius: 8px;
       font-weight: 600;
       font-size: 0.95em;
@@ -47,12 +47,12 @@
       user-select: none;
     }
     #menu div.actif { background: #fff; color: #1d2b36; box-shadow: 0 1px 3px rgba(0,0,0,0.12); }
-    .barre-infos { display: flex; align-items: center; gap: 4px; font-size: 0.9em; }
+    .barre-infos { display: flex; align-items: center; gap: 3px; font-size: 0.9em; white-space: nowrap; }
     .barre-infos .niveau { border: 1.5px solid #2c3e50; border-radius: 12px; padding: 1px 8px; font-weight: bold; }
     .barre-infos .objectif { color: #8a5a00; font-weight: bold; }
     .btn-veille {
       border: none; background: transparent; font-size: 1.05em; line-height: 1;
-      padding: 3px 4px; border-radius: 8px; cursor: pointer;
+      padding: 3px 2px; border-radius: 8px; cursor: pointer;
     }
     .btn-veille.off { opacity: 0.45; }
     .btn-veille.actif { background: #fff5d6; }
@@ -170,14 +170,15 @@
     .sys-msg { font-style: italic; color: #666; font-size: 0.85em; }
 
     /* ---------- Bandeau des zones (remplace les cases Décompte) ---------- */
+    /* Toutes les zones visibles d'un coup : retour à la ligne (2 lignes max), centré, sans défilement */
     .zones-strip {
       width: 100%;
       display: flex;
-      gap: 5px;
-      overflow-x: auto;
-      padding: 1px 1px 15px;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 4px;
+      padding: 4px 0 6px;
       box-sizing: border-box;
-      -webkit-overflow-scrolling: touch;
     }
     .zone-chip {
       flex-shrink: 0;
@@ -185,8 +186,8 @@
       flex-direction: column;
       align-items: center;
       position: relative;
-      gap: 3px;
-      padding: 4px 6px 5px;
+      gap: 1px;
+      padding: 3px 4px 4px;
       border: 2px solid transparent;
       border-radius: 8px;
       color: #1d2b36;
@@ -199,9 +200,9 @@
        - disponible : chiffre sur fond blanc translucide
        - pris par moi : pastille foncée (comme un gain entouré sur la fiche)
        - pris par un autre : chiffre pâle barré en diagonale (comme un gain barré sur la fiche) */
-    .zone-chip .gains { display: flex; gap: 2px; }
+    .zone-chip .gains { display: flex; gap: 1px; }
     .zone-chip .gains span {
-      width: 15px; height: 15px; line-height: 15px; text-align: center;
+      width: 14px; height: 14px; line-height: 14px; text-align: center;
       border-radius: 4px; font-size: 10px; font-weight: 700;
       background: rgba(255,255,255,0.55); color: #1d2b36;
     }
@@ -213,10 +214,12 @@
     }
     /* Zone que j'ai complétée : petite coche dans le coin, la pastille reste lisible */
     .zone-chip .coche {
-      position: absolute; top: 2px; right: 2px;
-      width: 11px; height: 11px; line-height: 11px; border-radius: 50%;
+      position: absolute; top: -5px; right: -5px; z-index: 1;
+      width: 12px; height: 12px; line-height: 12px; border-radius: 50%;
       background: #1d2b36; color: #fff; font-size: 8px; text-align: center;
+      box-shadow: 0 0 0 1.5px #f3f5f7;
     }
+    .zone-chip .sym-mini { font-size: 9px; line-height: 1; }
 
     /* ---------- Scores ---------- */
     .scores {
@@ -670,7 +673,7 @@
           @click="basculerZone(z.id)"
         >
           <span v-if="z.rempli === z.total" class="coche">✓</span>
-          <span class="sym">{{ z.symbole }}</span>
+          <span v-if="z.ambigu" class="sym-mini">{{ z.symbole }}</span>
           <span class="gains"><span v-for="(g, i) in z.gains" :key="i" :class="classeGain(z.id, i)">{{ g }}</span></span>
         </div>
       </div>
@@ -936,7 +939,7 @@
     function lireLigne(ligne) { return ligne.trim().split(/\s+/); }
 
     // Numéro de version affiché sur l'accueil (à augmenter à chaque mise en ligne)
-    const VERSION = '1.03 beta';
+    const VERSION = '1.04 beta';
 
     // ================== SONS ET VIBRATIONS ==================
     // Les sons sont fabriqués par le code (Web Audio API) : aucun fichier à charger.
@@ -1082,7 +1085,8 @@
     //   attente : pseudo -> clientId des joueurs arrivés pendant une partie
     let salle = { ordre: [], infos: {}, gains: {}, attente: {} };
 
-    const DELAI_SILENCE = 15000; // sans nouvelles depuis 15 s -> connexion considérée perdue
+    const DELAI_SILENCE = 15000;
+    const DELAI_ANNONCE = 5000;  // annonce vocale "à toi de lancer" si le joueur n'a pas lancé après 5 s // sans nouvelles depuis 15 s -> connexion considérée perdue
 
     new Vue({
       el: '#app',
@@ -1242,6 +1246,7 @@
               color: PALETTE[id[0]],
               symbole: REGLES[z.regle].symbole,
               gains: z.gains,
+              ambigu: Object.keys(self.niveau.zones).some(a => a !== id && a[0] === id[0] && self.niveau.zones[a].regle !== z.regle),
               total: cases.length,
               rempli: cases.filter(function(c) { return c.label; }).length
             };
@@ -2303,9 +2308,10 @@
             if (this.role !== 'hote') return;
             texte = nom ? nom + ' est absent. N\'importe qui peut lancer.' : 'Tout le monde est prêt. Lancez les dés !';
           }
-          // petit délai : on laisse finir le son des dés ou de la zone complétée
+          // Rappel seulement si personne n'a lancé au bout de 5 s : la clé change dès qu'un lancer a lieu,
+          // et l'annonce est alors abandonnée (pas de bavardage quand le joueur est attentif).
           clearTimeout(this._timerVoix);
-          this._timerVoix = setTimeout(() => { if (this.cleAnnonce === cle) Voix.dire(texte); }, 700);
+          this._timerVoix = setTimeout(() => { if (this.cleAnnonce === cle) Voix.dire(texte); }, DELAI_ANNONCE);
         },
         basculerSon: function() {
           this.sonActif = !this.sonActif;
