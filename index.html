@@ -4,6 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Brilliant en ligne</title>
+  <!-- Page privée entre amis : on demande aux moteurs de recherche de ne pas la référencer -->
+  <meta name="robots" content="noindex, nofollow, noarchive">
 
   <!-- Application installable (PWA) -->
   <link rel="manifest" href="manifest.webmanifest">
@@ -946,7 +948,7 @@
     function lireLigne(ligne) { return ligne.trim().split(/\s+/); }
 
     // Numéro de version affiché sur l'accueil (à augmenter à chaque mise en ligne)
-    const VERSION = '1.05 beta';
+    const VERSION = '1.06 beta';
 
     // ================== SONS ET VIBRATIONS ==================
     // Les sons sont fabriqués par le code (Web Audio API) : aucun fichier à charger.
