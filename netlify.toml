@@ -1,0 +1,17 @@
+# Configuration Netlify (sans effet sur GitHub Pages)
+# Site statique : aucun build, les fichiers à publier sont à la racine du dépôt.
+[build]
+  publish = "."
+  command = ""
+
+# Application privée entre amis : on demande aux robots de ne rien référencer
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Robots-Tag = "noindex, nofollow, noarchive"
+
+# Le service worker doit toujours être revérifié, pour que les mises à jour arrivent vite
+[[headers]]
+  for = "/sw.js"
+  [headers.values]
+    Cache-Control = "no-cache"
