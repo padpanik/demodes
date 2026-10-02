@@ -62,6 +62,21 @@
     .barre-infos .point-co.attente { background: #f0a030; animation: clignote 1s infinite; }
     @keyframes clignote { 50% { opacity: 0.3; } }
 
+    /* ---------- Accès privé ---------- */
+    .acces { width: 100%; max-width: 340px; margin: 12vh auto 0; text-align: center; }
+    .acces .logo { margin: 0 auto 18px; width: max-content; }
+    .acces h1 { margin: 0 0 6px; font-size: 1.6em; }
+    .acces p { color: #6b7a86; font-size: 0.95em; line-height: 1.4; margin: 0 0 18px; }
+    .acces input {
+      display: block; width: 100%; box-sizing: border-box; margin-bottom: 10px;
+      padding: 13px 12px; font-size: 1.1rem; text-align: center; color: #1d2b36;
+      border: 1.5px solid #dde3e8; border-radius: 12px; background: #fff; outline: none;
+    }
+    .acces input:focus { border-color: #3b82c4; }
+    .acces .btn { width: 100%; }
+    .acces .btn:disabled { opacity: 0.5; }
+    .acces .acces-erreur { color: #c0392b; font-weight: 600; margin-top: 12px; }
+
     /* ---------- Accueil ---------- */
     #config { width: 100%; }
     .hero { display: flex; align-items: center; gap: 14px; padding: 10px 4px 16px; }
@@ -483,6 +498,20 @@
 
   <div id="app" class="grid-app">
 
+    <!-- ACCÈS PRIVÉ : écran affiché tant que le code n'a pas été saisi sur ce téléphone -->
+    <div v-if="!accesOk" class="acces">
+      <div class="logo"><span v-for="c in logoCouleurs" :key="c" :style="{ background: c }"></span></div>
+      <h1>Accès privé</h1>
+      <p>Cette application est réservée à un cercle d'amis.<br>Saisis le code qu'on t'a donné.</p>
+      <form @submit.prevent="validerAcces">
+        <input type="password" v-model="codeSaisi" placeholder="Code d'accès" autocomplete="off" autocapitalize="none" :disabled="accesEnCours">
+        <button class="btn principal" type="submit" :disabled="accesEnCours || !codeSaisi.trim()">{{ accesEnCours ? 'Vérification…' : 'Entrer' }}</button>
+      </form>
+      <p class="acces-erreur" v-if="accesErreur">{{ accesErreur }}</p>
+    </div>
+
+    <template v-else>
+
     <!-- MENU -->
     <div class="barre">
       <div id="menu">
@@ -780,6 +809,7 @@
       </div>
     </div>
 
+    </template>
   </div>
 
   <script>
@@ -948,7 +978,53 @@
     function lireLigne(ligne) { return ligne.trim().split(/\s+/); }
 
     // Numéro de version affiché sur l'accueil (à augmenter à chaque mise en ligne)
-    const VERSION = '1.06 beta';
+    const VERSION = '1.07 beta';
+
+    // ================== ACCÈS PRIVÉ ==================
+    // Application réservée à un cercle d'amis : un code est demandé au premier lancement.
+    // - Le code n'est écrit nulle part ici : seule son empreinte (PBKDF2-SHA256) permet de le vérifier.
+    // - Le même calcul produit une "clé de salon", absente de ce fichier, qui est mélangée à
+    //   l'identifiant réseau des salons : sans le bon code, impossible de rejoindre une partie.
+    const ACCES = {
+      SEL: 'demodes-acces-v1',
+      ITERATIONS: 150000,
+      EMPREINTE: 'bbd3d13a58946514832f78fffb2f2429d7b39475716ee09fc8ff0687543615e4',
+      CLE_STOCKAGE: 'brillant-acces',
+      cleSalon: null,
+      hex: function(octets) { return Array.from(octets).map(b => b.toString(16).padStart(2, '0')).join(''); },
+      // Renvoie { empreinte, cleSalon } pour un code saisi
+      deriver: function(code) {
+        var enc = new TextEncoder();
+        return crypto.subtle.importKey('raw', enc.encode(code.trim().toLowerCase()), 'PBKDF2', false, ['deriveBits'])
+          .then(cle => crypto.subtle.deriveBits(
+            { name: 'PBKDF2', hash: 'SHA-256', salt: enc.encode(this.SEL), iterations: this.ITERATIONS }, cle, 48 * 8))
+          .then(bits => {
+            var o = new Uint8Array(bits);
+            return { empreinte: this.hex(o.slice(0, 32)), cleSalon: this.hex(o.slice(32, 40)) };
+          });
+      },
+      // Accès déjà validé sur ce téléphone ?
+      memorise: function() {
+        var m = lireStockage(this.CLE_STOCKAGE);
+        if (m && m.e === this.EMPREINTE && m.s) { this.cleSalon = m.s; return true; }
+        return false;
+      },
+      valider: function(code) {
+        if (!(window.crypto && crypto.subtle)) return Promise.reject(new Error('navigateur'));
+        return this.deriver(code).then(r => {
+          if (r.empreinte !== this.EMPREINTE) return false;
+          this.cleSalon = r.cleSalon;
+          ecrireStockage(this.CLE_STOCKAGE, { e: r.empreinte, s: r.cleSalon });
+          return true;
+        });
+      },
+      // Identifiant réseau d'un salon : clé privée + nom simplifié (lettres, chiffres, tirets)
+      idSalon: function(nom) {
+        var simple = nom.trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+                        .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'salon';
+        return 'dm-' + this.cleSalon + '-' + simple;
+      }
+    };
 
     // ================== SONS ET VIBRATIONS ==================
     // Les sons sont fabriqués par le code (Web Audio API) : aucun fichier à charger.
@@ -1102,6 +1178,10 @@
       data: {
         actif_tab: 'config',
         version: VERSION,
+        accesOk: false,          // le code d'accès a été validé sur ce téléphone
+        codeSaisi: '',
+        accesErreur: '',
+        accesEnCours: false,
         soloTraits: 0,           // solo : nombre de lancers déjà faits (traits sur la piste)
         soloPenalite: false,     // solo : une zone doit être pénalisée avant le prochain lancer
         records: lireStockage('brillant-records') || {},  // solo : meilleur score par niveau
@@ -1166,7 +1246,8 @@
           this.installPossible = false;
           this.estInstallee = true;
         });
-        this.restaurer();
+        // Sans le code d'accès, on ne restaure rien et on ne se connecte à rien
+        if (ACCES.memorise()) { this.accesOk = true; this.restaurer(); }
         setInterval(() => this.battement(), 4000);
         document.addEventListener('visibilitychange', () => this.auRetourPremierPlan());
         window.addEventListener('online', () => this.auRetourPremierPlan());
@@ -1856,7 +1937,7 @@
 
           monPeer.on('open', () => {
             if (peer !== monPeer) return;
-            var conn = hostConn = monPeer.connect(target, { reliable: true });
+            var conn = hostConn = monPeer.connect(ACCES.idSalon(target), { reliable: true });
 
             // Si l'hôte ne répond pas, on réessaie (ou on abandonne pour une 1re connexion)
             var delaiOuverture = setTimeout(() => {
@@ -2036,17 +2117,18 @@
           if (!reprise && !this.validerPseudo()) return;
 
           var customChannel = reprise ? this.roomCode : this.channelInput.trim();
+          if (!customChannel) customChannel = 'salon-' + nouvelId().slice(0, 4); // nom par défaut
           this.reinitialiserPeer(!!reprise);
           this.connexion = reprise ? 'perdue' : 'connexion';
           this.status = reprise ? 'Statut : Récupération du salon…' : 'Statut : Création du salon...';
-          var monPeer = peer = customChannel ? new Peer(customChannel) : new Peer();
+          var monPeer = peer = new Peer(ACCES.idSalon(customChannel));
 
           monPeer.on('open', (id) => {
             if (peer !== monPeer) return;
             isHost = true;
             this.role = 'hote';
             this.connexion = 'ok';
-            this.roomCode = id;
+            this.roomCode = customChannel; // on affiche le nom choisi, pas l'identifiant réseau
             this.status = `Statut : Hôte (${monPseudo})`;
             if (reprise) {
               this.ajouterLog('Salon récupéré, les joueurs vont se reconnecter.', true);
@@ -2383,6 +2465,22 @@
           this.garderEcran = !this.garderEcran;
           this.afficherMessage(this.garderEcran ? '☀️ L\'écran restera allumé pendant la partie.'
                                                 : '🌙 L\'écran se mettra en veille normalement.');
+        },
+        // ---------- Accès privé ----------
+        validerAcces: function() {
+          if (this.accesEnCours || !this.codeSaisi.trim()) return;
+          this.accesEnCours = true;
+          this.accesErreur = '';
+          ACCES.valider(this.codeSaisi).then(ok => {
+            this.accesEnCours = false;
+            if (!ok) { this.accesErreur = 'Code incorrect.'; return; }
+            this.codeSaisi = '';
+            this.accesOk = true;
+            this.restaurer();
+          }).catch(() => {
+            this.accesEnCours = false;
+            this.accesErreur = 'Ce navigateur ne permet pas de vérifier le code.';
+          });
         },
         installer: function() {
           var invit = this._invitationInstall;

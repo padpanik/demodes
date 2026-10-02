@@ -5,7 +5,7 @@
 //   version mise en ligne sur GitHub est donc visible dès le prochain lancement.
 // Pensez à changer VERSION à chaque mise en ligne (même numéro que dans index.html).
 
-const VERSION = '1.06 beta';
+const VERSION = '1.07 beta';
 const CACHE = 'brilliant-' + VERSION;
 
 const FICHIERS = [
