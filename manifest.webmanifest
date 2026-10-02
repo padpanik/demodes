@@ -1,8 +1,8 @@
 {
   "id": "./",
-  "name": "Brilliant en ligne",
-  "short_name": "Brilliant",
-  "description": "Le roll & write Brilliant à jouer ensemble, chacun sur son téléphone.",
+  "name": "Désdale",
+  "short_name": "Désdale",
+  "description": "Un jeu de dés et de grilles à jouer ensemble, chacun sur son téléphone.",
   "lang": "fr",
   "start_url": "./index.html",
   "scope": "./",

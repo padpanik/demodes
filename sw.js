@@ -1,12 +1,12 @@
-// Service worker de Brilliant en ligne
+// Service worker de Désdale
 // - garde en cache la page, les icônes et les bibliothèques (Vue, PeerJS)
 //   pour que l'application démarre vite, même avec un réseau faible ;
 // - la page elle-même est toujours prise sur le réseau d'abord : une nouvelle
 //   version mise en ligne sur GitHub est donc visible dès le prochain lancement.
 // Pensez à changer VERSION à chaque mise en ligne (même numéro que dans index.html).
 
-const VERSION = '1.07 beta';
-const CACHE = 'brilliant-' + VERSION;
+const VERSION = '1.08 beta';
+const CACHE = 'desdale-' + VERSION;
 
 const FICHIERS = [
   './',
@@ -36,7 +36,7 @@ self.addEventListener('install', event => {
 self.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys()
-      .then(noms => Promise.all(noms.filter(n => n.startsWith('brilliant-') && n !== CACHE).map(n => caches.delete(n))))
+      .then(noms => Promise.all(noms.filter(n => (n.startsWith('desdale-') || n.startsWith('brilliant-')) && n !== CACHE).map(n => caches.delete(n))))
       .then(() => self.clients.claim())
   );
 });

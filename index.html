@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>Brilliant en ligne</title>
+  <title>Désdale</title>
   <!-- Page privée entre amis : on demande aux moteurs de recherche de ne pas la référencer -->
   <meta name="robots" content="noindex, nofollow, noarchive">
 
@@ -15,7 +15,7 @@
   <link rel="apple-touch-icon" href="apple-touch-icon.png">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-title" content="Brilliant">
+  <meta name="apple-mobile-web-app-title" content="Désdale">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
 
   <!-- Version figée de Vue (la même que celle gardée en cache par sw.js) -->
@@ -538,7 +538,7 @@
       <header class="hero">
         <div class="logo"><span v-for="c in logoCouleurs" :key="c" :style="{ background: c }"></span></div>
         <div>
-          <h1>Brilliant</h1>
+          <h1>Désdale</h1>
           <p>Le roll &amp; write à jouer ensemble</p>
         </div>
       </header>
@@ -637,7 +637,7 @@
         </ul>
       </details>
 
-      <p class="version">Brilliant en ligne · version {{ version }}</p>
+      <p class="version">Désdale · version {{ version }}</p>
     </div>
 
     <!-- FIN DE PARTIE -->
@@ -978,7 +978,7 @@
     function lireLigne(ligne) { return ligne.trim().split(/\s+/); }
 
     // Numéro de version affiché sur l'accueil (à augmenter à chaque mise en ligne)
-    const VERSION = '1.07 beta';
+    const VERSION = '1.08 beta';
 
     // ================== ACCÈS PRIVÉ ==================
     // Application réservée à un cercle d'amis : un code est demandé au premier lancement.
