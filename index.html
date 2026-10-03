@@ -138,7 +138,8 @@
     .chips-joueurs { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
     .chip { background: #eef2f5; border-radius: 14px; padding: 4px 10px; font-size: 0.9em; }
     .chip.absent { opacity: 0.5; }
-    .salon-actif .actions-accueil { margin-bottom: 0; }
+    .salon-actif .actions-accueil { margin-bottom: 0; gap: 6px; }
+    .salon-actif .actions-accueil .btn { padding: 13px 4px; white-space: nowrap; font-size: 0.95rem; }
     .attente-partie {
       background: #fff8e1; border: 1px solid #f0d98c; border-radius: 12px;
       padding: 10px 12px; margin-bottom: 12px; font-size: 0.9em; line-height: 1.4;
@@ -276,6 +277,21 @@
     }
     .fin-box h2 { margin: 0 0 6px; }
     .fin-box ol { text-align: left; margin: 12px auto; max-width: 240px; }
+    /* ---------- Top 10 solo ---------- */
+    .top-onglets { display: flex; gap: 4px; background: #e3e8ec; border-radius: 10px; padding: 3px; margin: 10px 0; }
+    .fin-box .top-onglets button {
+      flex: 1; margin: 0; padding: 6px 0; border: none; border-radius: 8px; background: transparent;
+      font-size: 0.9em; font-weight: 600; color: #5b6b78;
+    }
+    .fin-box .top-onglets button.actif { background: #fff; color: #1d2b36; box-shadow: 0 1px 3px rgba(0,0,0,0.12); }
+    .fin-box ol.top-liste { list-style: none; padding: 0; margin: 0 0 8px; max-width: none; }
+    .top-liste li { display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-radius: 8px; }
+    .top-liste li:nth-child(odd) { background: #f5f7f9; }
+    .top-liste li.moi { background: #e3f4ea; font-weight: 600; }
+    .top-liste .rang { width: 26px; text-align: center; color: #6b7a86; }
+    .top-liste .nom { flex: 1; text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .top-liste .nom small { font-weight: 400; color: #6b7a86; }
+    .top-aide { font-size: 0.78em; color: #8a97a1; margin: 4px 0 10px; }
     .fin-box button {
       margin: 4px; padding: 10px 16px; font-size: 1em; border-radius: 8px;
       border: 1px solid #999; background: #fff; cursor: pointer;
@@ -578,6 +594,7 @@
         </div>
         <div class="actions-accueil">
           <button class="btn principal" v-if="!enAttentePartie" @click="setTab('play')">Jouer →</button>
+          <button class="btn" @click="ouvrirTop">🏆 Top 10</button>
           <button class="btn" @click="quitterSalon">Quitter</button>
         </div>
       </section>
@@ -611,6 +628,7 @@
         <button class="btn solo-btn" @click="demarrerSolo">🧩 Jouer seul
           <small v-if="recordNiveau">· record niveau {{ level }} : {{ recordNiveau }} pts</small>
         </button>
+        <button class="btn solo-btn" @click="ouvrirTop">🏆 Top 10 solo</button>
         <p class="statut" v-if="connexion !== 'aucune'">{{ status }}</p>
       </template>
 
@@ -638,6 +656,27 @@
       </details>
 
       <p class="version">Désdale · version {{ version }}</p>
+    </div>
+
+    <!-- TOP 10 SOLO -->
+    <div v-if="topOuvert" class="fin-backdrop" @click.self="topOuvert = false">
+      <div class="fin-box top-box">
+        <h2>🏆 Top 10 solo</h2>
+        <div class="sys-msg">Salon « {{ salonClassement.trim() || 'salon' }} »</div>
+        <div class="top-onglets">
+          <button v-for="n in 4" :key="n" :class="{ actif: topNiveau === n }" @click="topNiveau = n">Niv. {{ n }}</button>
+        </div>
+        <ol class="top-liste" v-if="top10.length">
+          <li v-for="(e, i) in top10" :key="e.id" :class="{ moi: e.moi }">
+            <span class="rang">{{ i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : (i + 1) + '.' }}</span>
+            <span class="nom">{{ e.pseudo }}<small v-if="e.moi"> (toi)</small></span>
+            <strong>{{ e.score }}</strong>
+          </li>
+        </ol>
+        <p class="sys-msg" v-else>Aucun score connu pour ce niveau.</p>
+        <p class="top-aide">Les scores s'échangent quand vous vous retrouvez dans ce salon.</p>
+        <button class="principal" @click="topOuvert = false">Fermer</button>
+      </div>
     </div>
 
     <!-- FIN DE PARTIE -->
@@ -978,7 +1017,7 @@
     function lireLigne(ligne) { return ligne.trim().split(/\s+/); }
 
     // Numéro de version affiché sur l'accueil (à augmenter à chaque mise en ligne)
-    const VERSION = '1.08 beta';
+    const VERSION = '1.09 beta';
 
     // ================== ACCÈS PRIVÉ ==================
     // Application réservée à un cercle d'amis : un code est demandé au premier lancement.
@@ -1019,10 +1058,13 @@
         });
       },
       // Identifiant réseau d'un salon : clé privée + nom simplifié (lettres, chiffres, tirets)
+      // Nom de salon simplifié (minuscules, sans accents) : « Soirée Jeux » -> « soiree-jeux »
+      simplifier: function(nom) {
+        return (nom || '').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+                          .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'salon';
+      },
       idSalon: function(nom) {
-        var simple = nom.trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-                        .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'salon';
-        return 'dm-' + this.cleSalon + '-' + simple;
+        return 'dm-' + this.cleSalon + '-' + this.simplifier(nom);
       }
     };
 
@@ -1185,6 +1227,11 @@
         soloTraits: 0,           // solo : nombre de lancers déjà faits (traits sur la piste)
         soloPenalite: false,     // solo : une zone doit être pénalisée avant le prochain lancer
         records: lireStockage('brillant-records') || {},  // solo : meilleur score par niveau
+        recordsDates: lireStockage('brillant-records-dates') || {}, // solo : date de chaque record
+        // Classements solo partagés, par nom de salon : { salon: { niveau: { idJoueur: { p: pseudo, s: score, d: date } } } }
+        classements: lireStockage('brillant-classements') || {},
+        topOuvert: false,        // fenêtre « Top 10 solo »
+        topNiveau: 1,
         enAttentePartie: false,  // arrivé pendant une partie : on attend la suivante
         partieDisponible: false, // une nouvelle partie commence (si pas de rejoindre auto)
         infoAttente: '',         // ex. "Niveau 2, 12 lancers joués."
@@ -1421,6 +1468,15 @@
           return { zone: z, gain: this.niveau.zones[z].gains[this.prisIndex[z] || 0], nom: this.nomZone(z) };
         },
         recordNiveau: function() { return this.records[this.level] || 0; },
+        // Salon dont on affiche le classement : celui où l'on est, sinon celui saisi sur l'accueil
+        salonClassement: function() { return this.role ? this.roomCode : this.channelInput; },
+        top10: function() {
+          var niveau = this.tableauPour(ACCES.simplifier(this.salonClassement))[this.topNiveau] || {};
+          return Object.keys(niveau)
+            .map(id => ({ id: id, pseudo: niveau[id].p, score: niveau[id].s, date: niveau[id].d || 0, moi: id === clientId }))
+            .sort((a, b) => b.score - a.score || a.date - b.date)
+            .slice(0, 10);
+        },
         connexionTexte: function() {
           return this.connexion === 'ok' ? 'en ligne' : 'reconnexion…';
         },
@@ -1757,6 +1813,8 @@
             if (score > ancien) {
               this.$set(this.records, this.level, score);
               ecrireStockage('brillant-records', this.records);
+              this.$set(this.recordsDates, this.level, Date.now());
+              ecrireStockage('brillant-records-dates', this.recordsDates);
             }
           }
           if (atteints.length) {
@@ -1814,6 +1872,63 @@
             this.ajouterLog('Nouvelle partie !', true);
           }
         },
+
+        // ---------- Classement solo partagé ----------
+        // Pas de serveur : chaque téléphone garde un classement par nom de salon. Quand des joueurs
+        // se retrouvent dans un salon, ils échangent tout ce qu'ils connaissent ; les scores
+        // circulent ainsi de proche en proche, même vers ceux qui n'étaient pas là ensemble.
+        mesRecordsPartages: function() {
+          var res = {};
+          Object.keys(this.records).forEach(n => {
+            if (this.records[n] > 0) res[n] = { p: this.pseudoInput.trim() || 'Moi', s: this.records[n], d: this.recordsDates[n] || 0 };
+          });
+          return res;
+        },
+        // Classement connu pour un salon, avec mes propres records toujours inclus
+        tableauPour: function(salon) {
+          var t = JSON.parse(JSON.stringify(this.classements[salon] || {}));
+          var miens = this.mesRecordsPartages();
+          Object.keys(miens).forEach(n => { (t[n] = t[n] || {})[clientId] = miens[n]; });
+          return t;
+        },
+        // Intègre un classement reçu ; renvoie true si on a appris quelque chose
+        fusionnerClassement: function(salon, recu) {
+          if (!recu || typeof recu !== 'object') return false;
+          var t = JSON.parse(JSON.stringify(this.classements[salon] || {}));
+          var change = false;
+          [1, 2, 3, 4].forEach(n => {
+            var entrees = recu[n];
+            if (!entrees || typeof entrees !== 'object') return;
+            Object.keys(entrees).slice(0, 200).forEach(id => {
+              var e = entrees[id];
+              if (id === clientId || !e || typeof e.s !== 'number' || !(e.s > 0 && e.s <= 300)) return;
+              var nouv = { p: String(e.p || '?').slice(0, 20), s: Math.round(e.s), d: Number(e.d) || 0 };
+              var anc = (t[n] || {})[id];
+              // On garde le meilleur score de chaque joueur (à score égal, le pseudo le plus récent)
+              if (!anc || nouv.s > anc.s || (nouv.s === anc.s && nouv.p !== anc.p && nouv.d >= anc.d)) {
+                (t[n] = t[n] || {})[id] = nouv;
+                change = true;
+              }
+            });
+          });
+          if (change) {
+            this.$set(this.classements, salon, t);
+            ecrireStockage('brillant-classements', this.classements);
+          }
+          return change;
+        },
+        // Client : envoie à l'hôte tout ce qu'il connaît pour ce salon
+        partagerClassement: function() {
+          if (this.role !== 'client') return;
+          this.envoyerHote({ action: 'CLASSEMENT', tableau: this.tableauPour(ACCES.simplifier(this.roomCode)) });
+        },
+        // Hôte : reçoit, fusionne, puis redistribue le classement complet à tout le salon
+        recevoirClassement: function(tableau) {
+          var salon = ACCES.simplifier(this.roomCode);
+          this.fusionnerClassement(salon, tableau);
+          if (this.role === 'hote') this.broadcast({ action: 'CLASSEMENT', tableau: this.tableauPour(salon) });
+        },
+        ouvrirTop: function() { this.topNiveau = this.level; this.topOuvert = true; },
 
         // ---------- Variante solo ----------
         demarrerSolo: function() {
@@ -2017,9 +2132,11 @@
               this.infoAttente = data.fin ? 'Elle vient de se terminer, l\'hôte va en relancer une.'
                                           : 'Niveau ' + data.level + ', ' + data.lancerId + ' lancer' + (data.lancerId > 1 ? 's' : '') + ' déjà joué' + (data.lancerId > 1 ? 's' : '') + '.';
               this.actif_tab = 'config';
+              this.partagerClassement(); // même en attente, on échange les scores solo
               break;
             case 'PING': break;
-            case 'ETAT': this.appliquerEtat(data); break;
+            case 'CLASSEMENT': this.recevoirClassement(data.tableau); break;
+            case 'ETAT': this.appliquerEtat(data); this.partagerClassement(); break;
             case 'RESULTAT': this.afficherResultat(data.joueur, data.valeur, data.lancerId, data.prochainLanceur); break;
             case 'REFUS':
               if (data.fatal) {
@@ -2196,6 +2313,7 @@
           var info = p ? salle.infos[p] : null;
           switch (data.action) {
             case 'PING': break;
+            case 'CLASSEMENT': this.recevoirClassement(data.tableau); break;
             case 'REJOINDRE': {
               var pseudo = data.pseudo;
               var existant = salle.infos[pseudo];
