@@ -567,7 +567,7 @@
           <span class="pastille" :class="{ attente: connexion !== 'ok' }"></span>
           <div>
             <div class="salon-nom">Salon « {{ roomCode }} »</div>
-            <div class="salon-role">{{ role === 'hote' ? 'Tu es l\'hôte' : (enAttentePartie ? 'Tu es en attente' : 'Tu joues') + ' en tant que ' + pseudoInput }} · {{ connexionTexte }}</div>
+            <div class="salon-role">{{ role === 'hote' ? '👑 Tu es l\'hôte : tu choisis le niveau' : (enAttentePartie ? 'Tu es en attente' : 'Tu joues') + ' en tant que ' + pseudoInput }} · {{ connexionTexte }}</div>
           </div>
         </div>
 
@@ -588,7 +588,7 @@
 
         <div class="chips-joueurs">
           <span v-for="j in joueurs" :key="j.pseudo" class="chip" :class="{ absent: j.connecte === false }">
-            {{ j.pseudo }}
+            <span v-if="j.hote" title="Hôte : il choisit le niveau">👑</span> {{ j.pseudo }}
             <small v-if="enAttentePartie">{{ scores[j.pseudo] || 0 }} pts</small>
             <small v-else>{{ j.connecte === false ? '💤' : (j.pret ? '✓' : '…') }}</small>
           </span>
@@ -613,7 +613,10 @@
       </section>
 
       <section class="carte">
-        <div class="titre-carte">Niveau <small v-if="role === 'client'">choisi par l'hôte</small></div>
+        <div class="titre-carte">Niveau
+          <small v-if="role === 'client'">choisi par 👑 {{ nomHote || 'l\'hôte' }}</small>
+          <small v-else-if="role === 'hote'">c'est toi qui choisis (👑 hôte)</small>
+        </div>
         <div class="niveaux">
           <button v-for="n in 4" :key="n" class="niveau-btn" :class="{ actif: level === n }"
                   :disabled="role === 'client'" @click="changerNiveau(n)">
@@ -1020,7 +1023,7 @@
     function lireLigne(ligne) { return ligne.trim().split(/\s+/); }
 
     // Numéro de version affiché sur l'accueil (à augmenter à chaque mise en ligne)
-    const VERSION = '1.10 beta';
+    const VERSION = '1.11 beta';
 
     // ================== ACCÈS PRIVÉ ==================
     // Application réservée à un cercle d'amis : un code est demandé au premier lancement.
@@ -1450,6 +1453,10 @@
           return this.pseudoInput.trim();
         },
         partieTerminee: function() { return !!this.finPartie; },
+        nomHote: function() {
+          var h = this.joueurs.find(j => j.hote);
+          return h ? h.pseudo : '';
+        },
         // Clé unique par lancer à annoncer : non vide seulement quand tout le monde est prêt à lancer
         cleAnnonce: function() {
           if (!this.role || this.phase !== 'jeu' || this.finPartie || this.enAttentePartie) return '';
@@ -2026,7 +2033,7 @@
           if (this.role !== 'hote') return;
           this.joueurs = salle.ordre.map(p => {
             if (p === monPseudo) {
-              return { pseudo: p, pret: this.phase === 'jeu', joue: this.aJoue, connecte: true, attendu: true };
+              return { pseudo: p, pret: this.phase === 'jeu', joue: this.aJoue, connecte: true, attendu: true, hote: true };
             }
             var i = salle.infos[p];
             return { pseudo: p, pret: !!i.pret, joue: i.aJoue !== false, connecte: !!i.connecte,
