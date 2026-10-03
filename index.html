@@ -157,6 +157,8 @@
     .installer .btn { width: 100%; }
     .reglages .case-a-cocher { font-weight: 500; }
     .solo-btn { width: 100%; margin-bottom: 8px; }
+    .solo-btn:disabled { opacity: 0.6; }
+    .solo-salon { margin: 8px 0 0; padding: 9px 10px; font-size: 0.9rem; font-weight: 600; }
     .solo-btn small { font-weight: 400; color: #6b7a86; }
     .scores .joueur.penalite { background: #fdebd0; color: #8a4b00; }
     .depart-panel.penalite-panel { background: #fdecea; border-color: #f2b8b0; display: flex; align-items: center; justify-content: space-between; gap: 8px; text-align: left; }
@@ -597,6 +599,7 @@
           <button class="btn" @click="ouvrirTop">🏆 Top 10</button>
           <button class="btn" @click="quitterSalon">Quitter</button>
         </div>
+        <button class="btn solo-btn solo-salon" @click="demarrerSolo">🧩 Jouer seul <small>(quitte le salon)</small></button>
       </section>
 
       <section class="carte">
@@ -606,7 +609,7 @@
         <label class="champ">Nom du salon
           <input type="text" id="channelInput" v-model="channelInput" placeholder="ex : partie-du-dimanche" :disabled="!!role" autocomplete="off">
         </label>
-        <div class="aide" v-if="!role">L'hôte crée le salon, puis les autres joueurs le rejoignent avec le même nom.</div>
+        <div class="aide" v-if="!role">Donnez-vous tous le même nom de salon : le premier arrivé l'ouvre, les suivants le rejoignent.</div>
       </section>
 
       <section class="carte">
@@ -621,15 +624,14 @@
       </section>
 
       <template v-if="!role">
-        <div class="actions-accueil">
-          <button class="btn principal" @click="creerPartie()">Créer la partie</button>
-          <button class="btn" @click="rejoindrePartie()">Rejoindre</button>
-        </div>
-        <button class="btn solo-btn" @click="demarrerSolo">🧩 Jouer seul
-          <small v-if="recordNiveau">· record niveau {{ level }} : {{ recordNiveau }} pts</small>
+        <button class="btn principal solo-btn" @click="entrerSalon()" :disabled="entreeEnCours">
+          {{ entreeEnCours ? 'Connexion au salon…' : 'Entrer dans le salon' }}
         </button>
-        <button class="btn solo-btn" @click="ouvrirTop">🏆 Top 10 solo</button>
-        <p class="statut" v-if="connexion !== 'aucune'">{{ status }}</p>
+        <div class="actions-accueil">
+          <button class="btn" @click="demarrerSolo">🧩 Jouer seul</button>
+          <button class="btn" @click="ouvrirTop">🏆 Top 10 solo</button>
+        </div>
+        <p class="statut" v-if="recordNiveau">Ton record solo au niveau {{ level }} : {{ recordNiveau }} pts</p>
       </template>
 
       <!-- Réglages -->
@@ -637,6 +639,7 @@
         <div class="titre-carte">Réglages</div>
         <label class="case-a-cocher"><input type="checkbox" v-model="sonActif"> 🔊 Sons et vibrations</label>
         <label class="case-a-cocher" v-if="voixSupportee"><input type="checkbox" v-model="voixActive"> 🗣️ Annoncer mon tour</label>
+        <label class="case-a-cocher"><input type="checkbox" v-model="entreeAuto"> 🚪 Entrer dans mon salon au lancement</label>
         <label class="case-a-cocher" v-if="veilleSupportee"><input type="checkbox" v-model="garderEcran"> ☀️ Garder l'écran allumé</label>
       </section>
 
@@ -674,7 +677,7 @@
           </li>
         </ol>
         <p class="sys-msg" v-else>Aucun score connu pour ce niveau.</p>
-        <p class="top-aide">Les scores s'échangent quand vous vous retrouvez dans ce salon.</p>
+        <p class="top-aide">{{ topInfo || 'Les scores s\'échangent dès que quelqu\'un est présent dans ce salon.' }}</p>
         <button class="principal" @click="topOuvert = false">Fermer</button>
       </div>
     </div>
@@ -1017,7 +1020,7 @@
     function lireLigne(ligne) { return ligne.trim().split(/\s+/); }
 
     // Numéro de version affiché sur l'accueil (à augmenter à chaque mise en ligne)
-    const VERSION = '1.09 beta';
+    const VERSION = '1.10 beta';
 
     // ================== ACCÈS PRIVÉ ==================
     // Application réservée à un cercle d'amis : un code est demandé au premier lancement.
@@ -1203,6 +1206,7 @@
     let connParPseudo = {}; // Hôte : pseudo -> connexion actuelle
     let hostConn = null;    // Client : connexion vers l'hôte
     let dernierMsgHote = 0; // Client : heure du dernier message reçu de l'hôte
+    let peerSynchro = null; // connexion éclair pour échanger les scores solo hors salon
     let isHost = false;
     let monPseudo = '';
     // Hôte : mémoire du salon, conservée même quand un joueur se déconnecte
@@ -1230,6 +1234,9 @@
         recordsDates: lireStockage('brillant-records-dates') || {}, // solo : date de chaque record
         // Classements solo partagés, par nom de salon : { salon: { niveau: { idJoueur: { p: pseudo, s: score, d: date } } } }
         classements: lireStockage('brillant-classements') || {},
+        entreeEnCours: false,    // tentative d'entrée dans le salon en cours
+        entreeAuto: lireStockage('brillant-entree-auto') !== false, // entrer dans le salon mémorisé au lancement
+        topInfo: '',             // état de la synchronisation des scores
         topOuvert: false,        // fenêtre « Top 10 solo »
         topNiveau: 1,
         enAttentePartie: false,  // arrivé pendant une partie : on attend la suivante
@@ -1294,7 +1301,7 @@
           this.estInstallee = true;
         });
         // Sans le code d'accès, on ne restaure rien et on ne se connecte à rien
-        if (ACCES.memorise()) { this.accesOk = true; this.restaurer(); }
+        if (ACCES.memorise()) { this.accesOk = true; this.demarrer(); }
         setInterval(() => this.battement(), 4000);
         document.addEventListener('visibilitychange', () => this.auRetourPremierPlan());
         window.addEventListener('online', () => this.auRetourPremierPlan());
@@ -1334,6 +1341,7 @@
         // Quand le prochain lancer devient possible, on annonce qui doit lancer
         cleAnnonce: function(cle) { if (cle) this.annoncerLanceur(); },
         rejoindreAuto: function(v) { ecrireStockage('brillant-rejoindre-auto', v); },
+        entreeAuto: function(v) { ecrireStockage('brillant-entree-auto', v); },
         // Sauvegarde automatique à chaque changement
         etatSauvegarde: function(val) {
           ecrireStockage(CLE_SAUVEGARDE, JSON.parse(val));
@@ -1816,6 +1824,7 @@
               this.$set(this.recordsDates, this.level, Date.now());
               ecrireStockage('brillant-records-dates', this.recordsDates);
             }
+            setTimeout(() => this.synchroniserScores(), 500); // on tente de partager le score tout de suite
           }
           if (atteints.length) {
             var max = Math.max.apply(null, atteints.map(p => scores[p]));
@@ -1928,12 +1937,52 @@
           this.fusionnerClassement(salon, tableau);
           if (this.role === 'hote') this.broadcast({ action: 'CLASSEMENT', tableau: this.tableauPour(salon) });
         },
-        ouvrirTop: function() { this.topNiveau = this.level; this.topOuvert = true; },
+        ouvrirTop: function() { this.topNiveau = this.level; this.topOuvert = true; this.synchroniserScores(); },
+        // Échange les scores solo sans entrer dans le salon : connexion éclair à celui qui le tient
+        // (s'il y a quelqu'un), envoi de ce qu'on connaît, réception du classement complet.
+        synchroniserScores: function() {
+          if (this.role === 'client') { this.topInfo = ''; return this.partagerClassement(); }
+          if (this.role || this._entree || !this.accesOk) return;
+          var nom = this.channelInput.trim();
+          if (!nom) return;
+          var salon = ACCES.simplifier(nom);
+          if (peerSynchro) {
+            if (peerSynchro.salon === salon) return;       // déjà en cours pour ce salon
+            try { peerSynchro.destroy(); } catch (e) {}    // une demande pour un autre salon la remplace
+            peerSynchro = null;
+          }
+          this.topInfo = 'Recherche du salon…';
+          var p = peerSynchro = new Peer();
+          p.salon = salon;
+          var fini = (texte) => {
+            if (peerSynchro !== p) return;
+            peerSynchro = null;
+            clearTimeout(delai);
+            this.topInfo = texte;
+            try { p.destroy(); } catch (e) {}
+          };
+          var delai = setTimeout(() => fini('Personne dans ce salon pour l\'instant : les scores s\'échangeront plus tard.'), 9000);
+          p.on('open', () => {
+            var c = p.connect(ACCES.idSalon(nom), { reliable: true });
+            c.on('open', () => { try { c.send({ action: 'CLASSEMENT', tableau: this.tableauPour(salon) }); } catch (e) {} });
+            c.on('data', (d) => {
+              if (d && d.action === 'CLASSEMENT') { this.fusionnerClassement(salon, d.tableau); fini('Scores à jour.'); }
+            });
+          });
+          p.on('error', () => fini('Personne dans ce salon pour l\'instant : les scores s\'échangeront plus tard.'));
+        },
 
         // ---------- Variante solo ----------
         demarrerSolo: function() {
-          var enCours = this.phase === 'jeu' || Object.values(this.cellsData).some(c => c.label);
-          if (enCours && !this.finPartie && !confirm('Recommencer une partie solo ? Ta grille actuelle sera effacée.')) return;
+          if (this.role) {
+            var autres = this.joueurs.length > 1;
+            if (!confirm(autres ? 'Quitter le salon pour jouer seul ? Les autres continueront sans toi.'
+                                : 'Quitter le salon pour jouer seul ?')) return;
+            this.sortirDuSalon();
+          } else {
+            var enCours = this.phase === 'jeu' || Object.values(this.cellsData).some(c => c.label);
+            if (enCours && !this.finPartie && !confirm('Recommencer une partie solo ? Ta grille actuelle sera effacée.')) return;
+          }
           monPseudo = this.pseudoInput.trim() || 'Moi';
           this.buildGrid();
           this.actif_tab = 'play';
@@ -2016,12 +2065,74 @@
           clearTimeout(this._timerReco);
           this._timerReco = setTimeout(() => {
             if (!this.role || this.connexion === 'ok') return;
-            if (this.role === 'hote') this.creerPartie(true);
-            else this.rejoindrePartie(true);
+            if (this.role === 'hote') return this.creerPartie(true);
+            // Client : si l'hôte reste introuvable alors qu'aucun lancer n'a eu lieu, il n'y a rien
+            // à perdre : on rouvre le salon soi-même, les autres s'y retrouveront.
+            this._echecsClient = (this._echecsClient || 0) + 1;
+            if (this._echecsClient >= 4 && this.lancerId === 0 && !this.enAttentePartie) {
+              this._echecsClient = 0;
+              var nom = this.roomCode;
+              this.ajouterLog('L\'hôte est parti : tu rouvres le salon.', true);
+              this.sortirDuSalon();
+              this.channelInput = nom;
+              return this.entrerSalon(true);
+            }
+            this.rejoindrePartie(true);
           }, delai || 3000);
         },
         quitterSalon: function() {
           if (!confirm('Quitter le salon ? Ta grille sera effacée de ce téléphone.')) return;
+          this.sortirDuSalon();
+        },
+
+        // ---------- Démarrage et entrée dans le salon ----------
+        demarrer: function() {
+          this.restaurer();
+          if (this.role) return; // partie en salon restaurée : la reconnexion est déjà lancée
+          var dernier = lireStockage('brillant-dernier-salon');
+          if (dernier) this.channelInput = dernier;
+          var soloEnCours = !this.finPartie && Object.values(this.cellsData).some(c => c.label);
+          if (this.entreeAuto && dernier && this.pseudoInput.trim() && !soloEnCours) this.entrerSalon(true);
+          else if (dernier) this.synchroniserScores(); // seulement si on a déjà un salon à soi
+        },
+        // Un seul geste pour tous : on tente d'ouvrir le salon ; s'il existe déjà, on le rejoint.
+        // (Ouvrir d'abord est le plus rapide : la réponse est immédiate dans les deux cas.)
+        // silencieux = entrée automatique au lancement : pas de message d'erreur, on reste sur l'accueil.
+        entrerSalon: function(silencieux) {
+          if (this.role || this._entree) return;
+          if (silencieux ? !this.pseudoInput.trim() : !this.validerPseudo()) return;
+          if (!this.channelInput.trim()) {
+            if (!silencieux) alert('Saisis un nom de salon.');
+            return;
+          }
+          this._entree = { essais: 0, silencieux: !!silencieux };
+          this.entreeEnCours = true;
+          this.creerPartie(false);
+        },
+        finEntree: function(reussie, message) {
+          var e = this._entree;
+          this._entree = null;
+          this.entreeEnCours = false;
+          if (reussie) ecrireStockage('brillant-dernier-salon', this.roomCode);
+          else if (e && !e.silencieux && message) alert(message);
+        },
+        // Le salon semblait exister mais on n'a pas pu le rejoindre (hôte tout juste parti) : on retente d'ouvrir
+        suiteEntree: function() {
+          var e = this._entree;
+          if (!e) return;
+          this.status = 'Statut : Non connecté';
+          this.reinitialiserPeer(false);
+          if (++e.essais >= 4) return this.finEntree(false, 'Impossible d\'entrer dans le salon pour le moment. Réessaie dans un instant.');
+          setTimeout(() => { if (this._entree === e && !this.role) this.creerPartie(false); }, 1200);
+        },
+        sortirDuSalon: function() {
+          // Départ volontaire : on prévient l'hôte pour qu'il ne nous attende pas, puis on coupe
+          if (this.role === 'client' && peer) {
+            this.envoyerHote({ action: 'DEPART' });
+            var ancienPeer = peer;
+            peer = null; // la coupure est différée, le temps que le message parte
+            setTimeout(() => { try { ancienPeer.destroy(); } catch (e) {} }, 400);
+          }
           this.reinitialiserPeer(false);
           this.status = 'Statut : Non connecté';
           this.partieId = null;
@@ -2058,6 +2169,7 @@
             var delaiOuverture = setTimeout(() => {
               if (hostConn !== conn || this.connexion === 'ok') return;
               if (this.role) { this.status = 'Statut : Hôte injoignable, nouvelle tentative…'; this.planifierReconnexion(); }
+              else if (this._entree) this.suiteEntree();
               else { this.status = 'Statut : Non connecté'; alert('Impossible de joindre ce salon.'); this.reinitialiserPeer(false); }
             }, 10000);
 
@@ -2069,7 +2181,11 @@
               this.role = 'client';
               this.roomCode = target;
               this.status = `Statut : Connecté (${monPseudo})`;
-              if (!reprise) this.actif_tab = 'play';
+              this._echecsClient = 0;
+              if (!reprise) {
+                if (!(this._entree && this._entree.silencieux)) this.actif_tab = 'play';
+                this.finEntree(true);
+              }
               conn.send({ action: 'REJOINDRE', pseudo: monPseudo, clientId: clientId });
             });
 
@@ -2095,6 +2211,8 @@
               this.status = 'Statut : Hôte injoignable, nouvelle tentative…';
               this.connexion = 'perdue';
               this.planifierReconnexion();
+            } else if (this._entree) {
+              this.suiteEntree();
             } else {
               this.status = 'Statut : Non connecté';
               this.reinitialiserPeer(false);
@@ -2247,14 +2365,16 @@
             this.connexion = 'ok';
             this.roomCode = customChannel; // on affiche le nom choisi, pas l'identifiant réseau
             this.status = `Statut : Hôte (${monPseudo})`;
+            this._echecsReprise = 0;
             if (reprise) {
               this.ajouterLog('Salon récupéré, les joueurs vont se reconnecter.', true);
             } else {
-              this.actif_tab = 'play';
+              if (!(this._entree && this._entree.silencieux)) this.actif_tab = 'play';
+              this.finEntree(true);
               this.partieId = nouvelId();
               salle = { ordre: [monPseudo], infos: {}, gains: {}, attente: {} };
               this.buildGrid();
-              this.ajouterLog(`${monPseudo} a créé la partie.`, true);
+              this.ajouterLog(`${monPseudo} a ouvert le salon.`, true);
             }
             this.majJoueurs();
           });
@@ -2275,10 +2395,22 @@
               // secondes sur le serveur de mise en relation : on réessaie jusqu'à le récupérer.
               if (err.type === 'peer-unavailable') return; // un joueur injoignable : sans gravité
               this.connexion = 'perdue';
+              // Le nom du salon reste pris après plusieurs essais : quelqu'un d'autre l'a rouvert
+              // entre-temps. On le rejoint comme simple joueur plutôt que d'attendre indéfiniment.
+              if (err.type === 'unavailable-id' && (this._echecsReprise = (this._echecsReprise || 0) + 1) >= 5) {
+                this._echecsReprise = 0;
+                this.role = 'client';
+                salle = { ordre: [], infos: {}, gains: {}, attente: {} };
+                this.ajouterLog('Le salon a été rouvert par un autre joueur : tu le rejoins.', true);
+                return this.rejoindrePartie(true);
+              }
               this.status = 'Statut : Récupération du salon… (nouvelle tentative)';
               this.planifierReconnexion(3000);
               return;
             }
+            // Entrée automatique : le salon est déjà ouvert par quelqu'un -> on le rejoint
+            if (this._entree && err.type === 'unavailable-id') return this.rejoindrePartie(false);
+            if (this._entree) return this.suiteEntree();
             this.status = 'Statut : Non connecté';
             this.reinitialiserPeer(false);
             if (err.type === 'unavailable-id') {
@@ -2314,6 +2446,25 @@
           switch (data.action) {
             case 'PING': break;
             case 'CLASSEMENT': this.recevoirClassement(data.tableau); break;
+            case 'DEPART':
+              // Le joueur quitte volontairement le salon (ce n'est pas une coupure réseau)
+              if (!info) return;
+              delete connParPseudo[p];
+              if (this.lancerId === 0) {
+                // partie pas commencée : il sort simplement de la liste
+                delete salle.infos[p];
+                salle.ordre = salle.ordre.filter(x => x !== p);
+              } else {
+                // partie en cours : il garde son score, mais on ne l'attend plus
+                info.connecte = false;
+                info.patienceLevee = true;
+              }
+              if (this.prochainLanceur === p) this.prochainLanceur = null;
+              this.broadcast({ action: 'JOUEUR_QUITTE', pseudo: p });
+              this.ajouterLog(`${p} a quitté le salon.`, true);
+              this.majJoueurs();
+              this.verifierResolution();
+              break;
             case 'REJOINDRE': {
               var pseudo = data.pseudo;
               var existant = salle.infos[pseudo];
@@ -2594,7 +2745,7 @@
             if (!ok) { this.accesErreur = 'Code incorrect.'; return; }
             this.codeSaisi = '';
             this.accesOk = true;
-            this.restaurer();
+            this.demarrer();
           }).catch(() => {
             this.accesEnCours = false;
             this.accesErreur = 'Ce navigateur ne permet pas de vérifier le code.';
