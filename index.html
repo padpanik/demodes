@@ -470,6 +470,7 @@
       box-shadow: 0 3px 5px rgba(0, 0, 0, 0.1);
       user-select: none;
     }
+    .dice.bloque { background-color: #fdecea; border-color: #c0392b; color: #c0392b; }
     .dice.roule { animation: rouler 0.15s linear infinite; color: #7a8a96; }
     .dice.roule + .dice.roule { animation-direction: reverse; }
     @keyframes rouler {
@@ -538,7 +539,7 @@
       </div>
       <div class="barre-infos" v-if="actif_tab === 'play'">
         <button class="btn-veille" :class="{ off: !sonActif }" @click="basculerSon"
-                :title="sonActif ? 'Sons et vibrations activés' : 'Sons et vibrations coupés'">
+                :title="sonActif ? 'Sons activés' : 'Sons coupés'">
           {{ sonActif ? '🔊' : '🔇' }}
         </button>
         <button v-if="veilleSupportee" class="btn-veille" :class="{ actif: veilleActive, off: !garderEcran }"
@@ -640,7 +641,8 @@
       <!-- Réglages -->
       <section class="carte reglages">
         <div class="titre-carte">Réglages</div>
-        <label class="case-a-cocher"><input type="checkbox" v-model="sonActif"> 🔊 Sons et vibrations</label>
+        <label class="case-a-cocher"><input type="checkbox" v-model="sonActif"> 🔊 Sons</label>
+        <label class="case-a-cocher" v-if="vibrationSupportee"><input type="checkbox" v-model="vibrationActive"> 📳 Vibrations</label>
         <label class="case-a-cocher" v-if="voixSupportee"><input type="checkbox" v-model="voixActive"> 🗣️ Annoncer mon tour</label>
         <label class="case-a-cocher"><input type="checkbox" v-model="entreeAuto"> 🚪 Entrer dans mon salon au lancement</label>
         <label class="case-a-cocher" v-if="veilleSupportee"><input type="checkbox" v-model="garderEcran"> ☀️ Garder l'écran allumé</label>
@@ -827,8 +829,8 @@
         <div class="des-ligne">
           <div class="des-bloc">
             <div class="dice-container">
-              <div class="dice" :class="{ roule: desRoulent }">{{ desRoulent ? desAnim[0] : (dice1 !== null ? dice1 : '?') }}</div>
-              <div class="dice" :class="{ roule: desRoulent }">{{ desRoulent ? desAnim[1] : (dice2 !== null ? dice2 : '?') }}</div>
+              <div class="dice" :class="{ roule: desRoulent, bloque: aucunCoup && !desRoulent }">{{ desRoulent ? desAnim[0] : (dice1 !== null ? dice1 : '?') }}</div>
+              <div class="dice" :class="{ roule: desRoulent, bloque: aucunCoup && !desRoulent }">{{ desRoulent ? desAnim[1] : (dice2 !== null ? dice2 : '?') }}</div>
             </div>
             <div class="dice-lanceur" v-if="last_player">lancés par<br><strong>{{ last_player }}</strong></div>
           </div>
@@ -836,7 +838,7 @@
           <button class="roll-btn" v-else-if="role !== 'client'" @click="nouvellePartie">🔄 Rejouer</button>
         </div>
         <div class="actions-coup" v-if="phase === 'jeu' && lancerId > 0 && !partieTerminee">
-          <button @click="passer" :disabled="aJoue">Je passe</button>
+          <button @click="passer" :disabled="aJoue || (modeSolo && soloPenalite)">Je passe</button>
           <button @click="annulerCoup" :disabled="!dernierCoup">↶ Annuler mon coup</button>
         </div>
         <div class="statut-tour">
@@ -1023,7 +1025,7 @@
     function lireLigne(ligne) { return ligne.trim().split(/\s+/); }
 
     // Numéro de version affiché sur l'accueil (à augmenter à chaque mise en ligne)
-    const VERSION = '1.11 beta';
+    const VERSION = '1.12 beta';
 
     // ================== ACCÈS PRIVÉ ==================
     // Application réservée à un cercle d'amis : un code est demandé au premier lancement.
@@ -1247,7 +1249,10 @@
         infoAttente: '',         // ex. "Niveau 2, 12 lancers joués."
         joueursEnAttente: [],    // pseudos qui attendent la prochaine partie
         rejoindreAuto: lireStockage('brillant-rejoindre-auto') !== false,
-        sonActif: lireStockage('brillant-son') !== false,  // sons + vibrations (oui par défaut)
+        sonActif: lireStockage('brillant-son') !== false,  // sons (oui par défaut)
+        // vibrations : réglage à part ; au premier lancement de cette version, on reprend le réglage du son
+        vibrationActive: lireStockage('brillant-vibration') !== null ? lireStockage('brillant-vibration') !== false
+                                                                     : lireStockage('brillant-son') !== false,
         voixSupportee: Voix.supportee,
         voixActive: lireStockage('brillant-voix') !== false, // annonce vocale de qui doit lancer (oui par défaut)
         desRoulent: false,       // animation des dés en cours
@@ -1340,6 +1345,7 @@
         actif_tab: function() { this.majVeille(); },
         garderEcran: function(v) { ecrireStockage('brillant-garder-ecran', v); this.majVeille(); },
         sonActif: function(v) { ecrireStockage('brillant-son', v); },
+        vibrationActive: function(v) { ecrireStockage('brillant-vibration', v); if (v) vibrer(40); },
         voixActive: function(v) { ecrireStockage('brillant-voix', v); if (v) Voix.dire('Annonce de ton tour activée'); },
         // Quand le prochain lancer devient possible, on annonce qui doit lancer
         cleAnnonce: function(cle) { if (cle) this.annoncerLanceur(); },
@@ -1429,7 +1435,6 @@
         coupsPossibles: function() {
           var res = {};
           if (this.phase !== 'jeu' || this.aJoue || this.dice1 === null) return res;
-          if (!this.role && this.soloPenalite) return res; // solo : pénalité à régler avant de jouer
           var paires = [[this.dice1, this.dice2], [this.dice2, this.dice1]];
           Object.keys(this.cellsData).forEach(key => {
             var c = this.cellsData[key];
@@ -1465,6 +1470,7 @@
           return this.partieId + ':' + this.lancerId + ':' + (this.prochainLanceur || '*');
         },
         modeSolo: function() { return !this.role; },
+        vibrationSupportee: function() { return typeof navigator.vibrate === 'function'; },
         soloScore: function() {
           return Object.keys(this.mesGains).reduce((t, z) => t + this.niveau.zones[z].gains[this.mesGains[z]], 0);
         },
@@ -1559,6 +1565,8 @@
           if (this.phase === 'depart') return 'Touche une case pour y placer un chiffre de départ.';
           if (this.dice1 === null) return this.modeSolo ? 'Partie solo : ' + SOLO_LANCERS + ' lancers pour marquer un maximum de points.'
                                                         : 'Lance les dés pour commencer.';
+          if (this.modeSolo && this.soloPenalite) return this.aucunCoup ? 'Aucun coup possible avec ce lancer. Barre d\'abord un gain.'
+                                                                        : 'Les cases qui clignotent sont jouables. Barre d\'abord un gain.';
           if (this.aucunCoup) return 'Aucun coup possible avec ce lancer : passe ton tour.';
           if (!this.aJoue) return 'Place un ' + this.dice1 + ' à côté d\'un ' + this.dice2 +
             (this.dice1 !== this.dice2 ? ', ou un ' + this.dice2 + ' à côté d\'un ' + this.dice1 : '') +
@@ -1756,6 +1764,7 @@
         },
         passer: function() {
           if (this.aJoue) return;
+          if (this.modeSolo && this.soloPenalite) return this.afficherMessage('Barre d\'abord un gain.');
           this.mesCompletions = [];
           this.aJoue = true;
           this.dernierCoup = null;
@@ -1863,13 +1872,14 @@
             this.ajouterLog(`${a.pseudo} complète la ${this.nomZone(a.zone)} : +${a.gain} pts`, true);
           });
           if (annonces.length) this.afficherMessage('🎉 ' + annonces.join(' · '));
-          if (this.sonActif && data.attributions.length && !(data.fin && !this.finPartie)) {
+          if (data.attributions.length && !(data.fin && !this.finPartie)) {
             var pourMoi = data.attributions.some(a => a.pseudo === moi);
-            Sons.jouer('zone', pourMoi);
-            vibrer(pourMoi ? [60, 50, 120] : 40);
+            if (this.sonActif) Sons.jouer('zone', pourMoi);
+            this.vibre(pourMoi ? [60, 50, 120] : 40);
           }
           if (data.fin && !this.finPartie) {
-            if (this.sonActif) { Sons.jouer('victoire'); vibrer([100, 60, 100, 60, 250]); }
+            if (this.sonActif) Sons.jouer('victoire');
+            this.vibre([100, 60, 100, 60, 250]);
             this.finPartie = data.fin;
             this.finMasquee = false;
             this.ajouterLog(data.fin.solo ? `Partie solo terminée : ${data.fin.score} points.`
@@ -2000,7 +2010,7 @@
           this.soloTraits++;
           if (SOLO_LANCERS_PENALITE.indexOf(this.soloTraits) !== -1 && this.soloZonesPenalisables.length) {
             this.soloPenalite = true;
-            if (this.sonActif) vibrer([40, 40, 40]);
+            this.vibre([40, 40, 40]);
           }
         },
         appliquerPenaliteSolo: function() {
@@ -2296,7 +2306,8 @@
         },
         // Nouvelle partie annoncée alors qu'on attendait
         annoncerNouvellePartie: function() {
-          if (this.sonActif) { Sons.jouer('zone', true); vibrer([60, 50, 120]); }
+          if (this.sonActif) Sons.jouer('zone', true);
+          this.vibre([60, 50, 120]);
           if (this.rejoindreAuto) {
             this.rejoindreProchaine();
           } else {
@@ -2651,7 +2662,8 @@
         },
         // Dés qui roulent : son, vibration et chiffres qui défilent pendant ~0,6 s
         animerDes: function() {
-          if (this.sonActif) { Sons.jouer('des'); vibrer([25, 35, 25, 45, 20, 70, 15]); }
+          if (this.sonActif) Sons.jouer('des');
+          this.vibre([25, 35, 25, 45, 20, 70, 15]);
           clearInterval(this._timerDes);
           this.desRoulent = true;
           var debut = Date.now();
@@ -2682,9 +2694,10 @@
         },
         basculerSon: function() {
           this.sonActif = !this.sonActif;
-          if (this.sonActif) { Sons.jouer('zone', true); vibrer(40); }
-          this.afficherMessage(this.sonActif ? '🔊 Sons et vibrations activés.' : '🔇 Sons et vibrations coupés.');
+          if (this.sonActif) Sons.jouer('zone', true);
+          this.afficherMessage(this.sonActif ? '🔊 Sons activés.' : '🔇 Sons coupés.');
         },
+        vibre: function(motif) { if (this.vibrationActive) vibrer(motif); },
 
         // Choix du niveau (accueil) : en cours de partie, on demande confirmation
         changerNiveau: function(n) {
@@ -2795,8 +2808,9 @@
             }
           } else {
             this.zoneSurlignee = cell.zone;
-            // Solo : la pénalité se choisit avant d'inscrire son chiffre (toucher une case choisit sa zone)
-            if (this.modeSolo && this.soloPenalite) return;
+            // Solo : les coups possibles sont montrés, mais on barre un gain avant d'inscrire son chiffre
+            // (toucher une case choisit seulement sa zone)
+            if (this.modeSolo && this.soloPenalite) return this.afficherMessage('Barre d\'abord un gain, puis joue ton coup.');
             // Case déjà remplie, pas de lancer, ou coup déjà joué : on montre juste la zone
             if (data.label) return;
             if (this.dice1 === null) return this.afficherMessage('Attends le premier lancer de dés.');
