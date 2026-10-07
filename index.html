@@ -843,8 +843,8 @@
         <div class="des-ligne">
           <div class="des-bloc">
             <div class="dice-container">
-              <div class="dice" :class="{ roule: desRoulent, bloque: aucunCoup && evidenceVisible }">{{ desRoulent ? desAnim[0] : (dice1 !== null ? dice1 : '?') }}</div>
-              <div class="dice" :class="{ roule: desRoulent, bloque: aucunCoup && evidenceVisible }">{{ desRoulent ? desAnim[1] : (dice2 !== null ? dice2 : '?') }}</div>
+              <div class="dice" :class="{ roule: desRoulent, bloque: aucunCoup && !desRoulent }">{{ desRoulent ? desAnim[0] : (dice1 !== null ? dice1 : '?') }}</div>
+              <div class="dice" :class="{ roule: desRoulent, bloque: aucunCoup && !desRoulent }">{{ desRoulent ? desAnim[1] : (dice2 !== null ? dice2 : '?') }}</div>
             </div>
             <div class="dice-lanceur" v-if="last_player">lancés par<br><strong>{{ last_player }}</strong></div>
           </div>
@@ -1031,7 +1031,6 @@
     // La piste de score sert de compteur : un trait par lancer, 2 traits par case, fin après la 22e case.
     // Au 2e trait d'une case portant le symbole Solo, on barre le plus gros gain d'une zone au choix.
     const MAX_SALONS = 8; // nombre de salons gardés dans la liste de l'accueil
-    const DELAI_EVIDENCE = 1000; // ms entre l'arrêt des dés et la mise en évidence des coups possibles
     const SOLO_CASES_TOTAL = 22;
     const SOLO_LANCERS = SOLO_CASES_TOTAL * 2;                  // 44 lancers
     const SOLO_CASES_PENALITE = [9, 12, 14, 16, 18, 20, 22];      // cases marquées du symbole Solo
@@ -1041,7 +1040,7 @@
     function lireLigne(ligne) { return ligne.trim().split(/\s+/); }
 
     // Numéro de version affiché sur l'accueil (à augmenter à chaque mise en ligne)
-    const VERSION = '1.14';
+    const VERSION = '1.15';
 
     // ================== ACCÈS PRIVÉ ==================
     // Application réservée à un cercle d'amis : un code est demandé au premier lancement.
@@ -1272,7 +1271,6 @@
         voixSupportee: Voix.supportee,
         voixActive: lireStockage('brillant-voix') !== false, // annonce vocale de qui doit lancer (oui par défaut)
         desRoulent: false,       // animation des dés en cours
-        evidenceVisible: true,   // coups possibles mis en évidence (1 s après l'arrêt des dés)
         desAnim: [1, 1],         // valeurs affichées pendant l'animation
         veilleSupportee: 'wakeLock' in navigator,
         garderEcran: lireStockage('brillant-garder-ecran') !== false, // préférence (oui par défaut)
@@ -1401,7 +1399,7 @@
                 depart: data.depart,
                 symbole: REGLES[this.niveau.zones[z].regle].symbole,
                 fond: palir(data.color, 0.55), // toute la case prend la couleur pâle de sa zone
-                jouable: this.evidenceVisible && !!coups[key]
+                jouable: !!coups[key]
               });
             }
           }
@@ -2708,17 +2706,11 @@
           if (this.sonActif) Sons.jouer('des');
           this.vibre([25, 35, 25, 45, 20, 70, 15]);
           clearInterval(this._timerDes);
-          clearTimeout(this._timerEvidence);
           this.desRoulent = true;
-          this.evidenceVisible = false;
           var debut = Date.now();
           this._timerDes = setInterval(() => {
             this.desAnim = [1 + Math.floor(Math.random() * 6), 1 + Math.floor(Math.random() * 6)];
-            if (Date.now() - debut > 600) {
-              clearInterval(this._timerDes); this.desRoulent = false;
-              // On laisse le temps de lire les dés avant de montrer les cases jouables
-              this._timerEvidence = setTimeout(() => { this.evidenceVisible = true; }, DELAI_EVIDENCE);
-            }
+            if (Date.now() - debut > 600) { clearInterval(this._timerDes); this.desRoulent = false; }
           }, 70);
         },
         annoncerLanceur: function() {
