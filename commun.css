@@ -1,0 +1,109 @@
+/* ================== DÉSDALE : STYLES COMMUNS (écran de choix et jeux) ================== */
+body { margin: 0; background: #f3f5f7; color: #1d2b36; }
+.app {
+  font-family: system-ui, sans-serif;
+  width: 100%; max-width: 600px; min-height: 100dvh;
+  margin: 0 auto; padding: 8px 10px; box-sizing: border-box;
+}
+.sys-msg { font-style: italic; color: #666; font-size: 0.85em; }
+.version { text-align: center; color: #a3adb5; font-size: 0.78rem; margin: 6px 0 4px; }
+
+/* ---------- Barre du haut ---------- */
+.barre { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
+#menu { display: flex; background: #e3e8ec; border-radius: 11px; padding: 3px; }
+#menu div { padding: 6px 11px; border-radius: 8px; font-weight: 600; font-size: 0.95em; color: #5b6b78; cursor: pointer; user-select: none; }
+#menu div.actif { background: #fff; color: #1d2b36; box-shadow: 0 1px 3px rgba(0,0,0,0.12); }
+.barre-infos { display: flex; align-items: center; gap: 3px; font-size: 0.9em; white-space: nowrap; }
+.btn-veille { border: none; background: transparent; font-size: 1.05em; line-height: 1; padding: 3px 2px; border-radius: 8px; cursor: pointer; }
+.btn-veille.off { opacity: 0.45; }
+.btn-veille.actif { background: #fff5d6; }
+.point-co { width: 9px; height: 9px; border-radius: 50%; background: #42b983; }
+.point-co.attente { background: #f0a030; animation: clignote 1s infinite; }
+@keyframes clignote { 50% { opacity: 0.3; } }
+.lien-jeux {
+  font-weight: 600; font-size: 0.9em; color: #3b5568; text-decoration: none;
+  padding: 6px 10px; border-radius: 10px; background: #e3e8ec;
+}
+
+/* ---------- Accès privé ---------- */
+.acces { width: 100%; max-width: 340px; margin: 12vh auto 0; text-align: center; }
+.acces .logo { margin: 0 auto 18px; width: max-content; }
+.acces h1 { margin: 0 0 6px; font-size: 1.6em; }
+.acces p { color: #6b7a86; font-size: 0.95em; line-height: 1.4; margin: 0 0 18px; }
+.acces input {
+  display: block; width: 100%; box-sizing: border-box; margin-bottom: 10px;
+  padding: 13px 12px; font-size: 1.1rem; text-align: center; color: #1d2b36;
+  border: 1.5px solid #dde3e8; border-radius: 12px; background: #fff; outline: none;
+}
+.acces input:focus { border-color: #3b82c4; }
+.acces .btn { width: 100%; }
+.acces .btn:disabled { opacity: 0.5; }
+.acces .acces-erreur { color: #c0392b; font-weight: 600; margin-top: 12px; }
+
+/* ---------- Accueil ---------- */
+.hero { display: flex; align-items: center; gap: 14px; padding: 10px 4px 16px; }
+.logo { display: grid; grid-template-columns: repeat(2, 24px); gap: 4px; transform: rotate(-8deg); }
+.logo span { width: 24px; height: 24px; border-radius: 6px; box-shadow: inset 0 -3px 0 rgba(0,0,0,0.2), inset 0 2px 0 rgba(255,255,255,0.4); }
+.hero h1 { margin: 0; font-size: 1.9em; letter-spacing: -0.5px; }
+.hero p { margin: 2px 0 0; color: #6b7a86; font-size: 0.95em; }
+.carte { background: #fff; border-radius: 16px; padding: 14px 16px; margin-bottom: 12px; box-shadow: 0 1px 2px rgba(0,0,0,0.05), 0 4px 14px rgba(29,43,54,0.06); }
+.titre-carte { font-weight: 700; margin-bottom: 8px; }
+.titre-carte small { font-weight: 400; color: #8a97a1; margin-left: 4px; }
+.champ { display: block; font-size: 0.85em; font-weight: 600; color: #5b6b78; margin-bottom: 10px; }
+.champ:last-of-type { margin-bottom: 0; }
+.champ input {
+  display: block; width: 100%; box-sizing: border-box; margin-top: 4px;
+  padding: 11px 12px; font-size: 1.05rem; color: #1d2b36;
+  border: 1.5px solid #dde3e8; border-radius: 10px; background: #f8fafb; outline: none;
+}
+.champ input:focus { border-color: #3b82c4; background: #fff; }
+.champ input:disabled { color: #8a97a1; }
+.salons-connus { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 2px; }
+.salon-puce { display: inline-flex; align-items: stretch; max-width: 100%; border: 1.5px solid #d5dce2; border-radius: 999px; background: #f6f8fa; overflow: hidden; }
+.salon-puce.actif { border-color: #2c3e50; background: #e8eef3; }
+.salon-puce button { border: 0; background: none; font: inherit; color: #2c3e50; cursor: pointer; min-height: 36px; }
+.salon-puce .nom { padding: 0 4px 0 12px; font-weight: 600; font-size: 0.9em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.salon-puce .oter { padding: 0 11px 0 7px; color: #8a97a1; font-size: 0.85em; }
+.aide { font-size: 0.8em; color: #8a97a1; margin-top: 8px; }
+.actions-accueil { display: flex; gap: 10px; margin-bottom: 8px; }
+.btn { flex: 1; padding: 13px 10px; font-size: 1rem; font-weight: 700; border-radius: 12px; border: 1.5px solid #cfd7dd; background: #fff; color: #1d2b36; cursor: pointer; }
+.btn.principal { background: #2c3e50; border-color: #2c3e50; color: #fff; }
+.btn:active { transform: scale(0.98); }
+.btn:disabled { opacity: 0.5; }
+.btn-large { width: 100%; margin-bottom: 8px; }
+.statut { text-align: center; color: #6b7a86; font-size: 0.9em; margin: 4px 0 12px; }
+.salon-tete { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.pastille { width: 12px; height: 12px; border-radius: 50%; background: #42b983; flex-shrink: 0; box-shadow: 0 0 0 4px rgba(66,185,131,0.18); }
+.pastille.attente { background: #f0a030; box-shadow: 0 0 0 4px rgba(240,160,48,0.2); animation: clignote 1s infinite; }
+.salon-nom { font-weight: 700; font-size: 1.1em; }
+.salon-role { font-size: 0.82em; color: #6b7a86; }
+.chips-joueurs { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+.chip { background: #eef2f5; border-radius: 14px; padding: 4px 10px; font-size: 0.9em; }
+.chip.absent { opacity: 0.5; }
+.salon-actif .actions-accueil { margin-bottom: 0; gap: 6px; }
+.salon-actif .actions-accueil .btn { padding: 13px 4px; white-space: nowrap; font-size: 0.95rem; }
+.case-a-cocher { display: flex; align-items: center; gap: 8px; margin-top: 8px; font-weight: 500; }
+.case-a-cocher input { width: 18px; height: 18px; }
+.encart { background: #fff8e1; border: 1px solid #f0d98c; border-radius: 12px; padding: 10px 12px; margin-bottom: 12px; font-size: 0.9em; line-height: 1.4; }
+.journal summary, .regles summary { font-weight: 700; cursor: pointer; }
+.journal ul { list-style: none; padding: 0; margin: 10px 0 0; max-height: 180px; overflow-y: auto; font-size: 0.88em; }
+.journal li { padding: 4px 0; border-bottom: 1px solid #f0f2f4; }
+.journal li.sys-msg { color: #6b7a86; }
+.installer .btn { width: 100%; }
+
+/* ---------- Fenêtres (fin de partie, Top 10) ---------- */
+.fin-backdrop { position: fixed; inset: 0; z-index: 2000; background: rgba(0,0,0,0.45); display: flex; align-items: center; justify-content: center; padding: 16px; }
+.fin-box { background: #fff; border-radius: 14px; padding: 20px 18px; width: 100%; max-width: 360px; max-height: 90dvh; overflow-y: auto; box-sizing: border-box; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+.fin-box h2 { margin: 0 0 6px; }
+.fin-box button { margin: 4px; padding: 10px 16px; font-size: 1em; border-radius: 8px; border: 1px solid #999; background: #fff; cursor: pointer; }
+.fin-box button.principal { background: #2c3e50; color: #fff; border-color: #2c3e50; }
+.score-solo { font-size: 2.6em; font-weight: 800; margin: 4px 0; }
+.score-solo small { font-size: 0.35em; font-weight: 600; color: #6b7a86; }
+.top-liste { list-style: none; padding: 0; margin: 10px 0 8px; }
+.top-liste li { display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-radius: 8px; }
+.top-liste li:nth-child(odd) { background: #f5f7f9; }
+.top-liste li.moi { background: #e3f4ea; font-weight: 600; }
+.top-liste .rang { width: 26px; text-align: center; color: #6b7a86; }
+.top-liste .nom { flex: 1; text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.top-liste .nom small { font-weight: 400; color: #6b7a86; }
+.top-aide { font-size: 0.78em; color: #8a97a1; margin: 4px 0 10px; }

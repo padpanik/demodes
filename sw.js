@@ -1,16 +1,20 @@
 // Service worker de Désdale
-// - garde en cache la page, les icônes et les bibliothèques (Vue, PeerJS)
+// - garde en cache les pages, les icônes et les bibliothèques (Vue, PeerJS)
 //   pour que l'application démarre vite, même avec un réseau faible ;
-// - la page elle-même est toujours prise sur le réseau d'abord : une nouvelle
+// - nos propres pages, scripts et styles sont toujours pris sur le réseau d'abord : une nouvelle
 //   version mise en ligne sur GitHub est donc visible dès le prochain lancement.
-// Pensez à changer VERSION à chaque mise en ligne (même numéro que dans index.html).
+// Pensez à changer VERSION à chaque mise en ligne (même numéro que dans commun.js et brilliant.html).
 
-const VERSION = '1.15';
+const VERSION = '1.16';
 const CACHE = 'desdale-' + VERSION;
 
 const FICHIERS = [
   './',
   './index.html',
+  './brilliant.html',
+  './yams.html',
+  './commun.js',
+  './commun.css',
   './manifest.webmanifest',
   './icon-192.png',
   './icon-512.png',
@@ -50,16 +54,17 @@ self.addEventListener('fetch', event => {
   // Tout le reste (serveur de mise en relation PeerJS, etc.) passe sans cache
   if (!memeSite && !EXTERNES.includes(req.url)) return;
 
-  // La page : réseau d'abord (pour avoir la dernière version), cache si hors ligne
-  if (req.mode === 'navigate' || (memeSite && url.pathname.endsWith('.html'))) {
+  // Nos pages, scripts et styles : réseau d'abord (dernière version), cache si hors ligne.
+  // Chaque page est rangée sous sa propre adresse (sans le "?choix" éventuel).
+  if (req.mode === 'navigate' || (memeSite && /\.(html|js|css)$|\/$/.test(url.pathname))) {
+    const cle = url.origin + url.pathname;
     event.respondWith(
       fetch(req)
         .then(rep => {
-          const copie = rep.clone();
-          caches.open(CACHE).then(c => c.put('./index.html', copie));
+          if (rep.ok) { const copie = rep.clone(); caches.open(CACHE).then(c => c.put(cle, copie)); }
           return rep;
         })
-        .catch(() => caches.match('./index.html'))
+        .catch(() => caches.match(cle).then(r => r || caches.match('./index.html')))
     );
     return;
   }
