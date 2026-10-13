@@ -55,6 +55,7 @@
     .feuille td.choisi.nul { background: #b04a4a; color: #fff; }
     .feuille td.annoncable { box-shadow: inset 0 0 0 1.5px #c7b5ea; cursor: pointer; }
     .feuille td.annonce { background: #7b5cc4; color: #fff; font-weight: 700; box-shadow: none; }
+    .feuille td.jouable.annonce.nul { background: #9c7fd6; color: #fff; }
     .feuille td.dernier { animation: eclat 1.2s ease-out 2; }
     @keyframes eclat { 0% { background: #ffe08a; } 100% { background: #fff; } }
     .feuille tr.somme td { background: #eef2f5; font-weight: 700; height: 22px; font-size: 0.92em; }
@@ -185,7 +186,7 @@
         <ul>
           <li>À ton tour : jusqu'à <strong>3 lancers</strong>. Entre deux lancers, touche les dés à <strong>garder</strong>.</li>
           <li>Ensuite tu inscris ton score dans <strong>une case</strong> (0 si la combinaison n'y est pas : la case est barrée).</li>
-          <li><strong>↓ Descendante</strong> : de haut en bas, dans l'ordre. <strong>↑ Montante</strong> : de bas en haut. <strong>Libre</strong> : dans l'ordre que tu veux. <strong>Sec</strong> : seulement avec ton <strong>1er lancer</strong>. <strong>Imp. (Imposée)</strong> : avant ton 1er lancer, touche la case que tu vises dans cette colonne ; tu devras t'y inscrire à la fin du tour.</li>
+          <li><strong>↓ Descendante</strong> : de haut en bas, dans l'ordre. <strong>↑ Montante</strong> : de bas en haut. <strong>Libre</strong> : dans l'ordre que tu veux. <strong>Sec</strong> : seulement avec ton <strong>1er lancer</strong>. <strong>Imp. (Imposée)</strong> : juste après ton 1er lancer, touche la case que tu vises dans cette colonne ; tu peux encore relancer, mais tu devras t'y inscrire à la fin du tour.</li>
           <li><strong>1 à 6</strong> : total des dés de ce chiffre. <strong>Bonus +35</strong> si le haut d'une colonne atteint 63.</li>
           <li><strong>Brelan</strong> : 3 dés identiques (leur total). <strong>Carré</strong> : 4 identiques (leur total). <strong>Full</strong> (3 + 2) : 25. <strong>Petite suite</strong> (4 qui se suivent) : 30. <strong>Grande suite</strong> (5) : 40. <strong>Yams</strong> (5 identiques) : 50. <strong>Chance</strong> : total des 5 dés.</li>
           <li>La partie finit quand toutes les feuilles sont pleines (65 tours chacun). Le plus gros total gagne.</li>
@@ -278,6 +279,7 @@
         <div class="legende-des">{{ legendeDes }}</div>
 
         <div class="actions" v-if="!etat.fin">
+          <button class="btn" v-if="monTour && !selection && etat.tour.annonce && etat.tour.lancer === 1" @click="jouer({ type: 'ANNONCER', ligne: null })" style="flex: 0 0 30%">✕ Annonce</button>
           <button class="btn principal" v-if="monTour && !selection" @click="lancer" :disabled="!peutLancer">
             🎲 Lancer <small v-if="etat.tour.lancer > 0">({{ 3 - etat.tour.lancer }} restant{{ etat.tour.lancer < 2 ? 's' : '' }})</small>
           </button>
@@ -399,7 +401,7 @@
       return jeu;
     }
     // Peut-on inscrire dans cette case ? (ordre des colonnes ↓ et ↑, Sec au 1er lancer,
-    // Imposée : la case annoncée avant le 1er lancer, et alors seulement elle)
+    // Imposée : la case annoncée après le 1er lancer, et alors seulement elle)
     function caseAutorisee(f, col, ligne, lancer, annonce) {
       if (!f || !f[col] || f[col][ligne] !== undefined || lancer < 1) return false;
       if (annonce) return col === 'impose' && ligne === annonce;
@@ -469,8 +471,8 @@
         return null;
       }
       if (a.type === 'ANNONCER') {
-        // Imposée : on choisit sa case avant le 1er lancer (null = on retire l'annonce)
-        if (t.lancer > 0) return 'L\'Imposée s\'annonce avant le 1er lancer.';
+        // Imposée : on annonce sa case juste après le 1er lancer (null = on retire l'annonce)
+        if (t.lancer !== 1) return t.lancer ? 'L\'Imposée s\'annonce juste après le 1er lancer.' : 'Lance d\'abord les dés.';
         var fi = jeu.feuilles[joueur].impose;
         if (a.ligne && (IDS_LIGNES.indexOf(a.ligne) === -1 || fi[a.ligne] !== undefined)) return 'Cette case est déjà remplie.';
         t.annonce = a.ligne || null;
@@ -627,12 +629,9 @@
           }
           var imp = t.annonce ? 'Imposée : ' + this.nomLigne(t.annonce) + '. ' : '';
           if (this.monTour) {
-            if (t.lancer === 0) {
-              if (t.annonce) return 'Imposée annoncée : ' + this.nomLigne(t.annonce) + '. Lance les dés.';
-              return (e.solo ? '' : avant + 'À toi ! ') + 'Lance les dés, ou annonce d\'abord une case Imposée.';
-            }
+            if (t.lancer === 0) return e.solo ? 'Lance les dés.' : avant + 'À toi ! Lance les dés.';
             if (t.annonce) return imp + (t.lancer < 3 ? 'Garde des dés et relance, ou inscris-toi.' : 'Inscris ton score.');
-            if (t.lancer === 1) return 'Garde des dés et relance, ou choisis une case (Sec possible).';
+            if (t.lancer === 1) return 'Garde et relance, choisis une case (Sec possible) ou annonce une Imposée.';
             if (t.lancer === 2) return 'Encore un lancer possible, ou choisis une case.';
             return 'Choisis une case pour inscrire ton score.';
           }
@@ -711,17 +710,15 @@
           var t = this.etat.tour;
           var annoncee = col === 'impose' && t.annonce === ligne && t.joueur === this.pseudoVue && !this.etat.fin;
           if (!this.caseJouable(col, ligne)) {
-            return { annonce: annoncee, annoncable: col === 'impose' && this.monTour && t.lancer === 0 && this.pseudoVue === this.moi };
+            return { annonce: annoncee, annoncable: col === 'impose' && this.monTour && t.lancer === 1 && !this.desRoulent && this.pseudoVue === this.moi };
           }
           var choisi = this.selection && this.selection.col === col && this.selection.ligne === ligne;
-          return { jouable: true, choisi: choisi, nul: points(ligne, this.etat.tour.des) === 0 };
+          return { jouable: true, choisi: choisi, annonce: annoncee && !choisi, nul: points(ligne, this.etat.tour.des) === 0 };
         },
         texteCase: function(col, ligne) {
           var v = this.feuilleVue[col][ligne];
           if (v !== undefined) return v === 0 ? '' : v;
           if (this.caseJouable(col, ligne)) return points(ligne, this.etat.tour.des);
-          var t = this.etat.tour;
-          if (col === 'impose' && t.annonce === ligne && t.joueur === this.pseudoVue && t.lancer === 0) return '★';
           return '';
         },
         texteBonus: function(col) {
@@ -732,14 +729,17 @@
         },
         toucherCase: function(col, ligne) {
           var t = this.etat.tour;
-          // Imposée : avant le 1er lancer, toucher une case vide l'annonce (la retoucher annule)
-          if (col === 'impose' && this.monTour && t.lancer === 0 && this.pseudoVue === this.moi && this.feuilleVue.impose[ligne] === undefined) {
+          // Imposée : juste après le 1er lancer, toucher une case vide l'annonce
+          // (la case annoncée devient alors jouable ; toucher une autre case Imposée change l'annonce)
+          if (col === 'impose' && this.monTour && t.lancer === 1 && !this.desRoulent && this.pseudoVue === this.moi
+              && this.feuilleVue.impose[ligne] === undefined && t.annonce !== ligne) {
             if (this.sonActif) Sons.jouer('toc');
-            return this.jouer({ type: 'ANNONCER', ligne: t.annonce === ligne ? null : ligne });
+            this.selection = null;
+            return this.jouer({ type: 'ANNONCER', ligne: ligne });
           }
           if (!this.caseJouable(col, ligne)) {
             if (this.monTour && t.annonce && t.lancer > 0) return this.afficherMessage('Tu as annoncé ' + this.nomLigne(t.annonce) + ' en Imposée : inscris-toi là.');
-            if (col === 'impose' && this.monTour && t.lancer > 0) return this.afficherMessage('Imposée : la case s\'annonce avant le 1er lancer.');
+            if (col === 'impose' && this.monTour && t.lancer > 1) return this.afficherMessage('Imposée : la case s\'annonce juste après le 1er lancer.');
             if (this.monTour && this.pseudoVue !== this.moi) { this.vue = this.moi; return; }
             if (this.monTour && this.etat.tour.lancer === 0) return this.afficherMessage('Lance d\'abord les dés.');
             if (this.monTour && this.feuilleVue[col][ligne] === undefined) {
