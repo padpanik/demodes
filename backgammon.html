@@ -1,0 +1,1138 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Backgammon · Désdale</title>
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="theme-color" content="#f3f5f7">
+  <link rel="icon" type="image/png" href="favicon.png">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Désdale">
+  <script src="https://cdn.jsdelivr.net/npm/vue@2.7.16/dist/vue.min.js"></script>
+  <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+  <link rel="stylesheet" href="commun.css">
+  <style>
+    .logo-bg { display: flex; gap: 2px; align-items: flex-end; height: 48px; }
+    .logo-bg span { width: 12px; height: 46px; clip-path: polygon(50% 0, 100% 100%, 0 100%); }
+
+    /* ---------- Bandeau joueurs ---------- */
+    .joueurs-bande { display: flex; gap: 6px; justify-content: center; margin-bottom: 4px; flex-wrap: wrap; }
+    .joueur { background: #e6ebef; border-radius: 12px; padding: 3px 10px; font-size: 0.9em; border: 1.5px solid transparent; }
+    .joueur.actif { background: #fff3d6; border-color: #e0a526; }
+    .joueur.absent { opacity: 0.5; }
+    .joueur strong { margin-left: 4px; }
+    .pion-mini { display: inline-block; width: 11px; height: 11px; border-radius: 50%; vertical-align: -1px; margin-right: 3px; }
+    .consigne { min-height: 2.6em; display: flex; align-items: center; justify-content: center; text-align: center; font-size: 0.86em; color: #3b4b57; line-height: 1.3; margin-bottom: 4px; padding: 0 4px; }
+    .consigne.alerte { color: #c0392b; font-weight: 700; }
+
+    /* ---------- Plateau ---------- */
+    .plateau {
+      display: grid; grid-template-columns: repeat(6, 1fr) 20px repeat(6, 1fr) 24px; grid-template-rows: 1fr 10px 1fr;
+      height: min(340px, 46dvh); min-height: 290px; padding: 5px; gap: 0 1px; border-radius: 10px; background: #8a5a35; box-sizing: border-box;
+      box-shadow: inset 0 0 0 3px #6e4527; user-select: none; -webkit-tap-highlight-color: transparent;
+    }
+    .fleche { position: relative; display: flex; flex-direction: column; align-items: center; cursor: pointer; background: #e9d6b0; }
+    .fleche.bas { flex-direction: column-reverse; }
+    .fleche::before {
+      content: ''; position: absolute; inset: 0; background: var(--coul);
+      clip-path: polygon(0 0, 100% 0, 50% 88%);
+    }
+    .fleche.bas::before { clip-path: polygon(50% 12%, 100% 100%, 0 100%); }
+    .fleche.cote-g { border-radius: 0; }
+    .fleche.cible::after, .sortie.cible::after {
+      content: ''; position: absolute; inset: 0; background: rgba(66, 185, 131, 0.35); box-shadow: inset 0 0 0 2px #2f8a5b;
+    }
+    .fleche.source { box-shadow: inset 0 0 0 2px #e0a526; }
+    .fleche.choisie { box-shadow: inset 0 0 0 3px #e0a526; background: #fff3d6; }
+    .pion {
+      position: relative; z-index: 1; width: 92%; aspect-ratio: 1; border-radius: 50%; margin-bottom: -1px; flex-shrink: 0;
+      box-sizing: border-box; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 800;
+    }
+    .fleche.bas .pion { margin-bottom: 0; margin-top: -1px; }
+    .pion.A { background: radial-gradient(circle at 35% 30%, #fffdf6, #e8dcc2); border: 1.5px solid #9c8a64; color: #5a4a2a; }
+    .pion.B { background: radial-gradient(circle at 35% 30%, #6b5045, #2d1f1a); border: 1.5px solid #1a110d; color: #f5ecd7; }
+    .pion.dernier { box-shadow: 0 0 0 2px #e0a526; }
+    .barre-plateau { grid-row: 1 / 4; grid-column: 7; background: #6e4527; display: flex; flex-direction: column; justify-content: space-between; align-items: center; padding: 4px 0; cursor: pointer; position: relative; }
+    .barre-plateau .pions { display: flex; flex-direction: column; align-items: center; gap: 1px; width: 100%; }
+    .barre-plateau .pion { width: 17px; }
+    .barre-plateau.choisie { box-shadow: inset 0 0 0 3px #e0a526; }
+    .cube { width: 18px; height: 18px; border-radius: 4px; background: #fff; color: #1d2b36; font-size: 10px; font-weight: 800; display: flex; align-items: center; justify-content: center; box-shadow: 0 1px 3px rgba(0,0,0,0.4); }
+    .sortie { grid-row: 1 / 4; grid-column: 14; background: #6e4527; display: flex; flex-direction: column; justify-content: space-between; align-items: center; padding: 4px 0; position: relative; cursor: pointer; border-radius: 0 6px 6px 0; }
+    .sortie .tas { display: flex; flex-direction: column; gap: 1px; align-items: center; }
+    .sortie .tas i { display: block; width: 18px; height: 4px; border-radius: 1px; }
+    .sortie .tas i.A { background: #f3ead6; }
+    .sortie .tas i.B { background: #2d1f1a; box-shadow: 0 0 0 0.5px #9c7a5c; }
+    .sortie small { color: #f3ead6; font-size: 10px; font-weight: 700; }
+    .milieu { grid-row: 2; grid-column: 1 / 7; }
+    .milieu2 { grid-row: 2; grid-column: 8 / 14; }
+    .course { display: flex; justify-content: space-between; font-size: 0.75em; color: #6b7a86; margin: 3px 4px 0; }
+
+    /* ---------- Dés et actions ---------- */
+    .zone-des { display: flex; justify-content: center; align-items: center; gap: 8px; margin: 10px 0 8px; min-height: 48px; }
+    .de {
+      width: 44px; height: 44px; box-sizing: border-box; padding: 6px; border-radius: 10px;
+      background: #fff; border: 2.5px solid #2c3e50; display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(3, 1fr); gap: 2px;
+    }
+    .de i { border-radius: 50%; }
+    .de i.on { background: #1d2b36; }
+    .de.B { background: #3b2a22; border-color: #1a110d; }
+    .de.B i.on { background: #f5ecd7; }
+    .de.utilise { opacity: 0.3; }
+    .de.petit { width: 30px; height: 30px; padding: 4px; border-width: 2px; }
+    .de.roule { animation: rouler 0.15s linear infinite; }
+    @keyframes rouler { 0% { transform: rotate(-10deg); } 50% { transform: rotate(10deg); } 100% { transform: rotate(-10deg); } }
+    .actions { display: flex; gap: 8px; }
+    .actions .btn { padding: 12px 8px; }
+    .btn.valider { background: #2f8a5b; border-color: #2f8a5b; color: #fff; }
+    .btn.danger { color: #b04a4a; border-color: #e6c3c3; }
+    .panneau-vide { text-align: center; padding: 40px 16px; color: #5b6b78; }
+    .panneau-vide .grand { font-size: 2.5em; margin-bottom: 8px; }
+    .regles ul { padding-left: 18px; margin: 8px 0 0; font-size: 0.88em; line-height: 1.45; color: #3b4b57; }
+    .regles li { margin-bottom: 3px; }
+  </style>
+</head>
+<body>
+  <div id="app" class="app">
+
+    <div class="barre">
+      <div id="menu">
+        <div @click="onglet = 'config'" :class="{ actif: onglet === 'config' }">Accueil</div>
+        <div @click="onglet = 'play'" :class="{ actif: onglet === 'play' }">Jouer</div>
+      </div>
+      <a v-if="onglet === 'config' && !role" class="lien-jeux" href="index.html?choix">⇦ Jeux</a>
+      <div class="barre-infos" v-if="onglet === 'play'">
+        <button class="btn-veille" :class="{ off: !sonActif }" @click="basculerSon">{{ sonActif ? '🔊' : '🔇' }}</button>
+        <button v-if="veilleSupportee" class="btn-veille" :class="{ actif: veilleActive, off: !garderEcran }" @click="garderEcran = !garderEcran">{{ garderEcran ? '☀️' : '🌙' }}</button>
+        <span v-if="role" class="point-co" :class="{ attente: connexion !== 'ok' }"></span>
+      </div>
+    </div>
+
+    <!-- ACCUEIL -->
+    <div v-show="onglet === 'config'">
+      <header class="hero">
+        <div class="logo-bg"><span v-for="(c, i) in ['#8a5a35', '#e9d6b0', '#8a5a35', '#e9d6b0']" :key="i" :style="{ background: c }"></span></div>
+        <div>
+          <h1>Backgammon</h1>
+          <p>Désdale · à deux, avec le videau</p>
+        </div>
+      </header>
+
+      <section class="carte salon-actif" v-if="role">
+        <div class="salon-tete">
+          <span class="pastille" :class="{ attente: connexion !== 'ok' }"></span>
+          <div>
+            <div class="salon-nom">Salon « {{ roomCode }} »</div>
+            <div class="salon-role">{{ role === 'hote' ? '👑 Tu es l\'hôte' : 'Tu joues' }} en tant que {{ moi }} · {{ connexionTexte }}</div>
+          </div>
+        </div>
+        <div class="chips-joueurs">
+          <span v-for="j in bandeau" :key="j.pseudo" class="chip" :class="{ absent: !j.connecte }">
+            <span class="pion-mini" :style="{ background: j.c === 'A' ? '#efe4cc' : '#2d1f1a', border: '1px solid #9c8a64' }"></span>{{ j.pseudo }} · {{ j.score }} pt{{ j.score > 1 ? 's' : '' }}<span v-if="!j.connecte"> 💤</span>
+          </span>
+          <span v-if="etat && etat.ordre.length < 2" class="chip absent">en attente d'un adversaire…</span>
+        </div>
+        <div class="actions-accueil">
+          <button class="btn principal" @click="onglet = 'play'">Jouer →</button>
+          <button class="btn" @click="quitterSalon">Quitter</button>
+        </div>
+      </section>
+
+      <section class="carte">
+        <label class="champ">Ton pseudo
+          <input type="text" v-model="pseudoInput" placeholder="ex : Alex" :disabled="!!role" autocomplete="off" maxlength="20">
+        </label>
+        <label class="champ">Nom du salon
+          <input type="text" v-model="channelInput" placeholder="ex : partie-du-dimanche" :disabled="!!role" autocomplete="off">
+        </label>
+        <div class="salons-connus" v-if="!role && salonsConnus.length">
+          <span v-for="nom in salonsConnus" :key="nom" class="salon-puce" :class="{ actif: estSalonSaisi(nom) }">
+            <button class="nom" @click="channelInput = nom">{{ nom }}</button>
+            <button class="oter" @click="oublierSalon(nom)" aria-label="Retirer de la liste">✕</button>
+          </span>
+        </div>
+        <div class="aide" v-if="!role">Partie à deux : donnez-vous le même nom de salon. Le premier l'ouvre, le second le rejoint.</div>
+      </section>
+
+      <button v-if="!role" class="btn principal btn-large" @click="entrerSalon()" :disabled="entreeEnCours">
+        {{ entreeEnCours ? 'Connexion au salon…' : 'Entrer dans le salon' }}
+      </button>
+
+      <details class="carte regles">
+        <summary>Règles</summary>
+        <ul>
+          <li>Chacun avance ses 15 pions vers son jan intérieur (en bas à droite de ton écran), puis les sort. Le premier qui a tout sorti gagne.</li>
+          <li>Chaque dé est un déplacement séparé ; un <strong>double</strong> se joue 4 fois. Tu dois jouer le plus de dés possible ; si un seul des deux passe, le plus fort.</li>
+          <li>Une flèche avec <strong>2 pions adverses</strong> ou plus est fermée. Un pion adverse <strong>seul</strong> est pris : il part sur la barre et doit rentrer avant tout autre coup.</li>
+          <li>On ne sort ses pions que quand ils sont <strong>tous</strong> dans son jan intérieur.</li>
+          <li><strong>Videau</strong> : avant de lancer, tu peux doubler la mise. L'autre accepte (il prend le videau et pourra redoubler) ou abandonne et perd la mise en cours.</li>
+          <li>Partie gagnée : 1 × la mise. <strong>Gammon</strong> (l'autre n'a sorti aucun pion) : × 2. <strong>Backgammon</strong> (et il a encore un pion sur la barre ou dans ton jan) : × 3.</li>
+          <li>Pour jouer : touche un pion, ses arrivées possibles s'allument en vert, touche l'arrivée. Tu peux annuler tes coups jusqu'à « Valider ».</li>
+        </ul>
+      </details>
+
+      <section class="carte reglages">
+        <div class="titre-carte">Réglages</div>
+        <label class="case-a-cocher"><input type="checkbox" v-model="sonActif"> 🔊 Sons</label>
+        <label class="case-a-cocher" v-if="vibrationSupportee"><input type="checkbox" v-model="vibrationActive"> 📳 Vibrations</label>
+        <label class="case-a-cocher" v-if="voixSupportee"><input type="checkbox" v-model="voixActive"> 🗣️ Annoncer mon tour</label>
+        <label class="case-a-cocher"><input type="checkbox" v-model="entreeAuto"> 🚪 Entrer dans mon salon au lancement</label>
+        <label class="case-a-cocher" v-if="veilleSupportee"><input type="checkbox" v-model="garderEcran"> ☀️ Garder l'écran allumé</label>
+      </section>
+
+      <details class="carte journal">
+        <summary>Activité <small v-if="historique.length">({{ historique.length }})</small></summary>
+        <ul>
+          <li v-for="(log, i) in historiqueRecent" :key="i" :class="{ 'sys-msg': log.s }">{{ log.m }}</li>
+          <li v-if="!historique.length" class="sys-msg">Rien pour l'instant.</li>
+        </ul>
+      </details>
+
+      <p class="version">Désdale · Backgammon · version {{ version }}</p>
+    </div>
+
+    <!-- JOUER -->
+    <div v-show="onglet === 'play'">
+      <div v-if="!role" class="panneau-vide">
+        <div class="grand">🎲</div>
+        <p>Entre dans un salon depuis l'accueil pour jouer à deux.</p>
+        <button class="btn principal" @click="onglet = 'config'">Aller à l'accueil</button>
+      </div>
+      <div v-else-if="!etat || !etat.plateau" class="panneau-vide">
+        <div class="grand">⏳</div>
+        <p>En attente d'un adversaire.<br>Donne-lui le nom du salon : <strong>{{ roomCode }}</strong></p>
+      </div>
+      <template v-else>
+        <div class="joueurs-bande">
+          <span v-for="j in bandeau" :key="j.pseudo" class="joueur" :class="{ actif: etat.tour && etat.tour.c === j.c && !etat.fin, absent: !j.connecte }">
+            <span class="pion-mini" :style="{ background: j.c === 'A' ? '#efe4cc' : '#2d1f1a', border: '1px solid #9c8a64' }"></span>{{ j.pseudo }}<strong>{{ j.score }}</strong>
+          </span>
+          <span class="joueur" v-if="etat.cube.val > 1 || etat.cube.owner">Videau <strong>{{ etat.cube.val }}</strong></span>
+        </div>
+        <div class="consigne" :class="{ alerte: !!message }">{{ message || consigne }}</div>
+
+        <!-- Plateau vu de mon côté : mon jan intérieur en bas à droite -->
+        <div class="plateau">
+          <div v-for="(f, k) in fleches" :key="f.i" class="fleche" :class="classeFleche(f)"
+               :style="{ gridRow: f.haut ? 1 : 3, gridColumn: f.col, '--coul': f.sombre ? '#a0522d' : '#d9b07a' }"
+               @click="cliquer(f.i)">
+            <div v-for="n in Math.min(f.n, 5)" :key="n" class="pion" :class="[f.c, { dernier: n === Math.min(f.n, 5) && dernierArrivee === f.i }]">{{ n === 5 && f.n > 5 ? f.n : '' }}</div>
+          </div>
+          <div class="milieu"></div><div class="milieu2"></div>
+          <div class="barre-plateau" :class="{ choisie: selection === 'bar' }" @click="cliquer('bar')">
+            <div class="pions"><div v-for="n in Math.min(barre.eux, 4)" :key="'e' + n" class="pion" :class="adv">{{ n === 4 && barre.eux > 4 ? barre.eux : '' }}</div></div>
+            <div class="cube" v-if="etat.cube" :style="{ alignSelf: 'center' }" :title="etat.cube.owner ? 'Videau à ' + nomDe(etat.cube.owner) : 'Videau au centre'">{{ etat.cube.val > 1 ? etat.cube.val : 64 }}</div>
+            <div class="pions"><div v-for="n in Math.min(barre.moi, 4)" :key="'m' + n" class="pion" :class="maC">{{ n === 4 && barre.moi > 4 ? barre.moi : '' }}</div></div>
+          </div>
+          <div class="sortie" :class="{ cible: cibleSortie }" @click="cliquer('off')">
+            <div class="tas"><small v-if="sortis.eux">{{ sortis.eux }}</small><i v-for="n in sortis.eux" :key="'e' + n" :class="adv"></i></div>
+            <div class="tas"><i v-for="n in sortis.moi" :key="'m' + n" :class="maC"></i><small v-if="sortis.moi">{{ sortis.moi }}</small></div>
+          </div>
+        </div>
+        <div class="course"><span>Course : toi {{ courseMoi }}</span><span>{{ nomDe(adv) }} {{ courseEux }}</span></div>
+
+        <!-- Dés -->
+        <div class="zone-des">
+          <template v-if="desAffiches.length">
+            <div v-for="(d, k) in desAffiches" :key="k" class="de" :class="[couleurDes, { utilise: d.utilise, petit: desAffiches.length > 2, roule: desRoulent }]">
+              <i v-for="p in 9" :key="p" :class="{ on: PIPS[d.v].indexOf(p - 1) !== -1 }"></i>
+            </div>
+          </template>
+        </div>
+
+        <div class="actions" v-if="etat.fin">
+          <button class="btn principal" @click="jouer({ type: 'SUIVANTE' })" :disabled="etat.ordre.length < 2">Partie suivante</button>
+        </div>
+        <div class="actions" v-else-if="etat.offre && etat.offre.c !== maC">
+          <button class="btn danger" @click="jouer({ type: 'REPONDRE', accepte: false })">Abandonner (−{{ etat.cube.val }})</button>
+          <button class="btn principal" @click="jouer({ type: 'REPONDRE', accepte: true })">Accepter ({{ etat.cube.val * 2 }})</button>
+        </div>
+        <div class="actions" v-else-if="monTour && etat.tour.phase === 'lancer' && !etat.offre">
+          <button class="btn" v-if="peutDoubler" @click="doubler" style="flex: 0 0 38%">Doubler ×2</button>
+          <button class="btn principal" @click="jouer({ type: 'LANCER' })" :disabled="desRoulent">🎲 Lancer</button>
+        </div>
+        <div class="actions" v-else-if="monTour && etat.tour.phase === 'jouer'">
+          <button class="btn" @click="jouer({ type: 'ANNULER' })" :disabled="!etat.tour.joues.length" style="flex: 0 0 38%">↶ Annuler</button>
+          <button class="btn valider" @click="jouer({ type: 'VALIDER' })" :disabled="etat.tour.joues.length < etat.tour.max">✓ Valider</button>
+        </div>
+      </template>
+    </div>
+
+    <!-- FIN DE PARTIE -->
+    <div v-if="etat && etat.fin && !finMasquee" class="fin-backdrop" @click.self="finMasquee = true">
+      <div class="fin-box">
+        <h2>{{ etat.fin.gagnant === moi ? '🏆 Gagné !' : '🎲 ' + etat.fin.gagnant + ' gagne' }}</h2>
+        <div class="score-solo">+{{ etat.fin.points }} <small>point{{ etat.fin.points > 1 ? 's' : '' }}</small></div>
+        <div class="sys-msg">{{ texteFin }}</div>
+        <ol class="top-liste">
+          <li v-for="j in bandeau" :key="j.pseudo" :class="{ moi: j.pseudo === moi }">
+            <span class="nom">{{ j.pseudo }}</span><strong>{{ j.score }}</strong>
+          </li>
+        </ol>
+        <button @click="finMasquee = true">Voir le plateau</button>
+        <button class="principal" @click="jouer({ type: 'SUIVANTE' }); finMasquee = true" :disabled="etat.ordre.length < 2">Partie suivante</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="commun.js"></script>
+  <script src="backgammon-regles.js"></script>
+  <script>
+    if (!ACCES.memorise()) location.replace('index.html');
+
+    const PIPS = { 1: [4], 2: [2, 6], 3: [2, 4, 6], 4: [0, 2, 6, 8], 5: [0, 2, 4, 6, 8], 6: [0, 2, 3, 5, 6, 8] };
+    function de6() { return 1 + Math.floor(Math.random() * 6); }
+    function copie(o) { return JSON.parse(JSON.stringify(o)); }
+
+    // ================== DÉROULEMENT D'UNE PARTIE ==================
+    // Le même code tourne chez l'hôte, seul arbitre : il lance les dés et vérifie chaque coup.
+    function nouveauJeu(ordre) {
+      return { ordre: ordre.slice(), couleurs: {}, scores: {}, paire: '', partieId: null, plateau: null,
+               tour: null, cube: { val: 1, owner: null }, offre: null, fin: null, seq: 0, evt: null, manche: 0 };
+    }
+    function pseudoDe(jeu, c) { return jeu.couleurs[c]; }
+    function couleurDe(jeu, p) { return jeu.couleurs.A === p ? 'A' : jeu.couleurs.B === p ? 'B' : null; }
+    function evenement(jeu, e) { jeu.seq++; e.n = jeu.seq; jeu.evt = e; }
+    function tourVide(c) { return { c: c, phase: 'lancer', des: [], restants: [], joues: [], max: 0, debut: null }; }
+    // Nouvelle manche entre les deux joueurs (les couleurs alternent à chaque manche)
+    function nouvelleManche(jeu) {
+      var paire = jeu.ordre.slice().sort().join('|');
+      if (paire !== jeu.paire) { jeu.scores = {}; jeu.ordre.forEach(p => jeu.scores[p] = 0); jeu.paire = paire; jeu.manche = 0; }
+      jeu.manche++;
+      var blanc = jeu.ordre[(jeu.manche + 1) % 2];
+      jeu.couleurs = { A: blanc, B: jeu.ordre.find(p => p !== blanc) };
+      jeu.partieId = nouvelId();
+      jeu.plateau = BG.depart();
+      jeu.cube = { val: 1, owner: null };
+      jeu.offre = null;
+      jeu.fin = null;
+      // Ouverture : chacun lance un dé, le plus fort commence en jouant les deux
+      var a, b;
+      do { a = de6(); b = de6(); } while (a === b);
+      var c = a > b ? 'A' : 'B';
+      commencerTour(jeu, c, a, b);
+      if (jeu.evt && jeu.evt.type === 'lancer') jeu.evt = { n: jeu.evt.n, type: 'ouverture', c: c, desA: a, desB: b };
+    }
+    function commencerTour(jeu, c, d1, d2) {
+      var t = tourVide(c);
+      t.des = [d1, d2];
+      t.restants = BG.desDuLancer(d1, d2);
+      t.max = BG.maxJouable(jeu.plateau, c, t.restants);
+      t.debut = BG.copie(jeu.plateau);
+      t.phase = 'jouer';
+      jeu.tour = t;
+      if (!t.max) {
+        // Aucun coup possible : le tour passe tout seul
+        jeu.tour = tourVide(BG.autre(c));
+        evenement(jeu, { type: 'bloque', c: c, des: [d1, d2] });
+      } else {
+        evenement(jeu, { type: 'lancer', c: c, des: [d1, d2] });
+      }
+    }
+    function finir(jeu, c, res, type) {
+      var points = jeu.cube.val * res.mult, p = pseudoDe(jeu, c);
+      jeu.scores[p] = (jeu.scores[p] || 0) + points;
+      jeu.fin = { gagnant: p, c: c, points: points, type: type || res.type, mise: jeu.cube.val };
+      jeu.tour = Object.assign(tourVide(c), { phase: 'fin' });
+      jeu.offre = null;
+      evenement(jeu, { type: 'fin', c: c });
+    }
+    // Applique l'action d'un joueur. Renvoie un message d'erreur, ou null si c'est fait.
+    function agir(jeu, joueur, a) {
+      var c = couleurDe(jeu, joueur);
+      if (!c) return 'Tu ne joues pas cette partie.';
+      if (a.type === 'SUIVANTE') {
+        if (!jeu.fin) return 'La partie n\'est pas finie.';
+        if (jeu.ordre.length < 2) return 'Il manque un adversaire.';
+        nouvelleManche(jeu);
+        return null;
+      }
+      if (!jeu.plateau || jeu.fin) return 'La partie est terminée.';
+      var t = jeu.tour;
+      if (a.type === 'REPONDRE') {
+        if (!jeu.offre || jeu.offre.c === c) return 'Pas de proposition en cours.';
+        if (a.accepte) {
+          jeu.cube = { val: jeu.cube.val * 2, owner: c };
+          jeu.offre = null;
+          evenement(jeu, { type: 'accepte', c: c, val: jeu.cube.val });
+        } else {
+          finir(jeu, jeu.offre.c, { mult: 1 }, 'abandon');
+        }
+        return null;
+      }
+      if (t.c !== c) return 'Ce n\'est pas ton tour.';
+      if (jeu.offre) return 'Attends la réponse au videau.';
+      if (a.type === 'DOUBLER') {
+        if (t.phase !== 'lancer') return 'On double avant de lancer les dés.';
+        if (jeu.cube.owner && jeu.cube.owner !== c) return 'Le videau est chez ton adversaire.';
+        if (jeu.cube.val >= 64) return 'Le videau est au maximum.';
+        jeu.offre = { c: c };
+        evenement(jeu, { type: 'double', c: c, val: jeu.cube.val * 2 });
+        return null;
+      }
+      if (a.type === 'LANCER') {
+        if (t.phase !== 'lancer') return 'Les dés sont déjà lancés.';
+        commencerTour(jeu, c, de6(), de6());
+        return null;
+      }
+      if (t.phase !== 'jouer') return 'Lance d\'abord les dés.';
+      if (a.type === 'JOUER') {
+        var m = BG.coupsLegaux(jeu.plateau, c, t).find(x => x.from === a.from && x.to === a.to && x.d === a.d);
+        if (!m) return 'Ce coup n\'est pas permis.';
+        var prise = m.to !== 'off' && BG.sur(jeu.plateau, BG.autre(c), m.to) === 1;
+        jeu.plateau = BG.appliquer(jeu.plateau, c, m);
+        t.joues.push({ from: m.from, to: m.to, d: m.d, prise: prise });
+        t.restants = BG.sansUn(t.restants, m.d);
+        evenement(jeu, { type: 'coup', c: c, from: m.from, to: m.to, prise: prise });
+        if (jeu.plateau.off[c] === 15) finir(jeu, c, BG.resultat(jeu.plateau, c));
+        return null;
+      }
+      if (a.type === 'ANNULER') {
+        if (!t.joues.length) return null;
+        jeu.plateau = BG.copie(t.debut);
+        t.restants = BG.desDuLancer(t.des[0], t.des[1]);
+        t.joues = [];
+        evenement(jeu, { type: 'annuler', c: c });
+        return null;
+      }
+      if (a.type === 'VALIDER') {
+        if (t.joues.length < t.max) return 'Il reste des dés à jouer.';
+        jeu.tour = tourVide(BG.autre(c));
+        evenement(jeu, { type: 'valider', c: c });
+        return null;
+      }
+      return 'Action inconnue.';
+    }
+
+    // ================== RÉSEAU ==================
+    const JEU_RESEAU = 'bg';
+    const CLE_SAUVEGARDE = 'bg-sauvegarde';
+    const DELAI_SILENCE = 15000;
+    const DELAI_ANNONCE = 5000;
+    const MAX_SALONS = 8;
+    let peer = null;
+    let connections = [];
+    let connParPseudo = {};
+    let hostConn = null;
+    let dernierMsgHote = 0;
+    let monPseudo = '';
+    let jeuHote = null;
+    let salle = { infos: {} };
+
+    function pseudoSauvegarde() {
+      var s = lireStockage(CLE_SAUVEGARDE), y = lireStockage('yams-sauvegarde'), b = lireStockage('brillant-sauvegarde-v1');
+      return (s && s.pseudo) || (y && y.pseudo) || (b && b.pseudo) || '';
+    }
+
+    new Vue({
+      el: '#app',
+      data: {
+        PIPS: PIPS,
+        version: VERSION,
+        onglet: 'config',
+        pseudoInput: pseudoSauvegarde(),
+        channelInput: lireStockage('bg-dernier-salon') || lireStockage('brillant-dernier-salon') || '',
+        salonsConnus: lireStockage('brillant-salons') || [],
+        role: null,
+        connexion: 'aucune',
+        roomCode: '',
+        entreeEnCours: false,
+        etat: null,
+        joueurs: [],
+        selection: null,
+        desRoulent: false,
+        desAnim: [1, 1],
+        message: '',
+        finMasquee: false,
+        historique: [],
+        sonActif: lireStockage('brillant-son') !== false,
+        vibrationActive: lireStockage('brillant-vibration') !== null ? lireStockage('brillant-vibration') !== false : lireStockage('brillant-son') !== false,
+        voixActive: lireStockage('brillant-voix') !== false,
+        voixSupportee: Voix.supportee,
+        entreeAuto: lireStockage('brillant-entree-auto') !== false,
+        garderEcran: lireStockage('brillant-garder-ecran') !== false,
+        veilleSupportee: 'wakeLock' in navigator,
+        veilleActive: false
+      },
+      computed: {
+        moi: function() { return this.pseudoInput.trim() || 'Moi'; },
+        vibrationSupportee: function() { return typeof navigator.vibrate === 'function'; },
+        historiqueRecent: function() { return this.historique.slice().reverse(); },
+        connexionTexte: function() {
+          return { ok: 'en ligne', connexion: 'connexion…', perdue: 'reconnexion…', aucune: 'hors ligne' }[this.connexion];
+        },
+        // Ma couleur (A : blancs, B : noirs) ; le plateau est toujours affiché de mon côté
+        maC: function() { return (this.etat && couleurDe(this.etat, this.moi)) || 'A'; },
+        adv: function() { return BG.autre(this.maC); },
+        monTour: function() {
+          var e = this.etat;
+          return !!(e && e.plateau && !e.fin && e.tour && e.tour.c === this.maC && couleurDe(e, this.moi) && this.connexion === 'ok');
+        },
+        bandeau: function() {
+          var e = this.etat;
+          if (!e) return [];
+          return e.ordre.map(p => {
+            var j = this.joueurs.find(x => x.pseudo === p);
+            return { pseudo: p, c: couleurDe(e, p) || (p === e.ordre[0] ? 'A' : 'B'), score: (e.scores && e.scores[p]) || 0,
+                     connecte: p === this.moi || !j || j.connecte !== false };
+          });
+        },
+        // 24 flèches, numérotées de mon point de vue (1 = au fond de mon jan, en bas à droite)
+        fleches: function() {
+          var pl = this.etat.plateau, res = [];
+          for (var r = 1; r <= 24; r++) {
+            var i = this.maC === 'A' ? r : 25 - r, v = pl.pts[i];
+            var haut = r >= 13;
+            var col = haut ? (r <= 18 ? r - 12 : r - 11) : (r >= 7 ? 13 - r : 14 - r);
+            res.push({ i: i, r: r, haut: haut, col: col, sombre: r % 2 === 0, n: Math.abs(v), c: v > 0 ? 'A' : 'B' });
+          }
+          return res;
+        },
+        barre: function() { var b = this.etat.plateau.bar; return { moi: b[this.maC], eux: b[this.adv] }; },
+        sortis: function() { var o = this.etat.plateau.off; return { moi: o[this.maC], eux: o[this.adv] }; },
+        courseMoi: function() { return BG.course(this.etat.plateau, this.maC); },
+        courseEux: function() { return BG.course(this.etat.plateau, this.adv); },
+        legaux: function() {
+          if (!this.monTour || this.etat.tour.phase !== 'jouer' || this.etat.offre) return [];
+          return BG.coupsLegaux(this.etat.plateau, this.maC, this.etat.tour);
+        },
+        sources: function() { var s = {}; this.legaux.forEach(m => s[m.from] = true); return s; },
+        // Pion choisi (un pion sur la barre est choisi d'office)
+        selectionEffective: function() {
+          if (this.selection !== null && this.sources[this.selection]) return this.selection;
+          if (this.sources.bar) return 'bar';
+          return null;
+        },
+        cibles: function() {
+          var s = this.selectionEffective, r = {};
+          if (s === null) return r;
+          this.legaux.forEach(m => { if (String(m.from) === String(s)) r[m.to] = true; });
+          return r;
+        },
+        cibleSortie: function() { return !!this.cibles.off; },
+        dernierArrivee: function() {
+          var e = this.etat && this.etat.evt;
+          return e && e.type === 'coup' && e.to !== 'off' ? e.to : null;
+        },
+        // Couleur des dés : celle du joueur qui les a lancés
+        couleurDes: function() {
+          var e = this.etat, ev = e && e.evt;
+          if (ev && ev.type === 'bloque' && e.tour && e.tour.phase === 'lancer') return ev.c;
+          return e && e.tour ? e.tour.c : 'A';
+        },
+        desAffiches: function() {
+          var t = this.etat && this.etat.tour;
+          if (this.desRoulent) return this.desAnim.map(v => ({ v: v, utilise: false }));
+          if (!t) return [];
+          var ev = this.etat.evt;
+          if (t.phase === 'lancer' && ev && ev.type === 'bloque') return ev.des.map(v => ({ v: v, utilise: true }));
+          if (t.phase !== 'jouer') return [];
+          var tous = BG.desDuLancer(t.des[0], t.des[1]), reste = t.restants.slice();
+          // Dés déjà utilisés grisés (et ceux qui ne peuvent plus servir)
+          var jouables = t.max - t.joues.length;
+          return tous.map(v => {
+            var k = reste.indexOf(v);
+            if (k === -1) return { v: v, utilise: true };
+            reste.splice(k, 1);
+            return { v: v, utilise: jouables <= 0 };
+          });
+        },
+        peutDoubler: function() {
+          var e = this.etat;
+          return this.monTour && e.tour.phase === 'lancer' && !e.offre && (!e.cube.owner || e.cube.owner === this.maC) && e.cube.val < 64;
+        },
+        texteFin: function() {
+          var f = this.etat.fin;
+          var t = { simple: 'Partie simple', gammon: 'Gammon (×2)', backgammon: 'Backgammon (×3)', abandon: 'Abandon après le videau' }[f.type];
+          return t + (f.mise > 1 ? ' · videau à ' + f.mise : '');
+        },
+        consigne: function() {
+          var e = this.etat;
+          if (!e || !e.plateau) return '';
+          if (e.fin) return e.fin.gagnant + ' gagne ' + e.fin.points + ' point' + (e.fin.points > 1 ? 's' : '') + '.';
+          var t = e.tour, ev = e.evt, autre = this.nomDe(this.adv);
+          if (e.offre) {
+            if (e.offre.c === this.maC) return 'Tu proposes de doubler : ' + autre + ' doit accepter ou abandonner.';
+            return autre + ' double ! Accepte (mise à ' + (e.cube.val * 2) + ') ou abandonne (tu perds ' + e.cube.val + ').';
+          }
+          var avant = '';
+          if (ev && ev.type === 'bloque') avant = (ev.c === this.maC ? 'Tu as fait ' : this.nomDe(ev.c) + ' a fait ') + ev.des.join('-') + ' : aucun coup possible. ';
+          if (ev && ev.type === 'ouverture' && !t.joues.length) {
+            avant = 'Ouverture : ' + this.nomDe('A') + ' ' + ev.desA + ', ' + this.nomDe('B') + ' ' + ev.desB + '. ';
+          }
+          if (ev && ev.type === 'accepte') avant = this.nomDe(ev.c) + ' accepte : la mise passe à ' + ev.val + '. ';
+          if (this.monTour) {
+            if (t.phase === 'lancer') return avant + 'À toi : lance les dés' + (this.peutDoubler ? ' (ou double la mise avant).' : '.');
+            if (t.joues.length >= t.max) return t.max < t.restants.length + t.joues.length ? 'Plus aucun coup possible avec le reste : valide.' : 'Valide ton tour (ou annule).';
+            if (this.barre.moi) return avant + 'Ton pion sur la barre doit rentrer d\'abord.';
+            return avant + (this.selectionEffective !== null ? 'Touche une arrivée en vert.' : 'Touche un pion à déplacer.');
+          }
+          if (this.connexion !== 'ok') return 'Connexion perdue : reconnexion en cours…';
+          return avant + autre + (t.phase === 'lancer' ? ' va lancer les dés.' : ' joue ' + t.des.join('-') + '.');
+        },
+        cleAnnonce: function() {
+          if (!this.monTour || this.etat.tour.phase !== 'lancer') return '';
+          return this.etat.partieId + ':' + this.etat.seq;
+        }
+      },
+      watch: {
+        sonActif: function(v) { ecrireStockage('brillant-son', v); },
+        vibrationActive: function(v) { ecrireStockage('brillant-vibration', v); if (v) vibrer(40); },
+        voixActive: function(v) { ecrireStockage('brillant-voix', v); if (v) Voix.dire('Annonce de ton tour activée'); },
+        entreeAuto: function(v) { ecrireStockage('brillant-entree-auto', v); },
+        garderEcran: function(v) { ecrireStockage('brillant-garder-ecran', v); this.majVeille(); },
+        pseudoInput: function() { this.sauvegarder(); },
+        role: function() { this.majVeille(); },
+        onglet: function() { this.majVeille(); },
+        cleAnnonce: function(cle) {
+          clearTimeout(this._timerVoix);
+          if (!cle || !this.voixActive || !Voix.supportee) return;
+          this._timerVoix = setTimeout(() => { if (this.cleAnnonce === cle) Voix.dire(this.moi + ', à toi de jouer !'); }, DELAI_ANNONCE);
+        }
+      },
+      created: function() {
+        if (!ACCES.cleSalon) return;
+        this.demarrer();
+        setInterval(() => this.battement(), 4000);
+        document.addEventListener('visibilitychange', () => this.auRetourPremierPlan());
+        window.addEventListener('online', () => this.auRetourPremierPlan());
+        window.addEventListener('pageshow', () => this.auRetourPremierPlan());
+      },
+      methods: {
+        nomDe: function(c) { return (this.etat && this.etat.couleurs[c]) || '?'; },
+        ajouterLog: function(m, systeme) {
+          this.historique.push({ m: m, s: !!systeme });
+          if (this.historique.length > 150) this.historique.splice(0, this.historique.length - 150);
+        },
+        afficherMessage: function(txt) {
+          this.message = txt;
+          clearTimeout(this._timerMsg);
+          this._timerMsg = setTimeout(() => { this.message = ''; }, 2600);
+        },
+        vibre: function(motif) { if (this.vibrationActive) vibrer(motif); },
+        basculerSon: function() {
+          this.sonActif = !this.sonActif;
+          if (this.sonActif) Sons.jouer('toc');
+          this.afficherMessage(this.sonActif ? '🔊 Sons activés.' : '🔇 Sons coupés.');
+        },
+
+        // ---------- Plateau ----------
+        classeFleche: function(f) {
+          var s = this.selectionEffective;
+          return { bas: !f.haut, cible: !!this.cibles[f.i], choisie: String(s) === String(f.i), source: !!this.sources[f.i] && s === null };
+        },
+        cliquer: function(i) {
+          if (!this.monTour || this.etat.tour.phase !== 'jouer' || this.etat.offre) return;
+          var s = this.selectionEffective;
+          if (s !== null && this.cibles[i]) {
+            // Plusieurs dés mènent au même endroit (sortie) : on garde le plus petit qui convient
+            var choix = this.legaux.filter(m => String(m.from) === String(s) && String(m.to) === String(i)).sort((a, b) => a.d - b.d)[0];
+            this.selection = null;
+            return this.jouer({ type: 'JOUER', from: choix.from, to: choix.to, d: choix.d });
+          }
+          if (this.sources[i]) { this.selection = (String(this.selection) === String(i)) ? null : i; return; }
+          if (i !== 'off' && i !== 'bar' && BG.sur(this.etat.plateau, this.maC, i)) {
+            this.afficherMessage(this.barre.moi ? 'Fais d\'abord rentrer ton pion de la barre.' : 'Ce pion ne peut pas bouger avec ces dés.');
+          }
+          this.selection = null;
+        },
+        doubler: function() {
+          if (!confirm('Proposer de doubler la mise à ' + (this.etat.cube.val * 2) + ' ?')) return;
+          this.jouer({ type: 'DOUBLER' });
+        },
+
+        // ---------- Actions (hôte : directement ; joueur : envoyées à l'hôte) ----------
+        jouer: function(a) {
+          if (this.role === 'hote') {
+            var err = agir(jeuHote, this.moi, a);
+            if (err) return this.afficherMessage(err);
+            return this.publier();
+          }
+          if (this.connexion !== 'ok') return this.afficherMessage('Connexion perdue : reconnexion en cours…');
+          this.envoyerHote({ action: 'JEU', a: a });
+        },
+        publier: function() {
+          this.appliquerJeu(copie(jeuHote));
+          this.diffuser();
+          this.sauvegarder();
+        },
+        appliquerJeu: function(nouveau) {
+          var ancien = this.etat;
+          var nouvelEvt = nouveau && nouveau.evt && (!ancien || !ancien.evt || nouveau.evt.n > ancien.evt.n || ancien.partieId !== nouveau.partieId);
+          if (ancien && nouveau && ancien.partieId !== nouveau.partieId) this.finMasquee = false;
+          this.etat = nouveau;
+          if (ancien && nouvelEvt) this.reagir(nouveau.evt, ancien);
+          this.sauvegarder();
+        },
+        reagir: function(ev, ancien) {
+          var qui = ev.c ? this.nomDe(ev.c) : '';
+          if (ev.type === 'lancer' || ev.type === 'ouverture' || ev.type === 'bloque') {
+            var des = ev.type === 'ouverture' ? [ev.desA, ev.desB] : ev.des;
+            this.animerDes(des);
+            if (ev.type === 'ouverture') this.ajouterLog('Nouvelle partie : ' + qui + ' commence (' + ev.desA + ' contre ' + ev.desB + ').', true);
+            if (ev.type === 'bloque') this.ajouterLog(qui + ' : ' + des.join('-') + ', aucun coup possible.');
+            if (ev.c !== this.maC && ev.type !== 'bloque') return;
+          } else if (ev.type === 'coup') {
+            if (ev.prise) {
+              if (this.sonActif) Sons.jouer('zone', ev.c === this.maC);
+              this.vibre(ev.c === this.maC ? 40 : [80, 40, 80]);
+              this.ajouterLog(qui + ' prend un pion !');
+            } else if (this.sonActif) Sons.jouer('toc');
+          } else if (ev.type === 'valider') {
+            if (ev.c !== this.maC) this.vibre([30, 40, 30]);
+          } else if (ev.type === 'double') {
+            this.vibre([60, 40, 60]);
+            this.ajouterLog(qui + ' propose de doubler à ' + ev.val + '.', true);
+          } else if (ev.type === 'accepte') {
+            this.ajouterLog(qui + ' accepte : mise à ' + ev.val + '.', true);
+          } else if (ev.type === 'fin') {
+            var f = this.etat.fin;
+            if (this.sonActif) Sons.jouer('victoire');
+            this.vibre([100, 60, 100, 60, 250]);
+            this.finMasquee = false;
+            this.ajouterLog(f.gagnant + ' gagne ' + f.points + ' point' + (f.points > 1 ? 's' : '') + ' (' + this.texteFin + ').', true);
+          }
+        },
+        animerDes: function(des) {
+          if (this.sonActif) Sons.jouer('des', 2);
+          this.vibre([25, 35, 25, 45, 20, 70, 15]);
+          clearInterval(this._timerDes);
+          this.desRoulent = true;
+          var debut = Date.now();
+          var anim = () => {
+            this.desAnim = [de6(), de6()];
+            if (Date.now() - debut > 600) { clearInterval(this._timerDes); this.desRoulent = false; }
+          };
+          anim();
+          this._timerDes = setInterval(anim, 70);
+        },
+
+        // ---------- Liste des salons ----------
+        estSalonSaisi: function(nom) { return ACCES.simplifier(nom) === ACCES.simplifier(this.channelInput); },
+        retenirSalon: function(nom) {
+          var cle = ACCES.simplifier(nom);
+          this.salonsConnus = [nom].concat((lireStockage('brillant-salons') || this.salonsConnus).filter(n => ACCES.simplifier(n) !== cle)).slice(0, MAX_SALONS);
+          ecrireStockage('brillant-salons', this.salonsConnus);
+          ecrireStockage('bg-dernier-salon', nom);
+        },
+        oublierSalon: function(nom) {
+          var cle = ACCES.simplifier(nom);
+          this.salonsConnus = this.salonsConnus.filter(n => ACCES.simplifier(n) !== cle);
+          ecrireStockage('brillant-salons', this.salonsConnus);
+          if (ACCES.simplifier(lireStockage('bg-dernier-salon') || '') === cle) {
+            if (this.salonsConnus.length) ecrireStockage('bg-dernier-salon', this.salonsConnus[0]);
+            else effacerStockage('bg-dernier-salon');
+          }
+          if (ACCES.simplifier(this.channelInput) === cle) this.channelInput = this.salonsConnus[0] || '';
+        },
+
+        // ---------- Sauvegarde et démarrage ----------
+        sauvegarder: function() {
+          if (this._restauration) return;
+          ecrireStockage(CLE_SAUVEGARDE, {
+            pseudo: this.pseudoInput, salon: this.roomCode, role: this.role, etat: this.etat,
+            jeuHote: this.role === 'hote' ? jeuHote : null, salle: this.role === 'hote' ? salle : null,
+            historique: this.historique.slice(-60)
+          });
+        },
+        demarrer: function() {
+          var sv = lireStockage(CLE_SAUVEGARDE);
+          monPseudo = this.moi;
+          if (sv && sv.role && sv.salon && sv.etat) {
+            this._restauration = true;
+            if (sv.historique) this.historique = sv.historique;
+            this.etat = sv.etat;
+            this._restauration = false;
+            this.role = sv.role;
+            this.roomCode = sv.salon;
+            this.onglet = 'play';
+            this.connexion = 'perdue';
+            if (sv.role === 'hote') {
+              jeuHote = sv.jeuHote || copie(sv.etat);
+              salle = sv.salle || { infos: {} };
+              Object.values(salle.infos).forEach(i => { i.connecte = false; });
+              this.majJoueurs();
+              this.creerPartie(true);
+            } else {
+              this.rejoindrePartie(true);
+            }
+            this.ajouterLog('Partie restaurée, reconnexion au salon…', true);
+            return;
+          }
+          if (sv && sv.historique) this.historique = sv.historique;
+          var dernier = lireStockage('bg-dernier-salon');
+          if (this.entreeAuto && dernier && this.pseudoInput.trim()) {
+            this.channelInput = dernier;
+            this.entrerSalon(true);
+          }
+        },
+
+        // ---------- Entrée dans un salon ----------
+        validerPseudo: function() {
+          monPseudo = this.pseudoInput.trim();
+          if (!monPseudo) { alert('Merci de saisir un pseudo.'); return false; }
+          return true;
+        },
+        entrerSalon: function(silencieux) {
+          if (this.role || this._entree) return;
+          if (silencieux ? !this.pseudoInput.trim() : !this.validerPseudo()) return;
+          monPseudo = this.pseudoInput.trim();
+          if (!this.channelInput.trim()) { if (!silencieux) alert('Saisis un nom de salon.'); return; }
+          this._entree = { essais: 0, silencieux: !!silencieux };
+          this.entreeEnCours = true;
+          this.creerPartie(false);
+        },
+        finEntree: function(reussie, message) {
+          var e = this._entree;
+          this._entree = null;
+          this.entreeEnCours = false;
+          if (reussie) this.retenirSalon(this.roomCode);
+          else if (e && !e.silencieux && message) alert(message);
+        },
+        suiteEntree: function() {
+          var e = this._entree;
+          if (!e) return;
+          this.reinitialiserPeer(false);
+          if (++e.essais >= 4) return this.finEntree(false, 'Impossible d\'entrer dans le salon pour le moment. Réessaie dans un instant.');
+          setTimeout(() => { if (this._entree === e && !this.role) this.creerPartie(false); }, 1200);
+        },
+        quitterSalon: function() {
+          var enCours = this.etat && this.etat.plateau && !this.etat.fin;
+          if (!confirm(enCours ? 'Quitter le salon ? La partie en cours sera interrompue.' : 'Quitter le salon ?')) return;
+          this.sortirDuSalon();
+        },
+        sortirDuSalon: function() {
+          if (this.role === 'client' && peer) {
+            this.envoyerHote({ action: 'DEPART' });
+            var ancienPeer = peer;
+            peer = null;
+            setTimeout(() => { try { ancienPeer.destroy(); } catch (e) {} }, 400);
+          }
+          this.reinitialiserPeer(false);
+          jeuHote = null;
+          salle = { infos: {} };
+          this.etat = null;
+          this.ajouterLog('Tu as quitté le salon.', true);
+          this.sauvegarder();
+        },
+        reinitialiserPeer: function(garder) {
+          clearTimeout(this._timerReco);
+          var ancien = peer;
+          peer = null;
+          connections = [];
+          connParPseudo = {};
+          hostConn = null;
+          if (ancien) { try { ancien.destroy(); } catch (e) {} }
+          if (!garder) {
+            this.role = null;
+            this.joueurs = [];
+            this.roomCode = '';
+            this.connexion = 'aucune';
+          }
+        },
+        planifierReconnexion: function(delai) {
+          clearTimeout(this._timerReco);
+          this._timerReco = setTimeout(() => {
+            if (!this.role || this.connexion === 'ok') return;
+            if (this.role === 'hote') return this.creerPartie(true);
+            // L'hôte reste introuvable : on rouvre le salon avec notre copie de la partie
+            this._echecsClient = (this._echecsClient || 0) + 1;
+            if (this._echecsClient >= 4 && this.etat) {
+              this._echecsClient = 0;
+              return this.reprendreLeSalon();
+            }
+            this.rejoindrePartie(true);
+          }, delai || 3000);
+        },
+        reprendreLeSalon: function() {
+          jeuHote = copie(this.etat);
+          salle = { infos: {} };
+          jeuHote.ordre.forEach(p => { if (p !== monPseudo) salle.infos[p] = { connecte: false, clientId: null }; });
+          this._repriseParClient = true;
+          this.role = 'hote';
+          this.ajouterLog('L\'hôte ne répond plus : tu rouvres le salon.', true);
+          this.creerPartie(true);
+        },
+
+        // ---------- Hôte ----------
+        creerPartie: function(reprise) {
+          var nom = reprise ? this.roomCode : this.channelInput.trim();
+          this.reinitialiserPeer(!!reprise);
+          this.connexion = reprise ? 'perdue' : 'connexion';
+          var monPeer = peer = new Peer(ACCES.idSalon(nom, JEU_RESEAU));
+          monPeer.on('open', () => {
+            if (peer !== monPeer) return;
+            this.role = 'hote';
+            this.connexion = 'ok';
+            this.roomCode = nom;
+            this._echecsReprise = 0;
+            if (reprise) {
+              this._repriseParClient = false;
+              this.ajouterLog('Salon récupéré, l\'autre joueur va se reconnecter.', true);
+            } else {
+              if (!(this._entree && this._entree.silencieux)) this.onglet = 'play';
+              this.finEntree(true);
+              salle = { infos: {} };
+              jeuHote = nouveauJeu([monPseudo]);
+              this.ajouterLog(monPseudo + ' a ouvert le salon.', true);
+            }
+            this.publier();
+          });
+          monPeer.on('connection', (conn) => this.brancherClient(conn));
+          monPeer.on('disconnected', () => {
+            if (peer === monPeer && !monPeer.destroyed) {
+              setTimeout(() => { try { if (monPeer.disconnected && !monPeer.destroyed) monPeer.reconnect(); } catch (e) {} }, 1000);
+            }
+          });
+          monPeer.on('error', (err) => {
+            if (peer !== monPeer) return;
+            if (reprise || this.role === 'hote') {
+              if (err.type === 'peer-unavailable') return;
+              this.connexion = 'perdue';
+              var seuil = this._repriseParClient ? 1 : 5;
+              if (err.type === 'unavailable-id' && (this._echecsReprise = (this._echecsReprise || 0) + 1) >= seuil) {
+                this._echecsReprise = 0;
+                this._repriseParClient = false;
+                this.role = 'client';
+                jeuHote = null;
+                salle = { infos: {} };
+                this.ajouterLog('Le salon est tenu par l\'autre joueur : tu le rejoins.', true);
+                return this.rejoindrePartie(true);
+              }
+              this.planifierReconnexion(3000);
+              return;
+            }
+            if (this._entree && err.type === 'unavailable-id') return this.rejoindrePartie(false);
+            if (this._entree) return this.suiteEntree();
+            this.reinitialiserPeer(false);
+            alert('Erreur : ' + err.message);
+          });
+        },
+        brancherClient: function(conn) {
+          connections.push(conn);
+          conn.dernierMsg = Date.now();
+          conn.on('data', (data) => { conn.dernierMsg = Date.now(); this.recevoirDeClient(conn, data); });
+          conn.on('close', () => this.perteClient(conn));
+          conn.on('error', () => this.perteClient(conn));
+        },
+        broadcast: function(data) {
+          connections.forEach(c => { try { if (c.open) c.send(data); } catch (e) {} });
+        },
+        majJoueurs: function() {
+          if (this.role !== 'hote' || !jeuHote) return;
+          this.joueurs = jeuHote.ordre.map(p => ({ pseudo: p, hote: p === monPseudo,
+            connecte: p === monPseudo || !!(salle.infos[p] && salle.infos[p].connecte) }));
+        },
+        diffuser: function() {
+          this.majJoueurs();
+          this.broadcast({ action: 'ETAT', jeu: this.etat, joueurs: this.joueurs });
+        },
+        recevoirDeClient: function(conn, data) {
+          var p = conn.joueurPseudo;
+          switch (data.action) {
+            case 'PING': break;
+            case 'REJOINDRE': {
+              var pseudo = String(data.pseudo || '').trim().slice(0, 20);
+              var existant = salle.infos[pseudo];
+              var refus = '';
+              if (!pseudo || pseudo === monPseudo || (existant && existant.connecte && existant.clientId !== data.clientId
+                                           && connParPseudo[pseudo] && connParPseudo[pseudo] !== conn)) refus = 'Ce pseudo est déjà utilisé dans ce salon.';
+              else if (jeuHote.ordre.indexOf(pseudo) === -1 && jeuHote.ordre.length >= 2) refus = 'Ce salon est complet : une partie de backgammon se joue à deux.';
+              if (refus) {
+                try { conn.send({ action: 'REFUS', fatal: true, message: refus }); } catch (e) {}
+                setTimeout(() => { try { conn.close(); } catch (e) {} }, 500);
+                return;
+              }
+              var ancienne = connParPseudo[pseudo];
+              if (ancienne && ancienne !== conn) {
+                ancienne._remplacee = true;
+                connections = connections.filter(c => c !== ancienne);
+                try { ancienne.close(); } catch (e) {}
+              }
+              conn.joueurPseudo = pseudo;
+              connParPseudo[pseudo] = conn;
+              salle.infos[pseudo] = { connecte: true, clientId: data.clientId };
+              if (jeuHote.ordre.indexOf(pseudo) !== -1) {
+                this.ajouterLog(pseudo + ' est revenu.', true);
+              } else {
+                jeuHote.ordre.push(pseudo);
+                this.ajouterLog(pseudo + ' a rejoint le salon.', true);
+                // Deux joueurs : la partie commence
+                if (!jeuHote.plateau || jeuHote.fin) nouvelleManche(jeuHote);
+              }
+              this.publier();
+              break;
+            }
+            case 'DEPART':
+              if (!p) return;
+              delete connParPseudo[p];
+              delete salle.infos[p];
+              jeuHote.ordre = jeuHote.ordre.filter(x => x !== p);
+              if (jeuHote.plateau) {
+                jeuHote.plateau = null; jeuHote.tour = null; jeuHote.fin = null; jeuHote.offre = null;
+                jeuHote.seq++;
+              }
+              this.ajouterLog(p + ' a quitté le salon.', true);
+              this.publier();
+              break;
+            case 'JEU': {
+              if (!p) return;
+              var err = agir(jeuHote, p, data.a || {});
+              if (err) { try { conn.send({ action: 'REFUS', message: err }); } catch (e) {} this.diffuser(); return; }
+              this.publier();
+              break;
+            }
+          }
+        },
+        perteClient: function(conn) {
+          if (conn._perdue) return;
+          conn._perdue = true;
+          connections = connections.filter(c => c !== conn);
+          var p = conn.joueurPseudo;
+          if (!p || conn._remplacee || connParPseudo[p] !== conn) return;
+          delete connParPseudo[p];
+          if (salle.infos[p]) salle.infos[p].connecte = false;
+          this.ajouterLog(p + ' s\'est déconnecté (il peut revenir).', true);
+          this.diffuser();
+          this.sauvegarder();
+        },
+
+        // ---------- Client ----------
+        rejoindrePartie: function(reprise) {
+          var nom = reprise ? this.roomCode : this.channelInput.trim();
+          this.reinitialiserPeer(!!reprise);
+          this.connexion = reprise ? 'perdue' : 'connexion';
+          var monPeer = peer = new Peer();
+          monPeer.on('open', () => {
+            if (peer !== monPeer) return;
+            var conn = hostConn = monPeer.connect(ACCES.idSalon(nom, JEU_RESEAU), { reliable: true });
+            var delai = setTimeout(() => {
+              if (hostConn !== conn || this.connexion === 'ok') return;
+              if (this.role) this.planifierReconnexion();
+              else if (this._entree) this.suiteEntree();
+              else this.reinitialiserPeer(false);
+            }, 10000);
+            conn.on('open', () => {
+              if (hostConn !== conn) return;
+              clearTimeout(delai);
+              dernierMsgHote = Date.now();
+              this.connexion = 'ok';
+              this.role = 'client';
+              this.roomCode = nom;
+              this._echecsClient = 0;
+              if (!reprise) {
+                if (!(this._entree && this._entree.silencieux)) this.onglet = 'play';
+                this.finEntree(true);
+              }
+              conn.send({ action: 'REJOINDRE', pseudo: monPseudo, clientId: clientId });
+            });
+            conn.on('data', (data) => {
+              if (hostConn !== conn) return;
+              dernierMsgHote = Date.now();
+              this.recevoirDeHote(data);
+            });
+            conn.on('close', () => { if (hostConn === conn) this.perteHote(); });
+            conn.on('error', () => { if (hostConn === conn) this.perteHote(); });
+          });
+          monPeer.on('disconnected', () => { if (peer === monPeer && !monPeer.destroyed) { try { monPeer.reconnect(); } catch (e) {} } });
+          monPeer.on('error', () => {
+            if (peer !== monPeer) return;
+            if (this.role) { this.connexion = 'perdue'; this.planifierReconnexion(); }
+            else if (this._entree) this.suiteEntree();
+            else { this.reinitialiserPeer(false); alert('Impossible de joindre ce salon.'); }
+          });
+        },
+        perteHote: function() {
+          if (this.connexion === 'perdue' && this._timerReco) return;
+          if (this.connexion === 'ok') this.ajouterLog('Connexion à l\'hôte perdue, reconnexion…', true);
+          var c = hostConn;
+          hostConn = null;
+          if (c) { try { c.close(); } catch (e) {} }
+          this.connexion = 'perdue';
+          this.planifierReconnexion(1500);
+        },
+        envoyerHote: function(data) {
+          if (hostConn && hostConn.open && this.connexion === 'ok') { try { hostConn.send(data); } catch (e) {} }
+        },
+        recevoirDeHote: function(data) {
+          switch (data.action) {
+            case 'PING': break;
+            case 'ETAT':
+              this.joueurs = data.joueurs || [];
+              if (data.jeu) this.appliquerJeu(data.jeu);
+              break;
+            case 'REFUS':
+              if (data.fatal) { alert(data.message); this.reinitialiserPeer(false); this.etat = null; this.sauvegarder(); }
+              else this.afficherMessage(data.message);
+              break;
+          }
+        },
+
+        // ---------- Surveillance de la connexion ----------
+        battement: function() {
+          var maintenant = Date.now();
+          if (this.role === 'hote' && peer) {
+            connections.slice().forEach(c => {
+              try { if (c.open) c.send({ action: 'PING' }); } catch (e) {}
+              if (maintenant - (c.dernierMsg || maintenant) > DELAI_SILENCE) { try { c.close(); } catch (e) {} this.perteClient(c); }
+            });
+            if (peer.destroyed) this.planifierReconnexion(500);
+            else if (peer.disconnected) { try { peer.reconnect(); } catch (e) {} }
+          } else if (this.role === 'client' && this.connexion === 'ok') {
+            this.envoyerHote({ action: 'PING' });
+            if (maintenant - dernierMsgHote > DELAI_SILENCE) this.perteHote();
+          }
+        },
+        auRetourPremierPlan: function() {
+          this.majVeille();
+          if (document.visibilityState === 'hidden' || !this.role) return;
+          if (this.role === 'hote') {
+            if (!peer || peer.destroyed) this.creerPartie(true);
+            else if (peer.disconnected) { try { peer.reconnect(); } catch (e) {} }
+          } else if (this.connexion !== 'ok' || Date.now() - dernierMsgHote > 8000) {
+            this.connexion = 'perdue';
+            this.rejoindrePartie(true);
+          }
+        },
+
+        // ---------- Écran toujours allumé ----------
+        veilleVoulue: function() {
+          return this.veilleSupportee && this.garderEcran && document.visibilityState === 'visible' && !!this.role;
+        },
+        majVeille: function() {
+          if (!this.veilleSupportee) return;
+          if (this.veilleVoulue()) {
+            if (this._verrou || this._demandeVerrou) return;
+            this._demandeVerrou = true;
+            navigator.wakeLock.request('screen').then(verrou => {
+              this._demandeVerrou = false;
+              if (!this.veilleVoulue()) { verrou.release(); return; }
+              this._verrou = verrou;
+              this.veilleActive = true;
+              verrou.addEventListener('release', () => { if (this._verrou === verrou) { this._verrou = null; this.veilleActive = false; } });
+            }).catch(() => {
+              this._demandeVerrou = false;
+              if (!this._attenteGeste) {
+                this._attenteGeste = () => {
+                  document.removeEventListener('pointerup', this._attenteGeste);
+                  this._attenteGeste = null;
+                  this.majVeille();
+                };
+                document.addEventListener('pointerup', this._attenteGeste);
+              }
+            });
+          } else if (this._verrou) {
+            var v = this._verrou;
+            this._verrou = null;
+            this.veilleActive = false;
+            v.release().catch(() => {});
+          }
+        }
+      }
+    });
+  </script>
+</body>
+</html>
