@@ -53,6 +53,8 @@
     .feuille td.jouable.nul { color: #b07a7a; background: #fbf1f1; box-shadow: inset 0 0 0 1.5px #e6c3c3; }
     .feuille td.choisi { background: #2f8a5b; color: #fff; box-shadow: none; }
     .feuille td.choisi.nul { background: #b04a4a; color: #fff; }
+    .feuille td.annoncable { box-shadow: inset 0 0 0 1.5px #c7b5ea; cursor: pointer; }
+    .feuille td.annonce { background: #7b5cc4; color: #fff; font-weight: 700; box-shadow: none; }
     .feuille td.dernier { animation: eclat 1.2s ease-out 2; }
     @keyframes eclat { 0% { background: #ffe08a; } 100% { background: #fff; } }
     .feuille tr.somme td { background: #eef2f5; font-weight: 700; height: 22px; font-size: 0.92em; }
@@ -121,7 +123,7 @@
         </div>
         <div>
           <h1>Yams</h1>
-          <p>Désdale · 5 dés, 4 colonnes</p>
+          <p>Désdale · 5 dés, 5 colonnes</p>
         </div>
       </header>
 
@@ -183,10 +185,10 @@
         <ul>
           <li>À ton tour : jusqu'à <strong>3 lancers</strong>. Entre deux lancers, touche les dés à <strong>garder</strong>.</li>
           <li>Ensuite tu inscris ton score dans <strong>une case</strong> (0 si la combinaison n'y est pas : la case est barrée).</li>
-          <li><strong>↓ Descendante</strong> : de haut en bas, dans l'ordre. <strong>↑ Montante</strong> : de bas en haut. <strong>Libre</strong> : dans l'ordre que tu veux. <strong>Sec</strong> : seulement avec ton <strong>1er lancer</strong>.</li>
+          <li><strong>↓ Descendante</strong> : de haut en bas, dans l'ordre. <strong>↑ Montante</strong> : de bas en haut. <strong>Libre</strong> : dans l'ordre que tu veux. <strong>Sec</strong> : seulement avec ton <strong>1er lancer</strong>. <strong>Imp. (Imposée)</strong> : avant ton 1er lancer, touche la case que tu vises dans cette colonne ; tu devras t'y inscrire à la fin du tour.</li>
           <li><strong>1 à 6</strong> : total des dés de ce chiffre. <strong>Bonus +35</strong> si le haut d'une colonne atteint 63.</li>
           <li><strong>Brelan</strong> : 3 dés identiques (leur total). <strong>Carré</strong> : 4 identiques (leur total). <strong>Full</strong> (3 + 2) : 25. <strong>Petite suite</strong> (4 qui se suivent) : 30. <strong>Grande suite</strong> (5) : 40. <strong>Yams</strong> (5 identiques) : 50. <strong>Chance</strong> : total des 5 dés.</li>
-          <li>La partie finit quand toutes les feuilles sont pleines (52 tours chacun). Le plus gros total gagne.</li>
+          <li>La partie finit quand toutes les feuilles sont pleines (65 tours chacun). Le plus gros total gagne.</li>
         </ul>
       </details>
 
@@ -229,14 +231,14 @@
           <span v-for="s in spectateurs" :key="'s' + s" class="joueur spectateur">👀 {{ s }}</span>
         </div>
         <div class="joueurs-bande" v-else>
-          <span class="joueur moi">Tour <strong>{{ Math.min(52, casesRemplies(etat.feuilles[pseudoVue]) + 1) }}</strong>/52</span>
+          <span class="joueur moi">Tour <strong>{{ Math.min(nbCases, casesRemplies(etat.feuilles[pseudoVue]) + 1) }}</strong>/{{ nbCases }}</span>
           <span class="joueur" v-if="record">🏆 <strong>{{ record }}</strong></span>
         </div>
 
         <div class="consigne" :class="{ alerte: !!message }">{{ message || consigne }}</div>
 
         <table class="feuille" v-if="feuilleVue">
-          <colgroup><col style="width: 25%"><col v-for="c in COLONNES" :key="c.id"></colgroup>
+          <colgroup><col style="width: 22%"><col v-for="c in COLONNES" :key="c.id"></colgroup>
           <thead>
             <tr><th></th><th v-for="c in COLONNES" :key="c.id" class="col">{{ c.court }}</th></tr>
           </thead>
@@ -248,7 +250,7 @@
               </tr>
               <template v-if="i === 5">
                 <tr class="somme" :key="'haut'">
-                  <td class="lib">Total haut</td>
+                  <td class="lib">Haut</td>
                   <td v-for="c in COLONNES" :key="c.id">{{ totauxVue.cols[c.id].haut }}</td>
                 </tr>
                 <tr class="somme" :key="'bonus'">
@@ -349,7 +351,8 @@
       { id: 'desc',  nom: 'Descendante', court: '↓' },
       { id: 'libre', nom: 'Libre',       court: 'Libre' },
       { id: 'mont',  nom: 'Montante',    court: '↑' },
-      { id: 'sec',   nom: 'Sec',         court: 'Sec' }
+      { id: 'sec',   nom: 'Sec',         court: 'Sec' },
+      { id: 'impose', nom: 'Imposée',    court: 'Imp.' }
     ];
     const LIGNES = [
       { id: '1', nom: 'les 1', court: '1' }, { id: '2', nom: 'les 2', court: '2' }, { id: '3', nom: 'les 3', court: '3' },
@@ -363,7 +366,7 @@
       { id: 'chance', nom: 'Chance', court: 'Chance' }
     ];
     const IDS_LIGNES = LIGNES.map(l => l.id);
-    const NB_CASES = COLONNES.length * LIGNES.length; // 52 tours par joueur
+    const NB_CASES = COLONNES.length * LIGNES.length; // 65 tours par joueur
     const SEUIL_BONUS = 63, BONUS = 35;
     // Points des dés (cases de la grille 3×3 : 0 1 2 / 3 4 5 / 6 7 8)
     const PIPS = { 1: [4], 2: [2, 6], 3: [2, 4, 6], 4: [0, 2, 6, 8], 5: [0, 2, 4, 6, 8], 6: [0, 2, 3, 5, 6, 8] };
@@ -387,10 +390,20 @@
       return 0;
     }
     function nouvelleFeuille() { var f = {}; COLONNES.forEach(c => f[c.id] = {}); return f; }
-    function casesRemplies(f) { return f ? COLONNES.reduce((n, c) => n + Object.keys(f[c.id]).length, 0) : 0; }
-    // Peut-on inscrire dans cette case ? (ordre des colonnes ↓ et ↑, Sec au 1er lancer)
-    function caseAutorisee(f, col, ligne, lancer) {
+    function casesRemplies(f) { return f ? COLONNES.reduce((n, c) => n + Object.keys(f[c.id] || {}).length, 0) : 0; }
+    // Parties commencées avec une ancienne version : on ajoute les colonnes manquantes
+    function completerFeuilles(jeu) {
+      if (!jeu || !jeu.feuilles) return jeu;
+      Object.values(jeu.feuilles).forEach(f => COLONNES.forEach(c => { if (!f[c.id]) f[c.id] = {}; }));
+      if (jeu.tour && jeu.tour.annonce === undefined) jeu.tour.annonce = null;
+      return jeu;
+    }
+    // Peut-on inscrire dans cette case ? (ordre des colonnes ↓ et ↑, Sec au 1er lancer,
+    // Imposée : la case annoncée avant le 1er lancer, et alors seulement elle)
+    function caseAutorisee(f, col, ligne, lancer, annonce) {
       if (!f || !f[col] || f[col][ligne] !== undefined || lancer < 1) return false;
+      if (annonce) return col === 'impose' && ligne === annonce;
+      if (col === 'impose') return false;
       var vides = IDS_LIGNES.filter(l => f[col][l] === undefined);
       if (col === 'desc') return vides[0] === ligne;
       if (col === 'mont') return vides[vides.length - 1] === ligne;
@@ -412,7 +425,7 @@
 
     // ================== MOTEUR DE PARTIE ==================
     // Le même moteur sert en solo et chez l'hôte (seul arbitre en salon : il lance les dés et vérifie tout).
-    function tourVide(joueur) { return { joueur: joueur || null, lancer: 0, des: [0, 0, 0, 0, 0], garde: [false, false, false, false, false] }; }
+    function tourVide(joueur) { return { joueur: joueur || null, lancer: 0, des: [0, 0, 0, 0, 0], garde: [false, false, false, false, false], annonce: null }; }
     function nouveauJeu(ordre, premier, solo) {
       var jeu = { partieId: nouvelId(), solo: !!solo, ordre: ordre.slice(), feuilles: {}, partis: [],
                   tour: null, seq: 0, evt: null, fin: null, premier: premier || 0, dernierJoueur: null };
@@ -455,6 +468,15 @@
         jeu.seq++; jeu.evt = { n: jeu.seq, type: 'garde', joueur: joueur };
         return null;
       }
+      if (a.type === 'ANNONCER') {
+        // Imposée : on choisit sa case avant le 1er lancer (null = on retire l'annonce)
+        if (t.lancer > 0) return 'L\'Imposée s\'annonce avant le 1er lancer.';
+        var fi = jeu.feuilles[joueur].impose;
+        if (a.ligne && (IDS_LIGNES.indexOf(a.ligne) === -1 || fi[a.ligne] !== undefined)) return 'Cette case est déjà remplie.';
+        t.annonce = a.ligne || null;
+        jeu.seq++; jeu.evt = { n: jeu.seq, type: 'annonce', joueur: joueur, ligne: t.annonce };
+        return null;
+      }
       if (a.type === 'LANCER') {
         if (t.lancer >= 3) return 'Plus de lancer : choisis une case.';
         var garde = t.lancer === 0 ? nettoyerGarde() : nettoyerGarde(a.garde);
@@ -467,7 +489,7 @@
       }
       if (a.type === 'INSCRIRE') {
         var f = jeu.feuilles[joueur];
-        if (!caseAutorisee(f, a.col, a.ligne, t.lancer)) return 'Cette case n\'est pas disponible.';
+        if (!caseAutorisee(f, a.col, a.ligne, t.lancer, t.annonce)) return t.annonce ? 'Tu as annoncé ta case Imposée : inscris-toi là.' : 'Cette case n\'est pas disponible.';
         var pts = points(a.ligne, t.des);
         f[a.col][a.ligne] = pts;
         jeu.seq++; jeu.evt = { n: jeu.seq, type: 'inscription', joueur: joueur, col: a.col, ligne: a.ligne, pts: pts };
@@ -503,7 +525,7 @@
     new Vue({
       el: '#app',
       data: {
-        COLONNES: COLONNES, LIGNES: LIGNES, PIPS: PIPS,
+        COLONNES: COLONNES, LIGNES: LIGNES, PIPS: PIPS, nbCases: NB_CASES,
         version: VERSION,
         onglet: 'config',
         pseudoInput: pseudoSauvegarde(),
@@ -603,16 +625,21 @@
           if (!e.solo && t.lancer === 0 && ev && ev.type === 'inscription' && ev.joueur !== t.joueur) {
             avant = ev.joueur + ' : ' + (ev.pts ? ev.pts + ' en ' : 'barre ') + this.nomLigne(ev.ligne) + ' (' + this.nomColonne(ev.col) + '). ';
           }
+          var imp = t.annonce ? 'Imposée : ' + this.nomLigne(t.annonce) + '. ' : '';
           if (this.monTour) {
-            if (t.lancer === 0) return e.solo ? 'Lance les dés.' : avant + 'À toi ! Lance les dés.';
+            if (t.lancer === 0) {
+              if (t.annonce) return 'Imposée annoncée : ' + this.nomLigne(t.annonce) + '. Lance les dés.';
+              return (e.solo ? '' : avant + 'À toi ! ') + 'Lance les dés, ou annonce d\'abord une case Imposée.';
+            }
+            if (t.annonce) return imp + (t.lancer < 3 ? 'Garde des dés et relance, ou inscris-toi.' : 'Inscris ton score.');
             if (t.lancer === 1) return 'Garde des dés et relance, ou choisis une case (Sec possible).';
             if (t.lancer === 2) return 'Encore un lancer possible, ou choisis une case.';
             return 'Choisis une case pour inscrire ton score.';
           }
           if (this.role && this.connexion !== 'ok') return 'Connexion perdue : reconnexion en cours…';
           var n = t.lancer;
-          if (!n) return avant + 'Au tour de ' + t.joueur + '.';
-          return t.joueur + ' joue · ' + (n === 1 ? '1er' : n + 'e') + ' lancer';
+          if (!n) return avant + 'Au tour de ' + t.joueur + '.' + (t.annonce ? ' Il annonce ' + this.nomLigne(t.annonce) + ' en Imposée.' : '');
+          return t.joueur + ' joue · ' + (n === 1 ? '1er' : n + 'e') + ' lancer' + (t.annonce ? ' · Imposée : ' + this.nomLigne(t.annonce) : '');
         },
         // ---------- Top 10 solo ----------
         salonClassement: function() { return this.role ? this.roomCode : this.channelInput; },
@@ -673,7 +700,7 @@
         // ---------- Feuille ----------
         caseJouable: function(col, ligne) {
           return this.monTour && this.pseudoVue === this.moi && !this.desRoulent &&
-                 caseAutorisee(this.feuilleVue, col, ligne, this.etat.tour.lancer);
+                 caseAutorisee(this.feuilleVue, col, ligne, this.etat.tour.lancer, this.etat.tour.annonce);
         },
         classeCase: function(col, ligne) {
           var v = this.feuilleVue[col][ligne], e = this.etat.evt;
@@ -681,7 +708,11 @@
             return { rempli: true, zero: v === 0,
                      dernier: e && e.type === 'inscription' && e.joueur === this.pseudoVue && e.col === col && e.ligne === ligne };
           }
-          if (!this.caseJouable(col, ligne)) return {};
+          var t = this.etat.tour;
+          var annoncee = col === 'impose' && t.annonce === ligne && t.joueur === this.pseudoVue && !this.etat.fin;
+          if (!this.caseJouable(col, ligne)) {
+            return { annonce: annoncee, annoncable: col === 'impose' && this.monTour && t.lancer === 0 && this.pseudoVue === this.moi };
+          }
           var choisi = this.selection && this.selection.col === col && this.selection.ligne === ligne;
           return { jouable: true, choisi: choisi, nul: points(ligne, this.etat.tour.des) === 0 };
         },
@@ -689,6 +720,8 @@
           var v = this.feuilleVue[col][ligne];
           if (v !== undefined) return v === 0 ? '' : v;
           if (this.caseJouable(col, ligne)) return points(ligne, this.etat.tour.des);
+          var t = this.etat.tour;
+          if (col === 'impose' && t.annonce === ligne && t.joueur === this.pseudoVue && t.lancer === 0) return '★';
           return '';
         },
         texteBonus: function(col) {
@@ -698,7 +731,15 @@
           return t.haut ? '−' + (SEUIL_BONUS - t.haut) : '';
         },
         toucherCase: function(col, ligne) {
+          var t = this.etat.tour;
+          // Imposée : avant le 1er lancer, toucher une case vide l'annonce (la retoucher annule)
+          if (col === 'impose' && this.monTour && t.lancer === 0 && this.pseudoVue === this.moi && this.feuilleVue.impose[ligne] === undefined) {
+            if (this.sonActif) Sons.jouer('toc');
+            return this.jouer({ type: 'ANNONCER', ligne: t.annonce === ligne ? null : ligne });
+          }
           if (!this.caseJouable(col, ligne)) {
+            if (this.monTour && t.annonce && t.lancer > 0) return this.afficherMessage('Tu as annoncé ' + this.nomLigne(t.annonce) + ' en Imposée : inscris-toi là.');
+            if (col === 'impose' && this.monTour && t.lancer > 0) return this.afficherMessage('Imposée : la case s\'annonce avant le 1er lancer.');
             if (this.monTour && this.pseudoVue !== this.moi) { this.vue = this.moi; return; }
             if (this.monTour && this.etat.tour.lancer === 0) return this.afficherMessage('Lance d\'abord les dés.');
             if (this.monTour && this.feuilleVue[col][ligne] === undefined) {
@@ -755,6 +796,7 @@
         },
         // Nouvelle version de la partie (locale ou reçue de l'hôte)
         appliquerJeu: function(nouveau) {
+          completerFeuilles(nouveau);
           var ancien = this.etat;
           var memePartie = ancien && nouveau && ancien.partieId === nouveau.partieId;
           if (!memePartie) { this.finMasquee = false; this.vue = ''; this.selection = null; }
@@ -971,7 +1013,8 @@
           if (sv) {
             this._restauration = true;
             if (sv.historique) this.historique = sv.historique;
-            if (sv.etat) this.etat = sv.etat;
+            if (sv.etat) this.etat = completerFeuilles(sv.etat);
+            if (sv.jeuHote) completerFeuilles(sv.jeuHote);
             monPseudo = this.moi;
             this._restauration = false;
             if (sv.role && sv.salon && sv.etat) {
@@ -992,7 +1035,7 @@
               this.ajouterLog('Partie restaurée, reconnexion au salon…', true);
               return;
             }
-            if (sv.etat && sv.etat.solo) jeuHote = copie(sv.etat);
+            if (sv.etat && sv.etat.solo) jeuHote = completerFeuilles(copie(sv.etat));
             else this.etat = null; // ancienne partie de salon : elle n'a plus lieu d'être affichée
           }
           var dernier = lireStockage('yams-dernier-salon');
