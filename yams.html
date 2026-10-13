@@ -188,8 +188,8 @@
           <li>Ensuite tu inscris ton score dans <strong>une case</strong> (0 si la combinaison n'y est pas : la case est barrée).</li>
           <li><strong>Libre</strong> : dans l'ordre que tu veux. <strong>↓ Descendante</strong> : de haut en bas, dans l'ordre. <strong>↑ Montante</strong> : de bas en haut. <strong>Sec (sèche)</strong> : seulement avec ton <strong>1er lancer</strong>. <strong>Imp. (Imposée)</strong> : juste après ton 1er lancer, touche la case que tu vises dans cette colonne ; tu peux encore relancer, mais tu devras t'y inscrire à la fin du tour.</li>
           <li><strong>1 à 6</strong> : total des dés de ce chiffre. <strong>Bonus +35</strong> si le haut d'une colonne atteint 61.</li>
+          <li><strong>Full</strong> (3 + 2) : total des dés + 30. <strong>Carré</strong> (4 identiques) : total + 20. <strong>Grande suite</strong> (2-3-4-5-6) : 50. <strong>Petite suite</strong> (1-2-3-4-5) : 45. <strong>Yams</strong> (5 identiques) : total + 50.</li>
           <li><strong>Chance +</strong> et <strong>Chance −</strong> : total des 5 dés ; la Chance − doit être strictement plus petite que la Chance + de la même colonne, sinon elle vaut 0.</li>
-          <li><strong>Carré</strong> (4 identiques) : total des dés + 20. <strong>Full</strong> (3 + 2) : total + 30. <strong>Petite suite</strong> (4 qui se suivent) : 45. <strong>Grande suite</strong> (5) : 50. <strong>Yams</strong> (5 identiques) : total + 50.</li>
           <li>Chaque colonne est multipliée par son coefficient : Libre ×1, ↓ ×2, ↑ ×3, Sec ×4, Imp. ×5.</li>
           <li>La partie finit quand toutes les feuilles sont pleines (65 tours chacun). Le plus gros total de points gagne.</li>
         </ul>
@@ -366,12 +366,12 @@
     const LIGNES = [
       { id: '1', nom: 'les 1', court: '1' }, { id: '2', nom: 'les 2', court: '2' }, { id: '3', nom: 'les 3', court: '3' },
       { id: '4', nom: 'les 4', court: '4' }, { id: '5', nom: 'les 5', court: '5' }, { id: '6', nom: 'les 6', court: '6' },
+      { id: 'full',   nom: 'Full', court: 'Full' },
+      { id: 'carre',  nom: 'Carré', court: 'Carré' },
+      { id: 'gs',     nom: 'Grande suite', court: 'G. suite' },
+      { id: 'ps',     nom: 'Petite suite', court: 'P. suite' },
       { id: 'plus',   nom: 'Chance +', court: 'Ch. +' },
       { id: 'moins',  nom: 'Chance −', court: 'Ch. −' },
-      { id: 'carre',  nom: 'Carré', court: 'Carré' },
-      { id: 'full',   nom: 'Full', court: 'Full' },
-      { id: 'ps',     nom: 'Petite suite', court: 'P. suite' },
-      { id: 'gs',     nom: 'Grande suite', court: 'G. suite' },
       { id: 'yams',   nom: 'Yams', court: 'Yams' }
     ];
     const IDS_LIGNES = LIGNES.map(l => l.id);
@@ -392,8 +392,8 @@
         case 'moins':  return somme;                                                    // total des 5 dés
         case 'carre':  return Math.max.apply(null, c) >= 4 ? somme + 20 : 0;            // 4 identiques (ou 5)
         case 'full':   return c.indexOf(3) !== -1 && c.indexOf(2) !== -1 ? somme + 30 : 0;
-        case 'ps':     return suite(c, 1, 4) || suite(c, 2, 4) || suite(c, 3, 4) ? 45 : 0;
-        case 'gs':     return suite(c, 1, 5) || suite(c, 2, 5) ? 50 : 0;
+        case 'ps':     return suite(c, 1, 5) ? 45 : 0;   // 1-2-3-4-5
+        case 'gs':     return suite(c, 2, 5) ? 50 : 0;   // 2-3-4-5-6
         case 'yams':   return c.indexOf(5) !== -1 ? somme + 50 : 0;
       }
       return 0;
