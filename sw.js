@@ -5,7 +5,7 @@
 //   version mise en ligne sur GitHub est donc visible dès le prochain lancement.
 // Pensez à changer VERSION à chaque mise en ligne (même numéro que dans commun.js et brilliant.html).
 
-const VERSION = '1.20';
+const VERSION = '1.21';
 const CACHE = 'desdale-' + VERSION;
 
 const FICHIERS = [
@@ -58,8 +58,10 @@ self.addEventListener('fetch', event => {
   // Chaque page est rangée sous sa propre adresse (sans le "?choix" éventuel).
   if (req.mode === 'navigate' || (memeSite && /\.(html|js|css)$|\/$/.test(url.pathname))) {
     const cle = url.origin + url.pathname;
+    // cache: 'no-cache' : on redemande toujours au serveur si le fichier a changé
+    // (sinon le navigateur peut resservir sa copie jusqu'à 10 minutes après une mise en ligne)
     event.respondWith(
-      fetch(req)
+      fetch(req.url, { cache: 'no-cache', credentials: 'same-origin' })
         .then(rep => {
           if (rep.ok) { const copie = rep.clone(); caches.open(CACHE).then(c => c.put(cle, copie)); }
           return rep;
