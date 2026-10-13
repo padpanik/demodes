@@ -42,8 +42,8 @@
     .feuille { width: 100%; border-collapse: separate; border-spacing: 2px; table-layout: fixed; font-size: 0.9em; }
     .feuille th { font-size: 0.82em; color: #5b6b78; font-weight: 700; padding: 2px 0; }
     .feuille th.col { background: #e3e8ec; border-radius: 6px; }
-    .feuille th.col small { display: block; font-weight: 500; font-size: 0.8em; color: #8a97a1; }
-    .feuille td { height: 25px; text-align: center; border-radius: 6px; background: #fff; padding: 0; }
+    .feuille th.col small { display: block; font-weight: 500; font-size: 0.85em; color: #8a97a1; line-height: 1; }
+    .feuille td { height: 24px; text-align: center; border-radius: 6px; background: #fff; padding: 0; }
     .feuille td.lib { text-align: left; padding-left: 6px; background: transparent; font-weight: 600; color: #3b4b57; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .feuille td.lib small { color: #8a97a1; font-weight: 500; }
     .feuille td.rempli { font-weight: 700; color: #1d2b36; }
@@ -186,10 +186,12 @@
         <ul>
           <li>À ton tour : jusqu'à <strong>3 lancers</strong>. Entre deux lancers, touche les dés à <strong>garder</strong>.</li>
           <li>Ensuite tu inscris ton score dans <strong>une case</strong> (0 si la combinaison n'y est pas : la case est barrée).</li>
-          <li><strong>↓ Descendante</strong> : de haut en bas, dans l'ordre. <strong>↑ Montante</strong> : de bas en haut. <strong>Libre</strong> : dans l'ordre que tu veux. <strong>Sec</strong> : seulement avec ton <strong>1er lancer</strong>. <strong>Imp. (Imposée)</strong> : juste après ton 1er lancer, touche la case que tu vises dans cette colonne ; tu peux encore relancer, mais tu devras t'y inscrire à la fin du tour.</li>
-          <li><strong>1 à 6</strong> : total des dés de ce chiffre. <strong>Bonus +35</strong> si le haut d'une colonne atteint 63.</li>
-          <li><strong>Brelan</strong> : 3 dés identiques (leur total). <strong>Carré</strong> : 4 identiques (leur total). <strong>Full</strong> (3 + 2) : 25. <strong>Petite suite</strong> (4 qui se suivent) : 30. <strong>Grande suite</strong> (5) : 40. <strong>Yams</strong> (5 identiques) : 50. <strong>Chance</strong> : total des 5 dés.</li>
-          <li>La partie finit quand toutes les feuilles sont pleines (65 tours chacun). Le plus gros total gagne.</li>
+          <li><strong>Libre</strong> : dans l'ordre que tu veux. <strong>↓ Descendante</strong> : de haut en bas, dans l'ordre. <strong>↑ Montante</strong> : de bas en haut. <strong>Sec (sèche)</strong> : seulement avec ton <strong>1er lancer</strong>. <strong>Imp. (Imposée)</strong> : juste après ton 1er lancer, touche la case que tu vises dans cette colonne ; tu peux encore relancer, mais tu devras t'y inscrire à la fin du tour.</li>
+          <li><strong>1 à 6</strong> : total des dés de ce chiffre. <strong>Bonus +35</strong> si le haut d'une colonne atteint 61.</li>
+          <li><strong>Chance +</strong> et <strong>Chance −</strong> : total des 5 dés ; la Chance − doit être strictement plus petite que la Chance + de la même colonne, sinon elle vaut 0.</li>
+          <li><strong>Carré</strong> (4 identiques) : total des dés + 20. <strong>Full</strong> (3 + 2) : total + 30. <strong>Petite suite</strong> (4 qui se suivent) : 45. <strong>Grande suite</strong> (5) : 50. <strong>Yams</strong> (5 identiques) : total + 50.</li>
+          <li>Chaque colonne est multipliée par son coefficient : Libre ×1, ↓ ×2, ↑ ×3, Sec ×4, Imp. ×5.</li>
+          <li>La partie finit quand toutes les feuilles sont pleines (65 tours chacun). Le plus gros total de points gagne.</li>
         </ul>
       </details>
 
@@ -241,7 +243,7 @@
         <table class="feuille" v-if="feuilleVue">
           <colgroup><col style="width: 22%"><col v-for="c in COLONNES" :key="c.id"></colgroup>
           <thead>
-            <tr><th></th><th v-for="c in COLONNES" :key="c.id" class="col">{{ c.court }}</th></tr>
+            <tr><th></th><th v-for="c in COLONNES" :key="c.id" class="col">{{ c.court }}<small>×{{ c.coef }}</small></th></tr>
           </thead>
           <tbody>
             <template v-for="(l, i) in LIGNES">
@@ -260,9 +262,13 @@
                 </tr>
               </template>
             </template>
-            <tr class="total">
+            <tr class="somme">
               <td class="lib">Total</td>
               <td v-for="c in COLONNES" :key="c.id">{{ totauxVue.cols[c.id].total }}</td>
+            </tr>
+            <tr class="total">
+              <td class="lib">Points</td>
+              <td v-for="c in COLONNES" :key="c.id">{{ totauxVue.cols[c.id].points }}</td>
             </tr>
           </tbody>
         </table>
@@ -349,61 +355,73 @@
     if (!ACCES.memorise()) location.replace('index.html');
 
     // ================== RÈGLES DU YAMS ==================
+    // Colonnes dans l'ordre de la feuille, avec leur coefficient
     const COLONNES = [
-      { id: 'desc',  nom: 'Descendante', court: '↓' },
-      { id: 'libre', nom: 'Libre',       court: 'Libre' },
-      { id: 'mont',  nom: 'Montante',    court: '↑' },
-      { id: 'sec',   nom: 'Sec',         court: 'Sec' },
-      { id: 'impose', nom: 'Imposée',    court: 'Imp.' }
+      { id: 'libre',  nom: 'Libre',       court: 'Libre', coef: 1 },
+      { id: 'desc',   nom: 'Descendante', court: '↓',     coef: 2 },
+      { id: 'mont',   nom: 'Montante',    court: '↑',     coef: 3 },
+      { id: 'sec',    nom: 'Sèche',       court: 'Sec',   coef: 4 },
+      { id: 'impose', nom: 'Imposée',     court: 'Imp.',  coef: 5 }
     ];
     const LIGNES = [
       { id: '1', nom: 'les 1', court: '1' }, { id: '2', nom: 'les 2', court: '2' }, { id: '3', nom: 'les 3', court: '3' },
       { id: '4', nom: 'les 4', court: '4' }, { id: '5', nom: 'les 5', court: '5' }, { id: '6', nom: 'les 6', court: '6' },
-      { id: 'brelan', nom: 'Brelan', court: 'Brelan' },
+      { id: 'plus',   nom: 'Chance +', court: 'Ch. +' },
+      { id: 'moins',  nom: 'Chance −', court: 'Ch. −' },
       { id: 'carre',  nom: 'Carré', court: 'Carré' },
       { id: 'full',   nom: 'Full', court: 'Full' },
       { id: 'ps',     nom: 'Petite suite', court: 'P. suite' },
       { id: 'gs',     nom: 'Grande suite', court: 'G. suite' },
-      { id: 'yams',   nom: 'Yams', court: 'Yams' },
-      { id: 'chance', nom: 'Chance', court: 'Chance' }
+      { id: 'yams',   nom: 'Yams', court: 'Yams' }
     ];
     const IDS_LIGNES = LIGNES.map(l => l.id);
     const NB_CASES = COLONNES.length * LIGNES.length; // 65 tours par joueur
-    const SEUIL_BONUS = 63, BONUS = 35;
+    const SEUIL_BONUS = 61, BONUS = 35;
     // Points des dés (cases de la grille 3×3 : 0 1 2 / 3 4 5 / 6 7 8)
     const PIPS = { 1: [4], 2: [2, 6], 3: [2, 4, 6], 4: [0, 2, 6, 8], 5: [0, 2, 4, 6, 8], 6: [0, 2, 3, 5, 6, 8] };
 
     function compter(des) { var c = [0, 0, 0, 0, 0, 0, 0]; des.forEach(d => c[d]++); return c; }
     function suite(c, debut, long) { for (var v = debut; v < debut + long; v++) if (!c[v]) return false; return true; }
-    // Points que rapportent ces dés dans une ligne
+    // Points que rapportent ces dés dans une ligne (sans tenir compte des autres cases)
     function points(ligne, des) {
       if (!des || des.some(d => !d)) return 0;
-      var c = compter(des), somme = des.reduce((a, b) => a + b, 0), v;
+      var c = compter(des), somme = des.reduce((a, b) => a + b, 0);
       if (/^[1-6]$/.test(ligne)) return c[+ligne] * (+ligne);
       switch (ligne) {
-        case 'brelan': for (v = 6; v >= 1; v--) if (c[v] >= 3) return 3 * v; return 0;
-        case 'carre':  for (v = 6; v >= 1; v--) if (c[v] >= 4) return 4 * v; return 0;
-        case 'full':   return c.indexOf(3) !== -1 && c.indexOf(2) !== -1 ? 25 : 0;
-        case 'ps':     return suite(c, 1, 4) || suite(c, 2, 4) || suite(c, 3, 4) ? 30 : 0;
-        case 'gs':     return suite(c, 1, 5) || suite(c, 2, 5) ? 40 : 0;
-        case 'yams':   return c.indexOf(5) !== -1 ? 50 : 0;
-        case 'chance': return somme;
+        case 'plus':
+        case 'moins':  return somme;                                                    // total des 5 dés
+        case 'carre':  return Math.max.apply(null, c) >= 4 ? somme + 20 : 0;            // 4 identiques (ou 5)
+        case 'full':   return c.indexOf(3) !== -1 && c.indexOf(2) !== -1 ? somme + 30 : 0;
+        case 'ps':     return suite(c, 1, 4) || suite(c, 2, 4) || suite(c, 3, 4) ? 45 : 0;
+        case 'gs':     return suite(c, 1, 5) || suite(c, 2, 5) ? 50 : 0;
+        case 'yams':   return c.indexOf(5) !== -1 ? somme + 50 : 0;
       }
       return 0;
+    }
+    // Points dans une case précise : la Chance − doit être strictement inférieure à la Chance +
+    // de la même colonne (si l'une des deux est barrée, pas de contrainte)
+    function pointsCase(f, col, ligne, des) {
+      var p = points(ligne, des), c = (f && f[col]) || {};
+      if (ligne === 'moins' && c.plus && p >= c.plus) return 0;
+      if (ligne === 'plus' && c.moins && p <= c.moins) return 0;
+      return p;
     }
     function nouvelleFeuille() { var f = {}; COLONNES.forEach(c => f[c.id] = {}); return f; }
     function casesRemplies(f) { return f ? COLONNES.reduce((n, c) => n + Object.keys(f[c.id] || {}).length, 0) : 0; }
     // Parties commencées avec une ancienne version : on ajoute les colonnes manquantes
     function completerFeuilles(jeu) {
       if (!jeu || !jeu.feuilles) return jeu;
-      Object.values(jeu.feuilles).forEach(f => COLONNES.forEach(c => { if (!f[c.id]) f[c.id] = {}; }));
+      Object.values(jeu.feuilles).forEach(f => COLONNES.forEach(c => {
+        if (!f[c.id]) f[c.id] = {};
+        Object.keys(f[c.id]).forEach(l => { if (IDS_LIGNES.indexOf(l) === -1) delete f[c.id][l]; }); // ancien barème
+      }));
       if (jeu.tour && jeu.tour.annonce === undefined) jeu.tour.annonce = null;
       return jeu;
     }
     // Peut-on inscrire dans cette case ? (ordre des colonnes ↓ et ↑, Sec au 1er lancer,
     // Imposée : la case annoncée après le 1er lancer, et alors seulement elle)
     function caseAutorisee(f, col, ligne, lancer, annonce) {
-      if (!f || !f[col] || f[col][ligne] !== undefined || lancer < 1) return false;
+      if (!f || !f[col] || IDS_LIGNES.indexOf(ligne) === -1 || f[col][ligne] !== undefined || lancer < 1) return false;
       if (annonce) return col === 'impose' && ligne === annonce;
       if (col === 'impose') return false;
       var vides = IDS_LIGNES.filter(l => f[col][l] === undefined);
@@ -418,9 +436,9 @@
         var col = (f && f[c.id]) || {}, haut = 0, bas = 0;
         IDS_LIGNES.forEach((l, i) => { if (col[l] !== undefined) { if (i < 6) haut += col[l]; else bas += col[l]; } });
         var hautPlein = IDS_LIGNES.slice(0, 6).every(l => col[l] !== undefined);
-        var bonus = haut >= SEUIL_BONUS ? BONUS : 0;
-        res.cols[c.id] = { haut: haut, bonus: bonus, bas: bas, total: haut + bonus + bas, hautPlein: hautPlein };
-        res.total += haut + bonus + bas;
+        var bonus = haut >= SEUIL_BONUS ? BONUS : 0, total = haut + bonus + bas;
+        res.cols[c.id] = { haut: haut, bonus: bonus, bas: bas, total: total, points: total * c.coef, hautPlein: hautPlein };
+        res.total += total * c.coef;
       });
       return res;
     }
@@ -492,7 +510,7 @@
       if (a.type === 'INSCRIRE') {
         var f = jeu.feuilles[joueur];
         if (!caseAutorisee(f, a.col, a.ligne, t.lancer, t.annonce)) return t.annonce ? 'Tu as annoncé ta case Imposée : inscris-toi là.' : 'Cette case n\'est pas disponible.';
-        var pts = points(a.ligne, t.des);
+        var pts = pointsCase(f, a.col, a.ligne, t.des);
         f[a.col][a.ligne] = pts;
         jeu.seq++; jeu.evt = { n: jeu.seq, type: 'inscription', joueur: joueur, col: a.col, ligne: a.ligne, pts: pts };
         passerAuSuivant(jeu, dispo);
@@ -547,8 +565,8 @@
         message: '',
         finMasquee: false,
         historique: [],
-        record: (lireStockage('yams-record') || {}).s || 0,
-        classements: lireStockage('yams-classements') || {}, // { salon: { idJoueur: { p, s, d } } }
+        record: (lireStockage('yams2-record') || {}).s || 0,
+        classements: lireStockage('yams2-classements') || {}, // { salon: { idJoueur: { p, s, d } } }
         topOuvert: false,
         topInfo: '',
         sonActif: lireStockage('brillant-son') !== false,
@@ -713,12 +731,12 @@
             return { annonce: annoncee, annoncable: col === 'impose' && this.monTour && t.lancer === 1 && !this.desRoulent && this.pseudoVue === this.moi };
           }
           var choisi = this.selection && this.selection.col === col && this.selection.ligne === ligne;
-          return { jouable: true, choisi: choisi, annonce: annoncee && !choisi, nul: points(ligne, this.etat.tour.des) === 0 };
+          return { jouable: true, choisi: choisi, annonce: annoncee && !choisi, nul: pointsCase(this.feuilleVue, col, ligne, this.etat.tour.des) === 0 };
         },
         texteCase: function(col, ligne) {
           var v = this.feuilleVue[col][ligne];
           if (v !== undefined) return v === 0 ? '' : v;
-          if (this.caseJouable(col, ligne)) return points(ligne, this.etat.tour.des);
+          if (this.caseJouable(col, ligne)) return pointsCase(this.feuilleVue, col, ligne, this.etat.tour.des);
           return '';
         },
         texteBonus: function(col) {
@@ -750,7 +768,7 @@
             return;
           }
           if (this.selection && this.selection.col === col && this.selection.ligne === ligne) return this.inscrire();
-          this.selection = { col: col, ligne: ligne, pts: points(ligne, this.etat.tour.des) };
+          this.selection = { col: col, ligne: ligne, pts: pointsCase(this.feuilleVue, col, ligne, this.etat.tour.des) };
         },
         inscrire: function() {
           var s = this.selection;
@@ -873,7 +891,7 @@
           jeu.fin.ancienRecord = ancien;
           if (score > ancien) {
             this.record = score;
-            ecrireStockage('yams-record', { s: score, d: Date.now() });
+            ecrireStockage('yams2-record', { s: score, d: Date.now() });
             this.synchroniserScores();
           }
           if (jeuHote && jeuHote.partieId === jeu.partieId) jeuHote.fin = copie(jeu.fin);
@@ -924,7 +942,7 @@
         // ---------- Classement solo partagé ----------
         tableauPour: function(salon) {
           var t = copie(this.classements[salon] || {});
-          if (this.record > 0) t[clientId] = { p: this.moi, s: this.record, d: (lireStockage('yams-record') || {}).d || 0 };
+          if (this.record > 0) t[clientId] = { p: this.moi, s: this.record, d: (lireStockage('yams2-record') || {}).d || 0 };
           return t;
         },
         fusionnerClassement: function(salon, recu) {
@@ -932,12 +950,12 @@
           var t = copie(this.classements[salon] || {}), change = false;
           Object.keys(recu).slice(0, 200).forEach(id => {
             var e = recu[id];
-            if (id === clientId || !e || typeof e.s !== 'number' || !(e.s > 0 && e.s <= 1500)) return;
+            if (id === clientId || !e || typeof e.s !== 'number' || !(e.s > 0 && e.s <= 10000)) return;
             var nouv = { p: String(e.p || '?').slice(0, 20), s: Math.round(e.s), d: Number(e.d) || 0 };
             var anc = t[id];
             if (!anc || nouv.s > anc.s || (nouv.s === anc.s && nouv.p !== anc.p && nouv.d >= anc.d)) { t[id] = nouv; change = true; }
           });
-          if (change) { this.$set(this.classements, salon, t); ecrireStockage('yams-classements', this.classements); }
+          if (change) { this.$set(this.classements, salon, t); ecrireStockage('yams2-classements', this.classements); }
         },
         partagerClassement: function() {
           if (this.role === 'client') this.envoyerHote({ action: 'CLASSEMENT', tableau: this.tableauPour(ACCES.simplifier(this.roomCode)) });
