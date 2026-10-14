@@ -93,7 +93,7 @@ Backgammon : `bg-sauvegarde`, `bg-dernier-salon`.
 - Full (3 + 2) : total des dés + 30. Carré : total + 20. Petite suite **1-2-3-4-5** : 45. Grande suite **2-3-4-5-6** : 50.
   Yams : total + 50. Chance + et Chance − : total des dés, la Chance − strictement inférieure à la Chance + de la
   même colonne, sinon la case inscrite en second vaut 0 (pas de contrainte si l'une des deux est barrée).
-- Interprétations à confirmer si besoin : un Yams compte comme carré mais pas comme full.
+- Un Yams compte comme carré mais pas comme full (confirmé par l'utilisateur).
 
 ### Backgammon
 - À deux uniquement (un 3e est refusé), pas de solo. Règles courantes : videau, gammon ×2, backgammon ×3,
