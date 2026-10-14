@@ -513,7 +513,9 @@
         var pts = pointsCase(f, a.col, a.ligne, t.des);
         f[a.col][a.ligne] = pts;
         jeu.seq++; jeu.evt = { n: jeu.seq, type: 'inscription', joueur: joueur, col: a.col, ligne: a.ligne, pts: pts };
-        passerAuSuivant(jeu, dispo);
+        // Le tour passe au joueur suivant même s'il est momentanément absent (appel, autre appli) :
+        // on l'attend, et l'hôte peut toujours « Passer son tour » s'il tarde.
+        passerAuSuivant(jeu, () => true);
         return null;
       }
       return 'Action inconnue.';
@@ -655,6 +657,7 @@
           }
           if (this.role && this.connexion !== 'ok') return 'Connexion perdue : reconnexion en cours…';
           var n = t.lancer;
+          if (this.joueurActifAbsent) return avant + t.joueur + ' est absent 💤 : on l\'attend.'
           if (!n) return avant + 'Au tour de ' + t.joueur + '.' + (t.annonce ? ' Il annonce ' + this.nomLigne(t.annonce) + ' en Imposée.' : '');
           return t.joueur + ' joue · ' + (n === 1 ? '1er' : n + 'e') + ' lancer' + (t.annonce ? ' · Imposée : ' + this.nomLigne(t.annonce) : '');
         },
