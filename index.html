@@ -42,6 +42,9 @@
     .ico-bg span { background: #8a5a35; clip-path: polygon(0 0, 100% 0, 50% 100%); }
     .ico-bg span:nth-child(even) { background: #c48a52; }
     .ico-bg span.bas { clip-path: polygon(50% 0, 100% 100%, 0 100%); }
+    /* Icône Assaut : petit plateau, deux camps et un lac */
+    .ico-as { display: grid; grid-template-columns: repeat(3, 15px); gap: 3px; flex-shrink: 0; width: 51px; }
+    .ico-as span { width: 15px; height: 15px; border-radius: 3px; }
     .titre-section { font-weight: 700; color: #5b6b78; margin: 4px 4px 10px; }
   </style>
 </head>
@@ -75,6 +78,7 @@
         <a v-for="j in jeux" :key="j.id" class="jeu" :class="{ dernier: dernierJeu === j.id }" :href="j.page" @click="retenir(j.id)">
           <div v-if="j.id === 'brilliant'" class="ico-grille"><span v-for="(c, i) in grille" :key="i" :style="{ background: c }"></span></div>
           <div v-else-if="j.id === 'yams'" class="ico-des"><span v-for="n in [5, 3, 6, 2, 4]" :key="n">{{ n }}</span></div>
+          <div v-else-if="j.id === 'assaut'" class="ico-as"><span v-for="(c, k) in ['#b5422f','#b5422f','#b5422f','#5d9bc9','#a9c08c','#5d9bc9','#2f5f9e','#2f5f9e','#2f5f9e']" :key="k" :style="{ background: c }"></span></div>
           <div v-else class="ico-bg"><span v-for="k in 6" :key="k" :class="{ bas: k > 3 }"></span></div>
           <div>
             <div class="nom">{{ j.nom }}</div>
@@ -124,11 +128,12 @@
       },
       computed: {
         jeux: function() {
-          var b = etatJeu('brillant-sauvegarde-v1'), y = etatJeu('yams-sauvegarde'), g = etatJeu('bg-sauvegarde');
+          var b = etatJeu('brillant-sauvegarde-v1'), y = etatJeu('yams-sauvegarde'), g = etatJeu('bg-sauvegarde'), a = etatJeu('assaut-sauvegarde');
           return [
             { id: 'brilliant', nom: 'Brilliant', page: 'brilliant.html', desc: 'Roll & write : remplis les zones de ta grille.', enCours: b && b.texte },
             { id: 'yams', nom: 'Yams', page: 'yams.html', desc: '5 dés, 3 lancers, 5 colonnes : libre, descendante, montante, sèche, imposée.', enCours: y && y.texte },
-            { id: 'backgammon', nom: 'Backgammon', page: 'backgammon.html', desc: 'À deux, avec le videau.', enCours: g && g.texte }
+            { id: 'backgammon', nom: 'Backgammon', page: 'backgammon.html', desc: 'À deux, avec le videau.', enCours: g && g.texte },
+            { id: 'assaut', nom: 'Assaut', page: 'assaut.html', desc: 'Stratégie à pièces cachées, contre l\'ordinateur.', enCours: a && a.texte }
           ];
         }
       },

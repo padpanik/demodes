@@ -26,6 +26,7 @@ Tout est en français : interface, commentaires du code, messages de commit, ré
 | `brilliant.html` | Brilliant (roll & write). Page autonome historique : elle a **sa propre copie** de `ACCES`, `Sons`, `Voix`, `VERSION` (n'utilise pas `commun.js`). |
 | `yams.html` | Yams, solo et à plusieurs (chacun son tour). Utilise `commun.js`. |
 | `backgammon.html` + `backgammon-regles.js` | Backgammon à deux. Le moteur de règles est dans `backgammon-regles.js` (testable avec Node). |
+| `assaut.html` + `assaut-regles.js` | Assaut (stratégie à pièces cachées, version maison du genre « Stratego », sans le nom ni les visuels de la marque). Solo contre l'ordinateur ; le jeu à deux est en cours. Moteur + ordinateur dans `assaut-regles.js` (testable avec Node). |
 | `sw.js` | Service worker (PWA) : nos fichiers en « réseau d'abord » avec `cache: 'no-cache'`, bibliothèques en cache. |
 | `manifest.webmanifest`, icônes | Installation comme application. |
 | `netlify.toml` | Inutilisé (essai d'hébergement abandonné). |
@@ -72,6 +73,7 @@ Communs : `brillant-acces`, `brillant-client-id`, `brillant-son`, `brillant-vibr
 `brillant-garder-ecran`, `brillant-entree-auto`, `brillant-salons` (liste des salons, partagée), `desdale-dernier-jeu`.
 Brilliant : `brillant-sauvegarde-v1`, `brillant-dernier-salon`, `brillant-records(-dates)`, `brillant-classements`, `brillant-rejoindre-auto`.
 Yams : `yams-sauvegarde`, `yams-dernier-salon`, `yams2-record`, `yams2-classements` (le « 2 » : barème maison).
+Assaut : `assaut-sauvegarde`, `assaut-mode`, `assaut-memoire`, `assaut-stats`, `assaut-dispositions`.
 Backgammon : `bg-sauvegarde`, `bg-dernier-salon`.
 
 ## Règles des jeux (choix de l'utilisateur, à ne pas changer sans lui)
@@ -99,6 +101,15 @@ Backgammon : `bg-sauvegarde`, `bg-dernier-salon`.
 - À deux uniquement (un 3e est refusé), pas de solo. Règles courantes : videau, gammon ×2, backgammon ×3,
   scores cumulés entre les deux mêmes joueurs. Pas de matchs en N points ni de règle de Crawford.
 - Obligation de jouer le plus de dés possible, sinon le plus fort ; tour passé automatiquement si aucun coup.
+
+### Assaut
+- Deux formats : **complet** (40 pièces : 10, 9, 8×2, 7×3, 6×4, 5×4, 4×4, 3×5, 2×8, 1, 6 bombes, drapeau)
+  et **rapide** (10 pièces : 10, 9, 3×2, 2×2, 1, 2 bombes, drapeau), plateau 10×10 avec deux lacs.
+- Numérotation moderne : Maréchal 10 … Espion 1. Règles courantes (éclaireur qui file, démineur, espion contre maréchal,
+  pas plus de 3 allers-retours). Placement au hasard puis échanges ; 3 dispositions enregistrables par format.
+- Option « garder à l'écran les pièces adverses révélées » : **désactivée par défaut** (retenir fait partie du jeu).
+- Solo contre l'ordinateur : il ne triche pas (il ne voit que ce qu'un joueur verrait).
+- À deux (à venir) : la composition de chaque joueur ne quitte jamais son téléphone ; empreinte au départ, vérification à la fin.
 
 ### Autres choix déjà tranchés
 - Annonce vocale du tour : **seulement sur le téléphone du joueur concerné**, après 5 s sans lancer.

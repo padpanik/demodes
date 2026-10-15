@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Assaut · Désdale</title>
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="theme-color" content="#f3f5f7">
+  <link rel="icon" type="image/png" href="favicon.png">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Désdale">
+  <script src="https://cdn.jsdelivr.net/npm/vue@2.7.16/dist/vue.min.js"></script>
+  <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+  <link rel="stylesheet" href="commun.css">
+  <style>
+    .logo-as { display: grid; grid-template-columns: repeat(3, 15px); gap: 3px; }
+    .logo-as span { width: 15px; height: 15px; border-radius: 3px; font-size: 9px; font-weight: 800; color: #fff; display: flex; align-items: center; justify-content: center; }
+
+    .segment { display: flex; background: #e3e8ec; border-radius: 10px; padding: 3px; gap: 3px; margin-bottom: 4px; }
+    .segment button { flex: 1; border: none; background: transparent; border-radius: 8px; padding: 9px 4px; font: inherit; font-weight: 600; color: #5b6b78; cursor: pointer; }
+    .segment button.actif { background: #fff; color: #1d2b36; box-shadow: 0 1px 3px rgba(0,0,0,0.12); }
+    .segment button small { display: block; font-weight: 500; font-size: 0.78em; color: #8a97a1; }
+
+    /* ---------- Plateau ---------- */
+    .plateau {
+      display: grid; grid-template-columns: repeat(10, 1fr); grid-template-rows: repeat(10, 1fr); gap: 1px; width: 100%; aspect-ratio: 1 / 1;
+      background: #6f8f5a; padding: 2px; border-radius: 8px; box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent;
+    }
+    .case { position: relative; background: #a9c08c; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+    .case.sombre { background: #9fb783; }
+    .case.lac { background: #5d9bc9; cursor: default; }
+    .case.zone { background: #c8d8b0; }
+    .case.cible::after { content: ''; position: absolute; inset: 1px; border-radius: 4px; box-shadow: inset 0 0 0 2px #fff; background: rgba(255,255,255,0.25); }
+    .case.attaque::after { content: ''; position: absolute; inset: 1px; border-radius: 4px; box-shadow: inset 0 0 0 2.5px #ffd54a; }
+    .case.trace { box-shadow: inset 0 0 0 2px rgba(255, 213, 74, 0.8); }
+    .piece {
+      width: 88%; height: 88%; border-radius: 5px; display: flex; align-items: center; justify-content: center; position: relative; z-index: 1;
+      font-weight: 800; font-size: 15px; color: #fff; box-shadow: inset 0 -2px 0 rgba(0,0,0,0.25), 0 1px 2px rgba(0,0,0,0.3);
+    }
+    .piece.A { background: #2f5f9e; }
+    .piece.B { background: #b5422f; }
+    .piece.dos { color: rgba(255,255,255,0.35); font-size: 11px; }
+    .piece.revelee { box-shadow: 0 0 0 2px #ffd54a, inset 0 -2px 0 rgba(0,0,0,0.25); }
+    .piece.choisie { box-shadow: 0 0 0 3px #ffd54a; transform: scale(1.06); }
+    .piece.symbole { font-size: 16px; }
+    .piece.petit { font-size: 13px; }
+
+    .consigne { min-height: 2.5em; display: flex; align-items: center; justify-content: center; text-align: center; font-size: 0.86em; color: #3b4b57; line-height: 1.3; margin: 2px 0 4px; padding: 0 4px; }
+    .consigne.alerte { color: #c0392b; font-weight: 700; }
+    .bandeau-combat { background: #fff8e1; border: 1px solid #f0d98c; border-radius: 10px; padding: 6px 10px; font-size: 0.85em; margin-bottom: 6px; line-height: 1.35; }
+    .bandeau-combat div + div { margin-top: 2px; }
+    .restants { display: flex; flex-wrap: wrap; gap: 4px; justify-content: center; margin: 6px 0; font-size: 0.78em; }
+    .restants span { background: #f3dcd8; color: #7a2d20; border-radius: 6px; padding: 2px 6px; font-weight: 700; }
+    .restants span.zero { opacity: 0.35; text-decoration: line-through; }
+    .restants .titre { background: none; color: #6b7a86; font-weight: 600; }
+    .actions { display: flex; gap: 8px; margin-top: 6px; }
+    .actions .btn { padding: 11px 6px; font-size: 0.95rem; }
+    .dispositions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; align-items: center; font-size: 0.85em; color: #6b7a86; }
+    .panneau-vide { text-align: center; padding: 40px 16px; color: #5b6b78; }
+    .panneau-vide .grand { font-size: 2.5em; margin-bottom: 8px; }
+    .regles ul { padding-left: 18px; margin: 8px 0 0; font-size: 0.88em; line-height: 1.45; color: #3b4b57; }
+    .regles li { margin-bottom: 3px; }
+    .tableau-grades { width: 100%; border-collapse: collapse; font-size: 0.85em; margin-top: 8px; }
+    .tableau-grades td { padding: 2px 4px; border-bottom: 1px solid #f0f2f4; }
+  </style>
+</head>
+<body>
+  <div id="app" class="app">
+
+    <div class="barre">
+      <div id="menu">
+        <div @click="onglet = 'config'" :class="{ actif: onglet === 'config' }">Accueil</div>
+        <div @click="onglet = 'play'" :class="{ actif: onglet === 'play' }">Jouer</div>
+      </div>
+      <a v-if="onglet === 'config'" class="lien-jeux" href="index.html?choix">⇦ Jeux</a>
+      <div class="barre-infos" v-if="onglet === 'play'">
+        <button class="btn-veille" :class="{ off: !sonActif }" @click="basculerSon">{{ sonActif ? '🔊' : '🔇' }}</button>
+        <button v-if="veilleSupportee" class="btn-veille" :class="{ actif: veilleActive, off: !garderEcran }" @click="garderEcran = !garderEcran">{{ garderEcran ? '☀️' : '🌙' }}</button>
+      </div>
+    </div>
+
+    <!-- ACCUEIL -->
+    <div v-show="onglet === 'config'">
+      <header class="hero">
+        <div class="logo-as"><span v-for="(x, k) in logo" :key="k" :style="{ background: x.c }">{{ x.t }}</span></div>
+        <div>
+          <h1>Assaut</h1>
+          <p>Désdale · stratégie à pièces cachées</p>
+        </div>
+      </header>
+
+      <section class="carte">
+        <div class="titre-carte">Partie solo <small>contre l'ordinateur</small></div>
+        <div class="segment">
+          <button :class="{ actif: mode === 'complet' }" @click="mode = 'complet'">Complète<small>40 pièces</small></button>
+          <button :class="{ actif: mode === 'rapide' }" @click="mode = 'rapide'">Rapide<small>10 pièces</small></button>
+        </div>
+        <label class="case-a-cocher"><input type="checkbox" v-model="memoire"> 👁 Garder à l'écran les pièces adverses révélées</label>
+        <div class="aide">Sans cette option, une pièce adverse vue en combat se recache : à toi de t'en souvenir.</div>
+      </section>
+      <button class="btn principal btn-large" @click="nouvellePartie">{{ partieEnCours ? 'Nouvelle partie' : 'Placer mes pièces →' }}</button>
+      <button class="btn btn-large" v-if="partieEnCours" @click="onglet = 'play'">Reprendre la partie en cours</button>
+      <p class="statut" v-if="statsTexte">{{ statsTexte }}</p>
+
+      <section class="carte">
+        <div class="titre-carte">Partie à deux</div>
+        <div class="aide" style="margin-top:0">Bientôt : chacun sur son téléphone, sans que personne ne voie l'armée de l'autre.</div>
+      </section>
+
+      <details class="carte regles">
+        <summary>Règles</summary>
+        <ul>
+          <li>Chaque camp place ses pièces face cachée dans ses 4 premières rangées. But : <strong>prendre le drapeau</strong> adverse, ou bloquer l'adversaire (il ne peut plus bouger).</li>
+          <li>À ton tour, une pièce avance d'une case (pas en diagonale, pas dans les lacs). L'<strong>éclaireur (2)</strong> file en ligne droite d'autant de cases libres qu'il veut, et peut attaquer au bout.</li>
+          <li><strong>Bombes</strong> et <strong>drapeau</strong> ne bougent jamais.</li>
+          <li>Attaquer une pièce : les deux grades sont révélés, le plus fort reste, l'autre sort. Égalité : les deux sortent.</li>
+          <li>Une <strong>bombe</strong> détruit toute pièce qui l'attaque, sauf le <strong>démineur (3)</strong>. L'<strong>espion (1)</strong> bat le maréchal (10) s'il l'attaque, mais perd contre tout le reste.</li>
+          <li>Pas plus de 3 allers-retours de suite entre les deux mêmes cases.</li>
+        </ul>
+        <table class="tableau-grades">
+          <tr v-for="g in AS.GRADES" :key="g"><td><strong>{{ AS.nomCourt(g) }}</strong></td><td>{{ AS.NOMS[g] }}</td><td style="text-align:right">×{{ AS.ARMEES.complet[g] || 0 }} · ×{{ AS.ARMEES.rapide[g] || 0 }}</td></tr>
+          <tr><td></td><td class="sys-msg">nombre : complète · rapide</td><td></td></tr>
+        </table>
+      </details>
+
+      <section class="carte reglages">
+        <div class="titre-carte">Réglages</div>
+        <label class="case-a-cocher"><input type="checkbox" v-model="sonActif"> 🔊 Sons</label>
+        <label class="case-a-cocher" v-if="vibrationSupportee"><input type="checkbox" v-model="vibrationActive"> 📳 Vibrations</label>
+        <label class="case-a-cocher" v-if="veilleSupportee"><input type="checkbox" v-model="garderEcran"> ☀️ Garder l'écran allumé</label>
+      </section>
+
+      <details class="carte journal">
+        <summary>Activité <small v-if="historique.length">({{ historique.length }})</small></summary>
+        <ul>
+          <li v-for="(log, i) in historiqueRecent" :key="i" :class="{ 'sys-msg': log.s }">{{ log.m }}</li>
+          <li v-if="!historique.length" class="sys-msg">Rien pour l'instant.</li>
+        </ul>
+      </details>
+
+      <p class="version">Désdale · Assaut · version {{ version }}</p>
+    </div>
+
+    <!-- JOUER -->
+    <div v-show="onglet === 'play'">
+      <div v-if="!phase" class="panneau-vide">
+        <div class="grand">⚔️</div>
+        <p>Aucune partie en cours.</p>
+        <button class="btn principal" @click="nouvellePartie">Placer mes pièces</button>
+      </div>
+      <template v-else>
+        <div class="consigne" :class="{ alerte: !!message }">{{ message || consigne }}</div>
+        <div class="bandeau-combat" v-if="phase !== 'placement' && combats.length">
+          <div v-for="(t, k) in combats" :key="k">{{ t }}</div>
+        </div>
+
+        <div class="plateau">
+          <div v-for="x in cases" :key="x.d" class="case" :class="x.classes" @click="toucher(x.i)">
+            <div v-if="x.p" class="piece" :class="x.p.classes">{{ x.p.texte }}</div>
+          </div>
+        </div>
+
+        <!-- Placement -->
+        <template v-if="phase === 'placement'">
+          <div class="actions">
+            <button class="btn" @click="placerAuHasard">🎲 Hasard</button>
+            <button class="btn" @click="enregistrerDisposition">💾 Garder</button>
+            <button class="btn principal" @click="commencer">Prêt ✓</button>
+          </div>
+          <div class="dispositions" v-if="dispositions[mode].length">
+            Mes dispositions :
+            <span v-for="(d, k) in dispositions[mode]" :key="k" class="salon-puce">
+              <button class="nom" @click="chargerDisposition(k)">n° {{ k + 1 }}</button>
+              <button class="oter" @click="oublierDisposition(k)" aria-label="Supprimer">✕</button>
+            </span>
+          </div>
+        </template>
+
+        <!-- Partie -->
+        <template v-else>
+          <div class="restants">
+            <span class="titre">Adversaire :</span>
+            <span v-for="x in restantsAdverses" :key="x.g" :class="{ zero: !x.n }">{{ AS.nomCourt(x.g) }}×{{ x.n }}</span>
+          </div>
+          <div class="actions">
+            <button class="btn" v-if="phase === 'jeu'" @click="abandonner">Abandonner</button>
+            <button class="btn principal" v-if="phase === 'fin'" @click="nouvellePartie">Rejouer</button>
+            <button class="btn" v-if="phase === 'fin'" @click="finMasquee = false">Résultat</button>
+          </div>
+        </template>
+      </template>
+    </div>
+
+    <!-- FIN DE PARTIE -->
+    <div v-if="phase === 'fin' && fin && !finMasquee" class="fin-backdrop" @click.self="finMasquee = true">
+      <div class="fin-box">
+        <h2>{{ fin.gagnant === monC ? '🏆 Victoire !' : '💥 Défaite' }}</h2>
+        <p>{{ texteFin }}</p>
+        <p class="sys-msg">{{ statsTexte }}</p>
+        <button @click="finMasquee = true">Voir le plateau</button>
+        <button class="principal" @click="nouvellePartie">Rejouer</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="commun.js"></script>
+  <script src="assaut-regles.js"></script>
+  <script>
+    if (!ACCES.memorise()) location.replace('index.html');
+
+    const CLE_SAUVEGARDE = 'assaut-sauvegarde';
+    const DELAI_ORDINATEUR = 750; // ms : le temps de voir son propre coup avant la réponse
+    function copie(o) { return JSON.parse(JSON.stringify(o)); }
+    // Partie qui fait foi (solo : tout est connu ici, l'ordinateur ne regarde que sa propre vue)
+    let partie = null;
+
+    new Vue({
+      el: '#app',
+      data: {
+        AS: AS,
+        version: VERSION,
+        onglet: 'config',
+        mode: lireStockage('assaut-mode') || 'complet',
+        memoire: lireStockage('assaut-memoire') === true,
+        phase: null,            // null | 'placement' | 'jeu' | 'fin'
+        monC: 'A',
+        modePartie: 'complet',  // format de la partie en cours
+        memoirePartie: false,
+        placement: [],          // pendant le placement : [{ pos, r }]
+        placementIA: [],
+        selection: null,        // case choisie (index réel 0..99)
+        vue: null,              // copie affichée de la partie
+        revele: {},             // pièces adverses montrées un moment après un combat : id -> grade
+        combats: [],            // textes des derniers combats
+        fin: null,
+        finMasquee: false,
+        message: '',
+        historique: [],
+        stats: lireStockage('assaut-stats') || { complet: { v: 0, d: 0 }, rapide: { v: 0, d: 0 } },
+        dispositions: Object.assign({ complet: [], rapide: [] }, lireStockage('assaut-dispositions') || {}),
+        sonActif: lireStockage('brillant-son') !== false,
+        vibrationActive: lireStockage('brillant-vibration') !== null ? lireStockage('brillant-vibration') !== false : lireStockage('brillant-son') !== false,
+        garderEcran: lireStockage('brillant-garder-ecran') !== false,
+        veilleSupportee: 'wakeLock' in navigator,
+        veilleActive: false
+      },
+      computed: {
+        logo: function() {
+          return [{ c: '#b5422f', t: '' }, { c: '#b5422f', t: '' }, { c: '#b5422f', t: '' },
+                  { c: '#5d9bc9', t: '' }, { c: '#a9c08c', t: '' }, { c: '#5d9bc9', t: '' },
+                  { c: '#2f5f9e', t: '10' }, { c: '#2f5f9e', t: '3' }, { c: '#2f5f9e', t: '🚩' }];
+        },
+        vibrationSupportee: function() { return typeof navigator.vibrate === 'function'; },
+        historiqueRecent: function() { return this.historique.slice().reverse(); },
+        partieEnCours: function() { return this.phase === 'placement' || this.phase === 'jeu'; },
+        statsTexte: function() {
+          var s = this.stats[this.phase ? this.modePartie : this.mode];
+          if (!s.v && !s.d) return '';
+          return 'Contre l\'ordinateur (partie ' + ((this.phase ? this.modePartie : this.mode) === 'complet' ? 'complète' : 'rapide') + ') : ' + s.v + ' victoire' + (s.v > 1 ? 's' : '') + ', ' + s.d + ' défaite' + (s.d > 1 ? 's' : '');
+        },
+        monTour: function() { return this.phase === 'jeu' && this.vue && this.vue.tour === this.monC && !this.vue.fin; },
+        // Coups possibles pour moi, par case de départ
+        mesCoups: function() {
+          if (!this.monTour) return {};
+          var r = {};
+          AS.coups(this.vue, this.monC).forEach(m => { (r[m.from] = r[m.from] || []).push(m.to); });
+          return r;
+        },
+        // Plateau affiché, mon camp en bas
+        cases: function() {
+          var res = [], sel = this.selection, cibles = sel !== null ? (this.mesCoups[sel] || []) : [];
+          var pieces = {};
+          if (this.phase === 'placement') {
+            this.placement.forEach((x, k) => pieces[x.pos] = { c: this.monC, r: x.r });
+            this.placementIA.forEach(x => pieces[x.pos] = { c: AS.autre(this.monC) });
+          }
+          var trace = this.vue && this.vue.hist.length ? this.vue.hist[this.vue.hist.length - 1] : null;
+          var zone = this.phase === 'placement' ? AS.zone(this.monC) : [];
+          for (var d = 0; d < 100; d++) {
+            var i = this.monC === 'A' ? d : 99 - d;
+            var p = this.phase === 'placement' ? pieces[i] : (this.vue && this.vue.cases[i]);
+            var x = { d: d, i: i, classes: {
+              lac: AS.lac(i), sombre: (Math.floor(i / 10) + i % 10) % 2 === 1, zone: zone.indexOf(i) !== -1,
+              cible: cibles.indexOf(i) !== -1 && !p, attaque: cibles.indexOf(i) !== -1 && !!p,
+              trace: !!trace && trace.c !== this.monC && (trace.from === i || trace.to === i) && this.phase === 'jeu'
+            } };
+            if (p) x.p = this.affichagePiece(p, i);
+            res.push(x);
+          }
+          return res;
+        },
+        restantsAdverses: function() {
+          var adv = AS.autre(this.monC), t = AS.ARMEES[this.modePartie], morts = (this.vue && this.vue.morts[adv]) || {};
+          return AS.GRADES.filter(g => t[g]).map(g => ({ g: g, n: t[g] - (morts[g] || 0) }));
+        },
+        texteFin: function() {
+          var f = this.fin;
+          if (!f) return '';
+          var moi = f.gagnant === this.monC;
+          if (f.raison === 'drapeau') return moi ? 'Tu as pris le drapeau adverse.' : 'L\'ordinateur a pris ton drapeau.';
+          if (f.raison === 'bloque') return moi ? 'L\'adversaire ne peut plus bouger.' : 'Tu ne peux plus bouger aucune pièce.';
+          if (f.raison === 'abandon') return moi ? 'L\'adversaire abandonne.' : 'Tu as abandonné.';
+          return '';
+        },
+        consigne: function() {
+          if (this.phase === 'placement') {
+            return this.selection !== null ? (this.modePartie === 'rapide' ? 'Touche une autre pièce pour l\'échanger, ou une case libre de ta zone.' : 'Touche une autre pièce pour les échanger.')
+                                           : 'Place ton armée : touche deux pièces pour les échanger.';
+          }
+          if (this.phase === 'fin') return 'Partie terminée : toutes les pièces sont dévoilées.';
+          if (!this.monTour) return 'L\'ordinateur réfléchit…';
+          if (this.selection !== null) return 'Touche une case en surbrillance (jaune : attaque).';
+          return 'À toi : touche une de tes pièces.';
+        }
+      },
+      watch: {
+        mode: function(v) { ecrireStockage('assaut-mode', v); },
+        memoire: function(v) { ecrireStockage('assaut-memoire', v); },
+        sonActif: function(v) { ecrireStockage('brillant-son', v); },
+        vibrationActive: function(v) { ecrireStockage('brillant-vibration', v); if (v) vibrer(40); },
+        garderEcran: function(v) { ecrireStockage('brillant-garder-ecran', v); this.majVeille(); },
+        onglet: function() { this.majVeille(); },
+        phase: function() { this.majVeille(); }
+      },
+      created: function() {
+        if (!ACCES.cleSalon) return;
+        this.restaurer();
+        document.addEventListener('visibilitychange', () => this.majVeille());
+      },
+      methods: {
+        ajouterLog: function(m, systeme) {
+          this.historique.push({ m: m, s: !!systeme });
+          if (this.historique.length > 150) this.historique.splice(0, this.historique.length - 150);
+        },
+        afficherMessage: function(txt) {
+          this.message = txt;
+          clearTimeout(this._timerMsg);
+          this._timerMsg = setTimeout(() => { this.message = ''; }, 2600);
+        },
+        vibre: function(motif) { if (this.vibrationActive) vibrer(motif); },
+        son: function(nom, arg) { if (this.sonActif) Sons.jouer(nom, arg); },
+        basculerSon: function() {
+          this.sonActif = !this.sonActif;
+          if (this.sonActif) Sons.jouer('toc');
+          this.afficherMessage(this.sonActif ? '🔊 Sons activés.' : '🔇 Sons coupés.');
+        },
+        nom: function(g) { return AS.NOMS[g] + (typeof g === 'number' ? ' (' + g + ')' : ''); },
+
+        // Ce qu'on voit d'une pièce
+        affichagePiece: function(p, i) {
+          var mien = p.c === this.monC, g = null;
+          if (mien) g = p.r;
+          else if (this.phase === 'fin' && p.r !== undefined) g = p.r;                // fin : tout est dévoilé
+          else if (this.revele[p.id] !== undefined) g = this.revele[p.id];           // vient de combattre
+          else if (this.memoirePartie && p.vu !== null && p.vu !== undefined) g = p.vu; // option mémoire
+          var classes = [p.c];
+          if (g === null || g === undefined) classes.push('dos');
+          if (!mien && g !== null && g !== undefined) classes.push('revelee');
+          if (g === 'B' || g === 'D') classes.push('symbole');
+          if (g === 10) classes.push('petit');
+          if (this.selection === i) classes.push('choisie');
+          return { classes: classes, texte: (g === null || g === undefined) ? (mien ? '' : '?') : AS.nomCourt(g) };
+        },
+
+        // ---------- Placement ----------
+        nouvellePartie: function() {
+          if (this.phase === 'jeu' && !confirm('Abandonner la partie en cours et en commencer une nouvelle ?')) return;
+          clearTimeout(this._timerIA);
+          this.modePartie = this.mode;
+          this.memoirePartie = this.memoire;
+          this.monC = 'A';
+          partie = null;
+          this.vue = null;
+          this.fin = null;
+          this.finMasquee = false;
+          this.revele = {};
+          this.combats = [];
+          this.selection = null;
+          this.placement = AS.placementAleatoire(this.modePartie, 'A', true);
+          this.placementIA = AS.placementAleatoire(this.modePartie, 'B', true);
+          this.phase = 'placement';
+          this.onglet = 'play';
+          this.sauvegarder();
+        },
+        placerAuHasard: function() {
+          this.placement = AS.placementAleatoire(this.modePartie, this.monC, Math.random() < 0.7);
+          this.selection = null;
+          this.son('toc');
+          this.sauvegarder();
+        },
+        toucherPlacement: function(i) {
+          var k = this.placement.findIndex(x => x.pos === i);
+          if (this.selection === null) { if (k !== -1) this.selection = i; return; }
+          var s = this.placement.findIndex(x => x.pos === this.selection);
+          if (k !== -1 && k !== s) {
+            var r = this.placement[k].r;
+            this.$set(this.placement, k, { pos: i, r: this.placement[s].r });
+            this.$set(this.placement, s, { pos: this.selection, r: r });
+            this.son('toc');
+          } else if (k === -1 && AS.zone(this.monC).indexOf(i) !== -1) {
+            this.$set(this.placement, s, { pos: i, r: this.placement[s].r }); // case libre (partie rapide)
+            this.son('toc');
+          }
+          this.selection = null;
+          this.sauvegarder();
+        },
+        // Dispositions enregistrées (3 par format), toujours notées du point de vue du joueur du bas
+        enregistrerDisposition: function() {
+          var l = this.dispositions[this.modePartie];
+          l.push(this.placement.map(x => ({ pos: this.monC === 'A' ? x.pos : 99 - x.pos, r: x.r })));
+          if (l.length > 3) l.shift();
+          ecrireStockage('assaut-dispositions', this.dispositions);
+          this.afficherMessage('Disposition enregistrée (n° ' + l.length + ').');
+        },
+        chargerDisposition: function(k) {
+          this.placement = copie(this.dispositions[this.modePartie][k]).map(x => ({ pos: this.monC === 'A' ? x.pos : 99 - x.pos, r: x.r }));
+          this.selection = null;
+          this.sauvegarder();
+        },
+        oublierDisposition: function(k) {
+          this.dispositions[this.modePartie].splice(k, 1);
+          ecrireStockage('assaut-dispositions', this.dispositions);
+        },
+        commencer: function() {
+          partie = AS.nouvellePartie(this.modePartie, this.placement, this.placementIA, 'A');
+          this.phase = 'jeu';
+          this.selection = null;
+          this.ajouterLog('Nouvelle partie ' + this.modePartie + ' contre l\'ordinateur.', true);
+          this.publier();
+        },
+
+        // ---------- Partie ----------
+        toucher: function(i) {
+          if (this.phase === 'placement') return this.toucherPlacement(i);
+          if (!this.monTour) return;
+          var p = this.vue.cases[i];
+          if (this.selection !== null && (this.mesCoups[this.selection] || []).indexOf(i) !== -1) {
+            var from = this.selection;
+            this.selection = null;
+            return this.jouerCoup(from, i);
+          }
+          if (p && p.c === this.monC) {
+            if (!AS.mobile(p.r)) { this.selection = null; return this.afficherMessage(AS.NOMS[p.r] + ' : elle ne bouge jamais.'); }
+            if (!this.mesCoups[i]) { this.selection = null; return this.afficherMessage('Cette pièce ne peut pas bouger.'); }
+            this.selection = this.selection === i ? null : i;
+            return;
+          }
+          this.selection = null;
+        },
+        jouerCoup: function(from, to) {
+          var p = partie.cases[from], q = partie.cases[to];
+          this.revele = {};
+          this.combats = [];
+          var c = AS.appliquer(partie, from, to, p.r, q ? q.r : undefined);
+          if (c) this.raconterCombat(c);
+          else this.son('toc');
+          if (!partie.fin) AS.verifierBlocage(partie);
+          this.publier();
+          if (!partie.fin) {
+            clearTimeout(this._timerIA);
+            this._timerIA = setTimeout(() => this.coupOrdinateur(), DELAI_ORDINATEUR);
+          }
+        },
+        coupOrdinateur: function() {
+          if (!partie || partie.fin || partie.tour === this.monC) return;
+          var adv = partie.tour;
+          var m = AS.choisirCoup(AS.vue(partie, adv), adv);
+          if (!m) { partie.fin = { gagnant: this.monC, raison: 'bloque' }; return this.publier(); }
+          var p = partie.cases[m.from], q = partie.cases[m.to];
+          var c = AS.appliquer(partie, m.from, m.to, p.r, q ? q.r : undefined);
+          if (c) this.raconterCombat(c);
+          else {
+            this.son('toc');
+            if (p.vu === 2) this.$set(this.revele, p.id, 2); // l'éclaireur qui file se dévoile
+          }
+          if (!partie.fin) AS.verifierBlocage(partie);
+          this.publier();
+        },
+        raconterCombat: function(c) {
+          var moi = c.ca === this.monC;
+          var issue = c.res === 'egalite' ? 'égalité, les deux pièces tombent' :
+                      (c.res === 'attaquant') === moi ? 'gagné' : 'perdu';
+          var texte = moi ? '⚔️ Ton ' + this.nom(c.ra) + ' attaque : ' + this.nom(c.rd) + ' → ' + issue
+                          : '⚔️ Attaque adverse : ' + this.nom(c.ra) + ' contre ton ' + this.nom(c.rd) + ' → ' + issue;
+          if (c.rd === 'D') texte = moi ? '🚩 Tu prends le drapeau !' : '🚩 L\'adversaire prend ton drapeau !';
+          this.combats.push(texte);
+          this.ajouterLog(texte);
+          // La pièce adverse reste visible un moment (jusqu'à ton prochain coup)
+          this.$set(this.revele, moi ? c.idd : c.ida, moi ? c.rd : c.ra);
+          var gagneMoi = c.res === 'egalite' ? null : ((c.res === 'attaquant') === moi);
+          if (gagneMoi) { this.son('zone', true); this.vibre(40); }
+          else { this.son('toc'); this.vibre(gagneMoi === false ? [80, 40, 80] : 50); }
+        },
+        abandonner: function() {
+          if (!confirm('Abandonner la partie ?')) return;
+          clearTimeout(this._timerIA);
+          partie.fin = { gagnant: AS.autre(this.monC), raison: 'abandon' };
+          this.publier();
+        },
+        publier: function() {
+          var ancienneFin = this.fin;
+          this.vue = copie(partie);
+          if (partie.fin && !ancienneFin) {
+            this.fin = partie.fin;
+            this.phase = 'fin';
+            this.finMasquee = false;
+            var gagne = partie.fin.gagnant === this.monC, s = this.stats[this.modePartie];
+            if (gagne) s.v++; else s.d++;
+            ecrireStockage('assaut-stats', this.stats);
+            this.ajouterLog(gagne ? 'Victoire !' : 'Défaite.', true);
+            if (gagne) { this.son('victoire'); this.vibre([100, 60, 100, 60, 250]); } else this.vibre([200, 100, 200]);
+          }
+          this.sauvegarder();
+        },
+
+        // ---------- Sauvegarde ----------
+        sauvegarder: function() {
+          ecrireStockage(CLE_SAUVEGARDE, {
+            phase: this.phase, modePartie: this.modePartie, memoirePartie: this.memoirePartie, monC: this.monC,
+            placement: this.placement, placementIA: this.placementIA, partie: partie, revele: this.revele,
+            combats: this.combats, fin: this.fin, historique: this.historique.slice(-60)
+          });
+        },
+        restaurer: function() {
+          var sv = lireStockage(CLE_SAUVEGARDE);
+          if (!sv || !sv.phase) { if (sv && sv.historique) this.historique = sv.historique; return; }
+          ['phase', 'modePartie', 'memoirePartie', 'monC', 'placement', 'placementIA', 'revele', 'combats', 'fin', 'historique']
+            .forEach(k => { if (sv[k] !== undefined) this[k] = sv[k]; });
+          partie = sv.partie;
+          if (partie) this.vue = copie(partie);
+          if (this.phase === 'fin') this.finMasquee = true;
+          if (this.phase === 'jeu' || this.phase === 'placement') this.onglet = 'play';
+          if (this.phase === 'jeu' && partie && !partie.fin && partie.tour !== this.monC) {
+            this._timerIA = setTimeout(() => this.coupOrdinateur(), DELAI_ORDINATEUR);
+          }
+        },
+
+        // ---------- Écran toujours allumé ----------
+        veilleVoulue: function() {
+          return this.veilleSupportee && this.garderEcran && document.visibilityState === 'visible' && this.onglet === 'play' && this.phase === 'jeu';
+        },
+        majVeille: function() {
+          if (!this.veilleSupportee) return;
+          if (this.veilleVoulue()) {
+            if (this._verrou || this._demandeVerrou) return;
+            this._demandeVerrou = true;
+            navigator.wakeLock.request('screen').then(verrou => {
+              this._demandeVerrou = false;
+              if (!this.veilleVoulue()) { verrou.release(); return; }
+              this._verrou = verrou;
+              this.veilleActive = true;
+              verrou.addEventListener('release', () => { if (this._verrou === verrou) { this._verrou = null; this.veilleActive = false; } });
+            }).catch(() => { this._demandeVerrou = false; });
+          } else if (this._verrou) {
+            var v = this._verrou;
+            this._verrou = null;
+            this.veilleActive = false;
+            v.release().catch(() => {});
+          }
+        }
+      }
+    });
+  </script>
+</body>
+</html>
