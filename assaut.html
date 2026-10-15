@@ -25,6 +25,11 @@
     .segment button small { display: block; font-weight: 500; font-size: 0.78em; color: #8a97a1; }
 
     /* ---------- Plateau ---------- */
+    .fantome { position: absolute; z-index: 5; display: flex; align-items: center; justify-content: center; pointer-events: none; }
+    .fantome .piece { box-shadow: 0 0 0 2px #ffd54a, 0 6px 12px rgba(0,0,0,0.45); transform: scale(1.12); }
+    .case.passage { background: #ecdf9a !important; }
+    .case.depart-anim { box-shadow: inset 0 0 0 2px #ffd54a; }
+    .plateau { position: relative; }
     .plateau {
       display: grid; grid-template-columns: repeat(10, 1fr); grid-template-rows: repeat(10, 1fr); gap: 1px; width: 100%; aspect-ratio: 1 / 1;
       background: #6f8f5a; padding: 2px; border-radius: 8px; box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent;
@@ -298,6 +303,10 @@
         <div class="plateau">
           <div v-for="x in cases" :key="x.d" class="case" :class="x.classes" @click="toucher(x.i)">
             <div v-if="x.p" class="piece" :class="x.p.classes"><img v-if="x.p.img" class="img" :src="x.p.img" alt=""><span v-else class="sym">{{ x.p.sym }}</span><span v-if="x.p.num" class="num">{{ x.p.num }}</span></div>
+          </div>
+          <!-- Pièce adverse qui se déplace (glisse de sa case de départ à son arrivée) -->
+          <div v-if="anim" class="fantome" :style="anim.style">
+            <div class="piece" :class="anim.p.classes"><img v-if="anim.p.img" class="img" :src="anim.p.img" alt=""><span v-else class="sym">{{ anim.p.sym }}</span><span v-if="anim.p.num" class="num">{{ anim.p.num }}</span></div>
           </div>
         </div>
 
@@ -575,6 +584,7 @@
         selection: null,
         choixReserve: null,     // placement : grade choisi dans la réserve
         scene: null,            // combat affiché en grand (voir montrerCombat)
+        anim: null,             // déplacement adverse en cours d'animation
         vue: null,              // état affiché : mes pièces avec leur grade, celles d'en face cachées
         revele: {},
         combats: [],
@@ -679,6 +689,11 @@
               cible: cibles.indexOf(i) !== -1 && !p, attaque: (cibles.indexOf(i) !== -1 && !!p) || (!!k && (k.from === i || k.to === i)),
               trace: !!trace && trace.c !== this.monC && (trace.from === i || trace.to === i) && this.phase === 'jeu'
             } };
+            if (this.anim) {
+              if (this.anim.passage.indexOf(i) !== -1) x.classes.passage = true;
+              if (i === this.anim.from) x.classes['depart-anim'] = true;
+              if (i === this.anim.cacher) p = null;
+            }
             if (p) x.p = this.affichagePiece(p, i);
             res.push(x);
           }
@@ -1009,12 +1024,56 @@
           var adv = partie.tour;
           var m = AS.choisirCoup(AS.vue(partie, adv), adv);
           if (!m) { partie.fin = { gagnant: this.monC, raison: 'bloque' }; return this.publierSolo(); }
-          var p = partie.cases[m.from], q = partie.cases[m.to];
-          var c = AS.appliquer(partie, m.from, m.to, p.r, q ? q.r : undefined);
-          if (c) this.raconterCombat(c);
-          else { this.son('toc'); if (p.vu === 2) this.$set(this.revele, p.id, 2); }
-          if (!partie.fin) AS.verifierBlocage(partie);
-          this.publierSolo();
+          var p = partie.cases[m.from];
+          this.animerDeplacement(m.from, m.to, p, m.from, () => {
+            if (!partie || partie.fin) return;
+            var q = partie.cases[m.to];
+            var c = AS.appliquer(partie, m.from, m.to, p.r, q ? q.r : undefined);
+            if (c) this.raconterCombat(c);
+            else { this.son('toc'); if (p.vu === 2) this.$set(this.revele, p.id, 2); }
+            if (!partie.fin) AS.verifierBlocage(partie);
+            this.publierSolo();
+          });
+        },
+        // ---------- Déplacement adverse animé ----------
+        // La pièce glisse de sa case de départ à son arrivée (un éclaireur qui file se dévoile).
+        // cacher : case dont on masque la vraie pièce pendant l'animation ; fin : appelé à l'arrivée.
+        animerDeplacement: function(from, to, piece, cacher, fin) {
+          var pos = (i) => {
+            var d = this.monC === 'A' ? i : 99 - i;
+            return { l: d % 10, h: Math.floor(d / 10) };
+          };
+          var a = pos(from), b = pos(to), dist = Math.abs(a.l - b.l) + Math.abs(a.h - b.h);
+          var duree = dist > 1 ? Math.min(1700, 500 + dist * 160) : 650;
+          var passage = [];
+          var pas = to > from ? (Math.floor(to / 10) === Math.floor(from / 10) ? 1 : 10) : (Math.floor(to / 10) === Math.floor(from / 10) ? -1 : -10);
+          for (var j = from + pas; j !== to && passage.length < 10; j += pas) passage.push(j);
+          var vue = dist > 1 ? Object.assign({}, piece, { vu: 2 }) : piece;
+          var p = this.affichagePiece(vue, -1);
+          if (dist > 1) {
+            // Éclaireur : on le montre pendant sa course, quelle que soit l'option mémoire
+            p = this.affichagePiece(Object.assign({}, piece, { c: piece.c }), -1);
+            p.classes = [piece.c, 'revelee']; p.img = this.apparence === 'images' ? (this.images[2] || null) : null;
+            p.sym = this.apparence === 'chiffres' ? this.chiffre(2) : AS.ICONES[2]; p.num = this.apparence === 'chiffres' ? '' : this.chiffre(2);
+          }
+          var style = (q, t) => ({ left: 'calc(2px + (100% - 4px) * ' + q.l / 10 + ')', top: 'calc(2px + (100% - 4px) * ' + q.h / 10 + ')',
+                                   width: 'calc((100% - 4px) / 10)', height: 'calc((100% - 4px) / 10)',
+                                   transition: t ? 'left ' + t + 'ms ease-in-out, top ' + t + 'ms ease-in-out' : 'none' });
+          this.animEnCours = true;
+          this.anim = { from: from, cacher: cacher, passage: passage, p: p, style: style(a, 0) };
+          clearTimeout(this._timerAnim);
+          this.$nextTick(() => {
+            this._timerAnim = setTimeout(() => {
+              if (!this.anim) return;
+              this.anim.style = style(b, duree);
+              this._timerAnim = setTimeout(() => {
+                this.anim = null;
+                this.animEnCours = false;
+                if (fin) fin();
+                if (!this.scene && (this._scenes || []).length) this.sceneSuivante();
+              }, duree + 120);
+            }, 30);
+          });
         },
         raconterCombat: function(c) {
           var moi = c.ca === this.monC, lui = this.role ? this.nomAdversaire : 'adverse';
@@ -1047,7 +1106,7 @@
           var titre = moi ? 'Tu attaques !' : (this.role ? this.nomAdversaire : 'L\'ordinateur') + ' t\'attaque !';
           this._scenes = this._scenes || [];
           this._scenes.push({ att: att, def: def, issue: issue, titre: titre, gagneMoi: gagneMoi, etape: 'entree' });
-          if (!this.scene) this.sceneSuivante();
+          if (!this.scene && !this.animEnCours) this.sceneSuivante();
         },
         sceneSuivante: function() {
           clearTimeout(this._timerScene);
@@ -1148,15 +1207,21 @@
           } else this.vue = null;
           // Ce qui vient de se passer
           var memePartie = ancien && ancien.partieId === pub.partieId;
+          var nouveauCoup = memePartie && pub.n > ancien.n && pub.hist.length;
+          var dernier = nouveauCoup ? pub.hist[pub.hist.length - 1] : null;
+          if (dernier && dernier.c !== c && !this._restauration) {
+            // Coup adverse : la pièce glisse de sa case de départ (on cache la vraie pièce à l'arrivée)
+            var arrivee = pub.cases[dernier.to];
+            var visible = arrivee && arrivee.c === dernier.c ? arrivee : { c: dernier.c, id: -1, vu: null };
+            this.animerDeplacement(dernier.from, dernier.to, visible, arrivee && arrivee.c === dernier.c ? dernier.to : -1, () => {
+              if (!pub.combat || pub.combat.attente) this.son('toc');
+            });
+          }
           if (memePartie && pub.combat && !pub.combat.attente && (!ancien.combat || ancien.combat.n !== pub.combat.n || ancien.combat.attente)) {
             this.raconterCombat(pub.combat);
-          } else if (memePartie && pub.n > ancien.n && !pub.combat) {
-            var h = pub.hist[pub.hist.length - 1];
-            if (h && h.c !== c) {
-              this.son('toc');
-              var q = pub.cases[h.to];
-              if (q && q.vu === 2 && Math.abs(h.from - h.to) !== 1 && Math.abs(h.from - h.to) !== 10) this.$set(this.revele, q.id, 2);
-            }
+          } else if (dernier && dernier.c !== c && !pub.combat) {
+            var q = pub.cases[dernier.to];
+            if (q && q.vu === 2 && Math.abs(dernier.from - dernier.to) !== 1 && Math.abs(dernier.from - dernier.to) !== 10) this.$set(this.revele, q.id, 2);
           }
           if (memePartie && ancien.tour !== pub.tour && pub.tour === c && pub.phase === 'jeu') this.vibre([30, 40, 30]);
           if (pub.fin && !(memePartie && ancien.fin)) {
