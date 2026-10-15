@@ -76,6 +76,41 @@
     .reserve-piece.choisie { border-color: #2f5f9e; background: #e4f0fb; box-shadow: 0 0 0 2px #2f5f9e; }
     .reserve-piece.retour { border-style: dashed; color: #b04a4a; }
     .actions .btn:disabled { opacity: 0.45; }
+    /* ---------- Scène de combat ---------- */
+    .combat-fond { position: fixed; inset: 0; z-index: 3000; background: rgba(15, 25, 20, 0.6); display: flex; align-items: center; justify-content: center; padding: 16px; }
+    .combat-boite { width: 100%; max-width: 330px; background: #f4f1e8; border-radius: 16px; padding: 14px 12px 10px; text-align: center; box-shadow: 0 12px 30px rgba(0,0,0,0.4); }
+    .combat-titre { font-weight: 800; font-size: 1.05em; margin-bottom: 8px; }
+    .combattants { position: relative; display: flex; justify-content: space-between; align-items: flex-start; padding: 0 6px; }
+    .combattant { width: 120px; transition: transform 0.45s ease, opacity 0.6s ease, filter 0.6s ease; }
+    .combat-role { font-size: 0.78em; font-weight: 700; color: #6b7a86; margin-bottom: 4px; }
+    .combat-carte { position: relative; width: 84px; height: 84px; margin: 0 auto; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #fff;
+                    box-shadow: inset 0 -4px 0 rgba(0,0,0,0.25), 0 3px 8px rgba(0,0,0,0.3); transition: box-shadow 0.4s; }
+    .combat-carte.A { background: #2f5f9e; }
+    .combat-carte.B { background: #b5422f; }
+    .combat-carte .sym { font-size: 42px; }
+    .combat-carte .img { position: absolute; inset: 4px; width: calc(100% - 8px); height: calc(100% - 8px); object-fit: cover; border-radius: 9px; }
+    .combat-carte .num { position: absolute; right: 6px; bottom: 4px; font-size: 18px; font-weight: 800; text-shadow: 0 0 3px rgba(0,0,0,0.7); }
+    .combat-carte .croix { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 70px; color: #e53935;
+                           text-shadow: 0 0 4px #fff; opacity: 0; transform: scale(2); transition: opacity 0.3s, transform 0.3s; }
+    .combat-nom { font-weight: 700; margin-top: 6px; font-size: 0.92em; }
+    .combat-qui { font-size: 0.78em; color: #6b7a86; }
+    .combat-vs { position: absolute; left: 50%; top: 52px; transform: translate(-50%, -50%); font-weight: 900; font-size: 1.2em; color: #8a5a00; transition: transform 0.3s; }
+    .combat-issue { min-height: 1.4em; margin-top: 10px; font-weight: 800; font-size: 1.05em; }
+    .combat-aide { font-size: 0.72em; color: #8a97a1; margin-top: 4px; }
+    /* Étapes : entrée par les côtés, choc au centre, puis issue */
+    .etape-entree .combattant.att { transform: translateX(-70px); opacity: 0; }
+    .etape-entree .combattant.def { transform: translateX(70px); opacity: 0; }
+    .etape-choc .combattant.att { animation: choc-g 0.5s ease-in-out; }
+    .etape-choc .combattant.def { animation: choc-d 0.5s ease-in-out; }
+    .etape-choc .combat-vs { transform: translate(-50%, -50%) scale(1.8); }
+    @keyframes choc-g { 0% { transform: translateX(0); } 45% { transform: translateX(26px); } 60% { transform: translateX(18px) rotate(-4deg); } 100% { transform: translateX(0); } }
+    @keyframes choc-d { 0% { transform: translateX(0); } 45% { transform: translateX(-26px); } 60% { transform: translateX(-18px) rotate(4deg); } 100% { transform: translateX(0); } }
+    .combattant.perdant { transform: scale(0.86) rotate(-6deg) translateY(8px); opacity: 0.75; }
+    .combattant.perdant .combat-carte { background: #8f989f; }
+    .combattant.perdant .combat-carte .sym, .combattant.perdant .combat-carte .img { filter: grayscale(1); opacity: 0.6; }
+    .combattant.perdant .croix { opacity: 0.9; transform: scale(1); }
+    .combattant.gagnant { transform: scale(1.08); }
+    .combattant.gagnant .combat-carte { box-shadow: 0 0 0 4px #ffd54a, 0 0 22px 6px rgba(255, 213, 74, 0.8); }
     .dispositions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; align-items: center; font-size: 0.85em; color: #6b7a86; }
     .panneau-vide { text-align: center; padding: 40px 16px; color: #5b6b78; }
     .panneau-vide .grand { font-size: 2.5em; margin-bottom: 8px; }
@@ -306,6 +341,29 @@
       </template>
     </div>
 
+    <!-- COMBAT : les deux pièces face à face, puis le perdant tombe -->
+    <div v-if="scene" class="combat-fond" @click="passerScene">
+      <div class="combat-boite" :class="'etape-' + scene.etape">
+        <div class="combat-titre">{{ scene.titre }}</div>
+        <div class="combattants">
+          <div v-for="f in [scene.att, scene.def]" :key="f.role" class="combattant" :class="[f.role, { perdant: scene.etape === 'issue' && f.perd, gagnant: scene.etape === 'issue' && f.gagne }]">
+            <div class="combat-role">{{ f.role === 'att' ? '⚔️ Attaque' : '🛡️ Défense' }}</div>
+            <div class="combat-carte" :class="f.c">
+              <img v-if="f.img" class="img" :src="f.img" alt="">
+              <span v-else class="sym">{{ f.sym }}</span>
+              <span v-if="f.num" class="num">{{ f.num }}</span>
+              <span class="croix">✖</span>
+            </div>
+            <div class="combat-nom">{{ f.nom }}</div>
+            <div class="combat-qui">{{ f.qui }}</div>
+          </div>
+          <div class="combat-vs">VS</div>
+        </div>
+        <div class="combat-issue">{{ scene.etape === 'issue' ? scene.issue : '…' }}</div>
+        <div class="combat-aide">Touche pour continuer</div>
+      </div>
+    </div>
+
     <!-- FIN DE PARTIE -->
     <div v-if="phase === 'fin' && fin && !finMasquee" class="fin-backdrop" @click.self="finMasquee = true">
       <div class="fin-box">
@@ -327,6 +385,8 @@
     const CLE_SAUVEGARDE = 'assaut-sauvegarde';
     const CLE_PRIVE = 'assaut-prive';      // à deux : MON armée, qui ne quitte jamais ce téléphone
     const DELAI_ORDINATEUR = 750;
+    const DUREE_ISSUE = 1600;                   // ms : le résultat du combat reste affiché
+    const DUREE_COMBAT = 40 + 650 + 700 + DUREE_ISSUE; // durée totale de la scène de combat (≈ 3 s)
     const JEU_RESEAU = 'as';
     const DELAI_SILENCE = 15000;
     const DELAI_ANNONCE = 5000;
@@ -514,6 +574,7 @@
         placementIA: [],
         selection: null,
         choixReserve: null,     // placement : grade choisi dans la réserve
+        scene: null,            // combat affiché en grand (voir montrerCombat)
         vue: null,              // état affiché : mes pièces avec leur grade, celles d'en face cachées
         revele: {},
         combats: [],
@@ -941,7 +1002,7 @@
           if (c) this.raconterCombat(c); else this.son('toc');
           if (!partie.fin) AS.verifierBlocage(partie);
           this.publierSolo();
-          if (!partie.fin) { clearTimeout(this._timerIA); this._timerIA = setTimeout(() => this.coupOrdinateur(), DELAI_ORDINATEUR); }
+          if (!partie.fin) { clearTimeout(this._timerIA); this._timerIA = setTimeout(() => this.coupOrdinateur(), c ? DUREE_COMBAT + 300 : DELAI_ORDINATEUR); }
         },
         coupOrdinateur: function() {
           if (this.role || !partie || partie.fin || partie.tour === this.monC) return;
@@ -965,8 +1026,51 @@
           this.ajouterLog(texte);
           this.$set(this.revele, moi ? c.idd : c.ida, moi ? c.rd : c.ra);
           var gagneMoi = c.res === 'egalite' ? null : ((c.res === 'attaquant') === moi);
-          if (gagneMoi) { this.son('zone', true); this.vibre(40); }
-          else { this.son('toc'); this.vibre(gagneMoi === false ? [80, 40, 80] : 50); }
+          this.montrerCombat(c, moi, gagneMoi);
+        },
+        // ---------- Scène de combat : entrée (0,7 s), choc (0,7 s), issue (1,6 s) ----------
+        combattant: function(role, c, g, mien) {
+          var symbole = g === 'B' || g === 'D';
+          var img = this.apparence === 'images' && this.images[g];
+          var qui = mien ? 'Toi' : (this.role ? this.nomAdversaire : 'Ordinateur');
+          if (this.apparence === 'chiffres' && !symbole) return { role: role, c: c, sym: this.chiffre(g), num: '', nom: AS.NOMS[g], qui: qui };
+          return { role: role, c: c, img: img || null, sym: AS.ICONES[g], num: symbole ? '' : this.chiffre(g), nom: AS.NOMS[g], qui: qui };
+        },
+        montrerCombat: function(c, moi, gagneMoi) {
+          var adv = AS.autre(c.ca);
+          var att = this.combattant('att', c.ca, c.ra, moi), def = this.combattant('def', adv, c.rd, !moi);
+          att.perd = c.res !== 'attaquant'; def.perd = c.res !== 'defenseur';
+          att.gagne = c.res === 'attaquant'; def.gagne = c.res === 'defenseur';
+          var issue = c.rd === 'D' ? '🚩 Drapeau pris !' :
+                      c.res === 'egalite' ? 'Égalité : les deux pièces tombent' :
+                      (gagneMoi ? 'Gagné : ' : 'Perdu : ') + (c.res === 'attaquant' ? att.nom : def.nom) + ' l\'emporte';
+          var titre = moi ? 'Tu attaques !' : (this.role ? this.nomAdversaire : 'L\'ordinateur') + ' t\'attaque !';
+          this._scenes = this._scenes || [];
+          this._scenes.push({ att: att, def: def, issue: issue, titre: titre, gagneMoi: gagneMoi, etape: 'entree' });
+          if (!this.scene) this.sceneSuivante();
+        },
+        sceneSuivante: function() {
+          clearTimeout(this._timerScene);
+          var s = (this._scenes || []).shift();
+          this.scene = s || null;
+          if (!s) return;
+          var t = (f, ms) => { this._timerScene = setTimeout(f, ms); };
+          this.$nextTick(() => {
+            t(() => { s.etape = 'face'; t(() => {
+              s.etape = 'choc';
+              this.son('toc'); this.vibre(30);
+              t(() => {
+                s.etape = 'issue';
+                if (s.gagneMoi) { this.son('zone', true); this.vibre(40); }
+                else { this.son('toc'); this.vibre(s.gagneMoi === false ? [80, 40, 80] : 50); }
+                t(() => this.sceneSuivante(), DUREE_ISSUE);
+              }, 700);
+            }, 650); }, 40);
+          });
+        },
+        passerScene: function() {
+          if (this.scene && this.scene.etape !== 'issue') { clearTimeout(this._timerScene); this.scene.etape = 'issue'; this._timerScene = setTimeout(() => this.sceneSuivante(), 700); return; }
+          this.sceneSuivante();
         },
         abandonner: function() {
           if (!confirm('Abandonner la partie ?')) return;
