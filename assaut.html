@@ -45,8 +45,8 @@
       width: 88%; height: 88%; border-radius: 5px; display: flex; align-items: center; justify-content: center; position: relative; z-index: 1;
       font-weight: 800; font-size: 15px; color: #fff; box-shadow: inset 0 -2px 0 rgba(0,0,0,0.25), 0 1px 2px rgba(0,0,0,0.3);
     }
-    .piece.A { background: #2f5f9e; }
-    .piece.B { background: #b5422f; }
+    .piece.A { background: var(--coul-A, #2f5f9e); }
+    .piece.B { background: var(--coul-B, #b5422f); }
     .piece.dos { color: rgba(255,255,255,0.35); font-size: 11px; }
     .piece.revelee { box-shadow: 0 0 0 2px #ffd54a, inset 0 -2px 0 rgba(0,0,0,0.25); }
     .piece.choisie { box-shadow: 0 0 0 3px #ffd54a; transform: scale(1.06); }
@@ -56,9 +56,13 @@
     .piece .sym { font-size: 17px; }
     .piece.chiffres .sym { font-size: 15px; font-weight: 800; }
     .piece .img { position: absolute; inset: 2px; width: calc(100% - 4px); height: calc(100% - 4px); object-fit: cover; border-radius: 4px; }
+    .couleurs { display: flex; align-items: center; gap: 7px; flex-wrap: wrap; margin-top: 10px; }
+    .titre-couleurs { font-size: 0.85em; font-weight: 600; color: #5b6b78; margin-right: 2px; }
+    .pastille-choix { width: 28px; height: 28px; border-radius: 50%; border: 3px solid #fff; box-shadow: 0 0 0 1.5px #c9d2d9; cursor: pointer; padding: 0; }
+    .pastille-choix.actif { box-shadow: 0 0 0 3px #1d2b36; }
     .apparence-grille { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 10px; }
     .apparence-grille button { position: relative; border: 1.5px dashed #c9d2d9; border-radius: 10px; background: #f8fafb; padding: 6px 2px 4px; font: inherit; font-size: 0.72em; color: #5b6b78; cursor: pointer; }
-    .apparence-grille img, .apparence-grille .vide { display: block; width: 44px; height: 44px; margin: 0 auto 3px; border-radius: 6px; object-fit: cover; background: #2f5f9e; color: #fff; font-size: 20px; line-height: 44px; }
+    .apparence-grille img, .apparence-grille .vide { display: block; width: 44px; height: 44px; margin: 0 auto 3px; border-radius: 6px; object-fit: cover; background: var(--coul-moi, #2f5f9e); color: #fff; font-size: 20px; line-height: 44px; }
     .apparence-grille .oter-img { position: absolute; top: -6px; right: -6px; width: 20px; height: 20px; border-radius: 50%; border: none; background: #b04a4a; color: #fff; font-size: 11px; padding: 0; }
     .piece .num { position: absolute; right: 2px; bottom: 1px; font-size: 9px; font-weight: 800; color: #fff; text-shadow: 0 0 2px rgba(0,0,0,0.6); }
     .piece.dos .sym { font-size: 11px; }
@@ -78,8 +82,8 @@
     .reserve-piece .sym { font-size: 15px; }
     .prises { display: flex; flex-wrap: wrap; gap: 3px; min-height: 26px; margin-top: 5px; }
     .prises .mini { position: relative; width: 24px; height: 24px; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 800; font-size: 12px; box-shadow: inset 0 -2px 0 rgba(0,0,0,0.25); }
-    .prises .mini.A { background: #2f5f9e; }
-    .prises .mini.B { background: #b5422f; }
+    .prises .mini.A { background: var(--coul-A, #2f5f9e); }
+    .prises .mini.B { background: var(--coul-B, #b5422f); }
     .prises .mini .s { font-size: 13px; }
     .prises .mini img { position: absolute; inset: 1px; width: 22px; height: 22px; object-fit: cover; border-radius: 3px; }
     .prises .mini .n { position: absolute; right: 1px; bottom: 0; font-size: 8px; text-shadow: 0 0 2px rgba(0,0,0,0.8); }
@@ -97,8 +101,8 @@
     .combat-role { font-size: 0.78em; font-weight: 700; color: #6b7a86; margin-bottom: 4px; }
     .combat-carte { position: relative; width: 84px; height: 84px; margin: 0 auto; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #fff;
                     box-shadow: inset 0 -4px 0 rgba(0,0,0,0.25), 0 3px 8px rgba(0,0,0,0.3); transition: box-shadow 0.4s; }
-    .combat-carte.A { background: #2f5f9e; }
-    .combat-carte.B { background: #b5422f; }
+    .combat-carte.A { background: var(--coul-A, #2f5f9e); }
+    .combat-carte.B { background: var(--coul-B, #b5422f); }
     .combat-carte .sym { font-size: 42px; }
     .combat-carte .img { position: absolute; inset: 4px; width: calc(100% - 8px); height: calc(100% - 8px); object-fit: cover; border-radius: 9px; }
     .combat-carte .num { position: absolute; right: 6px; bottom: 4px; font-size: 18px; font-weight: 800; text-shadow: 0 0 3px rgba(0,0,0,0.7); }
@@ -142,7 +146,7 @@
   </style>
 </head>
 <body>
-  <div id="app" class="app">
+  <div id="app" class="app" :style="variablesCouleurs">
 
     <div class="barre">
       <div id="menu">
@@ -178,7 +182,7 @@
         </div>
         <div class="chips-joueurs">
           <span v-for="j in bandeau" :key="j.pseudo" class="chip" :class="{ absent: !j.connecte }">
-            <span class="pastille-c" :style="{ background: j.c === 'A' ? '#2f5f9e' : '#b5422f' }"></span>{{ j.pseudo }} · {{ j.score }} victoire{{ j.score > 1 ? 's' : '' }}<span v-if="!j.connecte"> 💤</span>
+            <span class="pastille-c" :style="{ background: couleurCamp(j.c) }"></span>{{ j.pseudo }} · {{ j.score }} victoire{{ j.score > 1 ? 's' : '' }}<span v-if="!j.connecte"> 💤</span>
           </span>
           <span v-if="pub && pub.ordre.length < 2" class="chip absent">en attente d'un adversaire…</span>
         </div>
@@ -248,6 +252,11 @@
           <button :class="{ actif: apparence === 'chiffres' }" @click="apparence = 'chiffres'">Chiffres</button>
           <button :class="{ actif: apparence === 'images' }" @click="apparence = 'images'">Mes images</button>
         </div>
+        <div class="couleurs">
+          <span class="titre-couleurs">Ma couleur</span>
+          <button v-for="x in COULEURS" :key="x.id" class="pastille-choix" :class="{ actif: maCouleur === x.id }"
+                  :style="{ background: x.v }" :aria-label="x.nom" :title="x.nom" @click="maCouleur = x.id"></button>
+        </div>
         <div class="segment" style="margin-top:8px">
           <button :class="{ actif: numerotation === 'moderne' }" @click="numerotation = 'moderne'">Moderne<small>Maréchal 10 · Espion 1</small></button>
           <button :class="{ actif: numerotation === 'ancienne' }" @click="numerotation = 'ancienne'">Ancienne<small>Maréchal 1 · Éclaireur 9</small></button>
@@ -300,7 +309,7 @@
       <template v-else>
         <div class="joueurs-bande" v-if="role && pub">
           <span v-for="j in bandeau" :key="j.pseudo" :class="{ actif: phase === 'jeu' && vue && vue.tour === j.c, absent: !j.connecte }">
-            <span class="pastille-c" :style="{ background: j.c === 'A' ? '#2f5f9e' : '#b5422f' }"></span>{{ j.pseudo }} <strong>{{ j.score }}</strong>
+            <span class="pastille-c" :style="{ background: couleurCamp(j.c) }"></span>{{ j.pseudo }} <strong>{{ j.score }}</strong>
           </span>
         </div>
         <div class="consigne" :class="{ alerte: !!message }">{{ message || consigne }}</div>
@@ -405,6 +414,13 @@
     if (!ACCES.memorise()) location.replace('index.html');
 
     const CLE_SAUVEGARDE = 'assaut-sauvegarde';
+    // Couleurs possibles pour ses pièces (l'adversaire prend rouge, ou bleu si ma couleur est déjà dans les rouges)
+    const COULEURS = [
+      { id: 'bleu', nom: 'Bleu', v: '#2f5f9e' }, { id: 'rouge', nom: 'Rouge', v: '#b5422f' },
+      { id: 'vert', nom: 'Vert', v: '#2e7d4f' }, { id: 'violet', nom: 'Violet', v: '#6a3d9a' },
+      { id: 'orange', nom: 'Orange', v: '#c76a12' }, { id: 'rose', nom: 'Rose', v: '#b0407a' },
+      { id: 'turquoise', nom: 'Turquoise', v: '#1f8a8a' }, { id: 'noir', nom: 'Noir', v: '#2b2b2b' }
+    ];
     const CLE_PRIVE = 'assaut-prive';      // à deux : MON armée, qui ne quitte jamais ce téléphone
     const DELAI_ORDINATEUR = 750;
     const JEU_RESEAU = 'as';
@@ -608,6 +624,8 @@
         dispositions: Object.assign({ complet: [], rapide: [] }, lireStockage('assaut-dispositions') || {}),
         apparence: lireStockage('assaut-apparence') || 'symboles',   // 'symboles' | 'chiffres' | 'images'
         numerotation: lireStockage('assaut-numerotation') || 'moderne', // affichage seulement : 'moderne' | 'ancienne'
+        maCouleur: lireStockage('assaut-couleur') || 'bleu',             // couleur de MES pièces sur ce téléphone
+        COULEURS: COULEURS,
         images: lireStockage('assaut-images') || {},                  // grade -> image (data URL), propre à ce téléphone
         // Salon
         pseudoInput: pseudoSauvegarde(),
@@ -637,6 +655,9 @@
                   { c: '#2f5f9e', t: '10' }, { c: '#2f5f9e', t: '3' }, { c: '#2f5f9e', t: '🚩' }];
         },
         moi: function() { return this.pseudoInput.trim() || 'Moi'; },
+        variablesCouleurs: function() {
+          return { '--coul-A': this.couleurCamp('A'), '--coul-B': this.couleurCamp('B'), '--coul-moi': this.couleurCamp(this.monC) };
+        },
         vibrationSupportee: function() { return typeof navigator.vibrate === 'function'; },
         historiqueRecent: function() { return this.historique.slice().reverse(); },
         connexionTexte: function() { return { ok: 'en ligne', connexion: 'connexion…', perdue: 'reconnexion…', aucune: 'hors ligne' }[this.connexion]; },
@@ -752,6 +773,7 @@
         memoire: function(v) { ecrireStockage('assaut-memoire', v); },
         apparence: function(v) { ecrireStockage('assaut-apparence', v); },
         numerotation: function(v) { ecrireStockage('assaut-numerotation', v); },
+        maCouleur: function(v) { ecrireStockage('assaut-couleur', v); },
         sonActif: function(v) { ecrireStockage('brillant-son', v); },
         vibrationActive: function(v) { ecrireStockage('brillant-vibration', v); if (v) vibrer(40); },
         voixActive: function(v) { ecrireStockage('brillant-voix', v); if (v) Voix.dire('Annonce de ton tour activée'); },
@@ -798,6 +820,12 @@
           if (typeof g !== 'number') return '';
           if (this.numerotation === 'ancienne') return g === 1 ? 'E' : String(11 - g);
           return String(g);
+        },
+        // Couleur affichée d'un camp : la mienne pour mon camp, une couleur bien distincte pour l'adversaire
+        couleurCamp: function(c) {
+          var moi = COULEURS.find(x => x.id === this.maCouleur) || COULEURS[0];
+          var adv = ['rouge', 'orange', 'rose'].indexOf(moi.id) !== -1 ? COULEURS[0] : COULEURS[1];
+          return c === this.monC ? moi.v : adv.v;
         },
         nom: function(g) { return AS.NOMS[g] + (typeof g === 'number' ? ' (' + this.chiffre(g) + ')' : ''); },
         affichagePiece: function(p, i) {
