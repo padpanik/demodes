@@ -45,6 +45,12 @@
     /* Icône Assaut : petit plateau, deux camps et un lac */
     .ico-as { display: grid; grid-template-columns: repeat(3, 15px); gap: 3px; flex-shrink: 0; width: 51px; }
     .ico-as span { width: 15px; height: 15px; border-radius: 3px; }
+    /* Icône Bataille navale : un bout de mer avec un navire, un touché et une gerbe d'eau */
+    .ico-bn { display: grid; grid-template-columns: repeat(3, 15px); gap: 2px; flex-shrink: 0; width: 49px; padding: 1px; background: #2a6f97; border-radius: 5px; }
+    .ico-bn span { width: 15px; height: 15px; border-radius: 3px; background: rgba(255,255,255,0.12); position: relative; }
+    .ico-bn span.n { background: #8f9ba4; }
+    .ico-bn span.t::after { content: ''; position: absolute; inset: 3px; border-radius: 50%; background: radial-gradient(#ffe082, #ff6d00 55%, #c62828); }
+    .ico-bn span.e::after { content: ''; position: absolute; inset: 4px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.85); }
     .titre-section { font-weight: 700; color: #5b6b78; margin: 4px 4px 10px; }
   </style>
 </head>
@@ -79,6 +85,7 @@
           <div v-if="j.id === 'brilliant'" class="ico-grille"><span v-for="(c, i) in grille" :key="i" :style="{ background: c }"></span></div>
           <div v-else-if="j.id === 'yams'" class="ico-des"><span v-for="n in [5, 3, 6, 2, 4]" :key="n">{{ n }}</span></div>
           <div v-else-if="j.id === 'assaut'" class="ico-as"><span v-for="(c, k) in ['#b5422f','#b5422f','#b5422f','#5d9bc9','#a9c08c','#5d9bc9','#2f5f9e','#2f5f9e','#2f5f9e']" :key="k" :style="{ background: c }"></span></div>
+          <div v-else-if="j.id === 'bataille'" class="ico-bn"><span v-for="(x, k) in ['', 'e', '', 'n', 'n', 't', '', '', 'e']" :key="k" :class="x"></span></div>
           <div v-else class="ico-bg"><span v-for="k in 6" :key="k" :class="{ bas: k > 3 }"></span></div>
           <div>
             <div class="nom">{{ j.nom }}</div>
@@ -128,12 +135,13 @@
       },
       computed: {
         jeux: function() {
-          var b = etatJeu('brillant-sauvegarde-v1'), y = etatJeu('yams-sauvegarde'), g = etatJeu('bg-sauvegarde'), a = etatJeu('assaut-sauvegarde');
+          var b = etatJeu('brillant-sauvegarde-v1'), y = etatJeu('yams-sauvegarde'), g = etatJeu('bg-sauvegarde'), a = etatJeu('assaut-sauvegarde'), n = etatJeu('bataille-sauvegarde');
           return [
             { id: 'brilliant', nom: 'Brilliant', page: 'brilliant.html', desc: 'Roll & write : remplis les zones de ta grille.', enCours: b && b.texte },
             { id: 'yams', nom: 'Yams', page: 'yams.html', desc: '5 dés, 3 lancers, 5 colonnes : libre, descendante, montante, sèche, imposée.', enCours: y && y.texte },
             { id: 'backgammon', nom: 'Backgammon', page: 'backgammon.html', desc: 'À deux, avec le videau.', enCours: g && g.texte },
-            { id: 'assaut', nom: 'Assaut', page: 'assaut.html', desc: 'Stratégie à pièces cachées, seul contre l\'ordinateur ou à deux.', enCours: a && a.texte }
+            { id: 'assaut', nom: 'Assaut', page: 'assaut.html', desc: 'Stratégie à pièces cachées, seul contre l\'ordinateur ou à deux.', enCours: a && a.texte },
+            { id: 'bataille', nom: 'Bataille navale', page: 'bataille.html', desc: 'Coule la flotte adverse, seul contre l\'ordinateur ou à deux.', enCours: n && n.texte }
           ];
         }
       },

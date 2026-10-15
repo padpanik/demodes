@@ -27,6 +27,7 @@ Tout est en français : interface, commentaires du code, messages de commit, ré
 | `yams.html` | Yams, solo et à plusieurs (chacun son tour). Utilise `commun.js`. |
 | `backgammon.html` + `backgammon-regles.js` | Backgammon à deux. Le moteur de règles est dans `backgammon-regles.js` (testable avec Node). |
 | `assaut.html` + `assaut-regles.js` | Assaut (stratégie à pièces cachées, version maison du genre « Stratego », sans le nom ni les visuels de la marque). Solo contre l'ordinateur, ou à deux (salon limité à 2, armées gardées sur chaque téléphone). Moteur + ordinateur dans `assaut-regles.js` (testable avec Node). |
+| `bataille.html` + `bataille-regles.js` | Bataille navale. Solo contre l'ordinateur (3 niveaux), ou à deux (salon limité à 2, flottes gardées sur chaque téléphone). Moteur + ordinateur dans `bataille-regles.js` (testable avec Node). |
 | `sw.js` | Service worker (PWA) : nos fichiers en « réseau d'abord » avec `cache: 'no-cache'`, bibliothèques en cache. |
 | `manifest.webmanifest`, icônes | Installation comme application. |
 | `netlify.toml` | Inutilisé (essai d'hébergement abandonné). |
@@ -49,7 +50,7 @@ Pas d'étape de construction, pas de dépendance à ajouter.
   150 000 itérations, 48 octets. Octets 0–31 : `EMPREINTE` publiée ; octets 32–39 : « clé de salon »,
   jamais publiée, gardée dans `localStorage['brillant-acces']`.
 - La clé de salon entre dans l'identifiant réseau : `'dm-' + cléSalon + '-' + [jeu + '-'] + nomSimplifié`.
-  Préfixes de jeu : aucun pour Brilliant, `yams`, `bg`, `as`. Sans le bon code, impossible de joindre un salon.
+  Préfixes de jeu : aucun pour Brilliant, `yams`, `bg`, `as`, `bn`. Sans le bon code, impossible de joindre un salon.
 - Changer le code = recalculer l'empreinte dans les deux fichiers ; tous les salons changent d'identifiant.
 
 ## Réseau (identique dans les trois jeux)
@@ -75,6 +76,7 @@ Brilliant : `brillant-sauvegarde-v1`, `brillant-dernier-salon`, `brillant-record
 Yams : `yams-sauvegarde`, `yams-dernier-salon`, `yams2-record`, `yams2-classements` (le « 2 » : barème maison).
 Assaut : `assaut-sauvegarde`, `assaut-prive` (mon armée en salon), `assaut-dernier-salon`, `assaut-mode`, `assaut-memoire`, `assaut-stats`, `assaut-dispositions`, `assaut-apparence`, `assaut-images`, `assaut-numerotation`, `assaut-couleur`.
 Backgammon : `bg-sauvegarde`, `bg-dernier-salon`.
+Bataille navale : `bataille-sauvegarde`, `bataille-prive` (ma flotte en salon), `bataille-dernier-salon`, `bataille-stats`, `bataille-colles`, `bataille-rejouer`, `bataille-niveau`.
 
 ## Règles des jeux (choix de l'utilisateur, à ne pas changer sans lui)
 
@@ -121,6 +123,18 @@ Backgammon : `bg-sauvegarde`, `bg-dernier-salon`.
   tout seul ; à la fin, chacun dévoile son armée et l'autre vérifie l'empreinte et rejoue tous les coups.
   L'hôte choisit le format ; les couleurs alternent à chaque partie (A, en bleu, commence).
 
+### Bataille navale
+- Mer 10 × 10 (A–J, 1–10), flotte : porte-avions 5, croiseur 4, contre-torpilleur 3, sous-marin 3, torpilleur 2.
+  Annonces : à l'eau, touché, coulé (avec le nom du navire).
+- Règles par défaut : navires séparés d'au moins une case (même en diagonale), un tir chacun son tour.
+  Options de l'hôte (ou du joueur seul) : « les navires peuvent se toucher », « rejouer tant qu'on touche ».
+- Placement comme Assaut : flotte au hasard au départ, réserve de navires sous la mer, Hasard / Compléter, Vider ;
+  toucher un navire posé le choisit, le toucher encore le tourne. Pour tirer : toucher une case pour viser, la retoucher pour faire feu.
+- Solo : l'ordinateur ne voit que ses propres tirs (comptage des placements possibles), niveaux Facile / Normal / Fort.
+- À deux : la flotte ne quitte jamais le téléphone (`bataille-prive`) ; empreinte SHA-256 (flotte + sel) au départ,
+  le téléphone visé répond seul à chaque tir, à la fin chacun dévoile sa flotte et l'autre vérifie l'empreinte et toutes les réponses.
+  Le premier tireur alterne à chaque partie.
+
 ### Autres choix déjà tranchés
 - Annonce vocale du tour : **seulement sur le téléphone du joueur concerné**, après 5 s sans lancer.
 - Sons fabriqués par le code (pas de fichiers audio) ; sons et vibrations réglables séparément.
@@ -135,5 +149,5 @@ en simulant plusieurs téléphones (contextes séparés, 360 × 800) :
 2. Servir le dossier en local (`python3 -m http.server`), saisir le code d'accès dans le test **sans l'écrire dans le dépôt**.
 3. Piloter les pages (`document.getElementById('app').__vue__` donne accès à l'état Vue) : entrée en salon,
    coups, rechargement de page, fermeture d'un téléphone, reprise du salon.
-4. Moteur du backgammon : tests Node directs sur `backgammon-regles.js` (positions piégeuses + parties aléatoires).
+4. Moteurs : tests Node directs sur `backgammon-regles.js` (positions piégeuses + parties aléatoires) et `bataille-regles.js` (flottes, ordinateur contre ordinateur, triche repérée).
 5. Toujours regarder une capture d'écran du rendu à 360 px de large avant de publier.

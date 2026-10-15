@@ -1,0 +1,1485 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Bataille navale · Désdale</title>
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="theme-color" content="#e3f1f8">
+  <link rel="icon" type="image/png" href="favicon.png">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Désdale">
+  <script src="https://cdn.jsdelivr.net/npm/vue@2.7.16/dist/vue.min.js"></script>
+  <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+  <link rel="stylesheet" href="commun.css">
+  <style>
+    /* ---------- Ambiance marine ---------- */
+    body { background: #d4eaf4 linear-gradient(180deg, #eaf5fb 0%, #d4eaf4 100%) fixed; }
+    .logo-bn { display: grid; grid-template-columns: repeat(3, 15px); gap: 2px; padding: 3px; border-radius: 6px; background: #2a6f97; }
+    .logo-bn span { width: 15px; height: 15px; border-radius: 3px; background: rgba(255,255,255,0.12); position: relative; }
+    .logo-bn span.n { background: #8f9ba4; }
+    .logo-bn span.t::after { content: ''; position: absolute; inset: 3px; border-radius: 50%; background: radial-gradient(#ffe082, #ff6d00 55%, #c62828); }
+    .logo-bn span.e::after { content: ''; position: absolute; inset: 4px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.85); }
+
+    .segment { display: flex; background: #e3e8ec; border-radius: 10px; padding: 3px; gap: 3px; margin-bottom: 4px; }
+    .segment button { flex: 1; border: none; background: transparent; border-radius: 8px; padding: 9px 4px; font: inherit; font-weight: 600; color: #5b6b78; cursor: pointer; }
+    .segment button.actif { background: #fff; color: #1d2b36; box-shadow: 0 1px 3px rgba(0,0,0,0.12); }
+    .segment button small { display: block; font-weight: 500; font-size: 0.78em; color: #8a97a1; }
+
+    /* ---------- Mer : étiquettes A–J / 1–10 autour d'une grille 10 × 10 ---------- */
+    .mer { user-select: none; -webkit-tap-highlight-color: transparent; }
+    .lettres { display: grid; grid-template-columns: repeat(10, 1fr); margin-left: 16px; font-size: 10px; font-weight: 700; color: #4f6f86; text-align: center; height: 14px; line-height: 14px; }
+    .mer-corps { display: flex; }
+    .chiffres { width: 16px; display: grid; grid-template-rows: repeat(10, 1fr); font-size: 10px; font-weight: 700; color: #4f6f86; align-items: center; text-align: center; }
+    .eau {
+      position: relative; flex: 1; aspect-ratio: 1 / 1; display: grid; grid-template-columns: repeat(10, 1fr); grid-template-rows: repeat(10, 1fr);
+      border-radius: 6px; overflow: hidden; box-shadow: 0 2px 8px rgba(20, 60, 90, 0.35), inset 0 0 0 1px rgba(0,0,0,0.15);
+      background: radial-gradient(ellipse at 30% 20%, #3f8fbf 0%, #2a6f97 45%, #1b4f72 100%);
+    }
+    /* Vagues qui défilent lentement sous la grille */
+    .eau::before {
+      content: ''; position: absolute; inset: -40%; pointer-events: none; opacity: 0.55;
+      background: repeating-linear-gradient(170deg, rgba(255,255,255,0.07) 0 3px, transparent 3px 14px),
+                  repeating-linear-gradient(10deg, rgba(255,255,255,0.05) 0 2px, transparent 2px 19px);
+      animation: vagues 14s linear infinite;
+    }
+    @keyframes vagues { from { transform: translate(0, 0); } to { transform: translate(-38px, 26px); } }
+    @media (prefers-reduced-motion: reduce) { .eau::before { animation: none; } }
+    .cell { position: relative; box-shadow: inset 0 0 0 0.5px rgba(255,255,255,0.16); z-index: 1; }
+    .eau.active .cell.libre { cursor: crosshair; }
+    .eau.active .cell.libre:hover { background: rgba(255,255,255,0.10); }
+    .eau.placement .cell { cursor: pointer; }
+    .eau.inactive { filter: saturate(0.7) brightness(0.92); }
+
+    /* Coque des navires : segments jointifs, proue arrondie */
+    .coque { position: absolute; z-index: 1; background: linear-gradient(180deg, #a8b4bc, #6f7d87); box-shadow: inset 0 -2px 0 rgba(0,0,0,0.2); }
+    .coque.v { background: linear-gradient(90deg, #a8b4bc, #6f7d87); box-shadow: inset -2px 0 0 rgba(0,0,0,0.2); }
+    .coque.h { top: 17%; bottom: 17%; left: 0; right: 0; }
+    .coque.v { left: 17%; right: 17%; top: 0; bottom: 0; }
+    .coque.h.debut { left: 8%; border-radius: 50% 12% 12% 50% / 50% 20% 20% 50%; }
+    .coque.h.fin { right: 8%; border-radius: 12% 30% 30% 12%; }
+    .coque.v.debut { top: 8%; border-radius: 50% 50% 12% 12% / 50% 50% 20% 20%; }
+    .coque.v.fin { bottom: 8%; border-radius: 12% 12% 30% 30%; }
+    .coque.milieu::after { content: ''; position: absolute; left: 30%; right: 30%; top: 30%; bottom: 30%; border-radius: 3px; background: rgba(40, 55, 65, 0.45); }
+    .coque.choisi { background: linear-gradient(180deg, #ffe08a, #e0a526); }
+    .coque.adverse { background: linear-gradient(180deg, #8a5a4a, #4e2e25); }
+    .coque.cache { background: rgba(200, 215, 225, 0.35); box-shadow: inset 0 0 0 1.5px rgba(255,255,255,0.6); }
+    .coque.coulee { background: linear-gradient(180deg, #6b4438, #3a211b); animation: sombrer 0.9s ease-out; }
+    @keyframes sombrer { 0% { opacity: 0; transform: scale(1.15); } 100% { opacity: 1; transform: none; } }
+
+    /* Marques de tir */
+    .marque { position: absolute; z-index: 2; pointer-events: none; border-radius: 50%; }
+    .marque.eau-tir { inset: 34%; border: 2px solid rgba(255,255,255,0.9); animation: plouf 0.7s ease-out; }
+    .marque.eau-tir::after { content: ''; position: absolute; inset: -4px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.8); opacity: 0; animation: onde 1.1s ease-out; }
+    @keyframes plouf { 0% { transform: scale(0.2); opacity: 0; } 50% { transform: scale(1.3); opacity: 1; } 100% { transform: scale(1); } }
+    @keyframes onde { 0% { transform: scale(0.6); opacity: 0.9; } 100% { transform: scale(3); opacity: 0; } }
+    .marque.feu { inset: 20%; background: radial-gradient(circle, #fff3b0 0%, #ffb300 35%, #f4511e 65%, rgba(198, 40, 40, 0.9) 100%);
+                  box-shadow: 0 0 6px 2px rgba(255, 140, 0, 0.7); animation: boum 0.8s ease-out; }
+    .marque.feu::after { content: ''; position: absolute; inset: -60%; border-radius: 50%; background: radial-gradient(circle, rgba(255,230,150,0.9), rgba(255,120,0,0) 70%); opacity: 0; animation: eclair 0.8s ease-out; }
+    .marque.feu.eteint { inset: 30%; background: radial-gradient(circle, #ff8a65, #b71c1c 70%); box-shadow: none; animation: none; }
+    @keyframes boum { 0% { transform: scale(0); } 35% { transform: scale(1.7); } 100% { transform: scale(1); } }
+    @keyframes eclair { 0% { opacity: 1; transform: scale(0.3); } 100% { opacity: 0; transform: scale(1.6); } }
+    /* Viseur : case visée (en attente de confirmation, ou tir en cours) */
+    .cell.vise::after, .cell.visee::after {
+      content: ''; position: absolute; inset: 8%; z-index: 3; border-radius: 50%; border: 2px solid #ffd54a;
+      background: linear-gradient(#ffd54a, #ffd54a) center / 2px 100% no-repeat, linear-gradient(#ffd54a, #ffd54a) center / 100% 2px no-repeat;
+    }
+    .cell.visee::after { animation: viser 0.5s ease-in-out infinite alternate; }
+    @keyframes viser { from { transform: scale(1.25); opacity: 0.6; } to { transform: scale(0.9); opacity: 1; } }
+    .cell.dernier { box-shadow: inset 0 0 0 2px rgba(255, 213, 74, 0.75); }
+
+    .zone-jeu { position: relative; }
+    .titre-mer { display: flex; justify-content: space-between; align-items: baseline; font-size: 0.8em; font-weight: 700; color: #33566e; margin: 2px 2px 2px 18px; }
+    .titre-mer small { font-weight: 600; color: #6b8698; }
+    .bas { display: flex; gap: 10px; margin-top: 8px; align-items: flex-start; }
+    .bas .mer { width: 47%; flex-shrink: 0; }
+    .bas .lettres { display: none; }
+    .bas .chiffres { display: none; }
+    .panneau { flex: 1; min-width: 0; font-size: 0.78em; color: #33566e; }
+    .panneau .titre { font-weight: 700; margin: 0 0 3px; }
+    .panneau .titre + .flotte-etat { margin-bottom: 7px; }
+    .flotte-etat { display: flex; flex-direction: column; gap: 3px; }
+    .flotte-etat .nav { display: flex; align-items: center; gap: 1px; height: 9px; }
+    .flotte-etat .nav i { width: 11px; height: 9px; background: #7d8a94; }
+    .flotte-etat .nav i:first-child { border-radius: 5px 1px 1px 5px; }
+    .flotte-etat .nav i:last-child { border-radius: 1px 3px 3px 1px; }
+    .flotte-etat .nav.adv i { background: #8a5a4a; }
+    .flotte-etat .nav i.touche { background: #f4511e; }
+    .flotte-etat .nav.coule i { background: #c9d2d9; }
+    .flotte-etat .nav.coule::after { content: '✖'; color: #c62828; font-size: 10px; margin-left: 4px; line-height: 9px; }
+    .panneau .chiffre-cle { margin-top: 2px; color: #4f6f86; }
+    .panneau .btn { margin-top: 6px; padding: 7px 6px; font-size: 0.95em; width: 100%; }
+
+    /* Annonce du résultat d'un tir, au-dessus de la mer */
+    .annonce { position: absolute; left: 50%; top: 150px; z-index: 20; transform: translate(-50%, -50%); pointer-events: none; white-space: nowrap;
+               background: rgba(10, 30, 50, 0.88); color: #fff; font-weight: 900; font-size: 1.45em; padding: 10px 20px; border-radius: 14px;
+               box-shadow: 0 8px 22px rgba(0,0,0,0.35); animation: annonce 1.7s ease-out forwards; text-align: center; }
+    .annonce small { display: block; font-size: 0.5em; font-weight: 600; opacity: 0.8; margin-bottom: 2px; }
+    .annonce.r-eau { color: #a9dcff; }
+    .annonce.r-touche { color: #ffb74d; }
+    .annonce.r-coule { color: #ff8a65; font-size: 1.6em; }
+    .annonce.contre { top: auto; bottom: 30px; }
+    @keyframes annonce { 0% { opacity: 0; transform: translate(-50%, -50%) scale(0.6); } 15% { opacity: 1; transform: translate(-50%, -50%) scale(1.08); }
+                         25% { transform: translate(-50%, -50%) scale(1); } 80% { opacity: 1; } 100% { opacity: 0; transform: translate(-50%, -60%) scale(1); } }
+
+    .consigne { min-height: 2.5em; display: flex; align-items: center; justify-content: center; text-align: center; font-size: 0.86em; color: #2f4d63; line-height: 1.3; margin: 2px 0 4px; padding: 0 4px; }
+    .consigne.alerte { color: #c0392b; font-weight: 700; }
+    .actions { display: flex; gap: 8px; margin-top: 8px; }
+    .actions .btn { padding: 11px 6px; font-size: 0.95rem; }
+    .actions .btn:disabled { opacity: 0.45; }
+    /* Réserve : les navires encore à poser */
+    .reserve { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin: 8px 0 2px; }
+    .reserve-nav { display: flex; align-items: center; gap: 6px; border: 1.5px solid #c3d3de; background: #fff; border-radius: 10px; padding: 6px 9px; font: inherit; font-size: 0.8em; font-weight: 700; color: #1d2b36; cursor: pointer; }
+    .reserve-nav.choisie { border-color: #e0a526; background: #fff8e1; box-shadow: 0 0 0 2px #e0a526; }
+    .silhouette { display: inline-flex; gap: 1px; }
+    .silhouette i { width: 9px; height: 10px; background: #7d8a94; }
+    .silhouette i:first-child { border-radius: 6px 1px 1px 6px; }
+    .silhouette i:last-child { border-radius: 1px 3px 3px 1px; }
+
+    .panneau-vide { text-align: center; padding: 40px 16px; color: #3b5568; }
+    .panneau-vide .grand { font-size: 2.5em; margin-bottom: 8px; }
+    .regles ul { padding-left: 18px; margin: 8px 0 0; font-size: 0.88em; line-height: 1.45; color: #3b4b57; }
+    .regles li { margin-bottom: 3px; }
+    .verif { font-size: 0.85em; margin: 8px 0; }
+    .verif.ok { color: #2f8a5b; }
+    .verif.ko { color: #b04a4a; font-weight: 700; }
+    .joueurs-bande { display: flex; gap: 6px; justify-content: center; margin-bottom: 2px; flex-wrap: wrap; font-size: 0.88em; }
+    .joueurs-bande > span { background: #dcebf3; border-radius: 12px; padding: 2px 10px; }
+    .joueurs-bande > span.actif { background: #fff3d6; box-shadow: inset 0 0 0 1.5px #e0a526; }
+    .joueurs-bande > span.absent { opacity: 0.5; }
+  </style>
+</head>
+<body>
+  <div id="app" class="app">
+
+    <div class="barre">
+      <div id="menu">
+        <div @click="onglet = 'config'" :class="{ actif: onglet === 'config' }">Accueil</div>
+        <div @click="onglet = 'play'" :class="{ actif: onglet === 'play' }">Jouer</div>
+      </div>
+      <a v-if="onglet === 'config' && !role" class="lien-jeux" href="index.html?choix">⇦ Jeux</a>
+      <div class="barre-infos" v-if="onglet === 'play'">
+        <button class="btn-veille" :class="{ off: !sonActif }" @click="basculerSon">{{ sonActif ? '🔊' : '🔇' }}</button>
+        <button v-if="veilleSupportee" class="btn-veille" :class="{ actif: veilleActive, off: !garderEcran }" @click="garderEcran = !garderEcran">{{ garderEcran ? '☀️' : '🌙' }}</button>
+        <span v-if="role" class="point-co" :class="{ attente: connexion !== 'ok' }"></span>
+      </div>
+    </div>
+
+    <!-- ACCUEIL -->
+    <div v-show="onglet === 'config'">
+      <header class="hero">
+        <div class="logo-bn"><span v-for="(x, k) in ['', 'e', '', 'n', 'n', 't', '', '', 'e']" :key="k" :class="x"></span></div>
+        <div>
+          <h1>Bataille navale</h1>
+          <p>Désdale · coule la flotte adverse</p>
+        </div>
+      </header>
+
+      <!-- Salon en cours -->
+      <section class="carte salon-actif" v-if="role">
+        <div class="salon-tete">
+          <span class="pastille" :class="{ attente: connexion !== 'ok' }"></span>
+          <div>
+            <div class="salon-nom">Salon « {{ roomCode }} »</div>
+            <div class="salon-role">{{ role === 'hote' ? '👑 Tu es l\'hôte : tu choisis les règles' : 'Tu joues' }} en tant que {{ moi }} · {{ connexionTexte }}</div>
+          </div>
+        </div>
+        <div class="chips-joueurs">
+          <span v-for="j in bandeau" :key="j.pseudo" class="chip" :class="{ absent: !j.connecte }">
+            {{ j.pseudo }} · {{ j.score }} victoire{{ j.score > 1 ? 's' : '' }}<span v-if="!j.connecte"> 💤</span>
+          </span>
+          <span v-if="pub && pub.ordre.length < 2" class="chip absent">en attente d'un adversaire…</span>
+        </div>
+        <div class="actions-accueil">
+          <button class="btn principal" @click="onglet = 'play'">Jouer →</button>
+          <button class="btn" @click="quitterSalon">Quitter</button>
+        </div>
+      </section>
+
+      <section class="carte">
+        <div class="titre-carte">Règles de la partie <small v-if="role === 'client'">choisies par l'hôte</small></div>
+        <label class="case-a-cocher"><input type="checkbox" :checked="collesAffiche" :disabled="role === 'client'" @change="choisirRegle('colles', $event.target.checked)"> ⚓ Les navires peuvent se toucher</label>
+        <label class="case-a-cocher"><input type="checkbox" :checked="rejouerAffiche" :disabled="role === 'client'" @change="choisirRegle('rejouer', $event.target.checked)"> 🎯 Rejouer tant qu'on touche</label>
+        <div class="aide">Par défaut : navires séparés d'au moins une case (même en diagonale), un tir chacun son tour.<template v-if="role === 'hote'"> Un changement recommence le placement.</template></div>
+        <template v-if="!role">
+          <div class="titre-carte" style="margin-top:10px">Ordinateur</div>
+          <div class="segment">
+            <button :class="{ actif: niveau === 'facile' }" @click="niveau = 'facile'">Facile</button>
+            <button :class="{ actif: niveau === 'normal' }" @click="niveau = 'normal'">Normal</button>
+            <button :class="{ actif: niveau === 'fort' }" @click="niveau = 'fort'">Fort</button>
+          </div>
+        </template>
+      </section>
+
+      <template v-if="!role">
+        <button class="btn principal btn-large" @click="nouvellePartie">{{ partieEnCours ? 'Nouvelle partie solo' : 'Jouer seul contre l\'ordinateur' }}</button>
+        <button class="btn btn-large" v-if="partieEnCours" @click="onglet = 'play'">Reprendre la partie en cours</button>
+        <p class="statut" v-if="statsTexte">{{ statsTexte }}</p>
+
+        <section class="carte">
+          <div class="titre-carte">Partie à deux</div>
+          <label class="champ">Ton pseudo
+            <input type="text" v-model="pseudoInput" placeholder="ex : Alex" autocomplete="off" maxlength="20">
+          </label>
+          <label class="champ">Nom du salon
+            <input type="text" v-model="channelInput" placeholder="ex : partie-du-dimanche" autocomplete="off">
+          </label>
+          <div class="salons-connus" v-if="salonsConnus.length">
+            <span v-for="nom in salonsConnus" :key="nom" class="salon-puce" :class="{ actif: estSalonSaisi(nom) }">
+              <button class="nom" @click="channelInput = nom">{{ nom }}</button>
+              <button class="oter" @click="oublierSalon(nom)" aria-label="Retirer de la liste">✕</button>
+            </span>
+          </div>
+          <div class="aide">Chacun sur son téléphone : ta flotte ne quitte jamais le tien. Le premier ouvre le salon et choisit les règles.</div>
+        </section>
+        <button class="btn btn-large" @click="entrerSalon()" :disabled="entreeEnCours">
+          {{ entreeEnCours ? 'Connexion au salon…' : 'Entrer dans le salon' }}
+        </button>
+      </template>
+
+      <details class="carte regles">
+        <summary>Règles</summary>
+        <ul>
+          <li>Chacun cache sa flotte sur une mer de 10 × 10 : <strong>porte-avions (5)</strong>, <strong>croiseur (4)</strong>, <strong>contre-torpilleur (3)</strong>, <strong>sous-marin (3)</strong> et <strong>torpilleur (2)</strong>, à l'horizontale ou à la verticale.</li>
+          <li>À tour de rôle, on tire sur une case de la mer adverse : <strong>à l'eau</strong>, <strong>touché</strong>, ou <strong>coulé</strong> quand toutes les cases d'un navire sont touchées (son nom est alors annoncé).</li>
+          <li>Le premier qui coule toute la flotte adverse gagne.</li>
+          <li>Pour tirer : touche une case pour viser, puis touche-la encore pour faire feu.</li>
+          <li>À deux : ta flotte reste sur ton téléphone, qui répond tout seul aux tirs. À la fin, chacun dévoile sa flotte et l'appli vérifie que personne n'a menti.</li>
+        </ul>
+      </details>
+
+      <section class="carte reglages">
+        <div class="titre-carte">Réglages</div>
+        <label class="case-a-cocher"><input type="checkbox" v-model="sonActif"> 🔊 Sons</label>
+        <label class="case-a-cocher" v-if="vibrationSupportee"><input type="checkbox" v-model="vibrationActive"> 📳 Vibrations</label>
+        <label class="case-a-cocher" v-if="voixSupportee"><input type="checkbox" v-model="voixActive"> 🗣️ Annoncer mon tour</label>
+        <label class="case-a-cocher"><input type="checkbox" v-model="entreeAuto"> 🚪 Entrer dans mon salon au lancement</label>
+        <label class="case-a-cocher" v-if="veilleSupportee"><input type="checkbox" v-model="garderEcran"> ☀️ Garder l'écran allumé</label>
+      </section>
+
+      <details class="carte journal">
+        <summary>Activité <small v-if="historique.length">({{ historique.length }})</small></summary>
+        <ul>
+          <li v-for="(log, i) in historiqueRecent" :key="i" :class="{ 'sys-msg': log.s }">{{ log.m }}</li>
+          <li v-if="!historique.length" class="sys-msg">Rien pour l'instant.</li>
+        </ul>
+      </details>
+
+      <p class="version">Désdale · Bataille navale · version {{ version }}</p>
+    </div>
+
+    <!-- JOUER -->
+    <div v-show="onglet === 'play'">
+      <div v-if="role && (!pub || pub.ordre.length < 2) && !phase" class="panneau-vide">
+        <div class="grand">⏳</div>
+        <p>En attente d'un adversaire.<br>Donne-lui le nom du salon : <strong>{{ roomCode }}</strong></p>
+      </div>
+      <div v-else-if="!phase" class="panneau-vide">
+        <div class="grand">⚓</div>
+        <p>Aucune partie en cours.</p>
+        <button class="btn principal" @click="nouvellePartie">Jouer seul contre l'ordinateur</button>
+      </div>
+      <template v-else>
+        <div class="joueurs-bande" v-if="role && pub">
+          <span v-for="j in bandeau" :key="j.pseudo" :class="{ actif: phase === 'jeu' && etat && etat.tour === j.c, absent: !j.connecte }">
+            {{ j.pseudo }} <strong>{{ j.score }}</strong>
+          </span>
+        </div>
+        <div class="consigne" :class="{ alerte: !!message }">{{ message || consigne }}</div>
+
+        <!-- Placement : ma mer en grand, la réserve de navires en dessous -->
+        <template v-if="phase === 'placement'">
+          <div class="mer">
+            <div class="lettres"><span v-for="l in BN.LETTRES" :key="l">{{ l }}</span></div>
+            <div class="mer-corps">
+              <div class="chiffres"><span v-for="n in 10" :key="n">{{ n }}</span></div>
+              <div class="eau placement">
+                <div v-for="x in celluleMoi" :key="x.i" class="cell" :class="x.classes" @click="toucherPlacement(x.i)">
+                  <div v-if="x.coque" class="coque" :class="x.coque"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="reserve" v-if="!jeSuisPret && reserve.length">
+            <button v-for="n in reserve" :key="n.id" class="reserve-nav" :class="{ choisie: selNav === n.id }" @click="choisirNavire(n.id)">
+              <span class="silhouette"><i v-for="k in n.t" :key="k"></i></span>{{ n.nom }}
+            </button>
+          </div>
+          <div class="actions" v-if="!jeSuisPret">
+            <button class="btn" @click="tourner">↻ {{ orientationAffichee ? 'Horizontal' : 'Vertical' }}</button>
+            <button class="btn" v-if="selNav !== null && flotte[selNav]" @click="retirerNavire">↩ Retirer</button>
+            <button class="btn" v-else @click="placerAuHasard">🎲 {{ reserve.length && reserve.length < 5 ? 'Compléter' : 'Hasard' }}</button>
+            <button class="btn" @click="viderPlacement" :disabled="reserve.length === 5" aria-label="Vider la mer">🧹</button>
+            <button class="btn principal" @click="commencer" :disabled="reserve.length > 0">Prêt ✓</button>
+          </div>
+        </template>
+
+        <!-- Partie : la mer adverse en grand, la mienne en petit -->
+        <div v-else class="zone-jeu">
+          <div class="titre-mer"><span>🎯 Mer de {{ nomAdversaireCourt }}</span><small>{{ mesTirsTexte }}</small></div>
+          <div class="mer">
+            <div class="lettres"><span v-for="l in BN.LETTRES" :key="l">{{ l }}</span></div>
+            <div class="mer-corps">
+              <div class="chiffres"><span v-for="n in 10" :key="n">{{ n }}</span></div>
+              <div class="eau" :class="{ active: monTour, inactive: phase === 'jeu' && !monTour }">
+                <div v-for="x in celluleAdv" :key="x.i" class="cell" :class="x.classes" @click="toucherAdv(x.i)">
+                  <div v-if="x.coque" class="coque" :class="x.coque"></div>
+                  <div v-if="x.marque" class="marque" :class="x.marque"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="bas">
+            <div class="mer">
+              <div class="mer-corps">
+                <div class="eau">
+                  <div v-for="x in celluleMoi" :key="x.i" class="cell" :class="x.classes">
+                    <div v-if="x.coque" class="coque" :class="x.coque"></div>
+                    <div v-if="x.marque" class="marque" :class="x.marque"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="panneau">
+              <div class="titre">Flotte de {{ nomAdversaireCourt }}</div>
+              <div class="flotte-etat">
+                <div v-for="n in flotteAdvEtat" :key="n.id" class="nav adv" :class="{ coule: n.coule }" :title="n.nom"><i v-for="k in n.t" :key="k"></i></div>
+              </div>
+              <div class="titre">Ma flotte</div>
+              <div class="flotte-etat">
+                <div v-for="n in maFlotteEtat" :key="n.id" class="nav" :class="{ coule: n.coule }" :title="n.nom"><i v-for="k in n.t" :key="k" :class="{ touche: k <= n.touches && !n.coule }"></i></div>
+              </div>
+              <div class="verif" v-if="phase === 'fin' && verif" :class="verif.ok ? 'ok' : 'ko'">{{ verif.texte }}</div>
+              <button class="btn" v-if="phase === 'jeu'" @click="abandonner">Abandonner</button>
+              <button class="btn principal" v-if="phase === 'fin'" @click="rejouer">{{ role ? 'Partie suivante' : 'Rejouer' }}</button>
+              <button class="btn" v-if="phase === 'fin'" @click="finMasquee = false">Résultat</button>
+            </div>
+          </div>
+          <div v-if="annonce" :key="annonce.cle" class="annonce" :class="['r-' + annonce.type, { contre: !annonce.moi }]"><small>{{ annonce.qui }}</small>{{ annonce.texte }}</div>
+        </div>
+      </template>
+    </div>
+
+    <!-- FIN DE PARTIE -->
+    <div v-if="phase === 'fin' && fin && !finMasquee" class="fin-backdrop" @click.self="finMasquee = true">
+      <div class="fin-box">
+        <h2>{{ fin.gagnant === monC ? '🏆 Victoire !' : '🌊 Défaite' }}</h2>
+        <p>{{ texteFin }}</p>
+        <p class="verif" v-if="verif" :class="verif.ok ? 'ok' : 'ko'">{{ verif.texte }}</p>
+        <p class="sys-msg" v-if="!role">{{ statsTexte }}</p>
+        <button @click="finMasquee = true">Voir les deux mers</button>
+        <button class="principal" @click="rejouer">{{ role ? 'Partie suivante' : 'Rejouer' }}</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="commun.js"></script>
+  <script src="bataille-regles.js"></script>
+  <script>
+    if (!ACCES.memorise()) location.replace('index.html');
+
+    const CLE_SAUVEGARDE = 'bataille-sauvegarde';
+    const CLE_PRIVE = 'bataille-prive';    // à deux : MA flotte, qui ne quitte jamais ce téléphone
+    const JEU_RESEAU = 'bn';
+    const DELAI_SILENCE = 15000;
+    const DELAI_ANNONCE = 5000;
+    const DELAI_VISEE = 650;               // le viseur clignote avant l'impact
+    const DELAI_ORDINATEUR = 1300;         // pause avant que l'ordinateur vise
+    const MAX_SALONS = 8;
+    function copie(o) { return JSON.parse(JSON.stringify(o)); }
+    function hasard16() { var o = new Uint8Array(16); crypto.getRandomValues(o); return Array.from(o).map(b => b.toString(16).padStart(2, '0')).join(''); }
+    // Empreinte d'une flotte : SHA-256( flotte + sel secret )
+    function empreinte(flotte, sel) {
+      var txt = JSON.stringify(flotte.map(n => [n.pos, n.h ? 1 : 0])) + sel;
+      return crypto.subtle.digest('SHA-256', new TextEncoder().encode(txt))
+        .then(b => Array.from(new Uint8Array(b)).map(x => x.toString(16).padStart(2, '0')).join(''));
+    }
+
+    // ---------- Sons de la mer (fabriqués par le code) ----------
+    Sons.plouf = function(ctx, dest, t) {
+      var src = ctx.createBufferSource(); src.buffer = this.bruit(ctx); src.loop = true;
+      var f = ctx.createBiquadFilter(); f.type = 'lowpass';
+      f.frequency.setValueAtTime(1800, t); f.frequency.exponentialRampToValueAtTime(220, t + 0.55);
+      var g = ctx.createGain();
+      g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.7, t + 0.03); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.6);
+      src.connect(f); f.connect(g); g.connect(dest); src.start(t); src.stop(t + 0.65);
+      var o = ctx.createOscillator(); o.type = 'sine';
+      o.frequency.setValueAtTime(700, t); o.frequency.exponentialRampToValueAtTime(160, t + 0.18);
+      var g2 = ctx.createGain(); g2.gain.setValueAtTime(0.25, t); g2.gain.exponentialRampToValueAtTime(0.0001, t + 0.2);
+      o.connect(g2); g2.connect(dest); o.start(t); o.stop(t + 0.22);
+    };
+    Sons.boum = function(ctx, dest, t) {
+      var src = ctx.createBufferSource(); src.buffer = this.bruit(ctx); src.loop = true;
+      var f = ctx.createBiquadFilter(); f.type = 'lowpass';
+      f.frequency.setValueAtTime(2400, t); f.frequency.exponentialRampToValueAtTime(140, t + 0.8);
+      var g = ctx.createGain();
+      g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(1, t + 0.01); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.9);
+      src.connect(f); f.connect(g); g.connect(dest); src.start(t); src.stop(t + 0.95);
+      var o = ctx.createOscillator(); o.type = 'sine';
+      o.frequency.setValueAtTime(140, t); o.frequency.exponentialRampToValueAtTime(38, t + 0.5);
+      var g2 = ctx.createGain(); g2.gain.setValueAtTime(0.8, t); g2.gain.exponentialRampToValueAtTime(0.0001, t + 0.55);
+      o.connect(g2); g2.connect(dest); o.start(t); o.stop(t + 0.6);
+    };
+    Sons.coule = function(ctx, dest, t) {
+      this.boum(ctx, dest, t);
+      // Le navire sombre : une note grave qui descend, puis des bulles
+      var o = ctx.createOscillator(); o.type = 'triangle';
+      o.frequency.setValueAtTime(330, t + 0.35); o.frequency.exponentialRampToValueAtTime(70, t + 1.4);
+      var g = ctx.createGain(); g.gain.setValueAtTime(0.0001, t + 0.35); g.gain.exponentialRampToValueAtTime(0.3, t + 0.45); g.gain.exponentialRampToValueAtTime(0.0001, t + 1.45);
+      o.connect(g); g.connect(dest); o.start(t + 0.35); o.stop(t + 1.5);
+      for (var k = 0; k < 5; k++) this.note(ctx, dest, t + 0.9 + k * 0.09 + Math.random() * 0.04, 500 + Math.random() * 500, 0.06, 0.08, 'sine');
+    };
+
+    // Solo : partie complète (l'ordinateur ne regarde que ses propres tirs)
+    let partie = null;
+
+    // ================== À DEUX : ÉTAT PUBLIC (l'hôte relaie et arbitre ce qui est visible) ==================
+    // Aucune position de navire n'y figure : seulement les tirs et leurs résultats (donnés par le téléphone visé),
+    // les empreintes des flottes et, à la fin, les flottes dévoilées.
+    function nouvelEtatSalon(ordre, colles, rejouer) {
+      return { ordre: ordre.slice(), couleurs: {}, scores: {}, manche: 0, colles: colles, rejouer: rejouer,
+               partieId: null, phase: 'attente', prets: {}, journal: [], tour: 'A', tir: null, n: 0, fin: null, revelations: {} };
+    }
+    function couleurDe(pub, p) { return pub.couleurs.A === p ? 'A' : pub.couleurs.B === p ? 'B' : null; }
+    function nouvelleManche(pub) {
+      pub.manche++;
+      var a = pub.ordre[(pub.manche + 1) % 2];   // on commence chacun son tour
+      pub.couleurs = { A: a, B: pub.ordre.find(p => p !== a) };
+      pub.ordre.forEach(p => { if (pub.scores[p] === undefined) pub.scores[p] = 0; });
+      Object.assign(pub, { partieId: nouvelId(), phase: 'placement', prets: {}, journal: [], tour: 'A', tir: null, n: 0, fin: null, revelations: {} });
+    }
+    function finir(pub, gagnant, raison) {
+      pub.fin = { gagnant: gagnant, raison: raison };
+      pub.phase = 'fin';
+      pub.tir = null;
+      var p = pub.couleurs[gagnant];
+      pub.scores[p] = (pub.scores[p] || 0) + 1;
+    }
+    // Hôte : traite un message de jeu d'un des deux joueurs. Renvoie un message d'erreur ou null.
+    function traiterJeu(pub, pseudo, m) {
+      var c = couleurDe(pub, pseudo);
+      if (!c) return 'Tu ne joues pas cette partie.';
+      var adv = BN.autre(c);
+      switch (m.type) {
+        case 'PRET':
+          if (pub.phase !== 'placement' || m.partieId !== pub.partieId) return 'Placement terminé.';
+          pub.prets[c] = { hash: String(m.hash) };
+          if (pub.prets.A && pub.prets.B) { pub.phase = 'jeu'; pub.tour = 'A'; }
+          return null;
+        case 'TIR': {
+          var i = m.i;
+          if (pub.phase !== 'jeu' || pub.tour !== c || pub.tir) return 'Ce n\'est pas ton tour.';
+          if (typeof i !== 'number' || i < 0 || i > 99 || i % 1 || BN.dejaTire(pub.journal, c, i)) return 'Case déjà visée.';
+          pub.tir = { n: pub.n + 1, c: c, i: i };
+          return null;
+        }
+        case 'REPONSE': {
+          // Le téléphone visé dit ce que le tir a donné (vérifié en détail à la fin de la partie)
+          var t = pub.tir;
+          if (pub.phase !== 'jeu' || !t || t.n !== m.n || t.c === c) return 'rien';
+          var j = { c: t.c, i: t.i, res: m.res };
+          if (['eau', 'touche', 'coule'].indexOf(m.res) === -1) return 'Réponse invalide.';
+          if (m.res === 'coule') {
+            var nav = m.nav, taille = BN.FLOTTE[nav] && BN.FLOTTE[nav].t, cells = m.cells;
+            var dejaCoule = pub.journal.some(x => x.c === t.c && x.res === 'coule' && x.nav === nav);
+            var h = Array.isArray(cells) && cells.length > 1 && cells[1] - cells[0] === 1;
+            var ligne = Array.isArray(cells) && BN.cases(cells[0], h, taille);
+            var touches = pub.journal.filter(x => x.c === t.c && x.res === 'touche').map(x => x.i);
+            if (!taille || dejaCoule || !ligne || JSON.stringify(ligne) !== JSON.stringify(cells) || cells.indexOf(t.i) === -1 ||
+                cells.some(x => x !== t.i && touches.indexOf(x) === -1)) return 'Réponse invalide.';
+            j.nav = nav; j.cells = cells;
+          }
+          pub.journal.push(j);
+          pub.n = t.n;
+          pub.tir = null;
+          if (BN.coulesContre(pub.journal, c) === BN.FLOTTE.length) finir(pub, t.c, 'flotte');
+          else if (m.res === 'eau' || !pub.rejouer) pub.tour = c;
+          return null;
+        }
+        case 'ABANDON':
+          if (pub.phase !== 'jeu' && pub.phase !== 'placement') return 'rien';
+          finir(pub, adv, 'abandon');
+          return null;
+        case 'REVELER':
+          if (pub.phase !== 'fin' || pub.revelations[c] || m.partieId !== pub.partieId) return 'rien';
+          pub.revelations[c] = { flotte: m.flotte, sel: String(m.sel) };
+          return null;
+        case 'SUIVANTE':
+          if (pub.phase !== 'fin' || pub.ordre.length < 2) return 'rien';
+          nouvelleManche(pub);
+          return null;
+      }
+      return 'Action inconnue.';
+    }
+    // Fin de partie : la flotte dévoilée par l'adversaire doit correspondre à son empreinte et à toutes ses réponses
+    function verifierAdversaire(pub, adv) {
+      var rev = pub.revelations[adv], pret = pub.prets[adv];
+      if (!pret) return Promise.resolve({ ok: true, texte: '' });
+      if (!rev || !Array.isArray(rev.flotte)) return Promise.resolve({ ok: false, texte: 'Flotte adverse non dévoilée.' });
+      return empreinte(rev.flotte, rev.sel).then(h => {
+        var pb = h !== pret.hash ? 'la flotte dévoilée n\'est pas celle du départ' : BN.verifierReponses(rev.flotte, pub.journal, adv, pub.colles);
+        return pb ? { ok: false, texte: '⚠️ Incohérence chez ' + pub.couleurs[adv] + ' : ' + pb + '.' }
+                  : { ok: true, texte: '✓ Partie vérifiée : la flotte adverse correspond à ses réponses.' };
+      });
+    }
+
+    // ================== RÉSEAU ==================
+    let peer = null;
+    let connections = [];
+    let connParPseudo = {};
+    let hostConn = null;
+    let dernierMsgHote = 0;
+    let monPseudo = '';
+    let pubHote = null;
+    let salle = { infos: {} };
+
+    function pseudoSauvegarde() {
+      var cles = ['bataille-sauvegarde', 'assaut-sauvegarde', 'bg-sauvegarde', 'yams-sauvegarde', 'brillant-sauvegarde-v1'];
+      for (var k = 0; k < cles.length; k++) { var s = lireStockage(cles[k]); if (s && s.pseudo) return s.pseudo; }
+      return '';
+    }
+
+    new Vue({
+      el: '#app',
+      data: {
+        BN: BN,
+        version: VERSION,
+        onglet: 'config',
+        colles: lireStockage('bataille-colles') === true,
+        rejouerSiTouche: lireStockage('bataille-rejouer') === true,
+        niveau: lireStockage('bataille-niveau') || 'normal',
+        // Partie affichée (solo ou salon)
+        phase: null,            // null | 'placement' | 'jeu' | 'fin'
+        monC: 'A',
+        collesPartie: false,
+        flotte: [null, null, null, null, null],   // ma flotte [{ pos, h }] (null : encore dans la réserve)
+        flotteIA: null,
+        selNav: null,           // placement : navire choisi (dans la réserve ou déjà posé)
+        orientH: true,          // placement : orientation des navires posés depuis la réserve
+        etat: null,             // { journal, tour, fin, n } : les tirs des deux camps
+        vise: null,             // case visée sur la mer adverse (touchée une fois)
+        visee: null,            // tir en cours : { grille: 'adv' | 'moi', i }
+        attente: false,         // solo : animation en cours, on ne peut pas tirer
+        annonce: null,
+        fin: null,
+        finMasquee: false,
+        verif: null,
+        message: '',
+        historique: [],
+        stats: lireStockage('bataille-stats') || { v: 0, d: 0, record: null },
+        // Salon
+        pseudoInput: pseudoSauvegarde(),
+        channelInput: lireStockage('bataille-dernier-salon') || lireStockage('brillant-dernier-salon') || '',
+        salonsConnus: lireStockage('brillant-salons') || [],
+        role: null,
+        connexion: 'aucune',
+        roomCode: '',
+        entreeEnCours: false,
+        pub: null,
+        prive: lireStockage(CLE_PRIVE),
+        joueurs: [],
+        // Réglages
+        sonActif: lireStockage('brillant-son') !== false,
+        vibrationActive: lireStockage('brillant-vibration') !== null ? lireStockage('brillant-vibration') !== false : lireStockage('brillant-son') !== false,
+        voixActive: lireStockage('brillant-voix') !== false,
+        voixSupportee: Voix.supportee,
+        entreeAuto: lireStockage('brillant-entree-auto') !== false,
+        garderEcran: lireStockage('brillant-garder-ecran') !== false,
+        veilleSupportee: 'wakeLock' in navigator,
+        veilleActive: false
+      },
+      computed: {
+        moi: function() { return this.pseudoInput.trim() || 'Moi'; },
+        vibrationSupportee: function() { return typeof navigator.vibrate === 'function'; },
+        historiqueRecent: function() { return this.historique.slice().reverse(); },
+        connexionTexte: function() { return { ok: 'en ligne', connexion: 'connexion…', perdue: 'reconnexion…', aucune: 'hors ligne' }[this.connexion]; },
+        collesAffiche: function() { return this.role && this.pub ? this.pub.colles : this.colles; },
+        rejouerAffiche: function() { return this.role && this.pub ? this.pub.rejouer : this.rejouerSiTouche; },
+        partieEnCours: function() { return !this.role && (this.phase === 'placement' || this.phase === 'jeu'); },
+        nomAdversaire: function() {
+          if (!this.role) return 'l\'ordinateur';
+          return (this.pub && this.pub.couleurs[BN.autre(this.monC)]) || 'l\'adversaire';
+        },
+        nomAdversaireCourt: function() { return this.role ? this.nomAdversaire : 'l\'ordinateur'; },
+        statsTexte: function() {
+          var s = this.stats;
+          if (!s.v && !s.d) return '';
+          return 'Contre l\'ordinateur : ' + s.v + ' victoire' + (s.v > 1 ? 's' : '') + ', ' + s.d + ' défaite' + (s.d > 1 ? 's' : '') +
+                 (s.record ? ' · record : flotte coulée en ' + s.record + ' tirs' : '');
+        },
+        bandeau: function() {
+          var p = this.pub;
+          if (!p) return [];
+          return p.ordre.map(x => {
+            var j = this.joueurs.find(y => y.pseudo === x);
+            return { pseudo: x, c: couleurDe(p, x) || (x === p.ordre[0] ? 'A' : 'B'), score: p.scores[x] || 0, connecte: x === this.moi || !j || j.connecte !== false };
+          });
+        },
+        reserve: function() { return BN.FLOTTE.filter(n => !this.flotte[n.id]); },
+        orientationAffichee: function() {
+          var n = this.selNav !== null ? this.flotte[this.selNav] : null;
+          return n ? n.h : this.orientH;
+        },
+        jeSuisPret: function() { return !!(this.role && this.pub && this.pub.phase === 'placement' && this.pub.prets[this.monC]); },
+        journal: function() { return (this.etat && this.etat.journal) || []; },
+        tirEnAttente: function() { return !!(this.role && this.pub && this.pub.tir); },
+        monTour: function() {
+          if (this.phase !== 'jeu' || !this.etat || this.etat.tour !== this.monC || this.etat.fin) return false;
+          if (this.role) return this.connexion === 'ok' && !this.tirEnAttente;
+          return !this.attente;
+        },
+        mesTirs: function() { return BN.grilleTirs(this.journal, this.monC); },
+        mesTirsTexte: function() {
+          var t = this.journal.filter(j => j.c === this.monC), ok = t.filter(j => j.res !== 'eau').length;
+          return t.length ? t.length + ' tir' + (t.length > 1 ? 's' : '') + ' · ' + ok + ' au but' : '';
+        },
+        // Flotte adverse dévoilée (fin de partie) : on montre aussi les navires épargnés
+        flotteAdvVisible: function() {
+          if (this.phase !== 'fin') return null;
+          if (!this.role) return this.flotteIA;
+          var rev = this.pub && this.pub.revelations[BN.autre(this.monC)];
+          return rev && Array.isArray(rev.flotte) && !BN.erreurFlotte(rev.flotte, true) ? rev.flotte : null;
+        },
+        celluleAdv: function() {
+          var g = this.mesTirs, res = [], coques = {};
+          var dernier = this.journal.filter(j => j.c === this.monC).pop();
+          if (this.flotteAdvVisible) Object.assign(coques, this.segments(this.flotteAdvVisible, 'cache'));
+          this.journal.forEach(j => {
+            if (j.c !== this.monC || j.res !== 'coule') return;
+            var h = j.cells[1] - j.cells[0] === 1;
+            j.cells.forEach((x, k) => { coques[x] = this.segment(h, k, j.cells.length, 'coulee'); });
+          });
+          for (var i = 0; i < 100; i++) {
+            var x = { i: i, classes: { libre: g[i] === null, vise: this.vise === i && !(this.visee && this.visee.grille === 'adv'),
+                                      visee: !!this.visee && this.visee.grille === 'adv' && this.visee.i === i, dernier: !!dernier && dernier.i === i && this.phase === 'jeu' } };
+            if (coques[i]) x.coque = coques[i];
+            if (g[i] === 'e') x.marque = 'eau-tir';
+            else if (g[i] === 't') x.marque = 'feu';
+            else if (g[i] === 'c') x.marque = 'feu eteint';
+            res.push(x);
+          }
+          return res;
+        },
+        celluleMoi: function() {
+          var res = [], coques = this.segments(this.flotte, null), recus = {}, coulees = {};
+          var dernier = this.journal.filter(j => j.c !== this.monC).pop();
+          this.journal.forEach(j => {
+            if (j.c === this.monC) return;
+            recus[j.i] = j.res;
+            if (j.res === 'coule') j.cells.forEach(x => { coulees[x] = true; });
+          });
+          for (var i = 0; i < 100; i++) {
+            var x = { i: i, classes: { visee: !!this.visee && this.visee.grille === 'moi' && this.visee.i === i, dernier: !!dernier && dernier.i === i && this.phase === 'jeu' } };
+            if (coques[i]) {
+              x.coque = Object.assign({}, coques[i]);
+              if (coulees[i]) x.coque.coulee = true;
+              if (this.phase === 'placement' && this.selNav === coques[i].id) x.coque.choisi = true;
+            }
+            if (recus[i] === 'eau') x.marque = 'eau-tir';
+            else if (recus[i]) x.marque = coulees[i] ? 'feu eteint' : 'feu';
+            res.push(x);
+          }
+          return res;
+        },
+        flotteAdvEtat: function() {
+          var coules = this.journal.filter(j => j.c === this.monC && j.res === 'coule').map(j => j.nav);
+          return BN.FLOTTE.map(n => ({ id: n.id, nom: n.nom, t: n.t, coule: coules.indexOf(n.id) !== -1 }));
+        },
+        maFlotteEtat: function() {
+          var recus = this.journal.filter(j => j.c !== this.monC).map(j => j.i);
+          return BN.FLOTTE.map(n => {
+            var cs = this.flotte[n.id] ? BN.casesNavire(this.flotte, n.id) : [];
+            var t = cs.filter(x => recus.indexOf(x) !== -1).length;
+            return { id: n.id, nom: n.nom, t: n.t, touches: t, coule: cs.length > 0 && t === cs.length };
+          });
+        },
+        texteFin: function() {
+          var f = this.fin;
+          if (!f) return '';
+          var moi = f.gagnant === this.monC, lui = this.role ? this.nomAdversaire : 'L\'ordinateur';
+          var n = this.journal.filter(j => j.c === f.gagnant).length;
+          if (f.raison === 'flotte') return moi ? 'Tu as coulé toute la flotte ' + (this.role ? 'de ' + lui : 'adverse') + ' en ' + n + ' tirs.'
+                                                : lui + ' a coulé toute ta flotte en ' + n + ' tirs.';
+          if (f.raison === 'abandon') return moi ? (this.role ? lui : 'L\'adversaire') + ' abandonne.' : 'Tu as abandonné.';
+          return '';
+        },
+        consigne: function() {
+          if (this.phase === 'placement') {
+            if (this.jeSuisPret) return 'Prêt ! En attente de ' + this.nomAdversaire + '…';
+            var att = this.role && this.pub && this.pub.prets[BN.autre(this.monC)] ? ' (' + this.nomAdversaire + ' est prêt)' : '';
+            if (this.selNav !== null && this.flotte[this.selNav]) return 'Touche une case pour déplacer le ' + BN.FLOTTE[this.selNav].nom.toLowerCase() + ', ou touche-le encore pour le tourner.' + att;
+            if (this.selNav !== null) return 'Touche la case où mettre l\'avant du ' + BN.FLOTTE[this.selNav].nom.toLowerCase() + '.' + att;
+            if (this.reserve.length) return 'Choisis un navire sous la mer, puis sa case.' + att;
+            return 'Ta flotte est en place : touche un navire pour le déplacer, puis « Prêt ».' + att;
+          }
+          if (this.phase === 'fin') return 'Partie terminée : les deux flottes sont dévoilées.';
+          if (this.tirEnAttente) return this.pub.tir.c === this.monC ? '💥 Tir en ' + BN.nomCase(this.pub.tir.i) + '…' : '💥 ' + this.nomAdversaire + ' tire en ' + BN.nomCase(this.pub.tir.i) + '…';
+          if (this.role && this.connexion !== 'ok') return 'Connexion perdue : reconnexion en cours…';
+          if (this.visee) return this.visee.grille === 'adv' ? '💥 Feu sur ' + BN.nomCase(this.visee.i) + '…' : '💥 L\'ordinateur tire en ' + BN.nomCase(this.visee.i) + '…';
+          if (!this.monTour) return this.role ? 'Au tour de ' + this.nomAdversaire + '…' : 'L\'ordinateur vise…';
+          if (this.vise !== null) return 'Touche encore ' + BN.nomCase(this.vise) + ' pour faire feu.';
+          return 'À toi : touche une case de la mer adverse pour viser.';
+        },
+        cleAnnonce: function() { return this.role && this.monTour ? (this.pub.partieId + ':' + this.pub.n) : ''; }
+      },
+      watch: {
+        colles: function(v) { ecrireStockage('bataille-colles', v); },
+        rejouerSiTouche: function(v) { ecrireStockage('bataille-rejouer', v); },
+        niveau: function(v) { ecrireStockage('bataille-niveau', v); },
+        sonActif: function(v) { ecrireStockage('brillant-son', v); },
+        vibrationActive: function(v) { ecrireStockage('brillant-vibration', v); if (v) vibrer(40); },
+        voixActive: function(v) { ecrireStockage('brillant-voix', v); if (v) Voix.dire('Annonce de ton tour activée'); },
+        entreeAuto: function(v) { ecrireStockage('brillant-entree-auto', v); },
+        garderEcran: function(v) { ecrireStockage('brillant-garder-ecran', v); this.majVeille(); },
+        onglet: function() { this.majVeille(); },
+        phase: function() { this.majVeille(); },
+        role: function() { this.majVeille(); },
+        pseudoInput: function() { this.sauvegarder(); },
+        monTour: function(v) { if (!v) this.vise = null; },
+        cleAnnonce: function(cle) {
+          clearTimeout(this._timerVoix);
+          if (!cle || !this.voixActive || !Voix.supportee) return;
+          this._timerVoix = setTimeout(() => { if (this.cleAnnonce === cle) Voix.dire(this.moi + ', à toi de tirer !'); }, DELAI_ANNONCE);
+        }
+      },
+      created: function() {
+        if (!ACCES.cleSalon) return;
+        this.restaurer();
+        setInterval(() => this.battement(), 4000);
+        document.addEventListener('visibilitychange', () => this.auRetourPremierPlan());
+        window.addEventListener('online', () => this.auRetourPremierPlan());
+        window.addEventListener('pageshow', () => this.auRetourPremierPlan());
+      },
+      methods: {
+        ajouterLog: function(m, systeme) {
+          this.historique.push({ m: m, s: !!systeme });
+          if (this.historique.length > 150) this.historique.splice(0, this.historique.length - 150);
+        },
+        afficherMessage: function(txt) {
+          this.message = txt;
+          clearTimeout(this._timerMsg);
+          this._timerMsg = setTimeout(() => { this.message = ''; }, 2600);
+        },
+        vibre: function(motif) { if (this.vibrationActive) vibrer(motif); },
+        son: function(nom, arg) { if (this.sonActif) Sons.jouer(nom, arg); },
+        basculerSon: function() {
+          this.sonActif = !this.sonActif;
+          if (this.sonActif) Sons.jouer('toc');
+          this.afficherMessage(this.sonActif ? '🔊 Sons activés.' : '🔇 Sons coupés.');
+        },
+        // Dessin d'un navire : un segment de coque par case (proue arrondie, pont au milieu)
+        segment: function(h, k, t, etat) {
+          var s = { h: h, v: !h, debut: k === 0, fin: k === t - 1, milieu: k > 0 && k < t - 1 && k % 2 === 1 };
+          if (etat) s[etat] = true;
+          return s;
+        },
+        segments: function(flotte, etat) {
+          var r = {};
+          (flotte || []).forEach((n, id) => {
+            if (!n) return;
+            var cs = BN.cases(n.pos, n.h, BN.FLOTTE[id].t);
+            if (!cs) return;
+            cs.forEach((x, k) => { r[x] = Object.assign(this.segment(n.h, k, cs.length, etat), { id: id }); });
+          });
+          if (etat === 'cache') Object.keys(r).forEach(x => { delete r[x].id; });
+          return r;
+        },
+
+        // ---------- Règles (solo : pour la prochaine partie ; hôte : recommence le placement) ----------
+        choisirRegle: function(cle, v) {
+          if (this.role === 'client') return;
+          if (cle === 'colles') this.colles = v; else this.rejouerSiTouche = v;
+          if (this.role === 'hote') this.reglerSalon();
+        },
+        reglerSalon: function() {
+          if (!pubHote || (pubHote.colles === this.colles && pubHote.rejouer === this.rejouerSiTouche)) return;
+          if (pubHote.phase === 'jeu' && !confirm('Changer les règles arrête la partie en cours. Continuer ?')) { this.colles = pubHote.colles; this.rejouerSiTouche = pubHote.rejouer; return; }
+          pubHote.colles = this.colles;
+          pubHote.rejouer = this.rejouerSiTouche;
+          if (pubHote.ordre.length === 2 && pubHote.phase !== 'attente') { pubHote.manche--; nouvelleManche(pubHote); }
+          this.publier();
+        },
+
+        // ---------- Placement ----------
+        nouvellePartie: function() {
+          if (this.role) {
+            if (!confirm('Quitter le salon pour jouer seul ?')) return;
+            this.sortirDuSalon();
+          } else if (this.phase === 'jeu' && !confirm('Abandonner la partie en cours et en commencer une nouvelle ?')) return;
+          clearTimeout(this._timerIA);
+          clearTimeout(this._timerTir);
+          this.collesPartie = this.colles;
+          this.monC = 'A';
+          partie = null;
+          this.etat = null;
+          this.fin = null;
+          this.finMasquee = false;
+          this.verif = null;
+          this.vise = null;
+          this.visee = null;
+          this.attente = false;
+          this.annonce = null;
+          this.selNav = null;
+          this.flotte = BN.flotteAleatoire(this.collesPartie);
+          this.flotteIA = BN.flotteAleatoire(this.collesPartie);
+          this.phase = 'placement';
+          this.onglet = 'play';
+          this.sauvegarder();
+        },
+        placerAuHasard: function() {
+          if (this.jeSuisPret) return;
+          var base = this.reserve.length && this.reserve.length < 5 ? this.flotte : null;
+          this.flotte = BN.flotteAleatoire(this.collesPartie, base);
+          this.selNav = null;
+          this.son('toc');
+          this.memoriserPlacement();
+        },
+        viderPlacement: function() {
+          if (this.jeSuisPret) return;
+          this.flotte = [null, null, null, null, null];
+          this.selNav = 0;
+          this.memoriserPlacement();
+        },
+        choisirNavire: function(id) { this.selNav = this.selNav === id ? null : id; },
+        retirerNavire: function() {
+          if (this.selNav === null) return;
+          this.$set(this.flotte, this.selNav, null);
+          this.son('toc');
+          this.memoriserPlacement();
+        },
+        // Pose le navire id avec sa proue au plus près de la case i (recalé pour rester dans la mer)
+        poser: function(id, i, h) {
+          var t = BN.FLOTTE[id].t, l = Math.floor(i / 10), k = i % 10;
+          if (h) k = Math.min(k, 10 - t); else l = Math.min(l, 10 - t);
+          var pos = l * 10 + k;
+          if (!BN.placeLibre(this.flotte, id, pos, h, this.collesPartie)) {
+            this.afficherMessage(this.collesPartie ? 'Ça chevauche un autre navire.' : 'Trop près d\'un autre navire : laisse une case d\'eau autour.');
+            return false;
+          }
+          this.$set(this.flotte, id, { pos: pos, h: h });
+          this.son('toc');
+          this.memoriserPlacement();
+          return true;
+        },
+        tourner: function() {
+          if (this.jeSuisPret) return;
+          var n = this.selNav !== null ? this.flotte[this.selNav] : null;
+          if (!n) { this.orientH = !this.orientH; return; }
+          this.poser(this.selNav, n.pos, !n.h);
+        },
+        toucherPlacement: function(i) {
+          if (this.jeSuisPret) return;
+          var seg = this.segments(this.flotte, null)[i], id = this.selNav;
+          if (seg) {
+            // Un navire déjà posé : on le choisit, ou on le tourne s'il l'était déjà
+            if (id === seg.id) return this.tourner();
+            this.selNav = seg.id;
+            return;
+          }
+          if (id === null) return;
+          var deja = !!this.flotte[id];
+          if (this.poser(id, i, deja ? this.flotte[id].h : this.orientH) && !deja) {
+            var suivant = this.reserve[0];
+            this.selNav = suivant ? suivant.id : null;
+          } else if (deja) this.selNav = null;
+        },
+        memoriserPlacement: function() {
+          if (this.role && this.prive) { this.prive.flotte = copie(this.flotte); this.ecrirePrive(); }
+          this.sauvegarder();
+        },
+        commencer: function() {
+          if (this.reserve.length) return this.afficherMessage('Il reste ' + this.reserve.length + ' navire' + (this.reserve.length > 1 ? 's' : '') + ' à placer.');
+          if (BN.erreurFlotte(this.flotte, this.collesPartie)) return this.afficherMessage('Flotte mal placée.');
+          this.selNav = null;
+          if (this.role) {
+            // À deux : on envoie seulement l'empreinte ; la flotte reste ici
+            var p = this.prive;
+            p.flotte = copie(this.flotte);
+            p.sel = hasard16();
+            this.ecrirePrive();
+            return empreinte(p.flotte, p.sel).then(h => this.envoyerJeu({ type: 'PRET', partieId: p.partieId, hash: h }));
+          }
+          partie = BN.nouvellePartie(copie(this.flotte), this.flotteIA, this.collesPartie, this.rejouerSiTouche);
+          this.phase = 'jeu';
+          this.ajouterLog('Nouvelle partie contre l\'ordinateur (' + this.niveau + ').', true);
+          this.publierSolo();
+        },
+
+        // ---------- Tirs ----------
+        toucherAdv: function(i) {
+          if (!this.monTour || this.mesTirs[i] !== null) return;
+          if (this.vise !== i) { this.vise = i; this.son('toc'); return; }
+          this.vise = null;
+          this.tirer(i);
+        },
+        tirer: function(i) {
+          if (this.role) return this.envoyerJeu({ type: 'TIR', i: i });
+          this.attente = true;
+          this.visee = { grille: 'adv', i: i };
+          clearTimeout(this._timerTir);
+          this._timerTir = setTimeout(() => {
+            if (!partie || partie.fin) return;
+            var j = BN.jouer(partie, i);
+            this.visee = null;
+            this.publierSolo();
+            this.raconterTir(j);
+            this.suiteSolo();
+          }, DELAI_VISEE);
+        },
+        // Solo : qui joue ensuite ? (l'ordinateur prend la main après une courte pause)
+        suiteSolo: function() {
+          if (!partie || partie.fin) { this.attente = false; return; }
+          if (partie.tour === this.monC) { this.attente = false; return; }
+          this.attente = true;
+          clearTimeout(this._timerIA);
+          this._timerIA = setTimeout(() => this.tirOrdinateur(), DELAI_ORDINATEUR);
+        },
+        tirOrdinateur: function() {
+          if (this.role || !partie || partie.fin || partie.tour === this.monC) return;
+          var c = partie.tour;
+          var i = BN.choisirTir(BN.grilleTirs(partie.journal, c), BN.restants(partie.journal, c), partie.colles, this.niveau);
+          this.visee = { grille: 'moi', i: i };
+          this._timerIA = setTimeout(() => {
+            if (!partie || partie.fin) return;
+            var j = BN.jouer(partie, i);
+            this.visee = null;
+            this.publierSolo();
+            this.raconterTir(j);
+            this.suiteSolo();
+          }, DELAI_VISEE + 250);
+        },
+        // Résultat d'un tir : annonce au-dessus de la mer, son, vibration, journal
+        raconterTir: function(j) {
+          var moi = j.c === this.monC, lui = this.role ? this.nomAdversaire : 'L\'ordinateur';
+          var nav = j.res === 'coule' ? BN.FLOTTE[j.nav].nom : '';
+          var texte = j.res === 'eau' ? 'À l\'eau' : j.res === 'touche' ? 'Touché !' : 'Coulé !';
+          this.annonce = { cle: (this._cleAnnonce = (this._cleAnnonce || 0) + 1), type: j.res, moi: moi, texte: texte,
+                           qui: (moi ? 'Ton tir en ' : lui + ' tire en ') + BN.nomCase(j.i) + (nav ? ' · ' + (moi ? '' : 'ton ') + nav.toLowerCase() : '') };
+          clearTimeout(this._timerAnnonce);
+          this._timerAnnonce = setTimeout(() => { this.annonce = null; }, 1750);
+          this.son(j.res === 'eau' ? 'plouf' : j.res === 'touche' ? 'boum' : 'coule');
+          if (!moi && j.res !== 'eau') this.vibre(j.res === 'coule' ? [120, 60, 200] : 90);
+          if (moi && j.res === 'coule') this.vibre([40, 40, 40]);
+          this.ajouterLog((moi ? 'Tu tires en ' : lui + ' tire en ') + BN.nomCase(j.i) + ' : ' +
+                          (j.res === 'eau' ? 'à l\'eau.' : j.res === 'touche' ? 'touché.' : 'coulé (' + nav.toLowerCase() + ') !'));
+        },
+        abandonner: function() {
+          if (!confirm('Abandonner la partie ?')) return;
+          if (this.role) return this.envoyerJeu({ type: 'ABANDON' });
+          clearTimeout(this._timerIA);
+          clearTimeout(this._timerTir);
+          partie.fin = { gagnant: BN.autre(this.monC), raison: 'abandon' };
+          this.visee = null;
+          this.attente = false;
+          this.publierSolo();
+        },
+        rejouer: function() {
+          this.finMasquee = true;
+          if (this.role) return this.envoyerJeu({ type: 'SUIVANTE' });
+          this.nouvellePartie();
+        },
+        publierSolo: function() {
+          var ancienneFin = this.fin;
+          this.etat = { journal: copie(partie.journal), tour: partie.tour, fin: partie.fin, n: partie.n };
+          if (partie.fin && !ancienneFin) {
+            this.fin = partie.fin;
+            this.phase = 'fin';
+            this.finMasquee = false;
+            var gagne = partie.fin.gagnant === this.monC, s = this.stats;
+            if (gagne) {
+              s.v++;
+              var n = partie.journal.filter(j => j.c === this.monC).length;
+              if (partie.fin.raison === 'flotte' && (!s.record || n < s.record)) s.record = n;
+            } else s.d++;
+            ecrireStockage('bataille-stats', this.stats);
+            this.ajouterLog(gagne ? 'Victoire !' : 'Défaite.', true);
+            setTimeout(() => this.sonFin(gagne), 900);
+          }
+          this.sauvegarder();
+        },
+        sonFin: function(gagne) {
+          if (gagne) { this.son('victoire'); this.vibre([100, 60, 100, 60, 250]); } else this.vibre([200, 100, 200]);
+        },
+
+        // ---------- À deux : ce que fait chaque téléphone ----------
+        ecrirePrive: function() { ecrireStockage(CLE_PRIVE, this.prive); },
+        envoyerJeu: function(m) {
+          if (this.role === 'hote') {
+            var err = traiterJeu(pubHote, monPseudo, m);
+            if (err && err !== 'rien') return this.afficherMessage(err);
+            if (err !== 'rien') this.publier();
+            return;
+          }
+          if (this.connexion !== 'ok') return this.afficherMessage('Connexion perdue : reconnexion en cours…');
+          this.envoyerHote({ action: 'JEU', m: m });
+        },
+        // Nouvel état public reçu (ou produit par l'hôte)
+        appliquerPub: function(pub) {
+          this._versionEtat = (this._versionEtat || 0) + 1;
+          var ancien = this.pub;
+          this.pub = pub;
+          var c = couleurDe(pub, this.moi);
+          if (!c || pub.phase === 'attente' || !pub.partieId) { this.phase = null; this.etat = null; this.sauvegarder(); return; }
+          this.monC = c;
+          this.collesPartie = pub.colles;
+          // Nouvelle manche : nouvelle flotte, au hasard pour commencer
+          if (!this.prive || this.prive.partieId !== pub.partieId) {
+            this.prive = { partieId: pub.partieId, c: c, flotte: BN.flotteAleatoire(pub.colles), sel: null };
+            this.ecrirePrive();
+            this.fin = null; this.verif = null; this.finMasquee = false; this.selNav = null; this.vise = null; this.visee = null; this.annonce = null;
+            this.ajouterLog('Nouvelle partie : place ta flotte.', true);
+          }
+          this.flotte = copie(this.prive.flotte);
+          this.phase = pub.phase;
+          this.etat = { journal: pub.journal, tour: pub.tour, fin: pub.fin, n: pub.n };
+          // Ce qui vient de se passer : viseur pendant le tir, puis annonce du résultat
+          var memePartie = ancien && ancien.partieId === pub.partieId;
+          this.visee = pub.tir ? { grille: pub.tir.c === c ? 'adv' : 'moi', i: pub.tir.i } : null;
+          if (memePartie && pub.journal.length > ancien.journal.length && !this._restauration) this.raconterTir(pub.journal[pub.journal.length - 1]);
+          if (memePartie && ancien.tour !== pub.tour && pub.tour === c && pub.phase === 'jeu') this.vibre([30, 40, 30]);
+          if (pub.fin && !(memePartie && ancien.fin)) {
+            this.fin = pub.fin;
+            this.finMasquee = false;
+            this.ajouterLog(pub.fin.gagnant === c ? 'Victoire !' : 'Défaite.', true);
+            setTimeout(() => this.sonFin(pub.fin.gagnant === c), 900);
+          }
+          if (!pub.fin) this.fin = null;
+          this.sauvegarder();
+          this.actionsAutomatiques();
+        },
+        // Réponses automatiques : résultat d'un tir reçu, flotte dévoilée à la fin, vérification
+        actionsAutomatiques: function() {
+          var pub = this.pub, c = this.monC, p = this.prive;
+          if (!pub || !p || p.partieId !== pub.partieId) return;
+          var version = this._versionEtat;
+          var envois = this._envois || (this._envois = {});
+          var une = (cle, m, delai) => {
+            if (envois[cle] === version) return;
+            envois[cle] = version;
+            setTimeout(() => this.envoyerJeu(m), delai || 0); // différé : l'hôte traite ses propres envois après cet état
+          };
+          if (pub.phase === 'jeu' && pub.tir && pub.tir.c !== c) {
+            // Mon téléphone répond tout seul (après le temps de voir le viseur)
+            var r = BN.tirer(p.flotte, BN.recusPar(pub.journal, c), pub.tir.i);
+            une('rep' + pub.tir.n, Object.assign({ type: 'REPONSE', n: pub.tir.n }, r), DELAI_VISEE);
+          }
+          if (pub.phase === 'fin' && pub.prets[c] && !pub.revelations[c] && p.sel) {
+            une('rev', { type: 'REVELER', partieId: pub.partieId, flotte: p.flotte, sel: p.sel });
+          }
+          var adv = BN.autre(c);
+          if (pub.phase === 'fin' && pub.revelations[adv] && !this.verif && !this._verifEnCours) {
+            this._verifEnCours = true;
+            verifierAdversaire(pub, adv).then(r => {
+              this._verifEnCours = false;
+              if (this.pub && this.pub.partieId === pub.partieId && r.texte) { this.verif = r; this.ajouterLog(r.texte, true); }
+            });
+          }
+        },
+        publier: function() {
+          this.appliquerPub(copie(pubHote));
+          this.diffuser();
+          this.sauvegarder();
+        },
+
+        // ---------- Liste des salons ----------
+        estSalonSaisi: function(nom) { return ACCES.simplifier(nom) === ACCES.simplifier(this.channelInput); },
+        retenirSalon: function(nom) {
+          var cle = ACCES.simplifier(nom);
+          this.salonsConnus = [nom].concat((lireStockage('brillant-salons') || this.salonsConnus).filter(n => ACCES.simplifier(n) !== cle)).slice(0, MAX_SALONS);
+          ecrireStockage('brillant-salons', this.salonsConnus);
+          ecrireStockage('bataille-dernier-salon', nom);
+        },
+        oublierSalon: function(nom) {
+          var cle = ACCES.simplifier(nom);
+          this.salonsConnus = this.salonsConnus.filter(n => ACCES.simplifier(n) !== cle);
+          ecrireStockage('brillant-salons', this.salonsConnus);
+          if (ACCES.simplifier(lireStockage('bataille-dernier-salon') || '') === cle) {
+            if (this.salonsConnus.length) ecrireStockage('bataille-dernier-salon', this.salonsConnus[0]);
+            else effacerStockage('bataille-dernier-salon');
+          }
+          if (ACCES.simplifier(this.channelInput) === cle) this.channelInput = this.salonsConnus[0] || '';
+        },
+
+        // ---------- Sauvegarde ----------
+        sauvegarder: function() {
+          if (this._restauration) return;
+          ecrireStockage(CLE_SAUVEGARDE, {
+            pseudo: this.pseudoInput, role: this.role, salon: this.roomCode,
+            pub: this.role ? this.pub : null, pubHote: this.role === 'hote' ? pubHote : null, salle: this.role === 'hote' ? salle : null,
+            phase: this.role ? null : this.phase, collesPartie: this.collesPartie, monC: this.monC,
+            flotte: this.role ? null : this.flotte, flotteIA: this.role ? null : this.flotteIA, partie: this.role ? null : partie,
+            fin: this.role ? null : this.fin, historique: this.historique.slice(-60)
+          });
+        },
+        restaurer: function() {
+          var sv = lireStockage(CLE_SAUVEGARDE);
+          monPseudo = this.moi;
+          if (!sv) return this.entreeAutomatique();
+          if (sv.historique) this.historique = sv.historique;
+          if (sv.role && sv.salon && sv.pub) {
+            this.role = sv.role;
+            this.roomCode = sv.salon;
+            this.onglet = 'play';
+            this.connexion = 'perdue';
+            this._restauration = true;
+            this.appliquerPub(sv.pub);
+            this._restauration = false;
+            if (sv.role === 'hote') {
+              pubHote = sv.pubHote || copie(sv.pub);
+              salle = sv.salle || { infos: {} };
+              Object.values(salle.infos).forEach(i => { i.connecte = false; });
+              this.creerPartie(true);
+            } else this.rejoindrePartie(true);
+            this.ajouterLog('Partie restaurée, reconnexion au salon…', true);
+            return;
+          }
+          if (sv.phase) {
+            ['phase', 'collesPartie', 'monC', 'flotte', 'flotteIA', 'fin'].forEach(k => { if (sv[k] !== undefined && sv[k] !== null) this[k] = sv[k]; });
+            partie = sv.partie;
+            if (partie) this.etat = { journal: copie(partie.journal), tour: partie.tour, fin: partie.fin, n: partie.n };
+            if (this.phase === 'fin') this.finMasquee = true;
+            if (this.phase === 'jeu' || this.phase === 'placement') this.onglet = 'play';
+            if (this.phase === 'jeu' && partie && !partie.fin && partie.tour !== this.monC) this.suiteSolo();
+            return;
+          }
+          this.entreeAutomatique();
+        },
+        entreeAutomatique: function() {
+          var dernier = lireStockage('bataille-dernier-salon');
+          if (this.entreeAuto && dernier && this.pseudoInput.trim()) { this.channelInput = dernier; this.entrerSalon(true); }
+        },
+
+        // ---------- Entrée dans un salon ----------
+        validerPseudo: function() {
+          monPseudo = this.pseudoInput.trim();
+          if (!monPseudo) { alert('Merci de saisir un pseudo.'); return false; }
+          return true;
+        },
+        entrerSalon: function(silencieux) {
+          if (this.role || this._entree) return;
+          if (silencieux ? !this.pseudoInput.trim() : !this.validerPseudo()) return;
+          monPseudo = this.pseudoInput.trim();
+          if (!this.channelInput.trim()) { if (!silencieux) alert('Saisis un nom de salon.'); return; }
+          if (!silencieux && this.partieEnCours && !confirm('Ta partie solo en cours sera abandonnée. Continuer ?')) return;
+          if (this.partieEnCours) { clearTimeout(this._timerIA); clearTimeout(this._timerTir); partie = null; this.phase = null; this.etat = null; this.attente = false; this.visee = null; }
+          this._entree = { essais: 0, silencieux: !!silencieux };
+          this.entreeEnCours = true;
+          this.creerPartie(false);
+        },
+        finEntree: function(reussie, message) {
+          var e = this._entree;
+          this._entree = null;
+          this.entreeEnCours = false;
+          if (reussie) this.retenirSalon(this.roomCode);
+          else if (e && !e.silencieux && message) alert(message);
+        },
+        suiteEntree: function() {
+          var e = this._entree;
+          if (!e) return;
+          this.reinitialiserPeer(false);
+          if (++e.essais >= 4) return this.finEntree(false, 'Impossible d\'entrer dans le salon pour le moment. Réessaie dans un instant.');
+          setTimeout(() => { if (this._entree === e && !this.role) this.creerPartie(false); }, 1200);
+        },
+        quitterSalon: function() {
+          var enCours = this.phase === 'jeu' || this.phase === 'placement';
+          if (!confirm(enCours ? 'Quitter le salon ? La partie en cours sera interrompue.' : 'Quitter le salon ?')) return;
+          this.sortirDuSalon();
+        },
+        sortirDuSalon: function() {
+          if (this.role === 'client' && peer) {
+            this.envoyerHote({ action: 'DEPART' });
+            var ancienPeer = peer;
+            peer = null;
+            setTimeout(() => { try { ancienPeer.destroy(); } catch (e) {} }, 400);
+          }
+          this.reinitialiserPeer(false);
+          pubHote = null;
+          salle = { infos: {} };
+          this.pub = null;
+          this.phase = null;
+          this.etat = null;
+          this.fin = null;
+          this.verif = null;
+          this.visee = null;
+          this.ajouterLog('Tu as quitté le salon.', true);
+          this.sauvegarder();
+        },
+        reinitialiserPeer: function(garder) {
+          clearTimeout(this._timerReco);
+          var ancien = peer;
+          peer = null;
+          connections = [];
+          connParPseudo = {};
+          hostConn = null;
+          if (ancien) { try { ancien.destroy(); } catch (e) {} }
+          if (!garder) { this.role = null; this.joueurs = []; this.roomCode = ''; this.connexion = 'aucune'; }
+        },
+        planifierReconnexion: function(delai) {
+          clearTimeout(this._timerReco);
+          this._timerReco = setTimeout(() => {
+            if (!this.role || this.connexion === 'ok') return;
+            if (this.role === 'hote') return this.creerPartie(true);
+            this._echecsClient = (this._echecsClient || 0) + 1;
+            if (this._echecsClient >= 4 && this.pub) { this._echecsClient = 0; return this.reprendreLeSalon(); }
+            this.rejoindrePartie(true);
+          }, delai || 3000);
+        },
+        // L'hôte ne répond plus : on rouvre le salon avec notre copie de l'état public (il ne contient aucun secret)
+        reprendreLeSalon: function() {
+          pubHote = copie(this.pub);
+          salle = { infos: {} };
+          pubHote.ordre.forEach(p => { if (p !== monPseudo) salle.infos[p] = { connecte: false, clientId: null }; });
+          this._repriseParClient = true;
+          this.role = 'hote';
+          this.ajouterLog('L\'hôte ne répond plus : tu rouvres le salon.', true);
+          this.creerPartie(true);
+        },
+
+        // ---------- Hôte ----------
+        creerPartie: function(reprise) {
+          var nom = reprise ? this.roomCode : this.channelInput.trim();
+          this.reinitialiserPeer(!!reprise);
+          this.connexion = reprise ? 'perdue' : 'connexion';
+          var monPeer = peer = new Peer(ACCES.idSalon(nom, JEU_RESEAU));
+          monPeer.on('open', () => {
+            if (peer !== monPeer) return;
+            this.role = 'hote';
+            this.connexion = 'ok';
+            this.roomCode = nom;
+            this._echecsReprise = 0;
+            if (reprise) {
+              this._repriseParClient = false;
+              this.ajouterLog('Salon récupéré, l\'autre joueur va se reconnecter.', true);
+            } else {
+              if (!(this._entree && this._entree.silencieux)) this.onglet = 'play';
+              this.finEntree(true);
+              salle = { infos: {} };
+              pubHote = nouvelEtatSalon([monPseudo], this.colles, this.rejouerSiTouche);
+              this.ajouterLog(monPseudo + ' a ouvert le salon.', true);
+            }
+            this.publier();
+          });
+          monPeer.on('connection', (conn) => this.brancherClient(conn));
+          monPeer.on('disconnected', () => {
+            if (peer === monPeer && !monPeer.destroyed) setTimeout(() => { try { if (monPeer.disconnected && !monPeer.destroyed) monPeer.reconnect(); } catch (e) {} }, 1000);
+          });
+          monPeer.on('error', (err) => {
+            if (peer !== monPeer) return;
+            if (reprise || this.role === 'hote') {
+              if (err.type === 'peer-unavailable') return;
+              this.connexion = 'perdue';
+              var seuil = this._repriseParClient ? 1 : 5;
+              if (err.type === 'unavailable-id' && (this._echecsReprise = (this._echecsReprise || 0) + 1) >= seuil) {
+                this._echecsReprise = 0;
+                this._repriseParClient = false;
+                this.role = 'client';
+                pubHote = null;
+                salle = { infos: {} };
+                this.ajouterLog('Le salon est tenu par l\'autre joueur : tu le rejoins.', true);
+                return this.rejoindrePartie(true);
+              }
+              this.planifierReconnexion(3000);
+              return;
+            }
+            if (this._entree && err.type === 'unavailable-id') return this.rejoindrePartie(false);
+            if (this._entree) return this.suiteEntree();
+            this.reinitialiserPeer(false);
+            alert('Erreur : ' + err.message);
+          });
+        },
+        brancherClient: function(conn) {
+          connections.push(conn);
+          conn.dernierMsg = Date.now();
+          conn.on('data', (data) => { conn.dernierMsg = Date.now(); this.recevoirDeClient(conn, data); });
+          conn.on('close', () => this.perteClient(conn));
+          conn.on('error', () => this.perteClient(conn));
+        },
+        broadcast: function(data) { connections.forEach(c => { try { if (c.open) c.send(data); } catch (e) {} }); },
+        majJoueurs: function() {
+          if (this.role !== 'hote' || !pubHote) return;
+          this.joueurs = pubHote.ordre.map(p => ({ pseudo: p, hote: p === monPseudo, connecte: p === monPseudo || !!(salle.infos[p] && salle.infos[p].connecte) }));
+        },
+        diffuser: function() {
+          this.majJoueurs();
+          this.broadcast({ action: 'ETAT', pub: pubHote, joueurs: this.joueurs });
+        },
+        recevoirDeClient: function(conn, data) {
+          var p = conn.joueurPseudo;
+          switch (data.action) {
+            case 'PING': break;
+            case 'REJOINDRE': {
+              var pseudo = String(data.pseudo || '').trim().slice(0, 20);
+              var existant = salle.infos[pseudo], refus = '';
+              if (!pseudo || pseudo === monPseudo || (existant && existant.connecte && existant.clientId !== data.clientId && connParPseudo[pseudo] && connParPseudo[pseudo] !== conn)) refus = 'Ce pseudo est déjà utilisé dans ce salon.';
+              else if (pubHote.ordre.indexOf(pseudo) === -1 && pubHote.ordre.length >= 2) refus = 'Ce salon est complet : la bataille navale se joue à deux.';
+              if (refus) {
+                try { conn.send({ action: 'REFUS', fatal: true, message: refus }); } catch (e) {}
+                setTimeout(() => { try { conn.close(); } catch (e) {} }, 500);
+                return;
+              }
+              var ancienne = connParPseudo[pseudo];
+              if (ancienne && ancienne !== conn) { ancienne._remplacee = true; connections = connections.filter(c => c !== ancienne); try { ancienne.close(); } catch (e) {} }
+              conn.joueurPseudo = pseudo;
+              connParPseudo[pseudo] = conn;
+              salle.infos[pseudo] = { connecte: true, clientId: data.clientId };
+              if (pubHote.ordre.indexOf(pseudo) !== -1) this.ajouterLog(pseudo + ' est revenu.', true);
+              else {
+                pubHote.ordre.push(pseudo);
+                this.ajouterLog(pseudo + ' a rejoint le salon.', true);
+                if (pubHote.phase === 'attente' || pubHote.phase === 'fin') nouvelleManche(pubHote);
+              }
+              this.publier();
+              break;
+            }
+            case 'DEPART':
+              if (!p) return;
+              delete connParPseudo[p];
+              delete salle.infos[p];
+              pubHote.ordre = pubHote.ordre.filter(x => x !== p);
+              Object.assign(pubHote, { phase: 'attente', partieId: null, journal: [], tir: null, fin: null, prets: {}, revelations: {} });
+              this.ajouterLog(p + ' a quitté le salon.', true);
+              this.publier();
+              break;
+            case 'JEU': {
+              if (!p) return;
+              var err = traiterJeu(pubHote, p, data.m || {});
+              if (err === 'rien') return;
+              if (err) { try { conn.send({ action: 'REFUS', message: err }); } catch (e) {} this.diffuser(); return; }
+              this.publier();
+              break;
+            }
+          }
+        },
+        perteClient: function(conn) {
+          if (conn._perdue) return;
+          conn._perdue = true;
+          connections = connections.filter(c => c !== conn);
+          var p = conn.joueurPseudo;
+          if (!p || conn._remplacee || connParPseudo[p] !== conn) return;
+          delete connParPseudo[p];
+          if (salle.infos[p]) salle.infos[p].connecte = false;
+          this.ajouterLog(p + ' s\'est déconnecté (il peut revenir).', true);
+          this.diffuser();
+          this.sauvegarder();
+        },
+
+        // ---------- Client ----------
+        rejoindrePartie: function(reprise) {
+          var nom = reprise ? this.roomCode : this.channelInput.trim();
+          this.reinitialiserPeer(!!reprise);
+          this.connexion = reprise ? 'perdue' : 'connexion';
+          var monPeer = peer = new Peer();
+          monPeer.on('open', () => {
+            if (peer !== monPeer) return;
+            var conn = hostConn = monPeer.connect(ACCES.idSalon(nom, JEU_RESEAU), { reliable: true });
+            var delai = setTimeout(() => {
+              if (hostConn !== conn || this.connexion === 'ok') return;
+              if (this.role) this.planifierReconnexion();
+              else if (this._entree) this.suiteEntree();
+              else this.reinitialiserPeer(false);
+            }, 10000);
+            conn.on('open', () => {
+              if (hostConn !== conn) return;
+              clearTimeout(delai);
+              dernierMsgHote = Date.now();
+              this.connexion = 'ok';
+              this.role = 'client';
+              this.roomCode = nom;
+              this._echecsClient = 0;
+              if (!reprise) { if (!(this._entree && this._entree.silencieux)) this.onglet = 'play'; this.finEntree(true); }
+              conn.send({ action: 'REJOINDRE', pseudo: monPseudo, clientId: clientId });
+            });
+            conn.on('data', (data) => { if (hostConn !== conn) return; dernierMsgHote = Date.now(); this.recevoirDeHote(data); });
+            conn.on('close', () => { if (hostConn === conn) this.perteHote(); });
+            conn.on('error', () => { if (hostConn === conn) this.perteHote(); });
+          });
+          monPeer.on('disconnected', () => { if (peer === monPeer && !monPeer.destroyed) { try { monPeer.reconnect(); } catch (e) {} } });
+          monPeer.on('error', () => {
+            if (peer !== monPeer) return;
+            if (this.role) { this.connexion = 'perdue'; this.planifierReconnexion(); }
+            else if (this._entree) this.suiteEntree();
+            else { this.reinitialiserPeer(false); alert('Impossible de joindre ce salon.'); }
+          });
+        },
+        perteHote: function() {
+          if (this.connexion === 'perdue' && this._timerReco) return;
+          if (this.connexion === 'ok') this.ajouterLog('Connexion à l\'hôte perdue, reconnexion…', true);
+          var c = hostConn;
+          hostConn = null;
+          if (c) { try { c.close(); } catch (e) {} }
+          this.connexion = 'perdue';
+          this.planifierReconnexion(1500);
+        },
+        envoyerHote: function(data) { if (hostConn && hostConn.open && this.connexion === 'ok') { try { hostConn.send(data); } catch (e) {} } },
+        recevoirDeHote: function(data) {
+          switch (data.action) {
+            case 'PING': break;
+            case 'ETAT':
+              this.joueurs = data.joueurs || [];
+              if (data.pub) this.appliquerPub(data.pub);
+              break;
+            case 'REFUS':
+              if (data.fatal) { alert(data.message); this.reinitialiserPeer(false); this.pub = null; this.phase = null; this.sauvegarder(); }
+              else this.afficherMessage(data.message);
+              break;
+          }
+        },
+
+        // ---------- Surveillance de la connexion ----------
+        battement: function() {
+          var maintenant = Date.now();
+          if (this.role === 'hote' && peer) {
+            connections.slice().forEach(c => {
+              try { if (c.open) c.send({ action: 'PING' }); } catch (e) {}
+              if (maintenant - (c.dernierMsg || maintenant) > DELAI_SILENCE) { try { c.close(); } catch (e) {} this.perteClient(c); }
+            });
+            if (peer.destroyed) this.planifierReconnexion(500);
+            else if (peer.disconnected) { try { peer.reconnect(); } catch (e) {} }
+          } else if (this.role === 'client' && this.connexion === 'ok') {
+            this.envoyerHote({ action: 'PING' });
+            if (maintenant - dernierMsgHote > DELAI_SILENCE) this.perteHote();
+          }
+        },
+        auRetourPremierPlan: function() {
+          this.majVeille();
+          if (document.visibilityState === 'hidden' || !this.role) return;
+          if (this.role === 'hote') {
+            if (!peer || peer.destroyed) this.creerPartie(true);
+            else if (peer.disconnected) { try { peer.reconnect(); } catch (e) {} }
+          } else if (this.connexion !== 'ok' || Date.now() - dernierMsgHote > 8000) {
+            this.connexion = 'perdue';
+            this.rejoindrePartie(true);
+          }
+        },
+
+        // ---------- Écran toujours allumé ----------
+        veilleVoulue: function() {
+          return this.veilleSupportee && this.garderEcran && document.visibilityState === 'visible' && (!!this.role || (this.onglet === 'play' && this.phase === 'jeu'));
+        },
+        majVeille: function() {
+          if (!this.veilleSupportee) return;
+          if (this.veilleVoulue()) {
+            if (this._verrou || this._demandeVerrou) return;
+            this._demandeVerrou = true;
+            navigator.wakeLock.request('screen').then(verrou => {
+              this._demandeVerrou = false;
+              if (!this.veilleVoulue()) { verrou.release(); return; }
+              this._verrou = verrou;
+              this.veilleActive = true;
+              verrou.addEventListener('release', () => { if (this._verrou === verrou) { this._verrou = null; this.veilleActive = false; } });
+            }).catch(() => { this._demandeVerrou = false; });
+          } else if (this._verrou) {
+            var v = this._verrou;
+            this._verrou = null;
+            this.veilleActive = false;
+            v.release().catch(() => {});
+          }
+        }
+      }
+    });
+  </script>
+</body>
+</html>
