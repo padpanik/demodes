@@ -29,6 +29,8 @@ const AS = {
     this.GRADES.forEach(g => { for (var k = 0; k < (t[g] || 0); k++) a.push(g); });
     return a;
   },
+  // Repère visuel de chaque grade, affiché sous le chiffre
+  ICONES: { 10: '👑', 9: '⭐', 8: '🎖️', 7: '🛡️', 6: '⚔️', 5: '🗡️', 4: '🪖', 3: '⛏️', 2: '🔭', 1: '🕵️', B: '💣', D: '🚩' },
   nomCourt: function(r) { return r === 'B' ? '💣' : r === 'D' ? '🚩' : String(r); },
 
   // Combat : qui gagne ? 'attaquant', 'defenseur' ou 'egalite' (les deux pièces disparaissent)
