@@ -65,6 +65,14 @@
     .regles li { margin-bottom: 3px; }
     .tableau-grades { width: 100%; border-collapse: collapse; font-size: 0.85em; margin-top: 8px; }
     .tableau-grades td { padding: 2px 4px; border-bottom: 1px solid #f0f2f4; }
+    .verif { font-size: 0.85em; margin: 8px 0; }
+    .verif.ok { color: #2f8a5b; }
+    .verif.ko { color: #b04a4a; font-weight: 700; }
+    .joueurs-bande { display: flex; gap: 6px; justify-content: center; margin-bottom: 2px; flex-wrap: wrap; font-size: 0.88em; }
+    .joueurs-bande > span { background: #e6ebef; border-radius: 12px; padding: 2px 10px; }
+    .joueurs-bande > span.actif { background: #fff3d6; box-shadow: inset 0 0 0 1.5px #e0a526; }
+    .joueurs-bande > span.absent { opacity: 0.5; }
+    .pastille-c { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 4px; vertical-align: -1px; }
   </style>
 </head>
 <body>
@@ -75,10 +83,11 @@
         <div @click="onglet = 'config'" :class="{ actif: onglet === 'config' }">Accueil</div>
         <div @click="onglet = 'play'" :class="{ actif: onglet === 'play' }">Jouer</div>
       </div>
-      <a v-if="onglet === 'config'" class="lien-jeux" href="index.html?choix">⇦ Jeux</a>
+      <a v-if="onglet === 'config' && !role" class="lien-jeux" href="index.html?choix">⇦ Jeux</a>
       <div class="barre-infos" v-if="onglet === 'play'">
         <button class="btn-veille" :class="{ off: !sonActif }" @click="basculerSon">{{ sonActif ? '🔊' : '🔇' }}</button>
         <button v-if="veilleSupportee" class="btn-veille" :class="{ actif: veilleActive, off: !garderEcran }" @click="garderEcran = !garderEcran">{{ garderEcran ? '☀️' : '🌙' }}</button>
+        <span v-if="role" class="point-co" :class="{ attente: connexion !== 'ok' }"></span>
       </div>
     </div>
 
@@ -92,23 +101,62 @@
         </div>
       </header>
 
-      <section class="carte">
-        <div class="titre-carte">Partie solo <small>contre l'ordinateur</small></div>
-        <div class="segment">
-          <button :class="{ actif: mode === 'complet' }" @click="mode = 'complet'">Complète<small>40 pièces</small></button>
-          <button :class="{ actif: mode === 'rapide' }" @click="mode = 'rapide'">Rapide<small>10 pièces</small></button>
+      <!-- Salon en cours -->
+      <section class="carte salon-actif" v-if="role">
+        <div class="salon-tete">
+          <span class="pastille" :class="{ attente: connexion !== 'ok' }"></span>
+          <div>
+            <div class="salon-nom">Salon « {{ roomCode }} »</div>
+            <div class="salon-role">{{ role === 'hote' ? '👑 Tu es l\'hôte : tu choisis le format' : 'Tu joues' }} en tant que {{ moi }} · {{ connexionTexte }}</div>
+          </div>
         </div>
-        <label class="case-a-cocher"><input type="checkbox" v-model="memoire"> 👁 Garder à l'écran les pièces adverses révélées</label>
-        <div class="aide">Sans cette option, une pièce adverse vue en combat se recache : à toi de t'en souvenir.</div>
+        <div class="chips-joueurs">
+          <span v-for="j in bandeau" :key="j.pseudo" class="chip" :class="{ absent: !j.connecte }">
+            <span class="pastille-c" :style="{ background: j.c === 'A' ? '#2f5f9e' : '#b5422f' }"></span>{{ j.pseudo }} · {{ j.score }} victoire{{ j.score > 1 ? 's' : '' }}<span v-if="!j.connecte"> 💤</span>
+          </span>
+          <span v-if="pub && pub.ordre.length < 2" class="chip absent">en attente d'un adversaire…</span>
+        </div>
+        <div class="actions-accueil">
+          <button class="btn principal" @click="onglet = 'play'">Jouer →</button>
+          <button class="btn" @click="quitterSalon">Quitter</button>
+        </div>
       </section>
-      <button class="btn principal btn-large" @click="nouvellePartie">{{ partieEnCours ? 'Nouvelle partie' : 'Placer mes pièces →' }}</button>
-      <button class="btn btn-large" v-if="partieEnCours" @click="onglet = 'play'">Reprendre la partie en cours</button>
-      <p class="statut" v-if="statsTexte">{{ statsTexte }}</p>
 
       <section class="carte">
-        <div class="titre-carte">Partie à deux</div>
-        <div class="aide" style="margin-top:0">Bientôt : chacun sur son téléphone, sans que personne ne voie l'armée de l'autre.</div>
+        <div class="titre-carte">Format <small v-if="role === 'client'">choisi par l'hôte</small><small v-else-if="!role">partie solo contre l'ordinateur</small></div>
+        <div class="segment">
+          <button :class="{ actif: formatAffiche === 'complet' }" :disabled="role === 'client'" @click="choisirFormat('complet')">Complète<small>40 pièces</small></button>
+          <button :class="{ actif: formatAffiche === 'rapide' }" :disabled="role === 'client'" @click="choisirFormat('rapide')">Rapide<small>10 pièces</small></button>
+        </div>
+        <label class="case-a-cocher"><input type="checkbox" :checked="memoireAffichee" :disabled="role === 'client'" @change="choisirMemoire($event.target.checked)"> 👁 Garder à l'écran les pièces adverses révélées</label>
+        <div class="aide">Sans cette option, une pièce adverse vue en combat se recache : à toi de t'en souvenir.<template v-if="role === 'hote'"> Un changement recommence le placement.</template></div>
       </section>
+
+      <template v-if="!role">
+        <button class="btn principal btn-large" @click="nouvellePartie">{{ partieEnCours ? 'Nouvelle partie solo' : 'Jouer seul contre l\'ordinateur' }}</button>
+        <button class="btn btn-large" v-if="partieEnCours" @click="onglet = 'play'">Reprendre la partie en cours</button>
+        <p class="statut" v-if="statsTexte">{{ statsTexte }}</p>
+
+        <section class="carte">
+          <div class="titre-carte">Partie à deux</div>
+          <label class="champ">Ton pseudo
+            <input type="text" v-model="pseudoInput" placeholder="ex : Alex" autocomplete="off" maxlength="20">
+          </label>
+          <label class="champ">Nom du salon
+            <input type="text" v-model="channelInput" placeholder="ex : partie-du-dimanche" autocomplete="off">
+          </label>
+          <div class="salons-connus" v-if="salonsConnus.length">
+            <span v-for="nom in salonsConnus" :key="nom" class="salon-puce" :class="{ actif: estSalonSaisi(nom) }">
+              <button class="nom" @click="channelInput = nom">{{ nom }}</button>
+              <button class="oter" @click="oublierSalon(nom)" aria-label="Retirer de la liste">✕</button>
+            </span>
+          </div>
+          <div class="aide">Chacun sur son téléphone : personne ne voit l'armée de l'autre. Le premier ouvre le salon et choisit le format.</div>
+        </section>
+        <button class="btn btn-large" @click="entrerSalon()" :disabled="entreeEnCours">
+          {{ entreeEnCours ? 'Connexion au salon…' : 'Entrer dans le salon' }}
+        </button>
+      </template>
 
       <details class="carte regles">
         <summary>Règles</summary>
@@ -119,6 +167,7 @@
           <li>Attaquer une pièce : les deux grades sont révélés, le plus fort reste, l'autre sort. Égalité : les deux sortent.</li>
           <li>Une <strong>bombe</strong> détruit toute pièce qui l'attaque, sauf le <strong>démineur (3)</strong>. L'<strong>espion (1)</strong> bat le maréchal (10) s'il l'attaque, mais perd contre tout le reste.</li>
           <li>Pas plus de 3 allers-retours de suite entre les deux mêmes cases.</li>
+          <li>À deux : ton armée reste sur ton téléphone. Seuls les grades des pièces qui combattent sont échangés ; à la fin, l'appli vérifie que personne n'a triché.</li>
         </ul>
         <table class="tableau-grades">
           <tr v-for="g in AS.GRADES" :key="g"><td><strong>{{ AS.nomCourt(g) }}</strong></td><td>{{ AS.NOMS[g] }}</td><td style="text-align:right">×{{ AS.ARMEES.complet[g] || 0 }} · ×{{ AS.ARMEES.rapide[g] || 0 }}</td></tr>
@@ -130,6 +179,8 @@
         <div class="titre-carte">Réglages</div>
         <label class="case-a-cocher"><input type="checkbox" v-model="sonActif"> 🔊 Sons</label>
         <label class="case-a-cocher" v-if="vibrationSupportee"><input type="checkbox" v-model="vibrationActive"> 📳 Vibrations</label>
+        <label class="case-a-cocher" v-if="voixSupportee"><input type="checkbox" v-model="voixActive"> 🗣️ Annoncer mon tour</label>
+        <label class="case-a-cocher"><input type="checkbox" v-model="entreeAuto"> 🚪 Entrer dans mon salon au lancement</label>
         <label class="case-a-cocher" v-if="veilleSupportee"><input type="checkbox" v-model="garderEcran"> ☀️ Garder l'écran allumé</label>
       </section>
 
@@ -146,12 +197,21 @@
 
     <!-- JOUER -->
     <div v-show="onglet === 'play'">
-      <div v-if="!phase" class="panneau-vide">
+      <div v-if="role && (!pub || pub.ordre.length < 2) && !phase" class="panneau-vide">
+        <div class="grand">⏳</div>
+        <p>En attente d'un adversaire.<br>Donne-lui le nom du salon : <strong>{{ roomCode }}</strong></p>
+      </div>
+      <div v-else-if="!phase" class="panneau-vide">
         <div class="grand">⚔️</div>
         <p>Aucune partie en cours.</p>
-        <button class="btn principal" @click="nouvellePartie">Placer mes pièces</button>
+        <button class="btn principal" @click="nouvellePartie">Jouer seul contre l'ordinateur</button>
       </div>
       <template v-else>
+        <div class="joueurs-bande" v-if="role && pub">
+          <span v-for="j in bandeau" :key="j.pseudo" :class="{ actif: phase === 'jeu' && vue && vue.tour === j.c, absent: !j.connecte }">
+            <span class="pastille-c" :style="{ background: j.c === 'A' ? '#2f5f9e' : '#b5422f' }"></span>{{ j.pseudo }} <strong>{{ j.score }}</strong>
+          </span>
+        </div>
         <div class="consigne" :class="{ alerte: !!message }">{{ message || consigne }}</div>
         <div class="bandeau-combat" v-if="phase !== 'placement' && combats.length">
           <div v-for="(t, k) in combats" :key="k">{{ t }}</div>
@@ -165,14 +225,14 @@
 
         <!-- Placement -->
         <template v-if="phase === 'placement'">
-          <div class="actions">
+          <div class="actions" v-if="!jeSuisPret">
             <button class="btn" @click="placerAuHasard">🎲 Hasard</button>
             <button class="btn" @click="enregistrerDisposition">💾 Garder</button>
             <button class="btn principal" @click="commencer">Prêt ✓</button>
           </div>
-          <div class="dispositions" v-if="dispositions[mode].length">
+          <div class="dispositions" v-if="!jeSuisPret && dispositions[modePartie].length">
             Mes dispositions :
-            <span v-for="(d, k) in dispositions[mode]" :key="k" class="salon-puce">
+            <span v-for="(d, k) in dispositions[modePartie]" :key="k" class="salon-puce">
               <button class="nom" @click="chargerDisposition(k)">n° {{ k + 1 }}</button>
               <button class="oter" @click="oublierDisposition(k)" aria-label="Supprimer">✕</button>
             </span>
@@ -182,12 +242,13 @@
         <!-- Partie -->
         <template v-else>
           <div class="restants">
-            <span class="titre">Adversaire :</span>
+            <span class="titre">{{ role ? nomAdversaire : 'Adversaire' }} :</span>
             <span v-for="x in restantsAdverses" :key="x.g" :class="{ zero: !x.n }">{{ AS.nomCourt(x.g) }}×{{ x.n }}</span>
           </div>
+          <div class="verif" v-if="phase === 'fin' && verif" :class="verif.ok ? 'ok' : 'ko'">{{ verif.texte }}</div>
           <div class="actions">
             <button class="btn" v-if="phase === 'jeu'" @click="abandonner">Abandonner</button>
-            <button class="btn principal" v-if="phase === 'fin'" @click="nouvellePartie">Rejouer</button>
+            <button class="btn principal" v-if="phase === 'fin'" @click="rejouer">{{ role ? 'Partie suivante' : 'Rejouer' }}</button>
             <button class="btn" v-if="phase === 'fin'" @click="finMasquee = false">Résultat</button>
           </div>
         </template>
@@ -199,9 +260,10 @@
       <div class="fin-box">
         <h2>{{ fin.gagnant === monC ? '🏆 Victoire !' : '💥 Défaite' }}</h2>
         <p>{{ texteFin }}</p>
-        <p class="sys-msg">{{ statsTexte }}</p>
+        <p class="verif" v-if="verif" :class="verif.ok ? 'ok' : 'ko'">{{ verif.texte }}</p>
+        <p class="sys-msg" v-if="!role">{{ statsTexte }}</p>
         <button @click="finMasquee = true">Voir le plateau</button>
-        <button class="principal" @click="nouvellePartie">Rejouer</button>
+        <button class="principal" @click="rejouer">{{ role ? 'Partie suivante' : 'Rejouer' }}</button>
       </div>
     </div>
   </div>
@@ -212,10 +274,177 @@
     if (!ACCES.memorise()) location.replace('index.html');
 
     const CLE_SAUVEGARDE = 'assaut-sauvegarde';
-    const DELAI_ORDINATEUR = 750; // ms : le temps de voir son propre coup avant la réponse
+    const CLE_PRIVE = 'assaut-prive';      // à deux : MON armée, qui ne quitte jamais ce téléphone
+    const DELAI_ORDINATEUR = 750;
+    const JEU_RESEAU = 'as';
+    const DELAI_SILENCE = 15000;
+    const DELAI_ANNONCE = 5000;
+    const MAX_SALONS = 8;
     function copie(o) { return JSON.parse(JSON.stringify(o)); }
-    // Partie qui fait foi (solo : tout est connu ici, l'ordinateur ne regarde que sa propre vue)
+    function hasard16() { var o = new Uint8Array(16); crypto.getRandomValues(o); return Array.from(o).map(b => b.toString(16).padStart(2, '0')).join(''); }
+    // Empreinte d'une disposition : SHA-256( disposition + sel secret )
+    function empreinte(placement, sel) {
+      var txt = JSON.stringify(placement.map(x => [x.pos, x.r])) + sel;
+      return crypto.subtle.digest('SHA-256', new TextEncoder().encode(txt))
+        .then(b => Array.from(new Uint8Array(b)).map(x => x.toString(16).padStart(2, '0')).join(''));
+    }
+
+    // Solo : partie complète (l'ordinateur ne regarde que sa propre vue)
     let partie = null;
+
+    // ================== À DEUX : ÉTAT PUBLIC (l'hôte relaie et arbitre ce qui est visible) ==================
+    // Aucun grade caché n'y figure : seulement les positions, les grades révélés, le journal des coups
+    // (avec les grades échangés lors des combats), les empreintes et, à la fin, les armées dévoilées.
+    function nouvelEtatSalon(ordre, mode, memoire) {
+      return { ordre: ordre.slice(), couleurs: {}, scores: {}, manche: 0, mode: mode, memoire: memoire,
+               partieId: null, phase: 'attente', prets: {}, cases: null, tour: 'A', hist: [], journal: [],
+               morts: { A: {}, B: {} }, combat: null, n: 0, fin: null, revelations: {} };
+    }
+    function couleurDe(pub, p) { return pub.couleurs.A === p ? 'A' : pub.couleurs.B === p ? 'B' : null; }
+    function nouvelleManche(pub) {
+      pub.manche++;
+      var a = pub.ordre[(pub.manche + 1) % 2];
+      pub.couleurs = { A: a, B: pub.ordre.find(p => p !== a) };
+      pub.ordre.forEach(p => { if (pub.scores[p] === undefined) pub.scores[p] = 0; });
+      Object.assign(pub, { partieId: nouvelId(), phase: 'placement', prets: {}, cases: null, tour: 'A', hist: [], journal: [],
+                           morts: { A: {}, B: {} }, combat: null, n: 0, fin: null, revelations: {} });
+    }
+    function finir(pub, gagnant, raison) {
+      pub.fin = { gagnant: gagnant, raison: raison };
+      pub.phase = 'fin';
+      pub.combat = pub.combat && pub.combat.attente ? null : pub.combat;
+      var p = pub.couleurs[gagnant];
+      pub.scores[p] = (pub.scores[p] || 0) + 1;
+    }
+    // Vérifie un coup du point de vue public (sans connaître les grades cachés)
+    function coupPublicValide(pub, c, from, to) {
+      if (from < 0 || from > 99 || to < 0 || to > 99 || from === to || AS.lac(to)) return false;
+      var p = pub.cases[from], q = pub.cases[to];
+      if (!p || p.c !== c || (q && q.c === c)) return false;
+      if (p.vu === 'B' || p.vu === 'D') return false;
+      var lf = Math.floor(from / 10), kf = from % 10, lt = Math.floor(to / 10), kt = to % 10;
+      if (lf !== lt && kf !== kt) return false;
+      var dist = Math.abs(lf - lt) + Math.abs(kf - kt), dl = Math.sign(lt - lf), dk = Math.sign(kt - kf);
+      for (var s = 1; s < dist; s++) { var j = (lf + dl * s) * 10 + kf + dk * s; if (pub.cases[j] || AS.lac(j)) return false; }
+      return !AS.allerRetourInterdit(pub.hist, c, from, to);
+    }
+    // Hôte : traite un message de jeu d'un des deux joueurs. Renvoie un message d'erreur ou null.
+    function traiterJeu(pub, pseudo, m) {
+      var c = couleurDe(pub, pseudo);
+      if (!c) return 'Tu ne joues pas cette partie.';
+      var adv = AS.autre(c);
+      switch (m.type) {
+        case 'PRET': {
+          if (pub.phase !== 'placement' || m.partieId !== pub.partieId) return 'Placement terminé.';
+          var zone = AS.zone(c), pos = m.positions || [];
+          if (pos.length !== AS.armee(pub.mode).length || new Set(pos).size !== pos.length || pos.some(x => zone.indexOf(x) === -1)) return 'Disposition invalide.';
+          pub.prets[c] = { hash: String(m.hash), positions: pos };
+          if (pub.prets.A && pub.prets.B) {
+            pub.cases = new Array(100).fill(null);
+            ['A', 'B'].forEach(x => pub.prets[x].positions.forEach((p, id) => { pub.cases[p] = { c: x, id: id, vu: null, bouge: false }; }));
+            pub.phase = 'jeu';
+            pub.tour = 'A';
+          }
+          return null;
+        }
+        case 'COUP': {
+          if (pub.phase !== 'jeu' || pub.tour !== c || pub.combat && pub.combat.attente) return 'Ce n\'est pas ton tour.';
+          if (!coupPublicValide(pub, c, m.from, m.to)) return 'Coup impossible.';
+          var p = pub.cases[m.from], q = pub.cases[m.to];
+          var dist = Math.abs(Math.floor(m.from / 10) - Math.floor(m.to / 10)) + Math.abs(m.from % 10 - m.to % 10);
+          if (!q) {
+            AS.appliquer(pub, m.from, m.to);
+            pub.journal.push({ c: c, from: m.from, to: m.to });
+            return null;
+          }
+          var ra = m.ra;
+          if (AS.GRADES.indexOf(ra) === -1 || !AS.mobile(ra) || (dist > 1 && ra !== 2)) return 'Attaque invalide.';
+          // Combat : on attend que le téléphone du défenseur donne le grade de sa pièce
+          pub.combat = { attente: true, n: pub.n + 1, from: m.from, to: m.to, ca: c, ra: ra, ida: p.id, idd: q.id };
+          return null;
+        }
+        case 'DEFENSE': {
+          var k = pub.combat;
+          if (pub.phase !== 'jeu' || !k || !k.attente || k.n !== m.n || k.ca === c) return 'rien';
+          if (AS.GRADES.indexOf(m.rd) === -1) return 'Grade invalide.';
+          var ra2 = k.ra;
+          pub.combat = null;
+          AS.appliquer(pub, k.from, k.to, ra2, m.rd);
+          pub.journal.push({ c: k.ca, from: k.from, to: k.to, ra: ra2, rd: m.rd });
+          if (pub.fin) { var f = pub.fin; pub.fin = null; finir(pub, f.gagnant, f.raison); }
+          return null;
+        }
+        case 'BLOQUE':
+          if (pub.phase !== 'jeu' || pub.tour !== c || pub.combat && pub.combat.attente) return 'rien';
+          finir(pub, adv, 'bloque');
+          return null;
+        case 'ABANDON':
+          if (pub.phase !== 'jeu' && pub.phase !== 'placement') return 'rien';
+          finir(pub, adv, 'abandon');
+          return null;
+        case 'REVELER':
+          if (pub.phase !== 'fin' || pub.revelations[c] || m.partieId !== pub.partieId) return 'rien';
+          pub.revelations[c] = { placement: m.placement, sel: String(m.sel) };
+          return null;
+        case 'SUIVANTE':
+          if (pub.phase !== 'fin' || pub.ordre.length < 2) return 'rien';
+          nouvelleManche(pub);
+          return null;
+      }
+      return 'Action inconnue.';
+    }
+    // Fin de partie : vérifie l'armée dévoilée par l'adversaire (empreinte + rejeu complet des coups)
+    function verifierAdversaire(pub, adv) {
+      var rev = pub.revelations[adv], pret = pub.prets[adv];
+      if (!rev || !pret || !Array.isArray(rev.placement)) return Promise.resolve({ ok: false, texte: 'Armée adverse non dévoilée.' });
+      return empreinte(rev.placement, rev.sel).then(h => {
+        var pb = [];
+        if (h !== pret.hash) pb.push('la disposition dévoilée ne correspond pas à celle du départ');
+        if (JSON.stringify(rev.placement.map(x => x.pos)) !== JSON.stringify(pret.positions)) pb.push('les positions de départ ne correspondent pas');
+        var compte = {};
+        rev.placement.forEach(x => compte[x.r] = (compte[x.r] || 0) + 1);
+        var t = AS.ARMEES[pub.mode];
+        if (AS.GRADES.some(g => (compte[g] || 0) !== (t[g] || 0))) pb.push('la composition de l\'armée n\'est pas réglementaire');
+        // Rejeu : chaque coup doit être possible avec les vrais grades
+        var plA = adv === 'A' ? rev.placement : pub.prets.A.positions.map(p => ({ pos: p, r: 2 }));
+        var plB = adv === 'B' ? rev.placement : pub.prets.B.positions.map(p => ({ pos: p, r: 2 }));
+        var e = AS.nouvellePartie(pub.mode, plA, plB, 'A');
+        var mien = AS.autre(adv);
+        e.cases.forEach(x => { if (x && x.c === mien) x.r = null; }); // mes grades n'importent pas ici
+        for (var k = 0; k < pub.journal.length && !pb.length; k++) {
+          var j = pub.journal[k], p = e.cases[j.from], q = e.cases[j.to];
+          if (!p) { pb.push('coup n° ' + (k + 1) + ' incohérent'); break; }
+          var ra = p.c === adv ? p.r : j.ra, rd = q ? (q.c === adv ? q.r : j.rd) : undefined;
+          if (p.c === adv) {
+            if (AS.destinations(e.cases, j.from, p.r).indexOf(j.to) === -1) pb.push('coup n° ' + (k + 1) + ' : cette pièce (' + AS.NOMS[p.r] + ') ne pouvait pas faire ce déplacement');
+            if (j.ra !== undefined && j.ra !== p.r) pb.push('coup n° ' + (k + 1) + ' : grade annoncé faux en attaque');
+          } else if (q && q.c === adv && j.rd !== q.r) pb.push('coup n° ' + (k + 1) + ' : grade annoncé faux en défense');
+          if (q && ra === null) ra = j.ra;
+          AS.appliquer(e, j.from, j.to, ra, rd);
+        }
+        if (!pb.length && pub.fin && pub.fin.raison === 'bloque' && pub.fin.gagnant === mien) {
+          if (AS.coups(e, adv).filter(m => e.cases[m.from].r !== null).length) pb.push('il pouvait encore jouer');
+        }
+        return pb.length ? { ok: false, texte: '⚠️ Incohérence chez ' + pub.couleurs[adv] + ' : ' + pb[0] + '.' }
+                         : { ok: true, texte: '✓ Partie vérifiée : l\'armée adverse correspond à ses coups.' };
+      });
+    }
+
+    // ================== RÉSEAU ==================
+    let peer = null;
+    let connections = [];
+    let connParPseudo = {};
+    let hostConn = null;
+    let dernierMsgHote = 0;
+    let monPseudo = '';
+    let pubHote = null;
+    let salle = { infos: {} };
+
+    function pseudoSauvegarde() {
+      var cles = ['assaut-sauvegarde', 'bg-sauvegarde', 'yams-sauvegarde', 'brillant-sauvegarde-v1'];
+      for (var k = 0; k < cles.length; k++) { var s = lireStockage(cles[k]); if (s && s.pseudo) return s.pseudo; }
+      return '';
+    }
 
     new Vue({
       el: '#app',
@@ -225,24 +454,41 @@
         onglet: 'config',
         mode: lireStockage('assaut-mode') || 'complet',
         memoire: lireStockage('assaut-memoire') === true,
+        // Partie affichée (solo ou salon)
         phase: null,            // null | 'placement' | 'jeu' | 'fin'
         monC: 'A',
-        modePartie: 'complet',  // format de la partie en cours
+        modePartie: 'complet',
         memoirePartie: false,
-        placement: [],          // pendant le placement : [{ pos, r }]
+        placement: [],          // ma disposition [{ pos, r }] (l'indice est l'identifiant de la pièce)
         placementIA: [],
-        selection: null,        // case choisie (index réel 0..99)
-        vue: null,              // copie affichée de la partie
-        revele: {},             // pièces adverses montrées un moment après un combat : id -> grade
-        combats: [],            // textes des derniers combats
+        selection: null,
+        vue: null,              // état affiché : mes pièces avec leur grade, celles d'en face cachées
+        revele: {},
+        combats: [],
         fin: null,
         finMasquee: false,
+        verif: null,
         message: '',
         historique: [],
         stats: lireStockage('assaut-stats') || { complet: { v: 0, d: 0 }, rapide: { v: 0, d: 0 } },
         dispositions: Object.assign({ complet: [], rapide: [] }, lireStockage('assaut-dispositions') || {}),
+        // Salon
+        pseudoInput: pseudoSauvegarde(),
+        channelInput: lireStockage('assaut-dernier-salon') || lireStockage('brillant-dernier-salon') || '',
+        salonsConnus: lireStockage('brillant-salons') || [],
+        role: null,
+        connexion: 'aucune',
+        roomCode: '',
+        entreeEnCours: false,
+        pub: null,
+        prive: lireStockage(CLE_PRIVE),
+        joueurs: [],
+        // Réglages
         sonActif: lireStockage('brillant-son') !== false,
         vibrationActive: lireStockage('brillant-vibration') !== null ? lireStockage('brillant-vibration') !== false : lireStockage('brillant-son') !== false,
+        voixActive: lireStockage('brillant-voix') !== false,
+        voixSupportee: Voix.supportee,
+        entreeAuto: lireStockage('brillant-entree-auto') !== false,
         garderEcran: lireStockage('brillant-garder-ecran') !== false,
         veilleSupportee: 'wakeLock' in navigator,
         veilleActive: false
@@ -253,38 +499,61 @@
                   { c: '#5d9bc9', t: '' }, { c: '#a9c08c', t: '' }, { c: '#5d9bc9', t: '' },
                   { c: '#2f5f9e', t: '10' }, { c: '#2f5f9e', t: '3' }, { c: '#2f5f9e', t: '🚩' }];
         },
+        moi: function() { return this.pseudoInput.trim() || 'Moi'; },
         vibrationSupportee: function() { return typeof navigator.vibrate === 'function'; },
         historiqueRecent: function() { return this.historique.slice().reverse(); },
-        partieEnCours: function() { return this.phase === 'placement' || this.phase === 'jeu'; },
-        statsTexte: function() {
-          var s = this.stats[this.phase ? this.modePartie : this.mode];
-          if (!s.v && !s.d) return '';
-          return 'Contre l\'ordinateur (partie ' + ((this.phase ? this.modePartie : this.mode) === 'complet' ? 'complète' : 'rapide') + ') : ' + s.v + ' victoire' + (s.v > 1 ? 's' : '') + ', ' + s.d + ' défaite' + (s.d > 1 ? 's' : '');
+        connexionTexte: function() { return { ok: 'en ligne', connexion: 'connexion…', perdue: 'reconnexion…', aucune: 'hors ligne' }[this.connexion]; },
+        formatAffiche: function() { return this.role && this.pub ? this.pub.mode : this.mode; },
+        memoireAffichee: function() { return this.role && this.pub ? this.pub.memoire : this.memoire; },
+        partieEnCours: function() { return !this.role && (this.phase === 'placement' || this.phase === 'jeu'); },
+        nomAdversaire: function() {
+          if (!this.role) return 'l\'ordinateur';
+          return (this.pub && this.pub.couleurs[AS.autre(this.monC)]) || 'l\'adversaire';
         },
-        monTour: function() { return this.phase === 'jeu' && this.vue && this.vue.tour === this.monC && !this.vue.fin; },
-        // Coups possibles pour moi, par case de départ
+        statsTexte: function() {
+          var m = this.phase && !this.role ? this.modePartie : this.mode, s = this.stats[m];
+          if (!s.v && !s.d) return '';
+          return 'Contre l\'ordinateur (partie ' + (m === 'complet' ? 'complète' : 'rapide') + ') : ' + s.v + ' victoire' + (s.v > 1 ? 's' : '') + ', ' + s.d + ' défaite' + (s.d > 1 ? 's' : '');
+        },
+        bandeau: function() {
+          var p = this.pub;
+          if (!p) return [];
+          return p.ordre.map(x => {
+            var j = this.joueurs.find(y => y.pseudo === x);
+            return { pseudo: x, c: couleurDe(p, x) || (x === p.ordre[0] ? 'A' : 'B'), score: p.scores[x] || 0, connecte: x === this.moi || !j || j.connecte !== false };
+          });
+        },
+        jeSuisPret: function() { return !!(this.role && this.pub && this.pub.phase === 'placement' && this.pub.prets[this.monC]); },
+        combatEnAttente: function() { return !!(this.role && this.pub && this.pub.combat && this.pub.combat.attente); },
+        monTour: function() {
+          if (this.phase !== 'jeu' || !this.vue || this.vue.tour !== this.monC || this.vue.fin) return false;
+          if (this.role) return this.connexion === 'ok' && !this.combatEnAttente;
+          return true;
+        },
         mesCoups: function() {
           if (!this.monTour) return {};
           var r = {};
           AS.coups(this.vue, this.monC).forEach(m => { (r[m.from] = r[m.from] || []).push(m.to); });
           return r;
         },
-        // Plateau affiché, mon camp en bas
         cases: function() {
           var res = [], sel = this.selection, cibles = sel !== null ? (this.mesCoups[sel] || []) : [];
           var pieces = {};
           if (this.phase === 'placement') {
-            this.placement.forEach((x, k) => pieces[x.pos] = { c: this.monC, r: x.r });
-            this.placementIA.forEach(x => pieces[x.pos] = { c: AS.autre(this.monC) });
+            this.placement.forEach(x => pieces[x.pos] = { c: this.monC, r: x.r });
+            var adv = AS.autre(this.monC);
+            if (!this.role) this.placementIA.forEach(x => pieces[x.pos] = { c: adv });
+            else if (this.pub && this.pub.prets[adv]) this.pub.prets[adv].positions.forEach(p => pieces[p] = { c: adv });
           }
           var trace = this.vue && this.vue.hist.length ? this.vue.hist[this.vue.hist.length - 1] : null;
           var zone = this.phase === 'placement' ? AS.zone(this.monC) : [];
+          var k = this.combatEnAttente ? this.pub.combat : null;
           for (var d = 0; d < 100; d++) {
             var i = this.monC === 'A' ? d : 99 - d;
             var p = this.phase === 'placement' ? pieces[i] : (this.vue && this.vue.cases[i]);
             var x = { d: d, i: i, classes: {
               lac: AS.lac(i), sombre: (Math.floor(i / 10) + i % 10) % 2 === 1, zone: zone.indexOf(i) !== -1,
-              cible: cibles.indexOf(i) !== -1 && !p, attaque: cibles.indexOf(i) !== -1 && !!p,
+              cible: cibles.indexOf(i) !== -1 && !p, attaque: (cibles.indexOf(i) !== -1 && !!p) || (!!k && (k.from === i || k.to === i)),
               trace: !!trace && trace.c !== this.monC && (trace.from === i || trace.to === i) && this.phase === 'jeu'
             } };
             if (p) x.p = this.affichagePiece(p, i);
@@ -299,36 +568,53 @@
         texteFin: function() {
           var f = this.fin;
           if (!f) return '';
-          var moi = f.gagnant === this.monC;
-          if (f.raison === 'drapeau') return moi ? 'Tu as pris le drapeau adverse.' : 'L\'ordinateur a pris ton drapeau.';
-          if (f.raison === 'bloque') return moi ? 'L\'adversaire ne peut plus bouger.' : 'Tu ne peux plus bouger aucune pièce.';
-          if (f.raison === 'abandon') return moi ? 'L\'adversaire abandonne.' : 'Tu as abandonné.';
+          var moi = f.gagnant === this.monC, lui = this.role ? this.nomAdversaire : 'L\'ordinateur';
+          if (f.raison === 'drapeau') return moi ? 'Tu as pris le drapeau adverse.' : lui + ' a pris ton drapeau.';
+          if (f.raison === 'bloque') return moi ? (this.role ? lui : 'L\'adversaire') + ' ne peut plus bouger.' : 'Tu ne peux plus bouger aucune pièce.';
+          if (f.raison === 'abandon') return moi ? (this.role ? lui : 'L\'adversaire') + ' abandonne.' : 'Tu as abandonné.';
           return '';
         },
         consigne: function() {
           if (this.phase === 'placement') {
-            return this.selection !== null ? (this.modePartie === 'rapide' ? 'Touche une autre pièce pour l\'échanger, ou une case libre de ta zone.' : 'Touche une autre pièce pour les échanger.')
-                                           : 'Place ton armée : touche deux pièces pour les échanger.';
+            if (this.jeSuisPret) return 'Prêt ! En attente de ' + this.nomAdversaire + '…';
+            var att = this.role && this.pub && this.pub.prets[AS.autre(this.monC)] ? ' (' + this.nomAdversaire + ' est prêt)' : '';
+            return (this.selection !== null ? (this.modePartie === 'rapide' ? 'Touche une autre pièce, ou une case libre de ta zone.' : 'Touche une autre pièce pour les échanger.')
+                                            : 'Place ton armée : touche deux pièces pour les échanger.') + att;
           }
           if (this.phase === 'fin') return 'Partie terminée : toutes les pièces sont dévoilées.';
-          if (!this.monTour) return 'L\'ordinateur réfléchit…';
+          if (this.combatEnAttente) return '⚔️ Combat en cours…';
+          if (this.role && this.connexion !== 'ok') return 'Connexion perdue : reconnexion en cours…';
+          if (!this.monTour) return this.role ? 'Au tour de ' + this.nomAdversaire + '…' : 'L\'ordinateur réfléchit…';
           if (this.selection !== null) return 'Touche une case en surbrillance (jaune : attaque).';
           return 'À toi : touche une de tes pièces.';
-        }
+        },
+        cleAnnonce: function() { return this.role && this.monTour ? (this.pub.partieId + ':' + this.pub.n) : ''; }
       },
       watch: {
         mode: function(v) { ecrireStockage('assaut-mode', v); },
         memoire: function(v) { ecrireStockage('assaut-memoire', v); },
         sonActif: function(v) { ecrireStockage('brillant-son', v); },
         vibrationActive: function(v) { ecrireStockage('brillant-vibration', v); if (v) vibrer(40); },
+        voixActive: function(v) { ecrireStockage('brillant-voix', v); if (v) Voix.dire('Annonce de ton tour activée'); },
+        entreeAuto: function(v) { ecrireStockage('brillant-entree-auto', v); },
         garderEcran: function(v) { ecrireStockage('brillant-garder-ecran', v); this.majVeille(); },
         onglet: function() { this.majVeille(); },
-        phase: function() { this.majVeille(); }
+        phase: function() { this.majVeille(); },
+        role: function() { this.majVeille(); },
+        pseudoInput: function() { this.sauvegarder(); },
+        cleAnnonce: function(cle) {
+          clearTimeout(this._timerVoix);
+          if (!cle || !this.voixActive || !Voix.supportee) return;
+          this._timerVoix = setTimeout(() => { if (this.cleAnnonce === cle) Voix.dire(this.moi + ', à toi de jouer !'); }, DELAI_ANNONCE);
+        }
       },
       created: function() {
         if (!ACCES.cleSalon) return;
         this.restaurer();
-        document.addEventListener('visibilitychange', () => this.majVeille());
+        setInterval(() => this.battement(), 4000);
+        document.addEventListener('visibilitychange', () => this.auRetourPremierPlan());
+        window.addEventListener('online', () => this.auRetourPremierPlan());
+        window.addEventListener('pageshow', () => this.auRetourPremierPlan());
       },
       methods: {
         ajouterLog: function(m, systeme) {
@@ -348,26 +634,47 @@
           this.afficherMessage(this.sonActif ? '🔊 Sons activés.' : '🔇 Sons coupés.');
         },
         nom: function(g) { return AS.NOMS[g] + (typeof g === 'number' ? ' (' + g + ')' : ''); },
-
-        // Ce qu'on voit d'une pièce
         affichagePiece: function(p, i) {
           var mien = p.c === this.monC, g = null;
           if (mien) g = p.r;
-          else if (this.phase === 'fin' && p.r !== undefined) g = p.r;                // fin : tout est dévoilé
-          else if (this.revele[p.id] !== undefined) g = this.revele[p.id];           // vient de combattre
-          else if (this.memoirePartie && p.vu !== null && p.vu !== undefined) g = p.vu; // option mémoire
-          var classes = [p.c];
-          if (g === null || g === undefined) classes.push('dos');
-          if (!mien && g !== null && g !== undefined) classes.push('revelee');
+          else if (this.phase === 'fin' && p.r !== undefined && p.r !== null) g = p.r;
+          else if (this.revele[p.id] !== undefined) g = this.revele[p.id];
+          else if (this.memoirePartie && p.vu !== null && p.vu !== undefined) g = p.vu;
+          var classes = [p.c], cache = g === null || g === undefined;
+          if (cache) classes.push('dos');
+          if (!mien && !cache) classes.push('revelee');
           if (g === 'B' || g === 'D') classes.push('symbole');
           if (g === 10) classes.push('petit');
           if (this.selection === i) classes.push('choisie');
-          return { classes: classes, texte: (g === null || g === undefined) ? (mien ? '' : '?') : AS.nomCourt(g) };
+          return { classes: classes, texte: cache ? (mien ? '' : '?') : AS.nomCourt(g) };
+        },
+
+        // ---------- Format (solo : pour la prochaine partie ; hôte : recommence le placement) ----------
+        choisirFormat: function(m) {
+          if (this.role === 'client') return;
+          this.mode = m;
+          if (this.role === 'hote') this.reglerSalon();
+        },
+        choisirMemoire: function(v) {
+          if (this.role === 'client') return;
+          this.memoire = v;
+          if (this.role === 'hote') this.reglerSalon();
+        },
+        reglerSalon: function() {
+          if (!pubHote || (pubHote.mode === this.mode && pubHote.memoire === this.memoire)) return;
+          if (pubHote.phase === 'jeu' && !confirm('Changer le format arrête la partie en cours. Continuer ?')) { this.mode = pubHote.mode; this.memoire = pubHote.memoire; return; }
+          pubHote.mode = this.mode;
+          pubHote.memoire = this.memoire;
+          if (pubHote.ordre.length === 2 && pubHote.phase !== 'attente') { pubHote.manche--; nouvelleManche(pubHote); }
+          this.publier();
         },
 
         // ---------- Placement ----------
         nouvellePartie: function() {
-          if (this.phase === 'jeu' && !confirm('Abandonner la partie en cours et en commencer une nouvelle ?')) return;
+          if (this.role) {
+            if (!confirm('Quitter le salon pour jouer seul ?')) return;
+            this.sortirDuSalon();
+          } else if (this.phase === 'jeu' && !confirm('Abandonner la partie en cours et en commencer une nouvelle ?')) return;
           clearTimeout(this._timerIA);
           this.modePartie = this.mode;
           this.memoirePartie = this.memoire;
@@ -376,6 +683,7 @@
           this.vue = null;
           this.fin = null;
           this.finMasquee = false;
+          this.verif = null;
           this.revele = {};
           this.combats = [];
           this.selection = null;
@@ -386,12 +694,14 @@
           this.sauvegarder();
         },
         placerAuHasard: function() {
+          if (this.jeSuisPret) return;
           this.placement = AS.placementAleatoire(this.modePartie, this.monC, Math.random() < 0.7);
           this.selection = null;
           this.son('toc');
-          this.sauvegarder();
+          this.memoriserPlacement();
         },
         toucherPlacement: function(i) {
+          if (this.jeSuisPret) return;
           var k = this.placement.findIndex(x => x.pos === i);
           if (this.selection === null) { if (k !== -1) this.selection = i; return; }
           var s = this.placement.findIndex(x => x.pos === this.selection);
@@ -401,13 +711,17 @@
             this.$set(this.placement, s, { pos: this.selection, r: r });
             this.son('toc');
           } else if (k === -1 && AS.zone(this.monC).indexOf(i) !== -1) {
-            this.$set(this.placement, s, { pos: i, r: this.placement[s].r }); // case libre (partie rapide)
+            this.$set(this.placement, s, { pos: i, r: this.placement[s].r });
             this.son('toc');
           }
           this.selection = null;
+          this.memoriserPlacement();
+        },
+        memoriserPlacement: function() {
+          if (this.role && this.prive) { this.prive.placement = copie(this.placement); this.ecrirePrive(); }
           this.sauvegarder();
         },
-        // Dispositions enregistrées (3 par format), toujours notées du point de vue du joueur du bas
+        // Dispositions enregistrées : toujours notées comme si l'on jouait en bas (camp A)
         enregistrerDisposition: function() {
           var l = this.dispositions[this.modePartie];
           l.push(this.placement.map(x => ({ pos: this.monC === 'A' ? x.pos : 99 - x.pos, r: x.r })));
@@ -416,20 +730,31 @@
           this.afficherMessage('Disposition enregistrée (n° ' + l.length + ').');
         },
         chargerDisposition: function(k) {
+          if (this.jeSuisPret) return;
           this.placement = copie(this.dispositions[this.modePartie][k]).map(x => ({ pos: this.monC === 'A' ? x.pos : 99 - x.pos, r: x.r }));
           this.selection = null;
-          this.sauvegarder();
+          this.memoriserPlacement();
         },
         oublierDisposition: function(k) {
           this.dispositions[this.modePartie].splice(k, 1);
           ecrireStockage('assaut-dispositions', this.dispositions);
         },
         commencer: function() {
+          this.selection = null;
+          if (this.role) {
+            // À deux : on envoie seulement les positions et l'empreinte ; les grades restent ici
+            var p = this.prive;
+            p.placement = copie(this.placement);
+            p.sel = hasard16();
+            this.ecrirePrive();
+            return empreinte(p.placement, p.sel).then(h => {
+              this.envoyerJeu({ type: 'PRET', partieId: p.partieId, hash: h, positions: p.placement.map(x => x.pos) });
+            });
+          }
           partie = AS.nouvellePartie(this.modePartie, this.placement, this.placementIA, 'A');
           this.phase = 'jeu';
-          this.selection = null;
           this.ajouterLog('Nouvelle partie ' + this.modePartie + ' contre l\'ordinateur.', true);
-          this.publier();
+          this.publierSolo();
         },
 
         // ---------- Partie ----------
@@ -451,44 +776,41 @@
           this.selection = null;
         },
         jouerCoup: function(from, to) {
-          var p = partie.cases[from], q = partie.cases[to];
           this.revele = {};
           this.combats = [];
-          var c = AS.appliquer(partie, from, to, p.r, q ? q.r : undefined);
-          if (c) this.raconterCombat(c);
-          else this.son('toc');
-          if (!partie.fin) AS.verifierBlocage(partie);
-          this.publier();
-          if (!partie.fin) {
-            clearTimeout(this._timerIA);
-            this._timerIA = setTimeout(() => this.coupOrdinateur(), DELAI_ORDINATEUR);
+          if (this.role) {
+            var q = this.vue.cases[to];
+            var m = { type: 'COUP', from: from, to: to };
+            if (q) m.ra = this.vue.cases[from].r;   // en attaque, on annonce son grade
+            return this.envoyerJeu(m);
           }
+          var p = partie.cases[from], q2 = partie.cases[to];
+          var c = AS.appliquer(partie, from, to, p.r, q2 ? q2.r : undefined);
+          if (c) this.raconterCombat(c); else this.son('toc');
+          if (!partie.fin) AS.verifierBlocage(partie);
+          this.publierSolo();
+          if (!partie.fin) { clearTimeout(this._timerIA); this._timerIA = setTimeout(() => this.coupOrdinateur(), DELAI_ORDINATEUR); }
         },
         coupOrdinateur: function() {
-          if (!partie || partie.fin || partie.tour === this.monC) return;
+          if (this.role || !partie || partie.fin || partie.tour === this.monC) return;
           var adv = partie.tour;
           var m = AS.choisirCoup(AS.vue(partie, adv), adv);
-          if (!m) { partie.fin = { gagnant: this.monC, raison: 'bloque' }; return this.publier(); }
+          if (!m) { partie.fin = { gagnant: this.monC, raison: 'bloque' }; return this.publierSolo(); }
           var p = partie.cases[m.from], q = partie.cases[m.to];
           var c = AS.appliquer(partie, m.from, m.to, p.r, q ? q.r : undefined);
           if (c) this.raconterCombat(c);
-          else {
-            this.son('toc');
-            if (p.vu === 2) this.$set(this.revele, p.id, 2); // l'éclaireur qui file se dévoile
-          }
+          else { this.son('toc'); if (p.vu === 2) this.$set(this.revele, p.id, 2); }
           if (!partie.fin) AS.verifierBlocage(partie);
-          this.publier();
+          this.publierSolo();
         },
         raconterCombat: function(c) {
-          var moi = c.ca === this.monC;
-          var issue = c.res === 'egalite' ? 'égalité, les deux pièces tombent' :
-                      (c.res === 'attaquant') === moi ? 'gagné' : 'perdu';
+          var moi = c.ca === this.monC, lui = this.role ? this.nomAdversaire : 'adverse';
+          var issue = c.res === 'egalite' ? 'égalité, les deux pièces tombent' : (c.res === 'attaquant') === moi ? 'gagné' : 'perdu';
           var texte = moi ? '⚔️ Ton ' + this.nom(c.ra) + ' attaque : ' + this.nom(c.rd) + ' → ' + issue
-                          : '⚔️ Attaque adverse : ' + this.nom(c.ra) + ' contre ton ' + this.nom(c.rd) + ' → ' + issue;
-          if (c.rd === 'D') texte = moi ? '🚩 Tu prends le drapeau !' : '🚩 L\'adversaire prend ton drapeau !';
+                          : '⚔️ Attaque ' + (this.role ? 'de ' + lui : 'adverse') + ' : ' + this.nom(c.ra) + ' contre ton ' + this.nom(c.rd) + ' → ' + issue;
+          if (c.rd === 'D') texte = moi ? '🚩 Tu prends le drapeau !' : '🚩 ' + (this.role ? lui : 'L\'adversaire') + ' prend ton drapeau !';
           this.combats.push(texte);
           this.ajouterLog(texte);
-          // La pièce adverse reste visible un moment (jusqu'à ton prochain coup)
           this.$set(this.revele, moi ? c.idd : c.ida, moi ? c.rd : c.ra);
           var gagneMoi = c.res === 'egalite' ? null : ((c.res === 'attaquant') === moi);
           if (gagneMoi) { this.son('zone', true); this.vibre(40); }
@@ -496,11 +818,17 @@
         },
         abandonner: function() {
           if (!confirm('Abandonner la partie ?')) return;
+          if (this.role) return this.envoyerJeu({ type: 'ABANDON' });
           clearTimeout(this._timerIA);
           partie.fin = { gagnant: AS.autre(this.monC), raison: 'abandon' };
-          this.publier();
+          this.publierSolo();
         },
-        publier: function() {
+        rejouer: function() {
+          this.finMasquee = true;
+          if (this.role) return this.envoyerJeu({ type: 'SUIVANTE' });
+          this.nouvellePartie();
+        },
+        publierSolo: function() {
           var ancienneFin = this.fin;
           this.vue = copie(partie);
           if (partie.fin && !ancienneFin) {
@@ -511,36 +839,486 @@
             if (gagne) s.v++; else s.d++;
             ecrireStockage('assaut-stats', this.stats);
             this.ajouterLog(gagne ? 'Victoire !' : 'Défaite.', true);
-            if (gagne) { this.son('victoire'); this.vibre([100, 60, 100, 60, 250]); } else this.vibre([200, 100, 200]);
+            this.sonFin(gagne);
           }
           this.sauvegarder();
+        },
+        sonFin: function(gagne) {
+          if (gagne) { this.son('victoire'); this.vibre([100, 60, 100, 60, 250]); } else this.vibre([200, 100, 200]);
+        },
+
+        // ---------- À deux : ce que fait chaque téléphone ----------
+        ecrirePrive: function() { ecrireStockage(CLE_PRIVE, this.prive); },
+        // Envoie une action de jeu (l'hôte la traite directement)
+        envoyerJeu: function(m) {
+          if (this.role === 'hote') {
+            var err = traiterJeu(pubHote, monPseudo, m);
+            if (err && err !== 'rien') return this.afficherMessage(err);
+            if (err !== 'rien') this.publier();
+            return;
+          }
+          if (this.connexion !== 'ok') return this.afficherMessage('Connexion perdue : reconnexion en cours…');
+          this.envoyerHote({ action: 'JEU', m: m });
+        },
+        // Nouvel état public reçu (ou produit par l'hôte) : on reconstruit sa vue avec ses propres grades
+        appliquerPub: function(pub) {
+          this._versionEtat = (this._versionEtat || 0) + 1;
+          var ancien = this.pub;
+          this.pub = pub;
+          var c = couleurDe(pub, this.moi);
+          if (!c || pub.phase === 'attente' || !pub.partieId) { this.phase = null; this.vue = null; this.sauvegarder(); return; }
+          this.monC = c;
+          this.modePartie = pub.mode;
+          this.memoirePartie = pub.memoire;
+          // Nouvelle manche : nouvelle armée, au hasard pour commencer
+          if (!this.prive || this.prive.partieId !== pub.partieId) {
+            this.prive = { partieId: pub.partieId, c: c, placement: AS.placementAleatoire(pub.mode, c, true), sel: null };
+            this.ecrirePrive();
+            this.revele = {}; this.combats = []; this.fin = null; this.verif = null; this.finMasquee = false; this.selection = null;
+            this.ajouterLog('Nouvelle partie ' + pub.mode + ' : place ton armée.', true);
+          }
+          this.placement = copie(this.prive.placement);
+          this.phase = pub.phase;
+          // Vue : positions publiques + mes grades
+          if (pub.cases) {
+            var v = copie(pub), rangs = {};
+            this.prive.placement.forEach((x, id) => rangs[id] = x.r);
+            v.cases.forEach(p => { if (p && p.c === c) p.r = rangs[p.id]; });
+            if (pub.phase === 'fin') {
+              var rev = pub.revelations[AS.autre(c)];
+              if (rev && Array.isArray(rev.placement)) v.cases.forEach(p => { if (p && p.c !== c && rev.placement[p.id]) p.r = rev.placement[p.id].r; });
+            }
+            this.vue = v;
+          } else this.vue = null;
+          // Ce qui vient de se passer
+          var memePartie = ancien && ancien.partieId === pub.partieId;
+          if (memePartie && pub.combat && !pub.combat.attente && (!ancien.combat || ancien.combat.n !== pub.combat.n || ancien.combat.attente)) {
+            this.raconterCombat(pub.combat);
+          } else if (memePartie && pub.n > ancien.n && !pub.combat) {
+            var h = pub.hist[pub.hist.length - 1];
+            if (h && h.c !== c) {
+              this.son('toc');
+              var q = pub.cases[h.to];
+              if (q && q.vu === 2 && Math.abs(h.from - h.to) !== 1 && Math.abs(h.from - h.to) !== 10) this.$set(this.revele, q.id, 2);
+            }
+          }
+          if (memePartie && ancien.tour !== pub.tour && pub.tour === c && pub.phase === 'jeu') this.vibre([30, 40, 30]);
+          if (pub.fin && !(memePartie && ancien.fin)) {
+            this.fin = pub.fin;
+            this.finMasquee = false;
+            this.ajouterLog(pub.fin.gagnant === c ? 'Victoire !' : 'Défaite.', true);
+            this.sonFin(pub.fin.gagnant === c);
+          }
+          if (!pub.fin) this.fin = null;
+          this.sauvegarder();
+          this.actionsAutomatiques();
+        },
+        // Réponses automatiques : grade en défense, blocage, armée dévoilée à la fin, vérification
+        actionsAutomatiques: function() {
+          var pub = this.pub, c = this.monC, p = this.prive;
+          if (!pub || !p || p.partieId !== pub.partieId) return;
+          var version = this._versionEtat;
+          var envois = this._envois || (this._envois = {});
+          var une = (cle, m) => {
+            if (envois[cle] === version) return;
+            envois[cle] = version;
+            setTimeout(() => this.envoyerJeu(m), 0); // différé : l'hôte traite ses propres envois après cet état
+          };
+          if (pub.phase === 'jeu' && pub.combat && pub.combat.attente) {
+            var cible = pub.cases[pub.combat.to];
+            if (cible && cible.c === c && pub.combat.ca !== c) une('def' + pub.combat.n, { type: 'DEFENSE', n: pub.combat.n, rd: p.placement[cible.id].r });
+          }
+          if (pub.phase === 'jeu' && pub.tour === c && !(pub.combat && pub.combat.attente) && this.vue && !AS.coups(this.vue, c).length) {
+            une('bloque' + pub.n, { type: 'BLOQUE' });
+          }
+          if (pub.phase === 'fin' && pub.prets[c] && !pub.revelations[c] && p.sel) {
+            une('rev', { type: 'REVELER', partieId: pub.partieId, placement: p.placement, sel: p.sel });
+          }
+          var adv = AS.autre(c);
+          if (pub.phase === 'fin' && pub.revelations[adv] && !this.verif && !this._verifEnCours) {
+            this._verifEnCours = true;
+            verifierAdversaire(pub, adv).then(r => { this._verifEnCours = false; if (this.pub === pub || (this.pub && this.pub.partieId === pub.partieId)) { this.verif = r; this.ajouterLog(r.texte, true); } });
+          }
+        },
+        publier: function() {
+          this.appliquerPub(copie(pubHote));
+          this.diffuser();
+          this.sauvegarder();
+        },
+
+        // ---------- Liste des salons ----------
+        estSalonSaisi: function(nom) { return ACCES.simplifier(nom) === ACCES.simplifier(this.channelInput); },
+        retenirSalon: function(nom) {
+          var cle = ACCES.simplifier(nom);
+          this.salonsConnus = [nom].concat((lireStockage('brillant-salons') || this.salonsConnus).filter(n => ACCES.simplifier(n) !== cle)).slice(0, MAX_SALONS);
+          ecrireStockage('brillant-salons', this.salonsConnus);
+          ecrireStockage('assaut-dernier-salon', nom);
+        },
+        oublierSalon: function(nom) {
+          var cle = ACCES.simplifier(nom);
+          this.salonsConnus = this.salonsConnus.filter(n => ACCES.simplifier(n) !== cle);
+          ecrireStockage('brillant-salons', this.salonsConnus);
+          if (ACCES.simplifier(lireStockage('assaut-dernier-salon') || '') === cle) {
+            if (this.salonsConnus.length) ecrireStockage('assaut-dernier-salon', this.salonsConnus[0]);
+            else effacerStockage('assaut-dernier-salon');
+          }
+          if (ACCES.simplifier(this.channelInput) === cle) this.channelInput = this.salonsConnus[0] || '';
         },
 
         // ---------- Sauvegarde ----------
         sauvegarder: function() {
+          if (this._restauration) return;
           ecrireStockage(CLE_SAUVEGARDE, {
-            phase: this.phase, modePartie: this.modePartie, memoirePartie: this.memoirePartie, monC: this.monC,
-            placement: this.placement, placementIA: this.placementIA, partie: partie, revele: this.revele,
-            combats: this.combats, fin: this.fin, historique: this.historique.slice(-60)
+            pseudo: this.pseudoInput, role: this.role, salon: this.roomCode,
+            pub: this.role ? this.pub : null, pubHote: this.role === 'hote' ? pubHote : null, salle: this.role === 'hote' ? salle : null,
+            phase: this.role ? null : this.phase, modePartie: this.modePartie, memoirePartie: this.memoirePartie, monC: this.monC,
+            placement: this.role ? null : this.placement, placementIA: this.placementIA, partie: this.role ? null : partie,
+            revele: this.revele, combats: this.combats, fin: this.role ? null : this.fin, historique: this.historique.slice(-60)
           });
         },
         restaurer: function() {
           var sv = lireStockage(CLE_SAUVEGARDE);
-          if (!sv || !sv.phase) { if (sv && sv.historique) this.historique = sv.historique; return; }
-          ['phase', 'modePartie', 'memoirePartie', 'monC', 'placement', 'placementIA', 'revele', 'combats', 'fin', 'historique']
-            .forEach(k => { if (sv[k] !== undefined) this[k] = sv[k]; });
-          partie = sv.partie;
-          if (partie) this.vue = copie(partie);
-          if (this.phase === 'fin') this.finMasquee = true;
-          if (this.phase === 'jeu' || this.phase === 'placement') this.onglet = 'play';
-          if (this.phase === 'jeu' && partie && !partie.fin && partie.tour !== this.monC) {
-            this._timerIA = setTimeout(() => this.coupOrdinateur(), DELAI_ORDINATEUR);
+          monPseudo = this.moi;
+          if (!sv) return this.entreeAutomatique();
+          if (sv.historique) this.historique = sv.historique;
+          if (sv.role && sv.salon && sv.pub) {
+            this.role = sv.role;
+            this.roomCode = sv.salon;
+            this.onglet = 'play';
+            this.connexion = 'perdue';
+            this._restauration = true;
+            this.appliquerPub(sv.pub);
+            this._restauration = false;
+            if (sv.role === 'hote') {
+              pubHote = sv.pubHote || copie(sv.pub);
+              salle = sv.salle || { infos: {} };
+              Object.values(salle.infos).forEach(i => { i.connecte = false; });
+              this.creerPartie(true);
+            } else this.rejoindrePartie(true);
+            this.ajouterLog('Partie restaurée, reconnexion au salon…', true);
+            return;
+          }
+          if (sv.phase) {
+            ['phase', 'modePartie', 'memoirePartie', 'monC', 'placement', 'placementIA', 'revele', 'combats', 'fin'].forEach(k => { if (sv[k] !== undefined && sv[k] !== null) this[k] = sv[k]; });
+            partie = sv.partie;
+            if (partie) this.vue = copie(partie);
+            if (this.phase === 'fin') this.finMasquee = true;
+            if (this.phase === 'jeu' || this.phase === 'placement') this.onglet = 'play';
+            if (this.phase === 'jeu' && partie && !partie.fin && partie.tour !== this.monC) this._timerIA = setTimeout(() => this.coupOrdinateur(), DELAI_ORDINATEUR);
+            return;
+          }
+          this.entreeAutomatique();
+        },
+        entreeAutomatique: function() {
+          var dernier = lireStockage('assaut-dernier-salon');
+          if (this.entreeAuto && dernier && this.pseudoInput.trim()) { this.channelInput = dernier; this.entrerSalon(true); }
+        },
+
+        // ---------- Entrée dans un salon ----------
+        validerPseudo: function() {
+          monPseudo = this.pseudoInput.trim();
+          if (!monPseudo) { alert('Merci de saisir un pseudo.'); return false; }
+          return true;
+        },
+        entrerSalon: function(silencieux) {
+          if (this.role || this._entree) return;
+          if (silencieux ? !this.pseudoInput.trim() : !this.validerPseudo()) return;
+          monPseudo = this.pseudoInput.trim();
+          if (!this.channelInput.trim()) { if (!silencieux) alert('Saisis un nom de salon.'); return; }
+          if (!silencieux && this.partieEnCours && !confirm('Ta partie solo en cours sera abandonnée. Continuer ?')) return;
+          if (this.partieEnCours) { clearTimeout(this._timerIA); partie = null; this.phase = null; this.vue = null; }
+          this._entree = { essais: 0, silencieux: !!silencieux };
+          this.entreeEnCours = true;
+          this.creerPartie(false);
+        },
+        finEntree: function(reussie, message) {
+          var e = this._entree;
+          this._entree = null;
+          this.entreeEnCours = false;
+          if (reussie) this.retenirSalon(this.roomCode);
+          else if (e && !e.silencieux && message) alert(message);
+        },
+        suiteEntree: function() {
+          var e = this._entree;
+          if (!e) return;
+          this.reinitialiserPeer(false);
+          if (++e.essais >= 4) return this.finEntree(false, 'Impossible d\'entrer dans le salon pour le moment. Réessaie dans un instant.');
+          setTimeout(() => { if (this._entree === e && !this.role) this.creerPartie(false); }, 1200);
+        },
+        quitterSalon: function() {
+          var enCours = this.phase === 'jeu' || this.phase === 'placement';
+          if (!confirm(enCours ? 'Quitter le salon ? La partie en cours sera interrompue.' : 'Quitter le salon ?')) return;
+          this.sortirDuSalon();
+        },
+        sortirDuSalon: function() {
+          if (this.role === 'client' && peer) {
+            this.envoyerHote({ action: 'DEPART' });
+            var ancienPeer = peer;
+            peer = null;
+            setTimeout(() => { try { ancienPeer.destroy(); } catch (e) {} }, 400);
+          }
+          this.reinitialiserPeer(false);
+          pubHote = null;
+          salle = { infos: {} };
+          this.pub = null;
+          this.phase = null;
+          this.vue = null;
+          this.fin = null;
+          this.verif = null;
+          this.ajouterLog('Tu as quitté le salon.', true);
+          this.sauvegarder();
+        },
+        reinitialiserPeer: function(garder) {
+          clearTimeout(this._timerReco);
+          var ancien = peer;
+          peer = null;
+          connections = [];
+          connParPseudo = {};
+          hostConn = null;
+          if (ancien) { try { ancien.destroy(); } catch (e) {} }
+          if (!garder) { this.role = null; this.joueurs = []; this.roomCode = ''; this.connexion = 'aucune'; }
+        },
+        planifierReconnexion: function(delai) {
+          clearTimeout(this._timerReco);
+          this._timerReco = setTimeout(() => {
+            if (!this.role || this.connexion === 'ok') return;
+            if (this.role === 'hote') return this.creerPartie(true);
+            this._echecsClient = (this._echecsClient || 0) + 1;
+            if (this._echecsClient >= 4 && this.pub) { this._echecsClient = 0; return this.reprendreLeSalon(); }
+            this.rejoindrePartie(true);
+          }, delai || 3000);
+        },
+        // L'hôte ne répond plus : on rouvre le salon avec notre copie de l'état public (il ne contient aucun secret)
+        reprendreLeSalon: function() {
+          pubHote = copie(this.pub);
+          salle = { infos: {} };
+          pubHote.ordre.forEach(p => { if (p !== monPseudo) salle.infos[p] = { connecte: false, clientId: null }; });
+          this._repriseParClient = true;
+          this.role = 'hote';
+          this.ajouterLog('L\'hôte ne répond plus : tu rouvres le salon.', true);
+          this.creerPartie(true);
+        },
+
+        // ---------- Hôte ----------
+        creerPartie: function(reprise) {
+          var nom = reprise ? this.roomCode : this.channelInput.trim();
+          this.reinitialiserPeer(!!reprise);
+          this.connexion = reprise ? 'perdue' : 'connexion';
+          var monPeer = peer = new Peer(ACCES.idSalon(nom, JEU_RESEAU));
+          monPeer.on('open', () => {
+            if (peer !== monPeer) return;
+            this.role = 'hote';
+            this.connexion = 'ok';
+            this.roomCode = nom;
+            this._echecsReprise = 0;
+            if (reprise) {
+              this._repriseParClient = false;
+              this.ajouterLog('Salon récupéré, l\'autre joueur va se reconnecter.', true);
+            } else {
+              if (!(this._entree && this._entree.silencieux)) this.onglet = 'play';
+              this.finEntree(true);
+              salle = { infos: {} };
+              pubHote = nouvelEtatSalon([monPseudo], this.mode, this.memoire);
+              this.ajouterLog(monPseudo + ' a ouvert le salon.', true);
+            }
+            this.publier();
+          });
+          monPeer.on('connection', (conn) => this.brancherClient(conn));
+          monPeer.on('disconnected', () => {
+            if (peer === monPeer && !monPeer.destroyed) setTimeout(() => { try { if (monPeer.disconnected && !monPeer.destroyed) monPeer.reconnect(); } catch (e) {} }, 1000);
+          });
+          monPeer.on('error', (err) => {
+            if (peer !== monPeer) return;
+            if (reprise || this.role === 'hote') {
+              if (err.type === 'peer-unavailable') return;
+              this.connexion = 'perdue';
+              var seuil = this._repriseParClient ? 1 : 5;
+              if (err.type === 'unavailable-id' && (this._echecsReprise = (this._echecsReprise || 0) + 1) >= seuil) {
+                this._echecsReprise = 0;
+                this._repriseParClient = false;
+                this.role = 'client';
+                pubHote = null;
+                salle = { infos: {} };
+                this.ajouterLog('Le salon est tenu par l\'autre joueur : tu le rejoins.', true);
+                return this.rejoindrePartie(true);
+              }
+              this.planifierReconnexion(3000);
+              return;
+            }
+            if (this._entree && err.type === 'unavailable-id') return this.rejoindrePartie(false);
+            if (this._entree) return this.suiteEntree();
+            this.reinitialiserPeer(false);
+            alert('Erreur : ' + err.message);
+          });
+        },
+        brancherClient: function(conn) {
+          connections.push(conn);
+          conn.dernierMsg = Date.now();
+          conn.on('data', (data) => { conn.dernierMsg = Date.now(); this.recevoirDeClient(conn, data); });
+          conn.on('close', () => this.perteClient(conn));
+          conn.on('error', () => this.perteClient(conn));
+        },
+        broadcast: function(data) { connections.forEach(c => { try { if (c.open) c.send(data); } catch (e) {} }); },
+        majJoueurs: function() {
+          if (this.role !== 'hote' || !pubHote) return;
+          this.joueurs = pubHote.ordre.map(p => ({ pseudo: p, hote: p === monPseudo, connecte: p === monPseudo || !!(salle.infos[p] && salle.infos[p].connecte) }));
+        },
+        diffuser: function() {
+          this.majJoueurs();
+          this.broadcast({ action: 'ETAT', pub: pubHote, joueurs: this.joueurs });
+        },
+        recevoirDeClient: function(conn, data) {
+          var p = conn.joueurPseudo;
+          switch (data.action) {
+            case 'PING': break;
+            case 'REJOINDRE': {
+              var pseudo = String(data.pseudo || '').trim().slice(0, 20);
+              var existant = salle.infos[pseudo], refus = '';
+              if (!pseudo || pseudo === monPseudo || (existant && existant.connecte && existant.clientId !== data.clientId && connParPseudo[pseudo] && connParPseudo[pseudo] !== conn)) refus = 'Ce pseudo est déjà utilisé dans ce salon.';
+              else if (pubHote.ordre.indexOf(pseudo) === -1 && pubHote.ordre.length >= 2) refus = 'Ce salon est complet : Assaut se joue à deux.';
+              if (refus) {
+                try { conn.send({ action: 'REFUS', fatal: true, message: refus }); } catch (e) {}
+                setTimeout(() => { try { conn.close(); } catch (e) {} }, 500);
+                return;
+              }
+              var ancienne = connParPseudo[pseudo];
+              if (ancienne && ancienne !== conn) { ancienne._remplacee = true; connections = connections.filter(c => c !== ancienne); try { ancienne.close(); } catch (e) {} }
+              conn.joueurPseudo = pseudo;
+              connParPseudo[pseudo] = conn;
+              salle.infos[pseudo] = { connecte: true, clientId: data.clientId };
+              if (pubHote.ordre.indexOf(pseudo) !== -1) this.ajouterLog(pseudo + ' est revenu.', true);
+              else {
+                pubHote.ordre.push(pseudo);
+                this.ajouterLog(pseudo + ' a rejoint le salon.', true);
+                if (pubHote.phase === 'attente' || pubHote.phase === 'fin') nouvelleManche(pubHote);
+              }
+              this.publier();
+              break;
+            }
+            case 'DEPART':
+              if (!p) return;
+              delete connParPseudo[p];
+              delete salle.infos[p];
+              pubHote.ordre = pubHote.ordre.filter(x => x !== p);
+              Object.assign(pubHote, { phase: 'attente', partieId: null, cases: null, combat: null, fin: null, prets: {}, revelations: {} });
+              this.ajouterLog(p + ' a quitté le salon.', true);
+              this.publier();
+              break;
+            case 'JEU': {
+              if (!p) return;
+              var err = traiterJeu(pubHote, p, data.m || {});
+              if (err === 'rien') return;
+              if (err) { try { conn.send({ action: 'REFUS', message: err }); } catch (e) {} this.diffuser(); return; }
+              this.publier();
+              break;
+            }
+          }
+        },
+        perteClient: function(conn) {
+          if (conn._perdue) return;
+          conn._perdue = true;
+          connections = connections.filter(c => c !== conn);
+          var p = conn.joueurPseudo;
+          if (!p || conn._remplacee || connParPseudo[p] !== conn) return;
+          delete connParPseudo[p];
+          if (salle.infos[p]) salle.infos[p].connecte = false;
+          this.ajouterLog(p + ' s\'est déconnecté (il peut revenir).', true);
+          this.diffuser();
+          this.sauvegarder();
+        },
+
+        // ---------- Client ----------
+        rejoindrePartie: function(reprise) {
+          var nom = reprise ? this.roomCode : this.channelInput.trim();
+          this.reinitialiserPeer(!!reprise);
+          this.connexion = reprise ? 'perdue' : 'connexion';
+          var monPeer = peer = new Peer();
+          monPeer.on('open', () => {
+            if (peer !== monPeer) return;
+            var conn = hostConn = monPeer.connect(ACCES.idSalon(nom, JEU_RESEAU), { reliable: true });
+            var delai = setTimeout(() => {
+              if (hostConn !== conn || this.connexion === 'ok') return;
+              if (this.role) this.planifierReconnexion();
+              else if (this._entree) this.suiteEntree();
+              else this.reinitialiserPeer(false);
+            }, 10000);
+            conn.on('open', () => {
+              if (hostConn !== conn) return;
+              clearTimeout(delai);
+              dernierMsgHote = Date.now();
+              this.connexion = 'ok';
+              this.role = 'client';
+              this.roomCode = nom;
+              this._echecsClient = 0;
+              if (!reprise) { if (!(this._entree && this._entree.silencieux)) this.onglet = 'play'; this.finEntree(true); }
+              conn.send({ action: 'REJOINDRE', pseudo: monPseudo, clientId: clientId });
+            });
+            conn.on('data', (data) => { if (hostConn !== conn) return; dernierMsgHote = Date.now(); this.recevoirDeHote(data); });
+            conn.on('close', () => { if (hostConn === conn) this.perteHote(); });
+            conn.on('error', () => { if (hostConn === conn) this.perteHote(); });
+          });
+          monPeer.on('disconnected', () => { if (peer === monPeer && !monPeer.destroyed) { try { monPeer.reconnect(); } catch (e) {} } });
+          monPeer.on('error', () => {
+            if (peer !== monPeer) return;
+            if (this.role) { this.connexion = 'perdue'; this.planifierReconnexion(); }
+            else if (this._entree) this.suiteEntree();
+            else { this.reinitialiserPeer(false); alert('Impossible de joindre ce salon.'); }
+          });
+        },
+        perteHote: function() {
+          if (this.connexion === 'perdue' && this._timerReco) return;
+          if (this.connexion === 'ok') this.ajouterLog('Connexion à l\'hôte perdue, reconnexion…', true);
+          var c = hostConn;
+          hostConn = null;
+          if (c) { try { c.close(); } catch (e) {} }
+          this.connexion = 'perdue';
+          this.planifierReconnexion(1500);
+        },
+        envoyerHote: function(data) { if (hostConn && hostConn.open && this.connexion === 'ok') { try { hostConn.send(data); } catch (e) {} } },
+        recevoirDeHote: function(data) {
+          switch (data.action) {
+            case 'PING': break;
+            case 'ETAT':
+              this.joueurs = data.joueurs || [];
+              if (data.pub) this.appliquerPub(data.pub);
+              break;
+            case 'REFUS':
+              if (data.fatal) { alert(data.message); this.reinitialiserPeer(false); this.pub = null; this.phase = null; this.sauvegarder(); }
+              else this.afficherMessage(data.message);
+              break;
+          }
+        },
+
+        // ---------- Surveillance de la connexion ----------
+        battement: function() {
+          var maintenant = Date.now();
+          if (this.role === 'hote' && peer) {
+            connections.slice().forEach(c => {
+              try { if (c.open) c.send({ action: 'PING' }); } catch (e) {}
+              if (maintenant - (c.dernierMsg || maintenant) > DELAI_SILENCE) { try { c.close(); } catch (e) {} this.perteClient(c); }
+            });
+            if (peer.destroyed) this.planifierReconnexion(500);
+            else if (peer.disconnected) { try { peer.reconnect(); } catch (e) {} }
+          } else if (this.role === 'client' && this.connexion === 'ok') {
+            this.envoyerHote({ action: 'PING' });
+            if (maintenant - dernierMsgHote > DELAI_SILENCE) this.perteHote();
+          }
+        },
+        auRetourPremierPlan: function() {
+          this.majVeille();
+          if (document.visibilityState === 'hidden' || !this.role) return;
+          if (this.role === 'hote') {
+            if (!peer || peer.destroyed) this.creerPartie(true);
+            else if (peer.disconnected) { try { peer.reconnect(); } catch (e) {} }
+          } else if (this.connexion !== 'ok' || Date.now() - dernierMsgHote > 8000) {
+            this.connexion = 'perdue';
+            this.rejoindrePartie(true);
           }
         },
 
         // ---------- Écran toujours allumé ----------
         veilleVoulue: function() {
-          return this.veilleSupportee && this.garderEcran && document.visibilityState === 'visible' && this.onglet === 'play' && this.phase === 'jeu';
+          return this.veilleSupportee && this.garderEcran && document.visibilityState === 'visible' && (!!this.role || (this.onglet === 'play' && this.phase === 'jeu'));
         },
         majVeille: function() {
           if (!this.veilleSupportee) return;

@@ -26,7 +26,7 @@ Tout est en français : interface, commentaires du code, messages de commit, ré
 | `brilliant.html` | Brilliant (roll & write). Page autonome historique : elle a **sa propre copie** de `ACCES`, `Sons`, `Voix`, `VERSION` (n'utilise pas `commun.js`). |
 | `yams.html` | Yams, solo et à plusieurs (chacun son tour). Utilise `commun.js`. |
 | `backgammon.html` + `backgammon-regles.js` | Backgammon à deux. Le moteur de règles est dans `backgammon-regles.js` (testable avec Node). |
-| `assaut.html` + `assaut-regles.js` | Assaut (stratégie à pièces cachées, version maison du genre « Stratego », sans le nom ni les visuels de la marque). Solo contre l'ordinateur ; le jeu à deux est en cours. Moteur + ordinateur dans `assaut-regles.js` (testable avec Node). |
+| `assaut.html` + `assaut-regles.js` | Assaut (stratégie à pièces cachées, version maison du genre « Stratego », sans le nom ni les visuels de la marque). Solo contre l'ordinateur, ou à deux (salon limité à 2, armées gardées sur chaque téléphone). Moteur + ordinateur dans `assaut-regles.js` (testable avec Node). |
 | `sw.js` | Service worker (PWA) : nos fichiers en « réseau d'abord » avec `cache: 'no-cache'`, bibliothèques en cache. |
 | `manifest.webmanifest`, icônes | Installation comme application. |
 | `netlify.toml` | Inutilisé (essai d'hébergement abandonné). |
@@ -49,7 +49,7 @@ Pas d'étape de construction, pas de dépendance à ajouter.
   150 000 itérations, 48 octets. Octets 0–31 : `EMPREINTE` publiée ; octets 32–39 : « clé de salon »,
   jamais publiée, gardée dans `localStorage['brillant-acces']`.
 - La clé de salon entre dans l'identifiant réseau : `'dm-' + cléSalon + '-' + [jeu + '-'] + nomSimplifié`.
-  Préfixes de jeu : aucun pour Brilliant, `yams`, `bg`. Sans le bon code, impossible de joindre un salon.
+  Préfixes de jeu : aucun pour Brilliant, `yams`, `bg`, `as`. Sans le bon code, impossible de joindre un salon.
 - Changer le code = recalculer l'empreinte dans les deux fichiers ; tous les salons changent d'identifiant.
 
 ## Réseau (identique dans les trois jeux)
@@ -73,7 +73,7 @@ Communs : `brillant-acces`, `brillant-client-id`, `brillant-son`, `brillant-vibr
 `brillant-garder-ecran`, `brillant-entree-auto`, `brillant-salons` (liste des salons, partagée), `desdale-dernier-jeu`.
 Brilliant : `brillant-sauvegarde-v1`, `brillant-dernier-salon`, `brillant-records(-dates)`, `brillant-classements`, `brillant-rejoindre-auto`.
 Yams : `yams-sauvegarde`, `yams-dernier-salon`, `yams2-record`, `yams2-classements` (le « 2 » : barème maison).
-Assaut : `assaut-sauvegarde`, `assaut-mode`, `assaut-memoire`, `assaut-stats`, `assaut-dispositions`.
+Assaut : `assaut-sauvegarde`, `assaut-prive` (mon armée en salon), `assaut-dernier-salon`, `assaut-mode`, `assaut-memoire`, `assaut-stats`, `assaut-dispositions`.
 Backgammon : `bg-sauvegarde`, `bg-dernier-salon`.
 
 ## Règles des jeux (choix de l'utilisateur, à ne pas changer sans lui)
@@ -109,7 +109,11 @@ Backgammon : `bg-sauvegarde`, `bg-dernier-salon`.
   pas plus de 3 allers-retours). Placement au hasard puis échanges ; 3 dispositions enregistrables par format.
 - Option « garder à l'écran les pièces adverses révélées » : **désactivée par défaut** (retenir fait partie du jeu).
 - Solo contre l'ordinateur : il ne triche pas (il ne voit que ce qu'un joueur verrait).
-- À deux (à venir) : la composition de chaque joueur ne quitte jamais son téléphone ; empreinte au départ, vérification à la fin.
+- À deux : la composition de chaque joueur ne quitte jamais son téléphone (`assaut-prive`). L'état public relayé par l'hôte
+  ne contient que les positions, les grades révélés et le journal des coups. Au départ, chacun envoie une empreinte
+  SHA-256 (disposition + sel secret) ; en combat, l'attaquant annonce son grade et le téléphone du défenseur répond
+  tout seul ; à la fin, chacun dévoile son armée et l'autre vérifie l'empreinte et rejoue tous les coups.
+  L'hôte choisit le format ; les couleurs alternent à chaque partie (A, en bleu, commence).
 
 ### Autres choix déjà tranchés
 - Annonce vocale du tour : **seulement sur le téléphone du joueur concerné**, après 5 s sans lancer.
