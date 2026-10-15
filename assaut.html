@@ -71,6 +71,8 @@
     .reserve { display: flex; flex-wrap: wrap; gap: 5px; justify-content: center; margin: 6px 0 2px; }
     .reserve-piece { display: flex; align-items: center; gap: 3px; border: 1.5px solid #c9d2d9; background: #fff; border-radius: 9px; padding: 4px 7px; font: inherit; font-size: 0.82em; font-weight: 700; color: #1d2b36; cursor: pointer; }
     .reserve-piece .sym { font-size: 15px; }
+    .restants .img-restant { width: 14px; height: 14px; border-radius: 3px; object-fit: cover; vertical-align: -2px; margin-right: 2px; }
+    .reserve-piece .img-reserve { width: 22px; height: 22px; border-radius: 4px; object-fit: cover; }
     .reserve-piece.choisie { border-color: #2f5f9e; background: #e4f0fb; box-shadow: 0 0 0 2px #2f5f9e; }
     .reserve-piece.retour { border-style: dashed; color: #b04a4a; }
     .actions .btn:disabled { opacity: 0.45; }
@@ -269,7 +271,7 @@
           <!-- Réserve : les pièces encore à poser -->
           <div class="reserve" v-if="!jeSuisPret && (reserveTotal || selection !== null)">
             <button v-for="x in reserve" :key="x.g" v-if="x.n" class="reserve-piece" :class="{ choisie: choixReserve === x.g }" @click="choisirReserve(x.g)">
-              <span class="sym">{{ AS.ICONES[x.g] }}</span><span class="txt">{{ typeof x.g === 'number' ? chiffre(x.g) : '' }}×{{ x.n }}</span>
+              <img v-if="apparence === 'images' && images[x.g]" class="img-reserve" :src="images[x.g]" alt=""><span v-else class="sym">{{ AS.ICONES[x.g] }}</span><span class="txt">{{ typeof x.g === 'number' ? chiffre(x.g) : '' }}×{{ x.n }}</span>
             </button>
             <button v-if="selection !== null" class="reserve-piece retour" @click="retirerSelection">↩ Retirer</button>
           </div>
@@ -292,7 +294,7 @@
         <template v-else>
           <div class="restants">
             <span class="titre">{{ role ? nomAdversaire : 'Adversaire' }} :</span>
-            <span v-for="x in restantsAdverses" :key="x.g" :class="{ zero: !x.n }">{{ typeof x.g === 'number' ? chiffre(x.g) + AS.ICONES[x.g] : AS.ICONES[x.g] }}×{{ x.n }}</span>
+            <span v-for="x in restantsAdverses" :key="x.g" :class="{ zero: !x.n }"><img v-if="apparence === 'images' && images[x.g]" class="img-restant" :src="images[x.g]" alt="">{{ typeof x.g === 'number' ? chiffre(x.g) + (apparence === 'images' && images[x.g] ? '' : AS.ICONES[x.g]) : (apparence === 'images' && images[x.g] ? '' : AS.ICONES[x.g]) }}×{{ x.n }}</span>
           </div>
           <div class="verif" v-if="phase === 'fin' && verif" :class="verif.ok ? 'ok' : 'ko'">{{ verif.texte }}</div>
           <div class="actions">
