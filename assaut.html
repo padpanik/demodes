@@ -49,6 +49,12 @@
     /* Symbole du grade en grand, chiffre en petit en bas à droite */
     .piece { line-height: 1; }
     .piece .sym { font-size: 17px; }
+    .piece.chiffres .sym { font-size: 15px; font-weight: 800; }
+    .piece .img { position: absolute; inset: 2px; width: calc(100% - 4px); height: calc(100% - 4px); object-fit: cover; border-radius: 4px; }
+    .apparence-grille { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 10px; }
+    .apparence-grille button { position: relative; border: 1.5px dashed #c9d2d9; border-radius: 10px; background: #f8fafb; padding: 6px 2px 4px; font: inherit; font-size: 0.72em; color: #5b6b78; cursor: pointer; }
+    .apparence-grille img, .apparence-grille .vide { display: block; width: 44px; height: 44px; margin: 0 auto 3px; border-radius: 6px; object-fit: cover; background: #2f5f9e; color: #fff; font-size: 20px; line-height: 44px; }
+    .apparence-grille .oter-img { position: absolute; top: -6px; right: -6px; width: 20px; height: 20px; border-radius: 50%; border: none; background: #b04a4a; color: #fff; font-size: 11px; padding: 0; }
     .piece .num { position: absolute; right: 2px; bottom: 1px; font-size: 9px; font-weight: 800; color: #fff; text-shadow: 0 0 2px rgba(0,0,0,0.6); }
     .piece.dos .sym { font-size: 11px; }
 
@@ -179,6 +185,27 @@
         </table>
       </details>
 
+      <section class="carte">
+        <div class="titre-carte">Apparence des pièces <small>sur ce téléphone</small></div>
+        <div class="segment">
+          <button :class="{ actif: apparence === 'symboles' }" @click="apparence = 'symboles'">Symboles</button>
+          <button :class="{ actif: apparence === 'chiffres' }" @click="apparence = 'chiffres'">Chiffres</button>
+          <button :class="{ actif: apparence === 'images' }" @click="apparence = 'images'">Mes images</button>
+        </div>
+        <template v-if="apparence === 'images'">
+          <div class="aide">Touche un grade pour lui donner une image (par exemple la photo d'une pièce de ton propre jeu). Les images restent sur ce téléphone : elles ne sont ni publiées ni envoyées à l'adversaire.</div>
+          <div class="apparence-grille">
+            <button v-for="g in AS.GRADES" :key="g" @click="choisirImage(g)">
+              <img v-if="images[g]" :src="images[g]" alt="">
+              <span v-else class="vide">{{ AS.ICONES[g] }}</span>
+              {{ AS.NOMS[g] }}
+              <span v-if="images[g]" class="oter-img" role="button" aria-label="Retirer l'image" @click.stop="retirerImage(g)">✕</span>
+            </button>
+          </div>
+          <input type="file" accept="image/*" ref="fichierImage" style="display:none" @change="imageChoisie">
+        </template>
+      </section>
+
       <section class="carte reglages">
         <div class="titre-carte">Réglages</div>
         <label class="case-a-cocher"><input type="checkbox" v-model="sonActif"> 🔊 Sons</label>
@@ -223,7 +250,7 @@
 
         <div class="plateau">
           <div v-for="x in cases" :key="x.d" class="case" :class="x.classes" @click="toucher(x.i)">
-            <div v-if="x.p" class="piece" :class="x.p.classes"><span class="sym">{{ x.p.sym }}</span><span v-if="x.p.num" class="num">{{ x.p.num }}</span></div>
+            <div v-if="x.p" class="piece" :class="x.p.classes"><img v-if="x.p.img" class="img" :src="x.p.img" alt=""><span v-else class="sym">{{ x.p.sym }}</span><span v-if="x.p.num" class="num">{{ x.p.num }}</span></div>
           </div>
         </div>
 
@@ -476,6 +503,8 @@
         historique: [],
         stats: lireStockage('assaut-stats') || { complet: { v: 0, d: 0 }, rapide: { v: 0, d: 0 } },
         dispositions: Object.assign({ complet: [], rapide: [] }, lireStockage('assaut-dispositions') || {}),
+        apparence: lireStockage('assaut-apparence') || 'symboles',   // 'symboles' | 'chiffres' | 'images'
+        images: lireStockage('assaut-images') || {},                  // grade -> image (data URL), propre à ce téléphone
         // Salon
         pseudoInput: pseudoSauvegarde(),
         channelInput: lireStockage('assaut-dernier-salon') || lireStockage('brillant-dernier-salon') || '',
@@ -597,6 +626,7 @@
       watch: {
         mode: function(v) { ecrireStockage('assaut-mode', v); },
         memoire: function(v) { ecrireStockage('assaut-memoire', v); },
+        apparence: function(v) { ecrireStockage('assaut-apparence', v); },
         sonActif: function(v) { ecrireStockage('brillant-son', v); },
         vibrationActive: function(v) { ecrireStockage('brillant-vibration', v); if (v) vibrer(40); },
         voixActive: function(v) { ecrireStockage('brillant-voix', v); if (v) Voix.dire('Annonce de ton tour activée'); },
@@ -651,7 +681,45 @@
           if (g === 10) classes.push('petit');
           if (this.selection === i) classes.push('choisie');
           var symbole = g === 'B' || g === 'D';
-          return { classes: classes, sym: cache ? (mien ? '' : '?') : AS.ICONES[g], num: cache || symbole ? '' : String(g) };
+          if (cache) return { classes: classes, sym: mien ? '' : '?', num: '' };
+          if (this.apparence === 'chiffres') { classes.push('chiffres'); return { classes: classes, sym: symbole ? AS.ICONES[g] : String(g), num: '' }; }
+          var img = this.apparence === 'images' ? this.images[g] : null;
+          return { classes: classes, img: img || null, sym: AS.ICONES[g], num: symbole ? '' : String(g) };
+        },
+
+        // ---------- Apparence : images choisies par le joueur (réduites à 96 px, gardées sur ce téléphone) ----------
+        choisirImage: function(g) {
+          this._gradeImage = g;
+          var champ = this.$refs.fichierImage;
+          champ.value = '';
+          champ.click();
+        },
+        imageChoisie: function(e) {
+          var f = e.target.files && e.target.files[0], g = this._gradeImage;
+          if (!f || g === undefined) return;
+          var lecteur = new FileReader();
+          lecteur.onload = () => {
+            var img = new Image();
+            img.onload = () => {
+              var T = 96, c = document.createElement('canvas'), cote = Math.min(img.width, img.height);
+              c.width = T; c.height = T;
+              // Recadrage carré au centre
+              c.getContext('2d').drawImage(img, (img.width - cote) / 2, (img.height - cote) / 2, cote, cote, 0, 0, T, T);
+              this.$set(this.images, g, c.toDataURL('image/jpeg', 0.85));
+              this.enregistrerImages();
+            };
+            img.onerror = () => this.afficherMessage('Image illisible.');
+            img.src = lecteur.result;
+          };
+          lecteur.readAsDataURL(f);
+        },
+        retirerImage: function(g) {
+          this.$delete(this.images, g);
+          this.enregistrerImages();
+        },
+        enregistrerImages: function() {
+          try { localStorage.setItem('assaut-images', JSON.stringify(this.images)); }
+          catch (e) { alert('Plus assez de place pour ces images sur ce téléphone.'); }
         },
 
         // ---------- Format (solo : pour la prochaine partie ; hôte : recommence le placement) ----------

@@ -73,7 +73,7 @@ Communs : `brillant-acces`, `brillant-client-id`, `brillant-son`, `brillant-vibr
 `brillant-garder-ecran`, `brillant-entree-auto`, `brillant-salons` (liste des salons, partagée), `desdale-dernier-jeu`.
 Brilliant : `brillant-sauvegarde-v1`, `brillant-dernier-salon`, `brillant-records(-dates)`, `brillant-classements`, `brillant-rejoindre-auto`.
 Yams : `yams-sauvegarde`, `yams-dernier-salon`, `yams2-record`, `yams2-classements` (le « 2 » : barème maison).
-Assaut : `assaut-sauvegarde`, `assaut-prive` (mon armée en salon), `assaut-dernier-salon`, `assaut-mode`, `assaut-memoire`, `assaut-stats`, `assaut-dispositions`.
+Assaut : `assaut-sauvegarde`, `assaut-prive` (mon armée en salon), `assaut-dernier-salon`, `assaut-mode`, `assaut-memoire`, `assaut-stats`, `assaut-dispositions`, `assaut-apparence`, `assaut-images`.
 Backgammon : `bg-sauvegarde`, `bg-dernier-salon`.
 
 ## Règles des jeux (choix de l'utilisateur, à ne pas changer sans lui)
@@ -108,6 +108,9 @@ Backgammon : `bg-sauvegarde`, `bg-dernier-salon`.
 - Numérotation moderne : Maréchal 10 … Espion 1. Règles courantes (éclaireur qui file, démineur, espion contre maréchal,
   pas plus de 3 allers-retours). Placement au hasard puis échanges ; 3 dispositions enregistrables par format.
 - Option « garder à l'écran les pièces adverses révélées » : **désactivée par défaut** (retenir fait partie du jeu).
+- Apparence des pièces (par téléphone) : Symboles (émojis), Chiffres, ou **Mes images** : le joueur choisit lui-même une image
+  par grade (photo de ses propres pièces), gardée seulement dans `assaut-images` sur son téléphone. Ne jamais mettre
+  d'illustrations officielles dans le dépôt.
 - Solo contre l'ordinateur : il ne triche pas (il ne voit que ce qu'un joueur verrait).
 - À deux : la composition de chaque joueur ne quitte jamais son téléphone (`assaut-prive`). L'état public relayé par l'hôte
   ne contient que les positions, les grades révélés et le journal des coups. Au départ, chacun envoie une empreinte
