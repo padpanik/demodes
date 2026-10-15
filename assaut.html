@@ -76,6 +76,11 @@
     .reserve { display: flex; flex-wrap: wrap; gap: 5px; justify-content: center; margin: 6px 0 2px; }
     .reserve-piece { display: flex; align-items: center; gap: 3px; border: 1.5px solid #c9d2d9; background: #fff; border-radius: 9px; padding: 4px 7px; font: inherit; font-size: 0.82em; font-weight: 700; color: #1d2b36; cursor: pointer; }
     .reserve-piece .sym { font-size: 15px; }
+    .restants.prises { justify-content: flex-start; margin: 4px 0 0; }
+    .restants.prises .titre { min-width: 92px; text-align: left; }
+    .restants.prises span.A { background: #dbe6f4; color: #1f4a80; }
+    .restants.prises span.B { background: #f3dcd8; color: #7a2d20; }
+    .restants.prises span.rien { background: none; color: #a3adb5; font-weight: 500; font-style: italic; }
     .restants .img-restant { width: 14px; height: 14px; border-radius: 3px; object-fit: cover; vertical-align: -2px; margin-right: 2px; }
     .reserve-piece .img-reserve { width: 22px; height: 22px; border-radius: 4px; object-fit: cover; }
     .reserve-piece.choisie { border-color: #2f5f9e; background: #e4f0fb; box-shadow: 0 0 0 2px #2f5f9e; }
@@ -102,6 +107,7 @@
     .combat-vs { position: absolute; left: 50%; top: 52px; transform: translate(-50%, -50%); font-weight: 900; font-size: 1.2em; color: #8a5a00; transition: transform 0.3s; }
     .combat-issue { min-height: 1.4em; margin-top: 10px; font-weight: 800; font-size: 1.05em; }
     .combat-aide { font-size: 0.72em; color: #8a97a1; margin-top: 4px; }
+    .combat-continuer { width: 100%; margin-top: 10px; }
     /* Étapes : entrée par les côtés, choc au centre, puis issue */
     .etape-entree .combattant.att { transform: translateX(-70px); opacity: 0; }
     .etape-entree .combattant.def { transform: translateX(70px); opacity: 0; }
@@ -336,9 +342,10 @@
 
         <!-- Partie -->
         <template v-else>
-          <div class="restants">
-            <span class="titre">{{ role ? nomAdversaire : 'Adversaire' }} :</span>
-            <span v-for="x in restantsAdverses" :key="x.g" :class="{ zero: !x.n }"><img v-if="apparence === 'images' && images[x.g]" class="img-restant" :src="images[x.g]" alt="">{{ typeof x.g === 'number' ? chiffre(x.g) + (apparence === 'images' && images[x.g] ? '' : AS.ICONES[x.g]) : (apparence === 'images' && images[x.g] ? '' : AS.ICONES[x.g]) }}×{{ x.n }}</span>
+          <div v-for="ligne in piecesPrises" :key="ligne.cle" class="restants prises" :class="ligne.cle">
+            <span class="titre">{{ ligne.titre }}</span>
+            <span v-for="x in ligne.pieces" :key="x.g" :class="ligne.c"><img v-if="apparence === 'images' && images[x.g]" class="img-restant" :src="images[x.g]" alt="">{{ typeof x.g === 'number' ? chiffre(x.g) + (apparence === 'images' && images[x.g] ? '' : AS.ICONES[x.g]) : (apparence === 'images' && images[x.g] ? '' : AS.ICONES[x.g]) }}<template v-if="x.n > 1">×{{ x.n }}</template></span>
+            <span v-if="!ligne.pieces.length" class="rien">aucune</span>
           </div>
           <div class="verif" v-if="phase === 'fin' && verif" :class="verif.ok ? 'ok' : 'ko'">{{ verif.texte }}</div>
           <div class="actions">
@@ -369,7 +376,8 @@
           <div class="combat-vs">VS</div>
         </div>
         <div class="combat-issue">{{ scene.etape === 'issue' ? scene.issue : '…' }}</div>
-        <div class="combat-aide">Touche pour continuer</div>
+        <button class="btn principal combat-continuer" v-if="scene.etape === 'issue'" @click.stop="sceneSuivante">Continuer</button>
+        <div class="combat-aide" v-else>Touche pour voir le résultat</div>
       </div>
     </div>
 
@@ -394,8 +402,6 @@
     const CLE_SAUVEGARDE = 'assaut-sauvegarde';
     const CLE_PRIVE = 'assaut-prive';      // à deux : MON armée, qui ne quitte jamais ce téléphone
     const DELAI_ORDINATEUR = 750;
-    const DUREE_ISSUE = 1600;                   // ms : le résultat du combat reste affiché
-    const DUREE_COMBAT = 40 + 650 + 700 + DUREE_ISSUE; // durée totale de la scène de combat (≈ 3 s)
     const JEU_RESEAU = 'as';
     const DELAI_SILENCE = 15000;
     const DELAI_ANNONCE = 5000;
@@ -699,9 +705,15 @@
           }
           return res;
         },
-        restantsAdverses: function() {
-          var adv = AS.autre(this.monC), t = AS.ARMEES[this.modePartie], morts = (this.vue && this.vue.morts[adv]) || {};
-          return AS.GRADES.filter(g => t[g]).map(g => ({ g: g, n: t[g] - (morts[g] || 0) }));
+        // Pièces sorties du plateau, pour les deux camps (ce que j'ai pris, ce qu'on m'a pris)
+        piecesPrises: function() {
+          var adv = AS.autre(this.monC), morts = (this.vue && this.vue.morts) || { A: {}, B: {} };
+          var liste = (c) => AS.GRADES.filter(g => (morts[c] || {})[g]).map(g => ({ g: g, n: morts[c][g] }));
+          var lui = this.role ? this.nomAdversaire : 'L\'ordinateur';
+          return [
+            { cle: 'mes-prises', titre: '🎯 Tu as pris :', c: adv, pieces: liste(adv) },
+            { cle: 'ses-prises', titre: '💀 ' + lui + ' a pris :', c: this.monC, pieces: liste(this.monC) }
+          ];
         },
         texteFin: function() {
           var f = this.fin;
@@ -1017,10 +1029,12 @@
           if (c) this.raconterCombat(c); else this.son('toc');
           if (!partie.fin) AS.verifierBlocage(partie);
           this.publierSolo();
-          if (!partie.fin) { clearTimeout(this._timerIA); this._timerIA = setTimeout(() => this.coupOrdinateur(), c ? DUREE_COMBAT + 300 : DELAI_ORDINATEUR); }
+          if (!partie.fin) { clearTimeout(this._timerIA); this._timerIA = setTimeout(() => this.coupOrdinateur(), DELAI_ORDINATEUR); }
         },
         coupOrdinateur: function() {
           if (this.role || !partie || partie.fin || partie.tour === this.monC) return;
+          // On attend que le joueur ait fermé la scène de combat
+          if (this.scene || this.animEnCours) { clearTimeout(this._timerIA); this._timerIA = setTimeout(() => this.coupOrdinateur(), 400); return; }
           var adv = partie.tour;
           var m = AS.choisirCoup(AS.vue(partie, adv), adv);
           if (!m) { partie.fin = { gagnant: this.monC, raison: 'bloque' }; return this.publierSolo(); }
@@ -1122,14 +1136,14 @@
                 s.etape = 'issue';
                 if (s.gagneMoi) { this.son('zone', true); this.vibre(40); }
                 else { this.son('toc'); this.vibre(s.gagneMoi === false ? [80, 40, 80] : 50); }
-                t(() => this.sceneSuivante(), DUREE_ISSUE);
+                // On laisse le résultat affiché jusqu'au bouton « Continuer » (le temps de mémoriser)
               }, 700);
             }, 650); }, 40);
           });
         },
+        // Toucher la scène avant la fin : on passe directement au résultat (la fermeture se fait par « Continuer »)
         passerScene: function() {
-          if (this.scene && this.scene.etape !== 'issue') { clearTimeout(this._timerScene); this.scene.etape = 'issue'; this._timerScene = setTimeout(() => this.sceneSuivante(), 700); return; }
-          this.sceneSuivante();
+          if (this.scene && this.scene.etape !== 'issue') { clearTimeout(this._timerScene); this.scene.etape = 'issue'; }
         },
         abandonner: function() {
           if (!confirm('Abandonner la partie ?')) return;
