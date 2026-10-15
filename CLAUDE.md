@@ -112,8 +112,8 @@ Backgammon : `bg-sauvegarde`, `bg-dernier-salon`.
 - Option « garder à l'écran les pièces adverses révélées » : **désactivée par défaut** (retenir fait partie du jeu).
 - Apparence des pièces (par téléphone) : Symboles (émojis), Chiffres, ou **Mes images** : le joueur choisit lui-même une image
   par grade (photo de ses propres pièces), gardée seulement dans `assaut-images` sur son téléphone. Ne jamais mettre
-  d'illustrations officielles dans le dépôt. Couleur de ses pièces au choix (par téléphone) ; l'adversaire est affiché
-  en rouge, ou en bleu si ma couleur est rouge, orange ou rose.
+  d'illustrations officielles dans le dépôt. Couleur de ses pièces au choix (par téléphone) : bleu ou rouge,
+  l'adversaire est affiché dans l'autre couleur.
 - Solo contre l'ordinateur : il ne triche pas (il ne voit que ce qu'un joueur verrait).
 - À deux : la composition de chaque joueur ne quitte jamais son téléphone (`assaut-prive`). L'état public relayé par l'hôte
   ne contient que les positions, les grades révélés et le journal des coups. Au départ, chacun envoie une empreinte

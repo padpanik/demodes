@@ -414,13 +414,8 @@
     if (!ACCES.memorise()) location.replace('index.html');
 
     const CLE_SAUVEGARDE = 'assaut-sauvegarde';
-    // Couleurs possibles pour ses pièces (l'adversaire prend rouge, ou bleu si ma couleur est déjà dans les rouges)
-    const COULEURS = [
-      { id: 'bleu', nom: 'Bleu', v: '#2f5f9e' }, { id: 'rouge', nom: 'Rouge', v: '#b5422f' },
-      { id: 'vert', nom: 'Vert', v: '#2e7d4f' }, { id: 'violet', nom: 'Violet', v: '#6a3d9a' },
-      { id: 'orange', nom: 'Orange', v: '#c76a12' }, { id: 'rose', nom: 'Rose', v: '#b0407a' },
-      { id: 'turquoise', nom: 'Turquoise', v: '#1f8a8a' }, { id: 'noir', nom: 'Noir', v: '#2b2b2b' }
-    ];
+    // Couleur de ses pièces : bleu ou rouge (l'adversaire prend l'autre)
+    const COULEURS = [{ id: 'bleu', nom: 'Bleu', v: '#2f5f9e' }, { id: 'rouge', nom: 'Rouge', v: '#b5422f' }];
     const CLE_PRIVE = 'assaut-prive';      // à deux : MON armée, qui ne quitte jamais ce téléphone
     const DELAI_ORDINATEUR = 750;
     const JEU_RESEAU = 'as';
@@ -824,7 +819,7 @@
         // Couleur affichée d'un camp : la mienne pour mon camp, une couleur bien distincte pour l'adversaire
         couleurCamp: function(c) {
           var moi = COULEURS.find(x => x.id === this.maCouleur) || COULEURS[0];
-          var adv = ['rouge', 'orange', 'rose'].indexOf(moi.id) !== -1 ? COULEURS[0] : COULEURS[1];
+          var adv = moi.id === 'rouge' ? COULEURS[0] : COULEURS[1];
           return c === this.monC ? moi.v : adv.v;
         },
         nom: function(g) { return AS.NOMS[g] + (typeof g === 'number' ? ' (' + this.chiffre(g) + ')' : ''); },
