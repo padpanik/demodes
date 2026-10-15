@@ -68,6 +68,12 @@
     .restants .titre { background: none; color: #6b7a86; font-weight: 600; }
     .actions { display: flex; gap: 8px; margin-top: 6px; }
     .actions .btn { padding: 11px 6px; font-size: 0.95rem; }
+    .reserve { display: flex; flex-wrap: wrap; gap: 5px; justify-content: center; margin: 6px 0 2px; }
+    .reserve-piece { display: flex; align-items: center; gap: 3px; border: 1.5px solid #c9d2d9; background: #fff; border-radius: 9px; padding: 4px 7px; font: inherit; font-size: 0.82em; font-weight: 700; color: #1d2b36; cursor: pointer; }
+    .reserve-piece .sym { font-size: 15px; }
+    .reserve-piece.choisie { border-color: #2f5f9e; background: #e4f0fb; box-shadow: 0 0 0 2px #2f5f9e; }
+    .reserve-piece.retour { border-style: dashed; color: #b04a4a; }
+    .actions .btn:disabled { opacity: 0.45; }
     .dispositions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; align-items: center; font-size: 0.85em; color: #6b7a86; }
     .panneau-vide { text-align: center; padding: 40px 16px; color: #5b6b78; }
     .panneau-vide .grand { font-size: 2.5em; margin-bottom: 8px; }
@@ -260,10 +266,18 @@
 
         <!-- Placement -->
         <template v-if="phase === 'placement'">
+          <!-- Réserve : les pièces encore à poser -->
+          <div class="reserve" v-if="!jeSuisPret && (reserveTotal || selection !== null)">
+            <button v-for="x in reserve" :key="x.g" v-if="x.n" class="reserve-piece" :class="{ choisie: choixReserve === x.g }" @click="choisirReserve(x.g)">
+              <span class="sym">{{ AS.ICONES[x.g] }}</span><span class="txt">{{ typeof x.g === 'number' ? chiffre(x.g) : '' }}×{{ x.n }}</span>
+            </button>
+            <button v-if="selection !== null" class="reserve-piece retour" @click="retirerSelection">↩ Retirer</button>
+          </div>
           <div class="actions" v-if="!jeSuisPret">
-            <button class="btn" @click="placerAuHasard">🎲 Hasard</button>
-            <button class="btn" @click="enregistrerDisposition">💾 Garder</button>
-            <button class="btn principal" @click="commencer">Prêt ✓</button>
+            <button class="btn" @click="placerAuHasard">🎲 {{ reserveTotal && placement.length ? 'Compléter' : 'Hasard' }}</button>
+            <button class="btn" @click="viderPlacement" :disabled="!placement.length">🧹 Vider</button>
+            <button class="btn" @click="enregistrerDisposition" :disabled="reserveTotal > 0" aria-label="Garder cette disposition">💾</button>
+            <button class="btn principal" @click="commencer" :disabled="reserveTotal > 0">Prêt ✓</button>
           </div>
           <div class="dispositions" v-if="!jeSuisPret && dispositions[modePartie].length">
             Mes dispositions :
@@ -497,6 +511,7 @@
         placement: [],          // ma disposition [{ pos, r }] (l'indice est l'identifiant de la pièce)
         placementIA: [],
         selection: null,
+        choixReserve: null,     // placement : grade choisi dans la réserve
         vue: null,              // état affiché : mes pièces avec leur grade, celles d'en face cachées
         revele: {},
         combats: [],
@@ -561,6 +576,13 @@
             return { pseudo: x, c: couleurDe(p, x) || (x === p.ordre[0] ? 'A' : 'B'), score: p.scores[x] || 0, connecte: x === this.moi || !j || j.connecte !== false };
           });
         },
+        // Pièces encore à poser (armée complète moins celles déjà sur le plateau)
+        reserve: function() {
+          var t = Object.assign({}, AS.ARMEES[this.modePartie]);
+          this.placement.forEach(x => { t[x.r] = (t[x.r] || 0) - 1; });
+          return AS.GRADES.filter(g => AS.ARMEES[this.modePartie][g]).map(g => ({ g: g, n: Math.max(0, t[g] || 0) }));
+        },
+        reserveTotal: function() { return this.reserve.reduce((s, x) => s + x.n, 0); },
         jeSuisPret: function() { return !!(this.role && this.pub && this.pub.phase === 'placement' && this.pub.prets[this.monC]); },
         combatEnAttente: function() { return !!(this.role && this.pub && this.pub.combat && this.pub.combat.attente); },
         monTour: function() {
@@ -616,8 +638,10 @@
           if (this.phase === 'placement') {
             if (this.jeSuisPret) return 'Prêt ! En attente de ' + this.nomAdversaire + '…';
             var att = this.role && this.pub && this.pub.prets[AS.autre(this.monC)] ? ' (' + this.nomAdversaire + ' est prêt)' : '';
-            return (this.selection !== null ? (this.modePartie === 'rapide' ? 'Touche une autre pièce, ou une case libre de ta zone.' : 'Touche une autre pièce pour les échanger.')
-                                            : 'Place ton armée : touche deux pièces pour les échanger.') + att;
+            if (this.choixReserve !== null) return 'Touche une case de ta zone pour y poser : ' + this.nom(this.choixReserve) + '.' + att;
+            if (this.selection !== null) return 'Touche une autre pièce pour les échanger, une case libre pour la déplacer, ou « Retirer ».' + att;
+            if (this.reserveTotal) return 'Choisis une pièce dans la réserve (' + this.reserveTotal + ' à poser), puis sa case.' + att;
+            return 'Ton armée est en place : touche deux pièces pour les échanger, puis « Prêt ».' + att;
           }
           if (this.phase === 'fin') return 'Partie terminée : toutes les pièces sont dévoilées.';
           if (this.combatEnAttente) return '⚔️ Combat en cours…';
@@ -779,9 +803,36 @@
           this.onglet = 'play';
           this.sauvegarder();
         },
+        // Hasard : armée complète au hasard ; si le placement est commencé, on complète seulement
         placerAuHasard: function() {
           if (this.jeSuisPret) return;
-          this.placement = AS.placementAleatoire(this.modePartie, this.monC, Math.random() < 0.7);
+          if (this.placement.length && this.reserveTotal) {
+            var libres = AS.melanger(AS.zone(this.monC).filter(i => !this.placement.some(x => x.pos === i)));
+            var aPoser = [];
+            this.reserve.forEach(x => { for (var k = 0; k < x.n; k++) aPoser.push(x.g); });
+            AS.melanger(aPoser).forEach((g, k) => this.placement.push({ pos: libres[k], r: g }));
+          } else {
+            this.placement = AS.placementAleatoire(this.modePartie, this.monC, Math.random() < 0.7);
+          }
+          this.selection = null;
+          this.choixReserve = null;
+          this.son('toc');
+          this.memoriserPlacement();
+        },
+        viderPlacement: function() {
+          if (this.jeSuisPret) return;
+          this.placement = [];
+          this.selection = null;
+          this.choixReserve = this.reserve[0].g;
+          this.memoriserPlacement();
+        },
+        choisirReserve: function(g) {
+          this.selection = null;
+          this.choixReserve = this.choixReserve === g ? null : g;
+        },
+        retirerSelection: function() {
+          var k = this.placement.findIndex(x => x.pos === this.selection);
+          if (k !== -1) this.placement.splice(k, 1);
           this.selection = null;
           this.son('toc');
           this.memoriserPlacement();
@@ -789,6 +840,17 @@
         toucherPlacement: function(i) {
           if (this.jeSuisPret) return;
           var k = this.placement.findIndex(x => x.pos === i);
+          // Pose depuis la réserve (sur une case occupée : la pièce qui y était retourne en réserve)
+          if (this.choixReserve !== null) {
+            if (AS.zone(this.monC).indexOf(i) === -1) return this.afficherMessage('Pose tes pièces dans tes 4 rangées.');
+            var g = this.choixReserve;
+            if (k === -1) this.placement.push({ pos: i, r: g });
+            else this.$set(this.placement, k, { pos: i, r: g });
+            this.son('toc');
+            // On garde le même grade tant qu'il en reste, sinon on passe au suivant
+            if (!this.reserve.find(x => x.g === g).n) { var suiv = this.reserve.find(x => x.n); this.choixReserve = suiv ? suiv.g : null; }
+            return this.memoriserPlacement();
+          }
           if (this.selection === null) { if (k !== -1) this.selection = i; return; }
           var s = this.placement.findIndex(x => x.pos === this.selection);
           if (k !== -1 && k !== s) {
@@ -826,7 +888,9 @@
           ecrireStockage('assaut-dispositions', this.dispositions);
         },
         commencer: function() {
+          if (this.reserveTotal) return this.afficherMessage('Il reste ' + this.reserveTotal + ' pièce' + (this.reserveTotal > 1 ? 's' : '') + ' à poser.');
           this.selection = null;
+          this.choixReserve = null;
           if (this.role) {
             // À deux : on envoie seulement les positions et l'empreinte ; les grades restent ici
             var p = this.prive;
