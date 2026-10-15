@@ -440,7 +440,7 @@
               <div class="flotte-etat">
                 <div v-for="n in maFlotteEtat" :key="n.id" class="nav" :class="{ coule: n.coule }" :title="n.nom"><svg class="mini-nav" :view-box.camel="'0 0 ' + n.t * 100 + ' 100'" :style="{ width: n.t * 12 + 'px' }" v-html="dessin(n.id, true)"></svg><span v-if="n.touches && !n.coule" class="impacts">{{ '●'.repeat(n.touches) }}</span></div>
               </div>
-              <div class="verif" v-if="phase === 'fin' && verif" :class="verif.ok ? 'ok' : 'ko'">{{ verif.texte }}</div>
+              <div class="verif ko" v-if="phase === 'fin' && verif && !verif.ok">{{ verif.texte }}</div>
               <button class="btn" v-if="phase === 'jeu'" @click="abandonner">Abandonner</button>
               <button class="btn principal" v-if="phase === 'fin'" @click="rejouer">{{ role ? 'Partie suivante' : 'Rejouer' }}</button>
               <button class="btn" v-if="phase === 'fin'" @click="finMasquee = false">Résultat</button>
@@ -456,7 +456,7 @@
       <div class="fin-box">
         <h2>{{ fin.gagnant === monC ? '🏆 Victoire !' : '🌊 Défaite' }}</h2>
         <p>{{ texteFin }}</p>
-        <p class="verif" v-if="verif" :class="verif.ok ? 'ok' : 'ko'">{{ verif.texte }}</p>
+        <p class="verif ko" v-if="verif && !verif.ok">{{ verif.texte }}</p>
         <p class="sys-msg" v-if="!role">{{ statsTexte }}</p>
         <button @click="finMasquee = true">Voir les deux mers</button>
         <button class="principal" @click="rejouer">{{ role ? 'Partie suivante' : 'Rejouer' }}</button>
@@ -1262,9 +1262,15 @@
             } else s.d++;
             ecrireStockage('bataille-stats', this.stats);
             this.ajouterLog(gagne ? 'Victoire !' : 'Défaite.', true);
-            setTimeout(() => this.sonFin(gagne), 900);
+            this.sonFinApresCoule(gagne, partie.fin.raison);
           }
           this.sauvegarder();
+        },
+        // Fin par le dernier navire coulé : on laisse l'explosion et la sirène se terminer avant la musique de fin
+        sonFinApresCoule: function(gagne, raison) {
+          var delai = raison !== 'flotte' ? 300 : tamponsSons.sirene ? 1500 + tamponsSons.sirene.duration * 1000 + 200 : 1800;
+          clearTimeout(this._timerSonFin);
+          this._timerSonFin = setTimeout(() => this.sonFin(gagne), delai);
         },
         sonFin: function(gagne) {
           if (gagne) { this.son('victoire'); this.vibre([100, 60, 100, 60, 250]); } else this.vibre([200, 100, 200]);
@@ -1310,7 +1316,7 @@
             this.fin = pub.fin;
             this.finMasquee = false;
             this.ajouterLog(pub.fin.gagnant === c ? 'Victoire !' : 'Défaite.', true);
-            setTimeout(() => this.sonFin(pub.fin.gagnant === c), 900);
+            this.sonFinApresCoule(pub.fin.gagnant === c, pub.fin.raison);
           }
           if (!pub.fin) this.fin = null;
           this.sauvegarder();
