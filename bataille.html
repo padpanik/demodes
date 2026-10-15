@@ -143,7 +143,7 @@
     .style-plateau .c-pont { fill: #c5ced5; stroke: #1d2b36; stroke-width: 3; }
     .style-plateau .c-detail { fill: #f2b134; stroke: #1d2b36; stroke-width: 4; }
     .style-plateau .c-sombre { fill: #1d2b36; }
-    .style-plateau .c-tourelle { fill: #e74c3c; stroke: #1d2b36; stroke-width: 4; }
+    .style-plateau .c-tourelle { fill: #7d8d99; stroke: #1d2b36; stroke-width: 4; }   /* pas de rond rouge : ça ressemblerait à un touché */
     .style-plateau .c-canon { stroke: #1d2b36; stroke-width: 6; stroke-linecap: round; fill: none; }
     .style-plateau .c-piste { stroke: #fff; stroke-width: 4; stroke-dasharray: 16 12; fill: none; }
     .style-plateau .c-trait { stroke: #1d2b36; stroke-width: 3; fill: none; }
@@ -163,7 +163,7 @@
     .titre-mer { display: flex; justify-content: space-between; align-items: baseline; font-size: 0.8em; font-weight: 700; color: #33566e; margin: 2px 2px 2px 18px; }
     .titre-mer small { font-weight: 600; color: #6b8698; }
     .bas { display: flex; gap: 10px; margin-top: 8px; align-items: flex-start; }
-    .bas .mer { width: 47%; flex-shrink: 0; }
+    .bas .mer { width: 46%; flex-shrink: 0; margin-left: 16px; }   /* bord gauche aligné sur celui de la grande mer */
     .bas .lettres { display: none; }
     .bas .chiffres { display: none; }
     .panneau { flex: 1; min-width: 0; font-size: 0.78em; color: #33566e; }
@@ -917,13 +917,12 @@
             var att = this.role && this.pub && this.pub.prets[BN.autre(this.monC)] ? ' (' + this.nomAdversaire + ' est prêt)' : '';
             var nom = (id) => BN.FLOTTE[id].nom.toLowerCase();
             if (this.selNav !== null && this.flotte[this.selNav]) {
-              if (this.montrerConflits && this.conflits.some(k => k.a === this.selNav || k.b === this.selNav)) return 'Déplace le ' + nom(this.selNav) + ' (en rouge), puis ✓.' + att;
-              return 'Glisse le ' + nom(this.selNav) + ' ou touche une case pour le déplacer ; ↻ pour pivoter, ✓ pour valider.' + att;
+              if (this.montrerConflits && this.conflits.some(k => k.a === this.selNav || k.b === this.selNav)) return 'Le ' + nom(this.selNav) + ' (en rouge) gêne : fais-le glisser ailleurs.' + att;
+              return 'Fais glisser le ' + nom(this.selNav) + ' à sa place ; ↻ pour pivoter, touche ailleurs pour valider.' + att;
             }
-            if (this.montrerConflits && this.conflits.length) return 'Touche un navire en rouge pour le déplacer, puis valide à nouveau.' + att;
-            if (this.selNav !== null) return 'Touche la mer pour y poser le ' + nom(this.selNav) + '.' + att;
-            if (this.reserve.length) return 'Touche la mer pour y poser le ' + nom(this.reserve[0].id) + ', ou choisis un autre navire dessous.' + att;
-            return 'Flotte en place : touche un navire pour le reprendre, sinon « Prêt ».' + att;
+            if (this.montrerConflits && this.conflits.length) return 'Fais glisser les navires en rouge, puis valide à nouveau.' + att;
+            if (this.reserve.length) return 'Touche un navire sous la mer : il arrive au milieu, fais-le glisser à sa place.' + att;
+            return 'Flotte en place : fais glisser un navire pour le déplacer, sinon « Prêt ».' + att;
           }
           if (this.phase === 'fin') return 'Partie terminée : les deux flottes sont dévoilées.';
           if (this.tirEnAttente) return this.pub.tir.c === this.monC ? '💥 Tir en ' + BN.nomCase(this.pub.tir.i) + '…' : '💥 ' + this.nomAdversaire + ' tire en ' + BN.nomCase(this.pub.tir.i) + '…';
@@ -1049,10 +1048,12 @@
           this.memoriserPlacement();
         },
         // ---- Placement libre : le navire choisi reste choisi (boutons ↻ et ✓ devant sa proue) jusqu'à ce qu'on le valide ----
+        // Navire pris dans la réserve : il arrive au milieu de la mer, choisi, prêt à être glissé à sa place
         choisirNavire: function(id) {
           if (this.jeSuisPret || id === this.selNav) return;
           if (!this.validerNavire(true)) return;          // le navire en cours doit d'abord être validé
           this.selNav = id;
+          this.poser(id, 44, true);
         },
         retirerNavire: function() {
           if (this.selNav === null) return;
@@ -1107,18 +1108,28 @@
           var k = Math.floor((e.clientX - r.left) / r.width * 10), l = Math.floor((e.clientY - r.top) / r.height * 10);
           return { k: Math.max(0, Math.min(9, k)), l: Math.max(0, Math.min(9, l)) };
         },
-        // Doigt posé sur la mer : sur le navire choisi, on le fait glisser ; ailleurs, c'est un toucher
+        // Navire (le plus haut) sur la case i, en préférant le navire choisi
+        navireSur: function(i) {
+          var ici = this.flotte.map((n, k) => n && BN.casesNavire(this.flotte, k).indexOf(i) !== -1 ? k : -1).filter(k => k !== -1);
+          if (!ici.length) return null;
+          return ici.indexOf(this.selNav) !== -1 ? this.selNav : ici[ici.length - 1];
+        },
+        // Doigt posé sur la mer : un navire se fait glisser (il devient le navire choisi) ;
+        // toucher ailleurs tente de valider le navire choisi et, si c'est bon, le désélectionne.
         appui: function(e) {
           if (this.jeSuisPret || e.button > 0) return;
-          var c = this.caseSous(e), i = c.l * 10 + c.k, id = this.selNav, n = id !== null ? this.flotte[id] : null;
-          if (n && BN.casesNavire(this.flotte, id).indexOf(i) !== -1) {
-            this.glissement = { id: id, c0: c, pos0: n.pos, bouge: false };
-            try { e.currentTarget.setPointerCapture(e.pointerId); } catch (x) {}
-          } else this.glissement = { toucher: i };
+          var c = this.caseSous(e), id = this.navireSur(c.l * 10 + c.k);
+          if (id === null) { this.glissement = { dehors: true }; return; }
+          if (id !== this.selNav) {
+            if (!this.validerNavire(true)) { this.glissement = null; return; }   // l'autre navire gêne encore : il reste choisi
+            this.selNav = id;
+          }
+          this.glissement = { id: id, c0: c, pos0: this.flotte[id].pos, bouge: false };
+          try { e.currentTarget.setPointerCapture(e.pointerId); } catch (x) {}
         },
         glisse: function(e) {
           var g = this.glissement;
-          if (!g || g.toucher !== undefined) return;
+          if (!g || g.dehors) return;
           var c = this.caseSous(e), n = this.flotte[g.id], t = BN.FLOTTE[g.id].t;
           var l = Math.floor(g.pos0 / 10) + c.l - g.c0.l, k = g.pos0 % 10 + c.k - g.c0.k;
           l = Math.max(0, Math.min(l, n.h ? 9 : 10 - t)); k = Math.max(0, Math.min(k, n.h ? 10 - t : 9));
@@ -1129,17 +1140,8 @@
           var g = this.glissement;
           this.glissement = null;
           if (!g) return;
-          if (g.toucher !== undefined) return this.toucherPlacement(g.toucher);
+          if (g.dehors) { if (this.selNav !== null) this.validerNavire(); return; }
           if (g.bouge) { this.son('toc'); this.memoriserPlacement(); }
-        },
-        toucherPlacement: function(i) {
-          if (this.jeSuisPret) return;
-          var id = this.selNav;
-          if (id !== null) return this.poser(id, i, this.flotte[id] ? this.flotte[id].h : true);   // le navire choisi vient ici
-          // Rien de choisi : toucher un navire le reprend ; toucher l'eau y pose le prochain navire de la réserve
-          var ici = this.flotte.map((n, k) => n && BN.casesNavire(this.flotte, k).indexOf(i) !== -1 ? k : -1).filter(k => k !== -1);
-          if (ici.length) { this.selNav = ici[ici.length - 1]; return; }
-          if (this.reserve.length) { this.selNav = this.reserve[0].id; this.poser(this.selNav, i, true); }
         },
         memoriserPlacement: function() {
           if (this.role && this.prive) { this.prive.flotte = copie(this.flotte); this.ecrirePrive(); }

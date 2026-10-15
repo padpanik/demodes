@@ -130,12 +130,13 @@ Bataille navale : `bataille-sauvegarde`, `bataille-prive` (ma flotte en salon), 
 - Règles par défaut : navires séparés d'au moins une case (même en diagonale), un tir chacun son tour.
   Options de l'hôte (ou du joueur seul) : « les navires peuvent se toucher », « rejouer tant qu'on touche ».
 - Placement **libre** : on part d'une mer vide, réserve de navires sous la mer, Hasard / Compléter, Vider.
-  Toucher l'eau y pose le prochain navire (centré sur la case) ; le navire posé **reste choisi** avec deux boutons
-  devant sa proue, ↻ pivoter et ✓ valider, jusqu'à sa validation. On le déplace en le faisant glisser au doigt ou en
-  touchant une autre case. Aucune contrainte pendant la pose : ✓ vérifie ce navire, « Prêt » toute la flotte ; les navires
-  en cause clignotent alors en rouge. Toucher un navire validé le reprend. Pour tirer : toucher une case pour viser, la retoucher pour faire feu.
+  Toucher un navire de la réserve le pose **au milieu de la mer**, choisi, avec deux boutons devant sa proue (↻ pivoter,
+  ✓ valider). On ne le déplace **qu'en le faisant glisser** au doigt ; toucher ailleurs (ou ✓) tente de le valider et,
+  si c'est bon, le désélectionne. Glisser un navire déjà validé le reprend. Aucune contrainte pendant la pose : la validation
+  vérifie ce navire, « Prêt » toute la flotte ; les navires en cause clignotent alors en rouge. Pour tirer : toucher une case pour viser, la retoucher pour faire feu.
 - Apparence (par téléphone, `bataille-style`) : **Réaliste** (navires d'acier vus du dessus, mer profonde avec reflets,
-  brume sur la mer adverse, feu et fumée) ou **Jeu de société** (couleurs franches, contours nets, fiches blanches et rouges).
+  brume sur la mer adverse, feu et fumée) ou **Jeu de société** (couleurs franches, contours nets, fiches blanches et rouges ;
+  pas de rond rouge sur les navires, pour ne pas confondre avec un touché). La petite mer est alignée sur la grande.
   Navires dessinés en SVG par le code (`DESSINS`), une silhouette par type, proue à droite (en haut si vertical).
 - Solo : l'ordinateur ne voit que ses propres tirs (comptage des placements possibles), niveaux Facile / Normal / Fort.
 - À deux : la flotte ne quitte jamais le téléphone (`bataille-prive`) ; empreinte SHA-256 (flotte + sel) au départ,
