@@ -65,6 +65,10 @@
     .coque.v.fin { bottom: 8%; border-radius: 12% 12% 30% 30%; }
     .coque.milieu::after { content: ''; position: absolute; left: 30%; right: 30%; top: 30%; bottom: 30%; border-radius: 3px; background: rgba(40, 55, 65, 0.45); }
     .coque.choisi { background: linear-gradient(180deg, #ffe08a, #e0a526); }
+    .coque.conflit { background: linear-gradient(180deg, #ff8a80, #c62828); animation: alerte 0.9s ease-in-out infinite alternate; }
+    .coque.choisi.conflit { background: linear-gradient(180deg, #ffcc80, #e65100); }
+    .coque.double { background: repeating-linear-gradient(135deg, #c62828 0 4px, #ffcdd2 4px 8px); }
+    @keyframes alerte { from { opacity: 1; } to { opacity: 0.55; } }
     .coque.adverse { background: linear-gradient(180deg, #8a5a4a, #4e2e25); }
     .coque.cache { background: rgba(200, 215, 225, 0.35); box-shadow: inset 0 0 0 1.5px rgba(255,255,255,0.6); }
     .coque.coulee { background: linear-gradient(180deg, #6b4438, #3a211b); animation: sombrer 0.9s ease-out; }
@@ -398,8 +402,49 @@
         .then(b => Array.from(new Uint8Array(b)).map(x => x.toString(16).padStart(2, '0')).join(''));
     }
 
-    // ---------- Sons de la mer (fabriqués par le code) ----------
-    Sons.plouf = function(ctx, dest, t) {
+    // ---------- Sons de la mer ----------
+    // Enregistrements libres de droits (CC0, voir sons/LICENCES.txt), chargés au premier toucher ;
+    // tant qu'ils ne sont pas prêts (ou hors ligne), des sons fabriqués par le code les remplacent.
+    const FICHIERS_SONS = { plouf: 'sons/plouf.mp3', boum: 'sons/touche.mp3', coule: 'sons/coule.mp3' };
+    const tamponsSons = {};
+    let donneesSons = null;
+    // Téléchargement tout de suite (simples fichiers), décodage dès que l'audio est débloqué par un toucher
+    function telechargerSons() {
+      if (donneesSons) return donneesSons;
+      donneesSons = Promise.all(Object.keys(FICHIERS_SONS).map(nom =>
+        fetch(FICHIERS_SONS[nom]).then(r => r.ok ? r.arrayBuffer() : null).catch(() => null).then(d => [nom, d])));
+      return donneesSons;
+    }
+    function decoderSons() {
+      var ctx = Sons.ctx;
+      if (!ctx || decoderSons.fait) return;
+      decoderSons.fait = true;
+      telechargerSons().then(liste => liste.forEach(([nom, d]) => {
+        if (!d) return;
+        ctx.decodeAudioData(d.slice(0), b => { tamponsSons[nom] = b; }, () => {});
+      }));
+    }
+    telechargerSons();
+    document.addEventListener('pointerdown', () => setTimeout(decoderSons, 0), true);
+    function jouerTampon(ctx, dest, t, nom, volume) {
+      var b = tamponsSons[nom];
+      if (!b) return false;
+      var src = ctx.createBufferSource(); src.buffer = b;
+      var g = ctx.createGain(); g.gain.value = volume || 1;
+      src.connect(g); g.connect(dest); src.start(t);
+      return true;
+    }
+    // (Sons.jouer amplifie déjà ×1,4 : les enregistrements, normalisés, sont joués un peu plus bas)
+    Sons.plouf = function(ctx, dest, t) { if (!jouerTampon(ctx, dest, t, 'plouf', 0.6)) this.ploufCode(ctx, dest, t); };
+    Sons.boum = function(ctx, dest, t) { if (!jouerTampon(ctx, dest, t, 'boum', 0.65)) this.boumCode(ctx, dest, t); };
+    Sons.coule = function(ctx, dest, t) {
+      // Grosse explosion, puis le navire qui s'enfonce dans l'eau
+      if (jouerTampon(ctx, dest, t, 'coule', 0.7)) { jouerTampon(ctx, dest, t + 1.0, 'plouf', 0.3); return; }
+      this.boumCode(ctx, dest, t);
+      this.naufrage(ctx, dest, t);
+    };
+    // Sons de secours, fabriqués par le code
+    Sons.ploufCode = function(ctx, dest, t) {
       var src = ctx.createBufferSource(); src.buffer = this.bruit(ctx); src.loop = true;
       var f = ctx.createBiquadFilter(); f.type = 'lowpass';
       f.frequency.setValueAtTime(1800, t); f.frequency.exponentialRampToValueAtTime(220, t + 0.55);
@@ -411,7 +456,7 @@
       var g2 = ctx.createGain(); g2.gain.setValueAtTime(0.25, t); g2.gain.exponentialRampToValueAtTime(0.0001, t + 0.2);
       o.connect(g2); g2.connect(dest); o.start(t); o.stop(t + 0.22);
     };
-    Sons.boum = function(ctx, dest, t) {
+    Sons.boumCode = function(ctx, dest, t) {
       var src = ctx.createBufferSource(); src.buffer = this.bruit(ctx); src.loop = true;
       var f = ctx.createBiquadFilter(); f.type = 'lowpass';
       f.frequency.setValueAtTime(2400, t); f.frequency.exponentialRampToValueAtTime(140, t + 0.8);
@@ -423,9 +468,8 @@
       var g2 = ctx.createGain(); g2.gain.setValueAtTime(0.8, t); g2.gain.exponentialRampToValueAtTime(0.0001, t + 0.55);
       o.connect(g2); g2.connect(dest); o.start(t); o.stop(t + 0.6);
     };
-    Sons.coule = function(ctx, dest, t) {
-      this.boum(ctx, dest, t);
-      // Le navire sombre : une note grave qui descend, puis des bulles
+    // Le navire sombre : une note grave qui descend, puis des bulles
+    Sons.naufrage = function(ctx, dest, t) {
       var o = ctx.createOscillator(); o.type = 'triangle';
       o.frequency.setValueAtTime(330, t + 0.35); o.frequency.exponentialRampToValueAtTime(70, t + 1.4);
       var g = ctx.createGain(); g.gain.setValueAtTime(0.0001, t + 0.35); g.gain.exponentialRampToValueAtTime(0.3, t + 0.45); g.gain.exponentialRampToValueAtTime(0.0001, t + 1.45);
@@ -558,6 +602,7 @@
         flotte: [null, null, null, null, null],   // ma flotte [{ pos, h }] (null : encore dans la réserve)
         flotteIA: null,
         selNav: null,           // placement : navire choisi (dans la réserve ou déjà posé)
+        montrerConflits: false, // placement : après une validation refusée, les navires mal placés clignotent en rouge
         orientH: true,          // placement : orientation des navires posés depuis la réserve
         etat: null,             // { journal, tour, fin, n } : les tirs des deux camps
         vise: null,             // case visée sur la mer adverse (touchée une fois)
@@ -619,6 +664,7 @@
           });
         },
         reserve: function() { return BN.FLOTTE.filter(n => !this.flotte[n.id]); },
+        conflits: function() { return BN.conflits(this.flotte, this.collesPartie); },
         orientationAffichee: function() {
           var n = this.selNav !== null ? this.flotte[this.selNav] : null;
           return n ? n.h : this.orientH;
@@ -664,7 +710,12 @@
           return res;
         },
         celluleMoi: function() {
-          var res = [], coques = this.segments(this.flotte, null), recus = {}, coulees = {};
+          var res = [], coques = this.segments(this.flotte, null), recus = {}, coulees = {}, enConflit = [];
+          var couverture = {};
+          if (this.phase === 'placement' && this.montrerConflits) {
+            this.conflits.forEach(k => { enConflit.push(k.a, k.b); });
+            this.flotte.forEach((n, k) => { if (n) BN.casesNavire(this.flotte, k).forEach(x => { couverture[x] = (couverture[x] || 0) + 1; }); });
+          }
           var dernier = this.journal.filter(j => j.c !== this.monC).pop();
           this.journal.forEach(j => {
             if (j.c === this.monC) return;
@@ -677,6 +728,8 @@
               x.coque = Object.assign({}, coques[i]);
               if (coulees[i]) x.coque.coulee = true;
               if (this.phase === 'placement' && this.selNav === coques[i].id) x.coque.choisi = true;
+              if (this.phase === 'placement' && this.montrerConflits && enConflit.indexOf(coques[i].id) !== -1) x.coque.conflit = true;
+              if (couverture[i] > 1) x.coque.double = true;   // deux navires l'un sur l'autre
             }
             if (recus[i] === 'eau') x.marque = 'eau-tir';
             else if (recus[i]) x.marque = coulees[i] ? 'feu eteint' : 'feu';
@@ -710,10 +763,11 @@
           if (this.phase === 'placement') {
             if (this.jeSuisPret) return 'Prêt ! En attente de ' + this.nomAdversaire + '…';
             var att = this.role && this.pub && this.pub.prets[BN.autre(this.monC)] ? ' (' + this.nomAdversaire + ' est prêt)' : '';
+            if (this.montrerConflits && this.conflits.length) return 'Déplace les navires en rouge, puis valide à nouveau.' + att;
             if (this.selNav !== null && this.flotte[this.selNav]) return 'Touche une case pour déplacer le ' + BN.FLOTTE[this.selNav].nom.toLowerCase() + ', ou touche-le encore pour le tourner.' + att;
             if (this.selNav !== null) return 'Touche la case où mettre l\'avant du ' + BN.FLOTTE[this.selNav].nom.toLowerCase() + '.' + att;
             if (this.reserve.length) return 'Choisis un navire sous la mer, puis sa case.' + att;
-            return 'Ta flotte est en place : touche un navire pour le déplacer, puis « Prêt ».' + att;
+            return 'Place tes navires comme tu veux, puis « Prêt » : la grille est vérifiée à ce moment-là.' + att;
           }
           if (this.phase === 'fin') return 'Partie terminée : les deux flottes sont dévoilées.';
           if (this.tirEnAttente) return this.pub.tir.c === this.monC ? '💥 Tir en ' + BN.nomCase(this.pub.tir.i) + '…' : '💥 ' + this.nomAdversaire + ' tire en ' + BN.nomCase(this.pub.tir.i) + '…';
@@ -822,8 +876,9 @@
           this.visee = null;
           this.attente = false;
           this.annonce = null;
-          this.selNav = null;
-          this.flotte = BN.flotteAleatoire(this.collesPartie);
+          this.selNav = 0;
+          this.montrerConflits = false;
+          this.flotte = [null, null, null, null, null];   // on part d'une mer vide
           this.flotteIA = BN.flotteAleatoire(this.collesPartie);
           this.phase = 'placement';
           this.onglet = 'play';
@@ -841,6 +896,7 @@
           if (this.jeSuisPret) return;
           this.flotte = [null, null, null, null, null];
           this.selNav = 0;
+          this.montrerConflits = false;
           this.memoriserPlacement();
         },
         choisirNavire: function(id) { this.selNav = this.selNav === id ? null : id; },
@@ -850,15 +906,12 @@
           this.son('toc');
           this.memoriserPlacement();
         },
-        // Pose le navire id avec sa proue au plus près de la case i (recalé pour rester dans la mer)
+        // Pose le navire id avec sa proue au plus près de la case i (recalé pour rester dans la mer).
+        // Placement libre : aucune règle ici, tout est vérifié quand on valide (« Prêt »).
         poser: function(id, i, h) {
           var t = BN.FLOTTE[id].t, l = Math.floor(i / 10), k = i % 10;
           if (h) k = Math.min(k, 10 - t); else l = Math.min(l, 10 - t);
           var pos = l * 10 + k;
-          if (!BN.placeLibre(this.flotte, id, pos, h, this.collesPartie)) {
-            this.afficherMessage(this.collesPartie ? 'Ça chevauche un autre navire.' : 'Trop près d\'un autre navire : laisse une case d\'eau autour.');
-            return false;
-          }
           this.$set(this.flotte, id, { pos: pos, h: h });
           this.son('toc');
           this.memoriserPlacement();
@@ -872,11 +925,13 @@
         },
         toucherPlacement: function(i) {
           if (this.jeSuisPret) return;
-          var seg = this.segments(this.flotte, null)[i], id = this.selNav;
-          if (seg) {
+          var id = this.selNav;
+          // Navires sur cette case (plusieurs s'ils se chevauchent)
+          var ici = this.flotte.map((n, k) => n && BN.casesNavire(this.flotte, k).indexOf(i) !== -1 ? k : -1).filter(k => k !== -1);
+          if (ici.length && !(id !== null && !this.flotte[id])) {
             // Un navire déjà posé : on le choisit, ou on le tourne s'il l'était déjà
-            if (id === seg.id) return this.tourner();
-            this.selNav = seg.id;
+            if (ici.indexOf(id) !== -1) return this.tourner();
+            this.selNav = ici[ici.length - 1];
             return;
           }
           if (id === null) return;
@@ -892,7 +947,19 @@
         },
         commencer: function() {
           if (this.reserve.length) return this.afficherMessage('Il reste ' + this.reserve.length + ' navire' + (this.reserve.length > 1 ? 's' : '') + ' à placer.');
+          var pb = this.conflits;
+          if (pb.length) {
+            // Validation refusée : on montre les navires en cause
+            this.montrerConflits = true;
+            var nom = (k) => BN.FLOTTE[k].nom.toLowerCase();
+            var p0 = pb[0];
+            this.afficherMessage('Le ' + nom(p0.a) + ' et le ' + nom(p0.b) + (p0.type === 'chevauche' ? ' se chevauchent' : ' se touchent : laisse une case d\'eau autour') +
+                                 (pb.length > 1 ? ' (et ' + (pb.length - 1) + ' autre' + (pb.length > 2 ? 's' : '') + ' problème' + (pb.length > 2 ? 's' : '') + ').' : '.'));
+            this.vibre([60, 40, 60]);
+            return;
+          }
           if (BN.erreurFlotte(this.flotte, this.collesPartie)) return this.afficherMessage('Flotte mal placée.');
+          this.montrerConflits = false;
           this.selNav = null;
           if (this.role) {
             // À deux : on envoie seulement l'empreinte ; la flotte reste ici
@@ -1027,9 +1094,9 @@
           this.collesPartie = pub.colles;
           // Nouvelle manche : nouvelle flotte, au hasard pour commencer
           if (!this.prive || this.prive.partieId !== pub.partieId) {
-            this.prive = { partieId: pub.partieId, c: c, flotte: BN.flotteAleatoire(pub.colles), sel: null };
+            this.prive = { partieId: pub.partieId, c: c, flotte: [null, null, null, null, null], sel: null };
             this.ecrirePrive();
-            this.fin = null; this.verif = null; this.finMasquee = false; this.selNav = null; this.vise = null; this.visee = null; this.annonce = null;
+            this.fin = null; this.verif = null; this.finMasquee = false; this.selNav = 0; this.montrerConflits = false; this.vise = null; this.visee = null; this.annonce = null;
             this.ajouterLog('Nouvelle partie : place ta flotte.', true);
           }
           this.flotte = copie(this.prive.flotte);

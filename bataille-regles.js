@@ -58,6 +58,17 @@ var BN = (function () {
     }
     return null;
   }
+  // Placement libre : liste des problèmes entre navires posés (pour les montrer quand on valide)
+  // Renvoie [{ a, b, type: 'chevauche' | 'touche' }]
+  function conflits(flotte, colles) {
+    var cs = flotte.map((n, id) => n ? cases(n.pos, !!n.h, FLOTTE[id].t) : null), r = [];
+    for (var a = 0; a < cs.length; a++) for (var b = a + 1; b < cs.length; b++) {
+      if (!cs[a] || !cs[b]) continue;
+      if (cs[a].some(x => cs[b].indexOf(x) !== -1)) r.push({ a: a, b: b, type: 'chevauche' });
+      else if (!colles && cs[a].some(x => voisines(x).some(v => cs[b].indexOf(v) !== -1))) r.push({ a: a, b: b, type: 'touche' });
+    }
+    return r;
+  }
   // Le navire « id » peut-il aller en (pos, h) sans gêner les autres navires déjà posés ?
   function placeLibre(flotte, id, pos, h, colles) {
     var cs = cases(pos, h, FLOTTE[id].t);
@@ -183,7 +194,7 @@ var BN = (function () {
   }
 
   return { FLOTTE: FLOTTE, LETTRES: LETTRES, nomCase: nomCase, autre: autre, melanger: melanger, cases: cases, voisines: voisines,
-           casesNavire: casesNavire, erreurFlotte: erreurFlotte, placeLibre: placeLibre, flotteAleatoire: flotteAleatoire,
+           casesNavire: casesNavire, erreurFlotte: erreurFlotte, conflits: conflits, placeLibre: placeLibre, flotteAleatoire: flotteAleatoire,
            tirer: tirer, nouvellePartie: nouvellePartie, recusPar: recusPar, dejaTire: dejaTire, coulesContre: coulesContre,
            jouer: jouer, grilleTirs: grilleTirs, restants: restants, choisirTir: choisirTir, verifierReponses: verifierReponses };
 })();

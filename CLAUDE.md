@@ -28,6 +28,7 @@ Tout est en français : interface, commentaires du code, messages de commit, ré
 | `backgammon.html` + `backgammon-regles.js` | Backgammon à deux. Le moteur de règles est dans `backgammon-regles.js` (testable avec Node). |
 | `assaut.html` + `assaut-regles.js` | Assaut (stratégie à pièces cachées, version maison du genre « Stratego », sans le nom ni les visuels de la marque). Solo contre l'ordinateur, ou à deux (salon limité à 2, armées gardées sur chaque téléphone). Moteur + ordinateur dans `assaut-regles.js` (testable avec Node). |
 | `bataille.html` + `bataille-regles.js` | Bataille navale. Solo contre l'ordinateur (3 niveaux), ou à deux (salon limité à 2, flottes gardées sur chaque téléphone). Moteur + ordinateur dans `bataille-regles.js` (testable avec Node). |
+| `sons/` | Sons enregistrés de la Bataille navale (MP3, CC0) et leurs sources (`LICENCES.txt`). |
 | `sw.js` | Service worker (PWA) : nos fichiers en « réseau d'abord » avec `cache: 'no-cache'`, bibliothèques en cache. |
 | `manifest.webmanifest`, icônes | Installation comme application. |
 | `netlify.toml` | Inutilisé (essai d'hébergement abandonné). |
@@ -128,8 +129,9 @@ Bataille navale : `bataille-sauvegarde`, `bataille-prive` (ma flotte en salon), 
   Annonces : à l'eau, touché, coulé (avec le nom du navire).
 - Règles par défaut : navires séparés d'au moins une case (même en diagonale), un tir chacun son tour.
   Options de l'hôte (ou du joueur seul) : « les navires peuvent se toucher », « rejouer tant qu'on touche ».
-- Placement comme Assaut : flotte au hasard au départ, réserve de navires sous la mer, Hasard / Compléter, Vider ;
-  toucher un navire posé le choisit, le toucher encore le tourne. Pour tirer : toucher une case pour viser, la retoucher pour faire feu.
+- Placement **libre** : on part d'une mer vide, réserve de navires sous la mer, Hasard / Compléter, Vider ;
+  toucher un navire posé le choisit, le toucher encore le tourne. Aucune contrainte pendant la pose (chevauchements
+  possibles) : la grille n'est vérifiée qu'à « Prêt », et les navires en cause clignotent alors en rouge. Pour tirer : toucher une case pour viser, la retoucher pour faire feu.
 - Solo : l'ordinateur ne voit que ses propres tirs (comptage des placements possibles), niveaux Facile / Normal / Fort.
 - À deux : la flotte ne quitte jamais le téléphone (`bataille-prive`) ; empreinte SHA-256 (flotte + sel) au départ,
   le téléphone visé répond seul à chaque tir, à la fin chacun dévoile sa flotte et l'autre vérifie l'empreinte et toutes les réponses.
@@ -137,7 +139,9 @@ Bataille navale : `bataille-sauvegarde`, `bataille-prive` (ma flotte en salon), 
 
 ### Autres choix déjà tranchés
 - Annonce vocale du tour : **seulement sur le téléphone du joueur concerné**, après 5 s sans lancer.
-- Sons fabriqués par le code (pas de fichiers audio) ; sons et vibrations réglables séparément.
+- Sons fabriqués par le code (pas de fichiers audio), sauf la Bataille navale : plouf, explosion et naufrage
+  enregistrés, **libres de droits CC0** uniquement, dans `sons/` (sources dans `sons/LICENCES.txt`), avec les sons
+  fabriqués par le code en secours. Sons et vibrations réglables séparément.
 
 ## Tester
 

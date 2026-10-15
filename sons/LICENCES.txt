@@ -1,0 +1,15 @@
+Sons de la Bataille navale : tous sous licence CC0 1.0 (domaine public)
+https://creativecommons.org/publicdomain/zero/1.0/
+
+Fichiers convertis en MP3 mono et normalisés pour Désdale.
+
+plouf.mp3   « 40 CC0 water / splash / slime SFX », fichier splash_03.ogg, par rubberduck
+            https://opengameart.org/content/40-cc0-water-splash-slime-sfx
+
+touche.mp3  « 25 CC0 bang / firework SFX », fichier bang_06.ogg, par rubberduck
+            https://opengameart.org/node/92774
+
+coule.mp3   mélange de cannon_02.ogg (même pack « 25 CC0 bang / firework SFX », rubberduck)
+            et de lowFrequency_explosion_000.ogg (« Sci-Fi Sounds », Kenney, www.kenney.nl)
+
+Copies récupérées depuis la collection CC0 https://github.com/lavenderdotpet/CC0-Public-Domain-Sounds
