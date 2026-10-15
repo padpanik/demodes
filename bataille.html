@@ -487,9 +487,9 @@
     }
 
     // ---------- Sons de la mer ----------
-    // Enregistrements libres de droits (CC0, voir sons/LICENCES.txt), chargés au premier toucher ;
+    // Enregistrements libres de droits (voir sons/LICENCES.txt), chargés au premier toucher ;
     // tant qu'ils ne sont pas prêts (ou hors ligne), des sons fabriqués par le code les remplacent.
-    const FICHIERS_SONS = { plouf: 'sons/plouf.mp3', boum: 'sons/touche.mp3', coule: 'sons/coule.mp3' };
+    const FICHIERS_SONS = { plouf: 'sons/plouf.mp3', boum: 'sons/touche.mp3', sirene: 'sons/sirene.mp3' };
     const tamponsSons = {};
     let donneesSons = null;
     // Téléchargement tout de suite (simples fichiers), décodage dès que l'audio est débloqué par un toucher
@@ -522,8 +522,8 @@
     Sons.plouf = function(ctx, dest, t) { if (!jouerTampon(ctx, dest, t, 'plouf', 0.6)) this.ploufCode(ctx, dest, t); };
     Sons.boum = function(ctx, dest, t) { if (!jouerTampon(ctx, dest, t, 'boum', 0.65)) this.boumCode(ctx, dest, t); };
     Sons.coule = function(ctx, dest, t) {
-      // Grosse explosion, puis le navire qui s'enfonce dans l'eau
-      if (jouerTampon(ctx, dest, t, 'coule', 0.7)) { jouerTampon(ctx, dest, t + 1.0, 'plouf', 0.3); return; }
+      // Coulé : l'explosion, puis la sirène qui l'annonce
+      if (jouerTampon(ctx, dest, t, 'boum', 0.65)) { jouerTampon(ctx, dest, t + 1.5, 'sirene', 0.7); return; }
       this.boumCode(ctx, dest, t);
       this.naufrage(ctx, dest, t);
     };
