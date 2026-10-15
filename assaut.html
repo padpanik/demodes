@@ -172,15 +172,15 @@
         <summary>Règles</summary>
         <ul>
           <li>Chaque camp place ses pièces face cachée dans ses 4 premières rangées. But : <strong>prendre le drapeau</strong> adverse, ou bloquer l'adversaire (il ne peut plus bouger).</li>
-          <li>À ton tour, une pièce avance d'une case (pas en diagonale, pas dans les lacs). L'<strong>éclaireur (2)</strong> file en ligne droite d'autant de cases libres qu'il veut, et peut attaquer au bout.</li>
+          <li>À ton tour, une pièce avance d'une case (pas en diagonale, pas dans les lacs). L'<strong>éclaireur ({{ chiffre(2) }})</strong> file en ligne droite d'autant de cases libres qu'il veut, et peut attaquer au bout.</li>
           <li><strong>Bombes</strong> et <strong>drapeau</strong> ne bougent jamais.</li>
           <li>Attaquer une pièce : les deux grades sont révélés, le plus fort reste, l'autre sort. Égalité : les deux sortent.</li>
-          <li>Une <strong>bombe</strong> détruit toute pièce qui l'attaque, sauf le <strong>démineur (3)</strong>. L'<strong>espion (1)</strong> bat le maréchal (10) s'il l'attaque, mais perd contre tout le reste.</li>
+          <li>Une <strong>bombe</strong> détruit toute pièce qui l'attaque, sauf le <strong>démineur ({{ chiffre(3) }})</strong>. L'<strong>espion ({{ chiffre(1) }})</strong> bat le maréchal ({{ chiffre(10) }}) s'il l'attaque, mais perd contre tout le reste.</li>
           <li>Pas plus de 3 allers-retours de suite entre les deux mêmes cases.</li>
           <li>À deux : ton armée reste sur ton téléphone. Seuls les grades des pièces qui combattent sont échangés ; à la fin, l'appli vérifie que personne n'a triché.</li>
         </ul>
         <table class="tableau-grades">
-          <tr v-for="g in AS.GRADES" :key="g"><td><strong>{{ AS.nomCourt(g) }}</strong> {{ typeof g === 'number' ? AS.ICONES[g] : '' }}</td><td>{{ AS.NOMS[g] }}</td><td style="text-align:right">×{{ AS.ARMEES.complet[g] || 0 }} · ×{{ AS.ARMEES.rapide[g] || 0 }}</td></tr>
+          <tr v-for="g in AS.GRADES" :key="g"><td><strong>{{ typeof g === 'number' ? chiffre(g) : AS.ICONES[g] }}</strong> {{ typeof g === 'number' ? AS.ICONES[g] : '' }}</td><td>{{ AS.NOMS[g] }}</td><td style="text-align:right">×{{ AS.ARMEES.complet[g] || 0 }} · ×{{ AS.ARMEES.rapide[g] || 0 }}</td></tr>
           <tr><td></td><td class="sys-msg">nombre : complète · rapide</td><td></td></tr>
         </table>
       </details>
@@ -191,6 +191,10 @@
           <button :class="{ actif: apparence === 'symboles' }" @click="apparence = 'symboles'">Symboles</button>
           <button :class="{ actif: apparence === 'chiffres' }" @click="apparence = 'chiffres'">Chiffres</button>
           <button :class="{ actif: apparence === 'images' }" @click="apparence = 'images'">Mes images</button>
+        </div>
+        <div class="segment" style="margin-top:8px">
+          <button :class="{ actif: numerotation === 'moderne' }" @click="numerotation = 'moderne'">Moderne<small>Maréchal 10 · Espion 1</small></button>
+          <button :class="{ actif: numerotation === 'ancienne' }" @click="numerotation = 'ancienne'">Ancienne<small>Maréchal 1 · Éclaireur 9</small></button>
         </div>
         <template v-if="apparence === 'images'">
           <div class="aide">Touche un grade pour lui donner une image (par exemple la photo d'une pièce de ton propre jeu). Les images restent sur ce téléphone : elles ne sont ni publiées ni envoyées à l'adversaire.</div>
@@ -274,7 +278,7 @@
         <template v-else>
           <div class="restants">
             <span class="titre">{{ role ? nomAdversaire : 'Adversaire' }} :</span>
-            <span v-for="x in restantsAdverses" :key="x.g" :class="{ zero: !x.n }">{{ typeof x.g === 'number' ? x.g + AS.ICONES[x.g] : AS.ICONES[x.g] }}×{{ x.n }}</span>
+            <span v-for="x in restantsAdverses" :key="x.g" :class="{ zero: !x.n }">{{ typeof x.g === 'number' ? chiffre(x.g) + AS.ICONES[x.g] : AS.ICONES[x.g] }}×{{ x.n }}</span>
           </div>
           <div class="verif" v-if="phase === 'fin' && verif" :class="verif.ok ? 'ok' : 'ko'">{{ verif.texte }}</div>
           <div class="actions">
@@ -504,6 +508,7 @@
         stats: lireStockage('assaut-stats') || { complet: { v: 0, d: 0 }, rapide: { v: 0, d: 0 } },
         dispositions: Object.assign({ complet: [], rapide: [] }, lireStockage('assaut-dispositions') || {}),
         apparence: lireStockage('assaut-apparence') || 'symboles',   // 'symboles' | 'chiffres' | 'images'
+        numerotation: lireStockage('assaut-numerotation') || 'moderne', // affichage seulement : 'moderne' | 'ancienne'
         images: lireStockage('assaut-images') || {},                  // grade -> image (data URL), propre à ce téléphone
         // Salon
         pseudoInput: pseudoSauvegarde(),
@@ -627,6 +632,7 @@
         mode: function(v) { ecrireStockage('assaut-mode', v); },
         memoire: function(v) { ecrireStockage('assaut-memoire', v); },
         apparence: function(v) { ecrireStockage('assaut-apparence', v); },
+        numerotation: function(v) { ecrireStockage('assaut-numerotation', v); },
         sonActif: function(v) { ecrireStockage('brillant-son', v); },
         vibrationActive: function(v) { ecrireStockage('brillant-vibration', v); if (v) vibrer(40); },
         voixActive: function(v) { ecrireStockage('brillant-voix', v); if (v) Voix.dire('Annonce de ton tour activée'); },
@@ -667,7 +673,14 @@
           if (this.sonActif) Sons.jouer('toc');
           this.afficherMessage(this.sonActif ? '🔊 Sons activés.' : '🔇 Sons coupés.');
         },
-        nom: function(g) { return AS.NOMS[g] + (typeof g === 'number' ? ' (' + g + ')' : ''); },
+        // Chiffre affiché d'un grade. Les règles utilisent toujours 10 (Maréchal) … 1 (Espion) ;
+        // l'ancienne numérotation affiche Maréchal 1 … Éclaireur 9, et « E » pour l'espion.
+        chiffre: function(g) {
+          if (typeof g !== 'number') return '';
+          if (this.numerotation === 'ancienne') return g === 1 ? 'E' : String(11 - g);
+          return String(g);
+        },
+        nom: function(g) { return AS.NOMS[g] + (typeof g === 'number' ? ' (' + this.chiffre(g) + ')' : ''); },
         affichagePiece: function(p, i) {
           var mien = p.c === this.monC, g = null;
           if (mien) g = p.r;
@@ -682,9 +695,9 @@
           if (this.selection === i) classes.push('choisie');
           var symbole = g === 'B' || g === 'D';
           if (cache) return { classes: classes, sym: mien ? '' : '?', num: '' };
-          if (this.apparence === 'chiffres') { classes.push('chiffres'); return { classes: classes, sym: symbole ? AS.ICONES[g] : String(g), num: '' }; }
+          if (this.apparence === 'chiffres') { classes.push('chiffres'); return { classes: classes, sym: symbole ? AS.ICONES[g] : this.chiffre(g), num: '' }; }
           var img = this.apparence === 'images' ? this.images[g] : null;
-          return { classes: classes, img: img || null, sym: AS.ICONES[g], num: symbole ? '' : String(g) };
+          return { classes: classes, img: img || null, sym: AS.ICONES[g], num: symbole ? '' : this.chiffre(g) };
         },
 
         // ---------- Apparence : images choisies par le joueur (réduites à 96 px, gardées sur ce téléphone) ----------

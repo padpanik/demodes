@@ -73,7 +73,7 @@ Communs : `brillant-acces`, `brillant-client-id`, `brillant-son`, `brillant-vibr
 `brillant-garder-ecran`, `brillant-entree-auto`, `brillant-salons` (liste des salons, partagée), `desdale-dernier-jeu`.
 Brilliant : `brillant-sauvegarde-v1`, `brillant-dernier-salon`, `brillant-records(-dates)`, `brillant-classements`, `brillant-rejoindre-auto`.
 Yams : `yams-sauvegarde`, `yams-dernier-salon`, `yams2-record`, `yams2-classements` (le « 2 » : barème maison).
-Assaut : `assaut-sauvegarde`, `assaut-prive` (mon armée en salon), `assaut-dernier-salon`, `assaut-mode`, `assaut-memoire`, `assaut-stats`, `assaut-dispositions`, `assaut-apparence`, `assaut-images`.
+Assaut : `assaut-sauvegarde`, `assaut-prive` (mon armée en salon), `assaut-dernier-salon`, `assaut-mode`, `assaut-memoire`, `assaut-stats`, `assaut-dispositions`, `assaut-apparence`, `assaut-images`, `assaut-numerotation`.
 Backgammon : `bg-sauvegarde`, `bg-dernier-salon`.
 
 ## Règles des jeux (choix de l'utilisateur, à ne pas changer sans lui)
@@ -105,7 +105,8 @@ Backgammon : `bg-sauvegarde`, `bg-dernier-salon`.
 ### Assaut
 - Deux formats : **complet** (40 pièces : 10, 9, 8×2, 7×3, 6×4, 5×4, 4×4, 3×5, 2×8, 1, 6 bombes, drapeau)
   et **rapide** (10 pièces : 10, 9, 3×2, 2×2, 1, 2 bombes, drapeau), plateau 10×10 avec deux lacs.
-- Numérotation moderne : Maréchal 10 … Espion 1. Règles courantes (éclaireur qui file, démineur, espion contre maréchal,
+- Numérotation : les règles utilisent toujours Maréchal 10 … Espion 1 ; option d'affichage par téléphone
+  « ancienne » (Maréchal 1 … Éclaireur 9, Espion « E »). Règles courantes (éclaireur qui file, démineur, espion contre maréchal,
   pas plus de 3 allers-retours). Placement au hasard puis échanges ; 3 dispositions enregistrables par format.
 - Option « garder à l'écran les pièces adverses révélées » : **désactivée par défaut** (retenir fait partie du jeu).
 - Apparence des pièces (par téléphone) : Symboles (émojis), Chiffres, ou **Mes images** : le joueur choisit lui-même une image
