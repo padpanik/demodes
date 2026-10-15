@@ -74,7 +74,6 @@
     .boutons-nav.v { transform: translateX(-50%); }
     .boutons-nav button { width: 30px; height: 30px; border-radius: 50%; border: 2px solid #fff; padding: 0; font-size: 15px; font-weight: 800; line-height: 1;
                           color: #fff; background: #2c3e50; box-shadow: 0 2px 6px rgba(0,0,0,0.45); cursor: pointer; }
-    .boutons-nav button.ok { background: #2f8a5b; }
 
     /* ===== Style « réaliste » : mer profonde, navires d'acier, feu et fumée ===== */
     .style-realiste .eau { background: radial-gradient(ellipse at 30% 15%, #3d8fbf 0%, #23668f 45%, #123f5e 100%);
@@ -199,6 +198,7 @@
     .reserve-nav { display: flex; align-items: center; gap: 6px; border: 1.5px solid #c3d3de; background: #fff; border-radius: 10px; padding: 6px 9px; font: inherit; font-size: 0.8em; font-weight: 700; color: #1d2b36; cursor: pointer; }
     .reserve-nav.choisie { border-color: #e0a526; background: #fff8e1; box-shadow: 0 0 0 2px #e0a526; }
     .reserve-nav .mini-nav { height: 13px; }
+    .ico-vider { display: inline-block; font-weight: 900; font-size: 1.15em; line-height: 1; transform: translateY(1px); }
     .reserve-nav.pose { opacity: 0.55; }
     .panneau-vide { text-align: center; padding: 40px 16px; color: #3b5568; }
     .panneau-vide .grand { font-size: 2.5em; margin-bottom: 8px; }
@@ -377,10 +377,9 @@
                     <div v-for="n in naviresMoi" :key="n.id" class="navire" :class="n.classes" :style="n.style"><svg :view-box.camel="n.vb" v-html="n.svg"></svg></div>
                   </div>
                 </div>
-                <!-- Le navire choisi garde ses boutons tant qu'il n'est pas validé -->
+                <!-- Le navire choisi garde son bouton « pivoter » tant qu'il n'est pas validé (toucher ailleurs le valide) -->
                 <div v-if="boutonsNavire" class="boutons-nav" :class="boutonsNavire.sens" :style="boutonsNavire.style">
                   <button @click="tourner" aria-label="Pivoter">↻</button>
-                  <button class="ok" @click="validerNavire" aria-label="Valider ce navire">✓</button>
                 </div>
               </div>
             </div>
@@ -393,7 +392,7 @@
           <div class="actions" v-if="!jeSuisPret">
             <button class="btn" v-if="selNav !== null && flotte[selNav]" @click="retirerNavire">↩ Retirer</button>
             <button class="btn" v-else @click="placerAuHasard">🎲 {{ reserve.length && reserve.length < 5 ? 'Compléter' : 'Hasard' }}</button>
-            <button class="btn" @click="viderPlacement" :disabled="reserve.length === 5" aria-label="Vider la mer">🧹</button>
+            <button class="btn" @click="viderPlacement" :disabled="reserve.length === 5" aria-label="Vider la mer"><span class="ico-vider">⟲</span> Vider</button>
             <button class="btn principal" @click="commencer" :disabled="reserve.length > 0">Prêt ✓</button>
           </div>
         </template>
@@ -849,7 +848,7 @@
         // Mes navires dessinés par-dessus ma mer
         naviresMoi: function() {
           var enConflit = [], coules = {};
-          if (this.phase === 'placement' && this.montrerConflits) this.conflits.forEach(k => { enConflit.push(k.a, k.b); });
+          if (this.phase === 'placement') this.conflits.forEach(k => { enConflit.push(k.a, k.b); });   // en rouge dès qu'ils se gênent
           this.journal.forEach(j => { if (j.c !== this.monC && j.res === 'coule') coules[j.nav] = true; });
           var r = [];
           this.flotte.forEach((n, id) => {
@@ -917,10 +916,10 @@
             var att = this.role && this.pub && this.pub.prets[BN.autre(this.monC)] ? ' (' + this.nomAdversaire + ' est prêt)' : '';
             var nom = (id) => BN.FLOTTE[id].nom.toLowerCase();
             if (this.selNav !== null && this.flotte[this.selNav]) {
-              if (this.montrerConflits && this.conflits.some(k => k.a === this.selNav || k.b === this.selNav)) return 'Le ' + nom(this.selNav) + ' (en rouge) gêne : fais-le glisser ailleurs.' + att;
-              return 'Fais glisser le ' + nom(this.selNav) + ' à sa place ; ↻ pour pivoter, touche ailleurs pour valider.' + att;
+              if (this.conflits.some(k => k.a === this.selNav || k.b === this.selNav)) return 'Le ' + nom(this.selNav) + ' (en rouge) gêne : fais-le glisser ailleurs.' + att;
+              return 'Fais glisser le ' + nom(this.selNav) + ' à sa place, ↻ pour le pivoter, puis touche ailleurs.' + att;
             }
-            if (this.montrerConflits && this.conflits.length) return 'Fais glisser les navires en rouge, puis valide à nouveau.' + att;
+            if (this.conflits.length) return 'Les navires en rouge se gênent : fais-les glisser ailleurs.' + att;
             if (this.reserve.length) return 'Touche un navire sous la mer : il arrive au milieu, fais-le glisser à sa place.' + att;
             return 'Flotte en place : fais glisser un navire pour le déplacer, sinon « Prêt ».' + att;
           }
