@@ -837,7 +837,10 @@
               c.width = T; c.height = T;
               // Recadrage carré au centre
               c.getContext('2d').drawImage(img, (img.width - cote) / 2, (img.height - cote) / 2, cote, cote, 0, 0, T, T);
-              this.$set(this.images, g, c.toDataURL('image/jpeg', 0.85));
+              // WebP (ou PNG si le téléphone ne sait pas l'écrire) : la transparence est conservée
+              var url = c.toDataURL('image/webp', 0.9);
+              if (url.indexOf('data:image/webp') !== 0) url = c.toDataURL('image/png');
+              this.$set(this.images, g, url);
               this.enregistrerImages();
             };
             img.onerror = () => this.afficherMessage('Image illisible.');
