@@ -76,11 +76,13 @@
     .reserve { display: flex; flex-wrap: wrap; gap: 5px; justify-content: center; margin: 6px 0 2px; }
     .reserve-piece { display: flex; align-items: center; gap: 3px; border: 1.5px solid #c9d2d9; background: #fff; border-radius: 9px; padding: 4px 7px; font: inherit; font-size: 0.82em; font-weight: 700; color: #1d2b36; cursor: pointer; }
     .reserve-piece .sym { font-size: 15px; }
-    .restants.prises { justify-content: flex-start; margin: 4px 0 0; }
-    .restants.prises .titre { min-width: 92px; text-align: left; }
-    .restants.prises span.A { background: #dbe6f4; color: #1f4a80; }
-    .restants.prises span.B { background: #f3dcd8; color: #7a2d20; }
-    .restants.prises span.rien { background: none; color: #a3adb5; font-weight: 500; font-style: italic; }
+    .prises { display: flex; flex-wrap: wrap; gap: 3px; min-height: 26px; margin-top: 5px; }
+    .prises .mini { position: relative; width: 24px; height: 24px; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 800; font-size: 12px; box-shadow: inset 0 -2px 0 rgba(0,0,0,0.25); }
+    .prises .mini.A { background: #2f5f9e; }
+    .prises .mini.B { background: #b5422f; }
+    .prises .mini .s { font-size: 13px; }
+    .prises .mini img { position: absolute; inset: 1px; width: 22px; height: 22px; object-fit: cover; border-radius: 3px; }
+    .prises .mini .n { position: absolute; right: 1px; bottom: 0; font-size: 8px; text-shadow: 0 0 2px rgba(0,0,0,0.8); }
     .restants .img-restant { width: 14px; height: 14px; border-radius: 3px; object-fit: cover; vertical-align: -2px; margin-right: 2px; }
     .reserve-piece .img-reserve { width: 22px; height: 22px; border-radius: 4px; object-fit: cover; }
     .reserve-piece.choisie { border-color: #2f5f9e; background: #e4f0fb; box-shadow: 0 0 0 2px #2f5f9e; }
@@ -342,10 +344,13 @@
 
         <!-- Partie -->
         <template v-else>
-          <div v-for="ligne in piecesPrises" :key="ligne.cle" class="restants prises" :class="ligne.cle">
-            <span class="titre">{{ ligne.titre }}</span>
-            <span v-for="x in ligne.pieces" :key="x.g" :class="ligne.c"><img v-if="apparence === 'images' && images[x.g]" class="img-restant" :src="images[x.g]" alt="">{{ typeof x.g === 'number' ? chiffre(x.g) + (apparence === 'images' && images[x.g] ? '' : AS.ICONES[x.g]) : (apparence === 'images' && images[x.g] ? '' : AS.ICONES[x.g]) }}<template v-if="x.n > 1">×{{ x.n }}</template></span>
-            <span v-if="!ligne.pieces.length" class="rien">aucune</span>
+          <!-- Pièces sorties : une vignette par pièce (la longueur des deux rangées montre l'écart) -->
+          <div v-for="ligne in piecesPrises" :key="ligne.cle" class="prises">
+            <span v-for="(g, k) in ligne.pieces" :key="k" class="mini" :class="ligne.c">
+              <img v-if="apparence === 'images' && images[g]" :src="images[g]" alt="">
+              <span v-else class="s">{{ apparence === 'chiffres' && typeof g === 'number' ? chiffre(g) : AS.ICONES[g] }}</span>
+              <span v-if="typeof g === 'number' && apparence !== 'chiffres'" class="n">{{ chiffre(g) }}</span>
+            </span>
           </div>
           <div class="verif" v-if="phase === 'fin' && verif" :class="verif.ok ? 'ok' : 'ko'">{{ verif.texte }}</div>
           <div class="actions">
@@ -708,11 +713,11 @@
         // Pièces sorties du plateau, pour les deux camps (ce que j'ai pris, ce qu'on m'a pris)
         piecesPrises: function() {
           var adv = AS.autre(this.monC), morts = (this.vue && this.vue.morts) || { A: {}, B: {} };
-          var liste = (c) => AS.GRADES.filter(g => (morts[c] || {})[g]).map(g => ({ g: g, n: morts[c][g] }));
-          var lui = this.role ? this.nomAdversaire : 'L\'ordinateur';
+          // Une entrée par pièce, des plus fortes aux plus faibles
+          var liste = (c) => { var r = []; AS.GRADES.forEach(g => { for (var k = 0; k < ((morts[c] || {})[g] || 0); k++) r.push(g); }); return r; };
           return [
-            { cle: 'mes-prises', titre: '🎯 Tu as pris :', c: adv, pieces: liste(adv) },
-            { cle: 'ses-prises', titre: '💀 ' + lui + ' a pris :', c: this.monC, pieces: liste(this.monC) }
+            { cle: 'mes-prises', c: adv, pieces: liste(adv) },          // pièces adverses que j'ai prises
+            { cle: 'ses-prises', c: this.monC, pieces: liste(this.monC) } // mes pièces perdues
           ];
         },
         texteFin: function() {
