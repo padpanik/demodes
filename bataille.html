@@ -30,70 +30,134 @@
     .segment button small { display: block; font-weight: 500; font-size: 0.78em; color: #8a97a1; }
 
     /* ---------- Mer : étiquettes A–J / 1–10 autour d'une grille 10 × 10 ---------- */
-    .mer { user-select: none; -webkit-tap-highlight-color: transparent; }
+    .mer { user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; }
     .lettres { display: grid; grid-template-columns: repeat(10, 1fr); margin-left: 16px; font-size: 10px; font-weight: 700; color: #4f6f86; text-align: center; height: 14px; line-height: 14px; }
     .mer-corps { display: flex; }
     .chiffres { width: 16px; display: grid; grid-template-rows: repeat(10, 1fr); font-size: 10px; font-weight: 700; color: #4f6f86; align-items: center; text-align: center; }
+    .plan { position: relative; flex: 1; }   /* la mer + ce qui peut en dépasser (boutons du navire choisi) */
     .eau {
-      position: relative; flex: 1; aspect-ratio: 1 / 1; display: grid; grid-template-columns: repeat(10, 1fr); grid-template-rows: repeat(10, 1fr);
-      border-radius: 6px; overflow: hidden; box-shadow: 0 2px 8px rgba(20, 60, 90, 0.35), inset 0 0 0 1px rgba(0,0,0,0.15);
-      background: radial-gradient(ellipse at 30% 20%, #3f8fbf 0%, #2a6f97 45%, #1b4f72 100%);
+      position: relative; isolation: isolate; aspect-ratio: 1 / 1; display: grid; grid-template-columns: repeat(10, 1fr); grid-template-rows: repeat(10, 1fr);
+      border-radius: 6px; overflow: hidden;
     }
-    /* Vagues qui défilent lentement sous la grille */
-    .eau::before {
-      content: ''; position: absolute; inset: -40%; pointer-events: none; opacity: 0.55;
-      background: repeating-linear-gradient(170deg, rgba(255,255,255,0.07) 0 3px, transparent 3px 14px),
-                  repeating-linear-gradient(10deg, rgba(255,255,255,0.05) 0 2px, transparent 2px 19px);
-      animation: vagues 14s linear infinite;
-    }
-    @keyframes vagues { from { transform: translate(0, 0); } to { transform: translate(-38px, 26px); } }
-    @media (prefers-reduced-motion: reduce) { .eau::before { animation: none; } }
-    .cell { position: relative; box-shadow: inset 0 0 0 0.5px rgba(255,255,255,0.16); z-index: 1; }
+    .eau.placement { touch-action: none; }
+    .cell { position: relative; }
     .eau.active .cell.libre { cursor: crosshair; }
-    .eau.active .cell.libre:hover { background: rgba(255,255,255,0.10); }
     .eau.placement .cell { cursor: pointer; }
-    .eau.inactive { filter: saturate(0.7) brightness(0.92); }
+    .eau.inactive { filter: saturate(0.75) brightness(0.92); }
 
-    /* Coque des navires : segments jointifs, proue arrondie */
-    .coque { position: absolute; z-index: 1; background: linear-gradient(180deg, #a8b4bc, #6f7d87); box-shadow: inset 0 -2px 0 rgba(0,0,0,0.2); }
-    .coque.v { background: linear-gradient(90deg, #a8b4bc, #6f7d87); box-shadow: inset -2px 0 0 rgba(0,0,0,0.2); }
-    .coque.h { top: 17%; bottom: 17%; left: 0; right: 0; }
-    .coque.v { left: 17%; right: 17%; top: 0; bottom: 0; }
-    .coque.h.debut { left: 8%; border-radius: 50% 12% 12% 50% / 50% 20% 20% 50%; }
-    .coque.h.fin { right: 8%; border-radius: 12% 30% 30% 12%; }
-    .coque.v.debut { top: 8%; border-radius: 50% 50% 12% 12% / 50% 50% 20% 20%; }
-    .coque.v.fin { bottom: 8%; border-radius: 12% 12% 30% 30%; }
-    .coque.milieu::after { content: ''; position: absolute; left: 30%; right: 30%; top: 30%; bottom: 30%; border-radius: 3px; background: rgba(40, 55, 65, 0.45); }
-    .coque.choisi { background: linear-gradient(180deg, #ffe08a, #e0a526); }
-    .coque.conflit { background: linear-gradient(180deg, #ff8a80, #c62828); animation: alerte 0.9s ease-in-out infinite alternate; }
-    .coque.choisi.conflit { background: linear-gradient(180deg, #ffcc80, #e65100); }
-    .coque.double { background: repeating-linear-gradient(135deg, #c62828 0 4px, #ffcdd2 4px 8px); }
-    @keyframes alerte { from { opacity: 1; } to { opacity: 0.55; } }
-    .coque.adverse { background: linear-gradient(180deg, #8a5a4a, #4e2e25); }
-    .coque.cache { background: rgba(200, 215, 225, 0.35); box-shadow: inset 0 0 0 1.5px rgba(255,255,255,0.6); }
-    .coque.coulee { background: linear-gradient(180deg, #6b4438, #3a211b); animation: sombrer 0.9s ease-out; }
-    @keyframes sombrer { 0% { opacity: 0; transform: scale(1.15); } 100% { opacity: 1; transform: none; } }
+    /* Navires : un dessin par navire, posé par-dessus la grille (les touchers passent à travers) */
+    .navires { position: absolute; inset: 0; z-index: 2; pointer-events: none; }
+    .navire { position: absolute; transition: left 0.12s ease-out, top 0.12s ease-out; filter: drop-shadow(0 2px 2px rgba(0, 15, 30, 0.45)); }
+    .navire svg { display: block; width: 100%; height: 100%; overflow: visible; }
+    .navire.choisi { filter: drop-shadow(0 0 2px #ffd54a) drop-shadow(0 0 5px #ffb300); }
+    .navire.conflit { filter: drop-shadow(0 0 2px #ff1744) drop-shadow(0 0 5px #ff1744); animation: alerte 0.8s ease-in-out infinite alternate; }
+    .navire.conflit .c-coque { fill: #ef9a9a !important; }
+    @keyframes alerte { from { opacity: 1; } to { opacity: 0.6; } }
+    .navire.fantome { opacity: 0.45; }
+    .navire.coule { filter: brightness(0.5) sepia(0.7) saturate(1.4) drop-shadow(0 1px 1px rgba(0,0,0,0.5)); animation: sombrer 1s ease-out; }
+    @keyframes sombrer { 0% { opacity: 0; transform: scale(1.1); } 100% { opacity: 1; transform: none; } }
+    .mini-nav { display: block; height: 11px; overflow: visible; }
 
-    /* Marques de tir */
-    .marque { position: absolute; z-index: 2; pointer-events: none; border-radius: 50%; }
-    .marque.eau-tir { inset: 34%; border: 2px solid rgba(255,255,255,0.9); animation: plouf 0.7s ease-out; }
-    .marque.eau-tir::after { content: ''; position: absolute; inset: -4px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.8); opacity: 0; animation: onde 1.1s ease-out; }
-    @keyframes plouf { 0% { transform: scale(0.2); opacity: 0; } 50% { transform: scale(1.3); opacity: 1; } 100% { transform: scale(1); } }
-    @keyframes onde { 0% { transform: scale(0.6); opacity: 0.9; } 100% { transform: scale(3); opacity: 0; } }
-    .marque.feu { inset: 20%; background: radial-gradient(circle, #fff3b0 0%, #ffb300 35%, #f4511e 65%, rgba(198, 40, 40, 0.9) 100%);
-                  box-shadow: 0 0 6px 2px rgba(255, 140, 0, 0.7); animation: boum 0.8s ease-out; }
-    .marque.feu::after { content: ''; position: absolute; inset: -60%; border-radius: 50%; background: radial-gradient(circle, rgba(255,230,150,0.9), rgba(255,120,0,0) 70%); opacity: 0; animation: eclair 0.8s ease-out; }
-    .marque.feu.eteint { inset: 30%; background: radial-gradient(circle, #ff8a65, #b71c1c 70%); box-shadow: none; animation: none; }
-    @keyframes boum { 0% { transform: scale(0); } 35% { transform: scale(1.7); } 100% { transform: scale(1); } }
-    @keyframes eclair { 0% { opacity: 1; transform: scale(0.3); } 100% { opacity: 0; transform: scale(1.6); } }
-    /* Viseur : case visée (en attente de confirmation, ou tir en cours) */
+    /* Marques de tir (au-dessus des navires) */
+    .marque { position: absolute; z-index: 3; pointer-events: none; border-radius: 50%; }
     .cell.vise::after, .cell.visee::after {
-      content: ''; position: absolute; inset: 8%; z-index: 3; border-radius: 50%; border: 2px solid #ffd54a;
+      content: ''; position: absolute; inset: 8%; z-index: 4; border-radius: 50%; border: 2px solid #ffd54a;
       background: linear-gradient(#ffd54a, #ffd54a) center / 2px 100% no-repeat, linear-gradient(#ffd54a, #ffd54a) center / 100% 2px no-repeat;
     }
     .cell.visee::after { animation: viser 0.5s ease-in-out infinite alternate; }
     @keyframes viser { from { transform: scale(1.25); opacity: 0.6; } to { transform: scale(0.9); opacity: 1; } }
-    .cell.dernier { box-shadow: inset 0 0 0 2px rgba(255, 213, 74, 0.75); }
+    .cell.dernier::before { content: ''; position: absolute; inset: 0; z-index: 4; box-shadow: inset 0 0 0 2px rgba(255, 213, 74, 0.8); pointer-events: none; }
+
+    /* Boutons du navire choisi : pivoter et valider, devant sa proue */
+    .boutons-nav { position: absolute; z-index: 10; display: flex; gap: 4px; }
+    .boutons-nav.h { flex-direction: column; transform: translateY(-50%); }
+    .boutons-nav.v { transform: translateX(-50%); }
+    .boutons-nav button { width: 30px; height: 30px; border-radius: 50%; border: 2px solid #fff; padding: 0; font-size: 15px; font-weight: 800; line-height: 1;
+                          color: #fff; background: #2c3e50; box-shadow: 0 2px 6px rgba(0,0,0,0.45); cursor: pointer; }
+    .boutons-nav button.ok { background: #2f8a5b; }
+
+    /* ===== Style « réaliste » : mer profonde, navires d'acier, feu et fumée ===== */
+    .style-realiste .eau { background: radial-gradient(ellipse at 30% 15%, #3d8fbf 0%, #23668f 45%, #123f5e 100%);
+                           box-shadow: 0 2px 8px rgba(20, 60, 90, 0.35), inset 0 0 0 1px rgba(0,0,0,0.2), inset 0 0 30px rgba(0, 20, 40, 0.35); }
+    /* Vagues qui défilent et reflets de lumière qui ondulent */
+    .style-realiste .eau::before {
+      content: ''; position: absolute; inset: -40%; z-index: 0; pointer-events: none; opacity: 0.55;
+      background: repeating-linear-gradient(170deg, rgba(255,255,255,0.07) 0 3px, transparent 3px 14px),
+                  repeating-linear-gradient(10deg, rgba(255,255,255,0.05) 0 2px, transparent 2px 19px);
+      animation: vagues 14s linear infinite;
+    }
+    .style-realiste .eau::after {
+      content: ''; position: absolute; inset: -20%; z-index: 0; pointer-events: none; opacity: 0.35; mix-blend-mode: screen;
+      background: radial-gradient(circle at 20% 30%, rgba(160, 220, 255, 0.35) 0 6%, transparent 14%),
+                  radial-gradient(circle at 70% 60%, rgba(160, 220, 255, 0.3) 0 5%, transparent 12%),
+                  radial-gradient(circle at 45% 85%, rgba(160, 220, 255, 0.25) 0 7%, transparent 15%),
+                  radial-gradient(circle at 85% 15%, rgba(160, 220, 255, 0.25) 0 4%, transparent 11%);
+      animation: reflets 9s ease-in-out infinite alternate;
+    }
+    @keyframes vagues { from { transform: translate(0, 0); } to { transform: translate(-38px, 26px); } }
+    @keyframes reflets { from { transform: translate(-3%, -2%) scale(1); } to { transform: translate(4%, 3%) scale(1.08); } }
+    @media (prefers-reduced-motion: reduce) { .style-realiste .eau::before, .style-realiste .eau::after { animation: none; } }
+    .style-realiste .cell { box-shadow: inset 0 0 0 0.5px rgba(255,255,255,0.14); }
+    .style-realiste .eau.active .cell.libre:hover { background: rgba(255,255,255,0.10); }
+    /* Brume sur la mer adverse : les zones déjà explorées s'éclaircissent */
+    .style-realiste .eau.adv .cell.brume { background: rgba(3, 16, 30, 0.3); transition: background 0.6s; }
+    .style-realiste .eau.adv .cell { transition: background 0.6s; }
+    /* Navires d'acier */
+    .style-realiste .c-coque { fill: url(#bn-acier); stroke: rgba(15, 25, 32, 0.55); stroke-width: 2; }
+    .style-realiste .c-sub { fill: url(#bn-sombre); }
+    .style-realiste .c-pont { fill: #76828b; }
+    .style-realiste .c-detail { fill: #b9c3ca; stroke: rgba(15, 25, 32, 0.4); stroke-width: 1.5; }
+    .style-realiste .c-sombre { fill: #353f47; }
+    .style-realiste .c-tourelle { fill: #5d6871; stroke: #262f35; stroke-width: 2; }
+    .style-realiste .c-canon { stroke: #262f35; stroke-width: 5; stroke-linecap: round; fill: none; }
+    .style-realiste .c-piste { stroke: rgba(255,255,255,0.75); stroke-width: 3; stroke-dasharray: 14 10; fill: none; }
+    .style-realiste .c-trait { stroke: rgba(0,0,0,0.3); stroke-width: 2; fill: none; }
+    .style-realiste .c-avion { fill: #d7dee3; }
+    .style-realiste .c-sillage { fill: rgba(255,255,255,0.5); }
+    /* Tir dans l'eau : gerbe puis ronds qui s'estompent */
+    .style-realiste .marque.eau-tir { inset: 34%; border: 2px solid rgba(255,255,255,0.85); animation: plouf 0.7s ease-out; }
+    .style-realiste .marque.eau-tir::after { content: ''; position: absolute; inset: -4px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.8); opacity: 0; animation: onde 1.1s ease-out; }
+    @keyframes plouf { 0% { transform: scale(0.2); opacity: 0; } 50% { transform: scale(1.3); opacity: 1; } 100% { transform: scale(1); } }
+    @keyframes onde { 0% { transform: scale(0.6); opacity: 0.9; } 100% { transform: scale(3); opacity: 0; } }
+    /* Touché : explosion, puis un feu qui vacille et de la fumée */
+    .style-realiste .marque.feu { inset: 22%; background: radial-gradient(circle, #fff3b0 0%, #ffb300 35%, #f4511e 65%, rgba(198, 40, 40, 0.9) 100%);
+                                  box-shadow: 0 0 6px 2px rgba(255, 140, 0, 0.7); animation: boum 0.8s ease-out, flamme 0.5s 0.8s ease-in-out infinite alternate; }
+    .style-realiste .marque.feu::after { content: ''; position: absolute; inset: -60%; border-radius: 50%; background: radial-gradient(circle, rgba(255,230,150,0.9), rgba(255,120,0,0) 70%); opacity: 0; animation: eclair 0.8s ease-out; }
+    .style-realiste .marque.feu::before { content: ''; position: absolute; left: 0; right: 0; top: -40%; height: 90%; border-radius: 50%;
+                                          background: radial-gradient(circle, rgba(70, 70, 70, 0.55), rgba(70, 70, 70, 0) 70%); animation: fumee 2.6s ease-out infinite; }
+    .style-realiste .marque.feu.eteint { inset: 32%; background: radial-gradient(circle, #ff8a65, #8e1b1b 75%); box-shadow: 0 0 3px rgba(255, 90, 0, 0.6); animation: none; }
+    .style-realiste .marque.feu.eteint::before { animation-duration: 4s; opacity: 0.6; }
+    @keyframes boum { 0% { transform: scale(0); } 35% { transform: scale(1.7); } 100% { transform: scale(1); } }
+    @keyframes eclair { 0% { opacity: 1; transform: scale(0.3); } 100% { opacity: 0; transform: scale(1.6); } }
+    @keyframes flamme { from { transform: scale(0.92); filter: brightness(1); } to { transform: scale(1.08); filter: brightness(1.3); } }
+    @keyframes fumee { 0% { transform: translateY(0) scale(0.5); opacity: 0.8; } 100% { transform: translateY(-110%) scale(1.7); opacity: 0; } }
+
+    /* ===== Style « jeu de société » : couleurs franches, contours nets, fiches blanches et rouges ===== */
+    .style-plateau .eau { background: #3d97d3; box-shadow: 0 0 0 3px #1d3b57, 0 3px 8px rgba(0,0,0,0.3); border-radius: 4px; }
+    .style-plateau .cell { box-shadow: inset 0 0 0 0.5px rgba(10, 40, 70, 0.45);
+                           background: radial-gradient(circle, rgba(10, 35, 60, 0.45) 0 8%, transparent 10%); }   /* le trou de la fiche */
+    .style-plateau .eau.active .cell.libre:hover { background-color: rgba(255,255,255,0.15); }
+    .style-plateau .lettres, .style-plateau .chiffres { color: #1d3b57; }
+    .style-plateau .c-coque { fill: #e3e8ec; stroke: #1d2b36; stroke-width: 6; stroke-linejoin: round; }
+    .style-plateau .c-sub { fill: #9fb0bd; }
+    .style-plateau .c-pont { fill: #c5ced5; stroke: #1d2b36; stroke-width: 3; }
+    .style-plateau .c-detail { fill: #f2b134; stroke: #1d2b36; stroke-width: 4; }
+    .style-plateau .c-sombre { fill: #1d2b36; }
+    .style-plateau .c-tourelle { fill: #e74c3c; stroke: #1d2b36; stroke-width: 4; }
+    .style-plateau .c-canon { stroke: #1d2b36; stroke-width: 6; stroke-linecap: round; fill: none; }
+    .style-plateau .c-piste { stroke: #fff; stroke-width: 4; stroke-dasharray: 16 12; fill: none; }
+    .style-plateau .c-trait { stroke: #1d2b36; stroke-width: 3; fill: none; }
+    .style-plateau .c-avion { fill: #1d2b36; }
+    .style-plateau .c-sillage { display: none; }
+    .style-plateau .navire { filter: drop-shadow(0 2px 0 rgba(0, 20, 40, 0.5)); }
+    .style-plateau .navire.coule { filter: saturate(0.2) brightness(0.75) drop-shadow(0 2px 0 rgba(0, 20, 40, 0.5)); }
+    /* Fiches : blanche dans l'eau, rouge sur un navire */
+    .style-plateau .marque.eau-tir { inset: 29%; background: radial-gradient(circle at 35% 30%, #ffffff 0%, #e3e8ec 55%, #9aa7b1 100%);
+                                     box-shadow: 0 2px 1px rgba(0, 20, 40, 0.5); animation: fiche 0.35s ease-out; }
+    .style-plateau .marque.feu { inset: 26%; background: radial-gradient(circle at 35% 30%, #ff9e94 0%, #e53935 50%, #8e1414 100%);
+                                 box-shadow: 0 2px 1px rgba(0, 20, 40, 0.55); animation: fiche 0.35s ease-out; }
+    .style-plateau .marque.feu.eteint { background: radial-gradient(circle at 35% 30%, #e57373 0%, #b71c1c 55%, #5d0d0d 100%); }
+    @keyframes fiche { 0% { transform: translateY(-60%) scale(1.4); opacity: 0; } 70% { transform: translateY(4%) scale(0.95); opacity: 1; } 100% { transform: none; } }
 
     .zone-jeu { position: relative; }
     .titre-mer { display: flex; justify-content: space-between; align-items: baseline; font-size: 0.8em; font-weight: 700; color: #33566e; margin: 2px 2px 2px 18px; }
@@ -105,15 +169,11 @@
     .panneau { flex: 1; min-width: 0; font-size: 0.78em; color: #33566e; }
     .panneau .titre { font-weight: 700; margin: 0 0 3px; }
     .panneau .titre + .flotte-etat { margin-bottom: 7px; }
-    .flotte-etat { display: flex; flex-direction: column; gap: 3px; }
-    .flotte-etat .nav { display: flex; align-items: center; gap: 1px; height: 9px; }
-    .flotte-etat .nav i { width: 11px; height: 9px; background: #7d8a94; }
-    .flotte-etat .nav i:first-child { border-radius: 5px 1px 1px 5px; }
-    .flotte-etat .nav i:last-child { border-radius: 1px 3px 3px 1px; }
-    .flotte-etat .nav.adv i { background: #8a5a4a; }
-    .flotte-etat .nav i.touche { background: #f4511e; }
-    .flotte-etat .nav.coule i { background: #c9d2d9; }
-    .flotte-etat .nav.coule::after { content: '✖'; color: #c62828; font-size: 10px; margin-left: 4px; line-height: 9px; }
+    .flotte-etat { display: flex; flex-direction: column; gap: 4px; }
+    .flotte-etat .nav { display: flex; align-items: center; gap: 5px; height: 11px; }
+    .flotte-etat .nav.coule .mini-nav { opacity: 0.35; filter: grayscale(1); }
+    .flotte-etat .nav.coule::after { content: '✖'; color: #c62828; font-size: 10px; line-height: 11px; }
+    .flotte-etat .nav .impacts { color: #e53935; font-size: 9px; letter-spacing: -1px; }
     .panneau .chiffre-cle { margin-top: 2px; color: #4f6f86; }
     .panneau .btn { margin-top: 6px; padding: 7px 6px; font-size: 0.95em; width: 100%; }
 
@@ -138,11 +198,8 @@
     .reserve { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin: 8px 0 2px; }
     .reserve-nav { display: flex; align-items: center; gap: 6px; border: 1.5px solid #c3d3de; background: #fff; border-radius: 10px; padding: 6px 9px; font: inherit; font-size: 0.8em; font-weight: 700; color: #1d2b36; cursor: pointer; }
     .reserve-nav.choisie { border-color: #e0a526; background: #fff8e1; box-shadow: 0 0 0 2px #e0a526; }
-    .silhouette { display: inline-flex; gap: 1px; }
-    .silhouette i { width: 9px; height: 10px; background: #7d8a94; }
-    .silhouette i:first-child { border-radius: 6px 1px 1px 6px; }
-    .silhouette i:last-child { border-radius: 1px 3px 3px 1px; }
-
+    .reserve-nav .mini-nav { height: 13px; }
+    .reserve-nav.pose { opacity: 0.55; }
     .panneau-vide { text-align: center; padding: 40px 16px; color: #3b5568; }
     .panneau-vide .grand { font-size: 2.5em; margin-bottom: 8px; }
     .regles ul { padding-left: 18px; margin: 8px 0 0; font-size: 0.88em; line-height: 1.45; color: #3b4b57; }
@@ -157,7 +214,12 @@
   </style>
 </head>
 <body>
-  <div id="app" class="app">
+  <!-- Dégradés partagés par les dessins des navires -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+    <linearGradient id="bn-acier" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#c9d2d8"/><stop offset="0.45" stop-color="#9aa6af"/><stop offset="1" stop-color="#5c6871"/></linearGradient>
+    <linearGradient id="bn-sombre" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5d6a74"/><stop offset="1" stop-color="#252d33"/></linearGradient>
+  </defs></svg>
+  <div id="app" class="app" :class="'style-' + styleVisuel">
 
     <div class="barre">
       <div id="menu">
@@ -255,6 +317,14 @@
         </ul>
       </details>
 
+      <section class="carte">
+        <div class="titre-carte">Apparence <small>sur ce téléphone</small></div>
+        <div class="segment">
+          <button :class="{ actif: styleVisuel === 'realiste' }" @click="styleVisuel = 'realiste'">Réaliste<small>acier, feu et fumée</small></button>
+          <button :class="{ actif: styleVisuel === 'plateau' }" @click="styleVisuel = 'plateau'">Jeu de société<small>fiches rouges et blanches</small></button>
+        </div>
+      </section>
+
       <section class="carte reglages">
         <div class="titre-carte">Réglages</div>
         <label class="case-a-cocher"><input type="checkbox" v-model="sonActif"> 🔊 Sons</label>
@@ -300,20 +370,27 @@
             <div class="lettres"><span v-for="l in BN.LETTRES" :key="l">{{ l }}</span></div>
             <div class="mer-corps">
               <div class="chiffres"><span v-for="n in 10" :key="n">{{ n }}</span></div>
-              <div class="eau placement">
-                <div v-for="x in celluleMoi" :key="x.i" class="cell" :class="x.classes" @click="toucherPlacement(x.i)">
-                  <div v-if="x.coque" class="coque" :class="x.coque"></div>
+              <div class="plan">
+                <div class="eau placement" ref="merPlacement" @pointerdown="appui" @pointermove="glisse" @pointerup="lache" @pointercancel="glissement = null">
+                  <div v-for="x in celluleMoi" :key="x.i" class="cell" :class="x.classes"></div>
+                  <div class="navires">
+                    <div v-for="n in naviresMoi" :key="n.id" class="navire" :class="n.classes" :style="n.style"><svg :view-box.camel="n.vb" v-html="n.svg"></svg></div>
+                  </div>
+                </div>
+                <!-- Le navire choisi garde ses boutons tant qu'il n'est pas validé -->
+                <div v-if="boutonsNavire" class="boutons-nav" :class="boutonsNavire.sens" :style="boutonsNavire.style">
+                  <button @click="tourner" aria-label="Pivoter">↻</button>
+                  <button class="ok" @click="validerNavire" aria-label="Valider ce navire">✓</button>
                 </div>
               </div>
             </div>
           </div>
           <div class="reserve" v-if="!jeSuisPret && reserve.length">
             <button v-for="n in reserve" :key="n.id" class="reserve-nav" :class="{ choisie: selNav === n.id }" @click="choisirNavire(n.id)">
-              <span class="silhouette"><i v-for="k in n.t" :key="k"></i></span>{{ n.nom }}
+              <svg class="mini-nav" :view-box.camel="'0 0 ' + n.t * 100 + ' 100'" :style="{ width: n.t * 13 + 'px' }" v-html="dessin(n.id, true)"></svg>{{ n.nom }}
             </button>
           </div>
           <div class="actions" v-if="!jeSuisPret">
-            <button class="btn" @click="tourner">↻ {{ orientationAffichee ? 'Horizontal' : 'Vertical' }}</button>
             <button class="btn" v-if="selNav !== null && flotte[selNav]" @click="retirerNavire">↩ Retirer</button>
             <button class="btn" v-else @click="placerAuHasard">🎲 {{ reserve.length && reserve.length < 5 ? 'Compléter' : 'Hasard' }}</button>
             <button class="btn" @click="viderPlacement" :disabled="reserve.length === 5" aria-label="Vider la mer">🧹</button>
@@ -328,10 +405,14 @@
             <div class="lettres"><span v-for="l in BN.LETTRES" :key="l">{{ l }}</span></div>
             <div class="mer-corps">
               <div class="chiffres"><span v-for="n in 10" :key="n">{{ n }}</span></div>
-              <div class="eau" :class="{ active: monTour, inactive: phase === 'jeu' && !monTour }">
-                <div v-for="x in celluleAdv" :key="x.i" class="cell" :class="x.classes" @click="toucherAdv(x.i)">
-                  <div v-if="x.coque" class="coque" :class="x.coque"></div>
-                  <div v-if="x.marque" class="marque" :class="x.marque"></div>
+              <div class="plan">
+                <div class="eau adv" :class="{ active: monTour, inactive: phase === 'jeu' && !monTour }">
+                  <div v-for="x in celluleAdv" :key="x.i" class="cell" :class="x.classes" @click="toucherAdv(x.i)">
+                    <div v-if="x.marque" class="marque" :class="x.marque"></div>
+                  </div>
+                  <div class="navires">
+                    <div v-for="n in naviresAdv" :key="n.id" class="navire" :class="n.classes" :style="n.style"><svg :view-box.camel="n.vb" v-html="n.svg"></svg></div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -339,10 +420,14 @@
           <div class="bas">
             <div class="mer">
               <div class="mer-corps">
-                <div class="eau">
-                  <div v-for="x in celluleMoi" :key="x.i" class="cell" :class="x.classes">
-                    <div v-if="x.coque" class="coque" :class="x.coque"></div>
-                    <div v-if="x.marque" class="marque" :class="x.marque"></div>
+                <div class="plan">
+                  <div class="eau">
+                    <div v-for="x in celluleMoi" :key="x.i" class="cell" :class="x.classes">
+                      <div v-if="x.marque" class="marque" :class="x.marque"></div>
+                    </div>
+                    <div class="navires">
+                      <div v-for="n in naviresMoi" :key="n.id" class="navire" :class="n.classes" :style="n.style"><svg :view-box.camel="n.vb" v-html="n.svg"></svg></div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -350,11 +435,11 @@
             <div class="panneau">
               <div class="titre">Flotte de {{ nomAdversaireCourt }}</div>
               <div class="flotte-etat">
-                <div v-for="n in flotteAdvEtat" :key="n.id" class="nav adv" :class="{ coule: n.coule }" :title="n.nom"><i v-for="k in n.t" :key="k"></i></div>
+                <div v-for="n in flotteAdvEtat" :key="n.id" class="nav adv" :class="{ coule: n.coule }" :title="n.nom"><svg class="mini-nav" :view-box.camel="'0 0 ' + n.t * 100 + ' 100'" :style="{ width: n.t * 12 + 'px' }" v-html="dessin(n.id, true)"></svg></div>
               </div>
               <div class="titre">Ma flotte</div>
               <div class="flotte-etat">
-                <div v-for="n in maFlotteEtat" :key="n.id" class="nav" :class="{ coule: n.coule }" :title="n.nom"><i v-for="k in n.t" :key="k" :class="{ touche: k <= n.touches && !n.coule }"></i></div>
+                <div v-for="n in maFlotteEtat" :key="n.id" class="nav" :class="{ coule: n.coule }" :title="n.nom"><svg class="mini-nav" :view-box.camel="'0 0 ' + n.t * 100 + ' 100'" :style="{ width: n.t * 12 + 'px' }" v-html="dessin(n.id, true)"></svg><span v-if="n.touches && !n.coule" class="impacts">{{ '●'.repeat(n.touches) }}</span></div>
               </div>
               <div class="verif" v-if="phase === 'fin' && verif" :class="verif.ok ? 'ok' : 'ko'">{{ verif.texte }}</div>
               <button class="btn" v-if="phase === 'jeu'" @click="abandonner">Abandonner</button>
@@ -476,6 +561,52 @@
       o.connect(g); g.connect(dest); o.start(t + 0.35); o.stop(t + 1.5);
       for (var k = 0; k < 5; k++) this.note(ctx, dest, t + 0.9 + k * 0.09 + Math.random() * 0.04, 500 + Math.random() * 500, 0.06, 0.08, 'sine');
     };
+
+    // ---------- Dessin des navires (vus du dessus, proue à droite ; une case = 100 unités) ----------
+    // Les classes c-… prennent leurs couleurs dans le style choisi (réaliste ou jeu de société).
+    function coqueD(L, w, proue) {
+      var a = 50 - w, b = 50 + w, p = proue;
+      return 'M12,' + a + ' L' + (L - p) + ',' + a + ' Q' + (L - p * 0.3) + ',' + a + ' ' + (L - 4) + ',50 Q' + (L - p * 0.3) + ',' + b + ' ' + (L - p) + ',' + b +
+             ' L12,' + b + ' Q5,' + b + ' 5,' + (b - 8) + ' L5,' + (a + 8) + ' Q5,' + a + ' 12,' + a + ' Z';
+    }
+    function tourelle(x, y, r, vers) {   // vers : +1 canon vers l'avant, -1 vers l'arrière
+      return '<line class="c-canon" x1="' + x + '" y1="' + y + '" x2="' + (x + vers * r * 2.6) + '" y2="' + y + '"/><circle class="c-tourelle" cx="' + x + '" cy="' + y + '" r="' + r + '"/>';
+    }
+    const DESSINS = [
+      // Porte-avions : pont d'envol, piste, îlot sur tribord, avions
+      () => '<path class="c-sillage" d="M6,36 Q-40,50 6,64 Z"/><path class="c-coque" d="' + coqueD(500, 40, 70) + '"/>' +
+            '<path class="c-pont" d="M18,18 L430,18 Q468,18 484,50 Q468,82 430,82 L18,82 Z"/>' +
+            '<line class="c-piste" x1="30" y1="50" x2="470" y2="50"/><line class="c-piste" x1="40" y1="70" x2="260" y2="30"/>' +
+            '<rect class="c-sombre" x="300" y="70" width="80" height="16" rx="3"/><rect class="c-detail" x="330" y="73" width="22" height="10" rx="2"/>' +
+            [110, 165, 380, 430].map(x => '<path class="c-avion" d="M' + x + ',28 L' + (x + 24) + ',36 L' + x + ',44 L' + (x + 5) + ',36 Z"/>').join(''),
+      // Croiseur : superstructure, cheminée, deux tourelles à l'avant, une à l'arrière
+      () => '<path class="c-sillage" d="M6,38 Q-36,50 6,62 Z"/><path class="c-coque" d="' + coqueD(400, 31, 95) + '"/>' +
+            '<line class="c-trait" x1="30" y1="50" x2="140" y2="50"/>' +
+            '<rect class="c-detail" x="140" y="33" width="100" height="34" rx="7"/><ellipse class="c-sombre" cx="178" cy="50" rx="15" ry="11"/>' +
+            '<rect class="c-sombre" x="222" y="39" width="22" height="22" rx="4"/>' + tourelle(285, 50, 13, 1) + tourelle(330, 50, 12, 1) + tourelle(95, 50, 13, -1),
+      // Contre-torpilleur : fin et effilé
+      () => '<path class="c-sillage" d="M6,40 Q-30,50 6,60 Z"/><path class="c-coque" d="' + coqueD(300, 24, 90) + '"/>' +
+            '<rect class="c-detail" x="140" y="38" width="44" height="24" rx="5"/><ellipse class="c-sombre" cx="112" cy="50" rx="13" ry="8"/>' +
+            tourelle(222, 50, 10, 1) + tourelle(52, 50, 10, -1),
+      // Sous-marin : coque ronde et sombre, kiosque
+      () => '<path class="c-sillage" d="M14,42 Q-22,50 14,58 Z"/><path class="c-coque c-sub" d="M16,50 Q16,29 58,29 L226,29 Q290,29 296,50 Q290,71 226,71 L58,71 Q16,71 16,50 Z"/>' +
+            '<path class="c-canon" d="M22,50 L6,36 M22,50 L6,64"/><line class="c-trait" x1="60" y1="50" x2="165" y2="50"/>' +
+            '<rect class="c-sombre" x="168" y="41" width="50" height="18" rx="9"/>',
+      // Torpilleur : petit, cabine et tubes lance-torpilles
+      () => '<path class="c-sillage" d="M6,42 Q-26,50 6,58 Z"/><path class="c-coque" d="' + coqueD(200, 21, 60) + '"/>' +
+            '<rect class="c-sombre" x="34" y="34" width="40" height="6" rx="3"/><rect class="c-sombre" x="34" y="60" width="40" height="6" rx="3"/>' +
+            '<rect class="c-detail" x="90" y="40" width="38" height="20" rx="5"/>' + tourelle(160, 50, 7, 1)
+    ];
+    const cacheDessins = {};
+    // Dessin SVG d'un navire, tourné d'un quart de tour (proue en haut) s'il est vertical
+    function dessinNavire(id, h) {
+      var cle = id + (h ? 'h' : 'v');
+      if (!cacheDessins[cle]) {
+        var L = BN.FLOTTE[id].t * 100, d = DESSINS[id]();
+        cacheDessins[cle] = h ? d : '<g transform="matrix(0 -1 1 0 0 ' + L + ')">' + d + '</g>';
+      }
+      return cacheDessins[cle];
+    }
 
     // Solo : partie complète (l'ordinateur ne regarde que ses propres tirs)
     let partie = null;
@@ -602,8 +733,9 @@
         flotte: [null, null, null, null, null],   // ma flotte [{ pos, h }] (null : encore dans la réserve)
         flotteIA: null,
         selNav: null,           // placement : navire choisi (dans la réserve ou déjà posé)
+        glissement: null,       // placement : navire qu'on fait glisser au doigt
+        styleVisuel: lireStockage('bataille-style') || 'realiste',   // 'realiste' | 'plateau' (sur ce téléphone)
         montrerConflits: false, // placement : après une validation refusée, les navires mal placés clignotent en rouge
-        orientH: true,          // placement : orientation des navires posés depuis la réserve
         etat: null,             // { journal, tour, fin, n } : les tirs des deux camps
         vise: null,             // case visée sur la mer adverse (touchée une fois)
         visee: null,            // tir en cours : { grille: 'adv' | 'moi', i }
@@ -665,10 +797,6 @@
         },
         reserve: function() { return BN.FLOTTE.filter(n => !this.flotte[n.id]); },
         conflits: function() { return BN.conflits(this.flotte, this.collesPartie); },
-        orientationAffichee: function() {
-          var n = this.selNav !== null ? this.flotte[this.selNav] : null;
-          return n ? n.h : this.orientH;
-        },
         jeSuisPret: function() { return !!(this.role && this.pub && this.pub.phase === 'placement' && this.pub.prets[this.monC]); },
         journal: function() { return (this.etat && this.etat.journal) || []; },
         tirEnAttente: function() { return !!(this.role && this.pub && this.pub.tir); },
@@ -690,18 +818,11 @@
           return rev && Array.isArray(rev.flotte) && !BN.erreurFlotte(rev.flotte, true) ? rev.flotte : null;
         },
         celluleAdv: function() {
-          var g = this.mesTirs, res = [], coques = {};
+          var g = this.mesTirs, res = [];
           var dernier = this.journal.filter(j => j.c === this.monC).pop();
-          if (this.flotteAdvVisible) Object.assign(coques, this.segments(this.flotteAdvVisible, 'cache'));
-          this.journal.forEach(j => {
-            if (j.c !== this.monC || j.res !== 'coule') return;
-            var h = j.cells[1] - j.cells[0] === 1;
-            j.cells.forEach((x, k) => { coques[x] = this.segment(h, k, j.cells.length, 'coulee'); });
-          });
           for (var i = 0; i < 100; i++) {
-            var x = { i: i, classes: { libre: g[i] === null, vise: this.vise === i && !(this.visee && this.visee.grille === 'adv'),
+            var x = { i: i, classes: { libre: g[i] === null, brume: g[i] === null, vise: this.vise === i && !(this.visee && this.visee.grille === 'adv'),
                                       visee: !!this.visee && this.visee.grille === 'adv' && this.visee.i === i, dernier: !!dernier && dernier.i === i && this.phase === 'jeu' } };
-            if (coques[i]) x.coque = coques[i];
             if (g[i] === 'e') x.marque = 'eau-tir';
             else if (g[i] === 't') x.marque = 'feu';
             else if (g[i] === 'c') x.marque = 'feu eteint';
@@ -710,12 +831,7 @@
           return res;
         },
         celluleMoi: function() {
-          var res = [], coques = this.segments(this.flotte, null), recus = {}, coulees = {}, enConflit = [];
-          var couverture = {};
-          if (this.phase === 'placement' && this.montrerConflits) {
-            this.conflits.forEach(k => { enConflit.push(k.a, k.b); });
-            this.flotte.forEach((n, k) => { if (n) BN.casesNavire(this.flotte, k).forEach(x => { couverture[x] = (couverture[x] || 0) + 1; }); });
-          }
+          var res = [], recus = {}, coulees = {};
           var dernier = this.journal.filter(j => j.c !== this.monC).pop();
           this.journal.forEach(j => {
             if (j.c === this.monC) return;
@@ -724,18 +840,54 @@
           });
           for (var i = 0; i < 100; i++) {
             var x = { i: i, classes: { visee: !!this.visee && this.visee.grille === 'moi' && this.visee.i === i, dernier: !!dernier && dernier.i === i && this.phase === 'jeu' } };
-            if (coques[i]) {
-              x.coque = Object.assign({}, coques[i]);
-              if (coulees[i]) x.coque.coulee = true;
-              if (this.phase === 'placement' && this.selNav === coques[i].id) x.coque.choisi = true;
-              if (this.phase === 'placement' && this.montrerConflits && enConflit.indexOf(coques[i].id) !== -1) x.coque.conflit = true;
-              if (couverture[i] > 1) x.coque.double = true;   // deux navires l'un sur l'autre
-            }
             if (recus[i] === 'eau') x.marque = 'eau-tir';
             else if (recus[i]) x.marque = coulees[i] ? 'feu eteint' : 'feu';
             res.push(x);
           }
           return res;
+        },
+        // Mes navires dessinés par-dessus ma mer
+        naviresMoi: function() {
+          var enConflit = [], coules = {};
+          if (this.phase === 'placement' && this.montrerConflits) this.conflits.forEach(k => { enConflit.push(k.a, k.b); });
+          this.journal.forEach(j => { if (j.c !== this.monC && j.res === 'coule') coules[j.nav] = true; });
+          var r = [];
+          this.flotte.forEach((n, id) => {
+            if (!n) return;
+            r.push(this.navireAffiche(id, n.pos, n.h, {
+              choisi: this.phase === 'placement' && this.selNav === id,
+              conflit: this.phase === 'placement' && enConflit.indexOf(id) !== -1,
+              coule: !!coules[id]
+            }));
+          });
+          // Le navire choisi passe au-dessus des autres
+          return r.sort((a, b) => (a.classes.choisi ? 1 : 0) - (b.classes.choisi ? 1 : 0));
+        },
+        // Navires adverses : ceux que j'ai coulés, et à la fin ceux qui restaient (en transparence)
+        naviresAdv: function() {
+          var r = [], vus = {};
+          this.journal.forEach(j => {
+            if (j.c !== this.monC || j.res !== 'coule') return;
+            vus[j.nav] = true;
+            r.push(this.navireAffiche(j.nav, j.cells[0], j.cells[1] - j.cells[0] === 1, { coule: true }));
+          });
+          if (this.flotteAdvVisible) this.flotteAdvVisible.forEach((n, id) => {
+            if (n && !vus[id]) r.push(this.navireAffiche(id, n.pos, n.h, { fantome: true }));
+          });
+          return r;
+        },
+        // Placement : boutons « pivoter » et « valider » devant la proue du navire choisi
+        // (à droite d'un navire horizontal, au-dessus d'un navire vertical ; de l'autre côté s'il touche le bord)
+        boutonsNavire: function() {
+          var id = this.selNav, n = id !== null ? this.flotte[id] : null;
+          if (this.phase !== 'placement' || !n || this.jeSuisPret || this.glissement && this.glissement.bouge) return null;
+          var t = BN.FLOTTE[id].t, l = Math.floor(n.pos / 10), k = n.pos % 10;
+          if (n.h) {
+            var devant = k + t <= 9;
+            return { sens: 'h', style: { left: devant ? 'calc(' + (k + t) * 10 + '% + 3px)' : 'calc(' + k * 10 + '% - 33px)', top: (l * 10 + 5) + '%' } };
+          }
+          var dessus = l >= 1;
+          return { sens: 'v', style: { left: (k * 10 + 5) + '%', top: dessus ? 'calc(' + l * 10 + '% - 33px)' : 'calc(' + (l + t) * 10 + '% + 3px)' } };
         },
         flotteAdvEtat: function() {
           var coules = this.journal.filter(j => j.c === this.monC && j.res === 'coule').map(j => j.nav);
@@ -763,11 +915,15 @@
           if (this.phase === 'placement') {
             if (this.jeSuisPret) return 'Prêt ! En attente de ' + this.nomAdversaire + '…';
             var att = this.role && this.pub && this.pub.prets[BN.autre(this.monC)] ? ' (' + this.nomAdversaire + ' est prêt)' : '';
-            if (this.montrerConflits && this.conflits.length) return 'Déplace les navires en rouge, puis valide à nouveau.' + att;
-            if (this.selNav !== null && this.flotte[this.selNav]) return 'Touche une case pour déplacer le ' + BN.FLOTTE[this.selNav].nom.toLowerCase() + ', ou touche-le encore pour le tourner.' + att;
-            if (this.selNav !== null) return 'Touche la case où mettre l\'avant du ' + BN.FLOTTE[this.selNav].nom.toLowerCase() + '.' + att;
-            if (this.reserve.length) return 'Choisis un navire sous la mer, puis sa case.' + att;
-            return 'Place tes navires comme tu veux, puis « Prêt » : la grille est vérifiée à ce moment-là.' + att;
+            var nom = (id) => BN.FLOTTE[id].nom.toLowerCase();
+            if (this.selNav !== null && this.flotte[this.selNav]) {
+              if (this.montrerConflits && this.conflits.some(k => k.a === this.selNav || k.b === this.selNav)) return 'Déplace le ' + nom(this.selNav) + ' (en rouge), puis ✓.' + att;
+              return 'Glisse le ' + nom(this.selNav) + ' ou touche une case pour le déplacer ; ↻ pour pivoter, ✓ pour valider.' + att;
+            }
+            if (this.montrerConflits && this.conflits.length) return 'Touche un navire en rouge pour le déplacer, puis valide à nouveau.' + att;
+            if (this.selNav !== null) return 'Touche la mer pour y poser le ' + nom(this.selNav) + '.' + att;
+            if (this.reserve.length) return 'Touche la mer pour y poser le ' + nom(this.reserve[0].id) + ', ou choisis un autre navire dessous.' + att;
+            return 'Flotte en place : touche un navire pour le reprendre, sinon « Prêt ».' + att;
           }
           if (this.phase === 'fin') return 'Partie terminée : les deux flottes sont dévoilées.';
           if (this.tirEnAttente) return this.pub.tir.c === this.monC ? '💥 Tir en ' + BN.nomCase(this.pub.tir.i) + '…' : '💥 ' + this.nomAdversaire + ' tire en ' + BN.nomCase(this.pub.tir.i) + '…';
@@ -783,6 +939,7 @@
         colles: function(v) { ecrireStockage('bataille-colles', v); },
         rejouerSiTouche: function(v) { ecrireStockage('bataille-rejouer', v); },
         niveau: function(v) { ecrireStockage('bataille-niveau', v); },
+        styleVisuel: function(v) { ecrireStockage('bataille-style', v); },
         sonActif: function(v) { ecrireStockage('brillant-son', v); },
         vibrationActive: function(v) { ecrireStockage('brillant-vibration', v); if (v) vibrer(40); },
         voixActive: function(v) { ecrireStockage('brillant-voix', v); if (v) Voix.dire('Annonce de ton tour activée'); },
@@ -825,22 +982,14 @@
           this.afficherMessage(this.sonActif ? '🔊 Sons activés.' : '🔇 Sons coupés.');
         },
         // Dessin d'un navire : un segment de coque par case (proue arrondie, pont au milieu)
-        segment: function(h, k, t, etat) {
-          var s = { h: h, v: !h, debut: k === 0, fin: k === t - 1, milieu: k > 0 && k < t - 1 && k % 2 === 1 };
-          if (etat) s[etat] = true;
-          return s;
+        // Un navire posé sur la mer : position en % de la grille et dessin (proue à droite, ou en haut s'il est vertical)
+        navireAffiche: function(id, pos, h, etats) {
+          var t = BN.FLOTTE[id].t, L = t * 100;
+          return { id: id, classes: etats,
+                   style: { left: (pos % 10) * 10 + '%', top: Math.floor(pos / 10) * 10 + '%', width: (h ? t : 1) * 10 + '%', height: (h ? 1 : t) * 10 + '%' },
+                   vb: h ? '0 0 ' + L + ' 100' : '0 0 100 ' + L, svg: this.dessin(id, h) };
         },
-        segments: function(flotte, etat) {
-          var r = {};
-          (flotte || []).forEach((n, id) => {
-            if (!n) return;
-            var cs = BN.cases(n.pos, n.h, BN.FLOTTE[id].t);
-            if (!cs) return;
-            cs.forEach((x, k) => { r[x] = Object.assign(this.segment(n.h, k, cs.length, etat), { id: id }); });
-          });
-          if (etat === 'cache') Object.keys(r).forEach(x => { delete r[x].id; });
-          return r;
-        },
+        dessin: function(id, h) { return dessinNavire(id, h); },
 
         // ---------- Règles (solo : pour la prochaine partie ; hôte : recommence le placement) ----------
         choisirRegle: function(cle, v) {
@@ -876,7 +1025,7 @@
           this.visee = null;
           this.attente = false;
           this.annonce = null;
-          this.selNav = 0;
+          this.selNav = null;
           this.montrerConflits = false;
           this.flotte = [null, null, null, null, null];   // on part d'une mer vide
           this.flotteIA = BN.flotteAleatoire(this.collesPartie);
@@ -895,66 +1044,115 @@
         viderPlacement: function() {
           if (this.jeSuisPret) return;
           this.flotte = [null, null, null, null, null];
-          this.selNav = 0;
+          this.selNav = null;
           this.montrerConflits = false;
           this.memoriserPlacement();
         },
-        choisirNavire: function(id) { this.selNav = this.selNav === id ? null : id; },
+        // ---- Placement libre : le navire choisi reste choisi (boutons ↻ et ✓ devant sa proue) jusqu'à ce qu'on le valide ----
+        choisirNavire: function(id) {
+          if (this.jeSuisPret || id === this.selNav) return;
+          if (!this.validerNavire(true)) return;          // le navire en cours doit d'abord être validé
+          this.selNav = id;
+        },
         retirerNavire: function() {
           if (this.selNav === null) return;
           this.$set(this.flotte, this.selNav, null);
+          this.selNav = null;
           this.son('toc');
           this.memoriserPlacement();
         },
-        // Pose le navire id avec sa proue au plus près de la case i (recalé pour rester dans la mer).
-        // Placement libre : aucune règle ici, tout est vérifié quand on valide (« Prêt »).
-        poser: function(id, i, h) {
-          var t = BN.FLOTTE[id].t, l = Math.floor(i / 10), k = i % 10;
-          if (h) k = Math.min(k, 10 - t); else l = Math.min(l, 10 - t);
-          var pos = l * 10 + k;
+        // Pose le navire id centré sur la case i (recalé pour rester dans la mer). Aucune règle ici :
+        // la vérification se fait quand on valide le navire (✓) ou la flotte (« Prêt »).
+        poser: function(id, i, h, silencieux) {
+          var t = BN.FLOTTE[id].t, l = Math.floor(i / 10), k = i % 10, d = Math.floor((t - 1) / 2);
+          if (h) k = Math.max(0, Math.min(k - d, 10 - t)); else l = Math.max(0, Math.min(l - d, 10 - t));
+          var n = this.flotte[id], pos = l * 10 + k;
+          if (n && n.pos === pos && n.h === h) return;
           this.$set(this.flotte, id, { pos: pos, h: h });
-          this.son('toc');
+          if (!silencieux) this.son('toc');
           this.memoriserPlacement();
+        },
+        // Pivote le navire choisi autour de son milieu
+        tourner: function() {
+          if (this.jeSuisPret || this.selNav === null) return;
+          var n = this.flotte[this.selNav];
+          if (!n) return;
+          var cs = BN.casesNavire(this.flotte, this.selNav);
+          this.poser(this.selNav, cs[Math.floor((cs.length - 1) / 2)], !n.h);
+        },
+        // ✓ : le navire choisi est-il bien placé par rapport aux autres ? (silencieux : appelé avant de passer à un autre)
+        validerNavire: function(silencieux) {
+          var id = this.selNav;
+          if (id === null || !this.flotte[id]) { this.selNav = silencieux ? this.selNav : null; return true; }
+          var pb = this.conflits.filter(k => k.a === id || k.b === id);
+          if (pb.length) {
+            this.montrerConflits = true;
+            this.afficherMessage(this.texteConflit(pb));
+            this.vibre([60, 40, 60]);
+            return false;
+          }
+          this.selNav = null;
+          if (!this.conflits.length) this.montrerConflits = false;
+          if (!silencieux) this.son('toc');
           return true;
         },
-        tourner: function() {
-          if (this.jeSuisPret) return;
-          var n = this.selNav !== null ? this.flotte[this.selNav] : null;
-          if (!n) { this.orientH = !this.orientH; return; }
-          this.poser(this.selNav, n.pos, !n.h);
+        texteConflit: function(pb) {
+          var nom = (k) => BN.FLOTTE[k].nom.toLowerCase(), p0 = pb[0];
+          return 'Le ' + nom(p0.a) + ' et le ' + nom(p0.b) + (p0.type === 'chevauche' ? ' se chevauchent' : ' se touchent : laisse une case d\'eau autour') +
+                 (pb.length > 1 ? ' (et ' + (pb.length - 1) + ' autre' + (pb.length > 2 ? 's' : '') + ' problème' + (pb.length > 2 ? 's' : '') + ').' : '.');
+        },
+        // Case de la mer sous le doigt
+        caseSous: function(e) {
+          var r = this.$refs.merPlacement.getBoundingClientRect();
+          var k = Math.floor((e.clientX - r.left) / r.width * 10), l = Math.floor((e.clientY - r.top) / r.height * 10);
+          return { k: Math.max(0, Math.min(9, k)), l: Math.max(0, Math.min(9, l)) };
+        },
+        // Doigt posé sur la mer : sur le navire choisi, on le fait glisser ; ailleurs, c'est un toucher
+        appui: function(e) {
+          if (this.jeSuisPret || e.button > 0) return;
+          var c = this.caseSous(e), i = c.l * 10 + c.k, id = this.selNav, n = id !== null ? this.flotte[id] : null;
+          if (n && BN.casesNavire(this.flotte, id).indexOf(i) !== -1) {
+            this.glissement = { id: id, c0: c, pos0: n.pos, bouge: false };
+            try { e.currentTarget.setPointerCapture(e.pointerId); } catch (x) {}
+          } else this.glissement = { toucher: i };
+        },
+        glisse: function(e) {
+          var g = this.glissement;
+          if (!g || g.toucher !== undefined) return;
+          var c = this.caseSous(e), n = this.flotte[g.id], t = BN.FLOTTE[g.id].t;
+          var l = Math.floor(g.pos0 / 10) + c.l - g.c0.l, k = g.pos0 % 10 + c.k - g.c0.k;
+          l = Math.max(0, Math.min(l, n.h ? 9 : 10 - t)); k = Math.max(0, Math.min(k, n.h ? 10 - t : 9));
+          var pos = l * 10 + k;
+          if (pos !== n.pos) { g.bouge = true; this.$set(this.flotte, g.id, { pos: pos, h: n.h }); }
+        },
+        lache: function() {
+          var g = this.glissement;
+          this.glissement = null;
+          if (!g) return;
+          if (g.toucher !== undefined) return this.toucherPlacement(g.toucher);
+          if (g.bouge) { this.son('toc'); this.memoriserPlacement(); }
         },
         toucherPlacement: function(i) {
           if (this.jeSuisPret) return;
           var id = this.selNav;
-          // Navires sur cette case (plusieurs s'ils se chevauchent)
+          if (id !== null) return this.poser(id, i, this.flotte[id] ? this.flotte[id].h : true);   // le navire choisi vient ici
+          // Rien de choisi : toucher un navire le reprend ; toucher l'eau y pose le prochain navire de la réserve
           var ici = this.flotte.map((n, k) => n && BN.casesNavire(this.flotte, k).indexOf(i) !== -1 ? k : -1).filter(k => k !== -1);
-          if (ici.length && !(id !== null && !this.flotte[id])) {
-            // Un navire déjà posé : on le choisit, ou on le tourne s'il l'était déjà
-            if (ici.indexOf(id) !== -1) return this.tourner();
-            this.selNav = ici[ici.length - 1];
-            return;
-          }
-          if (id === null) return;
-          var deja = !!this.flotte[id];
-          if (this.poser(id, i, deja ? this.flotte[id].h : this.orientH) && !deja) {
-            var suivant = this.reserve[0];
-            this.selNav = suivant ? suivant.id : null;
-          } else if (deja) this.selNav = null;
+          if (ici.length) { this.selNav = ici[ici.length - 1]; return; }
+          if (this.reserve.length) { this.selNav = this.reserve[0].id; this.poser(this.selNav, i, true); }
         },
         memoriserPlacement: function() {
           if (this.role && this.prive) { this.prive.flotte = copie(this.flotte); this.ecrirePrive(); }
           this.sauvegarder();
         },
         commencer: function() {
+          if (!this.validerNavire(true)) return;
           if (this.reserve.length) return this.afficherMessage('Il reste ' + this.reserve.length + ' navire' + (this.reserve.length > 1 ? 's' : '') + ' à placer.');
           var pb = this.conflits;
           if (pb.length) {
             // Validation refusée : on montre les navires en cause
             this.montrerConflits = true;
-            var nom = (k) => BN.FLOTTE[k].nom.toLowerCase();
-            var p0 = pb[0];
-            this.afficherMessage('Le ' + nom(p0.a) + ' et le ' + nom(p0.b) + (p0.type === 'chevauche' ? ' se chevauchent' : ' se touchent : laisse une case d\'eau autour') +
-                                 (pb.length > 1 ? ' (et ' + (pb.length - 1) + ' autre' + (pb.length > 2 ? 's' : '') + ' problème' + (pb.length > 2 ? 's' : '') + ').' : '.'));
+            this.afficherMessage(this.texteConflit(pb));
             this.vibre([60, 40, 60]);
             return;
           }
@@ -1096,7 +1294,7 @@
           if (!this.prive || this.prive.partieId !== pub.partieId) {
             this.prive = { partieId: pub.partieId, c: c, flotte: [null, null, null, null, null], sel: null };
             this.ecrirePrive();
-            this.fin = null; this.verif = null; this.finMasquee = false; this.selNav = 0; this.montrerConflits = false; this.vise = null; this.visee = null; this.annonce = null;
+            this.fin = null; this.verif = null; this.finMasquee = false; this.selNav = null; this.montrerConflits = false; this.vise = null; this.visee = null; this.annonce = null;
             this.ajouterLog('Nouvelle partie : place ta flotte.', true);
           }
           this.flotte = copie(this.prive.flotte);

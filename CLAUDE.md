@@ -77,7 +77,7 @@ Brilliant : `brillant-sauvegarde-v1`, `brillant-dernier-salon`, `brillant-record
 Yams : `yams-sauvegarde`, `yams-dernier-salon`, `yams2-record`, `yams2-classements` (le « 2 » : barème maison).
 Assaut : `assaut-sauvegarde`, `assaut-prive` (mon armée en salon), `assaut-dernier-salon`, `assaut-mode`, `assaut-memoire`, `assaut-stats`, `assaut-dispositions`, `assaut-apparence`, `assaut-images`, `assaut-numerotation`, `assaut-couleur`.
 Backgammon : `bg-sauvegarde`, `bg-dernier-salon`.
-Bataille navale : `bataille-sauvegarde`, `bataille-prive` (ma flotte en salon), `bataille-dernier-salon`, `bataille-stats`, `bataille-colles`, `bataille-rejouer`, `bataille-niveau`.
+Bataille navale : `bataille-sauvegarde`, `bataille-prive` (ma flotte en salon), `bataille-dernier-salon`, `bataille-stats`, `bataille-colles`, `bataille-rejouer`, `bataille-niveau`, `bataille-style`.
 
 ## Règles des jeux (choix de l'utilisateur, à ne pas changer sans lui)
 
@@ -129,9 +129,14 @@ Bataille navale : `bataille-sauvegarde`, `bataille-prive` (ma flotte en salon), 
   Annonces : à l'eau, touché, coulé (avec le nom du navire).
 - Règles par défaut : navires séparés d'au moins une case (même en diagonale), un tir chacun son tour.
   Options de l'hôte (ou du joueur seul) : « les navires peuvent se toucher », « rejouer tant qu'on touche ».
-- Placement **libre** : on part d'une mer vide, réserve de navires sous la mer, Hasard / Compléter, Vider ;
-  toucher un navire posé le choisit, le toucher encore le tourne. Aucune contrainte pendant la pose (chevauchements
-  possibles) : la grille n'est vérifiée qu'à « Prêt », et les navires en cause clignotent alors en rouge. Pour tirer : toucher une case pour viser, la retoucher pour faire feu.
+- Placement **libre** : on part d'une mer vide, réserve de navires sous la mer, Hasard / Compléter, Vider.
+  Toucher l'eau y pose le prochain navire (centré sur la case) ; le navire posé **reste choisi** avec deux boutons
+  devant sa proue, ↻ pivoter et ✓ valider, jusqu'à sa validation. On le déplace en le faisant glisser au doigt ou en
+  touchant une autre case. Aucune contrainte pendant la pose : ✓ vérifie ce navire, « Prêt » toute la flotte ; les navires
+  en cause clignotent alors en rouge. Toucher un navire validé le reprend. Pour tirer : toucher une case pour viser, la retoucher pour faire feu.
+- Apparence (par téléphone, `bataille-style`) : **Réaliste** (navires d'acier vus du dessus, mer profonde avec reflets,
+  brume sur la mer adverse, feu et fumée) ou **Jeu de société** (couleurs franches, contours nets, fiches blanches et rouges).
+  Navires dessinés en SVG par le code (`DESSINS`), une silhouette par type, proue à droite (en haut si vertical).
 - Solo : l'ordinateur ne voit que ses propres tirs (comptage des placements possibles), niveaux Facile / Normal / Fort.
 - À deux : la flotte ne quitte jamais le téléphone (`bataille-prive`) ; empreinte SHA-256 (flotte + sel) au départ,
   le téléphone visé répond seul à chaque tir, à la fin chacun dévoile sa flotte et l'autre vérifie l'empreinte et toutes les réponses.
