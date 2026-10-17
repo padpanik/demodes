@@ -660,7 +660,6 @@
         <label class="case-a-cocher"><input type="checkbox" v-model="sonActif"> 🔊 Sons</label>
         <label class="case-a-cocher" v-if="vibrationSupportee"><input type="checkbox" v-model="vibrationActive"> 📳 Vibrations</label>
         <label class="case-a-cocher" v-if="voixSupportee"><input type="checkbox" v-model="voixActive"> 🗣️ Annoncer mon tour</label>
-        <label class="case-a-cocher"><input type="checkbox" v-model="entreeAuto"> 🚪 Entrer dans mon salon au lancement</label>
         <label class="case-a-cocher" v-if="veilleSupportee"><input type="checkbox" v-model="garderEcran"> ☀️ Garder l'écran allumé</label>
       </section>
 
@@ -1042,7 +1041,7 @@
     function lireLigne(ligne) { return ligne.trim().split(/\s+/); }
 
     // Numéro de version affiché sur l'accueil (à augmenter à chaque mise en ligne)
-    const VERSION = '1.46';
+    const VERSION = '1.47';
 
     // ================== ACCÈS PRIVÉ ==================
     // Application réservée à un cercle d'amis : un code est demandé au premier lancement.
@@ -1268,7 +1267,7 @@
         // Classements solo partagés, par nom de salon : { salon: { niveau: { idJoueur: { p: pseudo, s: score, d: date } } } }
         classements: lireStockage('brillant-classements') || {},
         entreeEnCours: false,    // tentative d'entrée dans le salon en cours
-        entreeAuto: lireStockage('brillant-entree-auto') !== false, // entrer dans le salon mémorisé au lancement
+        entreeAuto: false,   // plus d'entrée automatique dans le salon au lancement (choix de l'utilisateur) : on touche « Entrer »
         topInfo: '',             // état de la synchronisation des scores
         topOuvert: false,        // fenêtre « Top 10 solo »
         topNiveau: 1,

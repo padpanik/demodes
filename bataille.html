@@ -330,7 +330,6 @@
         <label class="case-a-cocher"><input type="checkbox" v-model="sonActif"> 🔊 Sons</label>
         <label class="case-a-cocher" v-if="vibrationSupportee"><input type="checkbox" v-model="vibrationActive"> 📳 Vibrations</label>
         <label class="case-a-cocher" v-if="voixSupportee"><input type="checkbox" v-model="voixActive"> 🗣️ Annoncer mon tour</label>
-        <label class="case-a-cocher"><input type="checkbox" v-model="entreeAuto"> 🚪 Entrer dans mon salon au lancement</label>
         <label class="case-a-cocher" v-if="veilleSupportee"><input type="checkbox" v-model="garderEcran"> ☀️ Garder l'écran allumé</label>
       </section>
 
@@ -762,7 +761,7 @@
         vibrationActive: lireStockage('brillant-vibration') !== null ? lireStockage('brillant-vibration') !== false : lireStockage('brillant-son') !== false,
         voixActive: lireStockage('brillant-voix') !== false,
         voixSupportee: Voix.supportee,
-        entreeAuto: lireStockage('brillant-entree-auto') !== false,
+        entreeAuto: false,   // plus d'entrée automatique dans le salon au lancement (choix de l'utilisateur) : on touche « Entrer »
         garderEcran: lireStockage('brillant-garder-ecran') !== false,
         veilleSupportee: 'wakeLock' in navigator,
         veilleActive: false
@@ -1587,7 +1586,12 @@
               var pseudo = String(data.pseudo || '').trim().slice(0, 20);
               var existant = salle.infos[pseudo], refus = '';
               if (!pseudo || pseudo === monPseudo || (existant && existant.connecte && existant.clientId !== data.clientId && connParPseudo[pseudo] && connParPseudo[pseudo] !== conn)) refus = 'Ce pseudo est déjà utilisé dans ce salon.';
-              else if (pubHote.ordre.indexOf(pseudo) === -1 && pubHote.ordre.length >= 2) refus = 'Ce salon est complet : la bataille navale se joue à deux.';
+              else if (pubHote.ordre.indexOf(pseudo) === -1 && pubHote.ordre.length >= 2) {
+                // Salon complet : si l'autre joueur n'est plus là (ancienne partie, téléphone éteint…), le nouveau venu prend sa place
+                var absent = pubHote.ordre.find(x => x !== monPseudo && !(salle.infos[x] && salle.infos[x].connecte));
+                if (absent) { this.retirerJoueur(absent); this.ajouterLog(absent + ' était absent : ' + pseudo + ' prend sa place.', true); }
+                else refus = 'Ce salon est complet : la bataille navale se joue à deux.';
+              }
               if (refus) {
                 try { conn.send({ action: 'REFUS', fatal: true, message: refus }); } catch (e) {}
                 setTimeout(() => { try { conn.close(); } catch (e) {} }, 500);
@@ -1609,10 +1613,7 @@
             }
             case 'DEPART':
               if (!p) return;
-              delete connParPseudo[p];
-              delete salle.infos[p];
-              pubHote.ordre = pubHote.ordre.filter(x => x !== p);
-              Object.assign(pubHote, { phase: 'attente', partieId: null, journal: [], tir: null, fin: null, prets: {}, revelations: {} });
+              this.retirerJoueur(p);
               this.ajouterLog(p + ' a quitté le salon.', true);
               this.publier();
               break;
@@ -1625,6 +1626,13 @@
               break;
             }
           }
+        },
+        // Retire un joueur du salon (départ volontaire, ou place reprise par un nouveau venu)
+        retirerJoueur: function(p) {
+          delete connParPseudo[p];
+          delete salle.infos[p];
+          pubHote.ordre = pubHote.ordre.filter(x => x !== p);
+          Object.assign(pubHote, { phase: 'attente', partieId: null, journal: [], tir: null, fin: null, prets: {}, revelations: {} });
         },
         perteClient: function(conn) {
           if (conn._perdue) return;

@@ -68,6 +68,10 @@ Pas d'étape de construction, pas de dépendance à ajouter.
   de la partie ; l'ancien hôte, à son retour, rejoint comme simple joueur.
 - Brilliant : la reprise par un joueur ne se fait qu'avant le premier lancer.
 - Un joueur momentanément absent (appel, autre appli) est **attendu** ; l'hôte peut passer son tour (Yams).
+- **Pas d'entrée automatique** dans le salon au lancement (option retirée) : le nom du dernier salon est prérempli, on touche « Entrer ».
+  Une partie en cours après un rechargement se reconnecte toujours toute seule.
+- Jeux à deux (Backgammon, Assaut, Bataille navale) : si le salon est complet mais que l'autre joueur est **absent**
+  (déconnecté), un nouveau venu prend sa place (`retirerJoueur`) au lieu d'être refusé.
 - **Un seul salon à la fois par téléphone** : entrer dans un salon (`entrerSalon`) appelle `fermerAutresSalons(jeu)`
   (`commun.js`, copie dans `brilliant.html`), qui oublie le salon en cours des autres jeux (rôle et salon effacés de leur
   sauvegarde). L'accueil affiche le salon en cours avec un bouton « ✕ Quitter » (`oublierSalonDuJeu`).
@@ -75,7 +79,7 @@ Pas d'étape de construction, pas de dépendance à ajouter.
 ## Stockage local (préfixe historique `brillant-` conservé volontairement)
 
 Communs : `brillant-acces`, `brillant-client-id`, `brillant-son`, `brillant-vibration`, `brillant-voix`,
-`brillant-garder-ecran`, `brillant-entree-auto`, `brillant-salons` (liste des salons, partagée), `desdale-dernier-jeu`.
+`brillant-garder-ecran`, `brillant-entree-auto` (plus utilisé), `brillant-salons` (liste des salons, partagée), `desdale-dernier-jeu`.
 Brilliant : `brillant-sauvegarde-v1`, `brillant-dernier-salon`, `brillant-records(-dates)`, `brillant-classements`, `brillant-rejoindre-auto`.
 Yams : `yams-sauvegarde`, `yams-dernier-salon`, `yams2-record`, `yams2-classements` (le « 2 » : barème maison).
 Assaut : `assaut-sauvegarde`, `assaut-prive` (mon armée en salon), `assaut-dernier-salon`, `assaut-mode`, `assaut-memoire`, `assaut-stats`, `assaut-dispositions`, `assaut-apparence`, `assaut-images`, `assaut-numerotation`, `assaut-couleur`.

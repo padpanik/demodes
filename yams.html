@@ -200,7 +200,6 @@
         <label class="case-a-cocher"><input type="checkbox" v-model="sonActif"> 🔊 Sons</label>
         <label class="case-a-cocher" v-if="vibrationSupportee"><input type="checkbox" v-model="vibrationActive"> 📳 Vibrations</label>
         <label class="case-a-cocher" v-if="voixSupportee"><input type="checkbox" v-model="voixActive"> 🗣️ Annoncer mon tour</label>
-        <label class="case-a-cocher"><input type="checkbox" v-model="entreeAuto"> 🚪 Entrer dans mon salon au lancement</label>
         <label class="case-a-cocher" v-if="veilleSupportee"><input type="checkbox" v-model="garderEcran"> ☀️ Garder l'écran allumé</label>
       </section>
 
@@ -575,7 +574,7 @@
         vibrationActive: lireStockage('brillant-vibration') !== null ? lireStockage('brillant-vibration') !== false : lireStockage('brillant-son') !== false,
         voixActive: lireStockage('brillant-voix') !== false,
         voixSupportee: Voix.supportee,
-        entreeAuto: lireStockage('brillant-entree-auto') !== false,
+        entreeAuto: false,   // plus d'entrée automatique dans le salon au lancement (choix de l'utilisateur) : on touche « Entrer »
         garderEcran: lireStockage('brillant-garder-ecran') !== false,
         veilleSupportee: 'wakeLock' in navigator,
         veilleActive: false
