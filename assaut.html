@@ -1408,7 +1408,7 @@
           var e = this._entree;
           if (!e) return;
           this.reinitialiserPeer(false);
-          if (++e.essais >= 4) return this.finEntree(false, 'Impossible d\'entrer dans le salon pour le moment. Réessaie dans un instant.');
+          if (++e.essais >= 4) return this.finEntree(false, 'Impossible d\'entrer dans le salon pour le moment.\n\nSi vous êtes sur le même Wi-Fi (location, hôtel, Wi-Fi invité…), il empêche souvent les téléphones de se parler : passe l\'un des deux en 4G/5G (Wi-Fi coupé), puis réessaie.');
           setTimeout(() => { if (this._entree === e && !this.role) this.creerPartie(false); }, 1200);
         },
         quitterSalon: function() {
@@ -1637,7 +1637,7 @@
             if (peer !== monPeer) return;
             if (this.role) { this.connexion = 'perdue'; this.planifierReconnexion(); }
             else if (this._entree) this.suiteEntree();
-            else { this.reinitialiserPeer(false); alert('Impossible de joindre ce salon.'); }
+            else { this.reinitialiserPeer(false); alert('Impossible de joindre ce salon.\n\nSur un même Wi-Fi (location, hôtel, Wi-Fi invité…), passe l\'un des téléphones en 4G/5G puis réessaie.'); }
           });
         },
         perteHote: function() {

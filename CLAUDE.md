@@ -68,6 +68,9 @@ Pas d'étape de construction, pas de dépendance à ajouter.
   de la partie ; l'ancien hôte, à son retour, rejoint comme simple joueur.
 - Brilliant : la reprise par un joueur ne se fait qu'avant le premier lancer.
 - Un joueur momentanément absent (appel, autre appli) est **attendu** ; l'hôte peut passer son tour (Yams).
+- Connexion impossible sur un **même Wi-Fi** (location, hôtel, Wi-Fi invité : isolation des appareils) : constaté par
+  l'utilisateur, ça marche dès qu'un téléphone passe en 4G/5G. Le message d'échec d'entrée le conseille. PeerJS utilise
+  déjà ses relais TURN par défaut (UDP 3478) ; un relais TURN plus robuste demanderait un compte (Metered, Cloudflare…).
 - **Pas d'entrée automatique** dans le salon au lancement (option retirée) : le nom du dernier salon est prérempli, on touche « Entrer ».
   Une partie en cours après un rechargement se reconnecte toujours toute seule.
 - Jeux à deux (Backgammon, Assaut, Bataille navale) : si le salon est complet mais que l'autre joueur est **absent**
