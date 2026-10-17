@@ -1,0 +1,1188 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <!-- resizes-content : quand le clavier s'ouvre, la page rétrécit et la zone de dessin avec (le champ reste visible) -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
+  <title>Gribouille · Désdale</title>
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="theme-color" content="#f3f5f7">
+  <link rel="icon" type="image/png" href="favicon.png">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Désdale">
+  <script src="https://cdn.jsdelivr.net/npm/vue@2.7.16/dist/vue.min.js"></script>
+  <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+  <link rel="stylesheet" href="commun.css">
+  <style>
+    .logo-gb { width: 51px; height: 51px; border-radius: 10px; background: #fff; box-shadow: inset 0 0 0 2px #2c3e50; display: flex; align-items: center; justify-content: center; }
+    .segment { display: flex; background: #e3e8ec; border-radius: 10px; padding: 3px; gap: 3px; margin-bottom: 6px; }
+    .segment button { flex: 1; border: none; background: transparent; border-radius: 8px; padding: 8px 4px; font: inherit; font-weight: 600; color: #5b6b78; cursor: pointer; }
+    .segment button.actif { background: #fff; color: #1d2b36; box-shadow: 0 1px 3px rgba(0,0,0,0.12); }
+    .segment button:disabled { opacity: 0.6; }
+    .titre-option { font-size: 0.85em; font-weight: 700; color: #5b6b78; margin: 8px 2px 4px; }
+
+    /* ---------- Jeu ---------- */
+    .joueurs-bande { display: flex; gap: 5px; flex-wrap: wrap; justify-content: center; margin-bottom: 4px; font-size: 0.82em; }
+    .joueurs-bande > span { background: #e6ebef; border-radius: 12px; padding: 2px 9px; white-space: nowrap; }
+    .joueurs-bande > span.dessine { background: #fff3d6; box-shadow: inset 0 0 0 1.5px #e0a526; }
+    .joueurs-bande > span.trouve { background: #dff3e6; box-shadow: inset 0 0 0 1.5px #3c9a62; }
+    .joueurs-bande > span.absent { opacity: 0.45; }
+    .info { display: flex; align-items: center; gap: 8px; min-height: 40px; margin-bottom: 4px; }
+    .indice { flex: 1; min-width: 0; text-align: center; font-weight: 800; font-size: 1.25em; letter-spacing: 0.14em; color: #1d2b36; font-family: ui-monospace, Menlo, Consolas, monospace; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .indice small { font-family: system-ui, sans-serif; letter-spacing: 0; font-weight: 600; font-size: 0.6em; color: #6b7a86; margin-left: 6px; }
+    .indice.mot-a-dessiner { letter-spacing: 0.02em; font-family: system-ui, sans-serif; font-size: 1.1em; }
+    .indice.mot-a-dessiner small { margin: 0 6px 0 0; }
+    .chrono { width: 46px; height: 46px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.95em; color: #1d2b36;
+              background: conic-gradient(#4a90d9 calc(var(--part, 1) * 360deg), #e3e8ec 0); position: relative; }
+    .chrono::before { content: ''; position: absolute; inset: 4px; border-radius: 50%; background: #f3f5f7; }
+    .chrono span { position: relative; }
+    .chrono.urgent { background: conic-gradient(#d9534f calc(var(--part, 1) * 360deg), #e3e8ec 0); color: #c0392b; }
+
+    /* Zone de dessin : carrée, aussi grande que possible sans faire défiler (elle rétrécit quand le clavier s'ouvre) */
+    .toile-boite { position: relative; width: min(100%, calc(100dvh - 330px)); min-width: 180px; aspect-ratio: 1 / 1; margin: 0 auto; border-radius: 10px; overflow: hidden;
+                   background: #fff; box-shadow: 0 1px 2px rgba(0,0,0,0.08), 0 3px 12px rgba(29,43,54,0.12); touch-action: none; }
+    .toile-boite.dessinateur { box-shadow: 0 0 0 2.5px #e0a526, 0 3px 12px rgba(29,43,54,0.12); }
+    .toile-boite canvas { display: block; width: 100%; height: 100%; }
+    .toile-voile { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; text-align: center; padding: 16px;
+                   background: rgba(243, 245, 247, 0.94); color: #3b4b57; }
+    .toile-voile .grand { font-size: 2.2em; }
+    .toile-voile .mot-revele { font-size: 1.5em; font-weight: 800; color: #1d2b36; }
+    .choix-mots { display: flex; flex-direction: column; gap: 8px; width: 100%; max-width: 240px; }
+    .choix-mots button { padding: 12px; border-radius: 12px; border: 2px solid #2c3e50; background: #fff; font: inherit; font-weight: 800; font-size: 1.05em; cursor: pointer; }
+    .gains { list-style: none; padding: 0; margin: 0; font-size: 0.92em; width: 100%; max-width: 240px; }
+    .gains li { display: flex; justify-content: space-between; padding: 2px 4px; }
+    .gains li strong { color: #2f8a5b; }
+
+    /* Outils du dessinateur */
+    .outils { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; align-items: center; margin-top: 8px; }
+    .pastille-coul { width: 28px; height: 28px; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 0 0 1.5px #c9d2d9; padding: 0; cursor: pointer; }
+    .pastille-coul.actif { box-shadow: 0 0 0 3px #1d2b36; }
+    .epaisseurs { display: flex; gap: 4px; }
+    .outil { min-width: 36px; height: 34px; border-radius: 10px; border: 1.5px solid #c9d2d9; background: #fff; font: inherit; font-size: 0.9em; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0 6px; }
+    .outil.actif { border-color: #1d2b36; box-shadow: 0 0 0 1.5px #1d2b36; background: #f6f8fa; }
+    .outil .point { border-radius: 50%; background: #1d2b36; }
+
+    /* Propositions */
+    .fil { height: 92px; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end; font-size: 0.86em; margin-top: 6px; padding: 0 4px; }
+    .fil div { line-height: 1.35; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .fil .qui { font-weight: 700; color: #3b5568; }
+    .fil .trouve { color: #2f8a5b; font-weight: 700; }
+    .fil .sys { color: #8a97a1; font-style: italic; }
+    .fil .proche { color: #c77c02; font-weight: 700; }
+    .saisie { display: flex; gap: 6px; margin-top: 4px; }
+    .saisie input { flex: 1; min-width: 0; font: inherit; font-size: 16px; padding: 10px 12px; border-radius: 12px; border: 1.5px solid #c9d2d9; background: #fff; }
+    .saisie .btn { width: auto; flex: 0 0 58px; padding: 0; }
+    .saisie.bloquee input { background: #eef1f3; }
+
+    .attente-liste { list-style: none; padding: 0; margin: 8px 0; }
+    .attente-liste li { padding: 6px 4px; border-bottom: 1px solid #eef1f3; display: flex; justify-content: space-between; }
+    .podium { list-style: none; padding: 0; margin: 10px 0; text-align: left; }
+    .podium li { display: flex; justify-content: space-between; padding: 5px 8px; border-radius: 8px; }
+    .podium li:first-child { background: #fff3d6; font-weight: 800; }
+    .panneau-vide { text-align: center; padding: 36px 16px; color: #5b6b78; }
+    .panneau-vide .grand { font-size: 2.5em; margin-bottom: 8px; }
+    .regles ul { padding-left: 18px; margin: 8px 0 0; font-size: 0.88em; line-height: 1.45; color: #3b4b57; }
+  </style>
+</head>
+<body>
+  <div id="app" class="app">
+
+    <div class="barre">
+      <div id="menu">
+        <div @click="onglet = 'config'" :class="{ actif: onglet === 'config' }">Accueil</div>
+        <div @click="onglet = 'play'" :class="{ actif: onglet === 'play' }">Jouer</div>
+      </div>
+      <a v-if="onglet === 'config' && !role" class="lien-jeux" href="index.html?choix">⇦ Jeux</a>
+      <div class="barre-infos" v-if="onglet === 'play'">
+        <button class="btn-veille" :class="{ off: !sonActif }" @click="basculerSon">{{ sonActif ? '🔊' : '🔇' }}</button>
+        <button v-if="veilleSupportee" class="btn-veille" :class="{ actif: veilleActive, off: !garderEcran }" @click="garderEcran = !garderEcran">{{ garderEcran ? '☀️' : '🌙' }}</button>
+        <span v-if="role" class="point-co" :class="{ attente: connexion !== 'ok' }"></span>
+      </div>
+    </div>
+
+    <!-- ACCUEIL -->
+    <div v-show="onglet === 'config'">
+      <header class="hero">
+        <div class="logo-gb"><svg width="38" height="38" viewBox="0 0 38 38"><path d="M5 27 C 9 12, 14 30, 19 17 S 28 8, 33 20" fill="none" stroke="#e74c3c" stroke-width="3.5" stroke-linecap="round"/><path d="M24 33 l9 -9 l3 3 l-9 9 z" fill="#f2b134"/><path d="M24 33 l-2 5 l5 -2 z" fill="#2c3e50"/></svg></div>
+        <div>
+          <h1>Gribouille</h1>
+          <p>Désdale · dessine, les autres devinent</p>
+        </div>
+      </header>
+
+      <section class="carte salon-actif" v-if="role">
+        <div class="salon-tete">
+          <span class="pastille" :class="{ attente: connexion !== 'ok' }"></span>
+          <div>
+            <div class="salon-nom">Salon « {{ roomCode }} »</div>
+            <div class="salon-role">{{ role === 'hote' ? '👑 Tu es l\'hôte : tu lances les parties' : 'Tu joues' }} en tant que {{ moi }} · {{ connexionTexte }}</div>
+          </div>
+        </div>
+        <div class="chips-joueurs">
+          <span v-for="j in bandeau" :key="j.pseudo" class="chip" :class="{ absent: !j.connecte }">{{ j.pseudo }} · {{ j.score }} pts<span v-if="!j.connecte"> 💤</span></span>
+        </div>
+        <div class="actions-accueil">
+          <button class="btn principal" @click="onglet = 'play'">Jouer →</button>
+          <button class="btn" @click="quitterSalon">Quitter</button>
+        </div>
+      </section>
+
+      <template v-if="!role">
+        <section class="carte">
+          <div class="titre-carte">Entrer dans un salon</div>
+          <label class="champ">Ton pseudo
+            <input type="text" v-model="pseudoInput" placeholder="ex : Alex" autocomplete="off" maxlength="20">
+          </label>
+          <label class="champ">Nom du salon
+            <input type="text" v-model="channelInput" placeholder="ex : partie-du-dimanche" autocomplete="off">
+          </label>
+          <div class="salons-connus" v-if="salonsConnus.length">
+            <span v-for="nom in salonsConnus" :key="nom" class="salon-puce" :class="{ actif: estSalonSaisi(nom) }">
+              <button class="nom" @click="channelInput = nom">{{ nom }}</button>
+              <button class="oter" @click="oublierSalon(nom)" aria-label="Retirer de la liste">✕</button>
+            </span>
+          </div>
+          <div class="aide">À partir de deux joueurs, chacun sur son téléphone. Le premier ouvre le salon et lance les parties.</div>
+        </section>
+        <button class="btn principal btn-large" @click="entrerSalon()" :disabled="entreeEnCours">{{ entreeEnCours ? 'Connexion au salon…' : 'Entrer dans le salon' }}</button>
+      </template>
+
+      <details class="carte regles">
+        <summary>Règles</summary>
+        <ul>
+          <li>Chacun son tour, un joueur choisit un mot parmi trois et le <strong>dessine</strong> ; les autres voient le dessin se faire en direct et tapent leurs propositions.</li>
+          <li>{{ dureeAffichee }} secondes par dessin. Le nombre de lettres est affiché, puis une ou deux lettres se dévoilent avec le temps.</li>
+          <li>Celui qui trouve gagne des points selon sa rapidité (bonus pour le 1er et le 2e). Le dessinateur gagne {{ GB.POINTS_DESSINATEUR }} points pour chaque joueur qui trouve.</li>
+          <li>Pas d'accents ni de majuscules à respecter. « Tout près ! » s'affiche quand il ne manque presque rien.</li>
+          <li>Chacun dessine une fois par manche ; le meilleur total gagne la partie.</li>
+        </ul>
+      </details>
+
+      <section class="carte reglages">
+        <div class="titre-carte">Réglages</div>
+        <label class="case-a-cocher"><input type="checkbox" v-model="sonActif"> 🔊 Sons</label>
+        <label class="case-a-cocher" v-if="vibrationSupportee"><input type="checkbox" v-model="vibrationActive"> 📳 Vibrations</label>
+        <label class="case-a-cocher" v-if="veilleSupportee"><input type="checkbox" v-model="garderEcran"> ☀️ Garder l'écran allumé</label>
+      </section>
+
+      <details class="carte journal">
+        <summary>Activité <small v-if="historique.length">({{ historique.length }})</small></summary>
+        <ul>
+          <li v-for="(log, i) in historiqueRecent" :key="i" :class="{ 'sys-msg': log.s }">{{ log.m }}</li>
+          <li v-if="!historique.length" class="sys-msg">Rien pour l'instant.</li>
+        </ul>
+      </details>
+
+      <p class="version">Désdale · Gribouille · version {{ version }}</p>
+    </div>
+
+    <!-- JOUER -->
+    <div v-show="onglet === 'play'">
+      <div v-if="!role || !pub" class="panneau-vide">
+        <div class="grand">✏️</div>
+        <p>Entre dans un salon depuis l'accueil pour jouer.</p>
+        <button class="btn principal" @click="onglet = 'config'">Aller à l'accueil</button>
+      </div>
+
+      <!-- Salle d'attente : l'hôte règle la partie et la lance -->
+      <section v-else-if="pub.phase === 'attente'" class="carte">
+        <div class="titre-carte">Salon « {{ roomCode }} »</div>
+        <ul class="attente-liste">
+          <li v-for="j in bandeau" :key="j.pseudo"><span>{{ j.hote ? '👑 ' : '' }}{{ j.pseudo }}<span v-if="!j.connecte"> 💤</span></span><span class="sys-msg">{{ j.victoires ? '🏆 ' + j.victoires : '' }}</span></li>
+        </ul>
+        <div class="titre-option">Temps pour dessiner</div>
+        <div class="segment">
+          <button v-for="d in [60, 80, 120]" :key="d" :class="{ actif: pub.duree === d }" :disabled="role !== 'hote'" @click="reglage('duree', d)">{{ d }} s</button>
+        </div>
+        <div class="titre-option">Manches (chacun dessine une fois par manche)</div>
+        <div class="segment">
+          <button v-for="n in [1, 2, 3]" :key="n" :class="{ actif: pub.nbManches === n }" :disabled="role !== 'hote'" @click="reglage('nbManches', n)">{{ n }}</button>
+        </div>
+        <button v-if="role === 'hote'" class="btn principal btn-large" :disabled="nbConnectes < 2" @click="commencerPartie">{{ nbConnectes < 2 ? 'En attente d\'un 2e joueur…' : 'Lancer la partie' }}</button>
+        <p v-else class="statut">En attente que l'hôte lance la partie…</p>
+      </section>
+
+      <template v-else>
+        <div class="joueurs-bande">
+          <span v-for="j in bandeau" :key="j.pseudo" :class="{ dessine: j.pseudo === pub.dessinateur, trouve: j.trouve, absent: !j.connecte }">
+            {{ j.pseudo === pub.dessinateur ? '✏️ ' : j.trouve ? '✅ ' : '' }}{{ j.pseudo }} <strong>{{ j.score }}</strong>
+          </span>
+        </div>
+
+        <div class="info">
+          <div v-if="pub.phase === 'dessin' && jeDessine && monMot" class="indice mot-a-dessiner"><small>Dessine :</small>{{ monMot }}</div>
+          <div v-else-if="pub.phase === 'dessin'" class="indice">{{ pub.indice }}<small>{{ pub.longueur }} lettres</small></div>
+          <div v-else-if="pub.phase === 'choix'" class="indice mot-a-dessiner"><small>{{ jeDessine ? 'À toi :' : pub.dessinateur + ' choisit un mot…' }}</small></div>
+          <div v-else-if="pub.phase === 'bilan'" class="indice mot-a-dessiner"><small>C'était :</small>{{ pub.motRevele }}</div>
+          <div v-else class="indice mot-a-dessiner"><small>Partie terminée</small></div>
+          <div v-if="pub.phase === 'dessin' || pub.phase === 'choix'" class="chrono" :class="{ urgent: resteSec <= 10 }" :style="{ '--part': partRestante }"><span>{{ resteSec }}</span></div>
+        </div>
+
+        <div class="toile-boite" ref="boite" :class="{ dessinateur: jeDessine && pub.phase === 'dessin' }"
+             @pointerdown="appuiToile" @pointermove="glisseToile" @pointerup="lacheToile" @pointercancel="lacheToile">
+          <canvas ref="toile"></canvas>
+          <!-- Choix du mot -->
+          <div v-if="pub.phase === 'choix'" class="toile-voile">
+            <template v-if="jeDessine && mesMots">
+              <div>Choisis le mot à dessiner :</div>
+              <div class="choix-mots"><button v-for="(m, i) in mesMots" :key="m" @click="choisirMot(i)">{{ m }}</button></div>
+            </template>
+            <template v-else><div class="grand">🤔</div><div><strong>{{ pub.dessinateur }}</strong> choisit un mot…</div></template>
+          </div>
+          <!-- Bilan du tour -->
+          <div v-else-if="pub.phase === 'bilan'" class="toile-voile">
+            <div>Le mot était</div>
+            <div class="mot-revele">{{ pub.motRevele }}</div>
+            <ul class="gains">
+              <li v-for="g in gainsTour" :key="g.p"><span>{{ g.p === pub.dessinateur ? '✏️ ' : '' }}{{ g.p }}</span><strong>+{{ g.pts }}</strong></li>
+              <li v-if="!gainsTour.length" class="sys-msg">Personne n'a trouvé.</li>
+            </ul>
+          </div>
+          <!-- Fin de partie -->
+          <div v-else-if="pub.phase === 'fin'" class="toile-voile">
+            <div class="grand">🏆</div>
+            <div><strong>{{ classement[0] && classement[0].pseudo }}</strong> gagne la partie !</div>
+            <ol class="podium" style="width:100%;max-width:240px">
+              <li v-for="j in classement" :key="j.pseudo"><span>{{ j.pseudo }}</span><span>{{ j.score }} pts</span></li>
+            </ol>
+            <button v-if="role === 'hote'" class="btn principal" @click="partieSuivante">Nouvelle partie</button>
+            <div v-else class="sys-msg">L'hôte peut relancer une partie.</div>
+          </div>
+        </div>
+
+        <!-- Dessinateur : couleurs, épaisseurs, gomme, annuler, tout effacer -->
+        <template v-if="jeDessine && pub.phase === 'dessin'">
+          <div class="outils">
+            <button v-for="c in COULEURS" :key="c" class="pastille-coul" :class="{ actif: !outil.gomme && outil.couleur === c }" :style="{ background: c }" @click="outil.couleur = c; outil.gomme = false" :aria-label="'Couleur ' + c"></button>
+          </div>
+          <div class="outils">
+            <div class="epaisseurs">
+              <button v-for="(e, k) in EPAISSEURS" :key="e" class="outil" :class="{ actif: !outil.gomme && outil.epaisseur === e }" @click="outil.epaisseur = e; outil.gomme = false" :aria-label="'Épaisseur ' + (k + 1)">
+                <span class="point" :style="{ width: 4 + k * 5 + 'px', height: 4 + k * 5 + 'px', background: outil.couleur }"></span>
+              </button>
+            </div>
+            <button class="outil" :class="{ actif: outil.gomme }" @click="outil.gomme = !outil.gomme">🧽 Gomme</button>
+            <button class="outil" @click="annulerTrait" aria-label="Annuler le dernier trait">↶</button>
+            <button class="outil" @click="toutEffacer" aria-label="Tout effacer">🗑️</button>
+          </div>
+        </template>
+
+        <!-- Les autres : propositions -->
+        <template v-else-if="pub.phase !== 'fin'">
+          <div class="fil">
+            <div v-for="(l, k) in filAffiche" :key="k" :class="l.type">
+              <template v-if="l.type === 'msg'"><span class="qui">{{ l.p }} :</span> {{ l.t }}</template>
+              <template v-else-if="l.type === 'trouve'">🎉 {{ l.p }} a trouvé !</template>
+              <template v-else>{{ l.t }}</template>
+            </div>
+          </div>
+          <form class="saisie" :class="{ bloquee: !peutDeviner }" @submit.prevent="proposer">
+            <input type="text" v-model="saisie" :placeholder="placeholderSaisie" :disabled="!peutDeviner" autocomplete="off" autocapitalize="none" spellcheck="false" maxlength="40" enterkeyhint="send">
+            <button class="btn principal" type="submit" :disabled="!peutDeviner || !saisie.trim()">➤</button>
+          </form>
+        </template>
+      </template>
+    </div>
+  </div>
+
+  <script src="commun.js"></script>
+  <script src="gribouille-regles.js"></script>
+  <script>
+    if (!ACCES.memorise()) location.replace('index.html');
+
+    const CLE_SAUVEGARDE = 'gribouille-sauvegarde';
+    const JEU_RESEAU = 'gb';
+    const DELAI_SILENCE = 15000;
+    const DUREE_CHOIX = 15000;       // temps pour choisir son mot (sinon le premier est pris)
+    const DUREE_BILAN = 6000;        // affichage du mot et des points avant le tour suivant
+    const ABSENCE_DESSINATEUR = 10000; // dessinateur déconnecté plus longtemps : on passe au tour suivant
+    const MAX_SALONS = 8;
+    const MAX_FIL = 30;
+    const COULEURS = ['#1d2b36', '#7d8a94', '#e53935', '#fb8c00', '#fdd835', '#43a047', '#1e88e5', '#8e24aa', '#6d4c41', '#f48fb1'];
+    const EPAISSEURS = [6, 14, 30];   // en millièmes de la largeur
+    const GOMME = 44;
+    function copie(o) { return JSON.parse(JSON.stringify(o)); }
+
+    // ================== ÉTAT PUBLIC (l'hôte arbitre ; le mot n'y figure jamais pendant le tour) ==================
+    function nouvelEtatSalon(ordre) {
+      return { ordre: ordre.slice(), scores: {}, victoires: {}, phase: 'attente', duree: lireStockage('gribouille-duree') || 80,
+               nbManches: lireStockage('gribouille-manches') || 2, manche: 0, file: [], dessinateur: null, tourId: null,
+               indice: '', longueur: 0, reste: 0, trouves: [], gains: {}, motRevele: '', fil: [], n: 0 };
+    }
+
+    // ================== RÉSEAU ==================
+    let peer = null;
+    let connections = [];
+    let connParPseudo = {};
+    let hostConn = null;
+    let dernierMsgHote = 0;
+    let monPseudo = '';
+    let pubHote = null;
+    let salle = { infos: {} };
+    // Hôte seulement : ce que les autres ne doivent pas voir, et le dessin complet du tour
+    let secret = { tourId: null, mots: [], mot: null, devoilees: [], finChoix: 0, finDessin: 0, finBilan: 0, joues: [], absentDepuis: 0 };
+    let dessinHote = [];
+
+    function pseudoSauvegarde() {
+      var cles = ['gribouille-sauvegarde', 'bataille-sauvegarde', 'assaut-sauvegarde', 'bg-sauvegarde', 'yams-sauvegarde', 'brillant-sauvegarde-v1'];
+      for (var k = 0; k < cles.length; k++) { var s = lireStockage(cles[k]); if (s && s.pseudo) return s.pseudo; }
+      return '';
+    }
+
+    new Vue({
+      el: '#app',
+      data: {
+        GB: GB,
+        COULEURS: COULEURS,
+        EPAISSEURS: EPAISSEURS,
+        version: VERSION,
+        onglet: 'config',
+        pub: null,
+        joueurs: [],
+        mesMots: null,          // dessinateur : les trois mots proposés
+        monMot: null,           // dessinateur : le mot à dessiner
+        saisie: '',
+        proche: null,           // « tout près ! » (seulement sur mon téléphone)
+        maintenant: Date.now(),
+        finLocale: 0,           // fin du chrono, à l'heure de ce téléphone
+        outil: { couleur: COULEURS[0], epaisseur: EPAISSEURS[1], gomme: false },
+        historique: [],
+        pseudoInput: pseudoSauvegarde(),
+        channelInput: lireStockage('gribouille-dernier-salon') || lireStockage('brillant-dernier-salon') || '',
+        salonsConnus: lireStockage('brillant-salons') || [],
+        role: null,
+        connexion: 'aucune',
+        roomCode: '',
+        entreeEnCours: false,
+        sonActif: lireStockage('brillant-son') !== false,
+        vibrationActive: lireStockage('brillant-vibration') !== null ? lireStockage('brillant-vibration') !== false : lireStockage('brillant-son') !== false,
+        garderEcran: lireStockage('brillant-garder-ecran') !== false,
+        veilleSupportee: 'wakeLock' in navigator,
+        veilleActive: false
+      },
+      computed: {
+        moi: function() { return this.pseudoInput.trim() || 'Moi'; },
+        vibrationSupportee: function() { return typeof navigator.vibrate === 'function'; },
+        historiqueRecent: function() { return this.historique.slice().reverse(); },
+        connexionTexte: function() { return { ok: 'en ligne', connexion: 'connexion…', perdue: 'reconnexion…', aucune: 'hors ligne' }[this.connexion]; },
+        dureeAffichee: function() { return this.pub ? this.pub.duree : 80; },
+        bandeau: function() {
+          var p = this.pub;
+          if (!p) return [];
+          return p.ordre.map(x => {
+            var j = this.joueurs.find(y => y.pseudo === x);
+            return { pseudo: x, hote: j ? j.hote : false, score: p.scores[x] || 0, victoires: (p.victoires || {})[x] || 0,
+                     trouve: p.trouves.some(t => t.p === x), connecte: x === this.moi || !j || j.connecte !== false };
+          });
+        },
+        nbConnectes: function() { return this.bandeau.filter(j => j.connecte).length; },
+        jeDessine: function() { return !!this.pub && this.pub.dessinateur === this.moi; },
+        jAiTrouve: function() { return !!this.pub && this.pub.trouves.some(t => t.p === this.moi); },
+        peutDeviner: function() { return !!this.pub && this.pub.phase === 'dessin' && !this.jeDessine && !this.jAiTrouve && this.connexion === 'ok'; },
+        placeholderSaisie: function() {
+          if (!this.pub) return '';
+          if (this.pub.phase === 'dessin' && this.jAiTrouve) return 'Bravo, tu as trouvé ! 🎉';
+          if (this.pub.phase === 'dessin') return 'Ta proposition…';
+          return 'Attends le prochain dessin…';
+        },
+        resteSec: function() { return Math.max(0, Math.ceil((this.finLocale - this.maintenant) / 1000)); },
+        partRestante: function() {
+          if (!this.pub) return 0;
+          var total = this.pub.phase === 'choix' ? DUREE_CHOIX : this.pub.duree * 1000;
+          return Math.max(0, Math.min(1, (this.finLocale - this.maintenant) / total));
+        },
+        filAffiche: function() {
+          if (!this.pub) return [];
+          var l = this.pub.fil.slice(-4);
+          if (this.proche && this.maintenant < this.proche.fin) l = l.slice(-3).concat([{ type: 'proche', t: '« ' + this.proche.texte + ' » : tout près !' }]);
+          return l;
+        },
+        gainsTour: function() {
+          var g = (this.pub && this.pub.gains) || {};
+          return Object.keys(g).map(p => ({ p: p, pts: g[p] })).sort((a, b) => b.pts - a.pts);
+        },
+        classement: function() {
+          if (!this.pub) return [];
+          return this.pub.ordre.map(p => ({ pseudo: p, score: this.pub.scores[p] || 0 })).sort((a, b) => b.score - a.score);
+        }
+      },
+      watch: {
+        sonActif: function(v) { ecrireStockage('brillant-son', v); },
+        vibrationActive: function(v) { ecrireStockage('brillant-vibration', v); if (v) vibrer(40); },
+        garderEcran: function(v) { ecrireStockage('brillant-garder-ecran', v); this.majVeille(); },
+        onglet: function() { this.majVeille(); this.$nextTick(() => this.ajusterToile()); },
+        role: function() { this.majVeille(); },
+        pseudoInput: function() { this.sauvegarder(); },
+        resteSec: function(s, avant) {
+          // Tic-tac discret pendant les 5 dernières secondes du dessin
+          if (this.pub && this.pub.phase === 'dessin' && s < avant && s <= 5 && s > 0) this.son('toc');
+        }
+      },
+      created: function() {
+        if (!ACCES.cleSalon) return;
+        this._traits = [];
+        this.restaurer();
+        setInterval(() => this.battement(), 4000);
+        setInterval(() => { this.maintenant = Date.now(); this.horlogeHote(); }, 250);
+        document.addEventListener('visibilitychange', () => this.auRetourPremierPlan());
+        window.addEventListener('online', () => this.auRetourPremierPlan());
+        window.addEventListener('pageshow', () => this.auRetourPremierPlan());
+      },
+      mounted: function() {
+        window.addEventListener('resize', () => this.ajusterToile());
+        if (window.ResizeObserver) new ResizeObserver(() => this.ajusterToile()).observe(document.body);
+      },
+      methods: {
+        ajouterLog: function(m, systeme) {
+          this.historique.push({ m: m, s: !!systeme });
+          if (this.historique.length > 150) this.historique.splice(0, this.historique.length - 150);
+        },
+        vibre: function(motif) { if (this.vibrationActive) vibrer(motif); },
+        son: function(nom, arg) { if (this.sonActif) Sons.jouer(nom, arg); },
+        basculerSon: function() {
+          this.sonActif = !this.sonActif;
+          if (this.sonActif) Sons.jouer('toc');
+        },
+
+        // ================== DESSIN ==================
+        // Les traits sont en millièmes de la largeur : { c: couleur, e: épaisseur, p: [x0, y0, x1, y1, …] }
+        ajusterToile: function() {
+          var cv = this.$refs.toile, boite = this.$refs.boite;
+          if (!cv || !boite) return;
+          var r = boite.getBoundingClientRect(), dpr = window.devicePixelRatio || 1;
+          var w = Math.round(r.width * dpr), h = Math.round(r.height * dpr);
+          if (!w || (cv.width === w && cv.height === h)) return;
+          cv.width = w; cv.height = h;
+          this.redessiner();
+        },
+        contexte: function() {
+          var cv = this.$refs.toile;
+          if (!cv || !cv.width) return null;
+          var ctx = cv.getContext('2d');
+          ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+          return ctx;
+        },
+        redessiner: function() {
+          var ctx = this.contexte();
+          if (!ctx) return;
+          var cv = this.$refs.toile;
+          ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, cv.width, cv.height);
+          this._traits.forEach(t => this.tracer(ctx, t, 0));
+        },
+        // Trace un trait à partir du point n° depuis (0 = tout le trait)
+        tracer: function(ctx, t, depuis) {
+          var k = this.$refs.toile.width / 1000, p = t.p;
+          ctx.strokeStyle = t.c; ctx.fillStyle = t.c; ctx.lineWidth = Math.max(1, t.e * k);
+          if (p.length === 2 && depuis === 0) {
+            ctx.beginPath(); ctx.arc(p[0] * k, p[1] * k, Math.max(0.5, t.e * k / 2), 0, Math.PI * 2); ctx.fill();
+            return;
+          }
+          var i = Math.max(0, depuis - 1);
+          ctx.beginPath(); ctx.moveTo(p[i * 2] * k, p[i * 2 + 1] * k);
+          for (i = i + 1; i < p.length / 2; i++) ctx.lineTo(p[i * 2] * k, p[i * 2 + 1] * k);
+          ctx.stroke();
+        },
+        // Applique un morceau de dessin (venu du dessinateur, ou fait ici) : début, points, annuler, tout effacer
+        appliquerTrait: function(m) {
+          var ctx = this.contexte();
+          switch (m.o) {
+            case 'd': {
+              var t = { c: m.c, e: m.e, p: m.p.slice() };
+              this._traits.push(t);
+              if (ctx) this.tracer(ctx, t, 0);
+              break;
+            }
+            case 'p': {
+              var der = this._traits[this._traits.length - 1];
+              if (!der) return;
+              var avant = der.p.length / 2;
+              for (var i = 0; i < m.p.length; i++) der.p.push(m.p[i]);
+              if (ctx) this.tracer(ctx, der, avant);
+              break;
+            }
+            case 'u': this._traits.pop(); this.redessiner(); break;
+            case 'e': this._traits = []; this.redessiner(); break;
+          }
+        },
+        // ---- Dessinateur : le doigt trace, les points partent par petits paquets ----
+        pointSous: function(e) {
+          var r = this.$refs.boite.getBoundingClientRect();
+          return [Math.round(Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)) * 1000),
+                  Math.round(Math.max(0, Math.min(1, (e.clientY - r.top) / r.height)) * 1000)];
+        },
+        appuiToile: function(e) {
+          if (!this.jeDessine || !this.pub || this.pub.phase !== 'dessin' || e.button > 0) return;
+          try { this.$refs.boite.setPointerCapture(e.pointerId); } catch (x) {}
+          var p = this.pointSous(e);
+          this._enCours = { dernier: p, attente: [] };
+          var m = { o: 'd', c: this.outil.gomme ? '#ffffff' : this.outil.couleur, e: this.outil.gomme ? GOMME : this.outil.epaisseur, p: p };
+          this.appliquerTrait(m);
+          this.envoyerTrait(m);
+        },
+        glisseToile: function(e) {
+          var t = this._enCours;
+          if (!t) return;
+          var p = this.pointSous(e);
+          if (Math.abs(p[0] - t.dernier[0]) + Math.abs(p[1] - t.dernier[1]) < 6) return;
+          t.dernier = p;
+          this.appliquerTrait({ o: 'p', p: p });
+          t.attente.push(p[0], p[1]);
+          if (!this._timerTrait) this._timerTrait = setTimeout(() => this.viderTraits(), 45);
+        },
+        lacheToile: function() {
+          if (!this._enCours) return;
+          this.viderTraits();
+          this._enCours = null;
+        },
+        viderTraits: function() {
+          clearTimeout(this._timerTrait);
+          this._timerTrait = null;
+          var t = this._enCours;
+          if (!t || !t.attente.length) return;
+          this.envoyerTrait({ o: 'p', p: t.attente });
+          t.attente = [];
+        },
+        annulerTrait: function() { this.appliquerTrait({ o: 'u' }); this.envoyerTrait({ o: 'u' }); },
+        toutEffacer: function() {
+          if (this._traits.length > 3 && !confirm('Effacer tout le dessin ?')) return;
+          this.appliquerTrait({ o: 'e' }); this.envoyerTrait({ o: 'e' });
+        },
+        envoyerTrait: function(m) {
+          if (!this.pub) return;
+          var msg = Object.assign({ type: 'TRAIT', tourId: this.pub.tourId }, m);
+          if (this.role === 'hote') this.traiterTrait(monPseudo, msg);
+          else this.envoyerHote({ action: 'JEU', m: msg });
+        },
+
+        // ================== ACTIONS DES JOUEURS ==================
+        choisirMot: function(i) { this.envoyerJeu({ type: 'CHOISIR', i: i, tourId: this.pub.tourId }); },
+        proposer: function() {
+          var t = this.saisie.trim();
+          if (!t || !this.peutDeviner) return;
+          this.saisie = '';
+          this.envoyerJeu({ type: 'DEVINE', texte: t.slice(0, 40), tourId: this.pub.tourId });
+        },
+        reglage: function(cle, v) {
+          if (this.role !== 'hote' || pubHote.phase !== 'attente') return;
+          pubHote[cle] = v;
+          ecrireStockage(cle === 'duree' ? 'gribouille-duree' : 'gribouille-manches', v);
+          this.publier();
+        },
+        envoyerJeu: function(m) {
+          if (this.role === 'hote') return this.traiterJeu(monPseudo, m);
+          if (this.connexion !== 'ok') return;
+          this.envoyerHote({ action: 'JEU', m: m });
+        },
+
+        // ================== HÔTE : DÉROULEMENT DE LA PARTIE ==================
+        estConnecte: function(p) { return p === monPseudo || !!(salle.infos[p] && salle.infos[p].connecte); },
+        ajouterFil: function(l) {
+          pubHote.fil.push(l);
+          if (pubHote.fil.length > MAX_FIL) pubHote.fil.splice(0, pubHote.fil.length - MAX_FIL);
+        },
+        commencerPartie: function() {
+          if (this.role !== 'hote' || pubHote.phase !== 'attente') return;
+          if (pubHote.ordre.filter(p => this.estConnecte(p)).length < 2) return;
+          pubHote.scores = {};
+          pubHote.ordre.forEach(p => { pubHote.scores[p] = 0; });
+          pubHote.manche = 1;
+          pubHote.file = pubHote.ordre.filter(p => this.estConnecte(p));
+          pubHote.fil = [];
+          secret.joues = [];
+          this.ajouterFil({ type: 'sys', t: 'Manche 1 sur ' + pubHote.nbManches });
+          this.tourSuivant();
+        },
+        partieSuivante: function() {
+          if (this.role !== 'hote' || pubHote.phase !== 'fin') return;
+          pubHote.phase = 'attente';
+          pubHote.dessinateur = null;
+          this.publier();
+        },
+        // Prochain dessinateur présent ; fin de manche, puis fin de partie
+        tourSuivant: function() {
+          var presents = pubHote.ordre.filter(p => this.estConnecte(p));
+          if (presents.length < 2) {
+            pubHote.phase = 'attente'; pubHote.dessinateur = null;
+            this.ajouterFil({ type: 'sys', t: 'Il faut au moins deux joueurs : partie arrêtée.' });
+            return this.publier();
+          }
+          while (pubHote.file.length) {
+            var p = pubHote.file.shift();
+            if (pubHote.ordre.indexOf(p) !== -1 && this.estConnecte(p)) return this.debuterTour(p);
+          }
+          if (pubHote.manche < pubHote.nbManches) {
+            pubHote.manche++;
+            pubHote.file = presents.slice();
+            this.ajouterFil({ type: 'sys', t: 'Manche ' + pubHote.manche + ' sur ' + pubHote.nbManches });
+            return this.tourSuivant();
+          }
+          this.finPartie();
+        },
+        debuterTour: function(p) {
+          Object.assign(pubHote, { phase: 'choix', dessinateur: p, tourId: nouvelId(), indice: '', longueur: 0, trouves: [], gains: {}, motRevele: '' });
+          var mots = GB.tirerMots(3, secret.joues);
+          secret = Object.assign(secret, { tourId: pubHote.tourId, mots: mots, mot: null, devoilees: [], finChoix: Date.now() + DUREE_CHOIX, absentDepuis: 0 });
+          dessinHote = [];
+          this.envoyerPrive(p, { action: 'MOTS', tourId: pubHote.tourId, mots: mots });
+          this.publier();
+        },
+        choisirMotHote: function(i) {
+          if (pubHote.phase !== 'choix') return;
+          var mot = secret.mots[i] || secret.mots[0];
+          secret.mot = mot;
+          secret.joues.push(mot);
+          secret.finDessin = Date.now() + pubHote.duree * 1000;
+          pubHote.phase = 'dessin';
+          pubHote.indice = GB.masque(mot, []);
+          pubHote.longueur = GB.positionsLettres(mot).length;
+          this.ajouterFil({ type: 'sys', t: '✏️ ' + pubHote.dessinateur + ' dessine !' });
+          this.envoyerPrive(pubHote.dessinateur, { action: 'MOT', tourId: pubHote.tourId, mot: mot });
+          this.publier();
+        },
+        finTour: function(raison) {
+          if (pubHote.phase !== 'dessin' && pubHote.phase !== 'choix') return;
+          pubHote.phase = 'bilan';
+          pubHote.motRevele = secret.mot || (raison === 'reprise' ? '(tour annulé)' : '(pas de mot choisi)');
+          secret.finBilan = Date.now() + DUREE_BILAN;
+          if (raison === 'absent') this.ajouterFil({ type: 'sys', t: pubHote.dessinateur + ' est parti : tour suivant.' });
+          this.ajouterFil({ type: 'sys', t: 'Le mot était : ' + pubHote.motRevele });
+          this.publier();
+        },
+        finPartie: function() {
+          pubHote.phase = 'fin';
+          pubHote.dessinateur = null;
+          pubHote.trouves = [];
+          var top = pubHote.ordre.slice().sort((a, b) => (pubHote.scores[b] || 0) - (pubHote.scores[a] || 0))[0];
+          if (top) pubHote.victoires[top] = (pubHote.victoires[top] || 0) + 1;
+          this.ajouterFil({ type: 'sys', t: '🏆 ' + top + ' gagne la partie !' });
+          this.publier();
+        },
+        // Proposition d'un joueur
+        deviner: function(p, texte) {
+          if (pubHote.phase !== 'dessin' || p === pubHote.dessinateur || pubHote.trouves.some(t => t.p === p) || !secret.mot) return;
+          var r = GB.verifier(texte, secret.mot);
+          if (r === 'ok') {
+            var rang = pubHote.trouves.length, reste = Math.max(0, secret.finDessin - Date.now());
+            var pts = GB.pointsDevineur(reste, pubHote.duree * 1000, rang);
+            pubHote.trouves.push({ p: p, pts: pts });
+            pubHote.scores[p] = (pubHote.scores[p] || 0) + pts;
+            pubHote.scores[pubHote.dessinateur] = (pubHote.scores[pubHote.dessinateur] || 0) + GB.POINTS_DESSINATEUR;
+            pubHote.gains[p] = pts;
+            pubHote.gains[pubHote.dessinateur] = (pubHote.gains[pubHote.dessinateur] || 0) + GB.POINTS_DESSINATEUR;
+            this.ajouterFil({ type: 'trouve', p: p });
+            var reste2 = pubHote.ordre.filter(x => x !== pubHote.dessinateur && this.estConnecte(x) && !pubHote.trouves.some(t => t.p === x));
+            if (!reste2.length) return this.finTour('tous');
+            return this.publier();
+          }
+          // Mauvaise proposition : visible de tous (sans jamais montrer un mot presque juste)
+          if (r === 'proche') this.envoyerPrive(p, { action: 'PROCHE', texte: texte });
+          else this.ajouterFil({ type: 'msg', p: p, t: texte });
+          this.publier();
+        },
+        traiterJeu: function(p, m) {
+          if (!pubHote) return;
+          switch (m.type) {
+            case 'CHOISIR': if (p === pubHote.dessinateur && m.tourId === pubHote.tourId) this.choisirMotHote(m.i); break;
+            case 'DEVINE': if (m.tourId === pubHote.tourId) this.deviner(p, String(m.texte || '').slice(0, 40)); break;
+            case 'TRAIT': this.traiterTrait(p, m); break;
+          }
+        },
+        // Trait du dessinateur : gardé (pour ceux qui arrivent) et relayé tout de suite aux autres
+        traiterTrait: function(p, m) {
+          if (pubHote.phase !== 'dessin' || p !== pubHote.dessinateur || m.tourId !== pubHote.tourId) return;
+          if (m.o === 'd') dessinHote.push({ c: String(m.c).slice(0, 9), e: +m.e || 10, p: m.p.slice(0, 2) });
+          else if (m.o === 'p') { var t = dessinHote[dessinHote.length - 1]; if (t) for (var i = 0; i < m.p.length; i++) t.p.push(m.p[i]); }
+          else if (m.o === 'u') dessinHote.pop();
+          else if (m.o === 'e') dessinHote = [];
+          var relai = { action: 'TRAIT', m: m };
+          connections.forEach(c => { if (c.joueurPseudo !== p) { try { if (c.open) c.send(relai); } catch (e) {} } });
+          if (p !== monPseudo) this.appliquerTrait(m);
+          this._dessinModifie = true;
+        },
+        // Horloge de l'hôte : fin du choix, indices, fin du dessin, tour suivant
+        horlogeHote: function() {
+          if (this.role !== 'hote' || !pubHote) return;
+          var t = Date.now();
+          if (pubHote.phase === 'choix' || pubHote.phase === 'dessin') {
+            if (!this.estConnecte(pubHote.dessinateur)) {
+              if (!secret.absentDepuis) secret.absentDepuis = t;
+              else if (t - secret.absentDepuis > ABSENCE_DESSINATEUR) return this.finTour('absent');
+            } else secret.absentDepuis = 0;
+          }
+          if (pubHote.phase === 'choix' && t > secret.finChoix) return this.choisirMotHote(0);
+          if (pubHote.phase === 'dessin') {
+            var total = pubHote.duree * 1000, reste = secret.finDessin - t, fait = 1 - reste / total;
+            var voulu = GB.nbIndices(secret.mot), deja = secret.devoilees.length;
+            if (deja < voulu && fait >= (deja === 0 ? 0.5 : 0.75)) {
+              var cachees = GB.positionsLettres(secret.mot).filter(i => secret.devoilees.indexOf(i) === -1);
+              secret.devoilees.push(cachees[Math.floor(Math.random() * cachees.length)]);
+              pubHote.indice = GB.masque(secret.mot, secret.devoilees);
+              this.publier();
+            }
+            if (reste <= 0) return this.finTour('temps');
+          }
+          if (pubHote.phase === 'bilan' && t > secret.finBilan) return this.tourSuivant();
+          // Sauvegarde du dessin de temps en temps (pour reprendre après un rechargement)
+          if (this._dessinModifie && (!this._derniereSauvegarde || t - this._derniereSauvegarde > 2000)) {
+            this._dessinModifie = false; this._derniereSauvegarde = t; this.sauvegarder();
+          }
+        },
+        // Message destiné à un seul joueur (le dessinateur, ou celui qui est tout près)
+        envoyerPrive: function(p, data) {
+          if (p === monPseudo) return this.recevoirDeHote(data);
+          var c = connParPseudo[p];
+          if (c && c.open) { try { c.send(data); } catch (e) {} }
+        },
+
+        // ================== RÉCEPTION DE L'ÉTAT ==================
+        appliquerPub: function(pub) {
+          var ancien = this.pub;
+          this.pub = pub;
+          var debut = pub.phase === 'choix' ? DUREE_CHOIX : pub.duree * 1000;
+          if (pub.phase === 'choix' || pub.phase === 'dessin') this.finLocale = Date.now() + Math.min(pub.reste, debut);
+          // Nouveau tour : toile vierge, plus de mot secret
+          if (!ancien || ancien.tourId !== pub.tourId) {
+            this._traits = []; this.redessiner();
+            if (!this.mesMots || this.mesMots.tourId !== pub.tourId) this.mesMots = null;
+            if (!this.monMot || this._tourMot !== pub.tourId) this.monMot = null;
+            this.saisie = '';
+          }
+          if (ancien && !this._restauration) this.reagir(ancien, pub);
+          this.$nextTick(() => this.ajusterToile());
+          this.sauvegarder();
+        },
+        // Sons et vibrations selon ce qui vient de se passer
+        reagir: function(a, p) {
+          var moi = this.moi;
+          if (p.phase === 'choix' && (a.phase !== 'choix' || a.tourId !== p.tourId) && p.dessinateur === moi) { this.vibre([40, 40, 40]); this.son('zone', true); }
+          if (p.trouves.length > a.trouves.length && a.tourId === p.tourId) {
+            var nouveau = p.trouves[p.trouves.length - 1];
+            if (nouveau.p === moi) { this.son('zone', true); this.vibre([60, 40, 60]); }
+            else this.son('zone', false);
+          }
+          if (p.phase === 'bilan' && a.phase !== 'bilan') this.son('toc');
+          if (p.phase === 'fin' && a.phase !== 'fin') {
+            var gagnant = this.classement[0] && this.classement[0].pseudo === moi;
+            if (gagnant) { this.son('victoire'); this.vibre([100, 60, 100, 60, 250]); }
+          }
+          if (p.phase === 'dessin' && a.phase !== 'dessin') this.ajouterLog(p.dessinateur + ' dessine (' + p.longueur + ' lettres).');
+          if (p.phase === 'bilan' && a.phase !== 'bilan') this.ajouterLog('Le mot était : ' + p.motRevele);
+        },
+        publier: function() {
+          this.diffuser();
+          this.appliquerPub(this.etatAEnvoyer());
+        },
+        etatAEnvoyer: function() {
+          var e = copie(pubHote), t = Date.now();
+          e.reste = pubHote.phase === 'choix' ? secret.finChoix - t : pubHote.phase === 'dessin' ? secret.finDessin - t : 0;
+          return e;
+        },
+
+        // ---------- Liste des salons ----------
+        estSalonSaisi: function(nom) { return ACCES.simplifier(nom) === ACCES.simplifier(this.channelInput); },
+        retenirSalon: function(nom) {
+          var cle = ACCES.simplifier(nom);
+          this.salonsConnus = [nom].concat((lireStockage('brillant-salons') || this.salonsConnus).filter(n => ACCES.simplifier(n) !== cle)).slice(0, MAX_SALONS);
+          ecrireStockage('brillant-salons', this.salonsConnus);
+          ecrireStockage('gribouille-dernier-salon', nom);
+        },
+        oublierSalon: function(nom) {
+          var cle = ACCES.simplifier(nom);
+          this.salonsConnus = this.salonsConnus.filter(n => ACCES.simplifier(n) !== cle);
+          ecrireStockage('brillant-salons', this.salonsConnus);
+          if (ACCES.simplifier(this.channelInput) === cle) this.channelInput = this.salonsConnus[0] || '';
+        },
+
+        // ---------- Sauvegarde ----------
+        sauvegarder: function() {
+          if (this._restauration) return;
+          ecrireStockage(CLE_SAUVEGARDE, {
+            pseudo: this.pseudoInput, role: this.role, salon: this.roomCode, pub: this.role ? this.pub : null,
+            pubHote: this.role === 'hote' ? pubHote : null, salle: this.role === 'hote' ? salle : null,
+            secret: this.role === 'hote' ? secret : null, dessin: this.role === 'hote' ? dessinHote : null,
+            mesMots: this.mesMots, monMot: this.monMot, tourMot: this._tourMot, historique: this.historique.slice(-60)
+          });
+        },
+        restaurer: function() {
+          var sv = lireStockage(CLE_SAUVEGARDE);
+          monPseudo = this.moi;
+          if (!sv) return;
+          if (sv.historique) this.historique = sv.historique;
+          if (sv.role && sv.salon && sv.pub) {
+            this.role = sv.role;
+            this.roomCode = sv.salon;
+            this.onglet = 'play';
+            this.connexion = 'perdue';
+            this.mesMots = sv.mesMots || null; this.monMot = sv.monMot || null; this._tourMot = sv.tourMot;
+            this._restauration = true;
+            this.appliquerPub(sv.pub);
+            this._restauration = false;
+            if (sv.role === 'hote') {
+              pubHote = sv.pubHote || copie(sv.pub);
+              salle = sv.salle || { infos: {} };
+              Object.values(salle.infos).forEach(i => { i.connecte = false; });
+              if (sv.secret) secret = sv.secret;
+              dessinHote = sv.dessin || [];
+              this._traits = copie(dessinHote); this.$nextTick(() => this.redessiner());
+              // Le chrono a continué pendant le rechargement : on le décale d'autant
+              this.creerPartie(true);
+            } else this.rejoindrePartie(true);
+            this.ajouterLog('Partie restaurée, reconnexion au salon…', true);
+          }
+        },
+
+        // ---------- Entrée dans un salon ----------
+        validerPseudo: function() {
+          monPseudo = this.pseudoInput.trim();
+          if (!monPseudo) { alert('Merci de saisir un pseudo.'); return false; }
+          return true;
+        },
+        entrerSalon: function() {
+          if (this.role || this._entree) return;
+          if (!this.validerPseudo()) return;
+          if (!this.channelInput.trim()) { alert('Saisis un nom de salon.'); return; }
+          fermerAutresSalons('gribouille');   // un seul salon à la fois sur ce téléphone
+          this._entree = { essais: 0 };
+          this.entreeEnCours = true;
+          this.creerPartie(false);
+        },
+        finEntree: function(reussie, message) {
+          var e = this._entree;
+          this._entree = null;
+          this.entreeEnCours = false;
+          if (reussie) this.retenirSalon(this.roomCode);
+          else if (e && message) alert(message);
+        },
+        suiteEntree: function() {
+          var e = this._entree;
+          if (!e) return;
+          this.reinitialiserPeer(false);
+          if (++e.essais >= 4) return this.finEntree(false, 'Impossible d\'entrer dans le salon pour le moment.\n\nSi vous êtes sur le même Wi-Fi (location, hôtel, Wi-Fi invité…), il empêche souvent les téléphones de se parler : passe l\'un des deux en 4G/5G (Wi-Fi coupé), puis réessaie.');
+          setTimeout(() => { if (this._entree === e && !this.role) this.creerPartie(false); }, 1200);
+        },
+        quitterSalon: function() {
+          if (!confirm('Quitter le salon ?')) return;
+          if (this.role === 'client' && peer) {
+            this.envoyerHote({ action: 'DEPART' });
+            var ancienPeer = peer;
+            peer = null;
+            setTimeout(() => { try { ancienPeer.destroy(); } catch (e) {} }, 400);
+          }
+          this.reinitialiserPeer(false);
+          pubHote = null;
+          salle = { infos: {} };
+          this.pub = null;
+          this.mesMots = null; this.monMot = null;
+          this.ajouterLog('Tu as quitté le salon.', true);
+          this.sauvegarder();
+        },
+        reinitialiserPeer: function(garder) {
+          clearTimeout(this._timerReco);
+          var ancien = peer;
+          peer = null;
+          connections = [];
+          connParPseudo = {};
+          hostConn = null;
+          if (ancien) { try { ancien.destroy(); } catch (e) {} }
+          if (!garder) { this.role = null; this.joueurs = []; this.roomCode = ''; this.connexion = 'aucune'; }
+        },
+        planifierReconnexion: function(delai) {
+          clearTimeout(this._timerReco);
+          this._timerReco = setTimeout(() => {
+            if (!this.role || this.connexion === 'ok') return;
+            if (this.role === 'hote') return this.creerPartie(true);
+            this._echecsClient = (this._echecsClient || 0) + 1;
+            if (this._echecsClient >= 4 && this.pub) { this._echecsClient = 0; return this.reprendreLeSalon(); }
+            this.rejoindrePartie(true);
+          }, delai || 3000);
+        },
+        // L'hôte ne répond plus : on rouvre le salon avec notre copie (le mot secret est perdu : le tour en cours est annulé)
+        reprendreLeSalon: function() {
+          pubHote = copie(this.pub);
+          salle = { infos: {} };
+          pubHote.ordre.forEach(p => { if (p !== monPseudo) salle.infos[p] = { connecte: false, clientId: null }; });
+          secret = { tourId: pubHote.tourId, mots: [], mot: null, devoilees: [], finChoix: 0, finDessin: 0, finBilan: Date.now() + DUREE_BILAN, joues: [], absentDepuis: 0 };
+          dessinHote = copie(this._traits || []);
+          this._repriseParClient = true;
+          this.role = 'hote';
+          this.ajouterLog('L\'hôte ne répond plus : tu rouvres le salon.', true);
+          if (pubHote.phase === 'choix' || pubHote.phase === 'dessin') this._tourAAnnuler = true;
+          this.creerPartie(true);
+        },
+
+        // ---------- Hôte ----------
+        creerPartie: function(reprise) {
+          var nom = reprise ? this.roomCode : this.channelInput.trim();
+          this.reinitialiserPeer(!!reprise);
+          this.connexion = reprise ? 'perdue' : 'connexion';
+          var monPeer = peer = new Peer(ACCES.idSalon(nom, JEU_RESEAU));
+          monPeer.on('open', () => {
+            if (peer !== monPeer) return;
+            this.role = 'hote';
+            this.connexion = 'ok';
+            this.roomCode = nom;
+            this._echecsReprise = 0;
+            if (reprise) {
+              this._repriseParClient = false;
+              this.ajouterLog('Salon récupéré, les autres joueurs vont se reconnecter.', true);
+              if (this._tourAAnnuler) { this._tourAAnnuler = false; return this.finTour('reprise'); }
+            } else {
+              this.onglet = 'play';
+              this.finEntree(true);
+              salle = { infos: {} };
+              pubHote = nouvelEtatSalon([monPseudo]);
+              this.ajouterLog(monPseudo + ' a ouvert le salon.', true);
+            }
+            this.publier();
+          });
+          monPeer.on('connection', (conn) => this.brancherClient(conn));
+          monPeer.on('disconnected', () => {
+            if (peer === monPeer && !monPeer.destroyed) setTimeout(() => { try { if (monPeer.disconnected && !monPeer.destroyed) monPeer.reconnect(); } catch (e) {} }, 1000);
+          });
+          monPeer.on('error', (err) => {
+            if (peer !== monPeer) return;
+            if (reprise || this.role === 'hote') {
+              if (err.type === 'peer-unavailable') return;
+              this.connexion = 'perdue';
+              var seuil = this._repriseParClient ? 1 : 5;
+              if (err.type === 'unavailable-id' && (this._echecsReprise = (this._echecsReprise || 0) + 1) >= seuil) {
+                this._echecsReprise = 0;
+                this._repriseParClient = false;
+                this._tourAAnnuler = false;
+                this.role = 'client';
+                pubHote = null;
+                salle = { infos: {} };
+                this.ajouterLog('Le salon est tenu par un autre joueur : tu le rejoins.', true);
+                return this.rejoindrePartie(true);
+              }
+              this.planifierReconnexion(3000);
+              return;
+            }
+            if (this._entree && err.type === 'unavailable-id') return this.rejoindrePartie(false);
+            if (this._entree) return this.suiteEntree();
+            this.reinitialiserPeer(false);
+            alert('Erreur : ' + err.message);
+          });
+        },
+        brancherClient: function(conn) {
+          connections.push(conn);
+          conn.dernierMsg = Date.now();
+          conn.on('data', (data) => { conn.dernierMsg = Date.now(); this.recevoirDeClient(conn, data); });
+          conn.on('close', () => this.perteClient(conn));
+          conn.on('error', () => this.perteClient(conn));
+        },
+        majJoueurs: function() {
+          if (this.role !== 'hote' || !pubHote) return;
+          this.joueurs = pubHote.ordre.map(p => ({ pseudo: p, hote: p === monPseudo, connecte: this.estConnecte(p) }));
+        },
+        diffuser: function() {
+          this.majJoueurs();
+          var data = { action: 'ETAT', pub: this.etatAEnvoyer(), joueurs: this.joueurs };
+          connections.forEach(c => { try { if (c.open) c.send(data); } catch (e) {} });
+        },
+        recevoirDeClient: function(conn, data) {
+          var p = conn.joueurPseudo;
+          switch (data.action) {
+            case 'PING': break;
+            case 'REJOINDRE': {
+              var pseudo = String(data.pseudo || '').trim().slice(0, 20);
+              var existant = salle.infos[pseudo];
+              if (!pseudo || pseudo === monPseudo || (existant && existant.connecte && existant.clientId !== data.clientId && connParPseudo[pseudo] && connParPseudo[pseudo] !== conn)) {
+                try { conn.send({ action: 'REFUS', fatal: true, message: 'Ce pseudo est déjà utilisé dans ce salon.' }); } catch (e) {}
+                setTimeout(() => { try { conn.close(); } catch (e) {} }, 500);
+                return;
+              }
+              var ancienne = connParPseudo[pseudo];
+              if (ancienne && ancienne !== conn) { ancienne._remplacee = true; connections = connections.filter(c => c !== ancienne); try { ancienne.close(); } catch (e) {} }
+              conn.joueurPseudo = pseudo;
+              connParPseudo[pseudo] = conn;
+              salle.infos[pseudo] = { connecte: true, clientId: data.clientId };
+              if (pubHote.ordre.indexOf(pseudo) !== -1) this.ajouterLog(pseudo + ' est revenu.', true);
+              else {
+                pubHote.ordre.push(pseudo);
+                pubHote.scores[pseudo] = pubHote.scores[pseudo] || 0;
+                this.ajouterLog(pseudo + ' a rejoint le salon.', true);
+                if (pubHote.phase !== 'attente' && pubHote.phase !== 'fin') {
+                  pubHote.file.push(pseudo);   // il dessinera lui aussi pendant cette manche
+                  this.ajouterFil({ type: 'sys', t: pseudo + ' arrive dans la partie.' });
+                }
+              }
+              this.publier();
+              // Ce qu'il a manqué : le dessin en cours, et ses mots s'il est le dessinateur
+              try { conn.send({ action: 'DESSIN', tourId: pubHote.tourId, traits: dessinHote }); } catch (e) {}
+              if (pseudo === pubHote.dessinateur) {
+                if (pubHote.phase === 'choix') this.envoyerPrive(pseudo, { action: 'MOTS', tourId: pubHote.tourId, mots: secret.mots });
+                if (pubHote.phase === 'dessin') this.envoyerPrive(pseudo, { action: 'MOT', tourId: pubHote.tourId, mot: secret.mot });
+              }
+              break;
+            }
+            case 'DEPART':
+              if (!p) return;
+              delete connParPseudo[p];
+              delete salle.infos[p];
+              pubHote.ordre = pubHote.ordre.filter(x => x !== p);
+              this.ajouterLog(p + ' a quitté le salon.', true);
+              if (p === pubHote.dessinateur && (pubHote.phase === 'choix' || pubHote.phase === 'dessin')) this.finTour('absent');
+              else this.publier();
+              break;
+            case 'JEU':
+              if (!p) return;
+              this.traiterJeu(p, data.m || {});
+              break;
+          }
+        },
+        perteClient: function(conn) {
+          if (conn._perdue) return;
+          conn._perdue = true;
+          connections = connections.filter(c => c !== conn);
+          var p = conn.joueurPseudo;
+          if (!p || conn._remplacee || connParPseudo[p] !== conn) return;
+          delete connParPseudo[p];
+          if (salle.infos[p]) salle.infos[p].connecte = false;
+          this.ajouterLog(p + ' s\'est déconnecté (il peut revenir).', true);
+          // S'il était le dernier à chercher, le tour se termine
+          if (pubHote && pubHote.phase === 'dessin' && p !== pubHote.dessinateur) {
+            var restent = pubHote.ordre.filter(x => x !== pubHote.dessinateur && this.estConnecte(x) && !pubHote.trouves.some(t => t.p === x));
+            if (!restent.length && pubHote.trouves.length) return this.finTour('tous');
+          }
+          this.publier();
+          this.sauvegarder();
+        },
+
+        // ---------- Client ----------
+        rejoindrePartie: function(reprise) {
+          var nom = reprise ? this.roomCode : this.channelInput.trim();
+          this.reinitialiserPeer(!!reprise);
+          this.connexion = reprise ? 'perdue' : 'connexion';
+          var monPeer = peer = new Peer();
+          monPeer.on('open', () => {
+            if (peer !== monPeer) return;
+            var conn = hostConn = monPeer.connect(ACCES.idSalon(nom, JEU_RESEAU), { reliable: true });
+            var delai = setTimeout(() => {
+              if (hostConn !== conn || this.connexion === 'ok') return;
+              if (this.role) this.planifierReconnexion();
+              else if (this._entree) this.suiteEntree();
+              else this.reinitialiserPeer(false);
+            }, 10000);
+            conn.on('open', () => {
+              if (hostConn !== conn) return;
+              clearTimeout(delai);
+              dernierMsgHote = Date.now();
+              this.connexion = 'ok';
+              this.role = 'client';
+              this.roomCode = nom;
+              this._echecsClient = 0;
+              if (!reprise) { this.onglet = 'play'; this.finEntree(true); }
+              conn.send({ action: 'REJOINDRE', pseudo: monPseudo, clientId: clientId });
+            });
+            conn.on('data', (data) => { if (hostConn !== conn) return; dernierMsgHote = Date.now(); this.recevoirDeHote(data); });
+            conn.on('close', () => { if (hostConn === conn) this.perteHote(); });
+            conn.on('error', () => { if (hostConn === conn) this.perteHote(); });
+          });
+          monPeer.on('disconnected', () => { if (peer === monPeer && !monPeer.destroyed) { try { monPeer.reconnect(); } catch (e) {} } });
+          monPeer.on('error', () => {
+            if (peer !== monPeer) return;
+            if (this.role) { this.connexion = 'perdue'; this.planifierReconnexion(); }
+            else if (this._entree) this.suiteEntree();
+            else { this.reinitialiserPeer(false); alert('Impossible de joindre ce salon.\n\nSur un même Wi-Fi (location, hôtel, Wi-Fi invité…), passe l\'un des téléphones en 4G/5G puis réessaie.'); }
+          });
+        },
+        perteHote: function() {
+          if (this.connexion === 'perdue' && this._timerReco) return;
+          if (this.connexion === 'ok') this.ajouterLog('Connexion à l\'hôte perdue, reconnexion…', true);
+          var c = hostConn;
+          hostConn = null;
+          if (c) { try { c.close(); } catch (e) {} }
+          this.connexion = 'perdue';
+          this.planifierReconnexion(1500);
+        },
+        envoyerHote: function(data) { if (hostConn && hostConn.open && this.connexion === 'ok') { try { hostConn.send(data); } catch (e) {} } },
+        recevoirDeHote: function(data) {
+          switch (data.action) {
+            case 'PING': break;
+            case 'ETAT':
+              this.joueurs = data.joueurs || [];
+              if (data.pub) this.appliquerPub(data.pub);
+              break;
+            case 'TRAIT':
+              if (this.pub && data.m && data.m.tourId === this.pub.tourId) this.appliquerTrait(data.m);
+              break;
+            case 'DESSIN':
+              if (this.pub && data.tourId === this.pub.tourId) { this._traits = data.traits || []; this.redessiner(); }
+              break;
+            case 'MOTS':
+              this.mesMots = data.mots.slice(); this.mesMots.tourId = data.tourId;
+              this.sauvegarder();
+              break;
+            case 'MOT':
+              this.monMot = data.mot; this._tourMot = data.tourId;
+              this.sauvegarder();
+              break;
+            case 'PROCHE':
+              this.proche = { texte: data.texte, fin: Date.now() + 4000 };
+              this.son('toc'); this.vibre(30);
+              break;
+            case 'REFUS':
+              if (data.fatal) { alert(data.message); this.reinitialiserPeer(false); this.pub = null; this.sauvegarder(); }
+              break;
+          }
+        },
+
+        // ---------- Surveillance de la connexion ----------
+        battement: function() {
+          var maintenant = Date.now();
+          if (this.role === 'hote' && peer) {
+            connections.slice().forEach(c => {
+              try { if (c.open) c.send({ action: 'PING' }); } catch (e) {}
+              if (maintenant - (c.dernierMsg || maintenant) > DELAI_SILENCE) { try { c.close(); } catch (e) {} this.perteClient(c); }
+            });
+            if (peer.destroyed) this.planifierReconnexion(500);
+            else if (peer.disconnected) { try { peer.reconnect(); } catch (e) {} }
+          } else if (this.role === 'client' && this.connexion === 'ok') {
+            this.envoyerHote({ action: 'PING' });
+            if (maintenant - dernierMsgHote > DELAI_SILENCE) this.perteHote();
+          }
+        },
+        auRetourPremierPlan: function() {
+          this.majVeille();
+          if (document.visibilityState === 'hidden' || !this.role) return;
+          if (this.role === 'hote') {
+            if (!peer || peer.destroyed) this.creerPartie(true);
+            else if (peer.disconnected) { try { peer.reconnect(); } catch (e) {} }
+          } else if (this.connexion !== 'ok' || Date.now() - dernierMsgHote > 8000) {
+            this.connexion = 'perdue';
+            this.rejoindrePartie(true);
+          }
+        },
+
+        // ---------- Écran toujours allumé ----------
+        veilleVoulue: function() {
+          return this.veilleSupportee && this.garderEcran && document.visibilityState === 'visible' && !!this.role;
+        },
+        majVeille: function() {
+          if (!this.veilleSupportee) return;
+          if (this.veilleVoulue()) {
+            if (this._verrou || this._demandeVerrou) return;
+            this._demandeVerrou = true;
+            navigator.wakeLock.request('screen').then(verrou => {
+              this._demandeVerrou = false;
+              if (!this.veilleVoulue()) { verrou.release(); return; }
+              this._verrou = verrou;
+              this.veilleActive = true;
+              verrou.addEventListener('release', () => { if (this._verrou === verrou) { this._verrou = null; this.veilleActive = false; } });
+            }).catch(() => { this._demandeVerrou = false; });
+          } else if (this._verrou) {
+            var v = this._verrou;
+            this._verrou = null;
+            this.veilleActive = false;
+            v.release().catch(() => {});
+          }
+        }
+      }
+    });
+  </script>
+</body>
+</html>

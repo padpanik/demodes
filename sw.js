@@ -5,7 +5,7 @@
 //   version mise en ligne sur GitHub est donc visible dès le prochain lancement.
 // Pensez à changer VERSION à chaque mise en ligne (même numéro que dans commun.js et brilliant.html).
 
-const VERSION = '1.48';
+const VERSION = '1.49';
 const CACHE = 'desdale-' + VERSION;
 
 const FICHIERS = [
@@ -19,6 +19,8 @@ const FICHIERS = [
   './assaut-regles.js',
   './bataille.html',
   './bataille-regles.js',
+  './gribouille.html',
+  './gribouille-regles.js',
   './sons/plouf.mp3',
   './sons/touche.mp3',
   './sons/sirene.mp3',
