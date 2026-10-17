@@ -3,7 +3,7 @@
 // Les clés de stockage gardent l'ancien préfixe "brillant-" : les réglages déjà faits sont conservés.
 
 // Numéro de version affiché (à augmenter à chaque mise en ligne, avec brilliant.html et sw.js)
-const VERSION = '1.45';
+const VERSION = '1.46';
 
 // ---------- Stockage local ----------
 function lireStockage(cle) {
@@ -20,6 +20,23 @@ function nouvelId() { return Math.random().toString(36).slice(2, 10); }
 // Identifiant propre à ce téléphone : permet à l'hôte de reconnaître un joueur qui revient
 var clientId = lireStockage('brillant-client-id');
 if (!clientId) { clientId = nouvelId() + nouvelId(); ecrireStockage('brillant-client-id', clientId); }
+
+// ---------- Un seul salon à la fois ----------
+// Chaque jeu garde en mémoire son salon en cours (et s'y reconnecte tout seul). Quand on entre dans un salon,
+// on oublie ceux des autres jeux : sinon le téléphone peut rester accroché à une ancienne partie.
+const SALONS_JEUX = { brilliant: 'brillant-sauvegarde-v1', yams: 'yams-sauvegarde', backgammon: 'bg-sauvegarde', assaut: 'assaut-sauvegarde', bataille: 'bataille-sauvegarde' };
+function oublierSalonDuJeu(jeu) {
+  var cle = SALONS_JEUX[jeu], sv = lireStockage(cle);
+  if (!sv || !sv.role) return false;
+  if (jeu === 'brilliant') { ecrireStockage(cle, { pseudo: sv.pseudo }); return true; }   // Brilliant : grille de salon effacée, comme en quittant
+  sv.role = null; sv.salon = ''; sv.pub = null; sv.pubHote = null; sv.salle = null; sv.jeuHote = null;
+  if (!(sv.etat && sv.etat.solo)) sv.etat = null;
+  ecrireStockage(cle, sv);
+  return true;
+}
+function fermerAutresSalons(jeuCourant) {
+  Object.keys(SALONS_JEUX).forEach(j => { if (j !== jeuCourant) oublierSalonDuJeu(j); });
+}
 
 // ---------- Accès privé ----------
 // Le code n'est écrit nulle part : seule son empreinte (PBKDF2-SHA256) permet de le vérifier.

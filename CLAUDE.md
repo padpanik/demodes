@@ -68,6 +68,9 @@ Pas d'étape de construction, pas de dépendance à ajouter.
   de la partie ; l'ancien hôte, à son retour, rejoint comme simple joueur.
 - Brilliant : la reprise par un joueur ne se fait qu'avant le premier lancer.
 - Un joueur momentanément absent (appel, autre appli) est **attendu** ; l'hôte peut passer son tour (Yams).
+- **Un seul salon à la fois par téléphone** : entrer dans un salon (`entrerSalon`) appelle `fermerAutresSalons(jeu)`
+  (`commun.js`, copie dans `brilliant.html`), qui oublie le salon en cours des autres jeux (rôle et salon effacés de leur
+  sauvegarde). L'accueil affiche le salon en cours avec un bouton « ✕ Quitter » (`oublierSalonDuJeu`).
 
 ## Stockage local (préfixe historique `brillant-` conservé volontairement)
 

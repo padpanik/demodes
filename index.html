@@ -29,6 +29,7 @@
     .jeu .nom { font-size: 1.25em; font-weight: 800; }
     .jeu .desc { color: #6b7a86; font-size: 0.9em; margin-top: 2px; }
     .jeu .badge { display: inline-block; margin-top: 6px; font-size: 0.78em; font-weight: 700; color: #8a5a00; background: #fff3d6; border-radius: 8px; padding: 2px 8px; }
+    .badge-quitter { margin-left: 8px; border: none; border-radius: 6px; background: #f3d9a8; color: #6b4500; font: inherit; font-weight: 700; padding: 1px 6px; cursor: pointer; }
     .jeu .fleche { margin-left: auto; font-size: 1.4em; color: #a3adb5; }
     /* Icône Brilliant : petite grille de couleurs */
     .ico-grille { display: grid; grid-template-columns: repeat(3, 14px); gap: 3px; flex-shrink: 0; }
@@ -90,7 +91,7 @@
           <div>
             <div class="nom">{{ j.nom }}</div>
             <div class="desc">{{ j.desc }}</div>
-            <span class="badge" v-if="j.enCours">{{ j.enCours }}</span>
+            <span class="badge" v-if="j.enCours">{{ j.enCours }}<button class="badge-quitter" @click.prevent.stop="quitter(j)" aria-label="Quitter ce salon">✕ Quitter</button></span>
           </div>
           <span class="fleche">›</span>
         </a>
@@ -127,6 +128,7 @@
         accesErreur: '',
         accesEnCours: false,
         dernierJeu: lireStockage('desdale-dernier-jeu') || '',
+        maj: 0,
         logo: [B, J, R, V],
         grille: [J, V, B, R, M, V, O, R, J],
         installPossible: false,
@@ -135,6 +137,7 @@
       },
       computed: {
         jeux: function() {
+          this.maj;   // recalcul après « Quitter »
           var b = etatJeu('brillant-sauvegarde-v1'), y = etatJeu('yams-sauvegarde'), g = etatJeu('bg-sauvegarde'), a = etatJeu('assaut-sauvegarde'), n = etatJeu('bataille-sauvegarde');
           return [
             { id: 'brilliant', nom: 'Brilliant', page: 'brilliant.html', desc: 'Roll & write : remplis les zones de ta grille.', enCours: b && b.texte },
@@ -158,6 +161,12 @@
           if (enSalon) location.replace(enSalon.page);
         },
         retenir: function(id) { ecrireStockage('desdale-dernier-jeu', id); },
+        // Oublie le salon en cours d'un jeu (il ne sera plus rouvert tout seul)
+        quitter: function(j) {
+          if (!confirm('Quitter le salon de ' + j.nom + ' ? La partie en salon ne sera plus reprise sur ce téléphone.')) return;
+          oublierSalonDuJeu(j.id);
+          this.maj++;
+        },
         validerAcces: function() {
           if (this.accesEnCours || !this.codeSaisi.trim()) return;
           this.accesEnCours = true;

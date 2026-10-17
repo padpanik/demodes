@@ -1080,6 +1080,7 @@
           monPseudo = this.pseudoInput.trim();
           if (!this.channelInput.trim()) { if (!silencieux) alert('Saisis un nom de salon.'); return; }
           if (!silencieux && this.soloEnCours && !confirm('Ta partie solo en cours sera abandonnée. Continuer ?')) return;
+          fermerAutresSalons('yams');   // un seul salon à la fois sur ce téléphone
           this._entree = { essais: 0, silencieux: !!silencieux };
           this.entreeEnCours = true;
           this.creerPartie(false);

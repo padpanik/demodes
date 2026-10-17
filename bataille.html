@@ -1437,6 +1437,7 @@
           if (!this.channelInput.trim()) { if (!silencieux) alert('Saisis un nom de salon.'); return; }
           if (!silencieux && this.partieEnCours && !confirm('Ta partie solo en cours sera abandonnée. Continuer ?')) return;
           if (this.partieEnCours) { clearTimeout(this._timerIA); clearTimeout(this._timerTir); partie = null; this.phase = null; this.etat = null; this.attente = false; this.visee = null; }
+          fermerAutresSalons('bataille');   // un seul salon à la fois sur ce téléphone
           this._entree = { essais: 0, silencieux: !!silencieux };
           this.entreeEnCours = true;
           this.creerPartie(false);
