@@ -447,6 +447,13 @@
 
     // ================== MOTEUR DE PARTIE ==================
     // Le même moteur sert en solo et chez l'hôte (seul arbitre en salon : il lance les dés et vérifie tout).
+    // Plus que des cases vides en Sèche : relancer ne servirait à rien (la Sèche se joue au 1er lancer)
+    function queDuSec(f) {
+      if (!f) return false;
+      var vides = 0;
+      for (var c of COLONNES) for (var l of IDS_LIGNES) if (f[c.id][l] === undefined) { if (c.id !== 'sec') return false; vides++; }
+      return vides > 0;
+    }
     function tourVide(joueur) { return { joueur: joueur || null, lancer: 0, des: [0, 0, 0, 0, 0], garde: [false, false, false, false, false], annonce: null }; }
     function nouveauJeu(ordre, premier, solo) {
       var jeu = { partieId: nouvelId(), solo: !!solo, ordre: ordre.slice(), feuilles: {}, partis: [],
@@ -501,6 +508,7 @@
       }
       if (a.type === 'LANCER') {
         if (t.lancer >= 3) return 'Plus de lancer : choisis une case.';
+        if (t.lancer >= 1 && queDuSec(jeu.feuilles[joueur])) return 'Il ne reste que des cases en Sèche : inscris-toi avec ce lancer.';
         var garde = t.lancer === 0 ? nettoyerGarde() : nettoyerGarde(a.garde);
         if (garde.every(Boolean)) return 'Tu gardes les 5 dés : choisis une case.';
         t.des = t.des.map((d, i) => garde[i] ? d : 1 + Math.floor(Math.random() * 6));
@@ -599,6 +607,7 @@
         },
         peutLancer: function() {
           if (!this.monTour || this.desRoulent || this.etat.tour.lancer >= 3) return false;
+          if (this.etat.tour.lancer >= 1 && queDuSec(this.etat.feuilles[this.moi])) return false;
           return !(this.etat.tour.lancer > 0 && this.etat.tour.garde.every(Boolean));
         },
         // Feuille affichée : celle choisie, sinon celle du joueur actif, sinon la mienne
@@ -656,6 +665,7 @@
             if (t.lancer === 0) return e.solo ? 'Lance les dés.' : avant + 'À toi ! Lance les dés.';
             if (t.annonce && t.lancer === 1) return imp + 'Relance pour t\'y engager, ou change d\'avis : autre case, autre annonce.';
             if (t.annonce) return imp + (t.lancer < 3 ? 'Garde des dés et relance, ou inscris-toi.' : 'Inscris ton score.');
+            if (t.lancer === 1 && queDuSec(e.feuilles[this.moi])) return 'Il ne reste que des cases en Sèche : choisis-en une avec ce lancer.';
             if (t.lancer === 1) return 'Garde et relance, choisis une case (Sec possible) ou annonce une Imposée.';
             if (t.lancer === 2) return 'Encore un lancer possible, ou choisis une case.';
             return 'Choisis une case pour inscrire ton score.';
