@@ -30,6 +30,7 @@ Tout est en français : interface, commentaires du code, messages de commit, ré
 | `bataille.html` + `bataille-regles.js` | Bataille navale. Solo contre l'ordinateur (3 niveaux), ou à deux (salon limité à 2, flottes gardées sur chaque téléphone). Moteur + ordinateur dans `bataille-regles.js` (testable avec Node). |
 | `gribouille.html` + `gribouille-regles.js` | Gribouille : un joueur dessine, les autres devinent (à partir de 2, sans limite). Liste de mots maison et règles (normalisation, « tout près », indices, points) dans `gribouille-regles.js` (testable avec Node). |
 | `petitbac.html` + `petitbac-regles.js` | Petit bac : une lettre, un mot par catégorie (à partir de 2, sans limite). Catégories, normalisation, validité et points dans `petitbac-regles.js` (testable avec Node). |
+| `agents.html` + `agents-regles.js` | Agents secrets (version maison du jeu d'espions en mots, sans le nom ni les visuels de la marque) : deux équipes, un chef par équipe voit la carte secrète. Mots et règles dans `agents-regles.js` (testable avec Node). |
 | `sons/` | Sons enregistrés de la Bataille navale (MP3 libres de droits) et leurs sources (`LICENCES.txt`). |
 | `salon-global.js` | **Salon global** commun à toutes les pages (présence, chat, profil), chargé en fin de page avec `data-jeu`. Indépendant du réseau des jeux. |
 | `sw.js` | Service worker (PWA) : nos fichiers en « réseau d'abord » avec `cache: 'no-cache'`, bibliothèques en cache. |
@@ -54,7 +55,7 @@ Pas d'étape de construction, pas de dépendance à ajouter.
   150 000 itérations, 48 octets. Octets 0–31 : `EMPREINTE` publiée ; octets 32–39 : « clé de salon »,
   jamais publiée, gardée dans `localStorage['brillant-acces']`.
 - La clé de salon entre dans l'identifiant réseau : `'dm-' + cléSalon + '-' + [jeu + '-'] + nomSimplifié`.
-  Préfixes de jeu : aucun pour Brilliant, `yams`, `bg`, `as`, `bn`, `gb`, `pb`. Sans le bon code, impossible de joindre un salon.
+  Préfixes de jeu : aucun pour Brilliant, `yams`, `bg`, `as`, `bn`, `gb`, `pb`, `ag`. Sans le bon code, impossible de joindre un salon.
 - Changer le code = recalculer l'empreinte dans les deux fichiers ; tous les salons changent d'identifiant.
 
 ## Réseau (identique dans les trois jeux)
@@ -107,6 +108,7 @@ Assaut : `assaut-sauvegarde`, `assaut-prive` (mon armée en salon), `assaut-dern
 Backgammon : `bg-sauvegarde`, `bg-dernier-salon`.
 Gribouille : `gribouille-sauvegarde`, `gribouille-dernier-salon`, `gribouille-duree`, `gribouille-manches`.
 Petit bac : `petitbac-sauvegarde`, `petitbac-dernier-salon`, `petitbac-reglages` (catégories, durée, manches, lettres de l'hôte).
+Agents secrets : `agents-sauvegarde` (dont `maCle`, la carte secrète si on est chef), `agents-dernier-salon`.
 Bataille navale : `bataille-sauvegarde`, `bataille-prive` (ma flotte en salon), `bataille-dernier-salon`, `bataille-stats`, `bataille-colles`, `bataille-rejouer`, `bataille-niveau`, `bataille-style`.
 
 ## Règles des jeux (choix de l'utilisateur, à ne pas changer sans lui)
@@ -200,6 +202,18 @@ Bataille navale : `bataille-sauvegarde`, `bataille-prive` (ma flotte en salon), 
   refusée si plus de la moitié des autres joueurs présents votent 👎. Points quand tous sont « prêts » (ou l'hôte décide).
 - Points : 10 réponse unique, 5 réponse partagée (articles, accents et pluriel simple ignorés), 20 si seul à avoir une réponse
   valable dans la catégorie, 0 sinon.
+
+### Agents secrets (version maison du jeu d'espions en mots)
+- Nom maison, pas le nom ni les visuels de la marque. À partir de 4 joueurs : deux équipes (Rouges, Bleus) d'au moins 2,
+  un chef par équipe. Chacun choisit son équipe et peut se proposer chef ; l'hôte peut tirer équipes et chefs au hasard.
+- 25 mots (environ 480 mots maison à double sens, pas deux fois le même mot dans les 200 derniers), carte secrète :
+  9 agents pour l'équipe qui commence (elle alterne à chaque partie), 8 pour l'autre, 7 passants, 1 assassin.
+- Le chef donne **un mot + un nombre** (1 à 9 ou ∞) ; le mot ne doit pas être (ni contenir) un mot encore caché du plateau.
+  Les coéquipiers touchent un mot pour le proposer (visible de tous), le retouchent pour le révéler ; nombre + 1 essais.
+  Passant ou agent adverse : fin du tour ; assassin : défaite immédiate. « Fin du tour » possible après un essai.
+- Réseau : l'hôte garde la carte (jamais dans l'état public avant la fin) et l'envoie aux deux chefs seulement ; chaque chef
+  la garde sur son téléphone et la renvoie en se reconnectant (utile si un joueur reprend le salon). Chef absent : un coéquipier
+  peut devenir chef en cours de partie. Un joueur sans équipe peut en rejoindre une en cours de partie (comme agent).
 
 ### Autres choix déjà tranchés
 - Annonce vocale du tour : **seulement sur le téléphone du joueur concerné**, après 5 s sans lancer.
