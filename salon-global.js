@@ -50,7 +50,9 @@ var SalonGlobal = (function () {
   }
   function hash(s) { var h = 0; for (var i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0; return h; }
   function enregistrerProfil(p) { ecrire(CLE_PROFIL, p); envoyer({ t: 'PROFIL', profil: publicProfil() }); majMoi(); rendre(); }
-  function publicProfil() { var p = profil(); return { pseudo: (p.pseudo || '').slice(0, 20) || 'Anonyme', couleur: p.couleur, emoji: p.emoji || '', image: p.image || '' }; }
+  function publicProfil() { var p = profil(); return { pseudo: (p.pseudo || '').slice(0, 20) || 'Anonyme', couleur: p.couleur, emoji: p.emoji || '', image: p.image || '', invisible: !!p.invisible }; }
+  function suisInvisible() { return !!profil().invisible; }
+  function basculerInvisible() { var q = profil(); q.invisible = !q.invisible; enregistrerProfil(q); }
 
   // Où suis-je ? (jeu affiché et salon de jeu en cours, lu dans la sauvegarde du jeu)
   function ou() {
@@ -155,8 +157,15 @@ var SalonGlobal = (function () {
     var p = publicProfil(), id = monId();
     membres[id] = Object.assign(membres[id] || { depuis: Date.now() }, p, { id: id, ou: ou() });
   }
-  function diffuserMembres() { if (role === 'hote') { majMoi(); diffuser({ t: 'MEMBRES', membres: listeMembres() }); } }
-  function listeMembres() { return Object.keys(membres).map(k => membres[k]); }
+  // Les invisibles ne sont envoyés qu'à eux-mêmes : les autres ne les voient pas du tout
+  function diffuserMembres() {
+    if (role !== 'hote') return;
+    majMoi();
+    var tous = Object.keys(membres).map(k => membres[k]);
+    Object.keys(conns).forEach(id => { var c = conns[id]; try { if (c.open) c.send({ t: 'MEMBRES', membres: tous.filter(m => !m.invisible || m.id === id) }); } catch (e) {} });
+  }
+  // Ceux que je vois (moi compris, même invisible)
+  function listeMembres() { return Object.keys(membres).map(k => membres[k]).filter(m => !m.invisible || m.id === monId()); }
   function brancher(c) {
     c.dernier = Date.now();
     c.on('data', (d) => { c.dernier = Date.now(); recevoirClient(c, d); });
@@ -201,7 +210,7 @@ var SalonGlobal = (function () {
     p = p || {};
     var img = String(p.image || '');
     return { pseudo: String(p.pseudo || 'Anonyme').slice(0, 20), couleur: /^#[0-9a-f]{6}$/i.test(p.couleur) ? p.couleur : '#7d8a94',
-             emoji: String(p.emoji || '').slice(0, 8), image: img.indexOf('data:image/') === 0 && img.length < 30000 ? img : '' };
+             emoji: String(p.emoji || '').slice(0, 8), image: img.indexOf('data:image/') === 0 && img.length < 30000 ? img : '', invisible: !!p.invisible };
   }
   function nettoyerOu(o) { o = o || {}; return { jeu: JEUX[o.jeu] ? o.jeu : 'accueil', salon: String(o.salon || '').slice(0, 40) }; }
 
@@ -223,7 +232,7 @@ var SalonGlobal = (function () {
     if (messages.length > MAX_MESSAGES) messages.splice(0, messages.length - MAX_MESSAGES);
     ecrire(CLE_MESSAGES, messages);
     var pourMoi = m.canal === 'tous' || m.canal === canalSalon();
-    if (m.de !== monId() && pourMoi && !silencieux) {
+    if (m.de !== monId() && pourMoi && !silencieux && !suisInvisible()) {   // invisible : pas de son ni de vibration
       if (!ouvert || (onglet !== 'tous' && onglet !== 'salon')) {
         try { if (lire('brillant-vibration') !== false) navigator.vibrate && navigator.vibrate(40); } catch (e) {}
         try { if (lire('brillant-son') !== false && typeof Sons !== 'undefined') Sons.jouer('toc'); } catch (e) {}
@@ -316,6 +325,12 @@ var SalonGlobal = (function () {
       '#sg-bulle .sg-pastille{position:absolute;top:-3px;right:-3px;min-width:18px;height:18px;border-radius:9px;background:#e74c3c;color:#fff;font:700 11px/18px system-ui,sans-serif;padding:0 4px;box-sizing:border-box}',
       '#sg-bulle .sg-nb{position:absolute;bottom:-3px;left:-3px;min-width:18px;height:18px;border-radius:9px;background:#2ecc71;color:#fff;font:700 11px/18px system-ui,sans-serif;padding:0 4px;box-sizing:border-box}',
       '#sg-bulle.hors{background:#7d8a94}',
+      '#sg-bulle.invisible{background:#8e7cc3;opacity:.75}',
+      '.sg-invisible{display:flex;align-items:center;gap:10px;background:#f4f1fb;border-radius:12px;padding:8px 10px;margin-bottom:6px;font-size:12px;color:#6b7a86}',
+      '.sg-invisible>div{flex:1}.sg-invisible b{font-size:14px;color:#1d2b36}.sg-invisible.actif{background:#e6defa}',
+      '.sg-interrupteur{flex-shrink:0;width:46px;height:28px;border-radius:14px;border:none;background:#c9d2d9;position:relative;cursor:pointer;padding:0}',
+      '.sg-interrupteur span{position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:left .15s}',
+      '.sg-invisible.actif .sg-interrupteur{background:#7b5cc4}.sg-invisible.actif .sg-interrupteur span{left:21px}',
       '#sg-fond{position:fixed;inset:0;z-index:4001;background:rgba(15,25,35,.35)}',
       '#sg-panneau{position:fixed;left:8px;right:8px;top:8px;z-index:4002;max-width:520px;margin:0 auto;background:#fff;border-radius:16px;box-shadow:0 10px 30px rgba(0,0,0,.35);display:flex;flex-direction:column;overflow:hidden;font-family:system-ui,sans-serif;color:#1d2b36}',
       '#sg-panneau .sg-tete{display:flex;align-items:center;gap:4px;padding:8px 8px 0}',
@@ -417,9 +432,9 @@ var SalonGlobal = (function () {
   // Redessine ce qui est visible (bulle, carte de l'accueil, panneau)
   function rendre(defiler) {
     if (!el.bulle) return;
-    var nb = Object.keys(membres).length, nl = nonLus();
-    el.bulle.className = role ? '' : 'hors';
-    el.bulle.innerHTML = '💬' + (nl ? '<span class="sg-pastille">' + (nl > 9 ? '9+' : nl) + '</span>' : '') + (nb > 1 ? '<span class="sg-nb">' + nb + '</span>' : '');
+    var nb = listeMembres().length, nl = nonLus(), inv = suisInvisible();
+    el.bulle.className = (role ? '' : 'hors') + (inv ? ' invisible' : '');
+    el.bulle.innerHTML = (inv ? '👻' : '💬') + (nl ? '<span class="sg-pastille">' + (nl > 9 ? '9+' : nl) + '</span>' : '') + (nb > 1 ? '<span class="sg-nb">' + nb + '</span>' : '');
     var ici = document.getElementById('sg-ici');
     if (ici) {
       var autres = listeMembres().filter(m => m.id !== monId());
@@ -443,7 +458,8 @@ var SalonGlobal = (function () {
     bar.querySelectorAll('button').forEach(x => { x.onclick = () => changerOnglet(x.dataset.o); });
     el.panneau.querySelector('.sg-etat').textContent = role ? (role === 'hote' ? 'Salon global · en ligne (tu le tiens)' : 'Salon global · en ligne') : 'Salon global · connexion…';
     var corps = el.panneau.querySelector('#sg-corps'), pied = el.panneau.querySelector('.sg-pied');
-    if (onglet === 'presents') { corps.innerHTML = vuePresents(); pied.innerHTML = ''; pied.style.display = 'none';
+    if (onglet === 'presents') { corps.innerHTML = vueInvisible() + vuePresents(); pied.innerHTML = ''; pied.style.display = 'none';
+      corps.querySelector('[data-invisible]').onclick = basculerInvisible;
       corps.querySelectorAll('[data-rejoindre]').forEach(x => { x.onclick = () => rejoindrePartie(x.dataset.rejoindre); }); }
     else if (onglet === 'profil') { pied.innerHTML = ''; pied.style.display = 'none'; vueProfil(corps); }
     else {
@@ -467,8 +483,15 @@ var SalonGlobal = (function () {
         };
       }
       marquerLus();
-      el.bulle.innerHTML = '💬' + (nb > 1 ? '<span class="sg-nb">' + nb + '</span>' : '');
+      el.bulle.innerHTML = (inv ? '👻' : '💬') + (nb > 1 ? '<span class="sg-nb">' + nb + '</span>' : '');
     }
+  }
+  // Interrupteur « invisible » : on joue tranquille, sans apparaître chez les autres
+  function vueInvisible() {
+    var inv = suisInvisible();
+    return '<div class="sg-invisible' + (inv ? ' actif' : '') + '"><div><b>👻 Invisible</b><div>' +
+      (inv ? 'Personne ne te voit en ligne. Tu peux lire, et tes messages restent signés si tu écris.' : 'Pour jouer tranquille sans apparaître chez les autres.') +
+      '</div></div><button class="sg-interrupteur" data-invisible role="switch" aria-checked="' + inv + '"><span></span></button></div>';
   }
   function vuePresents() {
     var moi = monId(), mon = ou();
@@ -491,7 +514,7 @@ var SalonGlobal = (function () {
   function vueProfil(corps) {
     var p = profil();
     corps.innerHTML = '<div class="sg-profil">' +
-      '<div class="sg-apercu">' + avatar(publicProfil(), 48) + '<div><b>' + esc(p.pseudo || 'Anonyme') + '</b><div style="font-size:12px;color:#6b7a86">C\'est ainsi que les autres te voient.</div></div></div>' +
+      vueInvisible() + '<div class="sg-apercu">' + avatar(publicProfil(), 48) + '<div><b>' + esc(p.pseudo || 'Anonyme') + '</b><div style="font-size:12px;color:#6b7a86">C\'est ainsi que les autres te voient.</div></div></div>' +
       '<label>Pseudo</label><input type="text" maxlength="20" value="' + esc(p.pseudo || '') + '" placeholder="ex : Alex">' +
       '<label>Couleur</label><div class="sg-choix sg-couleurs">' + COULEURS.map(c => '<button data-c="' + c + '" class="' + (p.couleur === c ? 'actif' : '') + '" style="background:' + c + '"></button>').join('') + '</div>' +
       '<label>Image</label><div class="sg-choix sg-emojis"><button data-em="" class="' + (!p.emoji && !p.image ? 'actif' : '') + '" style="font-size:13px;font-weight:800">Aa</button>' +
@@ -499,6 +522,7 @@ var SalonGlobal = (function () {
       '<div style="margin-top:10px;display:flex;gap:8px"><button class="sg-btn" data-photo>📷 Ma photo</button>' + (p.image ? '<button class="sg-btn" data-oter>Retirer la photo</button>' : '') + '</div>' +
       '<input type="file" accept="image/*" style="display:none">' +
       '<div style="font-size:12px;color:#8a97a1;margin-top:10px">Ta photo est réduite et partagée seulement avec les joueurs connectés au salon global.</div></div>';
+    corps.querySelector('[data-invisible]').onclick = basculerInvisible;
     var champ = corps.querySelector('input[type=text]');
     champ.onchange = () => { var q = profil(); q.pseudo = champ.value.trim().slice(0, 20); enregistrerProfil(q); };
     corps.querySelectorAll('[data-c]').forEach(x => { x.onclick = () => { var q = profil(); q.couleur = x.dataset.c; enregistrerProfil(q); }; });
