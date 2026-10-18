@@ -33,6 +33,10 @@
     .info { display: flex; align-items: center; gap: 8px; min-height: 40px; margin-bottom: 4px; }
     .indice { flex: 1; min-width: 0; text-align: center; font-weight: 800; font-size: 1.25em; letter-spacing: 0.14em; color: #1d2b36; font-family: ui-monospace, Menlo, Consolas, monospace; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .indice small { font-family: system-ui, sans-serif; letter-spacing: 0; font-weight: 600; font-size: 0.6em; color: #6b7a86; margin-left: 6px; }
+    /* Thème du mot (Action, Objet, Animal…), montré à ceux qui devinent */
+    .indice .theme { font-family: system-ui, sans-serif; letter-spacing: 0; font-size: 0.55em; font-weight: 800; color: #fff; background: #4a90d9;
+                     border-radius: 8px; padding: 2px 7px; margin-right: 8px; vertical-align: 3px; text-transform: uppercase; }
+    .theme-choix { display: block; font-size: 0.7em; font-weight: 600; color: #6b7a86; margin-top: 1px; }
     .indice.mot-a-dessiner { letter-spacing: 0.02em; font-family: system-ui, sans-serif; font-size: 1.1em; }
     .indice.mot-a-dessiner small { margin: 0 6px 0 0; }
     .chrono { width: 46px; height: 46px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.95em; color: #1d2b36;
@@ -213,8 +217,8 @@
         </div>
 
         <div class="info">
-          <div v-if="pub.phase === 'dessin' && jeDessine && monMot" class="indice mot-a-dessiner"><small>Dessine :</small>{{ monMot }}</div>
-          <div v-else-if="pub.phase === 'dessin'" class="indice">{{ pub.indice }}<small>{{ pub.longueur }} lettres</small></div>
+          <div v-if="pub.phase === 'dessin' && jeDessine && monMot" class="indice mot-a-dessiner"><small>Dessine :</small>{{ monMot }}<small v-if="pub.categorie">({{ pub.categorie }})</small></div>
+          <div v-else-if="pub.phase === 'dessin'" class="indice"><span v-if="pub.categorie" class="theme">{{ pub.categorie }}</span>{{ pub.indice }}<small>{{ pub.longueur }} lettres</small></div>
           <div v-else-if="pub.phase === 'choix'" class="indice mot-a-dessiner"><small>{{ jeDessine ? 'À toi :' : pub.dessinateur + ' choisit un mot…' }}</small></div>
           <div v-else-if="pub.phase === 'bilan'" class="indice mot-a-dessiner"><small>C'était :</small>{{ pub.motRevele }}</div>
           <div v-else class="indice mot-a-dessiner"><small>Partie terminée</small></div>
@@ -228,7 +232,7 @@
           <div v-if="pub.phase === 'choix'" class="toile-voile">
             <template v-if="jeDessine && mesMots">
               <div>Choisis le mot à dessiner :</div>
-              <div class="choix-mots"><button v-for="(m, i) in mesMots" :key="m" @click="choisirMot(i)">{{ m }}</button></div>
+              <div class="choix-mots"><button v-for="(m, i) in mesMots" :key="m" @click="choisirMot(i)">{{ m }}<small class="theme-choix">{{ GB.categorie(m) }}</small></button></div>
             </template>
             <template v-else><div class="grand">🤔</div><div><strong>{{ pub.dessinateur }}</strong> choisit un mot…</div></template>
           </div>
@@ -622,7 +626,7 @@
           this.finPartie();
         },
         debuterTour: function(p) {
-          Object.assign(pubHote, { phase: 'choix', dessinateur: p, tourId: nouvelId(), indice: '', longueur: 0, trouves: [], gains: {}, motRevele: '' });
+          Object.assign(pubHote, { phase: 'choix', dessinateur: p, tourId: nouvelId(), indice: '', longueur: 0, categorie: '', trouves: [], gains: {}, motRevele: '' });
           var mots = GB.tirerMots(3, secret.joues);
           secret = Object.assign(secret, { tourId: pubHote.tourId, mots: mots, mot: null, devoilees: [], finChoix: Date.now() + DUREE_CHOIX, absentDepuis: 0 });
           dessinHote = [];
@@ -638,6 +642,7 @@
           pubHote.phase = 'dessin';
           pubHote.indice = GB.masque(mot, []);
           pubHote.longueur = GB.positionsLettres(mot).length;
+          pubHote.categorie = GB.categorie(mot);
           this.ajouterFil({ type: 'sys', t: '✏️ ' + pubHote.dessinateur + ' dessine !' });
           this.envoyerPrive(pubHote.dessinateur, { action: 'MOT', tourId: pubHote.tourId, mot: mot });
           this.publier();
@@ -768,7 +773,7 @@
             var gagnant = this.classement[0] && this.classement[0].pseudo === moi;
             if (gagnant) { this.son('victoire'); this.vibre([100, 60, 100, 60, 250]); }
           }
-          if (p.phase === 'dessin' && a.phase !== 'dessin') this.ajouterLog(p.dessinateur + ' dessine (' + p.longueur + ' lettres).');
+          if (p.phase === 'dessin' && a.phase !== 'dessin') this.ajouterLog(p.dessinateur + ' dessine (' + (p.categorie ? p.categorie.toLowerCase() + ', ' : '') + p.longueur + ' lettres).');
           if (p.phase === 'bilan' && a.phase !== 'bilan') this.ajouterLog('Le mot était : ' + p.motRevele);
         },
         publier: function() {
