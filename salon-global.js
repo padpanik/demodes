@@ -14,7 +14,8 @@ var SalonGlobal = (function () {
     backgammon: { nom: 'Backgammon', page: 'backgammon.html', cle: 'bg-sauvegarde' },
     assaut: { nom: 'Assaut', page: 'assaut.html', cle: 'assaut-sauvegarde' },
     bataille: { nom: 'Bataille navale', page: 'bataille.html', cle: 'bataille-sauvegarde' },
-    gribouille: { nom: 'Gribouille', page: 'gribouille.html', cle: 'gribouille-sauvegarde' }
+    gribouille: { nom: 'Gribouille', page: 'gribouille.html', cle: 'gribouille-sauvegarde' },
+    petitbac: { nom: 'Petit bac', page: 'petitbac.html', cle: 'petitbac-sauvegarde' }
   };
   var COULEURS = ['#e74c3c', '#e67e22', '#f1c40f', '#2ecc71', '#16a085', '#3498db', '#2c3e50', '#9b59b6', '#e84393', '#8d6e63'];
   var EMOJIS = ['😀', '😎', '🤓', '🥳', '😺', '🐶', '🦊', '🐼', '🐸', '🐧', '🦁', '🐙', '🦄', '🐲', '👻', '🤖', '👽', '🎃', '⭐', '🔥', '🌈', '🍕', '🎲', '⚓'];

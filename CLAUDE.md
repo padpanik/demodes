@@ -29,6 +29,7 @@ Tout est en français : interface, commentaires du code, messages de commit, ré
 | `assaut.html` + `assaut-regles.js` | Assaut (stratégie à pièces cachées, version maison du genre « Stratego », sans le nom ni les visuels de la marque). Solo contre l'ordinateur, ou à deux (salon limité à 2, armées gardées sur chaque téléphone). Moteur + ordinateur dans `assaut-regles.js` (testable avec Node). |
 | `bataille.html` + `bataille-regles.js` | Bataille navale. Solo contre l'ordinateur (3 niveaux), ou à deux (salon limité à 2, flottes gardées sur chaque téléphone). Moteur + ordinateur dans `bataille-regles.js` (testable avec Node). |
 | `gribouille.html` + `gribouille-regles.js` | Gribouille : un joueur dessine, les autres devinent (à partir de 2, sans limite). Liste de mots maison et règles (normalisation, « tout près », indices, points) dans `gribouille-regles.js` (testable avec Node). |
+| `petitbac.html` + `petitbac-regles.js` | Petit bac : une lettre, un mot par catégorie (à partir de 2, sans limite). Catégories, normalisation, validité et points dans `petitbac-regles.js` (testable avec Node). |
 | `sons/` | Sons enregistrés de la Bataille navale (MP3 libres de droits) et leurs sources (`LICENCES.txt`). |
 | `salon-global.js` | **Salon global** commun à toutes les pages (présence, chat, profil), chargé en fin de page avec `data-jeu`. Indépendant du réseau des jeux. |
 | `sw.js` | Service worker (PWA) : nos fichiers en « réseau d'abord » avec `cache: 'no-cache'`, bibliothèques en cache. |
@@ -53,7 +54,7 @@ Pas d'étape de construction, pas de dépendance à ajouter.
   150 000 itérations, 48 octets. Octets 0–31 : `EMPREINTE` publiée ; octets 32–39 : « clé de salon »,
   jamais publiée, gardée dans `localStorage['brillant-acces']`.
 - La clé de salon entre dans l'identifiant réseau : `'dm-' + cléSalon + '-' + [jeu + '-'] + nomSimplifié`.
-  Préfixes de jeu : aucun pour Brilliant, `yams`, `bg`, `as`, `bn`, `gb`. Sans le bon code, impossible de joindre un salon.
+  Préfixes de jeu : aucun pour Brilliant, `yams`, `bg`, `as`, `bn`, `gb`, `pb`. Sans le bon code, impossible de joindre un salon.
 - Changer le code = recalculer l'empreinte dans les deux fichiers ; tous les salons changent d'identifiant.
 
 ## Réseau (identique dans les trois jeux)
@@ -105,6 +106,7 @@ Yams : `yams-sauvegarde`, `yams-dernier-salon`, `yams2-record`, `yams2-classemen
 Assaut : `assaut-sauvegarde`, `assaut-prive` (mon armée en salon), `assaut-dernier-salon`, `assaut-mode`, `assaut-memoire`, `assaut-stats`, `assaut-dispositions`, `assaut-apparence`, `assaut-images`, `assaut-numerotation`, `assaut-couleur`.
 Backgammon : `bg-sauvegarde`, `bg-dernier-salon`.
 Gribouille : `gribouille-sauvegarde`, `gribouille-dernier-salon`, `gribouille-duree`, `gribouille-manches`.
+Petit bac : `petitbac-sauvegarde`, `petitbac-dernier-salon`, `petitbac-reglages` (catégories, durée, manches, lettres de l'hôte).
 Bataille navale : `bataille-sauvegarde`, `bataille-prive` (ma flotte en salon), `bataille-dernier-salon`, `bataille-stats`, `bataille-colles`, `bataille-rejouer`, `bataille-niveau`, `bataille-style`.
 
 ## Règles des jeux (choix de l'utilisateur, à ne pas changer sans lui)
@@ -185,6 +187,19 @@ Bataille navale : `bataille-sauvegarde`, `bataille-prive` (ma flotte en salon), 
 - Réseau : l'hôte arbitre et garde le mot secret (envoyé seulement au dessinateur, jamais dans l'état public) ; les traits
   (millièmes de la largeur) sont relayés tout de suite aux autres et le dessin complet est renvoyé à qui arrive ou revient.
   Dessinateur absent plus de 10 s : tour suivant. Hôte disparu : un joueur rouvre le salon et le tour en cours est annulé.
+
+### Petit bac (première version, pratiques les plus courantes)
+- À partir de 2 joueurs, pas de solo. L'hôte choisit les catégories (3 à 12 parmi 24 ; par défaut Prénom, Pays, Ville, Animal,
+  Fruit ou légume, Métier, Objet, Marque), le temps (60 s à 3 min, 2 min par défaut), 3, 5 ou 8 manches, et les lettres
+  (sans K Q W X Y Z par défaut). Une lettre par manche, jamais deux fois la même dans une partie.
+- L'article du début (« le », « la », « l' », « un »…) ne compte pas pour la lettre. « STOP ! » seulement avec une grille
+  complète et juste ; les autres ont encore 3 s. Sinon fin au chrono.
+- Pendant l'écriture, les réponses ne vont qu'à l'hôte (seul le nombre de cases remplies est public) ; chacune est aussi gardée
+  sur son téléphone et renvoyée à la reconnexion (rien n'est perdu si l'hôte change).
+- Vérification : une catégorie à la fois ; une réponse qui ne commence pas par la lettre est refusée d'office ; sinon elle est
+  refusée si plus de la moitié des autres joueurs présents votent 👎. Points quand tous sont « prêts » (ou l'hôte décide).
+- Points : 10 réponse unique, 5 réponse partagée (articles, accents et pluriel simple ignorés), 20 si seul à avoir une réponse
+  valable dans la catégorie, 0 sinon.
 
 ### Autres choix déjà tranchés
 - Annonce vocale du tour : **seulement sur le téléphone du joueur concerné**, après 5 s sans lancer.

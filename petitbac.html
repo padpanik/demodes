@@ -1,0 +1,1034 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <!-- resizes-content : quand le clavier s'ouvre, la page rétrécit (le champ en cours reste visible) -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
+  <title>Petit bac · Désdale</title>
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="theme-color" content="#f3f5f7">
+  <link rel="icon" type="image/png" href="favicon.png">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Désdale">
+  <script src="https://cdn.jsdelivr.net/npm/vue@2.7.16/dist/vue.min.js"></script>
+  <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+  <link rel="stylesheet" href="commun.css">
+  <style>
+    .logo-pb { width: 51px; height: 51px; border-radius: 12px; background: #fff; box-shadow: inset 0 0 0 2px #2c3e50; display: flex; align-items: center; justify-content: center;
+               font: 900 30px/1 Georgia, 'Times New Roman', serif; color: #c0392b; }
+    .segment { display: flex; background: #e3e8ec; border-radius: 10px; padding: 3px; gap: 3px; margin-bottom: 6px; }
+    .segment button { flex: 1; border: none; background: transparent; border-radius: 8px; padding: 8px 4px; font: inherit; font-weight: 600; color: #5b6b78; cursor: pointer; }
+    .segment button.actif { background: #fff; color: #1d2b36; box-shadow: 0 1px 3px rgba(0,0,0,0.12); }
+    .segment button:disabled { opacity: 0.6; }
+    .titre-option { font-size: 0.85em; font-weight: 700; color: #5b6b78; margin: 10px 2px 4px; }
+    .puces-cat { display: flex; flex-wrap: wrap; gap: 5px; }
+    .puces-cat button { border: 1.5px solid #c9d2d9; background: #fff; border-radius: 14px; padding: 5px 10px; font: inherit; font-size: 0.85em; color: #5b6b78; cursor: pointer; }
+    .puces-cat button.actif { background: #2c3e50; border-color: #2c3e50; color: #fff; font-weight: 600; }
+    .puces-cat button:disabled { cursor: default; }
+    .attente-liste { list-style: none; padding: 0; margin: 8px 0; }
+    .attente-liste li { padding: 6px 4px; border-bottom: 1px solid #eef1f3; display: flex; justify-content: space-between; }
+
+    /* ---------- Jeu ---------- */
+    .tete-manche { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+    .lettre { width: 58px; height: 58px; border-radius: 14px; background: #fff; flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+              font: 900 40px/1 Georgia, 'Times New Roman', serif; color: #c0392b; box-shadow: 0 1px 2px rgba(0,0,0,0.08), 0 3px 12px rgba(29,43,54,0.12); }
+    .tete-manche .milieu { flex: 1; min-width: 0; }
+    .tete-manche .titre { font-weight: 800; font-size: 1.05em; }
+    .tete-manche .sous { font-size: 0.82em; color: #6b7a86; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .chrono { width: 46px; height: 46px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.95em; color: #1d2b36;
+              background: conic-gradient(#4a90d9 calc(var(--part, 1) * 360deg), #e3e8ec 0); position: relative; }
+    .chrono::before { content: ''; position: absolute; inset: 4px; border-radius: 50%; background: #f3f5f7; }
+    .chrono span { position: relative; }
+    .chrono.urgent { background: conic-gradient(#d9534f calc(var(--part, 1) * 360deg), #e3e8ec 0); color: #c0392b; }
+
+    .grille { display: flex; flex-direction: column; gap: 5px; }
+    .ligne-cat { display: flex; align-items: center; gap: 8px; background: #fff; border-radius: 12px; padding: 4px 6px 4px 10px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+    .ligne-cat label { width: 34%; flex-shrink: 0; font-size: 0.8em; font-weight: 700; color: #5b6b78; line-height: 1.15; }
+    .ligne-cat input { flex: 1; min-width: 0; font: inherit; font-size: 16px; padding: 7px 9px; border-radius: 9px; border: 1.5px solid #dfe5ea; background: #f8fafb; }
+    .ligne-cat input.bon { border-color: #8fd3ad; background: #f2fbf5; }
+    .ligne-cat input.faux { border-color: #e6a5a5; background: #fdf3f3; }
+    .ligne-cat input:disabled { color: #3b4b57; opacity: 1; }
+    .bas-ecriture { position: sticky; bottom: 0; padding: 8px 0 4px; background: linear-gradient(rgba(243,245,247,0), #f3f5f7 30%); }
+    .btn-stop { width: 100%; padding: 13px; border: none; border-radius: 14px; background: #c0392b; color: #fff; font: inherit; font-weight: 900; font-size: 1.15em; letter-spacing: 0.06em; cursor: pointer; }
+    .btn-stop:disabled { background: #c9d2d9; color: #6b7a86; letter-spacing: 0; font-weight: 700; font-size: 0.95em; }
+    .progres { display: flex; flex-wrap: wrap; gap: 4px; justify-content: center; margin-top: 6px; font-size: 0.8em; }
+    .progres span { background: #e6ebef; border-radius: 10px; padding: 1px 8px; }
+    .progres span.fini { background: #dff3e6; }
+    .progres span.absent { opacity: 0.45; }
+    .bandeau-stop { text-align: center; font-weight: 900; color: #c0392b; font-size: 1.1em; margin: 2px 0 6px; animation: clignote 0.5s ease-in-out infinite alternate; }
+    @keyframes clignote { from { opacity: 1; } to { opacity: 0.45; } }
+
+    /* Vote : une catégorie à la fois */
+    .nav-cat { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; }
+    .nav-cat button { width: 40px; height: 40px; border-radius: 12px; border: 1.5px solid #c9d2d9; background: #fff; font-size: 1.2em; cursor: pointer; flex-shrink: 0; }
+    .nav-cat button:disabled { opacity: 0.35; }
+    .nav-cat .nom-cat { flex: 1; text-align: center; font-weight: 800; font-size: 1.1em; }
+    .nav-cat .nom-cat small { display: block; font-weight: 600; font-size: 0.7em; color: #6b7a86; }
+    .points-cat { display: flex; gap: 4px; justify-content: center; margin-bottom: 8px; }
+    .points-cat span { width: 9px; height: 9px; border-radius: 50%; background: #c9d2d9; cursor: pointer; }
+    .points-cat span.ici { background: #2c3e50; }
+    .rep { display: flex; align-items: center; gap: 8px; background: #fff; border-radius: 12px; padding: 8px 10px; margin-bottom: 5px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+    .rep .qui { width: 30%; flex-shrink: 0; font-size: 0.82em; font-weight: 700; color: #5b6b78; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .rep .mot { flex: 1; min-width: 0; font-weight: 700; word-break: break-word; }
+    .rep.refuse .texte { text-decoration: line-through; color: #a0a9b0; font-weight: 600; }
+    .rep .vide { color: #a0a9b0; font-weight: 400; font-style: italic; }
+    .rep .etat { font-size: 0.75em; color: #b04a4a; display: block; font-weight: 600; }
+    .rep .pts { font-weight: 800; color: #2f8a5b; min-width: 30px; text-align: right; }
+    .btn-vote { border: 1.5px solid #c9d2d9; background: #fff; border-radius: 10px; padding: 5px 8px; font: inherit; font-size: 0.85em; cursor: pointer; flex-shrink: 0; }
+    .btn-vote.contre { background: #fbe9e9; border-color: #d98c8c; color: #a33; font-weight: 700; }
+    .aide-vote { font-size: 0.8em; color: #6b7a86; text-align: center; margin: 4px 0 8px; }
+    .podium { list-style: none; padding: 0; margin: 10px 0; }
+    .podium li { display: flex; justify-content: space-between; padding: 6px 10px; border-radius: 8px; }
+    .podium li:first-child { background: #fff3d6; font-weight: 800; }
+    .podium li .gain { color: #2f8a5b; font-weight: 700; margin-left: 6px; }
+    .panneau-vide { text-align: center; padding: 36px 16px; color: #5b6b78; }
+    .panneau-vide .grand { font-size: 2.5em; margin-bottom: 8px; }
+    .regles ul { padding-left: 18px; margin: 8px 0 0; font-size: 0.88em; line-height: 1.45; color: #3b4b57; }
+  </style>
+</head>
+<body>
+  <div id="app" class="app">
+
+    <div class="barre">
+      <div id="menu">
+        <div @click="onglet = 'config'" :class="{ actif: onglet === 'config' }">Accueil</div>
+        <div @click="onglet = 'play'" :class="{ actif: onglet === 'play' }">Jouer</div>
+      </div>
+      <a v-if="onglet === 'config' && !role" class="lien-jeux" href="index.html?choix">⇦ Jeux</a>
+      <div class="barre-infos" v-if="onglet === 'play'">
+        <button class="btn-veille" :class="{ off: !sonActif }" @click="basculerSon">{{ sonActif ? '🔊' : '🔇' }}</button>
+        <button v-if="veilleSupportee" class="btn-veille" :class="{ actif: veilleActive, off: !garderEcran }" @click="garderEcran = !garderEcran">{{ garderEcran ? '☀️' : '🌙' }}</button>
+        <span v-if="role" class="point-co" :class="{ attente: connexion !== 'ok' }"></span>
+      </div>
+    </div>
+
+    <!-- ACCUEIL -->
+    <div v-show="onglet === 'config'">
+      <header class="hero">
+        <div class="logo-pb">B</div>
+        <div>
+          <h1>Petit bac</h1>
+          <p>Désdale · une lettre, un mot par catégorie</p>
+        </div>
+      </header>
+
+      <section class="carte salon-actif" v-if="role">
+        <div class="salon-tete">
+          <span class="pastille" :class="{ attente: connexion !== 'ok' }"></span>
+          <div>
+            <div class="salon-nom">Salon « {{ roomCode }} »</div>
+            <div class="salon-role">{{ role === 'hote' ? '👑 Tu es l\'hôte : tu règles et lances les parties' : 'Tu joues' }} en tant que {{ moi }} · {{ connexionTexte }}</div>
+          </div>
+        </div>
+        <div class="chips-joueurs">
+          <span v-for="j in bandeau" :key="j.pseudo" class="chip" :class="{ absent: !j.connecte }">{{ j.pseudo }} · {{ j.score }} pts<span v-if="!j.connecte"> 💤</span></span>
+        </div>
+        <div class="actions-accueil">
+          <button class="btn principal" @click="onglet = 'play'">Jouer →</button>
+          <button class="btn" @click="quitterSalon">Quitter</button>
+        </div>
+      </section>
+
+      <template v-if="!role">
+        <section class="carte">
+          <div class="titre-carte">Entrer dans un salon</div>
+          <label class="champ">Ton pseudo
+            <input type="text" v-model="pseudoInput" placeholder="ex : Alex" autocomplete="off" maxlength="20">
+          </label>
+          <label class="champ">Nom du salon
+            <input type="text" v-model="channelInput" placeholder="ex : partie-du-dimanche" autocomplete="off">
+          </label>
+          <div class="salons-connus" v-if="salonsConnus.length">
+            <span v-for="nom in salonsConnus" :key="nom" class="salon-puce" :class="{ actif: estSalonSaisi(nom) }">
+              <button class="nom" @click="channelInput = nom">{{ nom }}</button>
+              <button class="oter" @click="oublierSalon(nom)" aria-label="Retirer de la liste">✕</button>
+            </span>
+          </div>
+          <div class="aide">À partir de deux joueurs, chacun sur son téléphone. Le premier ouvre le salon et règle la partie.</div>
+        </section>
+        <button class="btn principal btn-large" @click="entrerSalon()" :disabled="entreeEnCours">{{ entreeEnCours ? 'Connexion au salon…' : 'Entrer dans le salon' }}</button>
+      </template>
+
+      <details class="carte regles">
+        <summary>Règles</summary>
+        <ul>
+          <li>Une lettre est tirée au hasard. Pour chaque catégorie, trouve un mot qui commence par cette lettre (« le », « la », « l' », « un »… ne comptent pas).</li>
+          <li>Le premier qui a tout rempli peut crier <strong>STOP !</strong> : les autres ont encore 3 secondes. Sinon, la manche s'arrête à la fin du chrono.</li>
+          <li>Ensuite, chacun vérifie les réponses des autres : une réponse refusée par plus de la moitié des autres joueurs ne compte pas.</li>
+          <li>Points : <strong>{{ PB.POINTS.unique }}</strong> pour une réponse que personne d'autre n'a, <strong>{{ PB.POINTS.partage }}</strong> si quelqu'un a la même, <strong>{{ PB.POINTS.seul }}</strong> si tu es le seul à avoir trouvé dans la catégorie, 0 pour une case vide ou refusée.</li>
+          <li>Le meilleur total après la dernière manche gagne.</li>
+        </ul>
+      </details>
+
+      <section class="carte reglages">
+        <div class="titre-carte">Réglages</div>
+        <label class="case-a-cocher"><input type="checkbox" v-model="sonActif"> 🔊 Sons</label>
+        <label class="case-a-cocher" v-if="vibrationSupportee"><input type="checkbox" v-model="vibrationActive"> 📳 Vibrations</label>
+        <label class="case-a-cocher" v-if="veilleSupportee"><input type="checkbox" v-model="garderEcran"> ☀️ Garder l'écran allumé</label>
+      </section>
+
+      <details class="carte journal">
+        <summary>Activité <small v-if="historique.length">({{ historique.length }})</small></summary>
+        <ul>
+          <li v-for="(log, i) in historiqueRecent" :key="i" :class="{ 'sys-msg': log.s }">{{ log.m }}</li>
+          <li v-if="!historique.length" class="sys-msg">Rien pour l'instant.</li>
+        </ul>
+      </details>
+
+      <p class="version">Désdale · Petit bac · version {{ version }}</p>
+    </div>
+
+    <!-- JOUER -->
+    <div v-show="onglet === 'play'">
+      <div v-if="!role || !pub" class="panneau-vide">
+        <div class="grand">🅱️</div>
+        <p>Entre dans un salon depuis l'accueil pour jouer.</p>
+        <button class="btn principal" @click="onglet = 'config'">Aller à l'accueil</button>
+      </div>
+
+      <!-- Salle d'attente : l'hôte règle la partie et la lance -->
+      <section v-else-if="pub.phase === 'attente'" class="carte">
+        <div class="titre-carte">Salon « {{ roomCode }} »</div>
+        <ul class="attente-liste">
+          <li v-for="j in bandeau" :key="j.pseudo"><span>{{ j.hote ? '👑 ' : '' }}{{ j.pseudo }}<span v-if="!j.connecte"> 💤</span></span><span class="sys-msg">{{ j.victoires ? '🏆 ' + j.victoires : '' }}</span></li>
+        </ul>
+        <div class="titre-option">Catégories ({{ pub.categories.length }})</div>
+        <div class="puces-cat">
+          <button v-for="c in PB.CATEGORIES" :key="c" :class="{ actif: pub.categories.indexOf(c) !== -1 }" :disabled="role !== 'hote'" @click="basculerCategorie(c)">{{ c }}</button>
+        </div>
+        <div class="titre-option">Temps par manche</div>
+        <div class="segment">
+          <button v-for="d in [60, 90, 120, 180]" :key="d" :class="{ actif: pub.duree === d }" :disabled="role !== 'hote'" @click="reglage('duree', d)">{{ d < 120 ? d + ' s' : d / 60 + ' min' }}</button>
+        </div>
+        <div class="titre-option">Manches (une lettre par manche)</div>
+        <div class="segment">
+          <button v-for="n in [3, 5, 8]" :key="n" :class="{ actif: pub.nbManches === n }" :disabled="role !== 'hote'" @click="reglage('nbManches', n)">{{ n }}</button>
+        </div>
+        <div class="titre-option">Lettres</div>
+        <div class="segment">
+          <button :class="{ actif: !pub.difficiles }" :disabled="role !== 'hote'" @click="reglage('difficiles', false)">Sans KQWXYZ</button>
+          <button :class="{ actif: pub.difficiles }" :disabled="role !== 'hote'" @click="reglage('difficiles', true)">Toutes</button>
+        </div>
+        <button v-if="role === 'hote'" class="btn principal btn-large" :disabled="nbConnectes < 2 || pub.categories.length < 3" @click="commencerPartie">
+          {{ nbConnectes < 2 ? 'En attente d\'un 2e joueur…' : pub.categories.length < 3 ? 'Choisis au moins 3 catégories' : 'Lancer la partie' }}</button>
+        <p v-else class="statut">En attente que l'hôte lance la partie…</p>
+      </section>
+
+      <template v-else>
+        <div class="tete-manche">
+          <div class="lettre">{{ pub.lettre || '?' }}</div>
+          <div class="milieu">
+            <div class="titre">Manche {{ pub.manche }}/{{ pub.nbManches }}</div>
+            <div class="sous">{{ sousTitre }}</div>
+          </div>
+          <div v-if="pub.phase === 'ecriture' || pub.phase === 'stop'" class="chrono" :class="{ urgent: resteSec <= 10 }" :style="{ '--part': partRestante }"><span>{{ resteSec }}</span></div>
+        </div>
+
+        <!-- Écriture -->
+        <template v-if="pub.phase === 'ecriture' || pub.phase === 'stop' || pub.phase === 'collecte'">
+          <div v-if="pub.phase === 'stop'" class="bandeau-stop">STOP ! ({{ pub.stopPar }}) · {{ resteSec }}</div>
+          <div class="grille">
+            <div class="ligne-cat" v-for="(c, k) in pub.categories" :key="pub.mancheId + '-' + k">
+              <label :for="'cat' + k">{{ c }}</label>
+              <input :id="'cat' + k" type="text" maxlength="40" autocomplete="off" autocapitalize="sentences" spellcheck="false" enterkeyhint="next"
+                     :value="mesReponses[k] || ''" :class="classeSaisie(k)" :disabled="!peutEcrire"
+                     @input="saisir(k, $event.target.value)" @keydown.enter.prevent="champSuivant(k)">
+            </div>
+          </div>
+          <div class="bas-ecriture">
+            <button class="btn-stop" :disabled="!peutStop" @click="crierStop">{{ pub.phase === 'ecriture' ? (peutStop ? 'STOP !' : 'Remplis tout pour dire STOP (' + nbRemplies + '/' + pub.categories.length + ')') : pub.phase === 'stop' ? 'Vite, finis !' : 'On ramasse les copies…' }}</button>
+            <div class="progres">
+              <span v-for="j in bandeau" :key="j.pseudo" :class="{ fini: (pub.progres[j.pseudo] || 0) === pub.categories.length, absent: !j.connecte }">{{ j.pseudo }} {{ pub.progres[j.pseudo] || 0 }}/{{ pub.categories.length }}</span>
+            </div>
+          </div>
+        </template>
+
+        <!-- Vérification des réponses -->
+        <template v-else-if="pub.phase === 'vote'">
+          <div class="nav-cat">
+            <button :disabled="catVue === 0" @click="catVue--" aria-label="Catégorie précédente">‹</button>
+            <div class="nom-cat">{{ pub.categories[catVue] }}<small>{{ catVue + 1 }} / {{ pub.categories.length }} · lettre {{ pub.lettre }}</small></div>
+            <button :disabled="catVue >= pub.categories.length - 1" @click="catVue++" aria-label="Catégorie suivante">›</button>
+          </div>
+          <div class="points-cat"><span v-for="(c, k) in pub.categories" :key="k" :class="{ ici: k === catVue }" @click="catVue = k"></span></div>
+          <div v-for="r in reponsesVues" :key="r.p" class="rep" :class="{ refuse: !r.ok }">
+            <span class="qui">{{ r.p === moi ? 'Moi' : r.p }}</span>
+            <span class="mot"><span v-if="!r.t" class="vide">rien</span><span v-else class="texte">{{ r.t }}</span>
+              <span v-if="r.t && r.raison" class="etat">{{ r.raison }}</span></span>
+            <span class="pts" v-if="r.ok">+{{ r.pts }}</span>
+            <button v-if="r.t && r.p !== moi && r.lettreOk" class="btn-vote" :class="{ contre: r.monVote }" @click="voter(r.p)">{{ r.monVote ? '👎 Refusé' : '👎' }}</button>
+          </div>
+          <div class="aide-vote">Touche 👎 pour refuser une réponse qui ne va pas. Points provisoires.</div>
+          <button class="btn principal btn-large" :class="{ }" @click="basculerPret" :disabled="connexion !== 'ok'">{{ jeSuisPret ? '✓ Prêt · en attente (' + pub.prets.length + '/' + nbConnectes + ')' : 'J\'ai tout vérifié ✓' }}</button>
+          <button v-if="role === 'hote'" class="btn" style="margin-top:6px;width:100%" @click="compterPoints">Compter les points maintenant</button>
+        </template>
+
+        <!-- Bilan de la manche et fin de partie -->
+        <section v-else class="carte">
+          <div class="titre-carte">{{ pub.phase === 'fin' ? '🏆 ' + (classement[0] && classement[0].pseudo) + ' gagne !' : 'Points de la manche « ' + pub.lettre + ' »' }}</div>
+          <ol class="podium">
+            <li v-for="j in classement" :key="j.pseudo"><span>{{ j.pseudo }}<span v-if="pub.phase === 'bilan'" class="gain">+{{ pub.gains[j.pseudo] || 0 }}</span></span><span>{{ j.score }} pts</span></li>
+          </ol>
+          <template v-if="pub.phase === 'bilan'">
+            <button v-if="role === 'hote'" class="btn principal btn-large" @click="mancheSuivante">{{ pub.manche >= pub.nbManches ? 'Classement final' : 'Manche suivante' }}</button>
+            <p v-else class="statut">L'hôte lance la suite…</p>
+          </template>
+          <template v-else>
+            <button v-if="role === 'hote'" class="btn principal btn-large" @click="partieSuivante">Nouvelle partie</button>
+            <p v-else class="statut">L'hôte peut relancer une partie.</p>
+          </template>
+        </section>
+      </template>
+    </div>
+  </div>
+
+  <script src="commun.js"></script>
+  <script src="petitbac-regles.js"></script>
+  <script>
+    if (!ACCES.memorise()) location.replace('index.html');
+
+    const CLE_SAUVEGARDE = 'petitbac-sauvegarde';
+    const JEU_RESEAU = 'pb';
+    const DELAI_SILENCE = 15000;
+    const DUREE_STOP = 3000;         // après « STOP ! », les autres ont encore 3 s
+    const DUREE_COLLECTE = 2500;     // on attend les dernières réponses avant la vérification
+    const MAX_SALONS = 8;
+    function copie(o) { return JSON.parse(JSON.stringify(o)); }
+
+    // ================== ÉTAT PUBLIC (les réponses n'y figurent qu'une fois l'écriture finie) ==================
+    function nouvelEtatSalon(ordre) {
+      var r = lireStockage('petitbac-reglages') || {};
+      return { ordre: ordre.slice(), scores: {}, victoires: {}, phase: 'attente',
+               categories: r.categories || PB.PAR_DEFAUT.slice(), duree: r.duree || 120, nbManches: r.nbManches || 5, difficiles: !!r.difficiles,
+               manche: 0, lettre: '', lettres: [], mancheId: null, reste: 0, stopPar: '', progres: {},
+               reponses: {}, votes: {}, prets: [], gains: {}, n: 0 };
+    }
+
+    // ================== RÉSEAU ==================
+    let peer = null;
+    let connections = [];
+    let connParPseudo = {};
+    let hostConn = null;
+    let dernierMsgHote = 0;
+    let monPseudo = '';
+    let pubHote = null;
+    let salle = { infos: {} };
+    // Hôte seulement : les réponses de chacun pendant l'écriture (personne d'autre ne les voit)
+    let secret = { mancheId: null, reponses: {}, finaux: [], finEcriture: 0, finStop: 0, finCollecte: 0 };
+
+    function pseudoSauvegarde() {
+      var cles = ['petitbac-sauvegarde', 'gribouille-sauvegarde', 'bataille-sauvegarde', 'assaut-sauvegarde', 'bg-sauvegarde', 'yams-sauvegarde', 'brillant-sauvegarde-v1'];
+      for (var k = 0; k < cles.length; k++) { var s = lireStockage(cles[k]); if (s && s.pseudo) return s.pseudo; }
+      return '';
+    }
+
+    new Vue({
+      el: '#app',
+      data: {
+        PB: PB,
+        version: VERSION,
+        onglet: 'config',
+        pub: null,
+        joueurs: [],
+        mesReponses: [],        // mes réponses de la manche en cours (gardées sur ce téléphone)
+        mancheReponses: null,   // manche à laquelle elles appartiennent
+        catVue: 0,              // vérification : catégorie affichée
+        maintenant: Date.now(),
+        finLocale: 0,
+        historique: [],
+        pseudoInput: pseudoSauvegarde(),
+        channelInput: lireStockage('petitbac-dernier-salon') || lireStockage('brillant-dernier-salon') || '',
+        salonsConnus: lireStockage('brillant-salons') || [],
+        role: null,
+        connexion: 'aucune',
+        roomCode: '',
+        entreeEnCours: false,
+        sonActif: lireStockage('brillant-son') !== false,
+        vibrationActive: lireStockage('brillant-vibration') !== null ? lireStockage('brillant-vibration') !== false : lireStockage('brillant-son') !== false,
+        garderEcran: lireStockage('brillant-garder-ecran') !== false,
+        veilleSupportee: 'wakeLock' in navigator,
+        veilleActive: false
+      },
+      computed: {
+        moi: function() { return this.pseudoInput.trim() || 'Moi'; },
+        vibrationSupportee: function() { return typeof navigator.vibrate === 'function'; },
+        historiqueRecent: function() { return this.historique.slice().reverse(); },
+        connexionTexte: function() { return { ok: 'en ligne', connexion: 'connexion…', perdue: 'reconnexion…', aucune: 'hors ligne' }[this.connexion]; },
+        bandeau: function() {
+          var p = this.pub;
+          if (!p) return [];
+          return p.ordre.map(x => {
+            var j = this.joueurs.find(y => y.pseudo === x);
+            return { pseudo: x, hote: j ? j.hote : false, score: p.scores[x] || 0, victoires: (p.victoires || {})[x] || 0,
+                     connecte: x === this.moi || !j || j.connecte !== false };
+          });
+        },
+        nbConnectes: function() { return this.bandeau.filter(j => j.connecte).length; },
+        resteSec: function() { return Math.max(0, Math.ceil((this.finLocale - this.maintenant) / 1000)); },
+        partRestante: function() {
+          if (!this.pub) return 0;
+          var total = this.pub.phase === 'stop' ? DUREE_STOP : this.pub.duree * 1000;
+          return Math.max(0, Math.min(1, (this.finLocale - this.maintenant) / total));
+        },
+        sousTitre: function() {
+          var p = this.pub;
+          if (!p) return '';
+          return { ecriture: 'Un mot par catégorie, en ' + p.lettre, stop: p.stopPar + ' a dit STOP !', collecte: 'On ramasse les copies…',
+                   vote: 'Vérification des réponses', bilan: 'Fin de la manche', fin: 'Partie terminée' }[p.phase] || '';
+        },
+        peutEcrire: function() { return !!this.pub && (this.pub.phase === 'ecriture' || this.pub.phase === 'stop') && this.pub.ordre.indexOf(this.moi) !== -1; },
+        nbRemplies: function() { return this.pub ? this.pub.categories.filter((c, k) => (this.mesReponses[k] || '').trim()).length : 0; },
+        peutStop: function() {
+          var p = this.pub;
+          return !!p && p.phase === 'ecriture' && this.connexion === 'ok' && this.peutEcrire &&
+                 p.categories.every((c, k) => PB.commencePar(this.mesReponses[k] || '', p.lettre));
+        },
+        votants: function() { return this.bandeau.filter(j => j.connecte).map(j => j.pseudo); },
+        // Vérification : réponses de la catégorie affichée, avec points provisoires
+        reponsesVues: function() {
+          var p = this.pub;
+          if (!p || p.phase !== 'vote') return [];
+          var k = this.catVue, score = PB.compter(p.ordre, p.categories.length, p.reponses, p.votes, this.votants, p.lettre);
+          return p.ordre.map(j => {
+            var t = ((p.reponses[j] || [])[k] || '').trim(), lettreOk = PB.commencePar(t, p.lettre);
+            var ok = PB.valide(p.reponses, p.votes, this.votants, p.lettre, j, k), contre = (p.votes[j + '|' + k] || []);
+            return { p: j, t: t, ok: ok, lettreOk: lettreOk, pts: score.detail[j][k], monVote: contre.indexOf(this.moi) !== -1,
+                     raison: !t ? '' : !lettreOk ? 'ne commence pas par ' + p.lettre : !ok ? 'refusé par ' + contre.join(', ') : contre.length ? '👎 ' + contre.join(', ') : '' };
+          });
+        },
+        jeSuisPret: function() { return !!this.pub && this.pub.prets.indexOf(this.moi) !== -1; },
+        classement: function() {
+          if (!this.pub) return [];
+          return this.pub.ordre.map(p => ({ pseudo: p, score: this.pub.scores[p] || 0 })).sort((a, b) => b.score - a.score);
+        }
+      },
+      watch: {
+        sonActif: function(v) { ecrireStockage('brillant-son', v); },
+        vibrationActive: function(v) { ecrireStockage('brillant-vibration', v); if (v) vibrer(40); },
+        garderEcran: function(v) { ecrireStockage('brillant-garder-ecran', v); this.majVeille(); },
+        onglet: function() { this.majVeille(); },
+        role: function() { this.majVeille(); },
+        pseudoInput: function() { this.sauvegarder(); },
+        resteSec: function(s, avant) {
+          if (this.pub && (this.pub.phase === 'ecriture' || this.pub.phase === 'stop') && s < avant && s <= 5 && s > 0) this.son('toc');
+        }
+      },
+      created: function() {
+        if (!ACCES.cleSalon) return;
+        this.restaurer();
+        setInterval(() => this.battement(), 4000);
+        setInterval(() => { this.maintenant = Date.now(); this.horlogeHote(); }, 250);
+        document.addEventListener('visibilitychange', () => this.auRetourPremierPlan());
+        window.addEventListener('online', () => this.auRetourPremierPlan());
+        window.addEventListener('pageshow', () => this.auRetourPremierPlan());
+      },
+      methods: {
+        ajouterLog: function(m, systeme) {
+          this.historique.push({ m: m, s: !!systeme });
+          if (this.historique.length > 150) this.historique.splice(0, this.historique.length - 150);
+        },
+        vibre: function(motif) { if (this.vibrationActive) vibrer(motif); },
+        son: function(nom, arg) { if (this.sonActif) Sons.jouer(nom, arg); },
+        basculerSon: function() {
+          this.sonActif = !this.sonActif;
+          if (this.sonActif) Sons.jouer('toc');
+        },
+
+        // ================== ACTIONS DES JOUEURS ==================
+        classeSaisie: function(k) {
+          var t = (this.mesReponses[k] || '').trim();
+          if (!t || !this.pub) return '';
+          return PB.commencePar(t, this.pub.lettre) ? 'bon' : 'faux';
+        },
+        saisir: function(k, v) {
+          if (!this.peutEcrire) return;
+          this.$set(this.mesReponses, k, v.slice(0, 40));
+          clearTimeout(this._timerEnvoi);
+          this._timerEnvoi = setTimeout(() => this.envoyerReponses(false), 700);
+          this.sauvegarderBientot();
+        },
+        champSuivant: function(k) {
+          var el = document.getElementById('cat' + (k + 1));
+          if (el) el.focus(); else document.activeElement && document.activeElement.blur();
+        },
+        envoyerReponses: function(final) {
+          if (!this.pub || this.mancheReponses !== this.pub.mancheId) return;
+          this.envoyerJeu({ type: 'REPONSES', mancheId: this.pub.mancheId, r: this.mesReponses.slice(0, this.pub.categories.length), final: !!final });
+        },
+        crierStop: function() {
+          if (!this.peutStop) return;
+          clearTimeout(this._timerEnvoi);
+          this.envoyerReponses(false);
+          this.envoyerJeu({ type: 'STOP', mancheId: this.pub.mancheId });
+        },
+        voter: function(cible) { this.envoyerJeu({ type: 'VOTE', mancheId: this.pub.mancheId, p: cible, k: this.catVue }); },
+        basculerPret: function() { this.envoyerJeu({ type: 'PRET', mancheId: this.pub.mancheId, pret: !this.jeSuisPret }); },
+        basculerCategorie: function(c) {
+          if (this.role !== 'hote' || pubHote.phase !== 'attente') return;
+          var i = pubHote.categories.indexOf(c);
+          if (i !== -1) pubHote.categories.splice(i, 1);
+          else if (pubHote.categories.length < 12) pubHote.categories.push(c);
+          // Toujours dans l'ordre de la liste
+          pubHote.categories.sort((a, b) => PB.CATEGORIES.indexOf(a) - PB.CATEGORIES.indexOf(b));
+          this.enregistrerReglages();
+          this.publier();
+        },
+        reglage: function(cle, v) {
+          if (this.role !== 'hote' || pubHote.phase !== 'attente') return;
+          pubHote[cle] = v;
+          this.enregistrerReglages();
+          this.publier();
+        },
+        enregistrerReglages: function() {
+          ecrireStockage('petitbac-reglages', { categories: pubHote.categories, duree: pubHote.duree, nbManches: pubHote.nbManches, difficiles: pubHote.difficiles });
+        },
+        envoyerJeu: function(m) {
+          if (this.role === 'hote') return this.traiterJeu(monPseudo, m);
+          if (this.connexion !== 'ok') return;
+          this.envoyerHote({ action: 'JEU', m: m });
+        },
+
+        // ================== HÔTE : DÉROULEMENT DE LA PARTIE ==================
+        estConnecte: function(p) { return p === monPseudo || !!(salle.infos[p] && salle.infos[p].connecte); },
+        presents: function() { return pubHote.ordre.filter(p => this.estConnecte(p)); },
+        commencerPartie: function() {
+          if (this.role !== 'hote' || pubHote.phase !== 'attente') return;
+          if (this.presents().length < 2 || pubHote.categories.length < 3) return;
+          pubHote.scores = {};
+          pubHote.ordre.forEach(p => { pubHote.scores[p] = 0; });
+          pubHote.manche = 0;
+          pubHote.lettres = [];
+          this.nouvelleManche();
+        },
+        nouvelleManche: function() {
+          var lettre = PB.tirerLettre(pubHote.lettres, pubHote.difficiles);
+          pubHote.lettres.push(lettre);
+          Object.assign(pubHote, { phase: 'ecriture', manche: pubHote.manche + 1, lettre: lettre, mancheId: nouvelId(), stopPar: '',
+                                   progres: {}, reponses: {}, votes: {}, prets: [], gains: {} });
+          secret = { mancheId: pubHote.mancheId, reponses: {}, finaux: [], finEcriture: Date.now() + pubHote.duree * 1000, finStop: 0, finCollecte: 0 };
+          this.ajouterLog('Manche ' + pubHote.manche + ' : lettre ' + lettre, true);
+          this.publier();
+        },
+        mancheSuivante: function() {
+          if (this.role !== 'hote' || pubHote.phase !== 'bilan') return;
+          if (pubHote.manche >= pubHote.nbManches) return this.finPartie();
+          this.nouvelleManche();
+        },
+        partieSuivante: function() {
+          if (this.role !== 'hote' || pubHote.phase !== 'fin') return;
+          pubHote.phase = 'attente';
+          this.publier();
+        },
+        finPartie: function() {
+          pubHote.phase = 'fin';
+          var top = pubHote.ordre.slice().sort((a, b) => (pubHote.scores[b] || 0) - (pubHote.scores[a] || 0))[0];
+          if (top) pubHote.victoires[top] = (pubHote.victoires[top] || 0) + 1;
+          this.ajouterLog('🏆 ' + top + ' gagne la partie !', true);
+          this.publier();
+        },
+        // Fin de l'écriture : on ramasse les dernières réponses
+        ramasser: function() {
+          pubHote.phase = 'collecte';
+          secret.finCollecte = Date.now() + DUREE_COLLECTE;
+          this.publier();
+        },
+        // Tout le monde a rendu sa copie : les réponses deviennent publiques pour la vérification
+        ouvrirVote: function() {
+          pubHote.phase = 'vote';
+          pubHote.reponses = {};
+          pubHote.ordre.forEach(p => { pubHote.reponses[p] = (secret.reponses[p] || []).slice(0, pubHote.categories.length); });
+          pubHote.votes = {}; pubHote.prets = [];
+          this.publier();
+        },
+        compterPoints: function() {
+          if (this.role !== 'hote' || pubHote.phase !== 'vote') return;
+          var r = PB.compter(pubHote.ordre, pubHote.categories.length, pubHote.reponses, pubHote.votes, this.presents(), pubHote.lettre);
+          pubHote.gains = r.points;
+          pubHote.ordre.forEach(p => { pubHote.scores[p] = (pubHote.scores[p] || 0) + (r.points[p] || 0); });
+          pubHote.phase = 'bilan';
+          this.publier();
+        },
+        traiterJeu: function(p, m) {
+          if (!pubHote || m.mancheId !== pubHote.mancheId) return;
+          var ph = pubHote.phase;
+          switch (m.type) {
+            case 'REPONSES': {
+              if (ph !== 'ecriture' && ph !== 'stop' && ph !== 'collecte') return;
+              if (pubHote.ordre.indexOf(p) === -1 || secret.finaux.indexOf(p) !== -1) return;
+              var r = (Array.isArray(m.r) ? m.r : []).slice(0, pubHote.categories.length).map(x => String(x || '').slice(0, 40));
+              secret.reponses[p] = r;
+              if (m.final) secret.finaux.push(p);
+              var n = r.filter(x => x.trim()).length;
+              if (pubHote.progres[p] !== n) { pubHote.progres[p] = n; if (ph !== 'collecte') this.publier(); }
+              if (ph === 'collecte' && this.presents().every(x => secret.finaux.indexOf(x) !== -1)) this.ouvrirVote();
+              this._aSauver = true;
+              break;
+            }
+            case 'STOP': {
+              if (ph !== 'ecriture') return;
+              var mes = secret.reponses[p] || [];
+              // On ne peut crier STOP qu'avec une grille complète (vérifié ici aussi)
+              if (!pubHote.categories.every((c, k) => PB.commencePar(mes[k] || '', pubHote.lettre))) return;
+              pubHote.phase = 'stop';
+              pubHote.stopPar = p;
+              secret.finStop = Date.now() + DUREE_STOP;
+              this.ajouterLog(p + ' a dit STOP !', true);
+              this.publier();
+              break;
+            }
+            case 'VOTE': {
+              if (ph !== 'vote' || m.p === p || pubHote.ordre.indexOf(m.p) === -1) return;
+              var k = +m.k;
+              if (!(k >= 0 && k < pubHote.categories.length)) return;
+              var cle = m.p + '|' + k, l = pubHote.votes[cle] || [];
+              var i = l.indexOf(p);
+              if (i === -1) l.push(p); else l.splice(i, 1);
+              if (l.length) pubHote.votes[cle] = l; else delete pubHote.votes[cle];
+              this.publier();
+              break;
+            }
+            case 'PRET': {
+              if (ph !== 'vote') return;
+              var j = pubHote.prets.indexOf(p);
+              if (m.pret && j === -1) pubHote.prets.push(p);
+              if (!m.pret && j !== -1) pubHote.prets.splice(j, 1);
+              if (this.presents().every(x => pubHote.prets.indexOf(x) !== -1)) return this.compterPoints();
+              this.publier();
+              break;
+            }
+          }
+        },
+        // Horloge de l'hôte : fin du chrono, fin du STOP, fin du ramassage
+        horlogeHote: function() {
+          if (this.role !== 'hote' || !pubHote) return;
+          var t = Date.now();
+          if (pubHote.phase === 'ecriture' && t > secret.finEcriture) return this.ramasser();
+          if (pubHote.phase === 'stop' && t > secret.finStop) return this.ramasser();
+          if (pubHote.phase === 'collecte' && t > secret.finCollecte) return this.ouvrirVote();
+          if (this._aSauver && (!this._derniereSauvegarde || t - this._derniereSauvegarde > 2000)) {
+            this._aSauver = false; this._derniereSauvegarde = t; this.sauvegarder();
+          }
+        },
+
+        // ================== RÉCEPTION DE L'ÉTAT ==================
+        appliquerPub: function(pub) {
+          var ancien = this.pub;
+          this.pub = pub;
+          if (pub.phase === 'ecriture' || pub.phase === 'stop') this.finLocale = Date.now() + pub.reste;
+          // Nouvelle manche : grille vide
+          if (pub.mancheId && this.mancheReponses !== pub.mancheId) {
+            this.mancheReponses = pub.mancheId;
+            this.mesReponses = pub.categories.map(() => '');
+            this.catVue = 0;
+          }
+          if (this.catVue >= pub.categories.length) this.catVue = 0;
+          // Fin de l'écriture : je rends ma copie
+          if (pub.phase === 'collecte' && (!ancien || ancien.phase !== 'collecte' || ancien.mancheId !== pub.mancheId)) {
+            clearTimeout(this._timerEnvoi);
+            if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
+            this.$nextTick(() => this.envoyerReponses(true));
+          }
+          if (ancien && !this._restauration) this.reagir(ancien, pub);
+          this.sauvegarder();
+        },
+        reagir: function(a, p) {
+          if (p.phase === 'ecriture' && (a.phase !== 'ecriture' || a.mancheId !== p.mancheId)) {
+            this.son('zone', true); this.vibre([40, 40, 40]);
+            this.ajouterLog('Manche ' + p.manche + ' : lettre ' + p.lettre);
+          }
+          if (p.phase === 'stop' && a.phase !== 'stop') { this.son('zone', false); this.vibre([80, 50, 80]); }
+          if (p.phase === 'vote' && a.phase !== 'vote') this.son('toc');
+          if (p.phase === 'bilan' && a.phase !== 'bilan') { this.son('toc'); this.ajouterLog('Manche ' + p.lettre + ' : +' + (p.gains[this.moi] || 0) + ' points.'); }
+          if (p.phase === 'fin' && a.phase !== 'fin' && this.classement[0] && this.classement[0].pseudo === this.moi) {
+            this.son('victoire'); this.vibre([100, 60, 100, 60, 250]);
+          }
+        },
+        publier: function() {
+          this.diffuser();
+          this.appliquerPub(this.etatAEnvoyer());
+        },
+        etatAEnvoyer: function() {
+          var e = copie(pubHote), t = Date.now();
+          e.reste = pubHote.phase === 'ecriture' ? secret.finEcriture - t : pubHote.phase === 'stop' ? secret.finStop - t : 0;
+          return e;
+        },
+
+        // ---------- Liste des salons ----------
+        estSalonSaisi: function(nom) { return ACCES.simplifier(nom) === ACCES.simplifier(this.channelInput); },
+        retenirSalon: function(nom) {
+          var cle = ACCES.simplifier(nom);
+          this.salonsConnus = [nom].concat((lireStockage('brillant-salons') || this.salonsConnus).filter(n => ACCES.simplifier(n) !== cle)).slice(0, MAX_SALONS);
+          ecrireStockage('brillant-salons', this.salonsConnus);
+          ecrireStockage('petitbac-dernier-salon', nom);
+        },
+        oublierSalon: function(nom) {
+          var cle = ACCES.simplifier(nom);
+          this.salonsConnus = this.salonsConnus.filter(n => ACCES.simplifier(n) !== cle);
+          ecrireStockage('brillant-salons', this.salonsConnus);
+          if (ACCES.simplifier(this.channelInput) === cle) this.channelInput = this.salonsConnus[0] || '';
+        },
+
+        // ---------- Sauvegarde ----------
+        sauvegarderBientot: function() {
+          clearTimeout(this._timerSauve);
+          this._timerSauve = setTimeout(() => this.sauvegarder(), 800);
+        },
+        sauvegarder: function() {
+          if (this._restauration) return;
+          ecrireStockage(CLE_SAUVEGARDE, {
+            pseudo: this.pseudoInput, role: this.role, salon: this.roomCode, pub: this.role ? this.pub : null,
+            pubHote: this.role === 'hote' ? pubHote : null, salle: this.role === 'hote' ? salle : null,
+            secret: this.role === 'hote' ? secret : null,
+            mesReponses: this.mesReponses, mancheReponses: this.mancheReponses, historique: this.historique.slice(-60)
+          });
+        },
+        restaurer: function() {
+          var sv = lireStockage(CLE_SAUVEGARDE);
+          monPseudo = this.moi;
+          if (!sv) return;
+          if (sv.historique) this.historique = sv.historique;
+          if (sv.role && sv.salon && sv.pub) {
+            this.role = sv.role;
+            this.roomCode = sv.salon;
+            this.onglet = 'play';
+            this.connexion = 'perdue';
+            this.mesReponses = sv.mesReponses || []; this.mancheReponses = sv.mancheReponses || null;
+            this._restauration = true;
+            this.appliquerPub(sv.pub);
+            this._restauration = false;
+            if (sv.role === 'hote') {
+              pubHote = sv.pubHote || copie(sv.pub);
+              salle = sv.salle || { infos: {} };
+              Object.values(salle.infos).forEach(i => { i.connecte = false; });
+              if (sv.secret) secret = sv.secret;
+              this.creerPartie(true);
+            } else this.rejoindrePartie(true);
+            this.ajouterLog('Partie restaurée, reconnexion au salon…', true);
+          }
+        },
+
+        // ---------- Entrée dans un salon ----------
+        validerPseudo: function() {
+          monPseudo = this.pseudoInput.trim();
+          if (!monPseudo) { alert('Merci de saisir un pseudo.'); return false; }
+          return true;
+        },
+        entrerSalon: function() {
+          if (this.role || this._entree) return;
+          if (!this.validerPseudo()) return;
+          if (!this.channelInput.trim()) { alert('Saisis un nom de salon.'); return; }
+          fermerAutresSalons('petitbac');   // un seul salon à la fois sur ce téléphone
+          this._entree = { essais: 0 };
+          this.entreeEnCours = true;
+          this.creerPartie(false);
+        },
+        finEntree: function(reussie, message) {
+          var e = this._entree;
+          this._entree = null;
+          this.entreeEnCours = false;
+          if (reussie) this.retenirSalon(this.roomCode);
+          else if (e && message) alert(message);
+        },
+        suiteEntree: function() {
+          var e = this._entree;
+          if (!e) return;
+          this.reinitialiserPeer(false);
+          if (++e.essais >= 4) return this.finEntree(false, 'Impossible d\'entrer dans le salon pour le moment.\n\nSi vous êtes sur le même Wi-Fi (location, hôtel, Wi-Fi invité…), il empêche souvent les téléphones de se parler : passe l\'un des deux en 4G/5G (Wi-Fi coupé), puis réessaie.');
+          setTimeout(() => { if (this._entree === e && !this.role) this.creerPartie(false); }, 1200);
+        },
+        quitterSalon: function() {
+          if (!confirm('Quitter le salon ?')) return;
+          if (this.role === 'client' && peer) {
+            this.envoyerHote({ action: 'DEPART' });
+            var ancienPeer = peer;
+            peer = null;
+            setTimeout(() => { try { ancienPeer.destroy(); } catch (e) {} }, 400);
+          }
+          this.reinitialiserPeer(false);
+          pubHote = null;
+          salle = { infos: {} };
+          this.pub = null;
+          this.ajouterLog('Tu as quitté le salon.', true);
+          this.sauvegarder();
+        },
+        reinitialiserPeer: function(garder) {
+          clearTimeout(this._timerReco);
+          var ancien = peer;
+          peer = null;
+          connections = [];
+          connParPseudo = {};
+          hostConn = null;
+          if (ancien) { try { ancien.destroy(); } catch (e) {} }
+          if (!garder) { this.role = null; this.joueurs = []; this.roomCode = ''; this.connexion = 'aucune'; }
+        },
+        planifierReconnexion: function(delai) {
+          clearTimeout(this._timerReco);
+          this._timerReco = setTimeout(() => {
+            if (!this.role || this.connexion === 'ok') return;
+            if (this.role === 'hote') return this.creerPartie(true);
+            this._echecsClient = (this._echecsClient || 0) + 1;
+            if (this._echecsClient >= 4 && this.pub) { this._echecsClient = 0; return this.reprendreLeSalon(); }
+            this.rejoindrePartie(true);
+          }, delai || 3000);
+        },
+        // L'hôte ne répond plus : on rouvre le salon avec notre copie. Pendant l'écriture, chacun renvoie
+        // ses réponses en se reconnectant (elles sont gardées sur chaque téléphone) : rien n'est perdu.
+        reprendreLeSalon: function() {
+          pubHote = copie(this.pub);
+          salle = { infos: {} };
+          pubHote.ordre.forEach(p => { if (p !== monPseudo) salle.infos[p] = { connecte: false, clientId: null }; });
+          var t = Date.now();
+          secret = { mancheId: pubHote.mancheId, reponses: {}, finaux: [], finEcriture: t + Math.max(20000, this.finLocale - t), finStop: t + DUREE_STOP, finCollecte: t + 8000 };
+          if (pubHote.phase === 'collecte') secret.finCollecte = t + 8000;
+          this._repriseParClient = true;
+          this.role = 'hote';
+          this.ajouterLog('L\'hôte ne répond plus : tu rouvres le salon.', true);
+          this.creerPartie(true);
+          this.$nextTick(() => this.envoyerReponses(pubHote && pubHote.phase === 'collecte'));
+        },
+
+        // ---------- Hôte ----------
+        creerPartie: function(reprise) {
+          var nom = reprise ? this.roomCode : this.channelInput.trim();
+          this.reinitialiserPeer(!!reprise);
+          this.connexion = reprise ? 'perdue' : 'connexion';
+          var monPeer = peer = new Peer(ACCES.idSalon(nom, JEU_RESEAU));
+          monPeer.on('open', () => {
+            if (peer !== monPeer) return;
+            this.role = 'hote';
+            this.connexion = 'ok';
+            this.roomCode = nom;
+            this._echecsReprise = 0;
+            if (reprise) {
+              this._repriseParClient = false;
+              this.ajouterLog('Salon récupéré, les autres joueurs vont se reconnecter.', true);
+            } else {
+              this.onglet = 'play';
+              this.finEntree(true);
+              salle = { infos: {} };
+              pubHote = nouvelEtatSalon([monPseudo]);
+              this.ajouterLog(monPseudo + ' a ouvert le salon.', true);
+            }
+            this.publier();
+          });
+          monPeer.on('connection', (conn) => this.brancherClient(conn));
+          monPeer.on('disconnected', () => {
+            if (peer === monPeer && !monPeer.destroyed) setTimeout(() => { try { if (monPeer.disconnected && !monPeer.destroyed) monPeer.reconnect(); } catch (e) {} }, 1000);
+          });
+          monPeer.on('error', (err) => {
+            if (peer !== monPeer) return;
+            if (reprise || this.role === 'hote') {
+              if (err.type === 'peer-unavailable') return;
+              this.connexion = 'perdue';
+              var seuil = this._repriseParClient ? 1 : 5;
+              if (err.type === 'unavailable-id' && (this._echecsReprise = (this._echecsReprise || 0) + 1) >= seuil) {
+                this._echecsReprise = 0;
+                this._repriseParClient = false;
+                this.role = 'client';
+                pubHote = null;
+                salle = { infos: {} };
+                this.ajouterLog('Le salon est tenu par un autre joueur : tu le rejoins.', true);
+                return this.rejoindrePartie(true);
+              }
+              this.planifierReconnexion(3000);
+              return;
+            }
+            if (this._entree && err.type === 'unavailable-id') return this.rejoindrePartie(false);
+            if (this._entree) return this.suiteEntree();
+            this.reinitialiserPeer(false);
+            alert('Erreur : ' + err.message);
+          });
+        },
+        brancherClient: function(conn) {
+          connections.push(conn);
+          conn.dernierMsg = Date.now();
+          conn.on('data', (data) => { conn.dernierMsg = Date.now(); this.recevoirDeClient(conn, data); });
+          conn.on('close', () => this.perteClient(conn));
+          conn.on('error', () => this.perteClient(conn));
+        },
+        majJoueurs: function() {
+          if (this.role !== 'hote' || !pubHote) return;
+          this.joueurs = pubHote.ordre.map(p => ({ pseudo: p, hote: p === monPseudo, connecte: this.estConnecte(p) }));
+        },
+        diffuser: function() {
+          this.majJoueurs();
+          var data = { action: 'ETAT', pub: this.etatAEnvoyer(), joueurs: this.joueurs };
+          connections.forEach(c => { try { if (c.open) c.send(data); } catch (e) {} });
+        },
+        recevoirDeClient: function(conn, data) {
+          var p = conn.joueurPseudo;
+          switch (data.action) {
+            case 'PING': break;
+            case 'REJOINDRE': {
+              var pseudo = String(data.pseudo || '').trim().slice(0, 20);
+              var existant = salle.infos[pseudo];
+              if (!pseudo || pseudo === monPseudo || (existant && existant.connecte && existant.clientId !== data.clientId && connParPseudo[pseudo] && connParPseudo[pseudo] !== conn)) {
+                try { conn.send({ action: 'REFUS', fatal: true, message: 'Ce pseudo est déjà utilisé dans ce salon.' }); } catch (e) {}
+                setTimeout(() => { try { conn.close(); } catch (e) {} }, 500);
+                return;
+              }
+              var ancienne = connParPseudo[pseudo];
+              if (ancienne && ancienne !== conn) { ancienne._remplacee = true; connections = connections.filter(c => c !== ancienne); try { ancienne.close(); } catch (e) {} }
+              conn.joueurPseudo = pseudo;
+              connParPseudo[pseudo] = conn;
+              salle.infos[pseudo] = { connecte: true, clientId: data.clientId };
+              if (pubHote.ordre.indexOf(pseudo) !== -1) this.ajouterLog(pseudo + ' est revenu.', true);
+              else {
+                pubHote.ordre.push(pseudo);
+                pubHote.scores[pseudo] = pubHote.scores[pseudo] || 0;
+                this.ajouterLog(pseudo + ' a rejoint le salon.', true);
+              }
+              // Ses réponses de la manche en cours (gardées sur son téléphone)
+              if (data.reponses && data.mancheId === pubHote.mancheId) this.traiterJeu(pseudo, { type: 'REPONSES', mancheId: data.mancheId, r: data.reponses, final: pubHote.phase === 'collecte' });
+              this.publier();
+              break;
+            }
+            case 'DEPART':
+              if (!p) return;
+              delete connParPseudo[p];
+              delete salle.infos[p];
+              pubHote.ordre = pubHote.ordre.filter(x => x !== p);
+              this.ajouterLog(p + ' a quitté le salon.', true);
+              this.publier();
+              break;
+            case 'JEU':
+              if (!p) return;
+              this.traiterJeu(p, data.m || {});
+              break;
+          }
+        },
+        perteClient: function(conn) {
+          if (conn._perdue) return;
+          conn._perdue = true;
+          connections = connections.filter(c => c !== conn);
+          var p = conn.joueurPseudo;
+          if (!p || conn._remplacee || connParPseudo[p] !== conn) return;
+          delete connParPseudo[p];
+          if (salle.infos[p]) salle.infos[p].connecte = false;
+          this.ajouterLog(p + ' s\'est déconnecté (il peut revenir).', true);
+          // Vérification : s'il ne manquait que lui, on compte
+          if (pubHote && pubHote.phase === 'vote' && this.presents().every(x => pubHote.prets.indexOf(x) !== -1)) return this.compterPoints();
+          this.publier();
+          this.sauvegarder();
+        },
+
+        // ---------- Client ----------
+        rejoindrePartie: function(reprise) {
+          var nom = reprise ? this.roomCode : this.channelInput.trim();
+          this.reinitialiserPeer(!!reprise);
+          this.connexion = reprise ? 'perdue' : 'connexion';
+          var monPeer = peer = new Peer();
+          monPeer.on('open', () => {
+            if (peer !== monPeer) return;
+            var conn = hostConn = monPeer.connect(ACCES.idSalon(nom, JEU_RESEAU), { reliable: true });
+            var delai = setTimeout(() => {
+              if (hostConn !== conn || this.connexion === 'ok') return;
+              if (this.role) this.planifierReconnexion();
+              else if (this._entree) this.suiteEntree();
+              else this.reinitialiserPeer(false);
+            }, 10000);
+            conn.on('open', () => {
+              if (hostConn !== conn) return;
+              clearTimeout(delai);
+              dernierMsgHote = Date.now();
+              this.connexion = 'ok';
+              this.role = 'client';
+              this.roomCode = nom;
+              this._echecsClient = 0;
+              if (!reprise) { this.onglet = 'play'; this.finEntree(true); }
+              conn.send({ action: 'REJOINDRE', pseudo: monPseudo, clientId: clientId, mancheId: this.mancheReponses, reponses: this.mesReponses });
+            });
+            conn.on('data', (data) => { if (hostConn !== conn) return; dernierMsgHote = Date.now(); this.recevoirDeHote(data); });
+            conn.on('close', () => { if (hostConn === conn) this.perteHote(); });
+            conn.on('error', () => { if (hostConn === conn) this.perteHote(); });
+          });
+          monPeer.on('disconnected', () => { if (peer === monPeer && !monPeer.destroyed) { try { monPeer.reconnect(); } catch (e) {} } });
+          monPeer.on('error', () => {
+            if (peer !== monPeer) return;
+            if (this.role) { this.connexion = 'perdue'; this.planifierReconnexion(); }
+            else if (this._entree) this.suiteEntree();
+            else { this.reinitialiserPeer(false); alert('Impossible de joindre ce salon.\n\nSur un même Wi-Fi (location, hôtel, Wi-Fi invité…), passe l\'un des téléphones en 4G/5G puis réessaie.'); }
+          });
+        },
+        perteHote: function() {
+          if (this.connexion === 'perdue' && this._timerReco) return;
+          if (this.connexion === 'ok') this.ajouterLog('Connexion à l\'hôte perdue, reconnexion…', true);
+          var c = hostConn;
+          hostConn = null;
+          if (c) { try { c.close(); } catch (e) {} }
+          this.connexion = 'perdue';
+          this.planifierReconnexion(1500);
+        },
+        envoyerHote: function(data) { if (hostConn && hostConn.open && this.connexion === 'ok') { try { hostConn.send(data); } catch (e) {} } },
+        recevoirDeHote: function(data) {
+          switch (data.action) {
+            case 'PING': break;
+            case 'ETAT':
+              this.joueurs = data.joueurs || [];
+              if (data.pub) this.appliquerPub(data.pub);
+              break;
+            case 'REFUS':
+              if (data.fatal) { alert(data.message); this.reinitialiserPeer(false); this.pub = null; this.sauvegarder(); }
+              break;
+          }
+        },
+
+        // ---------- Surveillance de la connexion ----------
+        battement: function() {
+          var maintenant = Date.now();
+          if (this.role === 'hote' && peer) {
+            connections.slice().forEach(c => {
+              try { if (c.open) c.send({ action: 'PING' }); } catch (e) {}
+              if (maintenant - (c.dernierMsg || maintenant) > DELAI_SILENCE) { try { c.close(); } catch (e) {} this.perteClient(c); }
+            });
+            if (peer.destroyed) this.planifierReconnexion(500);
+            else if (peer.disconnected) { try { peer.reconnect(); } catch (e) {} }
+          } else if (this.role === 'client' && this.connexion === 'ok') {
+            this.envoyerHote({ action: 'PING' });
+            if (maintenant - dernierMsgHote > DELAI_SILENCE) this.perteHote();
+          }
+        },
+        auRetourPremierPlan: function() {
+          this.majVeille();
+          if (document.visibilityState === 'hidden' || !this.role) return;
+          if (this.role === 'hote') {
+            if (!peer || peer.destroyed) this.creerPartie(true);
+            else if (peer.disconnected) { try { peer.reconnect(); } catch (e) {} }
+          } else if (this.connexion !== 'ok' || Date.now() - dernierMsgHote > 8000) {
+            this.connexion = 'perdue';
+            this.rejoindrePartie(true);
+          }
+        },
+
+        // ---------- Écran toujours allumé ----------
+        veilleVoulue: function() {
+          return this.veilleSupportee && this.garderEcran && document.visibilityState === 'visible' && !!this.role;
+        },
+        majVeille: function() {
+          if (!this.veilleSupportee) return;
+          if (this.veilleVoulue()) {
+            if (this._verrou || this._demandeVerrou) return;
+            this._demandeVerrou = true;
+            navigator.wakeLock.request('screen').then(verrou => {
+              this._demandeVerrou = false;
+              if (!this.veilleVoulue()) { verrou.release(); return; }
+              this._verrou = verrou;
+              this.veilleActive = true;
+              verrou.addEventListener('release', () => { if (this._verrou === verrou) { this._verrou = null; this.veilleActive = false; } });
+            }).catch(() => { this._demandeVerrou = false; });
+          } else if (this._verrou) {
+            var v = this._verrou;
+            this._verrou = null;
+            this.veilleActive = false;
+            v.release().catch(() => {});
+          }
+        }
+      }
+    });
+  </script>
+  <script src="salon-global.js" data-jeu="petitbac"></script>
+</body>
+</html>

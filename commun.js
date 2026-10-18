@@ -3,7 +3,7 @@
 // Les clés de stockage gardent l'ancien préfixe "brillant-" : les réglages déjà faits sont conservés.
 
 // Numéro de version affiché (à augmenter à chaque mise en ligne, avec brilliant.html et sw.js)
-const VERSION = '1.62';
+const VERSION = '1.63';
 
 // ---------- Stockage local ----------
 function lireStockage(cle) {
@@ -24,7 +24,7 @@ if (!clientId) { clientId = nouvelId() + nouvelId(); ecrireStockage('brillant-cl
 // ---------- Un seul salon à la fois ----------
 // Chaque jeu garde en mémoire son salon en cours (et s'y reconnecte tout seul). Quand on entre dans un salon,
 // on oublie ceux des autres jeux : sinon le téléphone peut rester accroché à une ancienne partie.
-const SALONS_JEUX = { brilliant: 'brillant-sauvegarde-v1', yams: 'yams-sauvegarde', backgammon: 'bg-sauvegarde', assaut: 'assaut-sauvegarde', bataille: 'bataille-sauvegarde', gribouille: 'gribouille-sauvegarde' };
+const SALONS_JEUX = { brilliant: 'brillant-sauvegarde-v1', yams: 'yams-sauvegarde', backgammon: 'bg-sauvegarde', assaut: 'assaut-sauvegarde', bataille: 'bataille-sauvegarde', gribouille: 'gribouille-sauvegarde', petitbac: 'petitbac-sauvegarde' };
 function oublierSalonDuJeu(jeu) {
   var cle = SALONS_JEUX[jeu], sv = lireStockage(cle);
   if (!sv || !sv.role) return false;
