@@ -720,8 +720,8 @@
           if (pubHote.phase === 'dessin') {
             var total = pubHote.duree * 1000, reste = secret.finDessin - t, fait = 1 - reste / total;
             var voulu = GB.nbIndices(secret.mot), deja = secret.devoilees.length;
-            // À mi-temps, en même temps que la 1re lettre : action ou nom (pas avant, pour ne pas trop aider)
-            if (!pubHote.categorie && fait >= 0.5) { pubHote.categorie = GB.categorie(secret.mot) === 'Action' ? 'Action' : 'Nom'; this.publier(); }
+            // Aux trois quarts, en même temps que la 2e lettre : action ou nom (pas avant, pour ne pas trop aider)
+            if (!pubHote.categorie && fait >= 0.75) { pubHote.categorie = GB.categorie(secret.mot) === 'Action' ? 'Action' : 'Nom'; this.publier(); }
             if (deja < voulu && fait >= (deja === 0 ? 0.5 : 0.75)) {
               var cachees = GB.positionsLettres(secret.mot).filter(i => secret.devoilees.indexOf(i) === -1);
               secret.devoilees.push(cachees[Math.floor(Math.random() * cachees.length)]);
