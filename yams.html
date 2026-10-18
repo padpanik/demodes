@@ -57,6 +57,8 @@
     .feuille td.annonce { background: #7b5cc4; color: #fff; font-weight: 700; box-shadow: none; }
     .feuille td.jouable.annonce.nul { background: #9c7fd6; color: #fff; }
     .feuille td.dernier { animation: eclat 1.2s ease-out 2; }
+    .feuille td.dernier.tenu { animation: tenu 0.7s ease-in-out infinite alternate; color: #5a3d00; font-weight: 800; }
+    @keyframes tenu { from { background: #ffd54f; box-shadow: inset 0 0 0 2px #e0a800; } to { background: #fff1bf; box-shadow: inset 0 0 0 2px #f2c94c; } }
     @keyframes eclat { 0% { background: #ffe08a; } 100% { background: #fff; } }
     .feuille tr.somme td { background: #eef2f5; font-weight: 700; height: 22px; font-size: 0.92em; }
     .feuille tr.somme td.lib { background: transparent; color: #6b7a86; font-weight: 600; }
@@ -526,6 +528,7 @@
     const JEU_RESEAU = 'yams';            // les salons du Yams sont distincts de ceux de Brilliant
     const CLE_SAUVEGARDE = 'yams-sauvegarde';
     const DELAI_SILENCE = 15000;          // sans nouvelles depuis 15 s : connexion considérée perdue
+    const DELAI_TENUE = 2500;             // la case que le joueur précédent vient de remplir reste affichée 2,5 s
     const DELAI_ANNONCE = 5000;           // annonce vocale si le joueur n'a pas lancé après 5 s
     const MAX_SALONS = 8;
     let peer = null;
@@ -561,6 +564,7 @@
         joueurs: [],            // [{ pseudo, connecte, hote }]
         spectateurs: [],        // arrivés pendant la partie : ils jouent à la suivante
         vue: '',                // feuille affichée ('' = celle du joueur dont c'est le tour)
+        tenue: 0,               // n° de l'inscription qu'on montre encore quelques secondes (feuille du joueur précédent)
         selection: null,        // case choisie, en attente de validation { col, ligne, pts }
         desRoulent: false,
         desAnim: [1, 1, 1, 1, 1],
@@ -727,7 +731,8 @@
           var v = this.feuilleVue[col][ligne], e = this.etat.evt;
           if (v !== undefined) {
             return { rempli: true, zero: v === 0,
-                     dernier: e && e.type === 'inscription' && e.joueur === this.pseudoVue && e.col === col && e.ligne === ligne };
+                     dernier: e && e.type === 'inscription' && e.joueur === this.pseudoVue && e.col === col && e.ligne === ligne,
+                     tenu: !!this.tenue && e && e.n === this.tenue && e.joueur === this.pseudoVue && e.col === col && e.ligne === ligne };
           }
           var t = this.etat.tour;
           var annoncee = col === 'impose' && t.annonce === ligne && t.joueur === this.pseudoVue && !this.etat.fin;
@@ -824,7 +829,16 @@
           var ancien = this.etat;
           var memePartie = ancien && nouveau && ancien.partieId === nouveau.partieId;
           if (!memePartie) { this.finMasquee = false; this.vue = ''; this.selection = null; }
-          if (memePartie && ancien.tour.joueur !== nouveau.tour.joueur) { this.vue = ''; this.selection = null; }
+          if (memePartie && ancien.tour.joueur !== nouveau.tour.joueur) {
+            this.selection = null;
+            // Le joueur vient de s'inscrire : on garde sa feuille 2,5 s, la case mise en évidence, avant de passer au suivant
+            var ins = nouveau.evt;
+            if (ins && ins.type === 'inscription' && ins.joueur === ancien.tour.joueur && !nouveau.fin && !nouveau.solo) {
+              this.vue = ins.joueur; this.tenue = ins.n; this._tenuJoueur = ins.joueur;
+              clearTimeout(this._timerTenue);
+              this._timerTenue = setTimeout(() => this.finTenue(ins.n), DELAI_TENUE);
+            } else { this.vue = ''; this.tenue = 0; }
+          }
           if (memePartie && ancien.tour.lancer !== nouveau.tour.lancer) this.selection = null;
           var evt = nouveau && nouveau.evt;
           var nouvelEvt = evt && memePartie && evt.n > ((ancien.evt && ancien.evt.n) || 0);
@@ -845,8 +859,15 @@
           }
           this.sauvegarder();
         },
+        // Fin du temps de lecture de la case inscrite : on revient à la feuille du joueur dont c'est le tour
+        finTenue: function(n) {
+          if (!this.tenue || (n && this.tenue !== n)) return;
+          this.tenue = 0;
+          if (this.vue === this._tenuJoueur) this.vue = '';
+        },
         reagir: function(evt) {
           if (evt.type === 'lancer') {
+            if (this.tenue) this.finTenue();   // le joueur suivant lance déjà : on montre sa feuille
             this.animerDes(evt.garde);
           } else if (evt.type === 'inscription') {
             var txt = evt.joueur + ' : ' + (evt.pts ? evt.pts + ' en ' : 'barre ') + this.nomLigne(evt.ligne) + ' (' + this.nomColonne(evt.col) + ')';
