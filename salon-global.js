@@ -241,6 +241,14 @@ var SalonGlobal = (function () {
     var c = canalSalon();
     return messages.filter(m => m.h > lusJusqua && m.de !== monId() && (m.canal === 'tous' || m.canal === c)).length;
   }
+  // La bulle et la carte ouvrent directement le chat : celui du salon s'il y a du nouveau là, sinon le dernier chat utilisé
+  function ongletChat() {
+    var c = canalSalon(), nouveaux = messages.filter(m => m.h > lusJusqua && m.de !== monId());
+    var dernier = nouveaux[nouveaux.length - 1];
+    if (c && dernier && dernier.canal === c) return 'salon';
+    if (dernier && dernier.canal === 'tous') return 'tous';
+    return (onglet === 'salon' && c) ? 'salon' : 'tous';
+  }
   function marquerLus() {
     if (!messages.length) return;
     lusJusqua = messages[messages.length - 1].h;
@@ -330,7 +338,7 @@ var SalonGlobal = (function () {
       '.sg-msg .sg-texte.gros{font-size:30px;background:none;padding:0}',
       '.sg-vide{color:#8a97a1;text-align:center;padding:24px 8px;font-size:14px}',
       '.sg-pied{border-top:1px solid #eef1f3;padding:6px 8px 8px}',
-      '.sg-emotions{display:flex;gap:2px;overflow-x:auto;margin-bottom:6px}.sg-emotions button{border:none;background:#f1f4f6;border-radius:8px;font-size:20px;padding:3px 6px;cursor:pointer;flex-shrink:0}',
+      '.sg-emotions{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;margin-bottom:6px}.sg-emotions button{border:none;background:#f1f4f6;border-radius:8px;font-size:20px;line-height:1.2;padding:4px 0;cursor:pointer}',
       '.sg-saisie{display:flex;gap:6px}.sg-saisie input{flex:1;min-width:0;font:16px system-ui,sans-serif;padding:9px 12px;border-radius:12px;border:1.5px solid #c9d2d9}',
       '.sg-profil label{display:block;font-weight:700;font-size:13px;color:#5b6b78;margin:10px 0 5px}',
       '.sg-profil input[type=text]{width:100%;box-sizing:border-box;font:16px system-ui,sans-serif;padding:9px 12px;border-radius:12px;border:1.5px solid #c9d2d9}',
@@ -360,7 +368,7 @@ var SalonGlobal = (function () {
     b.addEventListener('pointerup', () => {
       if (!depart) return;
       var bouge = depart.bouge; depart = null;
-      if (bouge) ecrire(CLE_BULLE, b.offsetTop); else ouvrir_panneau();
+      if (bouge) ecrire(CLE_BULLE, b.offsetTop); else ouvrir_panneau(ongletChat());
     });
     window.addEventListener('resize', () => placerBulle(b.offsetTop));
     if (window.visualViewport) window.visualViewport.addEventListener('resize', ajusterPanneau);
@@ -409,7 +417,7 @@ var SalonGlobal = (function () {
       ici.innerHTML = '<div class="sg-carte"><span class="sg-titre">👥 En ligne</span><span class="sg-avs">' +
         (autres.length ? autres.slice(0, 8).map(m => avatar(m, 28)).join('') : '<span style="color:#8a97a1;font-size:14px">' + (role ? 'personne d\'autre pour l\'instant' : 'connexion…') + '</span>') +
         '</span>' + (nl ? '<span class="sg-btn plein">💬 ' + nl + '</span>' : '<span class="sg-btn">💬 Chat</span>') + '</div>';
-      ici.firstChild.onclick = () => ouvrir_panneau(nl ? 'tous' : 'presents');
+      ici.firstChild.onclick = () => ouvrir_panneau(ongletChat());
     }
     if (!ouvert || !el.panneau) return;
     var c = canalSalon();
