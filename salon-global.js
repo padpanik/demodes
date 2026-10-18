@@ -347,7 +347,7 @@ var SalonGlobal = (function () {
       '.sg-apercu{display:flex;align-items:center;gap:10px;margin-top:4px}',
       
       '.sg-carte{background:#fff;border-radius:18px;padding:12px 14px;box-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(29,43,54,.06);display:flex;align-items:center;gap:8px;cursor:pointer;font-family:system-ui,sans-serif}',
-      '.sg-carte .sg-titre{font-weight:700;color:#5b6b78;margin-right:4px}.sg-carte .sg-avs{display:flex;flex:1;min-width:0}.sg-carte .sg-avs .sg-av{margin-right:-6px;box-shadow:0 0 0 2px #fff}'
+      '.sg-carte .sg-titre{font-weight:700;color:#5b6b78;margin-right:4px}.sg-carte .sg-avs{display:flex;flex:1;min-width:0}.sg-carte .sg-avs .sg-av{margin-right:-6px;box-shadow:0 0 0 2px #fff}.sg-carte .sg-plus{background:#8a97a1;font-size:12px}'
     ].join('\n');
     document.head.appendChild(css);
 
@@ -423,10 +423,14 @@ var SalonGlobal = (function () {
     var ici = document.getElementById('sg-ici');
     if (ici) {
       var autres = listeMembres().filter(m => m.id !== monId());
+      // Carte de l'accueil : seulement les présents (le chat passe par la bulle) ; un toucher montre qui est où
+      var max = 9, reste = autres.length - max;
       ici.innerHTML = '<div class="sg-carte"><span class="sg-titre">👥 En ligne</span><span class="sg-avs">' +
-        (autres.length ? autres.slice(0, 8).map(m => avatar(m, 28)).join('') : '<span style="color:#8a97a1;font-size:14px">' + (role ? 'personne d\'autre pour l\'instant' : 'connexion…') + '</span>') +
-        '</span>' + (nl ? '<span class="sg-btn plein">💬 ' + nl + '</span>' : '<span class="sg-btn">💬 Chat</span>') + '</div>';
-      ici.firstChild.onclick = () => ouvrir_panneau(ongletChat());
+        (autres.length ? autres.slice(0, reste > 0 ? max - 1 : max).map(m => avatar(m, 30)).join('') +
+          (reste > 0 ? '<span class="sg-av sg-plus" style="width:30px;height:30px">+' + (reste + 1) + '</span>' : '')
+          : '<span style="color:#8a97a1;font-size:14px">' + (role ? 'personne d\'autre pour l\'instant' : 'connexion…') + '</span>') +
+        '</span></div>';
+      ici.firstChild.onclick = () => ouvrir_panneau('presents');
     }
     if (!ouvert || !el.panneau) return;
     var c = canalSalon();
