@@ -15,6 +15,7 @@
   <meta name="apple-mobile-web-app-title" content="Désdale">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <script src="https://cdn.jsdelivr.net/npm/vue@2.7.16/dist/vue.min.js"></script>
+  <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
   <link rel="stylesheet" href="commun.css">
   <style>
     .jeux { display: grid; gap: 12px; }
@@ -81,6 +82,9 @@
           <p>Les jeux de dés à jouer ensemble</p>
         </div>
       </header>
+
+      <!-- Salon global : qui est en ligne (rempli par salon-global.js) -->
+      <div id="sg-ici" style="margin-bottom:14px"></div>
 
       <div class="titre-section">Choisis ton jeu</div>
       <div class="jeux">
@@ -194,5 +198,6 @@
       }
     });
   </script>
+  <script src="salon-global.js" data-jeu="accueil"></script>
 </body>
 </html>
