@@ -217,7 +217,7 @@
         </div>
 
         <div class="info">
-          <div v-if="pub.phase === 'dessin' && jeDessine && monMot" class="indice mot-a-dessiner"><small>Dessine :</small>{{ monMot }}<small v-if="pub.categorie">({{ pub.categorie }})</small></div>
+          <div v-if="pub.phase === 'dessin' && jeDessine && monMot" class="indice mot-a-dessiner"><small>Dessine :</small>{{ monMot }}</div>
           <div v-else-if="pub.phase === 'dessin'" class="indice"><span v-if="pub.categorie" class="theme">{{ pub.categorie }}</span>{{ pub.indice }}<small>{{ pub.longueur }} lettres</small></div>
           <div v-else-if="pub.phase === 'choix'" class="indice mot-a-dessiner"><small>{{ jeDessine ? 'À toi :' : pub.dessinateur + ' choisit un mot…' }}</small></div>
           <div v-else-if="pub.phase === 'bilan'" class="indice mot-a-dessiner"><small>C'était :</small>{{ pub.motRevele }}</div>
@@ -232,7 +232,7 @@
           <div v-if="pub.phase === 'choix'" class="toile-voile">
             <template v-if="jeDessine && mesMots">
               <div>Choisis le mot à dessiner :</div>
-              <div class="choix-mots"><button v-for="(m, i) in mesMots" :key="m" @click="choisirMot(i)">{{ m }}<small class="theme-choix">{{ GB.categorie(m) }}</small></button></div>
+              <div class="choix-mots"><button v-for="(m, i) in mesMots" :key="m" @click="choisirMot(i)">{{ m }}</button></div>
             </template>
             <template v-else><div class="grand">🤔</div><div><strong>{{ pub.dessinateur }}</strong> choisit un mot…</div></template>
           </div>
@@ -642,7 +642,6 @@
           pubHote.phase = 'dessin';
           pubHote.indice = GB.masque(mot, []);
           pubHote.longueur = GB.positionsLettres(mot).length;
-          pubHote.categorie = GB.categorie(mot);
           this.ajouterFil({ type: 'sys', t: '✏️ ' + pubHote.dessinateur + ' dessine !' });
           this.envoyerPrive(pubHote.dessinateur, { action: 'MOT', tourId: pubHote.tourId, mot: mot });
           this.publier();
@@ -721,6 +720,8 @@
           if (pubHote.phase === 'dessin') {
             var total = pubHote.duree * 1000, reste = secret.finDessin - t, fait = 1 - reste / total;
             var voulu = GB.nbIndices(secret.mot), deja = secret.devoilees.length;
+            // À mi-temps, en même temps que la 1re lettre : action ou nom (pas avant, pour ne pas trop aider)
+            if (!pubHote.categorie && fait >= 0.5) { pubHote.categorie = GB.categorie(secret.mot) === 'Action' ? 'Action' : 'Nom'; this.publier(); }
             if (deja < voulu && fait >= (deja === 0 ? 0.5 : 0.75)) {
               var cachees = GB.positionsLettres(secret.mot).filter(i => secret.devoilees.indexOf(i) === -1);
               secret.devoilees.push(cachees[Math.floor(Math.random() * cachees.length)]);
@@ -773,7 +774,7 @@
             var gagnant = this.classement[0] && this.classement[0].pseudo === moi;
             if (gagnant) { this.son('victoire'); this.vibre([100, 60, 100, 60, 250]); }
           }
-          if (p.phase === 'dessin' && a.phase !== 'dessin') this.ajouterLog(p.dessinateur + ' dessine (' + (p.categorie ? p.categorie.toLowerCase() + ', ' : '') + p.longueur + ' lettres).');
+          if (p.phase === 'dessin' && a.phase !== 'dessin') this.ajouterLog(p.dessinateur + ' dessine (' + p.longueur + ' lettres).');
           if (p.phase === 'bilan' && a.phase !== 'bilan') this.ajouterLog('Le mot était : ' + p.motRevele);
         },
         publier: function() {
