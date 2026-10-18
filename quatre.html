@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Quatre en ligne · Désdale</title>
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="theme-color" content="#f3f5f7">
+  <link rel="icon" type="image/png" href="favicon.png">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Désdale">
+  <script src="https://cdn.jsdelivr.net/npm/vue@2.7.16/dist/vue.min.js"></script>
+  <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+  <link rel="stylesheet" href="commun.css">
+  <style>
+    :root { --j1: #e53935; --j2: #fbc02d; --plateau: #1f5fae; }
+    .logo-ql { width: 51px; height: 51px; border-radius: 10px; background: var(--plateau); display: grid; grid-template-columns: repeat(3, 12px); gap: 3px; align-content: center; justify-content: center; }
+    .logo-ql span { width: 12px; height: 12px; border-radius: 50%; background: #f3f5f7; }
+    .logo-ql span.r { background: var(--j1); } .logo-ql span.j { background: var(--j2); }
+    .segment { display: flex; background: #e3e8ec; border-radius: 10px; padding: 3px; gap: 3px; margin-bottom: 8px; }
+    .segment button { flex: 1; border: none; background: transparent; border-radius: 8px; padding: 8px 4px; font: inherit; font-weight: 600; color: #5b6b78; cursor: pointer; }
+    .segment button.actif { background: #fff; color: #1d2b36; box-shadow: 0 1px 3px rgba(0,0,0,0.12); }
+    .regles ul { padding-left: 18px; margin: 8px 0 0; font-size: 0.88em; line-height: 1.45; color: #3b4b57; }
+    .panneau-vide { text-align: center; padding: 36px 16px; color: #5b6b78; }
+    .panneau-vide .grand { font-size: 2.5em; margin-bottom: 8px; }
+
+    /* Joueurs */
+    .duel { display: flex; align-items: center; gap: 8px; margin: 4px 0 8px; }
+    .duel .camp { flex: 1; min-width: 0; display: flex; align-items: center; gap: 7px; background: #fff; border-radius: 14px; padding: 7px 10px; box-shadow: 0 1px 2px rgba(0,0,0,0.06); }
+    .duel .camp.joue { box-shadow: 0 0 0 2.5px #1d2b36; }
+    .duel .camp.absent { opacity: 0.5; }
+    .duel .camp:last-child { flex-direction: row-reverse; text-align: right; }
+    .duel .jeton { width: 22px; height: 22px; border-radius: 50%; flex-shrink: 0; box-shadow: inset 0 -3px 0 rgba(0,0,0,0.18); }
+    .duel .nom { flex: 1; min-width: 0; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 0.92em; }
+    .duel .score { font-weight: 900; font-size: 1.15em; }
+    .duel .vs { color: #8a97a1; font-weight: 700; font-size: 0.8em; }
+    .statut-ql { text-align: center; font-weight: 700; color: #3b4b57; min-height: 24px; margin-bottom: 6px; }
+    .statut-ql.gagne { color: #2f8a5b; font-size: 1.1em; } .statut-ql.perdu { color: #c0392b; font-size: 1.1em; }
+
+    /* Plateau : 7 colonnes, 6 rangées ; on touche une colonne pour y lâcher un jeton */
+    .plateau-ql { position: relative; background: var(--plateau); border-radius: 14px; padding: 6px; display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px;
+                  box-shadow: inset 0 -5px 0 rgba(0,0,0,0.2), 0 4px 14px rgba(29,43,54,0.25); touch-action: manipulation; user-select: none; -webkit-user-select: none; }
+    .trou { position: relative; aspect-ratio: 1 / 1; border-radius: 50%; background: #f3f5f7; box-shadow: inset 0 3px 4px rgba(0,0,0,0.25); cursor: pointer; }
+    .plateau-ql.colonne-0 .trou.c0, .plateau-ql.colonne-1 .trou.c1, .plateau-ql.colonne-2 .trou.c2, .plateau-ql.colonne-3 .trou.c3,
+    .plateau-ql.colonne-4 .trou.c4, .plateau-ql.colonne-5 .trou.c5, .plateau-ql.colonne-6 .trou.c6 { background: #dfe9f5; }
+    .pion { position: absolute; inset: 0; border-radius: 50%; box-shadow: inset 0 -4px 0 rgba(0,0,0,0.2), inset 0 3px 3px rgba(255,255,255,0.35); }
+    .pion.j1 { background: var(--j1); } .pion.j2 { background: var(--j2); }
+    .pion::after { content: ''; position: absolute; inset: 22%; border-radius: 50%; box-shadow: inset 0 0 0 2px rgba(0,0,0,0.08); }
+    .pion.tombe { animation: chute calc(0.12s + var(--h) * 0.06s) cubic-bezier(0.5, 0, 1, 1); }
+    @keyframes chute { from { transform: translateY(calc(var(--h) * -112%)); } to { transform: translateY(0); } }
+    .pion.gagnant { animation: brille 0.6s ease-in-out infinite alternate; }
+    @keyframes brille { from { box-shadow: 0 0 0 3px #fff, inset 0 -4px 0 rgba(0,0,0,0.2); } to { box-shadow: 0 0 0 5px #2ecc71, inset 0 -4px 0 rgba(0,0,0,0.2); } }
+    .actions-ql { display: flex; gap: 8px; margin-top: 10px; }
+    .actions-ql .btn { flex: 1; }
+    .journal-ql { text-align: center; font-size: 0.8em; color: #6b7a86; margin-top: 8px; }
+  </style>
+</head>
+<body>
+  <div id="app" class="app">
+
+    <div class="barre">
+      <div id="menu">
+        <div @click="onglet = 'config'" :class="{ actif: onglet === 'config' }">Accueil</div>
+        <div @click="onglet = 'play'" :class="{ actif: onglet === 'play' }">Jouer</div>
+      </div>
+      <a v-if="onglet === 'config' && !role" class="lien-jeux" href="index.html?choix">⇦ Jeux</a>
+      <div class="barre-infos" v-if="onglet === 'play'">
+        <button class="btn-veille" :class="{ off: !sonActif }" @click="basculerSon">{{ sonActif ? '🔊' : '🔇' }}</button>
+        <span v-if="role" class="point-co" :class="{ attente: connexion !== 'ok' }"></span>
+      </div>
+    </div>
+
+    <!-- ACCUEIL -->
+    <div v-show="onglet === 'config'">
+      <header class="hero">
+        <div class="logo-ql"><span v-for="(c, k) in ['', 'j', '', 'r', 'r', 'j', 'j', 'r', 'r']" :key="k" :class="c"></span></div>
+        <div>
+          <h1>Quatre en ligne</h1>
+          <p>Désdale · aligne quatre jetons avant l'autre</p>
+        </div>
+      </header>
+
+      <section class="carte salon-actif" v-if="role">
+        <div class="salon-tete">
+          <span class="pastille" :class="{ attente: connexion !== 'ok' }"></span>
+          <div>
+            <div class="salon-nom">Salon « {{ roomCode }} »</div>
+            <div class="salon-role">Tu joues en tant que {{ moi }} · {{ connexionTexte }}</div>
+          </div>
+        </div>
+        <div class="actions-accueil">
+          <button class="btn principal" @click="onglet = 'play'">Jouer →</button>
+          <button class="btn" @click="quitterSalon">Quitter</button>
+        </div>
+      </section>
+
+      <template v-if="!role">
+        <section class="carte">
+          <div class="titre-carte">Seul contre l'ordinateur</div>
+          <div class="segment">
+            <button v-for="n in NIVEAUX" :key="n.id" :class="{ actif: niveau === n.id }" @click="niveau = n.id">{{ n.nom }}</button>
+          </div>
+          <button class="btn principal" style="width:100%" @click="demarrerSolo">🤖 {{ soloEnCours ? 'Reprendre la partie' : 'Jouer seul' }}</button>
+          <div class="aide" v-if="statsSolo.parties">Contre l'ordinateur : {{ statsSolo.gagnees }} gagnée{{ statsSolo.gagnees > 1 ? 's' : '' }} sur {{ statsSolo.parties }}.</div>
+        </section>
+        <section class="carte">
+          <div class="titre-carte">À deux, chacun sur son téléphone</div>
+          <label class="champ">Ton pseudo
+            <input type="text" v-model="pseudoInput" placeholder="ex : Alex" autocomplete="off" maxlength="20">
+          </label>
+          <label class="champ">Nom du salon
+            <input type="text" v-model="channelInput" placeholder="ex : partie-du-dimanche" autocomplete="off">
+          </label>
+          <div class="salons-connus" v-if="salonsConnus.length">
+            <span v-for="nom in salonsConnus" :key="nom" class="salon-puce" :class="{ actif: estSalonSaisi(nom) }">
+              <button class="nom" @click="channelInput = nom">{{ nom }}</button>
+              <button class="oter" @click="oublierSalon(nom)" aria-label="Retirer de la liste">✕</button>
+            </span>
+          </div>
+          <button class="btn principal" style="width:100%;margin-top:8px" @click="entrerSalon()" :disabled="entreeEnCours">{{ entreeEnCours ? 'Connexion au salon…' : 'Entrer dans le salon' }}</button>
+        </section>
+      </template>
+
+      <details class="carte regles">
+        <summary>Règles</summary>
+        <ul>
+          <li>Chacun son tour, on lâche un jeton dans une colonne : il tombe tout en bas.</li>
+          <li>Le premier qui aligne <strong>4 jetons</strong> de sa couleur gagne : en ligne, en colonne ou en diagonale.</li>
+          <li>Grille pleine sans alignement : match nul. Celui qui commence change à chaque partie.</li>
+        </ul>
+      </details>
+
+      <section class="carte reglages">
+        <div class="titre-carte">Réglages</div>
+        <label class="case-a-cocher"><input type="checkbox" v-model="sonActif"> 🔊 Sons</label>
+        <label class="case-a-cocher" v-if="vibrationSupportee"><input type="checkbox" v-model="vibrationActive"> 📳 Vibrations</label>
+      </section>
+
+      <p class="version">Désdale · Quatre en ligne · version {{ version }}</p>
+    </div>
+
+    <!-- JOUER -->
+    <div v-show="onglet === 'play'">
+      <div v-if="!pub" class="panneau-vide">
+        <div class="grand">🔴🟡</div>
+        <p>Joue seul ou entre dans un salon depuis l'accueil.</p>
+        <button class="btn principal" @click="onglet = 'config'">Aller à l'accueil</button>
+      </div>
+      <template v-else>
+        <div class="duel">
+          <div v-for="(p, k) in campsAffiches" :key="k" class="camp" :class="{ joue: pub.phase === 'jeu' && pub.tour === k + 1, absent: p && !p.connecte }">
+            <span class="jeton" :style="{ background: k === 0 ? 'var(--j1)' : 'var(--j2)' }"></span>
+            <span class="nom">{{ p ? p.nom : 'en attente…' }}</span>
+            <span class="score">{{ p ? p.score : '' }}</span>
+          </div>
+        </div>
+        <div class="statut-ql" :class="classeStatut">{{ statut }}</div>
+        <div class="plateau-ql" :class="survol >= 0 ? 'colonne-' + survol : ''">
+          <div v-for="(v, i) in pub.grille" :key="i" class="trou" :class="'c' + (i % 7)" @click="jouerColonne(i % 7)"
+               @pointerdown="survol = peutJouer ? i % 7 : -1" @pointerup="survol = -1" @pointerleave="survol = -1">
+            <div v-if="v" class="pion" :class="['j' + v, { tombe: i === pub.dernier && !pub.resultat, gagnant: ligneGagnante.indexOf(i) !== -1 }]"
+                 :style="{ '--h': Math.floor(i / 7) + 1 }" :key="pub.partieId + '-' + i"></div>
+          </div>
+        </div>
+        <div class="actions-ql">
+          <button v-if="pub.phase === 'fin' && (solo || estJoueur)" class="btn principal" @click="nouvellePartie">Nouvelle partie</button>
+          <button v-if="!solo && pub.phase === 'jeu' && estJoueur && adversaireAbsent" class="btn" @click="nouvellePartie">L'autre est parti : nouvelle partie</button>
+          <button v-if="solo && pub.phase === 'jeu' && pub.coups.length >= 2 && pub.tour === 1" class="btn" @click="annulerSolo">↶ Annuler mon coup</button>
+          <button v-if="solo" class="btn" @click="quitterSolo">Arrêter</button>
+        </div>
+        <div class="journal-ql" v-if="!solo && spectateurs.length">👀 {{ spectateurs.join(', ') }} regarde{{ spectateurs.length > 1 ? 'nt' : '' }}</div>
+      </template>
+    </div>
+  </div>
+
+  <script src="commun.js"></script>
+  <script src="quatre-regles.js"></script>
+  <script>
+    if (!ACCES.memorise()) location.replace('index.html');
+
+    const CLE_SAUVEGARDE = 'quatre-sauvegarde';
+    const JEU_RESEAU = 'ql';
+    const DELAI_SILENCE = 15000;
+    const MAX_SALONS = 8;
+    const ORDI = '🤖 Ordi';
+    const NIVEAUX = [{ id: 'facile', nom: 'Facile' }, { id: 'normal', nom: 'Normal' }, { id: 'fort', nom: 'Fort' }];
+    function copie(o) { return JSON.parse(JSON.stringify(o)); }
+
+    // ================== ÉTAT DE LA PARTIE (le même en solo et chez l'hôte) ==================
+    // joueurs : [jaune… non : rouge = joueur 1, jaune = joueur 2] ; premier : celui qui commence (alterne)
+    function nouvelEtatSalon(ordre) {
+      return { ordre: ordre.slice(), joueurs: [ordre[0] || null, null], scores: {}, nuls: 0, phase: 'attente', partieId: null,
+               grille: QL.nouvelle(), tour: 1, premier: 2, coups: [], dernier: -1, resultat: null };
+    }
+    function debuterPartie(e) {
+      e.premier = e.premier === 1 ? 2 : 1;
+      Object.assign(e, { phase: 'jeu', partieId: nouvelId(), grille: QL.nouvelle(), tour: e.premier, coups: [], dernier: -1, resultat: null });
+    }
+    // Un coup : renvoie un message d'erreur, ou null
+    function appliquerCoup(e, j, col) {
+      if (e.phase !== 'jeu' || e.tour !== j) return 'Ce n\'est pas ton tour.';
+      var i = QL.jouer(e.grille, col, j);
+      if (i < 0) return 'Cette colonne est pleine.';
+      e.coups.push(col); e.dernier = i;
+      var r = QL.resultat(e.grille);
+      if (r) {
+        e.phase = 'fin'; e.resultat = r;
+        if (r.gagnant) { var p = e.joueurs[r.gagnant - 1]; e.scores[p] = (e.scores[p] || 0) + 1; } else e.nuls++;
+      } else e.tour = 3 - j;
+      return null;
+    }
+
+    // ================== RÉSEAU ==================
+    let peer = null;
+    let connections = [];
+    let connParPseudo = {};
+    let hostConn = null;
+    let dernierMsgHote = 0;
+    let monPseudo = '';
+    let pubHote = null;
+    let salle = { infos: {} };
+
+    function pseudoSauvegarde() {
+      var cles = ['quatre-sauvegarde', 'agents-sauvegarde', 'petitbac-sauvegarde', 'gribouille-sauvegarde', 'bataille-sauvegarde', 'assaut-sauvegarde', 'bg-sauvegarde', 'yams-sauvegarde', 'brillant-sauvegarde-v1'];
+      for (var k = 0; k < cles.length; k++) { var s = lireStockage(cles[k]); if (s && s.pseudo) return s.pseudo; }
+      return '';
+    }
+
+    new Vue({
+      el: '#app',
+      data: {
+        version: VERSION,
+        NIVEAUX: NIVEAUX,
+        onglet: 'config',
+        pub: null,
+        joueurs: [],
+        solo: false,
+        niveau: lireStockage('quatre-niveau') || 'normal',
+        statsSolo: lireStockage('quatre-stats') || { parties: 0, gagnees: 0 },
+        survol: -1,
+        historique: [],
+        pseudoInput: pseudoSauvegarde(),
+        channelInput: lireStockage('quatre-dernier-salon') || lireStockage('brillant-dernier-salon') || '',
+        salonsConnus: lireStockage('brillant-salons') || [],
+        role: null,
+        connexion: 'aucune',
+        roomCode: '',
+        entreeEnCours: false,
+        sonActif: lireStockage('brillant-son') !== false,
+        vibrationActive: lireStockage('brillant-vibration') !== null ? lireStockage('brillant-vibration') !== false : lireStockage('brillant-son') !== false,
+        veilleSupportee: false
+      },
+      computed: {
+        moi: function() { return this.pseudoInput.trim() || 'Moi'; },
+        vibrationSupportee: function() { return typeof navigator.vibrate === 'function'; },
+        connexionTexte: function() { return { ok: 'en ligne', connexion: 'connexion…', perdue: 'reconnexion…', aucune: 'hors ligne' }[this.connexion]; },
+        soloEnCours: function() { var s = lireStockage('quatre-solo'); return !!(s && s.phase === 'jeu' && s.coups.length); },
+        estConnecteVue: function() {
+          var r = {};
+          if (this.pub) this.pub.ordre.forEach(x => { var j = this.joueurs.find(y => y.pseudo === x); r[x] = this.solo || x === this.moi || !j || j.connecte !== false; });
+          return r;
+        },
+        campsAffiches: function() {
+          var p = this.pub;
+          return [0, 1].map(k => {
+            var n = p.joueurs[k];
+            if (!n) return null;
+            return { nom: n === this.moi && !this.solo ? n + ' (moi)' : n, score: p.scores[n] || 0, connecte: n === ORDI || this.estConnecteVue[n] !== false };
+          });
+        },
+        monNumero: function() { return this.pub ? this.pub.joueurs.indexOf(this.solo ? this.moiSolo : this.moi) + 1 : 0; },
+        moiSolo: function() { return this.pub && this.pub.joueurs[0]; },
+        estJoueur: function() { return this.monNumero > 0; },
+        spectateurs: function() { return this.pub ? this.pub.ordre.filter(p => this.pub.joueurs.indexOf(p) === -1) : []; },
+        peutJouer: function() {
+          var p = this.pub;
+          if (!p || p.phase !== 'jeu' || p.tour !== this.monNumero) return false;
+          return this.solo || this.connexion === 'ok';
+        },
+        adversaireAbsent: function() { var a = this.pub.joueurs[2 - this.monNumero]; return !!a && this.estConnecteVue[a] === false; },
+        ligneGagnante: function() { return (this.pub && this.pub.resultat && this.pub.resultat.ligne) || []; },
+        statut: function() {
+          var p = this.pub;
+          if (!p) return '';
+          if (p.phase === 'attente') return 'En attente d\'un deuxième joueur…';
+          if (p.phase === 'fin') {
+            var g = p.resultat.gagnant;
+            if (!g) return 'Match nul : la grille est pleine.';
+            if (g === this.monNumero) return '🎉 Tu as gagné !';
+            return (this.estJoueur ? '😕 ' : '🏆 ') + p.joueurs[g - 1] + ' gagne.';
+          }
+          if (this.peutJouer) return 'À toi : touche une colonne.';
+          var autre = p.joueurs[p.tour - 1];
+          return autre === ORDI ? 'L\'ordinateur réfléchit…' : 'Au tour de ' + autre + '…';
+        },
+        classeStatut: function() {
+          var p = this.pub;
+          if (!p || p.phase !== 'fin' || !p.resultat.gagnant || !this.estJoueur) return '';
+          return p.resultat.gagnant === this.monNumero ? 'gagne' : 'perdu';
+        }
+      },
+      watch: {
+        sonActif: function(v) { ecrireStockage('brillant-son', v); },
+        vibrationActive: function(v) { ecrireStockage('brillant-vibration', v); if (v) vibrer(40); },
+        niveau: function(v) { ecrireStockage('quatre-niveau', v); },
+        pseudoInput: function() { this.sauvegarder(); }
+      },
+      created: function() {
+        if (!ACCES.cleSalon) return;
+        this.restaurer();
+        setInterval(() => this.battement(), 4000);
+        document.addEventListener('visibilitychange', () => this.auRetourPremierPlan());
+        window.addEventListener('online', () => this.auRetourPremierPlan());
+        window.addEventListener('pageshow', () => this.auRetourPremierPlan());
+      },
+      methods: {
+        ajouterLog: function(m, systeme) {
+          this.historique.push({ m: m, s: !!systeme });
+          if (this.historique.length > 100) this.historique.splice(0, this.historique.length - 100);
+        },
+        vibre: function(motif) { if (this.vibrationActive) vibrer(motif); },
+        son: function(nom, arg) { if (this.sonActif) Sons.jouer(nom, arg); },
+        basculerSon: function() { this.sonActif = !this.sonActif; if (this.sonActif) Sons.jouer('toc'); },
+
+        // ================== SOLO ==================
+        demarrerSolo: function() {
+          var s = lireStockage('quatre-solo');
+          var e = s && s.phase === 'jeu' && s.coups.length ? s : null;
+          if (!e) {
+            e = nouvelEtatSalon([this.moi, ORDI]);
+            e.joueurs = [this.moi, ORDI];
+            e.niveau = this.niveau;
+            if (s && s.scores) { e.scores = {}; e.scores[this.moi] = s.scores[s.joueurs[0]] || 0; e.scores[ORDI] = s.scores[ORDI] || 0; e.nuls = s.nuls || 0; e.premier = s.premier || 2; }
+            debuterPartie(e);
+          }
+          this.solo = true;
+          this.pub = e;
+          this.onglet = 'play';
+          this.tourOrdi();
+        },
+        sauverSolo: function() { ecrireStockage('quatre-solo', this.pub); },
+        quitterSolo: function() { this.sauverSolo(); this.solo = false; this.pub = null; this.onglet = 'config'; },
+        tourOrdi: function() {
+          var e = this.pub;
+          if (!this.solo || e.phase !== 'jeu' || e.joueurs[e.tour - 1] !== ORDI) return;
+          clearTimeout(this._timerOrdi);
+          this._timerOrdi = setTimeout(() => {
+            if (!this.solo || this.pub !== e || e.phase !== 'jeu') return;
+            var col = QL.choisirCoup(e.grille, e.tour, e.niveau || this.niveau);
+            this.coupSolo(col);
+          }, 450);
+        },
+        coupSolo: function(col) {
+          var e = copie(this.pub), j = e.tour;
+          if (appliquerCoup(e, j, col)) return;
+          var avant = this.pub;
+          this.pub = e;
+          this.reagir(avant, e);
+          if (e.phase === 'fin') {
+            this.statsSolo = { parties: this.statsSolo.parties + 1, gagnees: this.statsSolo.gagnees + (e.resultat.gagnant === 1 ? 1 : 0) };
+            ecrireStockage('quatre-stats', this.statsSolo);
+          }
+          this.sauverSolo();
+          this.tourOrdi();
+        },
+        annulerSolo: function() {
+          // On retire le coup de l'ordinateur et le mien
+          var e = copie(this.pub), coups = e.coups.slice(0, -2);
+          e.grille = QL.nouvelle(); e.coups = []; e.tour = e.premier; e.dernier = -1;
+          coups.forEach(c => { e.dernier = QL.jouer(e.grille, c, e.tour); e.coups.push(c); e.tour = 3 - e.tour; });
+          this.pub = e;
+          this.sauverSolo();
+          this.tourOrdi();
+        },
+
+        // ================== ACTIONS ==================
+        jouerColonne: function(col) {
+          this.survol = -1;
+          if (!this.peutJouer) return;
+          if (this.pub.grille[col]) return this.vibre(60);
+          if (this.solo) return this.coupSolo(col);
+          this.envoyerJeu({ type: 'COUP', partieId: this.pub.partieId, col: col });
+        },
+        nouvellePartie: function() {
+          if (this.solo) {
+            var e = copie(this.pub); e.niveau = this.niveau; debuterPartie(e); this.pub = e; this.sauverSolo(); return this.tourOrdi();
+          }
+          this.envoyerJeu({ type: 'NOUVELLE' });
+        },
+        envoyerJeu: function(m) {
+          if (this.role === 'hote') return this.traiterJeu(monPseudo, m);
+          if (this.connexion !== 'ok') return;
+          this.envoyerHote({ action: 'JEU', m: m });
+        },
+
+        // ================== HÔTE ==================
+        estConnecte: function(p) { return p === monPseudo || !!(salle.infos[p] && salle.infos[p].connecte); },
+        // Les deux premiers présents jouent ; un joueur absent peut être remplacé par un nouveau venu
+        placerJoueurs: function() {
+          var j = pubHote.joueurs;
+          for (var k = 0; k < 2; k++) {
+            if (j[k] && pubHote.ordre.indexOf(j[k]) === -1) j[k] = null;
+            if (!j[k] || (pubHote.phase !== 'jeu' && !this.estConnecte(j[k]))) {
+              var libre = pubHote.ordre.find(p => j.indexOf(p) === -1 && this.estConnecte(p));
+              if (libre) j[k] = libre;
+            }
+          }
+          if (pubHote.phase === 'attente' && j[0] && j[1]) debuterPartie(pubHote);
+        },
+        traiterJeu: function(p, m) {
+          if (!pubHote) return;
+          var num = pubHote.joueurs.indexOf(p) + 1;
+          if (m.type === 'COUP') {
+            if (!num || m.partieId !== pubHote.partieId) return;
+            if (appliquerCoup(pubHote, num, +m.col)) return;
+          } else if (m.type === 'NOUVELLE') {
+            var adversaireParti = pubHote.phase === 'jeu' && !this.estConnecte(pubHote.joueurs[2 - num]);
+            if (!num || (pubHote.phase !== 'fin' && !adversaireParti)) return;
+            // Un joueur absent laisse sa place à un spectateur présent
+            pubHote.phase = 'attente';
+            pubHote.joueurs = pubHote.joueurs.map(x => x && this.estConnecte(x) ? x : null);
+            this.placerJoueurs();
+          } else return;
+          this.publier();
+        },
+
+        // ================== RÉCEPTION DE L'ÉTAT ==================
+        appliquerPub: function(pub) {
+          var ancien = this.pub;
+          this.pub = pub;
+          if (ancien && !this._restauration && !this.solo) this.reagir(ancien, pub);
+          this.sauvegarder();
+        },
+        reagir: function(a, p) {
+          if (p.partieId === a.partieId && p.coups.length > a.coups.length) { this.son('toc'); this.vibre(15); }
+          if (p.phase === 'jeu' && p.tour === this.monNumero && (a.tour !== p.tour || a.partieId !== p.partieId) && p.joueurs[2 - p.tour] !== ORDI) this.vibre([30, 40, 30]);
+          if (p.phase === 'fin' && a.phase !== 'fin') {
+            if (p.resultat.gagnant && p.resultat.gagnant === this.monNumero) { setTimeout(() => this.son('victoire'), 350); this.vibre([100, 60, 100, 60, 250]); }
+            else if (p.resultat.gagnant) this.vibre(200);
+          }
+        },
+        publier: function() {
+          this.diffuser();
+          this.appliquerPub(copie(pubHote));
+        },
+        etatAEnvoyer: function() { return copie(pubHote); },
+
+        // ---------- Liste des salons ----------
+        estSalonSaisi: function(nom) { return ACCES.simplifier(nom) === ACCES.simplifier(this.channelInput); },
+        retenirSalon: function(nom) {
+          var cle = ACCES.simplifier(nom);
+          this.salonsConnus = [nom].concat((lireStockage('brillant-salons') || this.salonsConnus).filter(n => ACCES.simplifier(n) !== cle)).slice(0, MAX_SALONS);
+          ecrireStockage('brillant-salons', this.salonsConnus);
+          ecrireStockage('quatre-dernier-salon', nom);
+        },
+        oublierSalon: function(nom) {
+          var cle = ACCES.simplifier(nom);
+          this.salonsConnus = this.salonsConnus.filter(n => ACCES.simplifier(n) !== cle);
+          ecrireStockage('brillant-salons', this.salonsConnus);
+          if (ACCES.simplifier(this.channelInput) === cle) this.channelInput = this.salonsConnus[0] || '';
+        },
+
+        // ---------- Sauvegarde ----------
+        sauvegarder: function() {
+          if (this._restauration) return;
+          ecrireStockage(CLE_SAUVEGARDE, {
+            pseudo: this.pseudoInput, role: this.role, salon: this.roomCode, pub: this.role ? this.pub : null,
+            pubHote: this.role === 'hote' ? pubHote : null, salle: this.role === 'hote' ? salle : null
+          });
+        },
+        restaurer: function() {
+          var sv = lireStockage(CLE_SAUVEGARDE);
+          monPseudo = this.moi;
+          if (!sv) return;
+          if (sv.role && sv.salon && sv.pub) {
+            this.role = sv.role;
+            this.roomCode = sv.salon;
+            this.onglet = 'play';
+            this.connexion = 'perdue';
+            this._restauration = true;
+            this.appliquerPub(sv.pub);
+            this._restauration = false;
+            if (sv.role === 'hote') {
+              pubHote = sv.pubHote || copie(sv.pub);
+              salle = sv.salle || { infos: {} };
+              Object.values(salle.infos).forEach(i => { i.connecte = false; });
+              this.creerPartie(true);
+            } else this.rejoindrePartie(true);
+          }
+        },
+
+        // ---------- Entrée dans un salon ----------
+        validerPseudo: function() {
+          monPseudo = this.pseudoInput.trim();
+          if (!monPseudo) { alert('Merci de saisir un pseudo.'); return false; }
+          return true;
+        },
+        entrerSalon: function() {
+          if (this.role || this._entree) return;
+          if (this.solo) { this.sauverSolo(); this.solo = false; this.pub = null; }
+          if (!this.validerPseudo()) return;
+          if (!this.channelInput.trim()) { alert('Saisis un nom de salon.'); return; }
+          fermerAutresSalons('quatre');   // un seul salon à la fois sur ce téléphone
+          this._entree = { essais: 0 };
+          this.entreeEnCours = true;
+          this.creerPartie(false);
+        },
+        finEntree: function(reussie, message) {
+          var e = this._entree;
+          this._entree = null;
+          this.entreeEnCours = false;
+          if (reussie) this.retenirSalon(this.roomCode);
+          else if (e && message) alert(message);
+        },
+        suiteEntree: function() {
+          var e = this._entree;
+          if (!e) return;
+          this.reinitialiserPeer(false);
+          if (++e.essais >= 4) return this.finEntree(false, 'Impossible d\'entrer dans le salon pour le moment.\n\nSi vous êtes sur le même Wi-Fi (location, hôtel, Wi-Fi invité…), il empêche souvent les téléphones de se parler : passe l\'un des deux en 4G/5G (Wi-Fi coupé), puis réessaie.');
+          setTimeout(() => { if (this._entree === e && !this.role) this.creerPartie(false); }, 1200);
+        },
+        quitterSalon: function() {
+          if (!confirm('Quitter le salon ?')) return;
+          if (this.role === 'client' && peer) {
+            this.envoyerHote({ action: 'DEPART' });
+            var ancienPeer = peer;
+            peer = null;
+            setTimeout(() => { try { ancienPeer.destroy(); } catch (e) {} }, 400);
+          }
+          this.reinitialiserPeer(false);
+          pubHote = null;
+          salle = { infos: {} };
+          this.pub = null;
+          this.ajouterLog('Tu as quitté le salon.', true);
+          this.sauvegarder();
+        },
+        reinitialiserPeer: function(garder) {
+          clearTimeout(this._timerReco);
+          var ancien = peer;
+          peer = null;
+          connections = [];
+          connParPseudo = {};
+          hostConn = null;
+          if (ancien) { try { ancien.destroy(); } catch (e) {} }
+          if (!garder) { this.role = null; this.joueurs = []; this.roomCode = ''; this.connexion = 'aucune'; }
+        },
+        planifierReconnexion: function(delai) {
+          clearTimeout(this._timerReco);
+          this._timerReco = setTimeout(() => {
+            if (!this.role || this.connexion === 'ok') return;
+            if (this.role === 'hote') return this.creerPartie(true);
+            this._echecsClient = (this._echecsClient || 0) + 1;
+            if (this._echecsClient >= 4 && this.pub) { this._echecsClient = 0; return this.reprendreLeSalon(); }
+            this.rejoindrePartie(true);
+          }, delai || 3000);
+        },
+        // L'hôte ne répond plus : on rouvre le salon avec notre copie de la partie (rien de secret ici)
+        reprendreLeSalon: function() {
+          pubHote = copie(this.pub);
+          salle = { infos: {} };
+          pubHote.ordre.forEach(p => { if (p !== monPseudo) salle.infos[p] = { connecte: false, clientId: null }; });
+          this._repriseParClient = true;
+          this.role = 'hote';
+          this.ajouterLog('L\'hôte ne répond plus : tu rouvres le salon.', true);
+          this.creerPartie(true);
+        },
+
+        // ---------- Hôte ----------
+        creerPartie: function(reprise) {
+          var nom = reprise ? this.roomCode : this.channelInput.trim();
+          this.reinitialiserPeer(!!reprise);
+          this.connexion = reprise ? 'perdue' : 'connexion';
+          var monPeer = peer = new Peer(ACCES.idSalon(nom, JEU_RESEAU));
+          monPeer.on('open', () => {
+            if (peer !== monPeer) return;
+            this.role = 'hote';
+            this.connexion = 'ok';
+            this.roomCode = nom;
+            this._echecsReprise = 0;
+            if (reprise) {
+              this._repriseParClient = false;
+              this.ajouterLog('Salon récupéré, les autres joueurs vont se reconnecter.', true);
+            } else {
+              this.onglet = 'play';
+              this.finEntree(true);
+              salle = { infos: {} };
+              pubHote = nouvelEtatSalon([monPseudo]);
+              this.ajouterLog(monPseudo + ' a ouvert le salon.', true);
+            }
+            this.publier();
+          });
+          monPeer.on('connection', (conn) => this.brancherClient(conn));
+          monPeer.on('disconnected', () => {
+            if (peer === monPeer && !monPeer.destroyed) setTimeout(() => { try { if (monPeer.disconnected && !monPeer.destroyed) monPeer.reconnect(); } catch (e) {} }, 1000);
+          });
+          monPeer.on('error', (err) => {
+            if (peer !== monPeer) return;
+            if (reprise || this.role === 'hote') {
+              if (err.type === 'peer-unavailable') return;
+              this.connexion = 'perdue';
+              var seuil = this._repriseParClient ? 1 : 5;
+              if (err.type === 'unavailable-id' && (this._echecsReprise = (this._echecsReprise || 0) + 1) >= seuil) {
+                this._echecsReprise = 0;
+                this._repriseParClient = false;
+                this.role = 'client';
+                pubHote = null;
+                salle = { infos: {} };
+                this.ajouterLog('Le salon est tenu par un autre joueur : tu le rejoins.', true);
+                return this.rejoindrePartie(true);
+              }
+              this.planifierReconnexion(3000);
+              return;
+            }
+            if (this._entree && err.type === 'unavailable-id') return this.rejoindrePartie(false);
+            if (this._entree) return this.suiteEntree();
+            this.reinitialiserPeer(false);
+            alert('Erreur : ' + err.message);
+          });
+        },
+        brancherClient: function(conn) {
+          connections.push(conn);
+          conn.dernierMsg = Date.now();
+          conn.on('data', (data) => { conn.dernierMsg = Date.now(); this.recevoirDeClient(conn, data); });
+          conn.on('close', () => this.perteClient(conn));
+          conn.on('error', () => this.perteClient(conn));
+        },
+        majJoueurs: function() {
+          if (this.role !== 'hote' || !pubHote) return;
+          this.joueurs = pubHote.ordre.map(p => ({ pseudo: p, hote: p === monPseudo, connecte: this.estConnecte(p) }));
+        },
+        diffuser: function() {
+          this.majJoueurs();
+          var data = { action: 'ETAT', pub: this.etatAEnvoyer(), joueurs: this.joueurs };
+          connections.forEach(c => { try { if (c.open) c.send(data); } catch (e) {} });
+        },
+        recevoirDeClient: function(conn, data) {
+          var p = conn.joueurPseudo;
+          switch (data.action) {
+            case 'PING': break;
+            case 'REJOINDRE': {
+              var pseudo = String(data.pseudo || '').trim().slice(0, 20);
+              var existant = salle.infos[pseudo];
+              if (!pseudo || pseudo === monPseudo || (existant && existant.connecte && existant.clientId !== data.clientId && connParPseudo[pseudo] && connParPseudo[pseudo] !== conn)) {
+                try { conn.send({ action: 'REFUS', fatal: true, message: 'Ce pseudo est déjà utilisé dans ce salon.' }); } catch (e) {}
+                setTimeout(() => { try { conn.close(); } catch (e) {} }, 500);
+                return;
+              }
+              var ancienne = connParPseudo[pseudo];
+              if (ancienne && ancienne !== conn) { ancienne._remplacee = true; connections = connections.filter(c => c !== ancienne); try { ancienne.close(); } catch (e) {} }
+              conn.joueurPseudo = pseudo;
+              connParPseudo[pseudo] = conn;
+              salle.infos[pseudo] = { connecte: true, clientId: data.clientId };
+              if (pubHote.ordre.indexOf(pseudo) !== -1) this.ajouterLog(pseudo + ' est revenu.', true);
+              else {
+                pubHote.ordre.push(pseudo);
+                this.ajouterLog(pseudo + ' a rejoint le salon.', true);
+              }
+              this.placerJoueurs();
+              this.publier();
+              break;
+            }
+            case 'DEPART':
+              if (!p) return;
+              delete connParPseudo[p];
+              delete salle.infos[p];
+              pubHote.ordre = pubHote.ordre.filter(x => x !== p);
+              this.ajouterLog(p + ' a quitté le salon.', true);
+              // Il abandonne la partie en cours : la place revient à un autre (la partie recommence)
+              var k = pubHote.joueurs.indexOf(p);
+              if (k !== -1) { pubHote.joueurs[k] = null; if (pubHote.phase === 'jeu') pubHote.phase = 'attente'; this.placerJoueurs(); }
+              this.publier();
+              break;
+            case 'JEU':
+              if (!p) return;
+              this.traiterJeu(p, data.m || {});
+              break;
+          }
+        },
+        perteClient: function(conn) {
+          if (conn._perdue) return;
+          conn._perdue = true;
+          connections = connections.filter(c => c !== conn);
+          var p = conn.joueurPseudo;
+          if (!p || conn._remplacee || connParPseudo[p] !== conn) return;
+          delete connParPseudo[p];
+          if (salle.infos[p]) salle.infos[p].connecte = false;
+          this.ajouterLog(p + ' s\'est déconnecté (il peut revenir).', true);
+          this.publier();
+          this.sauvegarder();
+        },
+
+        // ---------- Client ----------
+        rejoindrePartie: function(reprise) {
+          var nom = reprise ? this.roomCode : this.channelInput.trim();
+          this.reinitialiserPeer(!!reprise);
+          this.connexion = reprise ? 'perdue' : 'connexion';
+          var monPeer = peer = new Peer();
+          monPeer.on('open', () => {
+            if (peer !== monPeer) return;
+            var conn = hostConn = monPeer.connect(ACCES.idSalon(nom, JEU_RESEAU), { reliable: true });
+            var delai = setTimeout(() => {
+              if (hostConn !== conn || this.connexion === 'ok') return;
+              if (this.role) this.planifierReconnexion();
+              else if (this._entree) this.suiteEntree();
+              else this.reinitialiserPeer(false);
+            }, 10000);
+            conn.on('open', () => {
+              if (hostConn !== conn) return;
+              clearTimeout(delai);
+              dernierMsgHote = Date.now();
+              this.connexion = 'ok';
+              this.role = 'client';
+              this.roomCode = nom;
+              this._echecsClient = 0;
+              if (!reprise) { this.onglet = 'play'; this.finEntree(true); }
+              conn.send({ action: 'REJOINDRE', pseudo: monPseudo, clientId: clientId });
+            });
+            conn.on('data', (data) => { if (hostConn !== conn) return; dernierMsgHote = Date.now(); this.recevoirDeHote(data); });
+            conn.on('close', () => { if (hostConn === conn) this.perteHote(); });
+            conn.on('error', () => { if (hostConn === conn) this.perteHote(); });
+          });
+          monPeer.on('disconnected', () => { if (peer === monPeer && !monPeer.destroyed) { try { monPeer.reconnect(); } catch (e) {} } });
+          monPeer.on('error', () => {
+            if (peer !== monPeer) return;
+            if (this.role) { this.connexion = 'perdue'; this.planifierReconnexion(); }
+            else if (this._entree) this.suiteEntree();
+            else { this.reinitialiserPeer(false); alert('Impossible de joindre ce salon.\n\nSur un même Wi-Fi (location, hôtel, Wi-Fi invité…), passe l\'un des téléphones en 4G/5G puis réessaie.'); }
+          });
+        },
+        perteHote: function() {
+          if (this.connexion === 'perdue' && this._timerReco) return;
+          if (this.connexion === 'ok') this.ajouterLog('Connexion à l\'hôte perdue, reconnexion…', true);
+          var c = hostConn;
+          hostConn = null;
+          if (c) { try { c.close(); } catch (e) {} }
+          this.connexion = 'perdue';
+          this.planifierReconnexion(1500);
+        },
+        envoyerHote: function(data) { if (hostConn && hostConn.open && this.connexion === 'ok') { try { hostConn.send(data); } catch (e) {} } },
+        recevoirDeHote: function(data) {
+          switch (data.action) {
+            case 'PING': break;
+            case 'ETAT':
+              this.joueurs = data.joueurs || [];
+              if (data.pub) this.appliquerPub(data.pub);
+              break;
+            case 'REFUS':
+              if (data.fatal) { alert(data.message); this.reinitialiserPeer(false); this.pub = null; this.sauvegarder(); }
+              break;
+          }
+        },
+
+        // ---------- Surveillance de la connexion ----------
+        battement: function() {
+          var maintenant = Date.now();
+          if (this.role === 'hote' && peer) {
+            connections.slice().forEach(c => {
+              try { if (c.open) c.send({ action: 'PING' }); } catch (e) {}
+              if (maintenant - (c.dernierMsg || maintenant) > DELAI_SILENCE) { try { c.close(); } catch (e) {} this.perteClient(c); }
+            });
+            if (peer.destroyed) this.planifierReconnexion(500);
+            else if (peer.disconnected) { try { peer.reconnect(); } catch (e) {} }
+          } else if (this.role === 'client' && this.connexion === 'ok') {
+            this.envoyerHote({ action: 'PING' });
+            if (maintenant - dernierMsgHote > DELAI_SILENCE) this.perteHote();
+          }
+        },
+        auRetourPremierPlan: function() {
+          this.majVeille();
+          if (document.visibilityState === 'hidden' || !this.role) return;
+          if (this.role === 'hote') {
+            if (!peer || peer.destroyed) this.creerPartie(true);
+            else if (peer.disconnected) { try { peer.reconnect(); } catch (e) {} }
+          } else if (this.connexion !== 'ok' || Date.now() - dernierMsgHote > 8000) {
+            this.connexion = 'perdue';
+            this.rejoindrePartie(true);
+          }
+        },
+
+        // ---------- Écran toujours allumé ----------
+        veilleVoulue: function() {
+          return this.veilleSupportee && this.garderEcran && document.visibilityState === 'visible' && !!this.role;
+        },
+        majVeille: function() {
+          if (!this.veilleSupportee) return;
+          if (this.veilleVoulue()) {
+            if (this._verrou || this._demandeVerrou) return;
+            this._demandeVerrou = true;
+            navigator.wakeLock.request('screen').then(verrou => {
+              this._demandeVerrou = false;
+              if (!this.veilleVoulue()) { verrou.release(); return; }
+              this._verrou = verrou;
+              this.veilleActive = true;
+              verrou.addEventListener('release', () => { if (this._verrou === verrou) { this._verrou = null; this.veilleActive = false; } });
+            }).catch(() => { this._demandeVerrou = false; });
+          } else if (this._verrou) {
+            var v = this._verrou;
+            this._verrou = null;
+            this.veilleActive = false;
+            v.release().catch(() => {});
+          }
+        }
+      }
+    });
+  </script>
+  <script src="salon-global.js" data-jeu="quatre"></script>
+</body>
+</html>
