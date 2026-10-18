@@ -31,6 +31,10 @@
     .jeu > .ico-gb { height: 56px; }
     .jeu > div:nth-child(2) { flex: 1; min-width: 0; }
     .jeu .desc { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .jeu { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
+    .jeu.souleve { position: relative; z-index: 5; transition: none; box-shadow: 0 12px 28px rgba(29,43,54,0.25); border-color: #2c3e50; }
+    .tri-move { transition: transform 0.2s ease; }
+    .astuce-tri { float: right; font-weight: 400; font-size: 0.8em; color: #a3adb5; margin-top: 2px; }
     .jeu:active { transform: scale(0.99); }
     .jeu.dernier { border-color: #2c3e50; }
     .jeu .nom { font-size: 1.25em; font-weight: 800; }
@@ -92,9 +96,14 @@
       <!-- Salon global : qui est en ligne (rempli par salon-global.js) -->
       <div id="sg-ici" style="margin-bottom:14px"></div>
 
-      <div class="titre-section">Choisis ton jeu</div>
-      <div class="jeux">
-        <a v-for="j in jeux" :key="j.id" class="jeu" :class="{ dernier: dernierJeu === j.id }" :href="j.page" @click="retenir(j.id)">
+      <div class="titre-section">Choisis ton jeu<span class="astuce-tri">{{ glisse ? 'glisse puis lâche' : 'appui long pour trier' }}</span></div>
+      <!-- Ordre propre à chaque téléphone : appui long sur une fiche, puis la faire glisser -->
+      <transition-group name="tri" tag="div" class="jeux" ref="liste">
+        <a v-for="j in jeuxTries" :key="j.id" :ref="'jeu-' + j.id" class="jeu" :data-id="j.id"
+           :class="{ dernier: dernierJeu === j.id, souleve: glisse === j.id }"
+           :style="glisse === j.id ? { transform: 'translateY(' + decalY + 'px) scale(1.03)' } : null"
+           :href="j.page" @click="cliquer($event, j.id)" @contextmenu.prevent
+           @touchstart="debutAppui($event, j.id)" @mousedown="debutAppui($event, j.id)">
           <div v-if="j.id === 'brilliant'" class="ico-grille"><span v-for="(c, i) in grille" :key="i" :style="{ background: c }"></span></div>
           <div v-else-if="j.id === 'yams'" class="ico-des"><span v-for="n in [5, 3, 6, 2, 4]" :key="n">{{ n }}</span></div>
           <div v-else-if="j.id === 'assaut'" class="ico-as"><span v-for="(c, k) in ['#b5422f','#b5422f','#b5422f','#5d9bc9','#a9c08c','#5d9bc9','#2f5f9e','#2f5f9e','#2f5f9e']" :key="k" :style="{ background: c }"></span></div>
@@ -108,7 +117,7 @@
           </div>
           <span class="fleche">›</span>
         </a>
-      </div>
+      </transition-group>
 
       <section class="carte installer" v-if="!estInstallee && (installPossible || estIOS)" style="margin-top:16px">
         <div class="titre-carte">📲 Installer l'application</div>
@@ -141,6 +150,9 @@
         accesErreur: '',
         accesEnCours: false,
         dernierJeu: lireStockage('desdale-dernier-jeu') || '',
+        ordre: lireStockage('desdale-ordre-jeux') || [],
+        glisse: null,      // jeu soulevé par un appui long
+        decalY: 0,
         maj: 0,
         logo: [B, J, R, V],
         grille: [J, V, B, R, M, V, O, R, J],
@@ -149,6 +161,11 @@
         estIOS: /iphone|ipad|ipod/i.test(navigator.userAgent)
       },
       computed: {
+        // Jeux dans l'ordre choisi sur ce téléphone (les jeux inconnus de l'ordre gardent leur place par défaut, à la fin)
+        jeuxTries: function() {
+          var o = this.ordre, rang = (j) => { var i = o.indexOf(j.id); return i < 0 ? 100 : i; };
+          return this.jeux.map((j, k) => ({ j: j, k: k })).sort((a, b) => (rang(a.j) - rang(b.j)) || (a.k - b.k)).map(x => x.j);
+        },
         jeux: function() {
           this.maj;   // recalcul après « Quitter »
           var b = etatJeu('brillant-sauvegarde-v1'), y = etatJeu('yams-sauvegarde'), g = etatJeu('bg-sauvegarde'), a = etatJeu('assaut-sauvegarde'), n = etatJeu('bataille-sauvegarde'), d = etatJeu('gribouille-sauvegarde');
@@ -163,6 +180,12 @@
         }
       },
       created: function() {
+        // Glisser au doigt : il faut pouvoir bloquer le défilement de la page pendant le tri
+        document.addEventListener('touchmove', (e) => { if (this.glisse) { e.preventDefault(); this.deplacer(e.touches[0].clientY); } else this.bougeAvant(e.touches[0]); }, { passive: false });
+        document.addEventListener('touchend', () => this.finAppui());
+        document.addEventListener('touchcancel', () => this.finAppui());
+        document.addEventListener('mousemove', (e) => { if (this.glisse) this.deplacer(e.clientY); else this.bougeAvant(e); });
+        document.addEventListener('mouseup', () => this.finAppui());
         window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); this._invitation = e; this.installPossible = true; });
         window.addEventListener('appinstalled', () => { this.installPossible = false; this.estInstallee = true; });
         if (ACCES.memorise()) { this.accesOk = true; this.reprendre(); }
@@ -175,6 +198,65 @@
           if (enSalon) location.replace(enSalon.page);
         },
         retenir: function(id) { ecrireStockage('desdale-dernier-jeu', id); },
+        cliquer: function(e, id) {
+          // Pas d'ouverture du jeu à la fin d'un tri
+          if (this.glisse || Date.now() - (this._finTri || 0) < 500) { e.preventDefault(); return; }
+          this.retenir(id);
+        },
+        // ---- Tri des fiches : appui long (0,45 s sans bouger), puis glisser ----
+        debutAppui: function(e, id) {
+          if (e.type === 'mousedown' && e.button !== 0) return;
+          if (e.type === 'mousedown' && this._touche && Date.now() - this._touche < 800) return;   // souris simulée après un toucher
+          if (e.type === 'touchstart') this._touche = Date.now();
+          var p = e.touches ? e.touches[0] : e;
+          clearTimeout(this._minuterie);
+          this._appui = { id: id, x: p.clientX, y: p.clientY };
+          this._minuterie = setTimeout(() => this.soulever(), 450);
+        },
+        bougeAvant: function(p) {
+          // Le doigt bouge avant la fin de l'appui long : c'est un défilement, pas un tri
+          if (this._appui && Math.hypot(p.clientX - this._appui.x, p.clientY - this._appui.y) > 8) { clearTimeout(this._minuterie); this._appui = null; }
+        },
+        soulever: function() {
+          if (!this._appui) return;
+          var el = this.$refs['jeu-' + this._appui.id][0];
+          this.glisse = this._appui.id;
+          this.decalY = 0;
+          // Ancre : distance entre le doigt et le haut de la fiche, pour qu'elle suive le doigt sans sauter
+          this._ancre = this._appui.y - el.getBoundingClientRect().top;
+          vibrer(25);
+        },
+        deplacer: function(y) {
+          var id = this.glisse, ids = this.jeuxTries.map(j => j.id);
+          // Place visée : on compare le doigt au milieu des autres fiches (positions sans déplacement)
+          var cible = 0;
+          ids.forEach((autre) => {
+            if (autre === id) return;
+            var r = this.$refs['jeu-' + autre][0].getBoundingClientRect();
+            if (y > r.top + r.height / 2) cible++;
+          });
+          var ici = ids.indexOf(id);
+          if (cible !== ici) {
+            ids.splice(ici, 1); ids.splice(cible, 0, id);
+            this.ordre = ids;
+          }
+          this.$nextTick(() => {
+            var el = this.$refs['jeu-' + id] && this.$refs['jeu-' + id][0];
+            if (!el || this.glisse !== id) return;
+            // Position naturelle de la fiche (sans le décalage en cours), puis décalage pour rester sous le doigt
+            var naturel = el.getBoundingClientRect().top - this.decalY;
+            this.decalY = y - this._ancre - naturel;
+          });
+        },
+        finAppui: function() {
+          clearTimeout(this._minuterie);
+          this._appui = null;
+          if (!this.glisse) return;
+          this.glisse = null;
+          this.decalY = 0;
+          this._finTri = Date.now();
+          ecrireStockage('desdale-ordre-jeux', this.jeuxTries.map(j => j.id));
+        },
         // Oublie le salon en cours d'un jeu (il ne sera plus rouvert tout seul)
         quitter: function(j) {
           if (!confirm('Quitter le salon de ' + j.nom + ' ? La partie en salon ne sera plus reprise sur ce téléphone.')) return;
