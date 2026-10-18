@@ -365,10 +365,18 @@ var SalonGlobal = (function () {
       if (Math.abs(dy) > 6) depart.bouge = true;
       if (depart.bouge) placerBulle(depart.top + dy);
     });
+    // On ouvre sur « click » (et pas sur pointerup) : sinon, au doigt, le clic qui suit tombait sur le fond
+    // tout juste posé et refermait aussitôt le panneau (seul un appui long marchait)
+    var aGlisse = false;
     b.addEventListener('pointerup', () => {
       if (!depart) return;
-      var bouge = depart.bouge; depart = null;
-      if (bouge) ecrire(CLE_BULLE, b.offsetTop); else ouvrir_panneau(ongletChat());
+      aGlisse = depart.bouge; depart = null;
+      if (aGlisse) ecrire(CLE_BULLE, b.offsetTop);
+    });
+    b.addEventListener('pointercancel', () => { depart = null; });
+    b.addEventListener('click', () => {
+      if (aGlisse) { aGlisse = false; return; }
+      ouvrir_panneau(ongletChat());
     });
     window.addEventListener('resize', () => placerBulle(b.offsetTop));
     if (window.visualViewport) window.visualViewport.addEventListener('resize', ajusterPanneau);
@@ -386,7 +394,8 @@ var SalonGlobal = (function () {
     ouvert = true;
     var fond = el.fond = document.createElement('div');
     fond.id = 'sg-fond';
-    fond.addEventListener('click', fermer);
+    var ouvertA = Date.now();
+    fond.addEventListener('click', () => { if (Date.now() - ouvertA > 400) fermer(); });
     var p = el.panneau = document.createElement('div');
     p.id = 'sg-panneau';
     p.innerHTML = '<div class="sg-tete"><div class="sg-onglets"></div><button class="sg-fermer" aria-label="Fermer">✕</button></div>' +
