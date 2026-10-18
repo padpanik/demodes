@@ -25,6 +25,12 @@
       font: inherit; color: inherit; text-decoration: none; box-sizing: border-box;
       box-shadow: 0 1px 2px rgba(0,0,0,0.05), 0 4px 14px rgba(29,43,54,0.06);
     }
+    /* Fiches de même hauteur : colonne d'icône fixe, descriptif sur deux lignes au plus */
+    .jeu { min-height: 98px; }
+    .jeu > :first-child { width: 56px; box-sizing: border-box; flex-shrink: 0; justify-content: center; }
+    .jeu > .ico-gb { height: 56px; }
+    .jeu > div:nth-child(2) { flex: 1; min-width: 0; }
+    .jeu .desc { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
     .jeu:active { transform: scale(0.99); }
     .jeu.dernier { border-color: #2c3e50; }
     .jeu .nom { font-size: 1.25em; font-weight: 800; }
@@ -148,11 +154,11 @@
           var b = etatJeu('brillant-sauvegarde-v1'), y = etatJeu('yams-sauvegarde'), g = etatJeu('bg-sauvegarde'), a = etatJeu('assaut-sauvegarde'), n = etatJeu('bataille-sauvegarde'), d = etatJeu('gribouille-sauvegarde');
           return [
             { id: 'brilliant', nom: 'Brilliant', page: 'brilliant.html', desc: 'Roll & write : remplis les zones de ta grille.', enCours: b && b.texte },
-            { id: 'yams', nom: 'Yams', page: 'yams.html', desc: '5 dés, 3 lancers, 5 colonnes : libre, descendante, montante, sèche, imposée.', enCours: y && y.texte },
-            { id: 'backgammon', nom: 'Backgammon', page: 'backgammon.html', desc: 'À deux, avec le videau.', enCours: g && g.texte },
-            { id: 'assaut', nom: 'Assaut', page: 'assaut.html', desc: 'Stratégie à pièces cachées, seul contre l\'ordinateur ou à deux.', enCours: a && a.texte },
-            { id: 'bataille', nom: 'Bataille navale', page: 'bataille.html', desc: 'Coule la flotte adverse, seul contre l\'ordinateur ou à deux.', enCours: n && n.texte },
-            { id: 'gribouille', nom: 'Gribouille', page: 'gribouille.html', desc: 'Chacun son tour dessine un mot, les autres devinent. À partir de 2.', enCours: d && d.texte }
+            { id: 'yams', nom: 'Yams', page: 'yams.html', desc: '5 dés, 3 lancers, seul ou à plusieurs.', enCours: y && y.texte },
+            { id: 'backgammon', nom: 'Backgammon', page: 'backgammon.html', desc: 'À deux, avec le videau et les gammons.', enCours: g && g.texte },
+            { id: 'assaut', nom: 'Assaut', page: 'assaut.html', desc: 'Stratégie à pièces cachées, seul ou à deux.', enCours: a && a.texte },
+            { id: 'bataille', nom: 'Bataille navale', page: 'bataille.html', desc: 'Coule la flotte adverse, seul ou à deux.', enCours: n && n.texte },
+            { id: 'gribouille', nom: 'Gribouille', page: 'gribouille.html', desc: 'L\'un dessine, les autres devinent.', enCours: d && d.texte }
           ];
         }
       },
