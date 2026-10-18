@@ -772,6 +772,8 @@
             return;
           }
           if (this.selection && this.selection.col === col && this.selection.ligne === ligne) return this.inscrire();
+          // 1er lancer : choisir une autre case que celle annoncée abandonne l'annonce (elle n'est plus violette, chez tous)
+          if (t.annonce && t.lancer === 1 && !(col === 'impose' && ligne === t.annonce)) this.jouer({ type: 'ANNONCER', ligne: null });
           this.selection = { col: col, ligne: ligne, pts: pointsCase(this.feuilleVue, col, ligne, this.etat.tour.des) };
         },
         inscrire: function() {
