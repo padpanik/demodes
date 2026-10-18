@@ -418,11 +418,12 @@
       return jeu;
     }
     // Peut-on inscrire dans cette case ? (ordre des colonnes ↓ et ↑, Sec au 1er lancer,
-    // Imposée : la case annoncée après le 1er lancer, et alors seulement elle)
+    // Imposée : la case annoncée après le 1er lancer ; l'annonce n'engage qu'une fois les dés relancés :
+    // tant qu'on est sur le 1er lancer, on peut encore s'inscrire ailleurs ou changer d'annonce)
     function caseAutorisee(f, col, ligne, lancer, annonce) {
       if (!f || !f[col] || IDS_LIGNES.indexOf(ligne) === -1 || f[col][ligne] !== undefined || lancer < 1) return false;
-      if (annonce) return col === 'impose' && ligne === annonce;
-      if (col === 'impose') return false;
+      if (annonce && lancer > 1) return col === 'impose' && ligne === annonce;
+      if (col === 'impose') return !!annonce && ligne === annonce;
       var vides = IDS_LIGNES.filter(l => f[col][l] === undefined);
       if (col === 'desc') return vides[0] === ligne;
       if (col === 'mont') return vides[vides.length - 1] === ligne;
@@ -649,6 +650,7 @@
           var imp = t.annonce ? 'Imposée : ' + this.nomLigne(t.annonce) + '. ' : '';
           if (this.monTour) {
             if (t.lancer === 0) return e.solo ? 'Lance les dés.' : avant + 'À toi ! Lance les dés.';
+            if (t.annonce && t.lancer === 1) return imp + 'Relance pour t\'y engager, ou change d\'avis : autre case, autre annonce.';
             if (t.annonce) return imp + (t.lancer < 3 ? 'Garde des dés et relance, ou inscris-toi.' : 'Inscris ton score.');
             if (t.lancer === 1) return 'Garde et relance, choisis une case (Sec possible) ou annonce une Imposée.';
             if (t.lancer === 2) return 'Encore un lancer possible, ou choisis une case.';
@@ -758,7 +760,7 @@
             return this.jouer({ type: 'ANNONCER', ligne: ligne });
           }
           if (!this.caseJouable(col, ligne)) {
-            if (this.monTour && t.annonce && t.lancer > 0) return this.afficherMessage('Tu as annoncé ' + this.nomLigne(t.annonce) + ' en Imposée : inscris-toi là.');
+            if (this.monTour && t.annonce && t.lancer > 1) return this.afficherMessage('Tu as annoncé ' + this.nomLigne(t.annonce) + ' en Imposée : inscris-toi là.');
             if (col === 'impose' && this.monTour && t.lancer > 1) return this.afficherMessage('Imposée : la case s\'annonce juste après le 1er lancer.');
             if (this.monTour && this.pseudoVue !== this.moi) { this.vue = this.moi; return; }
             if (this.monTour && this.etat.tour.lancer === 0) return this.afficherMessage('Lance d\'abord les dés.');
