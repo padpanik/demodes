@@ -272,6 +272,10 @@
             </button>
           </div>
           <input type="file" accept="image/*" ref="fichierImage" style="display:none" @change="imageChoisie">
+          <!-- Toutes d'un coup : chaque fichier va au grade que son nom désigne (marechal.png, bombe.jpg, 10.png…) -->
+          <button class="btn" style="margin-top:8px;width:100%" @click="$refs.fichiersImages.value = ''; $refs.fichiersImages.click()">📂 Plusieurs images d'un coup</button>
+          <div class="aide">Nomme les fichiers d'après le grade (maréchal, général, colonel, commandant, capitaine, lieutenant, sergent, démineur, éclaireur, espion, bombe, drapeau) ou d'après le chiffre.</div>
+          <input type="file" accept="image/*" multiple ref="fichiersImages" style="display:none" @change="imagesChoisies">
         </template>
       </section>
 
@@ -851,6 +855,31 @@
         imageChoisie: function(e) {
           var f = e.target.files && e.target.files[0], g = this._gradeImage;
           if (!f || g === undefined) return;
+          this.reduireImage(f, g);
+        },
+        // Plusieurs fichiers : le grade est deviné d'après le nom du fichier
+        imagesChoisies: function(e) {
+          var fichiers = Array.from(e.target.files || []), inconnus = [], n = 0;
+          fichiers.forEach(f => {
+            var g = this.gradeDuNom(f.name);
+            if (g === null) inconnus.push(f.name); else { n++; this.reduireImage(f, g); }
+          });
+          this.afficherMessage(n + ' image' + (n > 1 ? 's' : '') + ' placée' + (n > 1 ? 's' : '') +
+            (inconnus.length ? '. Grade non reconnu : ' + inconnus.join(', ') + ' (touche le grade pour la choisir).' : '.'));
+        },
+        gradeDuNom: function(nom) {
+          var x = nom.replace(/\.[a-z0-9]+$/i, '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+          var mots = [[10, 'marechal|marshal|marshall'], [9, 'general'], [8, 'colonel'], [7, 'commandant|major'], [6, 'capitaine|captain'],
+                      [5, 'lieutenant'], [4, 'sergent|sergeant'], [3, 'demineur|miner|sapeur'], [2, 'eclaireur|scout'], [1, 'espion|spy'],
+                      ['B', 'bombe|bomb'], ['D', 'drapeau|flag|drapo']];
+          for (var k = 0; k < mots.length; k++) if (new RegExp(mots[k][1]).test(x)) return mots[k][0];
+          // Sinon un chiffre seul (selon la numérotation choisie sur ce téléphone)
+          var m = /(^|[^0-9])(10|[1-9])([^0-9]|$)/.exec(x);
+          if (m) { var v = +m[2]; return this.numerotation === 'ancienne' ? (v === 10 ? null : 11 - v) : v; }   // ancienne : Maréchal 1 … Éclaireur 9
+          if (this.numerotation === 'ancienne' && /(^|[^a-z])e([^a-z]|$)/.test(x)) return 1;
+          return null;
+        },
+        reduireImage: function(f, g) {
           var lecteur = new FileReader();
           lecteur.onload = () => {
             var img = new Image();
