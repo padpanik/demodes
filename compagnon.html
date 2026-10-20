@@ -191,6 +191,16 @@
         </div>
       </template>
 
+      <!-- Réglages des messages, sous les soins -->
+      <section v-if="onglet === 'soins'" class="jour" style="margin-bottom:16px">
+        <div class="titre">💬 Les petits mots de {{ animal.nom }}</div>
+        <label class="case-a-cocher"><input type="checkbox" :checked="reglages.messages" @change="changerReglage('messages', $event.target.checked)"> Il me parle de temps en temps</label>
+        <label class="case-a-cocher" v-if="notifPossible"><input type="checkbox" :checked="reglages.notifications && notifPermise === 'granted'" :disabled="!reglages.messages" @change="basculerNotifications($event.target.checked)"> 🔔 Notification si l'appli est en arrière-plan</label>
+        <div class="serie" v-if="notifPermise === 'denied'">Les notifications sont bloquées pour ce site dans les réglages du téléphone.</div>
+        <div class="serie">Un message au plus toutes les 20 minutes, jamais la nuit. Il te demande à manger, à boire, un bain ou un câlin quand il en a besoin.</div>
+        <button class="btn" style="width:100%;margin-top:8px" @click="essayerMessage">Essayer maintenant</button>
+      </section>
+
       <!-- ===== Boutique ===== -->
       <template v-else-if="onglet === 'boutique'">
         <div class="rayons"><button v-for="r in RAYONS" :key="r.id" :class="{ actif: rayon === r.id }" @click="rayon = r.id">{{ r.nom }}</button></div>
@@ -278,7 +288,10 @@
         etoiles: Etoiles.solde(),
         journal: [],
         onglet: 'soins',
-        enAchat: null,          // article dont on confirme l'achat
+        enAchat: null,
+        reglages: CP.reglagesMessages(),
+        notifPossible: 'Notification' in window && 'serviceWorker' in navigator,
+        notifPermise: 'Notification' in window ? Notification.permission : 'denied',          // article dont on confirme l'achat
         rayon: 'tete',
         maintenant: Date.now(),
         effets: [],
@@ -431,6 +444,17 @@
         possede: function(a) { return !!(this.animal.possede || {})[a.id]; },
         stock: function(a) { return (this.animal.possede || {})[a.id] || 0; },
         estPorte: function(a) { return !!a.slot && (this.animal.porte || {})[a.slot] === a.id; },
+        // ---------- Petits mots et notifications ----------
+        changerReglage: function(cle, v) { this.$set(this.reglages, cle, v); ecrireStockage('compagnon-reglages', this.reglages); },
+        basculerNotifications: function(v) {
+          if (!v) return this.changerReglage('notifications', false);
+          Notification.requestPermission().then(p => {
+            this.notifPermise = p;
+            this.changerReglage('notifications', p === 'granted');
+            if (p === 'granted') navigator.serviceWorker.ready.then(reg => reg.showNotification(this.animal.nom, { body: 'Je te ferai signe de temps en temps 🐾', icon: 'apple-touch-icon.png', tag: 'compagnon' })).catch(() => {});
+          });
+        },
+        essayerMessage: function() { CP.verifierVeille(true); },
         confirmerAchat: function() { var a = this.enAchat; this.enAchat = null; if (a) this.acheter(a); },
         acheter: function(a) {
           if (Etoiles.solde() < a.prix) return;

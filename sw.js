@@ -5,7 +5,7 @@
 //   version mise en ligne sur GitHub est donc visible dès le prochain lancement.
 // Pensez à changer VERSION à chaque mise en ligne (même numéro que dans commun.js et brilliant.html).
 
-const VERSION = '1.74';
+const VERSION = '1.75';
 const CACHE = 'desdale-' + VERSION;
 
 const FICHIERS = [
@@ -99,4 +99,14 @@ self.addEventListener('fetch', event => {
       return rep;
     }))
   );
+});
+
+// Toucher une notification du compagnon : on rouvre l'appli (ou on la ramène devant) sur sa page
+self.addEventListener('notificationclick', event => {
+  event.notification.close();
+  const url = (event.notification.data && event.notification.data.url) || 'compagnon.html';
+  event.waitUntil(self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(liste => {
+    for (const c of liste) { if ('focus' in c) { c.navigate ? c.navigate(url).catch(() => {}) : null; return c.focus(); } }
+    return self.clients.openWindow(url);
+  }));
 });

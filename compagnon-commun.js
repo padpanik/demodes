@@ -179,6 +179,85 @@ var CP = (function () {
     return '';
   }
 
-  return { ESPECES: ESPECES, BESOINS: BESOINS, RECOMPENSE_JOUR: RECOMPENSE_JOUR, RECOMPENSE_SEMAINE: RECOMPENSE_SEMAINE, RAYONS: RAYONS, ARTICLES: ARTICLES,
+  // ================== VEILLE : le compagnon parle de lui-même tant que l'appli est ouverte ==================
+  // Une petite bulle dans l'appli, ou une notification du téléphone si l'appli est en arrière-plan (et autorisée).
+  // Pas plus d'un message toutes les 20 min, rien la nuit (il dort), une même demande au plus toutes les 3 h.
+  var GENTILS = ['Coucou ! Je pense à toi 💛', 'J\'aime bien quand tu es là 😊', 'Une petite partie avec les amis ? 🎲',
+    'Merci de prendre soin de moi 🥰', 'Tu joues drôlement bien aujourd\'hui !', 'On fait un câlin tout à l\'heure ? 🤗',
+    'Il fait bon dans ma maison ☀️', 'Je t\'ai gardé une place sur le coussin 🛋️', 'Tu me racontes ta journée ? 🙂',
+    'Je suis fier de toi ! ⭐', 'Pense à boire un verre d\'eau toi aussi 💧', 'Tu m\'as manqué ! 🐾'];
+  var DEMANDES = { repas: 'J\'ai un petit creux… tu me donnes à manger ? 🍖', eau: 'J\'ai soif ! Un peu d\'eau ? 💧',
+                   toilette: 'Je suis tout sale… un petit bain ? 🛁', calin: 'Tu me fais un câlin ? ❤️' };
+  var ESPACE_MESSAGES = 20 * 60000, ESPACE_GENTILS = 45 * 60000, ESPACE_DEMANDE = 3 * 3600000;
+  function lireV(k) { try { return JSON.parse(localStorage.getItem(k) || 'null'); } catch (e) { return null; } }
+  function ecrireV(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+  function reglagesMessages() { return Object.assign({ messages: true, notifications: false }, lireV('compagnon-reglages') || {}); }
+  var veille = null;
+  function demarrerVeille(page) {
+    if (veille) return;
+    veille = { page: page || '' };
+    setTimeout(verifierVeille, 20000);
+    setInterval(verifierVeille, 60000);
+  }
+  function verifierVeille(forcer) {
+    var a = lireV('compagnon-animal'), r = reglagesMessages();
+    if (!a || !a.besoins || !r.messages) return null;
+    var t = Date.now(), h = new Date(t).getHours();
+    if (!forcer && (h >= 21 || h < 8)) return null;                     // la nuit, il dort
+    var etat = lireV('compagnon-veille') || { dernier: 0, demandes: {}, jour: '' };
+    if (!forcer && t - etat.dernier < ESPACE_MESSAGES) return null;
+    var nom = a.nom, prof = lireV('desdale-profil') || {}, qui = prof.pseudo ? ' ' + prof.pseudo : '';
+    var d = new Date(t), jour = d.getFullYear() + '-' + d.getMonth() + '-' + d.getDate();
+    var msg = null;
+    // 1) Une demande, s'il manque quelque chose (le besoin le plus bas d'abord)
+    var n = niveaux(a, t);
+    var bas = BESOINS.filter(b => n[b.id] < 30 && t - (etat.demandes[b.id] || 0) > ESPACE_DEMANDE).sort((x, y) => n[x.id] - n[y.id]);
+    if (bas.length && veille && veille.page !== 'compagnon') { msg = { texte: DEMANDES[bas[0].id], demande: true }; etat.demandes[bas[0].id] = t; }
+    // 2) Le premier message de la journée : bonjour
+    else if (etat.jour !== jour) msg = { texte: (h < 12 ? 'Bonjour' : h < 18 ? 'Coucou' : 'Bonsoir') + qui + ' ! Je suis content de te voir 🐾' };
+    // 3) De temps en temps, un mot gentil
+    else if (forcer || (t - etat.dernier > ESPACE_GENTILS && Math.random() < 0.35)) msg = { texte: GENTILS[Math.floor(Math.random() * GENTILS.length)] };
+    if (!msg) return null;
+    etat.dernier = t; etat.jour = jour;
+    ecrireV('compagnon-veille', etat);
+    annoncer(a, msg);
+    return msg;
+  }
+  function annoncer(a, msg) {
+    // Appli en arrière-plan : notification du téléphone (si autorisée)
+    if (document.visibilityState === 'hidden') {
+      if (reglagesMessages().notifications && 'Notification' in window && Notification.permission === 'granted' && navigator.serviceWorker) {
+        navigator.serviceWorker.ready.then(reg => reg.showNotification(a.nom, {
+          body: msg.texte, icon: 'apple-touch-icon.png', badge: 'favicon.png', tag: 'compagnon', renotify: true,
+          data: { url: 'compagnon.html' }
+        })).catch(() => {});
+      }
+      return;
+    }
+    bulleCompagnon(a, msg);
+  }
+  // Bulle dans l'appli : son petit dessin, son message, et « J'y vais » pour une demande
+  function bulleCompagnon(a, msg) {
+    try {
+      var ancien = document.getElementById('cp-bulle'); if (ancien) ancien.remove();
+      var d = document.createElement('div');
+      d.id = 'cp-bulle';
+      d.style.cssText = 'position:fixed;left:50%;top:10px;transform:translate(-50%,-140%);z-index:4500;width:calc(100% - 24px);max-width:420px;background:#fff8e7;' +
+        'border-radius:18px;box-shadow:0 8px 26px rgba(0,0,0,.22);display:flex;align-items:center;gap:8px;padding:6px 10px 6px 4px;' +
+        'font:600 15px system-ui,sans-serif;color:#3b2f1a;transition:transform .45s cubic-bezier(.2,.9,.3,1.2);cursor:pointer';
+      var dessinA = '<svg viewBox="0 -6 200 216" width="58" height="62" style="flex-shrink:0">' + dessin(a, msg.demande ? 'triste' : 'content', false) + '</svg>';
+      d.innerHTML = dessinA + '<div style="flex:1;min-width:0"><div style="font-weight:900;color:#7a5600">' + String(a.nom).replace(/</g, '&lt;') + '</div>' +
+        '<div>' + msg.texte + '</div></div>' +
+        (msg.demande ? '<a href="compagnon.html" style="flex-shrink:0;background:#2c3e50;color:#fff;border-radius:12px;padding:8px 10px;text-decoration:none;font-weight:800">J\'y vais</a>' : '');
+      document.body.appendChild(d);
+      requestAnimationFrame(() => requestAnimationFrame(() => { d.style.transform = 'translate(-50%,0)'; }));
+      var fermer = () => { d.style.transform = 'translate(-50%,-140%)'; setTimeout(() => d.remove(), 500); };
+      d.addEventListener('click', e => { if (e.target.tagName !== 'A') fermer(); });
+      setTimeout(fermer, msg.demande ? 12000 : 7000);
+      try { if (navigator.vibrate && lireV('brillant-vibration') !== false) navigator.vibrate(30); } catch (e) {}
+    } catch (e) {}
+  }
+
+  return { ESPECES: ESPECES, demarrerVeille: demarrerVeille, verifierVeille: verifierVeille, reglagesMessages: reglagesMessages, BESOINS: BESOINS, RECOMPENSE_JOUR: RECOMPENSE_JOUR, RECOMPENSE_SEMAINE: RECOMPENSE_SEMAINE, RAYONS: RAYONS, ARTICLES: ARTICLES,
            niveaux: niveaux, humeur: humeur, age: age, estNuit: estNuit, dessin: dessin, art: art };
 })();

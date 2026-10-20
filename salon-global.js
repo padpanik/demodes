@@ -351,10 +351,12 @@ var SalonGlobal = (function () {
 
   function installer() {
     // Le dessin des compagnons sert à la liste des présents : on le charge s'il n'est pas déjà là
+    // Le compagnon peut dire un petit mot de temps en temps, sur toutes les pages
+    if (typeof CP !== 'undefined' && CP.demarrerVeille) CP.demarrerVeille(jeu);
     if (typeof CP === 'undefined') {
       var sc = document.createElement('script');
       sc.src = 'compagnon-commun.js';
-      sc.onload = () => { dernierProfil = ''; rendre(); };
+      sc.onload = () => { dernierProfil = ''; rendre(); if (CP.demarrerVeille) CP.demarrerVeille(jeu); };
       document.head.appendChild(sc);
     }
     var css = document.createElement('style');
