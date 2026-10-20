@@ -238,12 +238,12 @@ Bataille navale : `bataille-sauvegarde`, `bataille-prive` (ma flotte en salon), 
 - But : petites obligations quotidiennes douces et envie de jouer **ensemble** pour gâter son animal. Grand texte, gros boutons.
 - Animaux (SVG dessinés par le code) : chat, chien, chèvre, dragon, lapin, renard, panda, tortue, raton laveur, singe, oie, écureuil ; une couleur au choix (aperçu en grand), un nom.
 - Rendu « niveau 1 » : dégradés arrondis (`relief` dans `compagnon-commun.js`), reflets sur la tête et le ventre, ombre douce au sol.
-- **Menu admin** (testeurs, lien « 🔒 Admin » en bas de l'onglet ⭐) : protégé par un mot de passe dont seule l'empreinte est publiée
+- **Menu admin** (testeurs, lien « 🔒 Admin » en bas de l'onglet ⚙️ Réglages) : protégé par un mot de passe dont seule l'empreinte est publiée
   (`ADMIN` dans `commun.js` : PBKDF2-SHA256, sel `desdale-admin-v1`, 150 000 itérations ; déverrouillage gardé dans `desdale-admin`).
   Comme le code d'accès, le mot de passe n'apparaît **jamais** dans le dépôt. Contient : réussir un défi, recevoir une clé, +50 ⭐,
   remplir les besoins, effacer défis/coupes/pièces, « Tout remettre à zéro »
   (efface toutes les clés `compagnon-*`), Verrouiller. « Adopter un autre compagnon » (étoiles, objets, coupes et maison gardés)
-  reste pour tous, dans l'onglet ⭐ au-dessus du lien Admin.
+  reste pour tous, dans l'onglet ⚙️ Réglages (ex-onglet ⭐ : gains d'étoiles, journal) au-dessus du lien Admin.
 - **Petits mots** (`CP.demarrerVeille`, lancé par `salon-global.js` sur toutes les pages) : tant que l'appli est ouverte, une bulle
   avec son dessin (bonjour du jour, mot gentil ~toutes les 45 min, ou demande « j'ai faim / soif / un bain / un câlin » si un besoin
   est sous 30 %, avec « J'y vais »). Au plus 1 message / 20 min, une même demande / 3 h, rien de 21 h à 8 h. Appli en arrière-plan :
