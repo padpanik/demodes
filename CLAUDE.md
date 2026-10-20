@@ -238,7 +238,11 @@ Bataille navale : `bataille-sauvegarde`, `bataille-prive` (ma flotte en salon), 
 - But : petites obligations quotidiennes douces et envie de jouer **ensemble** pour gâter son animal. Grand texte, gros boutons.
 - Animaux (SVG dessinés par le code) : chat, chien, chèvre, dragon, lapin, renard, panda ; une couleur au choix (aperçu en grand), un nom.
 - Rendu « niveau 1 » : dégradés arrondis (`relief` dans `compagnon-commun.js`), reflets sur la tête et le ventre, ombre douce au sol.
-- Onglet ⭐ : « Adopter un autre compagnon » (étoiles et objets gardés) et « Tout remettre à zéro » (efface toutes les clés `compagnon-*`).
+- **Menu admin** (testeurs, lien « 🔒 Admin » en bas de l'onglet ⭐) : protégé par un mot de passe dont seule l'empreinte est publiée
+  (`ADMIN` dans `commun.js` : PBKDF2-SHA256, sel `desdale-admin-v1`, 150 000 itérations ; déverrouillage gardé dans `desdale-admin`).
+  Comme le code d'accès, le mot de passe n'apparaît **jamais** dans le dépôt. Contient : réussir un défi, recevoir une clé, +50 ⭐,
+  remplir les besoins, « Adopter un autre compagnon » (étoiles et objets gardés), effacer défis/coupes/pièces, « Tout remettre à zéro »
+  (efface toutes les clés `compagnon-*`), Verrouiller.
 - **Petits mots** (`CP.demarrerVeille`, lancé par `salon-global.js` sur toutes les pages) : tant que l'appli est ouverte, une bulle
   avec son dessin (bonjour du jour, mot gentil ~toutes les 45 min, ou demande « j'ai faim / soif / un bain / un câlin » si un besoin
   est sous 30 %, avec « J'y vais »). Au plus 1 message / 20 min, une même demande / 3 h, rien de 21 h à 8 h. Appli en arrière-plan :
@@ -256,7 +260,7 @@ Bataille navale : `bataille-sauvegarde`, `bataille-prive` (ma flotte en salon), 
   le journal des parties `compagnon-evenements` (`Etoiles.evenement`, appelé par `finDePartie` ; Yams solo et Quatre en ligne solo
   ajoutent le score / le niveau de l'ordinateur). Réussite : une **coupe** bronze / argent / or (non achetable, SVG `CP.coupe`) et
   +3 / +5 / +8 ⭐ hors plafond ; les trois de la semaine : une **clé** pour construire une pièce. `compagnon-defis` (semaine en cours),
-  `compagnon-trophees` (coupes). Outils d'essai dans l'onglet 🏆 pour valider un défi ou recevoir une clé.
+  `compagnon-trophees` (coupes). Valider un défi ou recevoir une clé : menu admin.
 - **Maison qui s'agrandit** (`compagnon-maison` : pièces, clés, pièce où il est, coupes sur l'étagère) : les pièces défilent de gauche à droite
   (glisser ou flèches). Salon (étagère de 3 coupes sous la fenêtre), Salle des trophées (offerte à la 1re coupe, deux vitrines),
   puis au choix avec une clé : Jardin, Chambre (il y dort la nuit), Cuisine, Salle de jeux. « Appeler » le fait venir dans la pièce affichée.

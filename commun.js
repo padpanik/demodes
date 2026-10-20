@@ -3,7 +3,7 @@
 // Les clés de stockage gardent l'ancien préfixe "brillant-" : les réglages déjà faits sont conservés.
 
 // Numéro de version affiché (à augmenter à chaque mise en ligne, avec brilliant.html et sw.js)
-const VERSION = '1.76';
+const VERSION = '1.77';
 
 // ---------- Stockage local ----------
 function lireStockage(cle) {
@@ -42,6 +42,30 @@ function fermerAutresSalons(jeuCourant) {
 // Le code n'est écrit nulle part : seule son empreinte (PBKDF2-SHA256) permet de le vérifier.
 // Le même calcul produit une "clé de salon", absente des fichiers, mélangée à l'identifiant
 // réseau des salons : sans le bon code, impossible de rejoindre une partie.
+// ================== ADMIN (testeurs) ==================
+// Outils de mise au point réservés aux testeurs : mot de passe vérifié par son empreinte (PBKDF2), jamais écrit en clair.
+// Protection légère (tout reste sur le téléphone) : elle évite surtout les fausses manœuvres.
+const ADMIN = {
+  SEL: 'desdale-admin-v1',
+  ITERATIONS: 150000,
+  EMPREINTE: '172276c71b587c60d170da5ba80aa1ab4b5fcc11bd5495f021b3e4ce92c70c0c',
+  CLE_STOCKAGE: 'desdale-admin',
+  actif: function() { return lireStockage(this.CLE_STOCKAGE) === this.EMPREINTE; },
+  deverrouiller: function(mdp) {
+    if (!(window.crypto && crypto.subtle)) return Promise.resolve(false);
+    var enc = new TextEncoder();
+    return crypto.subtle.importKey('raw', enc.encode(String(mdp).trim().toLowerCase()), 'PBKDF2', false, ['deriveBits'])
+      .then(cle => crypto.subtle.deriveBits({ name: 'PBKDF2', hash: 'SHA-256', salt: enc.encode(this.SEL), iterations: this.ITERATIONS }, cle, 256))
+      .then(bits => {
+        var e = Array.from(new Uint8Array(bits)).map(b => b.toString(16).padStart(2, '0')).join('');
+        if (e !== this.EMPREINTE) return false;
+        ecrireStockage(this.CLE_STOCKAGE, e);
+        return true;
+      });
+  },
+  verrouiller: function() { try { localStorage.removeItem(this.CLE_STOCKAGE); } catch (e) {} }
+};
+
 const ACCES = {
   SEL: 'demodes-acces-v1',
   ITERATIONS: 150000,

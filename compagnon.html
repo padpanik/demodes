@@ -202,6 +202,15 @@
     .boutons-achat { display: flex; gap: 8px; }
     .boutons-achat .btn { flex: 1; padding: 12px 6px; }
 
+    /* ---------- Menu admin ---------- */
+    .lien-admin { display: block; margin: 4px auto 18px; border: none; background: transparent; color: #8a97a1; font: inherit; font-size: 0.85em; font-weight: 700; cursor: pointer; padding: 8px 14px; }
+    .fenetre-admin { max-height: calc(100vh - 32px); overflow-y: auto; text-align: left; }
+    .fenetre-admin .titre-achat { text-align: center; }
+    .champ-admin { width: 100%; box-sizing: border-box; font: inherit; font-size: 1.1em; padding: 10px 12px; border: 2px solid #c9d2d9; border-radius: 12px; }
+    .groupe-admin { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
+    .groupe-admin .btn { width: 100%; padding: 10px 6px; }
+    .sous-titre-admin { font-weight: 800; font-size: 0.9em; color: #5b6b78; }
+
     /* ---------- Adoption ---------- */
     .apercu-adoption { text-align: center; background: linear-gradient(#f6e7cf, #e9cfa8); border-radius: 18px; padding: 10px 0 8px; margin-bottom: 8px; }
     .apercu-adoption svg { width: 150px; height: 160px; }
@@ -438,13 +447,6 @@
           <div v-else class="aide">Pas encore de coupe : réussis un défi de la semaine !</div>
         </section>
 
-        <details class="carte" style="margin-bottom:16px">
-          <summary style="font-weight:800;cursor:pointer">🛠️ Outils d'essai</summary>
-          <div class="aide" style="margin:6px 0">Pour la mise au point : valider un défi sans jouer, ou recevoir une clé.</div>
-          <button v-for="d in defis.defis" :key="'f' + d.id" class="btn" style="width:100%;margin-bottom:6px" :disabled="d.fait" @click="forcerDefi(d)">Réussir « {{ d.niveau.nom }} »</button>
-          <button class="btn" style="width:100%;margin-bottom:6px" @click="donnerCle">🗝️ Recevoir une clé</button>
-          <button class="btn" style="width:100%;color:#c0392b" @click="effacerDefis">Effacer défis, coupes et pièces</button>
-        </details>
       </template>
 
       <!-- ===== Étoiles ===== -->
@@ -466,14 +468,46 @@
             <li v-if="!journal.length" style="color:#8a97a1">Pas encore d'étoile : joue une partie !</li>
           </ul>
         </section>
-        <section class="carte">
-          <div class="titre-carte">Changer d'animal</div>
-          <button class="btn" style="width:100%;margin-bottom:8px" @click="reprendreAdoption">🐾 Adopter un autre compagnon (étoiles et objets gardés)</button>
-          <button class="btn" style="width:100%;color:#c0392b" @click="toutEffacer">🗑️ Tout remettre à zéro</button>
-          <div class="aide">« Tout remettre à zéro » efface l'animal, les étoiles, les objets achetés et l'historique, sur ce téléphone.</div>
-        </section>
+        <button class="lien-admin" @click="ouvrirAdmin">{{ admin.actif ? '🛠️ Menu admin' : '🔒 Admin' }}</button>
       </template>
     </template>
+    <!-- Menu admin (testeurs) : protégé par mot de passe -->
+    <div v-if="admin.ouvert" class="voile-achat" @click.self="admin.ouvert = false">
+      <div class="fenetre-achat fenetre-admin" role="dialog" aria-label="Menu admin">
+        <div class="titre-achat">🛠️ Menu admin</div>
+        <template v-if="!admin.actif">
+          <div class="aide" style="margin-bottom:8px">Réservé aux testeurs.</div>
+          <input type="password" class="champ-admin" v-model="admin.mdp" placeholder="Mot de passe" autocomplete="off" @keyup.enter="deverrouillerAdmin">
+          <div v-if="admin.erreur" style="color:#c0392b;font-weight:700;margin:6px 0">{{ admin.erreur }}</div>
+          <div class="boutons-achat" style="margin-top:10px">
+            <button class="btn" @click="admin.ouvert = false">Fermer</button>
+            <button class="btn principal" :disabled="!admin.mdp || admin.calcul" @click="deverrouillerAdmin">{{ admin.calcul ? '…' : 'Entrer' }}</button>
+          </div>
+        </template>
+        <template v-else>
+          <div class="groupe-admin">
+            <div class="sous-titre-admin">🏆 Défis de la semaine</div>
+            <button v-for="d in defis.defis" :key="'f' + d.id" class="btn" :disabled="d.fait" @click="forcerDefi(d)">Réussir « {{ d.niveau.nom }} »{{ d.fait ? ' ✓' : '' }}</button>
+          </div>
+          <div class="groupe-admin">
+            <div class="sous-titre-admin">🏠 Maison et étoiles</div>
+            <button class="btn" @click="donnerCle">🗝️ Recevoir une clé ({{ maison.cles || 0 }})</button>
+            <button class="btn" @click="donnerEtoiles">⭐ Recevoir 50 étoiles</button>
+            <button class="btn" @click="toutRemplir">❤️ Remplir tous ses besoins</button>
+          </div>
+          <div class="groupe-admin">
+            <div class="sous-titre-admin">🐾 Animal</div>
+            <button class="btn" @click="admin.ouvert = false; reprendreAdoption()">Adopter un autre compagnon (étoiles et objets gardés)</button>
+            <button class="btn" style="color:#c0392b" @click="effacerDefis">Effacer défis, coupes et pièces</button>
+            <button class="btn" style="color:#c0392b" @click="admin.ouvert = false; toutEffacer()">🗑️ Tout remettre à zéro</button>
+          </div>
+          <div class="boutons-achat">
+            <button class="btn" @click="verrouillerAdmin">🔒 Verrouiller</button>
+            <button class="btn principal" @click="admin.ouvert = false">Fermer</button>
+          </div>
+        </template>
+      </div>
+    </div>
     <!-- Confirmation d'achat -->
     <div v-if="enAchat" class="voile-achat" @click.self="enAchat = null">
       <div class="fenetre-achat" role="dialog" aria-label="Confirmer l'achat">
@@ -533,7 +567,8 @@
         defis: CP.etatDefis(),
         trophees: CP.trophees(),
         maison: CP.lireMaison(),
-        pieceVue: 0
+        pieceVue: 0,
+        admin: { ouvert: false, actif: ADMIN.actif(), mdp: '', erreur: '', calcul: false }
       },
       computed: {
         gagneesJeux: function() { this.etoiles; return Etoiles.gagneesAujourdhui(); },
@@ -627,6 +662,7 @@
         },
         // Repartir de rien (utile pour les essais) : tout ce qui concerne le compagnon et les étoiles est effacé
         toutEffacer: function() {
+          if (!ADMIN.actif()) return;
           if (!confirm('Tout remettre à zéro ? L\'animal, les étoiles, les objets et l\'historique seront effacés de ce téléphone.')) return;
           Object.keys(localStorage).filter(k => k.indexOf('compagnon-') === 0).forEach(k => { try { localStorage.removeItem(k); } catch (e) {} });
           this.animal = null;
@@ -637,6 +673,7 @@
           window.scrollTo(0, 0);
         },
         reprendreAdoption: function() {
+          if (!ADMIN.actif()) return;
           if (!confirm('Adopter un autre compagnon ? ' + this.animal.nom + ' partira vivre chez des amis. Tes objets et tes étoiles sont gardés.')) return;
           this.adoption = { espece: '', couleur: '', nom: '' };
           ecrireStockage('compagnon-ancien', this.animal);
@@ -790,13 +827,31 @@
           this.maison = CP.lireMaison();
           if (nouveaux.length) { this.etoiles = Etoiles.solde(); this.majJournal(); this.message = 'Bravo ! Une nouvelle coupe 🏆'; this.$nextTick(() => this.animer('🏆', 3)); }
         },
-        forcerDefi: function(d) { CP.verifierDefis(true, d.id); this.majDefis(); this.etoiles = Etoiles.solde(); this.majJournal(); },
-        donnerCle: function() { this.maison.cles = (this.maison.cles || 0) + 1; CP.ecrireMaison(this.maison); },
+        forcerDefi: function(d) { if (!ADMIN.actif()) return; CP.verifierDefis(true, d.id); this.majDefis(); this.etoiles = Etoiles.solde(); this.majJournal(); },
+        donnerCle: function() { if (!ADMIN.actif()) return; this.maison.cles = (this.maison.cles || 0) + 1; CP.ecrireMaison(this.maison); },
         effacerDefis: function() {
+          if (!ADMIN.actif()) return;
           if (!confirm('Effacer les défis de la semaine, les coupes, les pièces construites et l\'historique des parties ?')) return;
           ['compagnon-defis', 'compagnon-trophees', 'compagnon-maison', 'compagnon-evenements'].forEach(k => { try { localStorage.removeItem(k); } catch (e) {} });
           this.majDefis();
           this.montrerAnimal(true);
+        },
+        // ---------- Menu admin ----------
+        ouvrirAdmin: function() { this.admin.actif = ADMIN.actif(); this.admin.mdp = ''; this.admin.erreur = ''; this.admin.ouvert = true; },
+        deverrouillerAdmin: function() {
+          if (!this.admin.mdp || this.admin.calcul) return;
+          this.admin.calcul = true;
+          ADMIN.deverrouiller(this.admin.mdp).then(ok => {
+            this.admin.calcul = false; this.admin.mdp = '';
+            if (ok) { this.admin.actif = true; this.admin.erreur = ''; } else this.admin.erreur = 'Mot de passe incorrect.';
+          });
+        },
+        verrouillerAdmin: function() { ADMIN.verrouiller(); this.admin.actif = false; this.admin.ouvert = false; },
+        donnerEtoiles: function() { if (!ADMIN.actif()) return; Etoiles.ajouter(50, 'Admin : étoiles d\'essai', true); this.etoiles = Etoiles.solde(); this.majJournal(); },
+        toutRemplir: function() {
+          if (!ADMIN.actif()) return;
+          var t = Date.now(); BESOINS.forEach(b => { this.animal.besoins[b.id] = { v: 100, t: t }; });
+          this.maintenant = t; this.sauver(); this.message = 'Je suis aux anges ! 🥰';
         },
         dateCourte: function(h) { return new Date(h).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' }); },
 
