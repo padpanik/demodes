@@ -80,14 +80,15 @@ var CP = (function () {
   }
   function estNuit(t) { var h = new Date(t || Date.now()).getHours(); return h >= 21 || h < 7; }
 
-  // Ce qui se voit sur lui : faim (ventre qui gargouille), soif (langue tirée), manque de câlins (air triste).
+  // Ce qui se voit sur lui : faim (ventre qui gargouille), soif (langue tirée), manque de câlins (air triste),
+  // besoin d'un bain (mouches qui tournent au-dessus de la tête, comme dans les dessins animés).
   // Les trois peuvent se voir en même temps. a.signes (résumé reçu d'un ami) ou calculé d'après ses besoins.
   var SEUIL_SIGNE = 30;
   function signes(a, t) {
     if (a.signes) return a.signes;
     if (!a.besoins) return null;
     var n = niveaux(a, t);
-    return { faim: n.repas < SEUIL_SIGNE, soif: n.eau < SEUIL_SIGNE, calin: n.calin < SEUIL_SIGNE };
+    return { faim: n.repas < SEUIL_SIGNE, soif: n.eau < SEUIL_SIGNE, calin: n.calin < SEUIL_SIGNE, toilette: n.toilette < SEUIL_SIGNE };
   }
   // dort : yeux fermés (la nuit) ; t : l'heure à laquelle lire ses besoins (maintenant par défaut)
   function dessin(a, humeur, dort, t) {
@@ -181,7 +182,22 @@ var CP = (function () {
     s += '<ellipse cx="80" cy="56" rx="20" ry="12" fill="#fff" opacity="0.28" transform="rotate(-25 80 56)"/>';
     s += '<ellipse cx="74" cy="138" rx="14" ry="8" fill="#fff" opacity="0.18" transform="rotate(-30 74 138)"/>';
     s += '</g>';
+    if (sg && sg.toilette) s += mouches();
     return relief(s, { c: c, f: fonce, l: clair, n: noir });
+  }
+  // Deux mouches qui tournent en rond au-dessus de la tête, sur un petit cercle en pointillés
+  function mouches() {
+    var orbite = 'M50 22 a50 13 0 1 0 100 0 a50 13 0 1 0 -100 0';
+    var r = '<path d="' + orbite + '" stroke="#6b5a3a" stroke-width="1.5" stroke-dasharray="3 6" fill="none" opacity="0.45"/>';
+    ['0s', '-1.3s'].forEach(debut => {
+      r += '<g><g transform="scale(1.7)"><ellipse cx="-3" cy="-5" rx="5" ry="3.5" fill="#dfe9f3" opacity="0.85" stroke="#9fb0bf" stroke-width="0.8">' +
+           '<animate attributeName="ry" values="3.5;1;3.5" dur="0.16s" repeatCount="indefinite"/></ellipse>' +
+           '<ellipse cx="4" cy="-5" rx="5" ry="3.5" fill="#dfe9f3" opacity="0.85" stroke="#9fb0bf" stroke-width="0.8">' +
+           '<animate attributeName="ry" values="3.5;1;3.5" dur="0.16s" repeatCount="indefinite"/></ellipse>' +
+           '<ellipse cx="0" cy="0" rx="5.5" ry="4" fill="#2b2b2b"/><circle cx="5" cy="-1" r="2.6" fill="#2b2b2b"/></g>' +
+           '<animateMotion dur="2.6s" begin="' + debut + '" repeatCount="indefinite" path="' + orbite + '"/></g>';
+    });
+    return r;
   }
   // « Niveau 1 » de relief : chaque couleur unie devient un dégradé arrondi (clair en haut à gauche, sombre en bas à droite)
   function relief(s, couleurs) {

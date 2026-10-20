@@ -251,7 +251,7 @@ Bataille navale : `bataille-sauvegarde`, `bataille-prive` (ma flotte en salon), 
 - Achat : fenêtre de confirmation (solde, prix, reste) ; bouton grisé si le solde ne suffit pas.
 - Besoins Repas, Eau, Toilette, Câlins (en %, baissent avec le temps réel : vides en 14 h, 12 h, 40 h, 20 h). **Il ne meurt jamais** :
   il devient triste et le dit. **Signes sur le dessin, combinables** (besoin sous 30 %, `CP.signes`) : air triste = manque de câlins
-  seulement, langue tirée = soif, traits qui gargouillent de chaque côté du ventre = faim ; envoyés aux amis dans le résumé (`cp.s`). La nuit (21 h – 7 h) il dort ; neige à la fenêtre en hiver (décembre à février).
+  seulement, langue tirée = soif, traits qui gargouillent de chaque côté du ventre = faim ; deux mouches qui tournent au-dessus de la tête = besoin d'un bain ; envoyés aux amis dans le résumé (`cp.s`). La nuit (21 h – 7 h) il dort ; neige à la fenêtre en hiver (décembre à février).
 - Tâches du jour : nourrir 2 fois, eau, 3 câlins, une partie avec des amis → +3 ⭐ ; +10 ⭐ tous les 7 jours de suite. 10 ⭐ offertes à l'adoption.
 - Étoiles des jeux (`Etoiles.finDePartie`, une fois par partie) : à plusieurs +5 victoire / +2 partie ; seul +2 victoire ; Yams solo +2.
   **Plafond : 30 ⭐ par jour en jouant** (`compagnon-gains-jeux`) ; au-delà la partie compte pour les tâches mais ne rapporte rien.
