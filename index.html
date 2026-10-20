@@ -121,7 +121,7 @@
           <svg v-if="compagnon" viewBox="0 -6 200 216" v-html="compagnon.dessin"></svg>
           <span v-else class="ico-cp">🐾</span>
           <span class="infos-cp">
-            <span class="nom-cp">{{ compagnon ? compagnon.nom : 'Mon compagnon' }}</span>
+            <span class="nom-cp">{{ compagnon ? compagnon.nom : 'Mon compagnon' }} <small v-if="compagnon" style="font-weight:600;font-size:0.6em;color:#9a7a2a">{{ compagnon.age }}</small></span>
             <span class="etat-cp">{{ compagnon ? compagnon.etat : 'Adopte un petit animal' }}</span>
           </span>
           <span class="etoiles-cp">⭐ {{ compagnon ? compagnon.etoiles : etoiles }}</span>
@@ -210,7 +210,7 @@
           if (!a || typeof CP === 'undefined') return null;
           var n = CP.niveaux(a), h = CP.humeur(n), nuit = CP.estNuit() && h !== 'triste';
           var bas = CP.BESOINS.filter(b => n[b.id] < 30).map(b => ({ repas: 'a faim', eau: 'a soif', toilette: 'voudrait un bain', calin: 'voudrait un câlin' })[b.id]);
-          return { nom: a.nom, dessin: CP.dessin(a, h, nuit), etoiles: Etoiles.solde(),
+          return { nom: a.nom, age: CP.age(a.ne), dessin: CP.dessin(a, h, nuit), etoiles: Etoiles.solde(),
                    etat: bas.length ? '😟 ' + bas.join(', ') : nuit ? '😴 Dort paisiblement' : h === 'content' ? '😊 Très heureux' : '🙂 Va bien' };
         },
         jeux: function() {

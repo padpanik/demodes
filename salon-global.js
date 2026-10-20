@@ -54,7 +54,33 @@ var SalonGlobal = (function () {
   }
   function hash(s) { var h = 0; for (var i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0; return h; }
   function enregistrerProfil(p) { ecrire(CLE_PROFIL, p); envoyer({ t: 'PROFIL', profil: publicProfil() }); majMoi(); rendre(); }
-  function publicProfil() { var p = profil(); return { pseudo: (p.pseudo || '').slice(0, 20) || 'Anonyme', couleur: p.couleur, emoji: p.emoji || '', image: p.image || '', invisible: !!p.invisible }; }
+  function publicProfil() { var p = profil(); return { pseudo: (p.pseudo || '').slice(0, 20) || 'Anonyme', couleur: p.couleur, emoji: p.emoji || '', image: p.image || '', invisible: !!p.invisible, cp: compagnonResume() }; }
+  // Mon compagnon (s'il y en a un), montré aux autres dans la liste des présents
+  function compagnonResume() {
+    var a = lire('compagnon-animal');
+    if (!a || !a.espece) return null;
+    var h = '';
+    try { if (typeof CP !== 'undefined') h = CP.humeur(CP.niveaux(a)); } catch (e) {}
+    return { e: a.espece, c: a.couleur, n: a.nom, p: a.porte || {}, ne: a.ne || 0, h: h };
+  }
+  function nettoyerCompagnon(c) {
+    if (!c || typeof c !== 'object' || !/^[a-z]{2,10}$/.test(c.e)) return null;
+    var p = {};
+    Object.keys(c.p || {}).slice(0, 12).forEach(k => { if (/^[a-z0-9-]{1,12}$/.test(k) && /^[a-z0-9-]{1,20}$/.test(c.p[k])) p[k] = c.p[k]; });
+    return { e: c.e, c: /^#[0-9a-f]{6}$/i.test(c.c) ? c.c : '#c8915a', n: String(c.n || '').slice(0, 16), p: p, ne: +c.ne || 0,
+             h: ['content', 'calme', 'triste'].indexOf(c.h) !== -1 ? c.h : '' };
+  }
+  function ageCompagnon(ne) {
+    if (!ne) return '';
+    var j = Math.floor((Date.now() - ne) / 86400000);
+    return j < 1 ? 'adopté aujourd\'hui' : j < 60 ? j + ' jour' + (j > 1 ? 's' : '') : Math.floor(j / 30) + ' mois';
+  }
+  // Petit dessin du compagnon (le dessin est dans compagnon-commun.js, chargé au besoin)
+  function dessinCompagnon(c, taille) {
+    if (!c || typeof CP === 'undefined') return '';
+    return '<svg viewBox="0 -6 200 216" width="' + taille + '" height="' + taille + '" style="flex-shrink:0">' +
+           CP.dessin({ espece: c.e, couleur: c.c, porte: c.p }, c.h || 'calme', false) + '</svg>';
+  }
   function suisInvisible() { return !!profil().invisible; }
   function basculerInvisible() { var q = profil(); q.invisible = !q.invisible; enregistrerProfil(q); }
 
@@ -214,7 +240,8 @@ var SalonGlobal = (function () {
     p = p || {};
     var img = String(p.image || '');
     return { pseudo: String(p.pseudo || 'Anonyme').slice(0, 20), couleur: /^#[0-9a-f]{6}$/i.test(p.couleur) ? p.couleur : '#7d8a94',
-             emoji: String(p.emoji || '').slice(0, 8), image: img.indexOf('data:image/') === 0 && img.length < 30000 ? img : '', invisible: !!p.invisible };
+             emoji: String(p.emoji || '').slice(0, 8), image: img.indexOf('data:image/') === 0 && img.length < 30000 ? img : '', invisible: !!p.invisible,
+             cp: nettoyerCompagnon(p.cp) };
   }
   function nettoyerOu(o) { o = o || {}; return { jeu: JEUX[o.jeu] ? o.jeu : 'accueil', salon: String(o.salon || '').slice(0, 40) }; }
 
@@ -323,6 +350,13 @@ var SalonGlobal = (function () {
   }
 
   function installer() {
+    // Le dessin des compagnons sert à la liste des présents : on le charge s'il n'est pas déjà là
+    if (typeof CP === 'undefined') {
+      var sc = document.createElement('script');
+      sc.src = 'compagnon-commun.js';
+      sc.onload = () => { dernierProfil = ''; rendre(); };
+      document.head.appendChild(sc);
+    }
     var css = document.createElement('style');
     css.textContent = [
       '#sg-bulle{position:fixed;right:8px;z-index:4000;width:46px;height:46px;border-radius:50%;border:none;background:#2c3e50;color:#fff;font-size:21px;box-shadow:0 3px 10px rgba(0,0,0,.3);cursor:pointer;touch-action:none;display:flex;align-items:center;justify-content:center;opacity:.92}',
@@ -348,6 +382,7 @@ var SalonGlobal = (function () {
       '.sg-membre .sg-qui{flex:1;min-width:0}.sg-membre .sg-nom{font-weight:700}.sg-membre .sg-ou{font-size:12px;color:#6b7a86;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}',
       '.sg-av{display:inline-flex;align-items:center;justify-content:center;border-radius:50%;color:#fff;font-weight:800;flex-shrink:0;overflow:hidden;line-height:1}',
       '.sg-av img{width:100%;height:100%;object-fit:cover}',
+      '.sg-cp{display:flex;align-items:center;gap:4px;font-size:12px;color:#7a5a20;margin-top:1px}.sg-cp span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}',
       '.sg-btn{border:1.5px solid #2c3e50;background:#fff;border-radius:10px;padding:6px 10px;font:700 13px system-ui,sans-serif;color:#2c3e50;cursor:pointer}',
       '.sg-btn.plein{background:#2c3e50;color:#fff}',
       '.sg-msg{display:flex;gap:8px;margin:7px 0;align-items:flex-start}.sg-msg .sg-bloc{min-width:0;flex:1}',
@@ -503,8 +538,9 @@ var SalonGlobal = (function () {
     if (!l.length) return '<div class="sg-vide">' + (role ? 'Personne pour l\'instant.' : 'Connexion au salon global…') + '</div>';
     return l.map(m => {
       var peutRejoindre = m.id !== moi && m.ou && m.ou.salon && !(m.ou.jeu === mon.jeu && simplifier(m.ou.salon) === simplifier(mon.salon));
+      var cp = m.cp && typeof CP !== 'undefined' ? '<div class="sg-cp">' + dessinCompagnon(m.cp, 30) + '<span>' + esc(m.cp.n) + (m.cp.ne ? ' · ' + esc(ageCompagnon(m.cp.ne)) : '') + '</span></div>' : '';
       return '<div class="sg-membre">' + avatar(m, 34) + '<div class="sg-qui"><div class="sg-nom">' + esc(m.pseudo) + (m.id === moi ? ' (moi)' : '') + '</div>' +
-             '<div class="sg-ou">' + esc(ouTexte(m.ou)) + '</div></div>' +
+             '<div class="sg-ou">' + esc(ouTexte(m.ou)) + '</div>' + cp + '</div>' +
              (peutRejoindre ? '<button class="sg-btn plein" data-rejoindre="' + esc(m.id) + '">Rejoindre</button>' : '') + '</div>';
     }).join('');
   }

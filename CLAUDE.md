@@ -91,6 +91,8 @@ Pas d'étape de construction, pas de dépendance à ajouter.
   à côté de celle du jeu) ; même principe en étoile : le premier connecté le tient, les autres le reprennent s'il part.
 - **Présence** : pseudo, couleur, émoji ou petite photo (72 px), et où est chacun (jeu affiché + salon de jeu, lu dans la
   sauvegarde du jeu toutes les 2,5 s). Bouton **Rejoindre** : ouvre `jeu.html?salon=…`, la page remplit le salon et y entre.
+- **Compagnon** : le profil envoyé contient un résumé de « Mon compagnon » (`cp` : espèce, couleur, nom, objets portés, date d'adoption,
+  humeur) ; la liste des présents montre son petit dessin, son nom et son âge (`compagnon-commun.js` chargé au besoin).
 - **Invisible** (interrupteur 👻 dans « Présents » et « Moi », gardé dans `desdale-profil`) : l'hôte n'envoie un membre invisible
   qu'à lui-même, les autres ne le voient pas ; il lit le chat, ses messages restent signés s'il écrit ; pas de son ni de vibration de chat.
 - **Chat** : onglet « Tous », et « Ce salon » (messages étiquetés `jeu:<jeu>:<salon>`, vus seulement par ce salon de jeu).

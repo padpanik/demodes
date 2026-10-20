@@ -142,7 +142,7 @@
       </div>
 
       <div class="tete-cp">
-        <span class="nom">{{ animal.nom }}</span>
+        <span class="nom">{{ animal.nom }} <small style="font-size:0.55em;font-weight:700;color:#8a97a1">{{ CP.age(animal.ne) }}</small></span>
         <span class="humeur">{{ texteHumeur }}</span>
       </div>
 
@@ -230,7 +230,7 @@
     new Vue({
       el: '#app',
       data: {
-        ESPECES: ESPECES, BESOINS: BESOINS, RAYONS: RAYONS, Etoiles: Etoiles, RECOMPENSE_JOUR: RECOMPENSE_JOUR, RECOMPENSE_SEMAINE: RECOMPENSE_SEMAINE,
+        CP: CP, ESPECES: ESPECES, BESOINS: BESOINS, RAYONS: RAYONS, Etoiles: Etoiles, RECOMPENSE_JOUR: RECOMPENSE_JOUR, RECOMPENSE_SEMAINE: RECOMPENSE_SEMAINE,
         animal: lireStockage('compagnon-animal'),
         adoption: { espece: '', couleur: '', nom: '' },
         etoiles: Etoiles.solde(),

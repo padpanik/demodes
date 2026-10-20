@@ -66,6 +66,12 @@ var CP = (function () {
     var m = BESOINS.reduce((s, b) => s + n[b.id], 0) / BESOINS.length, min = Math.min.apply(null, BESOINS.map(b => n[b.id]));
     return min < 20 || m < 35 ? 'triste' : m > 70 ? 'content' : 'calme';
   }
+  // Âge du compagnon, depuis son adoption
+  function age(ne) {
+    if (!ne) return '';
+    var j = Math.floor((Date.now() - ne) / 86400000);
+    return j < 1 ? 'adopté aujourd\'hui' : j < 60 ? j + ' jour' + (j > 1 ? 's' : '') : Math.floor(j / 30) + ' mois';
+  }
   function estNuit(t) { var h = new Date(t || Date.now()).getHours(); return h >= 21 || h < 7; }
 
   // dort : yeux fermés (la nuit)
@@ -152,5 +158,5 @@ var CP = (function () {
   }
 
   return { ESPECES: ESPECES, BESOINS: BESOINS, RECOMPENSE_JOUR: RECOMPENSE_JOUR, RECOMPENSE_SEMAINE: RECOMPENSE_SEMAINE, RAYONS: RAYONS, ARTICLES: ARTICLES,
-           niveaux: niveaux, humeur: humeur, estNuit: estNuit, dessin: dessin, art: art };
+           niveaux: niveaux, humeur: humeur, age: age, estNuit: estNuit, dessin: dessin, art: art };
 })();
