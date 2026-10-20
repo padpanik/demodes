@@ -240,6 +240,9 @@ Bataille navale : `bataille-sauvegarde`, `bataille-prive` (ma flotte en salon), 
 - **Renard redessiné** (premier animal « personnalisé », d'après des images d'inspiration de l'utilisateur, sans les recopier) :
   grandes oreilles à pointes sombres et intérieur crème, touffes de joues, mèche sur le front, masque et plastron crème en dents de scie,
   pattes avant en chaussettes sombres, grosse queue touffue au bout crème, yeux plissés de bonheur et bouche « ω » quand il est content.
+  **Dragon redessiné** de la même façon : grandes ailes de chauve-souris à membrane chaude (orange, jaune pour le dragon rouge),
+  cornes recourbées sombres, houppette claire, taches de rousseur, grands yeux à iris violet, ventre clair à bandes, petites pattes
+  posées sur le ventre, griffes, queue enroulée à piquants.
   Même squelette que les autres : accessoires, signes et postures inchangés. Les autres animaux pourront suivre de la même façon.
 - Rendu « niveau 1 » : dégradés arrondis (`relief` dans `compagnon-commun.js`), reflets sur la tête et le ventre, ombre douce au sol.
 - **Menu admin** (testeurs, lien « 🔒 Admin » en bas de l'onglet ⚙️ Réglages) : protégé par un mot de passe dont seule l'empreinte est publiée
