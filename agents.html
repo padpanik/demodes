@@ -582,6 +582,7 @@
             if (c && !a.revelees[i]) { if (c === monEq) this.son('zone', false); else this.son('toc'); this.ajouterLog(p.journal[p.journal.length - 1] || ''); }
           });
           if (p.phase === 'fin' && a.phase !== 'fin') {
+            if (monEq) Etoiles.finDePartie('Agents secrets', p.gagnant === monEq, true, p.partieId);
             if (p.gagnant === monEq) { this.son('victoire'); this.vibre([100, 60, 100, 60, 250]); }
             this.ajouterLog((p.gagnant === 'R' ? 'Les Rouges' : 'Les Bleus') + ' gagnent.');
           }

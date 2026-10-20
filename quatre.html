@@ -438,6 +438,7 @@
           if (p.partieId === a.partieId && p.coups.length > a.coups.length) { this.son('toc'); this.vibre(15); }
           if (p.phase === 'jeu' && p.tour === this.monNumero && (a.tour !== p.tour || a.partieId !== p.partieId) && p.joueurs[2 - p.tour] !== ORDI) this.vibre([30, 40, 30]);
           if (p.phase === 'fin' && a.phase !== 'fin') {
+            if (this.monNumero) Etoiles.finDePartie('Quatre en ligne', p.resultat.gagnant === this.monNumero, !this.solo, p.partieId);
             if (p.resultat.gagnant && p.resultat.gagnant === this.monNumero) { setTimeout(() => this.son('victoire'), 350); this.vibre([100, 60, 100, 60, 250]); }
             else if (p.resultat.gagnant) this.vibre(200);
           }

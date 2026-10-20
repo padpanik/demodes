@@ -1272,6 +1272,7 @@
           this._timerSonFin = setTimeout(() => this.sonFin(gagne), delai);
         },
         sonFin: function(gagne) {
+          Etoiles.finDePartie('Bataille navale', gagne, !!this.role, this.partie && this.partie.id);
           if (gagne) { this.son('victoire'); this.vibre([100, 60, 100, 60, 250]); } else this.vibre([200, 100, 200]);
         },
 

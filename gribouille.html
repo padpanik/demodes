@@ -772,6 +772,7 @@
           if (p.phase === 'bilan' && a.phase !== 'bilan') this.son('toc');
           if (p.phase === 'fin' && a.phase !== 'fin') {
             var gagnant = this.classement[0] && this.classement[0].pseudo === moi;
+            Etoiles.finDePartie('Gribouille', gagnant, true);
             if (gagnant) { this.son('victoire'); this.vibre([100, 60, 100, 60, 250]); }
           }
           if (p.phase === 'dessin' && a.phase !== 'dessin') this.ajouterLog(p.dessinateur + ' dessine (' + p.longueur + ' lettres).');

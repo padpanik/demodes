@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Mon compagnon · Désdale</title>
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="theme-color" content="#f3f5f7">
+  <link rel="icon" type="image/png" href="favicon.png">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Désdale">
+  <script src="https://cdn.jsdelivr.net/npm/vue@2.7.16/dist/vue.min.js"></script>
+  <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+  <link rel="stylesheet" href="commun.css">
+  <style>
+    /* Pensé pour tous les âges : gros caractères, gros boutons, couleurs franches */
+    body { font-size: 17px; }
+    .etoiles { display: inline-flex; align-items: center; gap: 4px; background: #fff3c4; color: #7a5600; font-weight: 900; border-radius: 14px; padding: 4px 12px; font-size: 1.05em; }
+    .onglets-cp { display: flex; gap: 4px; background: #e3e8ec; border-radius: 14px; padding: 4px; margin-bottom: 10px; }
+    .onglets-cp button { flex: 1; border: none; background: transparent; border-radius: 10px; padding: 10px 4px; font: inherit; font-weight: 700; color: #5b6b78; cursor: pointer; }
+    .onglets-cp button.actif { background: #fff; color: #1d2b36; box-shadow: 0 1px 3px rgba(0,0,0,0.12); }
+
+    /* ---------- La pièce ---------- */
+    .scene { position: relative; height: 290px; border-radius: 22px; overflow: hidden; box-shadow: 0 4px 16px rgba(29,43,54,0.15); }
+    .scene .mur { position: absolute; inset: 0 0 34% 0; }
+    .scene .sol { position: absolute; left: 0; right: 0; bottom: 0; height: 34%; background: linear-gradient(#d9b48a, #c49a6c); }
+    .scene .sol::before { content: ''; position: absolute; inset: 0; background: repeating-linear-gradient(90deg, transparent 0 58px, rgba(0,0,0,0.06) 58px 60px); }
+    .fenetre { position: absolute; top: 18px; right: 22px; width: 92px; height: 78px; border-radius: 8px; border: 6px solid #fff; box-shadow: 0 2px 6px rgba(0,0,0,0.15); overflow: hidden; }
+    .fenetre::after { content: ''; position: absolute; left: 50%; top: 0; bottom: 0; width: 5px; margin-left: -2.5px; background: #fff; }
+    .fenetre .astre { position: absolute; top: 10px; left: 12px; font-size: 22px; }
+    .fenetre .flocons { position: absolute; inset: 0; color: #fff; font-size: 11px; letter-spacing: 6px; line-height: 16px; animation: neige 4s linear infinite; }
+    @keyframes neige { from { transform: translateY(-16px); } to { transform: translateY(0); } }
+    .rideaux { position: absolute; top: 10px; right: 12px; width: 112px; height: 96px; pointer-events: none; }
+    .rideaux::before, .rideaux::after { content: ''; position: absolute; top: 0; width: 22px; height: 96px; background: #c0392b; border-radius: 0 0 10px 10px; opacity: 0.9; }
+    .rideaux::before { left: 0; } .rideaux::after { right: 0; }
+    .deco { position: absolute; line-height: 1; filter: drop-shadow(0 3px 2px rgba(0,0,0,0.18)); }
+    .animal { position: absolute; left: 50%; bottom: 14px; width: 190px; margin-left: -95px; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+    .animal svg { display: block; width: 100%; overflow: visible; }
+    .animal .corps-anime { transform-origin: 100px 190px; animation: respire 2.6s ease-in-out infinite; }
+    .animal.content .corps-anime { animation: sautille 1.1s ease-in-out infinite; }
+    .animal.triste .corps-anime { animation: respire 4s ease-in-out infinite; }
+    @keyframes respire { 0%, 100% { transform: scale(1, 1); } 50% { transform: scale(1.02, 0.98); } }
+    @keyframes sautille { 0%, 100% { transform: translateY(0); } 40% { transform: translateY(-7px); } 60% { transform: translateY(-7px) scale(1.02, 0.98); } }
+    .animal .yeux { transform-origin: 100px 82px; animation: cligne 4.5s infinite; }
+    @keyframes cligne { 0%, 93%, 100% { transform: scaleY(1); } 95% { transform: scaleY(0.1); } }
+    .effet { position: absolute; left: 50%; bottom: 150px; font-size: 30px; pointer-events: none; animation: monte 1.4s ease-out forwards; }
+    @keyframes monte { from { opacity: 1; transform: translate(-50%, 0) scale(0.7); } to { opacity: 0; transform: translate(calc(-50% + var(--dx, 0px)), -90px) scale(1.2); } }
+    .bulle-cp { position: absolute; left: 12px; top: 12px; max-width: 46%; background: #fff; border-radius: 14px; padding: 6px 10px; font-size: 0.82em; font-weight: 700; color: #3b4b57; box-shadow: 0 2px 6px rgba(0,0,0,0.12); }
+    .nuit .mur { filter: brightness(0.62); } .nuit .sol { filter: brightness(0.7); }
+
+    /* ---------- Besoins et soins ---------- */
+    .tete-cp { display: flex; align-items: center; gap: 8px; margin: 10px 2px 6px; }
+    .tete-cp .nom { flex: 1; font-size: 1.35em; font-weight: 900; }
+    .tete-cp .humeur { font-weight: 700; color: #5b6b78; font-size: 0.9em; }
+    .besoins { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .besoin { background: #fff; border-radius: 16px; padding: 8px 10px; box-shadow: 0 1px 2px rgba(0,0,0,0.06); display: flex; flex-direction: column; gap: 6px; border: none; font: inherit; text-align: left; cursor: pointer; }
+    .besoin:active { transform: scale(0.98); }
+    .besoin .haut { display: flex; align-items: center; gap: 6px; font-weight: 800; }
+    .besoin .haut .ico { font-size: 1.5em; }
+    .besoin .action { align-self: stretch; text-align: center; font-size: 0.85em; font-weight: 800; background: #2c3e50; color: #fff; border-radius: 10px; padding: 6px; }
+    .jauge { height: 12px; border-radius: 6px; background: #e3e8ec; overflow: hidden; }
+    .jauge span { display: block; height: 100%; border-radius: 6px; transition: width 0.5s; }
+    .besoin.bas { box-shadow: 0 0 0 2.5px #e67e22; }
+    .jour { background: #fff; border-radius: 16px; padding: 10px 12px; margin-top: 10px; box-shadow: 0 1px 2px rgba(0,0,0,0.06); }
+    .jour .titre { font-weight: 800; margin-bottom: 4px; }
+    .jour ul { list-style: none; padding: 0; margin: 0; }
+    .jour li { padding: 3px 0; font-size: 0.95em; }
+    .jour li.fait { color: #2f8a5b; }
+    .serie { font-size: 0.85em; color: #6b7a86; margin-top: 4px; }
+
+    /* ---------- Boutique ---------- */
+    .rayons { display: flex; gap: 6px; overflow-x: auto; margin-bottom: 8px; padding-bottom: 2px; }
+    .rayons button { flex-shrink: 0; border: 1.5px solid #c9d2d9; background: #fff; border-radius: 16px; padding: 7px 12px; font: inherit; font-size: 0.9em; font-weight: 700; color: #5b6b78; cursor: pointer; }
+    .rayons button.actif { background: #2c3e50; border-color: #2c3e50; color: #fff; }
+    .articles { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .article { background: #fff; border-radius: 16px; padding: 10px; text-align: center; box-shadow: 0 1px 2px rgba(0,0,0,0.06); display: flex; flex-direction: column; gap: 4px; align-items: center; }
+    .article .ico { font-size: 2.2em; height: 46px; display: flex; align-items: center; }
+    .article .ico svg { width: 52px; height: 46px; }
+    .article .nom { font-weight: 800; font-size: 0.92em; line-height: 1.15; }
+    .article .desc { font-size: 0.75em; color: #6b7a86; line-height: 1.2; min-height: 2.4em; }
+    .article .btn { width: 100%; padding: 8px 4px; font-size: 0.9em; }
+    .article.porte { box-shadow: 0 0 0 2.5px #2f8a5b; }
+
+    /* ---------- Adoption ---------- */
+    .choix-animaux { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+    .choix-animaux button { background: #fff; border: 2.5px solid transparent; border-radius: 16px; padding: 6px 2px 8px; font: inherit; font-weight: 800; cursor: pointer; box-shadow: 0 1px 2px rgba(0,0,0,0.08); }
+    .choix-animaux button.actif { border-color: #2c3e50; }
+    .choix-animaux svg { width: 100%; height: 86px; }
+    .pastilles { display: flex; gap: 10px; margin: 6px 0; }
+    .pastilles button { width: 38px; height: 38px; border-radius: 50%; border: 3px solid #fff; box-shadow: 0 0 0 1.5px #c9d2d9; cursor: pointer; }
+    .pastilles button.actif { box-shadow: 0 0 0 3px #1d2b36; }
+    .journal-etoiles li { display: flex; justify-content: space-between; padding: 5px 2px; border-bottom: 1px solid #eef1f3; font-size: 0.9em; }
+    .journal-etoiles li b { color: #b07d00; }
+  </style>
+</head>
+<body>
+  <div id="app" class="app">
+    <div class="barre">
+      <a class="lien-jeux" href="index.html?choix">⇦ Jeux</a>
+      <div class="barre-infos"><span class="etoiles">⭐ {{ etoiles }}</span></div>
+    </div>
+
+    <!-- ===== Adoption ===== -->
+    <template v-if="!animal">
+      <header class="hero"><div style="font-size:44px">🏡</div><div><h1>Mon compagnon</h1><p>Adopte un petit animal et prends-en soin</p></div></header>
+      <section class="carte">
+        <div class="titre-carte">1. Choisis ton compagnon</div>
+        <div class="choix-animaux">
+          <button v-for="e in ESPECES" :key="e.id" :class="{ actif: adoption.espece === e.id }" @click="choisirEspece(e.id)">
+            <svg viewBox="0 0 200 210" v-html="dessin({ espece: e.id, couleur: e.couleurs[0], porte: {} }, 'content')"></svg>
+            {{ e.nom }}
+          </button>
+        </div>
+      </section>
+      <section class="carte" v-if="adoption.espece">
+        <div class="titre-carte">2. Sa couleur et son nom</div>
+        <div class="pastilles"><button v-for="c in especeChoisie.couleurs" :key="c" :class="{ actif: adoption.couleur === c }" :style="{ background: c }" @click="adoption.couleur = c"></button></div>
+        <label class="champ">Son nom<input type="text" v-model="adoption.nom" maxlength="16" :placeholder="'ex : ' + especeChoisie.exemple"></label>
+        <button class="btn principal btn-large" :disabled="!adoption.nom.trim()" @click="adopter">💛 Adopter {{ adoption.nom.trim() || '' }}</button>
+      </section>
+    </template>
+
+    <template v-else>
+      <!-- ===== La pièce et l'animal ===== -->
+      <div class="scene" :class="{ nuit: estNuit }">
+        <div class="mur" :style="{ background: fondMur }"></div>
+        <div class="fenetre" :style="{ background: ciel }">
+          <span class="astre">{{ estNuit ? '🌙' : '☀️' }}</span>
+          <div v-if="estHiver" class="flocons">❄ ❄ ❄ ❄<br>&nbsp;❄ ❄ ❄<br>❄ ❄ ❄ ❄<br>&nbsp;❄ ❄ ❄<br>❄ ❄ ❄ ❄</div>
+        </div>
+        <div v-if="animal.porte && animal.porte.fenetre" class="rideaux"></div>
+        <div class="sol"></div>
+        <div v-for="d in decorsVisibles" :key="d.id" class="deco" :style="d.style">{{ d.ico }}</div>
+        <div class="bulle-cp" v-if="message">{{ message }}</div>
+        <div class="animal" :class="humeurClasse" @click="caresser">
+          <svg viewBox="0 0 200 210" v-html="dessin(animal, humeurClasse)"></svg>
+        </div>
+        <div v-for="f in effets" :key="f.id" class="effet" :style="{ '--dx': f.dx + 'px' }">{{ f.ico }}</div>
+      </div>
+
+      <div class="tete-cp">
+        <span class="nom">{{ animal.nom }}</span>
+        <span class="humeur">{{ texteHumeur }}</span>
+      </div>
+
+      <div class="onglets-cp">
+        <button :class="{ actif: onglet === 'soins' }" @click="onglet = 'soins'">❤️ Soins</button>
+        <button :class="{ actif: onglet === 'boutique' }" @click="onglet = 'boutique'">🛍️ Boutique</button>
+        <button :class="{ actif: onglet === 'etoiles' }" @click="onglet = 'etoiles'">⭐ Étoiles</button>
+      </div>
+
+      <!-- ===== Soins ===== -->
+      <template v-if="onglet === 'soins'">
+        <div class="besoins">
+          <button v-for="b in BESOINS" :key="b.id" class="besoin" :class="{ bas: niveaux[b.id] < 30 }" @click="soigner(b)">
+            <div class="haut"><span class="ico">{{ b.ico }}</span>{{ b.nom }}</div>
+            <div class="jauge"><span :style="{ width: niveaux[b.id] + '%', background: couleurJauge(niveaux[b.id]) }"></span></div>
+            <span class="action">{{ b.action }}</span>
+          </button>
+        </div>
+        <div class="jour">
+          <div class="titre">📅 Aujourd'hui</div>
+          <ul>
+            <li v-for="t in tachesDuJour" :key="t.id" :class="{ fait: t.fait }">{{ t.fait ? '✅' : '⬜' }} {{ t.texte }}</li>
+          </ul>
+          <div class="serie">{{ jour.recompense ? '⭐ Journée complète : +' + RECOMPENSE_JOUR + ' étoiles gagnées.' : 'Tout fait aujourd\'hui : +' + RECOMPENSE_JOUR + ' ⭐' }}
+            <span v-if="animal.serie > 1"> · {{ animal.serie }} jours de suite 🔥</span></div>
+        </div>
+      </template>
+
+      <!-- ===== Boutique ===== -->
+      <template v-else-if="onglet === 'boutique'">
+        <div class="rayons"><button v-for="r in RAYONS" :key="r.id" :class="{ actif: rayon === r.id }" @click="rayon = r.id">{{ r.nom }}</button></div>
+        <div class="articles">
+          <div v-for="a in articlesDuRayon" :key="a.id" class="article" :class="{ porte: estPorte(a) }">
+            <div class="ico" v-if="a.ico">{{ a.ico }}</div>
+            <div class="ico" v-else><svg :view-box.camel="a.slot === 'corps' ? '0 0 200 210' : '30 0 140 150'" v-html="apercuAccessoire(a)"></svg></div>
+            <div class="nom">{{ a.nom }}</div>
+            <div class="desc">{{ a.desc }}</div>
+            <button v-if="!possede(a)" class="btn principal" :disabled="etoiles < a.prix" @click="acheter(a)">⭐ {{ a.prix }}</button>
+            <button v-else-if="a.conso" class="btn principal" @click="utiliser(a)">Donner ({{ stock(a) }})</button>
+            <button v-else class="btn" @click="porter(a)">{{ estPorte(a) ? '✓ ' + (a.place ? 'En place' : 'Porté') : (a.place ? 'Installer' : 'Mettre') }}</button>
+            <button v-if="possede(a) && a.conso" class="btn" style="margin-top:2px" :disabled="etoiles < a.prix" @click="acheter(a)">+1 · ⭐ {{ a.prix }}</button>
+          </div>
+        </div>
+      </template>
+
+      <!-- ===== Étoiles ===== -->
+      <template v-else>
+        <section class="carte">
+          <div class="titre-carte">Comment gagner des étoiles ⭐</div>
+          <ul style="padding-left:18px;margin:4px 0;line-height:1.5">
+            <li><strong>Jouer avec les amis</strong> : +{{ Etoiles.BAREME.victoirePlusieurs }} ⭐ pour une victoire, +{{ Etoiles.BAREME.partiePlusieurs }} ⭐ pour chaque partie terminée.</li>
+            <li>Gagner seul contre l'ordinateur : +{{ Etoiles.BAREME.victoireSeul }} ⭐.</li>
+            <li>S'occuper de {{ animal.nom }} toute la journée : +{{ RECOMPENSE_JOUR }} ⭐ (et +{{ RECOMPENSE_SEMAINE }} ⭐ tous les 7 jours de suite).</li>
+          </ul>
+          <a class="btn principal" style="display:block;text-align:center;text-decoration:none;margin-top:8px" href="index.html?choix">🎲 Aller jouer</a>
+        </section>
+        <section class="carte">
+          <div class="titre-carte">Dernières étoiles</div>
+          <ul class="journal-etoiles" style="list-style:none;padding:0;margin:0">
+            <li v-for="(j, k) in journal" :key="k"><span>{{ j.r }} <small style="color:#8a97a1">· {{ quand(j.h) }}</small></span><b>{{ j.n > 0 ? '+' : '' }}{{ j.n }} ⭐</b></li>
+            <li v-if="!journal.length" style="color:#8a97a1">Pas encore d'étoile : joue une partie !</li>
+          </ul>
+        </section>
+        <button class="btn" style="width:100%;margin-bottom:20px" @click="reprendreAdoption">Adopter un autre compagnon…</button>
+      </template>
+    </template>
+  </div>
+
+  <script src="commun.js"></script>
+  <script>
+    if (!ACCES.memorise()) location.replace('index.html');
+
+    // ================== ESPÈCES ==================
+    const ESPECES = [
+      { id: 'chat', nom: 'Chat', exemple: 'Minou', couleurs: ['#f0a04b', '#7d8a94', '#3b3b3b', '#f4e6d4'] },
+      { id: 'chien', nom: 'Chien', exemple: 'Biscotte', couleurs: ['#c8915a', '#f4e6d4', '#5b4636', '#e8c07a'] },
+      { id: 'chevre', nom: 'Chèvre', exemple: 'Blanchette', couleurs: ['#f2efe8', '#c9a27a', '#8d8d8d'] },
+      { id: 'dragon', nom: 'Dragon', exemple: 'Flammèche', couleurs: ['#4caf7a', '#7e57c2', '#e5533d', '#3a8fd8'] },
+      { id: 'lapin', nom: 'Lapin', exemple: 'Pompon', couleurs: ['#f4f1ec', '#b9a28a', '#8d8d8d', '#e9c9a6'] },
+      { id: 'renard', nom: 'Renard', exemple: 'Roussette', couleurs: ['#e8772e', '#c95a3a', '#d9cbb8'] }
+    ];
+    // ================== BESOINS (en %, ils baissent doucement avec le temps réel) ==================
+    // Heures pour passer de plein à vide : on nourrit matin et soir, on donne à boire, un bain tous les deux jours…
+    const BESOINS = [
+      { id: 'repas', nom: 'Repas', ico: '🍖', action: 'Nourrir', heures: 14, gain: 45, effet: '😋' },
+      { id: 'eau', nom: 'Eau', ico: '💧', action: 'Donner', heures: 12, gain: 60, effet: '💦' },
+      { id: 'toilette', nom: 'Toilette', ico: '🛁', action: 'Laver', heures: 40, gain: 100, effet: '🫧' },
+      { id: 'calin', nom: 'Câlins', ico: '❤️', action: 'Câliner', heures: 20, gain: 34, effet: '❤️' }
+    ];
+    const RECOMPENSE_JOUR = 3, RECOMPENSE_SEMAINE = 10;
+
+    // ================== BOUTIQUE ==================
+    // slot : où se porte ou se pose l'objet (un seul par emplacement) ; conso : se consomme (friandises)
+    const RAYONS = [{ id: 'tete', nom: '🎩 Tête' }, { id: 'cou', nom: '🎀 Cou' }, { id: 'corps', nom: '🧥 Habits' },
+                    { id: 'maison', nom: '🛏️ Couchage' }, { id: 'deco', nom: '🪴 Déco' }, { id: 'gourmand', nom: '🍪 Friandises' }];
+    const ARTICLES = [
+      { id: 'bonnet', rayon: 'tete', slot: 'tete', nom: 'Bonnet de laine', desc: 'Bien au chaud en hiver', prix: 12, couleur: '#3a8fd8' },
+      { id: 'chapeau', rayon: 'tete', slot: 'tete', nom: 'Chapeau melon', desc: 'Très distingué', prix: 25, couleur: '#2b2b2b' },
+      { id: 'fleur', rayon: 'tete', slot: 'tete', nom: 'Fleur', desc: 'Une jolie fleur à l\'oreille', prix: 8, couleur: '#f06292' },
+      { id: 'couronne', rayon: 'tete', slot: 'tete', nom: 'Couronne', desc: 'Pour un vrai petit roi', prix: 80, couleur: '#f4c430' },
+      { id: 'collier', rayon: 'cou', slot: 'cou', nom: 'Collier rouge', desc: 'Le classique', prix: 6, couleur: '#d64541' },
+      { id: 'noeud', rayon: 'cou', slot: 'cou', nom: 'Nœud papillon', desc: 'Pour les grandes occasions', prix: 15, couleur: '#7e57c2' },
+      { id: 'echarpe', rayon: 'cou', slot: 'cou', nom: 'Écharpe', desc: 'Douce et chaude', prix: 18, couleur: '#2e9e6b' },
+      { id: 'laisse', rayon: 'cou', slot: 'cou', nom: 'Collier et laisse', desc: 'Prêt pour la promenade', prix: 14, couleur: '#c0392b' },
+      { id: 'laisse-luxe', rayon: 'cou', slot: 'cou', nom: 'Laisse de grande marque', desc: 'Cuir et dorures', prix: 60, couleur: '#8b5a2b' },
+      { id: 'pull', rayon: 'corps', slot: 'corps', nom: 'Petit pull', desc: 'Tricoté main', prix: 20, couleur: '#e67e22' },
+      { id: 'manteau', rayon: 'corps', slot: 'corps', nom: 'Manteau d\'hiver', desc: 'Indispensable quand il neige', prix: 35, couleur: '#2c5aa0' },
+      { id: 'cape', rayon: 'corps', slot: 'corps', nom: 'Cape de héros', desc: 'Pour les jours de bravoure', prix: 45, couleur: '#c0392b' },
+      { id: 'coussin', rayon: 'maison', slot: 'couchage', nom: 'Coussin', desc: 'Pour la sieste', prix: 8, ico: '🟫', place: true },
+      { id: 'panier', rayon: 'maison', slot: 'couchage', nom: 'Panier douillet', desc: 'Un vrai lit à soi', prix: 20, ico: '🧺', place: true },
+      { id: 'niche', rayon: 'maison', slot: 'couchage', nom: 'Niche en bois', desc: 'Une petite maison', prix: 40, ico: '🛖', place: true },
+      { id: 'chateau', rayon: 'maison', slot: 'couchage', nom: 'Petit château', desc: 'Le grand luxe', prix: 120, ico: '🏰', place: true },
+      { id: 'plante', rayon: 'deco', slot: 'plante', nom: 'Plante verte', desc: 'Un peu de nature', prix: 10, ico: '🪴', place: true },
+      { id: 'tableau', rayon: 'deco', slot: 'mur', nom: 'Tableau', desc: 'Un paysage au mur', prix: 22, ico: '🖼️', place: true },
+      { id: 'horloge', rayon: 'deco', slot: 'mur2', nom: 'Horloge', desc: 'Tic, tac…', prix: 18, ico: '🕰️', place: true },
+      { id: 'lampe', rayon: 'deco', slot: 'lampe', nom: 'Lampe', desc: 'Une lumière douce le soir', prix: 16, ico: '💡', place: true },
+      { id: 'rideaux', rayon: 'deco', slot: 'fenetre', nom: 'Rideaux', desc: 'Pour la fenêtre', prix: 14, place: true, ico: '🪟' },
+      { id: 'balle', rayon: 'deco', slot: 'jouet', nom: 'Balle', desc: 'Pour jouer', prix: 5, ico: '⚽', place: true },
+      { id: 'peluche', rayon: 'deco', slot: 'jouet', nom: 'Peluche', desc: 'Son doudou', prix: 12, ico: '🧸', place: true },
+      { id: 'biscuit', rayon: 'gourmand', nom: 'Biscuit', desc: 'Remplit l\'assiette et fait plaisir', prix: 3, ico: '🍪', conso: true, effets: { repas: 40, calin: 15 } },
+      { id: 'gateau', rayon: 'gourmand', nom: 'Gâteau de fête', desc: 'Un vrai festin', prix: 10, ico: '🎂', conso: true, effets: { repas: 100, calin: 40 } }
+    ];
+    // Où se posent les objets de la pièce
+    const PLACES = {
+      couchage: 'left:12px;bottom:20px;font-size:76px', plante: 'right:10px;bottom:22px;font-size:52px', mur: 'left:24px;top:52px;font-size:46px',
+      mur2: 'left:132px;top:26px;font-size:34px', lampe: 'right:124px;top:112px;font-size:30px', jouet: 'right:76px;bottom:12px;font-size:30px'
+    };
+    function heureFr(t) { return new Date(t).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }); }
+    function jourDe(t) { var d = new Date(t); return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate(); }
+
+    new Vue({
+      el: '#app',
+      data: {
+        ESPECES: ESPECES, BESOINS: BESOINS, RAYONS: RAYONS, Etoiles: Etoiles, RECOMPENSE_JOUR: RECOMPENSE_JOUR, RECOMPENSE_SEMAINE: RECOMPENSE_SEMAINE,
+        animal: lireStockage('compagnon-animal'),
+        adoption: { espece: '', couleur: '', nom: '' },
+        etoiles: Etoiles.solde(),
+        journal: [],
+        onglet: 'soins',
+        rayon: 'tete',
+        maintenant: Date.now(),
+        effets: [],
+        message: '',
+        jour: { date: '', faits: {}, recompense: false }
+      },
+      computed: {
+        especeChoisie: function() { return ESPECES.find(e => e.id === this.adoption.espece) || ESPECES[0]; },
+        // Les besoins, recalculés avec le temps passé depuis le dernier soin
+        niveaux: function() {
+          var r = {}, a = this.animal, t = this.maintenant;
+          if (!a) return r;
+          BESOINS.forEach(b => {
+            var perte = (t - a.besoins[b.id].t) / 3600000 * (100 / b.heures);
+            r[b.id] = Math.max(0, Math.min(100, Math.round(a.besoins[b.id].v - perte)));
+          });
+          return r;
+        },
+        moyenne: function() { var n = this.niveaux; return BESOINS.reduce((s, b) => s + (n[b.id] || 0), 0) / BESOINS.length; },
+        humeurClasse: function() { var m = this.moyenne, min = Math.min.apply(null, BESOINS.map(b => this.niveaux[b.id])); return min < 20 || m < 35 ? 'triste' : m > 70 ? 'content' : 'calme'; },
+        texteHumeur: function() {
+          if (this.estNuit && this.humeurClasse !== 'triste') return '😴 Il est tard…';
+          return { content: '😊 Très heureux', calme: '🙂 Ça va', triste: '😟 A besoin de toi' }[this.humeurClasse];
+        },
+        estNuit: function() { var h = new Date(this.maintenant).getHours(); return h >= 21 || h < 7; },
+        estHiver: function() { var m = new Date(this.maintenant).getMonth(); return m === 11 || m <= 1; },
+        ciel: function() { return this.estNuit ? 'linear-gradient(#0f2347, #2b4a7d)' : this.estHiver ? 'linear-gradient(#b8c9d9, #e6eef5)' : 'linear-gradient(#6fb6ec, #bfe3fb)'; },
+        fondMur: function() { return 'linear-gradient(#f6e7cf, #f1dcbc)'; },
+        decorsVisibles: function() {
+          var p = (this.animal && this.animal.porte) || {}, r = [];
+          Object.keys(p).forEach(slot => {
+            var a = ARTICLES.find(x => x.id === p[slot]);
+            if (a && a.place && PLACES[slot]) r.push({ id: a.id, ico: a.ico, style: PLACES[slot] + (a.id === 'lampe' && this.estNuit ? ';filter:drop-shadow(0 0 14px #ffd54f)' : '') });
+          });
+          return r;
+        },
+        articlesDuRayon: function() { return ARTICLES.filter(a => a.rayon === this.rayon); },
+        // Petites obligations du jour
+        tachesDuJour: function() {
+          var f = this.jour.faits;
+          return [
+            { id: 'repas', texte: 'Nourrir ' + this.animal.nom + ' (2 fois)', fait: (f.repas || 0) >= 2 },
+            { id: 'eau', texte: 'Lui donner de l\'eau', fait: (f.eau || 0) >= 1 },
+            { id: 'calin', texte: 'Lui faire 3 câlins', fait: (f.calin || 0) >= 3 },
+            { id: 'jeu', texte: 'Jouer une partie avec des amis', fait: (f.jeu || 0) >= 1 }
+          ];
+        }
+      },
+      created: function() {
+        setInterval(() => { this.maintenant = Date.now(); this.etoiles = Etoiles.solde(); }, 20000);
+        this.chargerJour();
+        this.majJournal();
+        // Une partie jouée aujourd'hui (repérée dans le journal des étoiles) compte pour les tâches du jour
+        var auj = jourDe(Date.now());
+        if ((lireStockage('compagnon-journal') || []).some(j => jourDe(j.h) === auj && /entre amis/.test(j.r))) { this.jour.faits.jeu = 1; this.verifierJour(); }
+        if (this.animal) this.accueil();
+      },
+      methods: {
+        // ---------- Dessin de l'animal (SVG fait par le code) ----------
+        dessin: function(a, humeur) {
+          var c = a.couleur, fonce = this.nuance(c, -0.25), clair = this.nuance(c, 0.45), e = a.espece, p = a.porte || {};
+          var s = '', triste = humeur === 'triste', dort = this.estNuit && humeur !== 'triste' && this.animal === a;
+          // Derrière : queue, ailes
+          if (e === 'chat') s += '<path d="M150 170 Q190 150 178 105" stroke="' + c + '" stroke-width="13" fill="none" stroke-linecap="round"/>';
+          if (e === 'chien') s += '<path d="M150 165 Q178 150 172 128" stroke="' + c + '" stroke-width="12" fill="none" stroke-linecap="round"/>';
+          if (e === 'renard') s += '<path d="M146 175 Q200 168 186 112 Q172 140 146 150 Z" fill="' + c + '"/><path d="M186 112 Q190 128 178 136 Q182 120 186 112Z" fill="#fff"/>';
+          if (e === 'lapin') s += '<circle cx="150" cy="168" r="13" fill="#fff"/>';
+          if (e === 'chevre') s += '<path d="M148 150 l12 -14 l-2 18 z" fill="' + c + '"/>';
+          if (e === 'dragon') s += '<path d="M60 128 Q20 92 34 70 Q44 96 66 108 Z" fill="' + fonce + '"/><path d="M140 128 Q180 92 166 70 Q156 96 134 108 Z" fill="' + fonce + '"/>' +
+                                    '<path d="M146 172 Q196 172 190 140 l10 -6 l-14 -2 Q182 160 146 158 Z" fill="' + c + '"/>';
+          // Corps
+          s += '<g class="corps-anime">';
+          s += '<ellipse cx="100" cy="200" rx="58" ry="8" fill="rgba(0,0,0,0.13)"/>';
+          s += '<ellipse cx="100" cy="158" rx="54" ry="42" fill="' + c + '"/>';
+          s += '<ellipse cx="100" cy="166" rx="32" ry="28" fill="' + clair + '"/>';
+          s += '<ellipse cx="74" cy="196" rx="15" ry="8" fill="' + fonce + '"/><ellipse cx="126" cy="196" rx="15" ry="8" fill="' + fonce + '"/>';
+          if (p.corps) s += this.habit(p.corps, c);
+          // Oreilles (derrière la tête)
+          if (e === 'chat') s += '<path d="M58 58 L60 12 L94 44 Z" fill="' + c + '"/><path d="M142 58 L140 12 L106 44 Z" fill="' + c + '"/><path d="M64 48 L65 24 L84 42 Z" fill="#f4a9b8"/><path d="M136 48 L135 24 L116 42 Z" fill="#f4a9b8"/>';
+          if (e === 'renard') s += '<path d="M56 60 L58 8 L96 44 Z" fill="' + c + '"/><path d="M144 60 L142 8 L104 44 Z" fill="' + c + '"/><path d="M62 50 L63 22 L84 42 Z" fill="#3b2a20"/><path d="M138 50 L137 22 L116 42 Z" fill="#3b2a20"/>';
+          if (e === 'lapin') s += '<ellipse cx="78" cy="22" rx="13" ry="38" fill="' + c + '" transform="rotate(-10 78 22)"/><ellipse cx="122" cy="22" rx="13" ry="38" fill="' + c + '" transform="rotate(10 122 22)"/>' +
+                                   '<ellipse cx="78" cy="24" rx="6" ry="28" fill="#f4a9b8" transform="rotate(-10 78 22)"/><ellipse cx="122" cy="24" rx="6" ry="28" fill="#f4a9b8" transform="rotate(10 122 22)"/>';
+          if (e === 'chevre') s += '<path d="M76 42 Q62 6 88 16 Q78 24 84 42Z" fill="#cdbb9c"/><path d="M124 42 Q138 6 112 16 Q122 24 116 42Z" fill="#cdbb9c"/>' +
+                                    '<ellipse cx="48" cy="72" rx="20" ry="9" fill="' + c + '" transform="rotate(20 48 72)"/><ellipse cx="152" cy="72" rx="20" ry="9" fill="' + c + '" transform="rotate(-20 152 72)"/>';
+          if (e === 'dragon') s += '<path d="M72 44 L66 6 L88 36 Z" fill="#f4d58d"/><path d="M128 44 L134 6 L112 36 Z" fill="#f4d58d"/><path d="M92 36 L100 22 L108 36Z" fill="' + fonce + '"/>';
+          // Tête
+          s += '<circle cx="100" cy="82" r="48" fill="' + c + '"/>';
+          if (e === 'chien') s += '<ellipse cx="54" cy="78" rx="15" ry="30" fill="' + fonce + '" transform="rotate(18 54 78)"/><ellipse cx="146" cy="78" rx="15" ry="30" fill="' + fonce + '" transform="rotate(-18 146 78)"/>';
+          if (e === 'renard') s += '<path d="M60 92 Q100 140 140 92 Q130 120 100 124 Q70 120 60 92Z" fill="#fff"/>';
+          s += '<ellipse cx="100" cy="102" rx="22" ry="15" fill="' + clair + '"/>';
+          // Yeux : ouverts, fermés (la nuit), tristes
+          if (dort) s += '<path d="M72 80 q8 6 16 0" stroke="#2b2b2b" stroke-width="3.5" fill="none" stroke-linecap="round"/><path d="M112 80 q8 6 16 0" stroke="#2b2b2b" stroke-width="3.5" fill="none" stroke-linecap="round"/>';
+          else s += '<g class="yeux"><ellipse cx="80" cy="80" rx="8" ry="10" fill="#2b2b2b"/><ellipse cx="120" cy="80" rx="8" ry="10" fill="#2b2b2b"/>' +
+                    '<circle cx="83" cy="76" r="3" fill="#fff"/><circle cx="123" cy="76" r="3" fill="#fff"/></g>' +
+                    (triste ? '<path d="M68 68 L86 62 M132 68 L114 62" stroke="#2b2b2b" stroke-width="3" stroke-linecap="round"/><ellipse cx="128" cy="94" rx="3" ry="5" fill="#7fc8f8"/>' : '');
+          // Joues, nez, bouche
+          s += '<ellipse cx="66" cy="98" rx="9" ry="6" fill="#f48fb1" opacity="0.55"/><ellipse cx="134" cy="98" rx="9" ry="6" fill="#f48fb1" opacity="0.55"/>';
+          s += e === 'dragon' ? '<circle cx="94" cy="96" r="2.5" fill="' + fonce + '"/><circle cx="106" cy="96" r="2.5" fill="' + fonce + '"/>' : '<ellipse cx="100" cy="96" rx="6" ry="4.5" fill="#3b2a2a"/>';
+          s += triste ? '<path d="M90 112 q10 -8 20 0" stroke="#3b2a2a" stroke-width="3" fill="none" stroke-linecap="round"/>'
+             : humeur === 'content' ? '<path d="M88 104 q12 14 24 0" stroke="#3b2a2a" stroke-width="3" fill="#e57373" stroke-linecap="round"/>'
+             : '<path d="M92 106 q8 6 16 0" stroke="#3b2a2a" stroke-width="3" fill="none" stroke-linecap="round"/>';
+          if (e === 'chevre') s += '<path d="M94 122 Q100 146 106 122 Z" fill="#e8e2d6"/>';
+          if (e === 'chat' || e === 'renard') s += '<path d="M60 98 l-22 -4 M60 104 l-22 4 M140 98 l22 -4 M140 104 l22 4" stroke="#2b2b2b" stroke-width="1.5" opacity="0.5"/>';
+          if (p.cou) s += this.accessoireCou(p.cou);
+          if (p.tete) s += this.chapeau(p.tete);
+          s += '</g>';
+          return s;
+        },
+        nuance: function(hex, k) {
+          var n = parseInt(hex.slice(1), 16), r = n >> 16, g = (n >> 8) & 255, b = n & 255;
+          var f = x => Math.round(k < 0 ? x * (1 + k) : x + (255 - x) * k);
+          return '#' + ((1 << 24) + (f(r) << 16) + (f(g) << 8) + f(b)).toString(16).slice(1);
+        },
+        art: function(id) { return ARTICLES.find(a => a.id === id) || {}; },
+        habit: function(id, c) {
+          var a = this.art(id), k = a.couleur;
+          if (id === 'cape') return '<path d="M56 132 Q100 120 144 132 L154 196 Q100 206 46 196 Z" fill="' + k + '"/><ellipse cx="100" cy="166" rx="32" ry="28" fill="' + this.nuance(c, 0.45) + '"/>';
+          var r = '<path d="M50 150 Q52 120 100 118 Q148 120 150 150 L148 178 Q100 192 52 178 Z" fill="' + k + '"/>';
+          if (id === 'manteau') r += '<path d="M100 120 L100 186" stroke="' + this.nuance(k, -0.3) + '" stroke-width="3"/><circle cx="108" cy="140" r="3.5" fill="#f4c430"/><circle cx="108" cy="158" r="3.5" fill="#f4c430"/><circle cx="108" cy="176" r="3.5" fill="#f4c430"/>' +
+                                   '<path d="M52 176 Q100 192 148 176" stroke="#fff" stroke-width="6" fill="none" opacity="0.9"/>';
+          if (id === 'pull') r += '<path d="M56 140 Q100 152 144 140 M54 160 Q100 172 146 160" stroke="' + this.nuance(k, 0.4) + '" stroke-width="5" fill="none"/>';
+          return r;
+        },
+        accessoireCou: function(id) {
+          var k = this.art(id).couleur;
+          if (id === 'noeud') return '<path d="M100 128 L78 116 L78 140 Z M100 128 L122 116 L122 140 Z" fill="' + k + '"/><circle cx="100" cy="128" r="6" fill="' + this.nuance(k, -0.3) + '"/>';
+          if (id === 'echarpe') return '<path d="M60 118 Q100 136 140 118 L142 130 Q100 148 58 130 Z" fill="' + k + '"/><path d="M118 132 L126 172 L112 172 L108 136Z" fill="' + k + '"/>';
+          var r = '<path d="M62 122 Q100 140 138 122" stroke="' + k + '" stroke-width="8" fill="none" stroke-linecap="round"/><circle cx="100" cy="134" r="5" fill="#f4c430"/>';
+          if (id === 'laisse' || id === 'laisse-luxe') r += '<path d="M100 136 Q140 170 196 150" stroke="' + k + '" stroke-width="' + (id === 'laisse-luxe' ? 5 : 3.5) + '" fill="none"/>' +
+                                                            (id === 'laisse-luxe' ? '<path d="M100 136 Q140 170 196 150" stroke="#f4c430" stroke-width="1.5" stroke-dasharray="4 6" fill="none"/>' : '');
+          return r;
+        },
+        chapeau: function(id) {
+          var k = this.art(id).couleur;
+          if (id === 'bonnet') return '<path d="M58 60 Q60 18 100 16 Q140 18 142 60 Z" fill="' + k + '"/><rect x="54" y="52" width="92" height="14" rx="7" fill="#fff"/><circle cx="100" cy="14" r="10" fill="#fff"/>';
+          if (id === 'chapeau') return '<ellipse cx="100" cy="42" rx="46" ry="9" fill="' + k + '"/><path d="M72 42 Q72 6 100 6 Q128 6 128 42Z" fill="' + k + '"/><rect x="72" y="30" width="56" height="7" fill="#c0392b"/>';
+          if (id === 'couronne') return '<path d="M68 44 L72 14 L86 30 L100 8 L114 30 L128 14 L132 44 Z" fill="' + k + '" stroke="#c99a00" stroke-width="2"/><circle cx="100" cy="30" r="4" fill="#e53935"/>';
+          if (id === 'fleur') return '<g transform="translate(132 42)"><circle r="7" cx="0" cy="-9" fill="' + k + '"/><circle r="7" cx="9" cy="0" fill="' + k + '"/><circle r="7" cx="0" cy="9" fill="' + k + '"/><circle r="7" cx="-9" cy="0" fill="' + k + '"/><circle r="6" fill="#ffd54f"/></g>';
+          return '';
+        },
+        // Aperçu en boutique : l'animal ne porte que cet accessoire
+        apercuAccessoire: function(a) {
+          var porte = {}; porte[a.slot] = a.id;
+          return this.dessin({ espece: this.animal.espece, couleur: this.animal.couleur, porte: porte }, 'content');
+        },
+
+        // ---------- Adoption ----------
+        choisirEspece: function(id) { this.adoption.espece = id; this.adoption.couleur = ESPECES.find(e => e.id === id).couleurs[0]; },
+        adopter: function() {
+          var t = Date.now(), b = {};
+          BESOINS.forEach(x => { b[x.id] = { v: 80, t: t }; });
+          var ancien = this.animal;
+          this.animal = { espece: this.adoption.espece, couleur: this.adoption.couleur, nom: this.adoption.nom.trim().slice(0, 16), ne: t, besoins: b,
+                          possede: ancien ? ancien.possede : {}, porte: {}, serie: 0, dernierJourComplet: '' };
+          this.sauver();
+          this.message = 'Bonjour ! Je m\'appelle ' + this.animal.nom + ' 🥰';
+          if (!lireStockage('compagnon-cadeau')) { ecrireStockage('compagnon-cadeau', true); Etoiles.ajouter(10, 'Cadeau de bienvenue'); this.etoiles = Etoiles.solde(); this.majJournal(); }
+        },
+        reprendreAdoption: function() {
+          if (!confirm('Adopter un autre compagnon ? ' + this.animal.nom + ' partira vivre chez des amis. Tes objets et tes étoiles sont gardés.')) return;
+          this.adoption = { espece: '', couleur: '', nom: '' };
+          ecrireStockage('compagnon-ancien', this.animal);
+          this.animal = null;
+        },
+        sauver: function() { ecrireStockage('compagnon-animal', this.animal); },
+
+        // ---------- Soins ----------
+        couleurJauge: function(v) { return v < 25 ? '#e5533d' : v < 55 ? '#f0a500' : '#3cb371'; },
+        soigner: function(b) {
+          var n = this.niveaux[b.id];
+          if (n >= 98) { this.message = b.id === 'calin' ? 'Encore un câlin ? Avec plaisir !' : 'Merci, ça va très bien pour l\'instant 😊'; if (b.id !== 'calin') return; }
+          this.changerBesoin(b.id, b.gain);
+          this.animer(b.effet, b.id === 'calin' ? 3 : 2);
+          this.compterTache(b.id);
+          this.message = { repas: 'Miam, merci ! 😋', eau: 'Glou glou… 💧', toilette: 'Tout propre ! ✨', calin: 'Je t\'aime 💛' }[b.id];
+          if (typeof Sons !== 'undefined') try { Sons.jouer('toc'); } catch (e) {}
+          vibrer(20);
+        },
+        caresser: function() { this.soigner(BESOINS.find(b => b.id === 'calin')); },
+        changerBesoin: function(id, gain) {
+          var a = this.animal;
+          a.besoins[id] = { v: Math.min(100, this.niveaux[id] + gain), t: Date.now() };
+          this.maintenant = Date.now();
+          this.sauver();
+        },
+        animer: function(ico, n) {
+          for (var k = 0; k < n; k++) {
+            var f = { id: Date.now() + Math.random(), ico: ico, dx: (k - (n - 1) / 2) * 40 };
+            this.effets.push(f);
+            setTimeout(((g) => () => { this.effets = this.effets.filter(x => x !== g); })(f), 1500);
+          }
+        },
+        // ---------- Tâches du jour ----------
+        chargerJour: function() {
+          var j = lireStockage('compagnon-jour'), auj = jourDe(Date.now());
+          this.jour = j && j.date === auj ? j : { date: auj, faits: {}, recompense: false };
+        },
+        compterTache: function(id) {
+          this.chargerJour();
+          this.$set(this.jour.faits, id, (this.jour.faits[id] || 0) + 1);
+          this.verifierJour();
+        },
+        verifierJour: function() {
+          ecrireStockage('compagnon-jour', this.jour);
+          if (!this.animal || this.jour.recompense || !this.tachesDuJour.every(t => t.fait)) return;
+          this.jour.recompense = true;
+          ecrireStockage('compagnon-jour', this.jour);
+          // Jours de suite
+          var hier = jourDe(Date.now() - 86400000), a = this.animal;
+          a.serie = a.dernierJourComplet === hier ? (a.serie || 0) + 1 : 1;
+          a.dernierJourComplet = this.jour.date;
+          this.sauver();
+          Etoiles.ajouter(RECOMPENSE_JOUR, 'Journée complète avec ' + a.nom);
+          if (a.serie % 7 === 0) Etoiles.ajouter(RECOMPENSE_SEMAINE, a.serie + ' jours de suite !');
+          this.etoiles = Etoiles.solde(); this.majJournal();
+          this.animer('⭐', 4);
+        },
+        // Message d'accueil selon son état
+        accueil: function() {
+          var n = this.niveaux, bas = BESOINS.filter(b => n[b.id] < 30);
+          if (bas.length) this.message = { repas: 'J\'ai un petit creux…', eau: 'J\'ai soif !', toilette: 'Un petit bain ?', calin: 'Tu m\'as manqué !' }[bas[0].id];
+          else this.message = this.estNuit ? 'Bonne nuit 🌙' : 'Coucou ! 👋';
+        },
+
+        // ---------- Boutique ----------
+        possede: function(a) { return !!(this.animal.possede || {})[a.id]; },
+        stock: function(a) { return (this.animal.possede || {})[a.id] || 0; },
+        estPorte: function(a) { return !!a.slot && (this.animal.porte || {})[a.slot] === a.id; },
+        acheter: function(a) {
+          if (Etoiles.solde() < a.prix) return;
+          Etoiles.ajouter(-a.prix, 'Achat : ' + a.nom, true);
+          this.$set(this.animal.possede, a.id, (this.animal.possede[a.id] || 0) + 1);
+          if (!a.conso) this.porter(a, true);
+          this.etoiles = Etoiles.solde(); this.majJournal();
+          this.message = a.conso ? 'Oh, ' + a.nom.toLowerCase() + ' ! 😍' : 'Merci pour ' + (a.place ? 'ce cadeau' : 'ce bel accessoire') + ' ! 🥰';
+          this.animer('✨', 3);
+          this.sauver();
+        },
+        porter: function(a, forcer) {
+          var p = this.animal.porte;
+          if (p[a.slot] === a.id && !forcer) this.$delete(p, a.slot); else this.$set(p, a.slot, a.id);
+          this.sauver();
+        },
+        utiliser: function(a) {
+          if (!this.stock(a)) return;
+          this.animal.possede[a.id]--;
+          Object.keys(a.effets).forEach(k => this.changerBesoin(k, a.effets[k]));
+          this.compterTache('repas');
+          this.animer(a.ico, 3);
+          this.message = 'Un régal ! 😋';
+          this.sauver();
+        },
+
+        // ---------- Étoiles ----------
+        majJournal: function() { this.journal = (lireStockage('compagnon-journal') || []).slice().reverse().slice(0, 25); },
+        quand: function(t) {
+          var j = jourDe(t) === jourDe(Date.now()) ? 'aujourd\'hui' : jourDe(t) === jourDe(Date.now() - 86400000) ? 'hier' : new Date(t).toLocaleDateString('fr-FR');
+          return j + ' ' + heureFr(t);
+        }
+      }
+    });
+  </script>
+  <script src="salon-global.js" data-jeu="compagnon"></script>
+</body>
+</html>

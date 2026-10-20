@@ -642,6 +642,7 @@
           if (p.phase === 'stop' && a.phase !== 'stop') { this.son('zone', false); this.vibre([80, 50, 80]); }
           if (p.phase === 'vote' && a.phase !== 'vote') this.son('toc');
           if (p.phase === 'bilan' && a.phase !== 'bilan') { this.son('toc'); this.ajouterLog('Manche ' + p.lettre + ' : +' + (p.gains[this.moi] || 0) + ' points.'); }
+          if (p.phase === 'fin' && a.phase !== 'fin') Etoiles.finDePartie('Petit bac', !!this.classement[0] && this.classement[0].pseudo === this.moi, true, p.mancheId);
           if (p.phase === 'fin' && a.phase !== 'fin' && this.classement[0] && this.classement[0].pseudo === this.moi) {
             this.son('victoire'); this.vibre([100, 60, 100, 60, 250]);
           }

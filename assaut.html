@@ -1232,6 +1232,7 @@
           this.sauvegarder();
         },
         sonFin: function(gagne) {
+          Etoiles.finDePartie('Assaut', gagne, !!this.role, this.partie && this.partie.id);
           if (gagne) { this.son('victoire'); this.vibre([100, 60, 100, 60, 250]); } else this.vibre([200, 100, 200]);
         },
 

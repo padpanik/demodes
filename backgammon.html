@@ -689,6 +689,7 @@
             this.ajouterLog(qui + ' accepte : mise à ' + ev.val + '.', true);
           } else if (ev.type === 'fin') {
             var f = this.etat.fin;
+            if (couleurDe(this.etat, this.moi)) Etoiles.finDePartie('Backgammon', f.gagnant === this.moi, true, this.etat.partieId);
             if (this.sonActif) Sons.jouer('victoire');
             this.vibre([100, 60, 100, 60, 250]);
             this.finMasquee = false;

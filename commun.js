@@ -3,7 +3,7 @@
 // Les clés de stockage gardent l'ancien préfixe "brillant-" : les réglages déjà faits sont conservés.
 
 // Numéro de version affiché (à augmenter à chaque mise en ligne, avec brilliant.html et sw.js)
-const VERSION = '1.68';
+const VERSION = '1.69';
 
 // ---------- Stockage local ----------
 function lireStockage(cle) {
@@ -181,6 +181,46 @@ const Voix = {
       if (fr) phrase.voice = fr;
       phrase.rate = 1.05;
       speechSynthesis.speak(phrase);
+    } catch (e) {}
+  }
+};
+
+// ---------- Étoiles ⭐ (monnaie de « Mon compagnon ») ----------
+// Gagnées en jouant, surtout à plusieurs : elles servent à acheter de quoi gâter son animal.
+// Prototype : tout est gardé sur ce téléphone (pas encore de serveur).
+const Etoiles = {
+  BAREME: { victoirePlusieurs: 5, partiePlusieurs: 2, victoireSeul: 2 },
+  solde: function() { return lireStockage('compagnon-etoiles') || 0; },
+  // Ajoute (ou retire) des étoiles et note pourquoi
+  ajouter: function(n, raison, discret) {
+    if (!n) return;
+    ecrireStockage('compagnon-etoiles', Math.max(0, this.solde() + n));
+    var j = lireStockage('compagnon-journal') || [];
+    j.push({ h: Date.now(), n: n, r: raison });
+    ecrireStockage('compagnon-journal', j.slice(-80));
+    if (!discret && n > 0) this.bulle('+' + n + ' ⭐', raison);
+  },
+  // Fin d'une partie : récompense selon victoire et nombre de joueurs (une seule fois par partie)
+  finDePartie: function(jeu, gagne, aPlusieurs, idPartie) {
+    var cle = jeu + ':' + (idPartie || ''), vus = lireStockage('compagnon-parties') || {}, t = Date.now();
+    if (idPartie ? vus[cle] : (vus[cle] && t - vus[cle] < 30000)) return;
+    vus[cle] = t;
+    var garder = {};
+    Object.keys(vus).filter(k => t - vus[k] < 7 * 86400000).forEach(k => { garder[k] = vus[k]; });
+    ecrireStockage('compagnon-parties', garder);
+    var b = this.BAREME, n = aPlusieurs ? (gagne ? b.victoirePlusieurs : b.partiePlusieurs) : (gagne ? b.victoireSeul : 0);
+    this.ajouter(n, (gagne ? 'Victoire' : 'Partie') + ' · ' + jeu + (aPlusieurs ? ' entre amis' : ''));
+  },
+  // Petite bulle « +5 ⭐ » en haut de l'écran
+  bulle: function(texte, sous) {
+    try {
+      var d = document.createElement('div');
+      d.style.cssText = 'position:fixed;left:50%;top:14px;transform:translateX(-50%);z-index:5000;background:#fff8dc;color:#7a5600;border-radius:16px;' +
+        'padding:8px 16px;font:800 18px system-ui,sans-serif;box-shadow:0 6px 20px rgba(0,0,0,.18);text-align:center;transition:opacity .6s,transform .6s;pointer-events:none';
+      d.innerHTML = texte + (sous ? '<div style="font:600 12px system-ui,sans-serif;color:#9a7a2a">' + String(sous).replace(/</g, '&lt;') + '</div>' : '');
+      document.body.appendChild(d);
+      setTimeout(() => { d.style.opacity = '0'; d.style.transform = 'translate(-50%,-20px)'; }, 2600);
+      setTimeout(() => d.remove(), 3300);
     } catch (e) {}
   }
 };
