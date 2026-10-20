@@ -247,7 +247,7 @@ Bataille navale : `bataille-sauvegarde`, `bataille-prive` (ma flotte en salon), 
 - **Petits mots** (`CP.demarrerVeille`, lancé par `salon-global.js` sur toutes les pages) : tant que l'appli est ouverte, une bulle
   avec son dessin (bonjour du jour, mot gentil ~toutes les 45 min, ou demande « j'ai faim / soif / un bain / un câlin » si un besoin
   est sous 30 %, avec « J'y vais »). Au plus 1 message / 20 min, une même demande / 3 h, rien de 21 h à 8 h. Appli en arrière-plan :
-  notification du téléphone si autorisée (`notificationclick` dans `sw.js` rouvre `compagnon.html`). Réglages `compagnon-reglages`,
+  notification du téléphone si autorisée (`notificationclick` dans `sw.js` rouvre `compagnon.html`). Réglages (onglet ⚙️) `compagnon-reglages`,
   état `compagnon-veille`. Pas de notification appli fermée (il faudrait un serveur de notifications).
 - Achat : fenêtre de confirmation (solde, prix, reste) ; bouton grisé si le solde ne suffit pas.
 - Besoins Repas, Eau, Toilette, Câlins (en %, baissent avec le temps réel : vides en 14 h, 12 h, 40 h, 20 h). **Il ne meurt jamais** :

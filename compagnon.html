@@ -375,15 +375,6 @@
         </div>
       </template>
 
-      <!-- Réglages des messages, sous les soins -->
-      <section v-if="onglet === 'soins'" class="jour" style="margin-bottom:16px">
-        <div class="titre">💬 Les petits mots de {{ animal.nom }}</div>
-        <label class="case-a-cocher"><input type="checkbox" :checked="reglages.messages" @change="changerReglage('messages', $event.target.checked)"> Il me parle de temps en temps</label>
-        <label class="case-a-cocher" v-if="notifPossible"><input type="checkbox" :checked="reglages.notifications && notifPermise === 'granted'" :disabled="!reglages.messages" @change="basculerNotifications($event.target.checked)"> 🔔 Notification si l'appli est en arrière-plan</label>
-        <div class="serie" v-if="notifPermise === 'denied'">Les notifications sont bloquées pour ce site dans les réglages du téléphone.</div>
-        <div class="serie">Un message au plus toutes les 20 minutes, jamais la nuit. Il te demande à manger, à boire, un bain ou un câlin quand il en a besoin.</div>
-        <button class="btn" style="width:100%;margin-top:8px" @click="essayerMessage">Essayer maintenant</button>
-      </section>
 
       <!-- ===== Boutique ===== -->
       <template v-else-if="onglet === 'boutique'">
@@ -451,6 +442,15 @@
 
       <!-- ===== Étoiles ===== -->
       <template v-else>
+        <!-- Les petits mots du compagnon : messages et notifications -->
+        <section class="carte">
+          <div class="titre-carte">💬 Les petits mots de {{ animal.nom }}</div>
+          <label class="case-a-cocher"><input type="checkbox" :checked="reglages.messages" @change="changerReglage('messages', $event.target.checked)"> Il me parle de temps en temps</label>
+          <label class="case-a-cocher" v-if="notifPossible"><input type="checkbox" :checked="reglages.notifications && notifPermise === 'granted'" :disabled="!reglages.messages" @change="basculerNotifications($event.target.checked)"> 🔔 Notification si l'appli est en arrière-plan</label>
+          <div class="serie" v-if="notifPermise === 'denied'">Les notifications sont bloquées pour ce site dans les réglages du téléphone.</div>
+          <div class="serie">Un message au plus toutes les 20 minutes, jamais la nuit. Il te demande à manger, à boire, un bain ou un câlin quand il en a besoin.</div>
+          <button class="btn" style="width:100%;margin-top:8px" @click="essayerMessage">Essayer maintenant</button>
+        </section>
         <section class="carte">
           <div class="titre-carte">Comment gagner des étoiles ⭐</div>
           <ul style="padding-left:18px;margin:4px 0;line-height:1.5">
