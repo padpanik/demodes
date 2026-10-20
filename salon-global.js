@@ -287,7 +287,7 @@ var SalonGlobal = (function () {
     var m = lire('compagnon-maison') || {}, tr = lire('compagnon-trophees') || [];
     var etagere = (m.etagere || []).slice(0, 3);
     return {
-      a: { espece: a.espece, couleur: a.couleur, nom: a.nom, ne: a.ne, porte: a.porte || {}, besoins: a.besoins, possede: {} },
+      a: { espece: a.espece, couleur: a.couleur, nom: a.nom, ne: a.ne, porte: a.porte || {}, deco: a.deco || {}, besoins: a.besoins, possede: {} },
       maison: { blocs: (m.blocs || ['salon']).slice(0, 10), piece: m.piece || 'salon', etagere: etagere, cles: 0 },
       trophees: tr.slice(-12).concat(tr.filter(t => etagere.indexOf(t.k) >= 0 && tr.slice(-12).indexOf(t) < 0)).map(t => ({ k: t.k, niv: t.niv, ico: t.ico, titre: t.titre, h: t.h })),
       pseudo: publicProfil().pseudo

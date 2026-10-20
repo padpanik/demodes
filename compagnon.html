@@ -81,15 +81,32 @@
     @keyframes remue-couche { from { transform: translateY(16px) rotate(15deg); } to { transform: translateY(16px) rotate(35deg); } }
     .animal.couche .corps-anime { animation: respire 4s ease-in-out infinite; }
     /* Objets avec lesquels il joue */
-    .deco.o-jouet { animation: roule 2.2s ease-in-out; z-index: 2; }
+    .o-balle { animation: roule 2.2s ease-in-out; }
+    .o-balle.vers-droite { animation-name: roule-d; }
+    @keyframes roule-d { 0%, 100% { transform: translate(0, 0) rotate(0); } 40% { transform: translate(70px, 4px) rotate(320deg); } 70% { transform: translate(50px, 4px) rotate(250deg); } }
+    .deco.devant { z-index: 3; }
+    .deco-i { display: inline-block; }
+    .deco.libre { transform: translate(-50%, -50%); }
+    .maison.arrange { overflow-x: hidden; scroll-snap-type: none; }
+    .arrange .deco.bougeable { z-index: 6; cursor: grab; touch-action: none; outline: 2px dashed rgba(255,255,255,0.95); outline-offset: 3px; border-radius: 10px; }
+    .arrange .deco.bougeable.choisi { outline: 3px solid #ff9800; }
+    .arrange .animal { opacity: 0.45; pointer-events: none; }
+    .arrange .appeler, .arrange .bulle-cp { display: none; }
+    .lien-arranger { display: block; margin: 4px auto 0; border: none; background: transparent; color: #5b6b78; font: inherit; font-size: 0.85em; font-weight: 800; cursor: pointer; padding: 6px 12px; }
+    .barre-deco { margin-top: 8px; }
+    .barre-deco .nom-deco { font-weight: 900; font-size: 1.1em; }
+    .barre-deco .petit-titre-deco { font-size: 0.85em; font-weight: 700; color: #5b6b78; margin: 6px 0 4px; }
+    .pieces-deco { display: flex; flex-wrap: wrap; gap: 6px; }
+    .pieces-deco button { border: 1.5px solid #c9d2d9; background: #fff; border-radius: 14px; padding: 7px 10px; font: inherit; font-size: 0.88em; font-weight: 700; color: #3b4b57; cursor: pointer; }
+    .pieces-deco button.actif { background: #2c3e50; border-color: #2c3e50; color: #fff; }
     @keyframes roule { 0%, 100% { transform: translate(0, 0) rotate(0); } 40% { transform: translate(-70px, 4px) rotate(-320deg); } 70% { transform: translate(-50px, 4px) rotate(-250deg); } }
-    .deco.o-nounours, .deco.o-peluche { animation: serre 1.6s ease-in-out; }
+    .o-nounours, .o-peluche { animation: serre 1.6s ease-in-out; }
     @keyframes serre { 0%, 100% { transform: scale(1); } 30%, 60% { transform: scale(1.18) rotate(-8deg); } }
-    .deco.o-gamelle, .deco.o-fleurs, .deco.o-plante { animation: frisson 0.5s ease-in-out 3; }
+    .o-gamelle, .o-fleurs, .o-plante { animation: frisson 0.5s ease-in-out 3; }
     @keyframes frisson { 0%, 100% { transform: rotate(0); } 33% { transform: rotate(-8deg); } 66% { transform: rotate(8deg); } }
     .des.o-des { animation: lance 1.2s ease-out; }
     @keyframes lance { 0% { transform: translateY(0) rotate(0); } 40% { transform: translateY(-26px) rotate(200deg); } 100% { transform: translateY(0) rotate(360deg); } }
-    @media (prefers-reduced-motion: reduce) { .animal *, .deco { animation: none !important; } }
+    @media (prefers-reduced-motion: reduce) { .animal *, .deco, .deco-i { animation: none !important; } }
     .effet { position: absolute; left: 50%; bottom: 150px; font-size: 30px; pointer-events: none; animation: monte 1.4s ease-out forwards; }
     @keyframes monte { from { opacity: 1; transform: translate(-50%, 0) scale(0.7); } to { opacity: 0; transform: translate(calc(-50% + var(--dx, 0px)), -90px) scale(1.2); } }
     .bulle-cp { position: absolute; left: 12px; top: 12px; max-width: 46%; background: #fff; border-radius: 14px; padding: 6px 10px; font-size: 0.82em; font-weight: 700; color: #3b4b57; box-shadow: 0 2px 6px rgba(0,0,0,0.12); }
@@ -314,7 +331,7 @@
 
     <template v-else-if="animal && (!visite || visite.etat === 'ok')">
       <!-- ===== La maison : une pièce par écran, on glisse de l'une à l'autre ===== -->
-      <div class="maison" ref="maison" @scroll.passive="surDefilement">
+      <div class="maison" :class="{ arrange: arrange }" ref="maison" @scroll.passive="surDefilement">
         <div v-for="p in pieces" :key="p.id" class="scene" :class="['piece-' + p.id, { nuit: estNuit, 'petit-animal': p.id !== 'salon' }]">
           <!-- Salon -->
           <template v-if="p.id === 'salon'">
@@ -325,7 +342,6 @@
             </div>
             <div v-if="animal.porte && animal.porte.fenetre" class="rideaux"></div>
             <div class="sol"></div>
-            <div v-for="d in decorsVisibles" :key="d.id" class="deco" :class="{ ['o-' + vie.objet]: vie.objet === d.slot }" :style="d.style">{{ d.ico }}</div>
             <div v-if="surEtagere.length" class="etagere"><svg v-for="t in surEtagere" :key="t.k" viewBox="0 0 60 72" v-html="CP.coupe(t.niv, t.ico)"></svg></div>
           </template>
           <!-- Salle des trophées : deux vitrines, les coupes les plus récentes devant -->
@@ -377,6 +393,10 @@
             <span class="deco" style="left:22px;bottom:4px;font-size:24px">🧩</span>
           </template>
 
+          <!-- Déco achetée en boutique : dans la pièce choisie, à l'endroit choisi (mode « Arranger ») -->
+          <div v-for="d in (decorsParPiece[p.id] || [])" :key="d.slot" class="deco bougeable" :class="{ libre: d.libre, choisi: arrange && decoChoisi === d.slot, devant: vie.objet === d.slot }"
+               :style="d.style" @pointerdown="debutDeco($event, d, p.id)"><span class="deco-i" :class="vie.objet === d.slot ? ['o-' + d.id, d.x >= 50 ? 'vers-droite' : ''] : ''">{{ d.ico }}</span></div>
+
           <!-- L'animal est dans cette pièce, ou on peut l'appeler -->
           <template v-if="p.id === ouEst">
             <div class="bulle-cp" v-if="message">{{ message }}</div>
@@ -398,6 +418,22 @@
         </div>
         <button class="fleche" :disabled="pieceVue === pieces.length - 1" @click="allerA(pieceVue + 1)" aria-label="Pièce suivante">›</button>
       </div>
+
+      <!-- Arranger la déco : choisir la pièce et l'endroit de chaque objet -->
+      <button v-if="!visite && !arrange && aDeLaDeco" class="lien-arranger" @click="arrange = true; decoChoisi = null">✏️ Arranger la déco</button>
+      <section v-if="arrange" class="carte barre-deco">
+        <div class="titre-carte" style="margin-bottom:4px">✏️ Arranger la déco</div>
+        <div class="aide" v-if="!decoChoisi">Fais glisser un objet pour le déplacer. Touche-le pour le changer de pièce.</div>
+        <template v-else>
+          <div class="nom-deco">{{ objetChoisi.ico }} {{ objetChoisi.nom }}</div>
+          <div class="petit-titre-deco">Dans quelle pièce ?</div>
+          <div class="pieces-deco">
+            <button v-for="b in pieces" :key="b.id" :class="{ actif: pieceDe(decoChoisi) === b.id }" @click="changerPieceDeco(b.id)">{{ b.ico }} {{ b.nom }}</button>
+          </div>
+          <button class="btn" style="width:100%;margin-top:6px" @click="rangerDeco">📦 Ranger dans le placard</button>
+        </template>
+        <button class="btn principal" style="width:100%;margin-top:8px" @click="arrange = false; decoChoisi = null">✓ Terminé</button>
+      </section>
 
       <div class="tete-cp">
         <span class="nom">{{ animal.nom }} <small style="font-size:0.55em;font-weight:700;color:#8a97a1">{{ CP.age(animal.ne) }}</small></span>
@@ -610,6 +646,9 @@
       couchage: 'left:12px;bottom:20px;font-size:76px', plante: 'right:10px;bottom:22px;font-size:52px', mur: 'left:24px;top:52px;font-size:46px',
       mur2: 'left:132px;top:26px;font-size:34px', lampe: 'right:124px;top:112px;font-size:30px', jouet: 'right:76px;bottom:12px;font-size:30px'
     };
+    // Taille de chaque objet, et sa place (en % de la largeur) tant qu'on ne l'a pas déplacé
+    const TAILLES = { couchage: 76, plante: 52, mur: 46, mur2: 34, lampe: 30, jouet: 30 };
+    const X_DEFAUT = { couchage: 15, plante: 88, mur: 15, mur2: 45, lampe: 60, jouet: 72 };
     // Petite partie en cours dessinée dans la salle de jeux (7 × 6, rangée du haut d'abord)
     const GRILLE4 = (function () { var g = new Array(42).fill(''), R = '#e5533d', J = '#f4c430';
       [[35, R], [36, J], [37, R], [38, J], [39, J], [30, R], [31, J], [32, R], [24, J], [23, R]].forEach(x => { g[x[0]] = x[1]; }); return g; })();
@@ -642,6 +681,8 @@
         // Vie de l'animal dans la pièce : position (% de la largeur), sens, marche, posture, geste en cours
         // Visite chez un ami connecté (compagnon.html?visite=…) : sa maison, en lecture seule
         visite: null,
+        arrange: false,        // mode « Arranger la déco »
+        decoChoisi: null,      // emplacement (slot) de l'objet choisi
         vie: { x: 50, dir: 1, marche: false, posture: 'assis', geste: '', duree: 0, objet: '', sieste: false },
         admin: { ouvert: false, actif: ADMIN.actif(), mdp: '', erreur: '', calcul: false }
       },
@@ -660,13 +701,23 @@
         estHiver: function() { var m = new Date(this.maintenant).getMonth(); return m === 11 || m <= 1; },
         ciel: function() { return this.estNuit ? 'linear-gradient(#0f2347, #2b4a7d)' : this.estHiver ? 'linear-gradient(#b8c9d9, #e6eef5)' : 'linear-gradient(#6fb6ec, #bfe3fb)'; },
         fondMur: function() { return 'linear-gradient(#f6e7cf, #f1dcbc)'; },
-        decorsVisibles: function() {
-          var p = (this.animal && this.animal.porte) || {}, r = [];
+        // La déco installée, rangée par pièce : à sa place choisie (deco[slot] = { piece, x, y } en %), sinon au salon, à sa place d'origine
+        decorsParPiece: function() {
+          var a = this.animal, p = (a && a.porte) || {}, deco = (a && a.deco) || {}, r = {};
           Object.keys(p).forEach(slot => {
-            var a = ARTICLES.find(x => x.id === p[slot]);
-            if (a && a.place && PLACES[slot]) r.push({ id: a.id, slot: slot, ico: a.ico, style: PLACES[slot] + (a.id === 'lampe' && this.estNuit ? ';filter:drop-shadow(0 0 14px #ffd54f)' : '') });
+            var art = ARTICLES.find(x => x.id === p[slot]);
+            if (!art || !art.place || !PLACES[slot]) return;
+            var d = deco[slot], piece = d && this.aBloc(d.piece) ? d.piece : 'salon';
+            var lueur = art.id === 'lampe' && this.estNuit ? ';filter:drop-shadow(0 0 14px #ffd54f)' : '';
+            var style = d ? 'left:' + d.x + '%;top:' + d.y + '%;font-size:' + TAILLES[slot] + 'px' : PLACES[slot];
+            (r[piece] = r[piece] || []).push({ slot: slot, id: art.id, nom: art.nom, ico: art.ico, libre: !!d, x: d ? d.x : X_DEFAUT[slot] || 50, style: style + lueur });
           });
           return r;
+        },
+        aDeLaDeco: function() { return Object.keys(this.decorsParPiece).length > 0; },
+        objetChoisi: function() {
+          var l = [].concat.apply([], Object.values(this.decorsParPiece));
+          return l.find(d => d.slot === this.decoChoisi) || {};
         },
         // ---------- Maison ----------
         pieces: function() { return CP.BLOCS.filter(b => this.maison.blocs.indexOf(b.id) >= 0); },
@@ -892,7 +943,7 @@
           this._vie = setTimeout(tour, 3000);
         },
         agir: function() {
-          if (!this.animal || document.visibilityState === 'hidden' || this.enAchat || this.admin.ouvert) return;
+          if (!this.animal || document.visibilityState === 'hidden' || this.enAchat || this.admin.ouvert || this.arrange) return;
           var v = this.vie, t = Date.now();
           if (t < this._occupe || v.marche) return;
           if (this.dort) { if (Math.random() < 0.25) this.geste('queue', 1600); return; }          // il dort : à peine un bout de queue
@@ -935,10 +986,6 @@
         objetsDeLaPiece: function() {
           var porte = this.animal.porte || {}, l = [], piece = this.ouEst, jour = !this.estNuit;
           if (piece === 'salon') {
-            if (porte.couchage) l.push({ id: 'couchage', x: 30, dir: -1, action: 'sieste' });
-            if (porte.jouet === 'balle') l.push({ id: 'jouet', x: 44, dir: 1, action: 'balle' });
-            if (porte.jouet === 'peluche') l.push({ id: 'jouet', x: 64, dir: 1, action: 'calin-objet' });
-            if (porte.plante) l.push({ id: 'plante', x: 70, dir: 1, action: 'renifle', ico: '🌿' });
             l.push({ id: 'fenetre', x: 68, dir: 1, action: 'fenetre' });
             if (this.surEtagere.length) l.push({ id: 'etagere', x: 70, dir: 1, action: 'admire' });
           } else if (piece === 'cuisine') {
@@ -957,6 +1004,14 @@
           } else if (piece === 'trophees') {
             l.push({ id: 'vitrine', x: 40, dir: -1, action: 'admire' }, { id: 'vitrine', x: 60, dir: 1, action: 'admire' });
           }
+          // La déco de la boutique, là où on l'a mise : il se place à côté, tourné vers elle
+          (this.decorsParPiece[piece] || []).forEach(d => {
+            var gauche = d.x < 50, x = Math.max(28, Math.min(72, d.x + (gauche ? 18 : -18))), dir = gauche ? -1 : 1;
+            if (d.slot === 'couchage') l.push({ id: 'couchage', x: x, dir: dir, action: 'sieste' });
+            if (d.id === 'balle') l.push({ id: 'jouet', x: x, dir: dir, action: 'balle' });
+            if (d.id === 'peluche') l.push({ id: 'jouet', x: x, dir: dir, action: 'calin-objet' });
+            if (d.slot === 'plante') l.push({ id: 'plante', x: x, dir: dir, action: 'renifle', ico: '🌿' });
+          });
           return l;
         },
         utiliserObjet: function(o) {
@@ -1014,6 +1069,44 @@
           this._finGeste = setTimeout(() => { if (v.geste === g) v.geste = ''; }, ms);
         },
 
+        // ---------- Arranger la déco ----------
+        pieceDe: function(slot) { var d = this.animal.deco && this.animal.deco[slot]; return d && this.aBloc(d.piece) ? d.piece : 'salon'; },
+        placerDeco: function(slot, piece, x, y) {
+          if (!this.animal.deco) this.$set(this.animal, 'deco', {});
+          this.$set(this.animal.deco, slot, { piece: piece, x: Math.round(x * 10) / 10, y: Math.round(y * 10) / 10 });
+        },
+        // Glisser un objet au doigt (ou à la souris) ; un simple toucher le choisit
+        debutDeco: function(ev, d, piece) {
+          if (!this.arrange) return;
+          ev.preventDefault(); ev.stopPropagation();
+          this.decoChoisi = d.slot;
+          var el = ev.currentTarget, scene = el.closest('.scene'), r = scene.getBoundingClientRect(), er = el.getBoundingClientRect();
+          var cx = er.left + er.width / 2, cy = er.top + er.height / 2, dx = ev.clientX - cx, dy = ev.clientY - cy;
+          if (!d.libre) this.placerDeco(d.slot, piece, (cx - r.left) / r.width * 100, (cy - r.top) / r.height * 100);
+          var bouger = e => {
+            var x = (e.clientX - dx - r.left) / r.width * 100, y = (e.clientY - dy - r.top) / r.height * 100;
+            this.placerDeco(d.slot, piece, Math.max(5, Math.min(95, x)), Math.max(8, Math.min(92, y)));
+          };
+          var fin = () => {
+            window.removeEventListener('pointermove', bouger); window.removeEventListener('pointerup', fin); window.removeEventListener('pointercancel', fin);
+            this.sauver();
+          };
+          window.addEventListener('pointermove', bouger); window.addEventListener('pointerup', fin); window.addEventListener('pointercancel', fin);
+        },
+        changerPieceDeco: function(piece) {
+          var slot = this.decoChoisi, d = (this.animal.deco && this.animal.deco[slot]) || { x: X_DEFAUT[slot] || 50, y: 70 };
+          this.placerDeco(slot, piece, d.x, d.y);
+          this.sauver();
+          this.allerA(this.pieces.findIndex(b => b.id === piece));
+        },
+        rangerDeco: function() {
+          var slot = this.decoChoisi;
+          this.$delete(this.animal.porte, slot);
+          if (this.animal.deco) this.$delete(this.animal.deco, slot);
+          this.decoChoisi = null;
+          this.sauver();
+        },
+
         // ---------- Visite chez un ami (par le salon global, de téléphone à téléphone) ----------
         demanderVisite: function(n) {
           n = n || 0;
@@ -1027,8 +1120,10 @@
             BESOINS.forEach(b => { var x = a.besoins && a.besoins[b.id]; propre[b.id] = { v: +(x && x.v) || 0, t: +(x && x.t) || Date.now() }; });
             var porte = {};
             Object.keys(a.porte || {}).forEach(k => { if (CP.art(a.porte[k]).id) porte[k] = a.porte[k]; });
+            var deco = {};
+            Object.keys(a.deco || {}).forEach(k => { var x = a.deco[k]; if (porte[k] && x) deco[k] = { piece: String(x.piece || 'salon'), x: Math.max(0, Math.min(100, +x.x || 50)), y: Math.max(0, Math.min(100, +x.y || 50)) }; });
             this.animal = { espece: a.espece, couleur: /^#[0-9a-f]{6}$/i.test(a.couleur) ? a.couleur : '#c8915a', nom: String(a.nom || '').slice(0, 16),
-                            ne: +a.ne || 0, besoins: propre, possede: {}, porte: porte, serie: 0 };
+                            ne: +a.ne || 0, besoins: propre, possede: {}, porte: porte, deco: deco, serie: 0 };
             var mm = d.maison || {};
             this.maison = { blocs: ['salon'].concat((mm.blocs || []).filter(b => b !== 'salon' && CP.BLOCS.some(x => x.id === b))), cles: 0,
                             piece: String(mm.piece || 'salon'), etagere: (mm.etagere || []).slice(0, 3) };
