@@ -32,6 +32,7 @@ Tout est en français : interface, commentaires du code, messages de commit, ré
 | `petitbac.html` + `petitbac-regles.js` | Petit bac : une lettre, un mot par catégorie (à partir de 2, sans limite). Catégories, normalisation, validité et points dans `petitbac-regles.js` (testable avec Node). |
 | `agents.html` + `agents-regles.js` | Agents secrets (version maison du jeu d'espions en mots, sans le nom ni les visuels de la marque) : deux équipes, un chef par équipe voit la carte secrète. Mots et règles dans `agents-regles.js` (testable avec Node). |
 | `quatre.html` + `quatre-regles.js` | Quatre en ligne (version maison du classique « aligner 4 jetons », sans le nom de la marque). Solo contre l'ordinateur (3 niveaux) ou à deux en salon. Moteur + ordinateur (minimax) dans `quatre-regles.js` (testable avec Node). |
+| `domino.html` + `domino-regles.js` | Dominos (double-six) avec l'option **Triominos**. Solo contre 1 à 3 ordinateurs, ou salon de 2 à 4 (mains gardées par l'hôte, chacun ne reçoit que la sienne). Moteur + ordinateur + géométrie triangulaire dans `domino-regles.js` (testable avec Node). |
 | `compagnon.html` + `compagnon-commun.js` | **Mon compagnon** (prototype, façon « animal virtuel ») : on adopte un animal dessiné en SVG, on en prend soin chaque jour, et les ⭐ gagnées en jouant (`Etoiles` dans `commun.js`) achètent accessoires et déco. Espèces, besoins, boutique et dessin SVG dans `compagnon-commun.js` (aussi utilisé par l'accueil). Pas de réseau propre. |
 | `compagnon-3d.html` | Maquette « niveau 2 » : le chien en vraie 3D (Three.js **r128** par CDN, uniquement sur cette page). **Mise de côté** par l'utilisateur (plus de lien dans le jeu, page gardée pour plus tard). |
 | `sons/` | Sons enregistrés de la Bataille navale (MP3 libres de droits) et leurs sources (`LICENCES.txt`). |
@@ -58,7 +59,7 @@ Pas d'étape de construction, pas de dépendance à ajouter.
   150 000 itérations, 48 octets. Octets 0–31 : `EMPREINTE` publiée ; octets 32–39 : « clé de salon »,
   jamais publiée, gardée dans `localStorage['brillant-acces']`.
 - La clé de salon entre dans l'identifiant réseau : `'dm-' + cléSalon + '-' + [jeu + '-'] + nomSimplifié`.
-  Préfixes de jeu : aucun pour Brilliant, `yams`, `bg`, `as`, `bn`, `gb`, `pb`, `ag`, `ql`. Sans le bon code, impossible de joindre un salon.
+  Préfixes de jeu : aucun pour Brilliant, `yams`, `bg`, `as`, `bn`, `gb`, `pb`, `ag`, `ql`, `dm`. Sans le bon code, impossible de joindre un salon.
 - Changer le code = recalculer l'empreinte dans les deux fichiers ; tous les salons changent d'identifiant.
 
 ## Réseau (identique dans les trois jeux)
@@ -115,6 +116,7 @@ Gribouille : `gribouille-sauvegarde`, `gribouille-dernier-salon`, `gribouille-du
 Petit bac : `petitbac-sauvegarde`, `petitbac-dernier-salon`, `petitbac-reglages` (catégories, durée, manches, lettres de l'hôte).
 Agents secrets : `agents-sauvegarde` (dont `maCle`, la carte secrète si on est chef), `agents-dernier-salon`.
 Quatre en ligne : `quatre-sauvegarde` (salon), `quatre-solo` (partie contre l'ordinateur), `quatre-niveau`, `quatre-stats`, `quatre-dernier-salon`.
+Dominos : `domino-sauvegarde` (salon ; chez l'hôte, l'état complet avec toutes les mains), `domino-solo` (partie contre l'ordinateur), `domino-jeu`, `domino-ordis`, `domino-buts`, `domino-dernier-salon`.
 Mon compagnon : `compagnon-animal` (espèce, nom, couleur, besoins, objets possédés et portés, série de jours), `compagnon-etoiles` (solde),
 `compagnon-journal` (dernières étoiles gagnées ou dépensées), `compagnon-parties` (parties déjà récompensées), `compagnon-jour` (tâches du jour),
 `compagnon-cadeau` (bonus de bienvenue donné), `compagnon-ancien`, `compagnon-gains-jeux` (étoiles gagnées en jouant aujourd'hui),
@@ -233,6 +235,20 @@ Bataille navale : `bataille-sauvegarde`, `bataille-prive` (ma flotte en salon), 
 - Solo : ordinateur Facile (gagne ou bloque parfois, sinon au hasard), Normal (minimax 4 coups), Fort (minimax 8 coups,
   élagage alpha-bêta, centre d'abord) ; « Annuler mon coup » possible en solo.
 - Salon : les deux premiers présents jouent, les autres regardent ; un joueur parti laisse sa place (nouvelle partie).
+
+### Dominos et Triominos
+- **Dominos** (jeu « à la pioche », double-six, 28 pièces) : 7 chacun à deux, 6 à trois ou quatre. Le plus gros double commence
+  (ensuite le gagnant de la manche précédente). Pas de pièce qui va : on pioche jusqu'à pouvoir jouer ; pioche vide : on passe.
+  Dernier domino posé : on marque les points des mains adverses ; bloqué : le moins chargé marque ceux des autres. Partie en 50, 100 ou 150 points.
+- **Triominos** (56 pièces, 0 à 5 dans les coins, sens horaire croissant ; on tourne, on ne retourne pas) : 9 chacun à deux, 7 à trois ou quatre.
+  Pose contre au moins un côté, **tous les coins qui se touchent identiques**. Points = somme des chiffres ; hexagone complété +50 ;
+  première pièce triple +10 (0-0-0 : +40). Sans coup : pioche −5 (3 au plus) puis passe −10. Fin : +25 + mains adverses ; bloqué : le moins
+  chargé marque la différence. Partie en 200 ou 400 points. Pas de « pont » (règle trop rare, laissée de côté).
+- Écran : dominos en chaîne qui se replie (doubles en travers) ; on touche une pièce verte puis « ici » au bout voulu (posée directement
+  s'il n'y a qu'un bout possible). Triominos : plateau triangulaire SVG qui défile, emplacements possibles en jaune, aperçu, ↻ Tourner, ✓ Poser.
+- Salon : l'hôte choisit le jeu et les points dans la salle d'attente et lance la partie (2 à 4, les suivants regardent). Joueur absent :
+  l'hôte peut « jouer à sa place » (un coup de l'ordinateur). Hôte disparu : un joueur rouvre le salon, mais les mains étaient chez
+  l'hôte, donc retour à la salle d'attente. Étoiles du compagnon à la fin de la **partie**.
 
 ### Mon compagnon (prototype : piste d'un futur Désdale « centre de loisirs pour personnes âgées »)
 - But : petites obligations quotidiennes douces et envie de jouer **ensemble** pour gâter son animal. Grand texte, gros boutons.

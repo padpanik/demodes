@@ -1041,7 +1041,7 @@
     function lireLigne(ligne) { return ligne.trim().split(/\s+/); }
 
     // Numéro de version affiché sur l'accueil (à augmenter à chaque mise en ligne)
-    const VERSION = '1.88';
+    const VERSION = '1.89';
 
     // ================== ACCÈS PRIVÉ ==================
     // Application réservée à un cercle d'amis : un code est demandé au premier lancement.
@@ -1207,7 +1207,7 @@
     // Au rechargement, la page restaure la grille et se reconnecte toute seule au salon.
     const CLE_SAUVEGARDE = 'brillant-sauvegarde-v1';
     // Un seul salon à la fois sur ce téléphone (copie de commun.js) : entrer ici oublie les salons des autres jeux
-    const SALONS_JEUX = { yams: 'yams-sauvegarde', backgammon: 'bg-sauvegarde', assaut: 'assaut-sauvegarde', bataille: 'bataille-sauvegarde', gribouille: 'gribouille-sauvegarde', petitbac: 'petitbac-sauvegarde', agents: 'agents-sauvegarde', quatre: 'quatre-sauvegarde' };
+    const SALONS_JEUX = { yams: 'yams-sauvegarde', backgammon: 'bg-sauvegarde', assaut: 'assaut-sauvegarde', bataille: 'bataille-sauvegarde', gribouille: 'gribouille-sauvegarde', petitbac: 'petitbac-sauvegarde', agents: 'agents-sauvegarde', quatre: 'quatre-sauvegarde', domino: 'domino-sauvegarde' };
     function fermerAutresSalons() {
       Object.keys(SALONS_JEUX).forEach(j => {
         var cle = SALONS_JEUX[j], sv = lireStockage(cle);
