@@ -468,6 +468,11 @@
             <li v-if="!journal.length" style="color:#8a97a1">Pas encore d'étoile : joue une partie !</li>
           </ul>
         </section>
+        <section class="carte">
+          <div class="titre-carte">Changer d'animal</div>
+          <button class="btn" style="width:100%" @click="reprendreAdoption">🐾 Adopter un autre compagnon</button>
+          <div class="aide">Tes étoiles, tes objets, tes coupes et ta maison sont gardés.</div>
+        </section>
         <button class="lien-admin" @click="ouvrirAdmin">{{ admin.actif ? '🛠️ Menu admin' : '🔒 Admin' }}</button>
       </template>
     </template>
@@ -496,8 +501,7 @@
             <button class="btn" @click="toutRemplir">❤️ Remplir tous ses besoins</button>
           </div>
           <div class="groupe-admin">
-            <div class="sous-titre-admin">🐾 Animal</div>
-            <button class="btn" @click="admin.ouvert = false; reprendreAdoption()">Adopter un autre compagnon (étoiles et objets gardés)</button>
+            <div class="sous-titre-admin">🗑️ Effacer</div>
             <button class="btn" style="color:#c0392b" @click="effacerDefis">Effacer défis, coupes et pièces</button>
             <button class="btn" style="color:#c0392b" @click="admin.ouvert = false; toutEffacer()">🗑️ Tout remettre à zéro</button>
           </div>
@@ -673,7 +677,6 @@
           window.scrollTo(0, 0);
         },
         reprendreAdoption: function() {
-          if (!ADMIN.actif()) return;
           if (!confirm('Adopter un autre compagnon ? ' + this.animal.nom + ' partira vivre chez des amis. Tes objets et tes étoiles sont gardés.')) return;
           this.adoption = { espece: '', couleur: '', nom: '' };
           ecrireStockage('compagnon-ancien', this.animal);
