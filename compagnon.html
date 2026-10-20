@@ -227,8 +227,12 @@
             <li v-if="!journal.length" style="color:#8a97a1">Pas encore d'étoile : joue une partie !</li>
           </ul>
         </section>
-        <a class="btn" style="display:block;text-align:center;text-decoration:none;margin-bottom:8px" href="compagnon-3d.html">🧪 Voir la maquette du chien en 3D</a>
-        <button class="btn" style="width:100%;margin-bottom:20px" @click="reprendreAdoption">Adopter un autre compagnon…</button>
+        <section class="carte">
+          <div class="titre-carte">Changer d'animal</div>
+          <button class="btn" style="width:100%;margin-bottom:8px" @click="reprendreAdoption">🐾 Adopter un autre compagnon (étoiles et objets gardés)</button>
+          <button class="btn" style="width:100%;color:#c0392b" @click="toutEffacer">🗑️ Tout remettre à zéro</button>
+          <div class="aide">« Tout remettre à zéro » efface l'animal, les étoiles, les objets achetés et l'historique, sur ce téléphone.</div>
+        </section>
       </template>
     </template>
     <!-- Confirmation d'achat -->
@@ -345,6 +349,17 @@
           this.sauver();
           this.message = 'Bonjour ! Je m\'appelle ' + this.animal.nom + ' 🥰';
           if (!lireStockage('compagnon-cadeau')) { ecrireStockage('compagnon-cadeau', true); Etoiles.ajouter(10, 'Cadeau de bienvenue'); this.etoiles = Etoiles.solde(); this.majJournal(); }
+        },
+        // Repartir de rien (utile pour les essais) : tout ce qui concerne le compagnon et les étoiles est effacé
+        toutEffacer: function() {
+          if (!confirm('Tout remettre à zéro ? L\'animal, les étoiles, les objets et l\'historique seront effacés de ce téléphone.')) return;
+          Object.keys(localStorage).filter(k => k.indexOf('compagnon-') === 0).forEach(k => { try { localStorage.removeItem(k); } catch (e) {} });
+          this.animal = null;
+          this.adoption = { espece: '', couleur: '', nom: '' };
+          this.etoiles = Etoiles.solde();
+          this.chargerJour(); this.majJournal();
+          this.onglet = 'soins';
+          window.scrollTo(0, 0);
         },
         reprendreAdoption: function() {
           if (!confirm('Adopter un autre compagnon ? ' + this.animal.nom + ' partira vivre chez des amis. Tes objets et tes étoiles sont gardés.')) return;
