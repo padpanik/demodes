@@ -271,6 +271,11 @@ Bataille navale : `bataille-sauvegarde`, `bataille-prive` (ma flotte en salon), 
   remue la queue, penche la tête, bâille, ou se **couche** un moment (corps aplati, tête posée). Il dort couché. Une caresse le relève.
   Le dessin est découpé en groupes animés par la page : `queue`, `ailes` (dragon), `torse`, `tete-g`, `regard`, `baillement`
   (ailleurs, sur l'accueil ou chez les amis, il reste assis). Mouvements coupés si le téléphone demande moins d'animations.
+- **Il se sert des objets** (`objetsDeLaPiece` / `faireAvec`) : il va jusqu'à l'objet, se tourne vers lui et dit une petite phrase (5 s).
+  Salon : sieste dans son couchage (s'il en a un, yeux fermés + « z », une caresse le réveille), pousse sa balle, serre sa peluche,
+  renifle la plante, regarde par la fenêtre (soleil, neige, étoiles), admire ses coupes. Cuisine : gamelle (« vide » s'il a faim),
+  frigo. Jardin : sieste sous l'arbre, fleurs, papillon. Chambre : sieste sur le lit, nounours. Salle de jeux : lance les dés, regarde
+  la grille. Trophées : admire. S'il a faim et qu'il y a une cuisine, il y part tout seul attendre près de sa gamelle.
 - Accueil : carte « Mon compagnon » (son dessin, son humeur, les étoiles) fixée en haut avec « En ligne », au-dessus de la liste des jeux qui défile.
 - Boutique : tête, cou (dont laisse et laisse de grande marque), habits (manteau d'hiver…), couchage (coussin → château), déco, friandises.
 

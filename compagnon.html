@@ -80,7 +80,16 @@
     .animal.couche.g-queue .queue { animation: remue-couche 0.4s ease-in-out infinite alternate; }
     @keyframes remue-couche { from { transform: translateY(16px) rotate(15deg); } to { transform: translateY(16px) rotate(35deg); } }
     .animal.couche .corps-anime { animation: respire 4s ease-in-out infinite; }
-    @media (prefers-reduced-motion: reduce) { .animal * { animation: none !important; } }
+    /* Objets avec lesquels il joue */
+    .deco.o-jouet { animation: roule 2.2s ease-in-out; z-index: 2; }
+    @keyframes roule { 0%, 100% { transform: translate(0, 0) rotate(0); } 40% { transform: translate(-70px, 4px) rotate(-320deg); } 70% { transform: translate(-50px, 4px) rotate(-250deg); } }
+    .deco.o-nounours, .deco.o-peluche { animation: serre 1.6s ease-in-out; }
+    @keyframes serre { 0%, 100% { transform: scale(1); } 30%, 60% { transform: scale(1.18) rotate(-8deg); } }
+    .deco.o-gamelle, .deco.o-fleurs, .deco.o-plante { animation: frisson 0.5s ease-in-out 3; }
+    @keyframes frisson { 0%, 100% { transform: rotate(0); } 33% { transform: rotate(-8deg); } 66% { transform: rotate(8deg); } }
+    .des.o-des { animation: lance 1.2s ease-out; }
+    @keyframes lance { 0% { transform: translateY(0) rotate(0); } 40% { transform: translateY(-26px) rotate(200deg); } 100% { transform: translateY(0) rotate(360deg); } }
+    @media (prefers-reduced-motion: reduce) { .animal *, .deco { animation: none !important; } }
     .effet { position: absolute; left: 50%; bottom: 150px; font-size: 30px; pointer-events: none; animation: monte 1.4s ease-out forwards; }
     @keyframes monte { from { opacity: 1; transform: translate(-50%, 0) scale(0.7); } to { opacity: 0; transform: translate(calc(-50% + var(--dx, 0px)), -90px) scale(1.2); } }
     .bulle-cp { position: absolute; left: 12px; top: 12px; max-width: 46%; background: #fff; border-radius: 14px; padding: 6px 10px; font-size: 0.82em; font-weight: 700; color: #3b4b57; box-shadow: 0 2px 6px rgba(0,0,0,0.12); }
@@ -303,7 +312,7 @@
             </div>
             <div v-if="animal.porte && animal.porte.fenetre" class="rideaux"></div>
             <div class="sol"></div>
-            <div v-for="d in decorsVisibles" :key="d.id" class="deco" :style="d.style">{{ d.ico }}</div>
+            <div v-for="d in decorsVisibles" :key="d.id" class="deco" :class="{ ['o-' + vie.objet]: vie.objet === d.slot }" :style="d.style">{{ d.ico }}</div>
             <div v-if="surEtagere.length" class="etagere"><svg v-for="t in surEtagere" :key="t.k" viewBox="0 0 60 72" v-html="CP.coupe(t.niv, t.ico)"></svg></div>
           </template>
           <!-- Salle des trophées : deux vitrines, les coupes les plus récentes devant -->
@@ -323,7 +332,7 @@
             <span style="position:absolute;right:18px;top:14px;font-size:34px">{{ estNuit ? '🌙' : '☀️' }}</span>
             <div class="colline"></div><div class="barriere"></div><div class="herbe"></div>
             <span class="deco" style="left:-6px;bottom:52px;font-size:104px">🌳</span>
-            <span class="deco" style="right:14px;bottom:20px;font-size:28px">🌷</span><span class="deco" style="right:48px;bottom:8px;font-size:22px">🌼</span>
+            <span class="deco" :class="{ 'o-fleurs': vie.objet === 'fleurs' }" style="right:14px;bottom:20px;font-size:28px">🌷</span><span class="deco" style="right:48px;bottom:8px;font-size:22px">🌼</span>
             <span class="deco" style="left:96px;bottom:6px;font-size:22px">🌻</span><span class="deco" style="right:24px;bottom:64px;font-size:30px">🪺</span>
             <span v-if="!estNuit" class="papillon" style="left:150px;top:96px">🦋</span>
           </template>
@@ -334,7 +343,7 @@
             <div class="parquet"></div><div class="tapis-rond"></div>
             <div class="lit"><div class="tete-lit"></div><div class="matelas"></div><div class="oreiller"></div><div class="couverture"></div>
               <div class="pied" style="left:10px"></div><div class="pied" style="right:4px"></div></div>
-            <span class="deco" style="right:14px;bottom:30px;font-size:34px">🧸</span>
+            <span class="deco" :class="{ 'o-nounours': vie.objet === 'nounours' }" style="right:14px;bottom:30px;font-size:34px">🧸</span>
             <span class="deco" style="right:110px;top:30px;font-size:30px">🖼️</span>
           </template>
           <!-- Cuisine -->
@@ -342,7 +351,7 @@
             <div class="etagere-pots">🫙🍯🫖</div>
             <div class="carrelage"></div><div class="plan"></div><div class="frigo"></div>
             <span class="deco" style="left:30px;bottom:160px;font-size:30px">🧺</span><span class="deco" style="left:120px;bottom:160px;font-size:26px">🍎</span>
-            <span class="deco" style="left:14px;bottom:14px;font-size:34px">🥣</span><span class="deco" style="left:54px;bottom:10px;font-size:26px">💧</span>
+            <span class="deco" :class="{ 'o-gamelle': vie.objet === 'gamelle' }" style="left:14px;bottom:14px;font-size:34px">🥣</span><span class="deco" style="left:54px;bottom:10px;font-size:26px">💧</span>
             <span class="deco" style="right:24px;top:22px;font-size:28px">🕰️</span>
           </template>
           <!-- Salle de jeux -->
@@ -350,7 +359,7 @@
             <span class="deco" style="left:20px;top:22px;font-size:42px">🎯</span>
             <div class="boites"><span style="width:70px;background:#e5533d"></span><span style="width:64px;background:#f4c430"></span><span style="width:74px;background:#3a8fd8"></span><span style="width:60px;background:#7e57c2"></span></div>
             <div class="parquet"></div>
-            <div class="table-jeux"><div class="pied"></div><div class="plateau"></div><div class="des">🎲🎲</div></div>
+            <div class="table-jeux"><div class="pied"></div><div class="plateau"></div><div class="des" :class="{ 'o-des': vie.objet === 'des' }">🎲🎲</div></div>
             <div class="grille4"><i v-for="(c, k) in GRILLE4" :key="k" :style="c ? { background: c } : null"></i></div>
             <span class="deco" style="left:22px;bottom:4px;font-size:24px">🧩</span>
           </template>
@@ -361,7 +370,7 @@
             <div class="animal" :class="[humeurClasse, classesVie]" :style="{ left: vie.x + '%', transitionDuration: vie.duree + 'ms' }" @click="caresser">
               <div class="sens" :class="{ gauche: vie.dir < 0 }"><svg viewBox="0 0 200 210" v-html="dessin(animal, humeurClasse)"></svg></div>
             </div>
-            <div v-if="dort" class="zzz" :style="{ left: vie.x + '%' }">z</div>
+            <div v-if="dort || vie.sieste" class="zzz" :style="{ left: vie.x + '%' }">z</div>
             <div v-for="f in effets" :key="f.id" class="effet" :style="{ '--dx': f.dx + 'px', left: vie.x + '%' }">{{ f.ico }}</div>
           </template>
           <button v-else class="appeler" @click="appeler(p.id)">🐾 Appeler {{ animal.nom }}</button>
@@ -606,7 +615,7 @@
         maison: CP.lireMaison(),
         pieceVue: 0,
         // Vie de l'animal dans la pièce : position (% de la largeur), sens, marche, posture, geste en cours
-        vie: { x: 50, dir: 1, marche: false, posture: 'assis', geste: '', duree: 0 },
+        vie: { x: 50, dir: 1, marche: false, posture: 'assis', geste: '', duree: 0, objet: '', sieste: false },
         admin: { ouvert: false, actif: ADMIN.actif(), mdp: '', erreur: '', calcul: false }
       },
       computed: {
@@ -628,7 +637,7 @@
           var p = (this.animal && this.animal.porte) || {}, r = [];
           Object.keys(p).forEach(slot => {
             var a = ARTICLES.find(x => x.id === p[slot]);
-            if (a && a.place && PLACES[slot]) r.push({ id: a.id, ico: a.ico, style: PLACES[slot] + (a.id === 'lampe' && this.estNuit ? ';filter:drop-shadow(0 0 14px #ffd54f)' : '') });
+            if (a && a.place && PLACES[slot]) r.push({ id: a.id, slot: slot, ico: a.ico, style: PLACES[slot] + (a.id === 'lampe' && this.estNuit ? ';filter:drop-shadow(0 0 14px #ffd54f)' : '') });
           });
           return r;
         },
@@ -640,6 +649,7 @@
           if (this.estNuit && this.aBloc('chambre')) return 'chambre';
           return this.aBloc(this.maison.piece) ? this.maison.piece : 'salon';
         },
+        signes: function() { return (this.animal && CP.signes(this.animal, this.maintenant)) || {}; },
         classesVie: function() {
           var v = this.vie;
           return [v.marche ? 'marche' : '', (this.dort || v.posture === 'couche') ? 'couche' : '', v.geste ? 'g-' + v.geste : ''];
@@ -683,7 +693,7 @@
       mounted: function() { this.montrerAnimal(true); this.demarrerVie(); },
       methods: {
         // ---------- Dessin de l'animal (SVG fait par le code, dans compagnon-commun.js) ----------
-        dessin: function(a, humeur) { return CP.dessin(a, humeur, this.estNuit && humeur !== 'triste' && this.animal === a, this.maintenant); },
+        dessin: function(a, humeur) { return CP.dessin(a, humeur, this.animal === a && ((this.estNuit && humeur !== 'triste') || this.vie.sieste), this.maintenant); },
         // Aperçu en boutique : l'animal ne porte que cet accessoire
         apercuAccessoire: function(a) {
           var porte = {}; porte[a.slot] = a.id;
@@ -736,7 +746,7 @@
           vibrer(20);
         },
         caresser: function() {
-          if (!this.dort && this.vie.posture === 'couche') this.vie.posture = 'assis';
+          if (!this.dort && this.vie.posture === 'couche') { this.vie.posture = 'assis'; this.vie.sieste = false; this._levee = 0; }
           this.soigner(BESOINS.find(b => b.id === 'calin'));
           if (!this.dort) this.geste('queue', 1800);
         },
@@ -841,10 +851,15 @@
           if (this.dort) { if (Math.random() < 0.25) this.geste('queue', 1600); return; }          // il dort : à peine un bout de queue
           if (v.posture === 'couche') {
             if (t < this._levee) { if (Math.random() < 0.3) this.geste(Math.random() < 0.5 ? 'queue' : 'regard', 2400); return; }
-            v.posture = 'assis'; this._occupe = t + 900; return;                                     // il se relève
+            v.posture = 'assis'; v.sieste = false; this._occupe = t + 900; return;                   // il se relève
           }
           var r = Math.random(), triste = this.humeurClasse === 'triste';
           var bouge = !(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
+          // Il a faim et il a une cuisine : il va attendre près de sa gamelle
+          if (bouge && this.signes.faim && this.aBloc('cuisine') && this.ouEst !== 'cuisine' && r < 0.3) return this.allerALaCuisine();
+          // Le plus souvent, il va voir un objet de la pièce et s'en sert
+          var objets = bouge ? this.objetsDeLaPiece() : [];
+          if (objets.length && Math.random() < (triste ? 0.25 : 0.45)) return this.utiliserObjet(objets[Math.floor(Math.random() * objets.length)]);
           if (bouge && r < (triste ? 0.15 : 0.4)) this.marcher();
           else if (r < 0.56) this.geste('regard', 2400);
           else if (r < 0.70) this.geste('queue', 2200);
@@ -852,17 +867,97 @@
           else if (r < 0.88) this.geste('baille', 1600);
           else { v.posture = 'couche'; this._levee = t + 8000 + Math.random() * 12000; this._occupe = t + 1500; }
         },
-        // Trottiner jusqu'à un autre endroit de la pièce (il reste toujours bien visible)
-        marcher: function() {
-          var v = this.vie, cible;
-          do { cible = 30 + Math.random() * 40; } while (Math.abs(cible - v.x) < 10);
+        // Trottiner jusqu'à un autre endroit de la pièce (il reste toujours bien visible) ; ensuite : ce qu'il fait en arrivant
+        marcher: function(cible, ensuite) {
+          var v = this.vie;
+          if (cible === undefined) do { cible = 30 + Math.random() * 40; } while (Math.abs(cible - v.x) < 10);
           var duree = Math.round(Math.abs(cible - v.x) * 65);
+          if (duree < 80) { if (ensuite) ensuite(); return; }
           v.dir = cible > v.x ? 1 : -1;
           v.duree = duree; v.marche = true;
           this.$nextTick(() => requestAnimationFrame(() => { v.x = cible; }));
           this._occupe = Date.now() + duree + 600;
           clearTimeout(this._finMarche);
-          this._finMarche = setTimeout(() => { v.marche = false; if (Math.random() < 0.6) setTimeout(() => { v.dir = 1; }, 700); }, duree + 50);
+          this._finMarche = setTimeout(() => {
+            v.marche = false;
+            if (ensuite) ensuite();
+            else if (Math.random() < 0.6) setTimeout(() => { v.dir = 1; }, 700);
+          }, duree + 50);
+        },
+        // Les objets de la pièce où il est : où se placer (x en %), de quel côté regarder, et ce qu'il en fait
+        objetsDeLaPiece: function() {
+          var porte = this.animal.porte || {}, l = [], piece = this.ouEst, jour = !this.estNuit;
+          if (piece === 'salon') {
+            if (porte.couchage) l.push({ id: 'couchage', x: 30, dir: -1, action: 'sieste' });
+            if (porte.jouet === 'balle') l.push({ id: 'jouet', x: 44, dir: 1, action: 'balle' });
+            if (porte.jouet === 'peluche') l.push({ id: 'jouet', x: 64, dir: 1, action: 'calin-objet' });
+            if (porte.plante) l.push({ id: 'plante', x: 70, dir: 1, action: 'renifle', ico: '🌿' });
+            l.push({ id: 'fenetre', x: 68, dir: 1, action: 'fenetre' });
+            if (this.surEtagere.length) l.push({ id: 'etagere', x: 70, dir: 1, action: 'admire' });
+          } else if (piece === 'cuisine') {
+            l.push({ id: 'gamelle', x: 28, dir: -1, action: 'gamelle' });
+            l.push({ id: 'frigo', x: 70, dir: 1, action: 'frigo' });
+          } else if (piece === 'jardin') {
+            l.push({ id: 'arbre', x: 30, dir: -1, action: jour ? 'sieste' : 'regarde' });
+            l.push({ id: 'fleurs', x: 70, dir: 1, action: 'renifle', ico: '🌸' });
+            if (jour) l.push({ id: 'papillon', x: 50, dir: 1, action: 'papillon' });
+          } else if (piece === 'chambre') {
+            l.push({ id: 'lit', x: 30, dir: -1, action: 'sieste' });
+            l.push({ id: 'nounours', x: 70, dir: 1, action: 'calin-objet' });
+          } else if (piece === 'jeux') {
+            l.push({ id: 'des', x: 32, dir: -1, action: 'des' });
+            l.push({ id: 'grille', x: 68, dir: 1, action: 'regarde' });
+          } else if (piece === 'trophees') {
+            l.push({ id: 'vitrine', x: 40, dir: -1, action: 'admire' }, { id: 'vitrine', x: 60, dir: 1, action: 'admire' });
+          }
+          return l;
+        },
+        utiliserObjet: function(o) {
+          this.marcher(o.x, () => {
+            var v = this.vie;
+            v.dir = o.dir;
+            this.faireAvec(o);
+          });
+        },
+        faireAvec: function(o) {
+          var v = this.vie, t = Date.now(), finObjet = ms => { v.objet = o.id; setTimeout(() => { if (v.objet === o.id) v.objet = ''; }, ms); };
+          var dit = '', dire = texte => { this.message = dit = texte; };
+          switch (o.action) {
+            case 'sieste':
+              v.posture = 'couche'; v.sieste = true;
+              this._levee = t + 15000 + Math.random() * 15000; this._occupe = t + 2000;
+              dire(o.id === 'arbre' ? 'Une petite sieste à l\'ombre… 😌' : 'Une petite sieste… 😴');
+              break;
+            case 'balle': finObjet(2200); this.geste('queue', 2400); setTimeout(() => this.animer('⚽', 1), 300); dire('À moi la balle ! ⚽'); break;
+            case 'calin-objet': finObjet(1600); this.geste('penche', 1800); this.animer('❤️', 2); dire('Mon doudou 🥰'); break;
+            case 'renifle': finObjet(1500); this.geste('penche', 1800); this.animer(o.ico || '🌸', 1); dire('Hmm, ça sent bon !'); break;
+            case 'fenetre':
+              this.geste('regard', 2400);
+              dire(this.estNuit ? 'Que d\'étoiles ce soir ✨' : this.estHiver ? 'Oh, il neige ! ❄️' : 'Il fait beau dehors ☀️');
+              break;
+            case 'admire': this.geste('regard', 2400); this.animer('✨', 2); dire('Nos belles coupes ! 🏆'); break;
+            case 'gamelle':
+              finObjet(1500); this.geste('penche', 1800);
+              if (this.signes.faim) dire('Ma gamelle est vide… 🥺');
+              else if (this.signes.soif) dire('Un peu d\'eau fraîche ? 💧');
+              else { this.animer('😋', 1); dire('Il reste des miettes !'); }
+              break;
+            case 'frigo': this.geste('regard', 2400); dire('Il y a du bon là-dedans ? 🧀'); break;
+            case 'papillon': this.geste('regard', 2400); this.animer('🦋', 1); dire('Un papillon ! 🦋'); break;
+            case 'des': finObjet(1200); this.geste('queue', 2200); setTimeout(() => this.animer('🎲', 1), 500); dire('On fait une partie ? 🎲'); break;
+            default: this.geste('regard', 2400);
+          }
+          setTimeout(() => { if (dit && this.message === dit) this.message = ''; }, 5000);   // sa petite phrase s'efface toute seule
+        },
+        // Il part tout seul à la cuisine attendre son repas (on le voit y aller)
+        allerALaCuisine: function() {
+          this.message = 'Je vais voir ma gamelle 🥣';
+          this.$set(this.maison, 'piece', 'cuisine');
+          CP.ecrireMaison(this.maison);
+          this.vie.x = 50; this.vie.posture = 'assis';
+          this.montrerAnimal();
+          this._occupe = Date.now() + 2500;
+          setTimeout(() => this.utiliserObjet({ id: 'gamelle', x: 28, dir: -1, action: 'gamelle' }), 1500);
         },
         geste: function(g, ms) {
           var v = this.vie;
