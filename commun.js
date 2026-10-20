@@ -3,7 +3,7 @@
 // Les clés de stockage gardent l'ancien préfixe "brillant-" : les réglages déjà faits sont conservés.
 
 // Numéro de version affiché (à augmenter à chaque mise en ligne, avec brilliant.html et sw.js)
-const VERSION = '1.89';
+const VERSION = '1.90';
 
 // ---------- Stockage local ----------
 function lireStockage(cle) {
@@ -228,6 +228,26 @@ const Etoiles = {
     if (!discret && n > 0) this.bulle('+' + n + ' ⭐', raison);
   },
   // Fin d'une partie : récompense selon victoire et nombre de joueurs (une seule fois par partie)
+  // Record battu en jouant seul (meilleur que l'ancien, pas le tout premier) : bonus hors plafond du jour
+  RECORD: 5,
+  record: function(jeu, detail) {
+    this.ajouter(this.RECORD, 'Nouveau record · ' + jeu + (detail ? ' (' + detail + ')' : ''), true);
+    setTimeout(() => this.bulle('🏆 Nouveau record ! +' + this.RECORD + ' ⭐', jeu + (detail ? ' · ' + detail : '')), 3200);   // après la bulle de fin de partie
+  },
+  // Série de victoires d'affilée contre l'ordinateur (une par jeu et niveau) : quand elle dépasse la meilleure série,
+  // un bonus, une seule fois par série (continuer à gagner ensuite ne rapporte pas plus)
+  serie: function(cle, gagne, jeu, libelle) {
+    var t = lireStockage('compagnon-series') || {}, s = t[cle] || { n: 0, max: 0, r: false }, nouveau = false;
+    if (gagne) {
+      s.n++;
+      if (s.n > s.max) { if (s.max > 0 && !s.r) { s.r = true; nouveau = true; } s.max = s.n; }
+    } else { s.n = 0; s.r = false; }
+    t[cle] = s;
+    ecrireStockage('compagnon-series', t);
+    if (nouveau) this.record(jeu, s.n + ' victoires d\'affilée' + (libelle ? ', ' + libelle : ''));
+    return s;
+  },
+  meilleureSerie: function(cle) { var s = (lireStockage('compagnon-series') || {})[cle]; return s ? s.max : 0; },
   // Journal des parties terminées (lu par les défis de la semaine du compagnon) : jeu, victoire, à plusieurs, détails
   evenement: function(jeu, gagne, aPlusieurs, info) {
     var ev = lireStockage('compagnon-evenements') || [];

@@ -669,7 +669,9 @@
         statsTexte: function() {
           var m = this.phase && !this.role ? this.modePartie : this.mode, s = this.stats[m];
           if (!s.v && !s.d) return '';
-          return 'Contre l\'ordinateur (partie ' + (m === 'complet' ? 'complète' : 'rapide') + ') : ' + s.v + ' victoire' + (s.v > 1 ? 's' : '') + ', ' + s.d + ' défaite' + (s.d > 1 ? 's' : '');
+          var serie = Etoiles.meilleureSerie('assaut-' + m);
+          return 'Contre l\'ordinateur (partie ' + (m === 'complet' ? 'complète' : 'rapide') + ') : ' + s.v + ' victoire' + (s.v > 1 ? 's' : '') + ', ' + s.d + ' défaite' + (s.d > 1 ? 's' : '') +
+                 (serie > 1 ? ' · record : ' + serie + ' victoires d\'affilée' : '');
         },
         bandeau: function() {
           var p = this.pub;
@@ -1226,6 +1228,7 @@
             var gagne = partie.fin.gagnant === this.monC, s = this.stats[this.modePartie];
             if (gagne) s.v++; else s.d++;
             ecrireStockage('assaut-stats', this.stats);
+            Etoiles.serie('assaut-' + this.modePartie, gagne, 'Assaut', 'partie ' + (this.modePartie === 'complet' ? 'complète' : 'rapide'));
             this.ajouterLog(gagne ? 'Victoire !' : 'Défaite.', true);
             this.sonFin(gagne);
           }

@@ -928,6 +928,7 @@
         enregistrerRecord: function(jeu) {
           var score = jeu.fin.classement[0].total, ancien = this.record;
           jeu.fin.nouveauRecord = score > ancien;
+          if (score > ancien && ancien > 0) Etoiles.record('Yams', score + ' pts');
           jeu.fin.ancienRecord = ancien;
           if (score > ancien) {
             this.record = score;

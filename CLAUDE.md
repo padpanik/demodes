@@ -120,7 +120,7 @@ Dominos : `domino-sauvegarde` (salon ; chez l'hôte, l'état complet avec toutes
 Mon compagnon : `compagnon-animal` (espèce, nom, couleur, besoins, objets possédés et portés, série de jours), `compagnon-etoiles` (solde),
 `compagnon-journal` (dernières étoiles gagnées ou dépensées), `compagnon-parties` (parties déjà récompensées), `compagnon-jour` (tâches du jour),
 `compagnon-cadeau` (bonus de bienvenue donné), `compagnon-ancien`, `compagnon-gains-jeux` (étoiles gagnées en jouant aujourd'hui),
-`compagnon-reglages`, `compagnon-veille`, `compagnon-evenements` (parties terminées), `compagnon-defis`, `compagnon-trophees`, `compagnon-maison`.
+`compagnon-reglages`, `compagnon-veille`, `compagnon-series` (séries de victoires solo), `compagnon-evenements` (parties terminées), `compagnon-defis`, `compagnon-trophees`, `compagnon-maison`.
 Bataille navale : `bataille-sauvegarde`, `bataille-prive` (ma flotte en salon), `bataille-dernier-salon`, `bataille-stats`, `bataille-colles`, `bataille-rejouer`, `bataille-niveau`, `bataille-style`.
 
 ## Règles des jeux (choix de l'utilisateur, à ne pas changer sans lui)
@@ -280,6 +280,10 @@ Bataille navale : `bataille-sauvegarde`, `bataille-prive` (ma flotte en salon), 
 - Étoiles des jeux (`Etoiles.finDePartie`, une fois par partie) : à plusieurs +5 victoire / +2 partie ; seul +2 victoire ; Yams solo +2.
   **Plafond : 30 ⭐ par jour en jouant** (`compagnon-gains-jeux`) ; au-delà la partie compte pour les tâches mais ne rapporte rien.
   Branché dans tous les jeux sauf Brilliant (qui n'utilise pas `commun.js`). Tout est local au téléphone (prototype, sans serveur).
+- **Record battu en solo** : +5 ⭐ (`Etoiles.record`, hors plafond), seulement s'il bat un record existant (pas le premier).
+  Yams : meilleur score ; Bataille navale : flotte coulée en moins de tirs ; Brilliant : meilleur score du niveau (fonction locale
+  `etoilesRecord`) ; Quatre en ligne (par niveau), Assaut (par format), Dominos/Triominos : **série de victoires d'affilée**
+  contre l'ordinateur (`Etoiles.serie`, `compagnon-series`), récompensée une seule fois par série quand elle dépasse la meilleure.
 - **Défis de la semaine** (`DEFIS` dans `compagnon-commun.js`) : chaque semaine (lundi → dimanche) un défi Facile, Moyen, Difficile,
   **les mêmes pour tout le monde** (tirés d'après le numéro de semaine, 6 par niveau, pas de répétition avant 6 semaines). Ils se lisent dans
   le journal des parties `compagnon-evenements` (`Etoiles.evenement`, appelé par `finDePartie` ; Yams solo et Quatre en ligne solo

@@ -141,6 +141,7 @@
           </div>
           <button class="btn principal" style="width:100%" @click="demarrerSolo">🤖 {{ soloEnCours ? 'Reprendre la partie' : 'Jouer seul' }}</button>
           <button v-if="soloEnCours" class="btn" style="width:100%;margin-top:6px" @click="nouveauSolo">Nouvelle partie ({{ NOMS[jeuChoisi] }})</button>
+          <div class="aide" v-if="serieRecord > 1">Record : {{ serieRecord }} parties gagnées d'affilée contre l'ordinateur.</div>
         </section>
         <section class="carte">
           <div class="titre-carte">À plusieurs (2 à 4), chacun sur son téléphone</div>
@@ -388,6 +389,7 @@
       computed: {
         moi: function() { return this.pseudoInput.trim() || 'Moi'; },
         // En solo, je suis le premier joueur de la partie enregistrée
+        serieRecord: function() { this.soloEnCours; return Etoiles.meilleureSerie('domino-' + this.jeuChoisi); },
         moiJ: function() { return this.solo && this.e ? this.e.joueurs[0] : this.moi; },
         vibrationSupportee: function() { return typeof navigator.vibrate === 'function'; },
         connexionTexte: function() { return { ok: 'en ligne', connexion: 'connexion…', perdue: 'reconnexion…', aucune: 'hors ligne' }[this.connexion]; },
@@ -661,8 +663,10 @@
             if (e.resultat && e.resultat.gagnant === moi) { setTimeout(() => this.son('victoire'), 300); this.vibre([100, 60, 100]); }
           }
           // Fin de partie : les étoiles du compagnon (une seule fois par partie)
-          if (e.phase === 'finPartie' && (!ea || ea.phase !== 'finPartie') && e.joueurs.indexOf(moi) !== -1)
+          if (e.phase === 'finPartie' && (!ea || ea.phase !== 'finPartie') && e.joueurs.indexOf(moi) !== -1) {
             Etoiles.finDePartie(NOMS[e.jeu], e.vainqueur === moi, !this.solo, p.partieId, { jeu: e.jeu, joueurs: e.joueurs.length });
+            if (this.solo) Etoiles.serie('domino-' + e.jeu, e.vainqueur === moi, NOMS[e.jeu]);
+          }
         },
         publier: function() {
           this.diffuser();

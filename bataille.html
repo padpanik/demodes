@@ -1257,7 +1257,10 @@
             if (gagne) {
               s.v++;
               var n = partie.journal.filter(j => j.c === this.monC).length;
-              if (partie.fin.raison === 'flotte' && (!s.record || n < s.record)) s.record = n;
+              if (partie.fin.raison === 'flotte' && (!s.record || n < s.record)) {
+                if (s.record) Etoiles.record('Bataille navale', 'flotte coulée en ' + n + ' tirs');
+                s.record = n;
+              }
             } else s.d++;
             ecrireStockage('bataille-stats', this.stats);
             this.ajouterLog(gagne ? 'Victoire !' : 'Défaite.', true);

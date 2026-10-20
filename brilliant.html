@@ -1041,7 +1041,7 @@
     function lireLigne(ligne) { return ligne.trim().split(/\s+/); }
 
     // Numéro de version affiché sur l'accueil (à augmenter à chaque mise en ligne)
-    const VERSION = '1.89';
+    const VERSION = '1.90';
 
     // ================== ACCÈS PRIVÉ ==================
     // Application réservée à un cercle d'amis : un code est demandé au premier lancement.
@@ -1219,6 +1219,23 @@
     }
     function lireStockage(cle) {
       try { var t = localStorage.getItem(cle); return t ? JSON.parse(t) : null; } catch (e) { return null; }
+    }
+    // Même effet qu'Etoiles.record dans commun.js : +5 ⭐ hors plafond, une ligne dans le journal, une petite bulle
+    function etoilesRecord(detail) {
+      var n = 5;
+      ecrireStockage('compagnon-etoiles', (lireStockage('compagnon-etoiles') || 0) + n);
+      var j = lireStockage('compagnon-journal') || [];
+      j.push({ h: Date.now(), n: n, r: 'Nouveau record · ' + detail });
+      ecrireStockage('compagnon-journal', j.slice(-80));
+      setTimeout(() => {
+        try {
+          var d = document.createElement('div');
+          d.style.cssText = 'position:fixed;left:50%;top:14px;transform:translateX(-50%);z-index:5000;background:#fff8dc;color:#7a5600;border-radius:16px;padding:8px 16px;font:800 18px system-ui,sans-serif;box-shadow:0 6px 20px rgba(0,0,0,.18);text-align:center;pointer-events:none';
+          d.innerHTML = '🏆 Nouveau record ! +' + n + ' ⭐<div style="font:600 12px system-ui,sans-serif;color:#9a7a2a">Pour ton compagnon</div>';
+          document.body.appendChild(d);
+          setTimeout(() => d.remove(), 3500);
+        } catch (e) {}
+      }, 600);
     }
     function ecrireStockage(cle, val) {
       try { localStorage.setItem(cle, JSON.stringify(val)); } catch (e) { /* stockage indisponible */ }
@@ -1863,6 +1880,8 @@
             var ancien = this.records[this.level] || 0;
             fin = { solo: true, gagnants: [moi], score: score, record: Math.max(ancien, score),
                     nouveauRecord: score > ancien, ancienRecord: ancien };
+            // Record battu (pas le tout premier) : +5 étoiles pour « Mon compagnon » (Brilliant n'utilise pas commun.js)
+            if (score > ancien && ancien > 0) etoilesRecord('Brilliant niveau ' + this.level + ', ' + score + ' pts');
             if (score > ancien) {
               this.$set(this.records, this.level, score);
               ecrireStockage('brillant-records', this.records);

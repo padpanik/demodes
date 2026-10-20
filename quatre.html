@@ -104,7 +104,7 @@
             <button v-for="n in NIVEAUX" :key="n.id" :class="{ actif: niveau === n.id }" @click="niveau = n.id">{{ n.nom }}</button>
           </div>
           <button class="btn principal" style="width:100%" @click="demarrerSolo">🤖 {{ soloEnCours ? 'Reprendre la partie' : 'Jouer seul' }}</button>
-          <div class="aide" v-if="statsSolo.parties">Contre l'ordinateur : {{ statsSolo.gagnees }} gagnée{{ statsSolo.gagnees > 1 ? 's' : '' }} sur {{ statsSolo.parties }}.</div>
+          <div class="aide" v-if="statsSolo.parties">Contre l'ordinateur : {{ statsSolo.gagnees }} gagnée{{ statsSolo.gagnees > 1 ? 's' : '' }} sur {{ statsSolo.parties }}.<span v-if="meilleureSerie > 1"> Record au niveau {{ NIVEAUX.find(n => n.id === niveau).nom }} : {{ meilleureSerie }} victoires d'affilée.</span></div>
         </section>
         <section class="carte">
           <div class="titre-carte">À deux, chacun sur son téléphone</div>
@@ -241,6 +241,7 @@
         niveau: lireStockage('quatre-niveau') || 'normal',
         statsSolo: lireStockage('quatre-stats') || { parties: 0, gagnees: 0 },
         survol: -1,
+        majSerie: 0,
         historique: [],
         pseudoInput: pseudoSauvegarde(),
         channelInput: lireStockage('quatre-dernier-salon') || lireStockage('brillant-dernier-salon') || '',
@@ -255,6 +256,7 @@
       },
       computed: {
         moi: function() { return this.pseudoInput.trim() || 'Moi'; },
+        meilleureSerie: function() { this.majSerie; return Etoiles.meilleureSerie('quatre-' + this.niveau); },
         vibrationSupportee: function() { return typeof navigator.vibrate === 'function'; },
         connexionTexte: function() { return { ok: 'en ligne', connexion: 'connexion…', perdue: 'reconnexion…', aucune: 'hors ligne' }[this.connexion]; },
         soloEnCours: function() { var s = lireStockage('quatre-solo'); return !!(s && s.phase === 'jeu' && s.coups.length); },
@@ -362,6 +364,9 @@
           if (e.phase === 'fin') {
             this.statsSolo = { parties: this.statsSolo.parties + 1, gagnees: this.statsSolo.gagnees + (e.resultat.gagnant === 1 ? 1 : 0) };
             ecrireStockage('quatre-stats', this.statsSolo);
+            var niv = e.niveau || this.niveau;
+            Etoiles.serie('quatre-' + niv, e.resultat.gagnant === 1, 'Quatre en ligne', 'niveau ' + NIVEAUX.find(n => n.id === niv).nom);
+            this.majSerie++;
           }
           this.sauverSolo();
           this.tourOrdi();
