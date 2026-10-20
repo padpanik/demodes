@@ -237,6 +237,10 @@ Bataille navale : `bataille-sauvegarde`, `bataille-prive` (ma flotte en salon), 
 ### Mon compagnon (prototype : piste d'un futur Désdale « centre de loisirs pour personnes âgées »)
 - But : petites obligations quotidiennes douces et envie de jouer **ensemble** pour gâter son animal. Grand texte, gros boutons.
 - Animaux (SVG dessinés par le code) : chat, chien, chèvre, dragon, lapin, renard, panda, tortue, raton laveur, singe, oie, écureuil ; une couleur au choix (aperçu en grand), un nom.
+- **Renard redessiné** (premier animal « personnalisé », d'après des images d'inspiration de l'utilisateur, sans les recopier) :
+  grandes oreilles à pointes sombres et intérieur crème, touffes de joues, mèche sur le front, masque et plastron crème en dents de scie,
+  pattes avant en chaussettes sombres, grosse queue touffue au bout crème, yeux plissés de bonheur et bouche « ω » quand il est content.
+  Même squelette que les autres : accessoires, signes et postures inchangés. Les autres animaux pourront suivre de la même façon.
 - Rendu « niveau 1 » : dégradés arrondis (`relief` dans `compagnon-commun.js`), reflets sur la tête et le ventre, ombre douce au sol.
 - **Menu admin** (testeurs, lien « 🔒 Admin » en bas de l'onglet ⚙️ Réglages) : protégé par un mot de passe dont seule l'empreinte est publiée
   (`ADMIN` dans `commun.js` : PBKDF2-SHA256, sel `desdale-admin-v1`, 150 000 itérations ; déverrouillage gardé dans `desdale-admin`).
