@@ -253,7 +253,7 @@
         </div>
         <div class="pastilles"><button v-for="c in especeChoisie.couleurs" :key="c" :class="{ actif: adoption.couleur === c }" :style="{ background: c }" @click="adoption.couleur = c"></button></div>
         <label class="champ">Son nom<input type="text" v-model="adoption.nom" maxlength="16" :placeholder="'ex : ' + especeChoisie.exemple"></label>
-        <button class="btn principal btn-large" :disabled="!adoption.nom.trim()" @click="adopter">💛 Adopter {{ adoption.nom.trim() || '' }}</button>
+        <button class="btn principal btn-large" style="margin-top:14px" :disabled="!adoption.nom.trim()" @click="adopter">💛 Adopter {{ adoption.nom.trim() || '' }}</button>
       </section>
     </template>
 
