@@ -23,6 +23,7 @@ Tout est en français : interface, commentaires du code, messages de commit, ré
 |---|---|
 | `index.html` | Code d'accès, puis choix du jeu. Reprend tout seul une partie en salon en cours (sauf avec `?choix`). |
 | `commun.js` / `commun.css` | Base partagée : `VERSION`, stockage local, `clientId`, `ACCES`, `Sons` (Web Audio), `Voix` (synthèse vocale), `vibrer`, enregistrement du service worker. |
+| `etoiles.js` | `Etoiles` (monnaie de « Mon compagnon ») : chargé juste après `commun.js` par toutes les pages, **et par `brilliant.html`** (il n'a besoin que de `lireStockage` / `ecrireStockage`). |
 | `brilliant.html` | Brilliant (roll & write). Page autonome historique : elle a **sa propre copie** de `ACCES`, `Sons`, `Voix`, `VERSION` (n'utilise pas `commun.js`). |
 | `yams.html` | Yams, solo et à plusieurs (chacun son tour). Utilise `commun.js`. |
 | `backgammon.html` + `backgammon-regles.js` | Backgammon à deux. Le moteur de règles est dans `backgammon-regles.js` (testable avec Node). |
@@ -279,10 +280,10 @@ Bataille navale : `bataille-sauvegarde`, `bataille-prive` (ma flotte en salon), 
 - Tâches du jour : nourrir 2 fois, eau, 3 câlins, une partie avec des amis → +3 ⭐ ; +10 ⭐ tous les 7 jours de suite. 10 ⭐ offertes à l'adoption.
 - Étoiles des jeux (`Etoiles.finDePartie`, une fois par partie) : à plusieurs +5 victoire / +2 partie ; seul +2 victoire ; Yams solo +2.
   **Plafond : 30 ⭐ par jour en jouant** (`compagnon-gains-jeux`) ; au-delà la partie compte pour les tâches mais ne rapporte rien.
-  Branché dans tous les jeux sauf Brilliant (qui n'utilise pas `commun.js`). Tout est local au téléphone (prototype, sans serveur).
+  Branché dans **tous** les jeux, Brilliant compris (`recompenserFin`, partie solo +2 comme le Yams). Une partie à plusieurs compte pour la tâche
+  du jour et les défis **gagnée ou perdue** (seule la fin de la *partie* compte, pas une manche). Tout est local au téléphone (prototype, sans serveur).
 - **Record battu en solo** : +5 ⭐ (`Etoiles.record`, hors plafond), seulement s'il bat un record existant (pas le premier).
-  Yams : meilleur score ; Bataille navale : flotte coulée en moins de tirs ; Brilliant : meilleur score du niveau (fonction locale
-  `etoilesRecord`) ; Quatre en ligne (par niveau), Assaut (par format), Dominos/Triominos : **série de victoires d'affilée**
+  Yams : meilleur score ; Bataille navale : flotte coulée en moins de tirs ; Brilliant : meilleur score du niveau ; Quatre en ligne (par niveau), Assaut (par format), Dominos/Triominos : **série de victoires d'affilée**
   contre l'ordinateur (`Etoiles.serie`, `compagnon-series`), récompensée une seule fois par série quand elle dépasse la meilleure.
 - **Défis de la semaine** (`DEFIS` dans `compagnon-commun.js`) : chaque semaine (lundi → dimanche) un défi Facile, Moyen, Difficile,
   **les mêmes pour tout le monde** (tirés d'après le numéro de semaine, 6 par niveau, pas de répétition avant 6 semaines). Ils se lisent dans

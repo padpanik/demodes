@@ -575,6 +575,7 @@
   </div>
 
   <script src="commun.js"></script>
+  <script src="etoiles.js"></script>
   <script src="compagnon-commun.js"></script>
   <script>
     if (!ACCES.memorise()) location.replace('index.html');
@@ -683,13 +684,12 @@
         setInterval(() => { this.maintenant = Date.now(); this.etoiles = Etoiles.solde(); this.defis = CP.etatDefis(); }, 20000);
         this.chargerJour();
         this.majJournal();
-        // Une partie jouée aujourd'hui (repérée dans le journal des étoiles) compte pour les tâches du jour
-        var auj = jourDe(Date.now());
-        if ((lireStockage('compagnon-journal') || []).some(j => jourDe(j.h) === auj && /entre amis/.test(j.r))) { this.jour.faits.jeu = 1; this.verifierJour(); }
+        // Une partie jouée aujourd'hui avec des amis (gagnée ou perdue) compte pour les tâches du jour
+        this.verifierPartieAmis();
         if (this.animal) this.accueil();
         this.majDefis();
         window.addEventListener('cp-defis', () => this.majDefis(true));
-        document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') { this.maintenant = Date.now(); this.majDefis(); } });
+        document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') { this.maintenant = Date.now(); this.chargerJour(); this.verifierPartieAmis(); this.majDefis(); } });
       },
       mounted: function() { this.montrerAnimal(true); this.demarrerVie(); },
       methods: {
@@ -788,6 +788,13 @@
           if (a.serie % 7 === 0) Etoiles.ajouter(RECOMPENSE_SEMAINE, a.serie + ' jours de suite !');
           this.etoiles = Etoiles.solde(); this.majJournal();
           this.animer('⭐', 4);
+        },
+        // Une partie terminée avec des amis aujourd'hui (gagnée ou perdue), lue dans le journal des parties
+        verifierPartieAmis: function() {
+          var auj = jourDe(Date.now());
+          var ev = (lireStockage('compagnon-evenements') || []).some(e => e.p && jourDe(e.h) === auj);
+          var jr = (lireStockage('compagnon-journal') || []).some(j => jourDe(j.h) === auj && /entre amis/.test(j.r));
+          if ((ev || jr) && !(this.jour.faits.jeu >= 1)) { this.$set(this.jour.faits, 'jeu', 1); this.verifierJour(); }
         },
         // Message d'accueil selon son état
         accueil: function() {

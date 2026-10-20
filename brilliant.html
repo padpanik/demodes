@@ -874,6 +874,7 @@
     </template>
   </div>
 
+  <script src="etoiles.js"></script>   <!-- étoiles de « Mon compagnon » (utilise lireStockage / ecrireStockage d'ici) -->
   <script>
     // ================== DONNÉES DU JEU ==================
 
@@ -1041,7 +1042,7 @@
     function lireLigne(ligne) { return ligne.trim().split(/\s+/); }
 
     // Numéro de version affiché sur l'accueil (à augmenter à chaque mise en ligne)
-    const VERSION = '1.90';
+    const VERSION = '1.91';
 
     // ================== ACCÈS PRIVÉ ==================
     // Application réservée à un cercle d'amis : un code est demandé au premier lancement.
@@ -1219,23 +1220,6 @@
     }
     function lireStockage(cle) {
       try { var t = localStorage.getItem(cle); return t ? JSON.parse(t) : null; } catch (e) { return null; }
-    }
-    // Même effet qu'Etoiles.record dans commun.js : +5 ⭐ hors plafond, une ligne dans le journal, une petite bulle
-    function etoilesRecord(detail) {
-      var n = 5;
-      ecrireStockage('compagnon-etoiles', (lireStockage('compagnon-etoiles') || 0) + n);
-      var j = lireStockage('compagnon-journal') || [];
-      j.push({ h: Date.now(), n: n, r: 'Nouveau record · ' + detail });
-      ecrireStockage('compagnon-journal', j.slice(-80));
-      setTimeout(() => {
-        try {
-          var d = document.createElement('div');
-          d.style.cssText = 'position:fixed;left:50%;top:14px;transform:translateX(-50%);z-index:5000;background:#fff8dc;color:#7a5600;border-radius:16px;padding:8px 16px;font:800 18px system-ui,sans-serif;box-shadow:0 6px 20px rgba(0,0,0,.18);text-align:center;pointer-events:none';
-          d.innerHTML = '🏆 Nouveau record ! +' + n + ' ⭐<div style="font:600 12px system-ui,sans-serif;color:#9a7a2a">Pour ton compagnon</div>';
-          document.body.appendChild(d);
-          setTimeout(() => d.remove(), 3500);
-        } catch (e) {}
-      }, 600);
     }
     function ecrireStockage(cle, val) {
       try { localStorage.setItem(cle, JSON.stringify(val)); } catch (e) { /* stockage indisponible */ }
@@ -1881,7 +1865,7 @@
             fin = { solo: true, gagnants: [moi], score: score, record: Math.max(ancien, score),
                     nouveauRecord: score > ancien, ancienRecord: ancien };
             // Record battu (pas le tout premier) : +5 étoiles pour « Mon compagnon » (Brilliant n'utilise pas commun.js)
-            if (score > ancien && ancien > 0) etoilesRecord('Brilliant niveau ' + this.level + ', ' + score + ' pts');
+            if (score > ancien && ancien > 0) Etoiles.record('Brilliant', 'niveau ' + this.level + ', ' + score + ' pts');
             if (score > ancien) {
               this.$set(this.records, this.level, score);
               ecrireStockage('brillant-records', this.records);
@@ -1926,6 +1910,7 @@
             this.vibre(pourMoi ? [60, 50, 120] : 40);
           }
           if (data.fin && !this.finPartie) {
+            this.recompenserFin(data.fin);
             if (this.sonActif) Sons.jouer('victoire');
             this.vibre([100, 60, 100, 60, 250]);
             this.finPartie = data.fin;
@@ -1935,6 +1920,19 @@
           }
         },
         masquerFin: function() { this.finMasquee = true; },
+        // Étoiles du compagnon à la fin d'une partie : gagnée ou perdue, à plusieurs elle compte (tâche du jour, défis)
+        recompenserFin: function(fin, scores) {
+          try {
+            if (fin.solo) {
+              Etoiles.evenement('Brilliant', false, false, { score: fin.score });
+              Etoiles.recompenseJeu(Etoiles.BAREME.victoireSeul, 'Partie solo de Brilliant terminée');
+              return;
+            }
+            var moi = monPseudo || this.monPseudoAffiche, sc = scores || this.scores || {};
+            if (!moi || sc[moi] === undefined) return;          // spectateur (salle d'attente) : rien
+            Etoiles.finDePartie('Brilliant', (fin.gagnants || []).indexOf(moi) !== -1, true, this.partieId || undefined);
+          } catch (e) {}
+        },
         nouvellePartie: function() {
           if (this.role === 'client') return;
           this.buildGrid();
@@ -2418,7 +2416,7 @@
           this.prochainLanceur = data.prochainLanceur;
           this.mesGains = Object.assign({}, data.gains || {});
           if (data.joueurs) this.joueurs = data.joueurs;
-          if (data.fin) { if (!this.finPartie) this.finMasquee = false; this.finPartie = data.fin; }
+          if (data.fin) { if (!this.finPartie) { this.finMasquee = false; this.recompenserFin(data.fin, data.scores); } this.finPartie = data.fin; }
           else this.finPartie = null;
 
           var resolu = data.lancerId === 0 || data.lancerResolu === data.lancerId;
