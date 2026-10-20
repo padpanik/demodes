@@ -99,7 +99,10 @@ var CP = (function () {
     // Air triste : seulement le manque de câlins (sinon, pour un dessin sans besoins, l'humeur demandée)
     var s = '', triste = sg ? sg.calin : humeur === 'triste';
     if (sg && humeur === 'triste' && !sg.calin) humeur = 'calme';
-    // Derrière : queue, ailes
+    // Le dessin est découpé en groupes que la page peut animer : queue, torse, tête (tete-g), regard, bâillement
+    // Derrière : ailes du dragon (elles suivent le corps), puis la queue
+    if (e === 'dragon') s += '<g class="ailes"><path d="M60 128 Q20 92 34 70 Q44 96 66 108 Z" fill="' + fonce + '"/><path d="M140 128 Q180 92 166 70 Q156 96 134 108 Z" fill="' + fonce + '"/></g>';
+    s += '<g class="queue">';
     if (e === 'chat') s += '<path d="M150 170 Q190 150 178 105" stroke="' + c + '" stroke-width="13" fill="none" stroke-linecap="round"/>';
     if (e === 'chien') s += '<path d="M150 165 Q178 150 172 128" stroke="' + c + '" stroke-width="12" fill="none" stroke-linecap="round"/>';
     if (e === 'renard') s += '<path d="M146 175 Q200 168 186 112 Q172 140 146 150 Z" fill="' + c + '"/><path d="M186 112 Q190 128 178 136 Q182 120 186 112Z" fill="#fff"/>';
@@ -111,11 +114,12 @@ var CP = (function () {
     if (e === 'ecureuil') s += '<path d="M138 182 Q204 176 198 112 Q194 56 146 62 Q178 90 164 122 Q154 142 138 152 Z" fill="' + c + '"/>' +
                                '<path d="M150 160 Q190 150 184 112 Q182 84 164 76" stroke="' + clair + '" stroke-width="7" fill="none" stroke-linecap="round" opacity="0.7"/>';
     if (e === 'tortue') s += '<path d="M150 178 l18 -4 l-16 -8 z" fill="' + c + '"/>';
-    if (e === 'dragon') s += '<path d="M60 128 Q20 92 34 70 Q44 96 66 108 Z" fill="' + fonce + '"/><path d="M140 128 Q180 92 166 70 Q156 96 134 108 Z" fill="' + fonce + '"/>' +
-                              '<path d="M146 172 Q196 172 190 140 l10 -6 l-14 -2 Q182 160 146 158 Z" fill="' + c + '"/>';
+    if (e === 'dragon') s += '<path d="M146 172 Q196 172 190 140 l10 -6 l-14 -2 Q182 160 146 158 Z" fill="' + c + '"/>';
+    s += '</g>';
     // Corps
     s += '<g class="corps-anime">';
     s += '<ellipse cx="100" cy="201" rx="60" ry="9" fill="rgba(0,0,0,0.22)" filter="url(#v-flou)"/>';
+    s += '<g class="torse">';
     s += '<ellipse cx="100" cy="158" rx="54" ry="42" fill="' + c + '"/>';
     s += '<ellipse cx="100" cy="166" rx="32" ry="28" fill="' + clair + '"/>';
     var pattes = e === 'oie' ? '#f39c12' : fonce;
@@ -127,6 +131,11 @@ var CP = (function () {
     if (e === 'oie') s += '<ellipse cx="54" cy="160" rx="15" ry="28" fill="' + fonce + '" transform="rotate(18 54 160)"/><ellipse cx="146" cy="160" rx="15" ry="28" fill="' + fonce + '" transform="rotate(-18 146 160)"/>';
     if (e === 'panda') s += '<path d="M48 150 Q50 124 74 120 L78 172 Q60 176 48 150Z M152 150 Q150 124 126 120 L122 172 Q140 176 152 150Z" fill="' + noir + '"/>';
     if (p.corps) s += habit(p.corps, c);
+    s += '<ellipse cx="74" cy="138" rx="14" ry="8" fill="#fff" opacity="0.18" transform="rotate(-30 74 138)"/>';
+    if (sg && sg.faim) s += '<g stroke="#b5562a" stroke-width="4.5" fill="none" stroke-linecap="round">' +
+      '<path d="M40 150 q-7 10 0 20 M30 145 q-10 15 0 30 M160 150 q7 10 0 20 M170 145 q10 15 0 30"/>' +
+      '<animate attributeName="opacity" values="1;0.15;1;0.15;1" dur="1.6s" repeatCount="indefinite"/></g>';
+    s += '</g><g class="tete-g">';
     // Oreilles (derrière la tête)
     if (e === 'chat') s += '<path d="M58 58 L60 12 L94 44 Z" fill="' + c + '"/><path d="M142 58 L140 12 L106 44 Z" fill="' + c + '"/><path d="M64 48 L65 24 L84 42 Z" fill="#f4a9b8"/><path d="M136 48 L135 24 L116 42 Z" fill="#f4a9b8"/>';
     if (e === 'renard') s += '<path d="M56 60 L58 8 L96 44 Z" fill="' + c + '"/><path d="M144 60 L142 8 L104 44 Z" fill="' + c + '"/><path d="M62 50 L63 22 L84 42 Z" fill="#3b2a20"/><path d="M138 50 L137 22 L116 42 Z" fill="#3b2a20"/>';
@@ -156,8 +165,8 @@ var CP = (function () {
     // Yeux : ouverts, fermés (la nuit), tristes
     var paupiere = (e === 'panda' || e === 'raton') ? '#fff' : '#2b2b2b';
     if (dort) s += '<path d="M72 80 q8 6 16 0" stroke="' + paupiere + '" stroke-width="3.5" fill="none" stroke-linecap="round"/><path d="M112 80 q8 6 16 0" stroke="' + paupiere + '" stroke-width="3.5" fill="none" stroke-linecap="round"/>';
-    else s += '<g class="yeux"><ellipse cx="80" cy="80" rx="8" ry="10" fill="#2b2b2b"/><ellipse cx="120" cy="80" rx="8" ry="10" fill="#2b2b2b"/>' +
-              '<circle cx="83" cy="76" r="3.4" fill="#fff"/><circle cx="123" cy="76" r="3.4" fill="#fff"/><circle cx="77" cy="85" r="1.6" fill="#fff" opacity="0.7"/><circle cx="117" cy="85" r="1.6" fill="#fff" opacity="0.7"/></g>' +
+    else s += '<g class="regard"><g class="yeux"><ellipse cx="80" cy="80" rx="8" ry="10" fill="#2b2b2b"/><ellipse cx="120" cy="80" rx="8" ry="10" fill="#2b2b2b"/>' +
+              '<circle cx="83" cy="76" r="3.4" fill="#fff"/><circle cx="123" cy="76" r="3.4" fill="#fff"/><circle cx="77" cy="85" r="1.6" fill="#fff" opacity="0.7"/><circle cx="117" cy="85" r="1.6" fill="#fff" opacity="0.7"/></g></g>' +
               (triste ? '<path d="M68 68 L86 62 M132 68 L114 62" stroke="#2b2b2b" stroke-width="3" stroke-linecap="round"/><ellipse cx="128" cy="94" rx="3" ry="5" fill="#7fc8f8"/>' : '');
     // Joues, nez, bouche
     s += '<ellipse cx="66" cy="98" rx="9" ry="6" fill="#f48fb1" opacity="0.55"/><ellipse cx="134" cy="98" rx="9" ry="6" fill="#f48fb1" opacity="0.55"/>';
@@ -167,21 +176,20 @@ var CP = (function () {
     if (langue) s += e === 'oie' ? '<path d="M96 104 Q96 118 100 119 Q104 118 104 104 Z" fill="#ef6f8a"/>'
       : '<path d="M88 106 Q100 114 112 106" stroke="#3b2a2a" stroke-width="3" fill="none" stroke-linecap="round"/>' +
         '<path d="M92 108 Q91 127 100 128 Q109 127 108 108 Q100 112 92 108Z" fill="#ef6f8a" stroke="#c94f6b" stroke-width="1.5"/><path d="M100 112 V122" stroke="#c94f6b" stroke-width="1.5" stroke-linecap="round"/>';
-    else if (e !== 'oie') s += triste ? '<path d="M90 112 q10 -8 20 0" stroke="#3b2a2a" stroke-width="3" fill="none" stroke-linecap="round"/>'
-       : humeur === 'content' ? '<path d="M88 104 q12 14 24 0" stroke="#3b2a2a" stroke-width="3" fill="#e57373" stroke-linecap="round"/>'
-       : '<path d="M92 106 q8 6 16 0" stroke="#3b2a2a" stroke-width="3" fill="none" stroke-linecap="round"/>';
+    else if (e !== 'oie') s += triste ? '<path class="bouche" d="M90 112 q10 -8 20 0" stroke="#3b2a2a" stroke-width="3" fill="none" stroke-linecap="round"/>'
+       : humeur === 'content' ? '<path class="bouche" d="M88 104 q12 14 24 0" stroke="#3b2a2a" stroke-width="3" fill="#e57373" stroke-linecap="round"/>'
+       : '<path class="bouche" d="M92 106 q8 6 16 0" stroke="#3b2a2a" stroke-width="3" fill="none" stroke-linecap="round"/>';
+    // Bâillement : invisible, la page l'affiche de temps en temps
+    if (!langue) s += e === 'oie' ? '<ellipse class="baillement" cx="100" cy="103" rx="7" ry="6" fill="#7a2f3a" opacity="0"/>'
+                                  : '<ellipse class="baillement" cx="100" cy="111" rx="8" ry="10" fill="#7a2f3a" opacity="0"/>';
     if (e === 'chevre') s += '<path d="M94 122 Q100 146 106 122 Z" fill="#e8e2d6"/>';
     if (e === 'ecureuil' && !triste) s += '<rect x="95.5" y="106" width="9" height="8" rx="2" fill="#fff" stroke="#d8cfc4" stroke-width="1"/><path d="M100 106 v8" stroke="#d8cfc4" stroke-width="1"/>';
     if (e === 'chat' || e === 'renard' || e === 'raton' || e === 'ecureuil') s += '<path d="M60 98 l-22 -4 M60 104 l-22 4 M140 98 l22 -4 M140 104 l22 4" stroke="#2b2b2b" stroke-width="1.5" opacity="0.5"/>';
     if (p.cou) s += accessoireCou(p.cou);
     if (p.tete) s += chapeau(p.tete);
-    if (sg && sg.faim) s += '<g stroke="#b5562a" stroke-width="4.5" fill="none" stroke-linecap="round">' +
-      '<path d="M40 150 q-7 10 0 20 M30 145 q-10 15 0 30 M160 150 q7 10 0 20 M170 145 q10 15 0 30"/>' +
-      '<animate attributeName="opacity" values="1;0.15;1;0.15;1" dur="1.6s" repeatCount="indefinite"/></g>';
     // Reflets : lumière venant d'en haut à gauche (tête et ventre)
     s += '<ellipse cx="80" cy="56" rx="20" ry="12" fill="#fff" opacity="0.28" transform="rotate(-25 80 56)"/>';
-    s += '<ellipse cx="74" cy="138" rx="14" ry="8" fill="#fff" opacity="0.18" transform="rotate(-30 74 138)"/>';
-    s += '</g>';
+    s += '</g></g>';
     if (sg && sg.toilette) s += mouches();
     return relief(s, { c: c, f: fonce, l: clair, n: noir });
   }

@@ -48,6 +48,39 @@
     @keyframes sautille { 0%, 100% { transform: translateY(0); } 40% { transform: translateY(-7px); } 60% { transform: translateY(-7px) scale(1.02, 0.98); } }
     .animal .yeux { transform-origin: 100px 82px; animation: cligne 4.5s infinite; }
     @keyframes cligne { 0%, 93%, 100% { transform: scaleY(1); } 95% { transform: scaleY(0.1); } }
+    /* ---------- Vie : promenade, petits gestes, posture couchée ---------- */
+    .animal { transition-property: left; transition-timing-function: linear; }
+    .animal .sens { transition: transform 0.35s ease; }
+    .animal .sens.gauche { transform: scaleX(-1); }
+    .animal .torse { transform-origin: 100px 200px; transition: transform 0.7s ease; }
+    .animal .tete-g { transform-origin: 100px 125px; transition: transform 0.7s ease; }
+    .animal .queue { transform-origin: 146px 172px; transition: transform 0.7s ease; }
+    .animal .regard { transition: transform 0.3s ease; }
+    .animal.marche .corps-anime { animation: trotte 0.34s ease-in-out infinite; }
+    @keyframes trotte { 0%, 100% { transform: translateY(0) rotate(0); } 25% { transform: translateY(-6px) rotate(-2deg); } 75% { transform: translateY(-6px) rotate(2deg); } }
+    .animal.marche .queue, .animal.g-queue .queue { animation: remue 0.3s ease-in-out infinite alternate; }
+    @keyframes remue { from { transform: rotate(-9deg); } to { transform: rotate(11deg); } }
+    .animal.g-regard .regard { animation: regarde 2.4s ease-in-out; }
+    @keyframes regarde { 0%, 100% { transform: translateX(0); } 20%, 45% { transform: translateX(-5px); } 60%, 88% { transform: translateX(5px); } }
+    .animal.g-penche .tete-g { animation: penche 1.8s ease-in-out; }
+    @keyframes penche { 0%, 100% { transform: rotate(0); } 25%, 75% { transform: rotate(-10deg); } }
+    .animal.g-baille .baillement { animation: baille 1.6s ease-in-out; }
+    @keyframes baille { 0%, 100% { opacity: 0; transform: scaleY(0.3); } 30%, 70% { opacity: 1; transform: scaleY(1); } }
+    .animal .baillement { transform-box: fill-box; transform-origin: center; }
+    .animal.g-baille .bouche { animation: cache 1.6s ease-in-out; }
+    @keyframes cache { 0%, 100% { opacity: 1; } 25%, 75% { opacity: 0; } }
+    /* Couché : le corps s'aplatit, la tête se pose dessus */
+    .animal.couche .torse { transform: scale(1.12, 0.7); }
+    .animal.couche .tete-g { transform: translateY(30px); }
+    .animal.couche .queue { transform: translateY(16px) rotate(25deg); }
+    .animal .ailes { transform-origin: 100px 200px; transition: transform 0.7s ease; }
+    .animal.couche .ailes { transform: translateY(26px) scale(1, 0.8); }
+    .animal.marche .ailes { animation: bat 0.34s ease-in-out infinite alternate; }
+    @keyframes bat { from { transform: scaleY(1); } to { transform: scaleY(0.88); } }
+    .animal.couche.g-queue .queue { animation: remue-couche 0.4s ease-in-out infinite alternate; }
+    @keyframes remue-couche { from { transform: translateY(16px) rotate(15deg); } to { transform: translateY(16px) rotate(35deg); } }
+    .animal.couche .corps-anime { animation: respire 4s ease-in-out infinite; }
+    @media (prefers-reduced-motion: reduce) { .animal * { animation: none !important; } }
     .effet { position: absolute; left: 50%; bottom: 150px; font-size: 30px; pointer-events: none; animation: monte 1.4s ease-out forwards; }
     @keyframes monte { from { opacity: 1; transform: translate(-50%, 0) scale(0.7); } to { opacity: 0; transform: translate(calc(-50% + var(--dx, 0px)), -90px) scale(1.2); } }
     .bulle-cp { position: absolute; left: 12px; top: 12px; max-width: 46%; background: #fff; border-radius: 14px; padding: 6px 10px; font-size: 0.82em; font-weight: 700; color: #3b4b57; box-shadow: 0 2px 6px rgba(0,0,0,0.12); }
@@ -325,11 +358,11 @@
           <!-- L'animal est dans cette pièce, ou on peut l'appeler -->
           <template v-if="p.id === ouEst">
             <div class="bulle-cp" v-if="message">{{ message }}</div>
-            <div class="animal" :class="humeurClasse" @click="caresser">
-              <svg viewBox="0 0 200 210" v-html="dessin(animal, humeurClasse)"></svg>
+            <div class="animal" :class="[humeurClasse, classesVie]" :style="{ left: vie.x + '%', transitionDuration: vie.duree + 'ms' }" @click="caresser">
+              <div class="sens" :class="{ gauche: vie.dir < 0 }"><svg viewBox="0 0 200 210" v-html="dessin(animal, humeurClasse)"></svg></div>
             </div>
-            <div v-if="dort" class="zzz">z</div>
-            <div v-for="f in effets" :key="f.id" class="effet" :style="{ '--dx': f.dx + 'px' }">{{ f.ico }}</div>
+            <div v-if="dort" class="zzz" :style="{ left: vie.x + '%' }">z</div>
+            <div v-for="f in effets" :key="f.id" class="effet" :style="{ '--dx': f.dx + 'px', left: vie.x + '%' }">{{ f.ico }}</div>
           </template>
           <button v-else class="appeler" @click="appeler(p.id)">🐾 Appeler {{ animal.nom }}</button>
         </div>
@@ -572,6 +605,8 @@
         trophees: CP.trophees(),
         maison: CP.lireMaison(),
         pieceVue: 0,
+        // Vie de l'animal dans la pièce : position (% de la largeur), sens, marche, posture, geste en cours
+        vie: { x: 50, dir: 1, marche: false, posture: 'assis', geste: '', duree: 0 },
         admin: { ouvert: false, actif: ADMIN.actif(), mdp: '', erreur: '', calcul: false }
       },
       computed: {
@@ -604,6 +639,10 @@
         ouEst: function() {
           if (this.estNuit && this.aBloc('chambre')) return 'chambre';
           return this.aBloc(this.maison.piece) ? this.maison.piece : 'salon';
+        },
+        classesVie: function() {
+          var v = this.vie;
+          return [v.marche ? 'marche' : '', (this.dort || v.posture === 'couche') ? 'couche' : '', v.geste ? 'g-' + v.geste : ''];
         },
         surEtagere: function() { return this.maison.etagere.map(k => this.trophees.find(t => t.k === k)).filter(Boolean); },
         // Deux vitrines de 3 rayons, 2 coupes par rayon : les 12 plus récentes
@@ -641,7 +680,7 @@
         window.addEventListener('cp-defis', () => this.majDefis(true));
         document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') { this.maintenant = Date.now(); this.majDefis(); } });
       },
-      mounted: function() { this.montrerAnimal(true); },
+      mounted: function() { this.montrerAnimal(true); this.demarrerVie(); },
       methods: {
         // ---------- Dessin de l'animal (SVG fait par le code, dans compagnon-commun.js) ----------
         dessin: function(a, humeur) { return CP.dessin(a, humeur, this.estNuit && humeur !== 'triste' && this.animal === a, this.maintenant); },
@@ -696,7 +735,11 @@
           if (typeof Sons !== 'undefined') try { Sons.jouer('toc'); } catch (e) {}
           vibrer(20);
         },
-        caresser: function() { this.soigner(BESOINS.find(b => b.id === 'calin')); },
+        caresser: function() {
+          if (!this.dort && this.vie.posture === 'couche') this.vie.posture = 'assis';
+          this.soigner(BESOINS.find(b => b.id === 'calin'));
+          if (!this.dort) this.geste('queue', 1800);
+        },
         changerBesoin: function(id, gain) {
           var a = this.animal;
           a.besoins[id] = { v: Math.min(100, this.niveaux[id] + gain), t: Date.now() };
@@ -781,6 +824,52 @@
           this.animer(a.ico, 3);
           this.message = 'Un régal ! 😋';
           this.sauver();
+        },
+
+        // ---------- Vie : il se promène, regarde autour de lui, remue la queue, se couche… ----------
+        // Mouvements lents et doux ; rien quand l'appli n'est pas à l'écran ; jamais hors de la pièce.
+        demarrerVie: function() {
+          if (this._vie) return;
+          this._occupe = 0; this._levee = 0;
+          var tour = () => { this._vie = setTimeout(tour, 2500 + Math.random() * 4500); this.agir(); };
+          this._vie = setTimeout(tour, 3000);
+        },
+        agir: function() {
+          if (!this.animal || document.visibilityState === 'hidden' || this.enAchat || this.admin.ouvert) return;
+          var v = this.vie, t = Date.now();
+          if (t < this._occupe || v.marche) return;
+          if (this.dort) { if (Math.random() < 0.25) this.geste('queue', 1600); return; }          // il dort : à peine un bout de queue
+          if (v.posture === 'couche') {
+            if (t < this._levee) { if (Math.random() < 0.3) this.geste(Math.random() < 0.5 ? 'queue' : 'regard', 2400); return; }
+            v.posture = 'assis'; this._occupe = t + 900; return;                                     // il se relève
+          }
+          var r = Math.random(), triste = this.humeurClasse === 'triste';
+          var bouge = !(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
+          if (bouge && r < (triste ? 0.15 : 0.4)) this.marcher();
+          else if (r < 0.56) this.geste('regard', 2400);
+          else if (r < 0.70) this.geste('queue', 2200);
+          else if (r < 0.82) this.geste('penche', 1800);
+          else if (r < 0.88) this.geste('baille', 1600);
+          else { v.posture = 'couche'; this._levee = t + 8000 + Math.random() * 12000; this._occupe = t + 1500; }
+        },
+        // Trottiner jusqu'à un autre endroit de la pièce (il reste toujours bien visible)
+        marcher: function() {
+          var v = this.vie, cible;
+          do { cible = 30 + Math.random() * 40; } while (Math.abs(cible - v.x) < 10);
+          var duree = Math.round(Math.abs(cible - v.x) * 65);
+          v.dir = cible > v.x ? 1 : -1;
+          v.duree = duree; v.marche = true;
+          this.$nextTick(() => requestAnimationFrame(() => { v.x = cible; }));
+          this._occupe = Date.now() + duree + 600;
+          clearTimeout(this._finMarche);
+          this._finMarche = setTimeout(() => { v.marche = false; if (Math.random() < 0.6) setTimeout(() => { v.dir = 1; }, 700); }, duree + 50);
+        },
+        geste: function(g, ms) {
+          var v = this.vie;
+          v.geste = ''; this.$nextTick(() => { v.geste = g; });
+          this._occupe = Date.now() + ms;
+          clearTimeout(this._finGeste);
+          this._finGeste = setTimeout(() => { if (v.geste === g) v.geste = ''; }, ms);
         },
 
         // ---------- Maison ----------

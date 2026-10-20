@@ -266,6 +266,11 @@ Bataille navale : `bataille-sauvegarde`, `bataille-prive` (ma flotte en salon), 
 - **Maison qui s'agrandit** (`compagnon-maison` : pièces, clés, pièce où il est, coupes sur l'étagère) : les pièces défilent de gauche à droite
   (glisser ou flèches). Salon (étagère de 3 coupes sous la fenêtre), Salle des trophées (offerte à la 1re coupe, deux vitrines),
   puis au choix avec une clé : Jardin, Chambre (il y dort la nuit), Cuisine, Salle de jeux. « Appeler » le fait venir dans la pièce affichée.
+- **Vie dans la pièce** (`demarrerVie` / `agir` dans `compagnon.html`, toutes les 2,5 à 7 s, rien si l'appli n'est pas à l'écran) :
+  il trottine d'un endroit à l'autre (entre 30 % et 70 % de la largeur, tourné dans le sens de la marche), regarde à gauche et à droite,
+  remue la queue, penche la tête, bâille, ou se **couche** un moment (corps aplati, tête posée). Il dort couché. Une caresse le relève.
+  Le dessin est découpé en groupes animés par la page : `queue`, `ailes` (dragon), `torse`, `tete-g`, `regard`, `baillement`
+  (ailleurs, sur l'accueil ou chez les amis, il reste assis). Mouvements coupés si le téléphone demande moins d'animations.
 - Accueil : carte « Mon compagnon » (son dessin, son humeur, les étoiles) fixée en haut avec « En ligne », au-dessus de la liste des jeux qui défile.
 - Boutique : tête, cou (dont laisse et laisse de grande marque), habits (manteau d'hiver…), couchage (coussin → château), déco, friandises.
 
