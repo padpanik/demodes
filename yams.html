@@ -859,7 +859,7 @@
           if (finit) {
             this.finMasquee = false;
             // Étoiles du compagnon : en solo, 2 pour une partie finie ; à plusieurs, selon la victoire
-            if (nouveau.solo) Etoiles.ajouter(Etoiles.BAREME.victoireSeul, 'Partie de Yams terminée');
+            if (nouveau.solo) Etoiles.recompenseJeu(Etoiles.BAREME.victoireSeul, 'Partie de Yams terminée');
             else if (nouveau.ordre.indexOf(this.moi) !== -1) Etoiles.finDePartie('Yams', nouveau.fin.gagnants.indexOf(this.moi) !== -1, true, nouveau.partieId);
             if (this.sonActif) Sons.jouer('victoire');
             this.vibre([100, 60, 100, 60, 250]);

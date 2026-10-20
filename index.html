@@ -67,6 +67,15 @@
     .ico-pb { width: 51px; height: 51px; border-radius: 10px; background: #fff; box-shadow: inset 0 0 0 2px #2c3e50; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
               font: 900 30px/1 Georgia, 'Times New Roman', serif; color: #c0392b; }
     .jeu > .ico-pb { height: 56px; }
+    /* Bloc fixe en haut : « En ligne » et « Mon compagnon » restent visibles quand on fait défiler les jeux */
+    .haut-fixe { position: sticky; top: 0; z-index: 20; background: #f3f5f7; padding: 6px 0 10px; margin-bottom: 4px; }
+    .carte-compagnon { display: flex; align-items: center; gap: 12px; background: linear-gradient(135deg, #fff8e1, #ffeccc); border-radius: 18px; padding: 8px 14px 8px 8px;
+                       text-decoration: none; color: inherit; box-shadow: 0 1px 2px rgba(0,0,0,0.05), 0 4px 14px rgba(29,43,54,0.06); }
+    .carte-compagnon svg { width: 62px; height: 66px; flex-shrink: 0; }
+    .carte-compagnon .infos-cp { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+    .carte-compagnon .nom-cp { font-weight: 800; font-size: 1.15em; }
+    .carte-compagnon .etat-cp { font-size: 0.85em; color: #6b5a3a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .carte-compagnon .etoiles-cp { background: #fff; color: #7a5600; font-weight: 900; border-radius: 12px; padding: 4px 10px; flex-shrink: 0; }
     .ico-cp { width: 51px; height: 51px; border-radius: 14px; background: #fff3c4; display: flex; align-items: center; justify-content: center; font-size: 30px; flex-shrink: 0; }
     .jeu > .ico-cp { height: 56px; }
     .ico-ql { width: 51px; height: 51px; border-radius: 10px; background: #1f5fae; display: grid; grid-template-columns: repeat(3, 12px); gap: 3px; align-content: center; justify-content: center; flex-shrink: 0; }
@@ -104,8 +113,20 @@
         </div>
       </header>
 
-      <!-- Salon global : qui est en ligne (rempli par salon-global.js) -->
-      <div id="sg-ici" style="margin-bottom:14px"></div>
+      <!-- En haut, fixes pendant que la liste des jeux défile : qui est en ligne, et mon compagnon -->
+      <div class="haut-fixe">
+        <!-- Salon global : qui est en ligne (rempli par salon-global.js) -->
+        <div id="sg-ici" style="margin-bottom:8px"></div>
+        <a class="carte-compagnon" href="compagnon.html" @click="retenir('compagnon')">
+          <svg v-if="compagnon" viewBox="0 -6 200 216" v-html="compagnon.dessin"></svg>
+          <span v-else class="ico-cp">🐾</span>
+          <span class="infos-cp">
+            <span class="nom-cp">{{ compagnon ? compagnon.nom : 'Mon compagnon' }}</span>
+            <span class="etat-cp">{{ compagnon ? compagnon.etat : 'Adopte un petit animal' }}</span>
+          </span>
+          <span class="etoiles-cp">⭐ {{ compagnon ? compagnon.etoiles : etoiles }}</span>
+        </a>
+      </div>
 
       <div class="titre-section">Choisis ton jeu<span class="astuce-tri">{{ glisse ? 'glisse puis lâche' : 'appui long pour trier' }}</span></div>
       <!-- Ordre propre à chaque téléphone : appui long sur une fiche, puis la faire glisser -->
@@ -120,7 +141,6 @@
           <div v-else-if="j.id === 'assaut'" class="ico-as"><span v-for="(c, k) in ['#b5422f','#b5422f','#b5422f','#5d9bc9','#a9c08c','#5d9bc9','#2f5f9e','#2f5f9e','#2f5f9e']" :key="k" :style="{ background: c }"></span></div>
           <div v-else-if="j.id === 'gribouille'" class="ico-gb"><svg width="38" height="38" viewBox="0 0 38 38"><path d="M5 27 C 9 12, 14 30, 19 17 S 28 8, 33 20" fill="none" stroke="#e74c3c" stroke-width="3.5" stroke-linecap="round"/><path d="M24 33 l9 -9 l3 3 l-9 9 z" fill="#f2b134"/><path d="M24 33 l-2 5 l5 -2 z" fill="#2c3e50"/></svg></div>
           <div v-else-if="j.id === 'petitbac'" class="ico-pb">B</div>
-          <div v-else-if="j.id === 'compagnon'" class="ico-cp">🐾</div>
           <div v-else-if="j.id === 'quatre'" class="ico-ql"><span v-for="(c, k) in ['', 'j', '', 'r', 'r', 'j', 'j', 'r', 'r']" :key="k" :class="c"></span></div>
           <div v-else-if="j.id === 'agents'" class="ico-ag"><span v-for="(c, k) in ['#c0392b','#e6dcc3','#2f6fb0','#2f6fb0','#1d2b36','#c0392b','#e6dcc3','#c0392b','#2f6fb0']" :key="k" :style="{ background: c }"></span></div>
           <div v-else-if="j.id === 'bataille'" class="ico-bn"><span v-for="(x, k) in ['', 'e', '', 'n', 'n', 't', '', '', 'e']" :key="k" :class="x"></span></div>
@@ -145,6 +165,7 @@
   </div>
 
   <script src="commun.js"></script>
+  <script src="compagnon-commun.js"></script>
   <script>
     const B = '#5dc1ec', V = '#7fcc8f', J = '#f7d24a', R = '#ee7163', M = '#b39ddb', O = '#f9a15a';
 
@@ -181,12 +202,21 @@
           var o = this.ordre, rang = (j) => { var i = o.indexOf(j.id); return i < 0 ? 100 : i; };
           return this.jeux.map((j, k) => ({ j: j, k: k })).sort((a, b) => (rang(a.j) - rang(b.j)) || (a.k - b.k)).map(x => x.j);
         },
+        etoiles: function() { this.maj; return Etoiles.solde(); },
+        // Mon compagnon, dessiné sur sa carte avec son humeur du moment
+        compagnon: function() {
+          this.maj;
+          var a = lireStockage('compagnon-animal');
+          if (!a || typeof CP === 'undefined') return null;
+          var n = CP.niveaux(a), h = CP.humeur(n), nuit = CP.estNuit() && h !== 'triste';
+          var bas = CP.BESOINS.filter(b => n[b.id] < 30).map(b => ({ repas: 'a faim', eau: 'a soif', toilette: 'voudrait un bain', calin: 'voudrait un câlin' })[b.id]);
+          return { nom: a.nom, dessin: CP.dessin(a, h, nuit), etoiles: Etoiles.solde(),
+                   etat: bas.length ? '😟 ' + bas.join(', ') : nuit ? '😴 Dort paisiblement' : h === 'content' ? '😊 Très heureux' : '🙂 Va bien' };
+        },
         jeux: function() {
           this.maj;   // recalcul après « Quitter »
           var b = etatJeu('brillant-sauvegarde-v1'), y = etatJeu('yams-sauvegarde'), g = etatJeu('bg-sauvegarde'), a = etatJeu('assaut-sauvegarde'), n = etatJeu('bataille-sauvegarde'), d = etatJeu('gribouille-sauvegarde'), pb = etatJeu('petitbac-sauvegarde'), ag = etatJeu('agents-sauvegarde'), ql = etatJeu('quatre-sauvegarde');
-          var cp = lireStockage('compagnon-animal');
           return [
-            { id: 'compagnon', nom: 'Mon compagnon', page: 'compagnon.html', desc: (cp ? 'Prends soin de ' + cp.nom : 'Adopte un petit animal') + ' · ⭐ ' + Etoiles.solde(), enCours: null },
             { id: 'brilliant', nom: 'Brilliant', page: 'brilliant.html', desc: 'Roll & write : remplis les zones de ta grille.', enCours: b && b.texte },
             { id: 'yams', nom: 'Yams', page: 'yams.html', desc: '5 dés, 3 lancers, seul ou à plusieurs.', enCours: y && y.texte },
             { id: 'backgammon', nom: 'Backgammon', page: 'backgammon.html', desc: 'À deux, avec le videau et les gammons.', enCours: g && g.texte },
@@ -200,6 +230,7 @@
         }
       },
       created: function() {
+        setInterval(() => { this.maj++; }, 30000);   // humeur du compagnon et étoiles à jour
         // Glisser au doigt : il faut pouvoir bloquer le défilement de la page pendant le tri
         document.addEventListener('touchmove', (e) => { if (this.glisse) { e.preventDefault(); this.deplacer(e.touches[0].clientY); } else this.bougeAvant(e.touches[0]); }, { passive: false });
         document.addEventListener('touchend', () => this.finAppui());

@@ -1,0 +1,156 @@
+// ================== MON COMPAGNON : ESPÈCES, BESOINS, BOUTIQUE ET DESSIN ==================
+// Partagé par compagnon.html et l'accueil (qui montre le compagnon sur sa carte).
+
+var CP = (function () {
+  var ESPECES = [
+    { id: 'chat', nom: 'Chat', exemple: 'Minou', couleurs: ['#f0a04b', '#7d8a94', '#3b3b3b', '#f4e6d4'] },
+    { id: 'chien', nom: 'Chien', exemple: 'Biscotte', couleurs: ['#c8915a', '#f4e6d4', '#5b4636', '#e8c07a'] },
+    { id: 'chevre', nom: 'Chèvre', exemple: 'Blanchette', couleurs: ['#f2efe8', '#c9a27a', '#8d8d8d'] },
+    { id: 'dragon', nom: 'Dragon', exemple: 'Flammèche', couleurs: ['#4caf7a', '#7e57c2', '#e5533d', '#3a8fd8'] },
+    { id: 'lapin', nom: 'Lapin', exemple: 'Pompon', couleurs: ['#f4f1ec', '#b9a28a', '#8d8d8d', '#e9c9a6'] },
+    { id: 'renard', nom: 'Renard', exemple: 'Roussette', couleurs: ['#e8772e', '#c95a3a', '#d9cbb8'] }
+  ];
+  // ================== BESOINS (en %, ils baissent doucement avec le temps réel) ==================
+  // Heures pour passer de plein à vide : on nourrit matin et soir, on donne à boire, un bain tous les deux jours…
+  var BESOINS = [
+    { id: 'repas', nom: 'Repas', ico: '🍖', action: 'Nourrir', heures: 14, gain: 45, effet: '😋' },
+    { id: 'eau', nom: 'Eau', ico: '💧', action: 'Donner', heures: 12, gain: 60, effet: '💦' },
+    { id: 'toilette', nom: 'Toilette', ico: '🛁', action: 'Laver', heures: 40, gain: 100, effet: '🫧' },
+    { id: 'calin', nom: 'Câlins', ico: '❤️', action: 'Câliner', heures: 20, gain: 34, effet: '❤️' }
+  ];
+  var RECOMPENSE_JOUR = 3, RECOMPENSE_SEMAINE = 10;
+
+  // ================== BOUTIQUE ==================
+  // slot : où se porte ou se pose l'objet (un seul par emplacement) ; conso : se consomme (friandises)
+  var RAYONS = [{ id: 'tete', nom: '🎩 Tête' }, { id: 'cou', nom: '🎀 Cou' }, { id: 'corps', nom: '🧥 Habits' },
+                  { id: 'maison', nom: '🛏️ Couchage' }, { id: 'deco', nom: '🪴 Déco' }, { id: 'gourmand', nom: '🍪 Friandises' }];
+  var ARTICLES = [
+    { id: 'bonnet', rayon: 'tete', slot: 'tete', nom: 'Bonnet de laine', desc: 'Bien au chaud en hiver', prix: 12, couleur: '#3a8fd8' },
+    { id: 'chapeau', rayon: 'tete', slot: 'tete', nom: 'Chapeau melon', desc: 'Très distingué', prix: 25, couleur: '#2b2b2b' },
+    { id: 'fleur', rayon: 'tete', slot: 'tete', nom: 'Fleur', desc: 'Une jolie fleur à l\'oreille', prix: 8, couleur: '#f06292' },
+    { id: 'couronne', rayon: 'tete', slot: 'tete', nom: 'Couronne', desc: 'Pour un vrai petit roi', prix: 80, couleur: '#f4c430' },
+    { id: 'collier', rayon: 'cou', slot: 'cou', nom: 'Collier rouge', desc: 'Le classique', prix: 6, couleur: '#d64541' },
+    { id: 'noeud', rayon: 'cou', slot: 'cou', nom: 'Nœud papillon', desc: 'Pour les grandes occasions', prix: 15, couleur: '#7e57c2' },
+    { id: 'echarpe', rayon: 'cou', slot: 'cou', nom: 'Écharpe', desc: 'Douce et chaude', prix: 18, couleur: '#2e9e6b' },
+    { id: 'laisse', rayon: 'cou', slot: 'cou', nom: 'Collier et laisse', desc: 'Prêt pour la promenade', prix: 14, couleur: '#c0392b' },
+    { id: 'laisse-luxe', rayon: 'cou', slot: 'cou', nom: 'Laisse de grande marque', desc: 'Cuir et dorures', prix: 60, couleur: '#8b5a2b' },
+    { id: 'pull', rayon: 'corps', slot: 'corps', nom: 'Petit pull', desc: 'Tricoté main', prix: 20, couleur: '#e67e22' },
+    { id: 'manteau', rayon: 'corps', slot: 'corps', nom: 'Manteau d\'hiver', desc: 'Indispensable quand il neige', prix: 35, couleur: '#2c5aa0' },
+    { id: 'cape', rayon: 'corps', slot: 'corps', nom: 'Cape de héros', desc: 'Pour les jours de bravoure', prix: 45, couleur: '#c0392b' },
+    { id: 'coussin', rayon: 'maison', slot: 'couchage', nom: 'Coussin', desc: 'Pour la sieste', prix: 8, ico: '🟫', place: true },
+    { id: 'panier', rayon: 'maison', slot: 'couchage', nom: 'Panier douillet', desc: 'Un vrai lit à soi', prix: 20, ico: '🧺', place: true },
+    { id: 'niche', rayon: 'maison', slot: 'couchage', nom: 'Niche en bois', desc: 'Une petite maison', prix: 40, ico: '🛖', place: true },
+    { id: 'chateau', rayon: 'maison', slot: 'couchage', nom: 'Petit château', desc: 'Le grand luxe', prix: 120, ico: '🏰', place: true },
+    { id: 'plante', rayon: 'deco', slot: 'plante', nom: 'Plante verte', desc: 'Un peu de nature', prix: 10, ico: '🪴', place: true },
+    { id: 'tableau', rayon: 'deco', slot: 'mur', nom: 'Tableau', desc: 'Un paysage au mur', prix: 22, ico: '🖼️', place: true },
+    { id: 'horloge', rayon: 'deco', slot: 'mur2', nom: 'Horloge', desc: 'Tic, tac…', prix: 18, ico: '🕰️', place: true },
+    { id: 'lampe', rayon: 'deco', slot: 'lampe', nom: 'Lampe', desc: 'Une lumière douce le soir', prix: 16, ico: '💡', place: true },
+    { id: 'rideaux', rayon: 'deco', slot: 'fenetre', nom: 'Rideaux', desc: 'Pour la fenêtre', prix: 14, place: true, ico: '🪟' },
+    { id: 'balle', rayon: 'deco', slot: 'jouet', nom: 'Balle', desc: 'Pour jouer', prix: 5, ico: '⚽', place: true },
+    { id: 'peluche', rayon: 'deco', slot: 'jouet', nom: 'Peluche', desc: 'Son doudou', prix: 12, ico: '🧸', place: true },
+    { id: 'biscuit', rayon: 'gourmand', nom: 'Biscuit', desc: 'Remplit l\'assiette et fait plaisir', prix: 3, ico: '🍪', conso: true, effets: { repas: 40, calin: 15 } },
+    { id: 'gateau', rayon: 'gourmand', nom: 'Gâteau de fête', desc: 'Un vrai festin', prix: 10, ico: '🎂', conso: true, effets: { repas: 100, calin: 40 } }
+  ];
+  // Où se posent les objets de la pièce
+
+  // Besoins (en %) au moment t, d'après le dernier soin de chacun
+  function niveaux(a, t) {
+    var r = {};
+    BESOINS.forEach(b => {
+      var perte = ((t || Date.now()) - a.besoins[b.id].t) / 3600000 * (100 / b.heures);
+      r[b.id] = Math.max(0, Math.min(100, Math.round(a.besoins[b.id].v - perte)));
+    });
+    return r;
+  }
+  function humeur(n) {
+    var m = BESOINS.reduce((s, b) => s + n[b.id], 0) / BESOINS.length, min = Math.min.apply(null, BESOINS.map(b => n[b.id]));
+    return min < 20 || m < 35 ? 'triste' : m > 70 ? 'content' : 'calme';
+  }
+  function estNuit(t) { var h = new Date(t || Date.now()).getHours(); return h >= 21 || h < 7; }
+
+  // dort : yeux fermés (la nuit)
+  function dessin(a, humeur, dort) {
+    var c = a.couleur, fonce = nuance(c, -0.25), clair = nuance(c, 0.45), e = a.espece, p = a.porte || {};
+    var s = '', triste = humeur === 'triste';
+    // Derrière : queue, ailes
+    if (e === 'chat') s += '<path d="M150 170 Q190 150 178 105" stroke="' + c + '" stroke-width="13" fill="none" stroke-linecap="round"/>';
+    if (e === 'chien') s += '<path d="M150 165 Q178 150 172 128" stroke="' + c + '" stroke-width="12" fill="none" stroke-linecap="round"/>';
+    if (e === 'renard') s += '<path d="M146 175 Q200 168 186 112 Q172 140 146 150 Z" fill="' + c + '"/><path d="M186 112 Q190 128 178 136 Q182 120 186 112Z" fill="#fff"/>';
+    if (e === 'lapin') s += '<circle cx="150" cy="168" r="13" fill="#fff"/>';
+    if (e === 'chevre') s += '<path d="M148 150 l12 -14 l-2 18 z" fill="' + c + '"/>';
+    if (e === 'dragon') s += '<path d="M60 128 Q20 92 34 70 Q44 96 66 108 Z" fill="' + fonce + '"/><path d="M140 128 Q180 92 166 70 Q156 96 134 108 Z" fill="' + fonce + '"/>' +
+                              '<path d="M146 172 Q196 172 190 140 l10 -6 l-14 -2 Q182 160 146 158 Z" fill="' + c + '"/>';
+    // Corps
+    s += '<g class="corps-anime">';
+    s += '<ellipse cx="100" cy="200" rx="58" ry="8" fill="rgba(0,0,0,0.13)"/>';
+    s += '<ellipse cx="100" cy="158" rx="54" ry="42" fill="' + c + '"/>';
+    s += '<ellipse cx="100" cy="166" rx="32" ry="28" fill="' + clair + '"/>';
+    s += '<ellipse cx="74" cy="196" rx="15" ry="8" fill="' + fonce + '"/><ellipse cx="126" cy="196" rx="15" ry="8" fill="' + fonce + '"/>';
+    if (p.corps) s += habit(p.corps, c);
+    // Oreilles (derrière la tête)
+    if (e === 'chat') s += '<path d="M58 58 L60 12 L94 44 Z" fill="' + c + '"/><path d="M142 58 L140 12 L106 44 Z" fill="' + c + '"/><path d="M64 48 L65 24 L84 42 Z" fill="#f4a9b8"/><path d="M136 48 L135 24 L116 42 Z" fill="#f4a9b8"/>';
+    if (e === 'renard') s += '<path d="M56 60 L58 8 L96 44 Z" fill="' + c + '"/><path d="M144 60 L142 8 L104 44 Z" fill="' + c + '"/><path d="M62 50 L63 22 L84 42 Z" fill="#3b2a20"/><path d="M138 50 L137 22 L116 42 Z" fill="#3b2a20"/>';
+    if (e === 'lapin') s += '<ellipse cx="78" cy="22" rx="13" ry="38" fill="' + c + '" transform="rotate(-10 78 22)"/><ellipse cx="122" cy="22" rx="13" ry="38" fill="' + c + '" transform="rotate(10 122 22)"/>' +
+                             '<ellipse cx="78" cy="24" rx="6" ry="28" fill="#f4a9b8" transform="rotate(-10 78 22)"/><ellipse cx="122" cy="24" rx="6" ry="28" fill="#f4a9b8" transform="rotate(10 122 22)"/>';
+    if (e === 'chevre') s += '<path d="M76 42 Q62 6 88 16 Q78 24 84 42Z" fill="#cdbb9c"/><path d="M124 42 Q138 6 112 16 Q122 24 116 42Z" fill="#cdbb9c"/>' +
+                              '<ellipse cx="48" cy="72" rx="20" ry="9" fill="' + c + '" transform="rotate(20 48 72)"/><ellipse cx="152" cy="72" rx="20" ry="9" fill="' + c + '" transform="rotate(-20 152 72)"/>';
+    if (e === 'dragon') s += '<path d="M72 44 L66 6 L88 36 Z" fill="#f4d58d"/><path d="M128 44 L134 6 L112 36 Z" fill="#f4d58d"/><path d="M92 36 L100 22 L108 36Z" fill="' + fonce + '"/>';
+    // Tête
+    s += '<circle cx="100" cy="82" r="48" fill="' + c + '"/>';
+    if (e === 'chien') s += '<ellipse cx="54" cy="78" rx="15" ry="30" fill="' + fonce + '" transform="rotate(18 54 78)"/><ellipse cx="146" cy="78" rx="15" ry="30" fill="' + fonce + '" transform="rotate(-18 146 78)"/>';
+    if (e === 'renard') s += '<path d="M60 92 Q100 140 140 92 Q130 120 100 124 Q70 120 60 92Z" fill="#fff"/>';
+    s += '<ellipse cx="100" cy="102" rx="22" ry="15" fill="' + clair + '"/>';
+    // Yeux : ouverts, fermés (la nuit), tristes
+    if (dort) s += '<path d="M72 80 q8 6 16 0" stroke="#2b2b2b" stroke-width="3.5" fill="none" stroke-linecap="round"/><path d="M112 80 q8 6 16 0" stroke="#2b2b2b" stroke-width="3.5" fill="none" stroke-linecap="round"/>';
+    else s += '<g class="yeux"><ellipse cx="80" cy="80" rx="8" ry="10" fill="#2b2b2b"/><ellipse cx="120" cy="80" rx="8" ry="10" fill="#2b2b2b"/>' +
+              '<circle cx="83" cy="76" r="3" fill="#fff"/><circle cx="123" cy="76" r="3" fill="#fff"/></g>' +
+              (triste ? '<path d="M68 68 L86 62 M132 68 L114 62" stroke="#2b2b2b" stroke-width="3" stroke-linecap="round"/><ellipse cx="128" cy="94" rx="3" ry="5" fill="#7fc8f8"/>' : '');
+    // Joues, nez, bouche
+    s += '<ellipse cx="66" cy="98" rx="9" ry="6" fill="#f48fb1" opacity="0.55"/><ellipse cx="134" cy="98" rx="9" ry="6" fill="#f48fb1" opacity="0.55"/>';
+    s += e === 'dragon' ? '<circle cx="94" cy="96" r="2.5" fill="' + fonce + '"/><circle cx="106" cy="96" r="2.5" fill="' + fonce + '"/>' : '<ellipse cx="100" cy="96" rx="6" ry="4.5" fill="#3b2a2a"/>';
+    s += triste ? '<path d="M90 112 q10 -8 20 0" stroke="#3b2a2a" stroke-width="3" fill="none" stroke-linecap="round"/>'
+       : humeur === 'content' ? '<path d="M88 104 q12 14 24 0" stroke="#3b2a2a" stroke-width="3" fill="#e57373" stroke-linecap="round"/>'
+       : '<path d="M92 106 q8 6 16 0" stroke="#3b2a2a" stroke-width="3" fill="none" stroke-linecap="round"/>';
+    if (e === 'chevre') s += '<path d="M94 122 Q100 146 106 122 Z" fill="#e8e2d6"/>';
+    if (e === 'chat' || e === 'renard') s += '<path d="M60 98 l-22 -4 M60 104 l-22 4 M140 98 l22 -4 M140 104 l22 4" stroke="#2b2b2b" stroke-width="1.5" opacity="0.5"/>';
+    if (p.cou) s += accessoireCou(p.cou);
+    if (p.tete) s += chapeau(p.tete);
+    s += '</g>';
+    return s;
+  }
+  function nuance(hex, k) {
+    var n = parseInt(hex.slice(1), 16), r = n >> 16, g = (n >> 8) & 255, b = n & 255;
+    var f = x => Math.round(k < 0 ? x * (1 + k) : x + (255 - x) * k);
+    return '#' + ((1 << 24) + (f(r) << 16) + (f(g) << 8) + f(b)).toString(16).slice(1);
+  }
+  function art(id) { return ARTICLES.find(a => a.id === id) || {}; }
+  function habit(id, c) {
+    var a = art(id), k = a.couleur;
+    if (id === 'cape') return '<path d="M56 132 Q100 120 144 132 L154 196 Q100 206 46 196 Z" fill="' + k + '"/><ellipse cx="100" cy="166" rx="32" ry="28" fill="' + nuance(c, 0.45) + '"/>';
+    var r = '<path d="M50 150 Q52 120 100 118 Q148 120 150 150 L148 178 Q100 192 52 178 Z" fill="' + k + '"/>';
+    if (id === 'manteau') r += '<path d="M100 120 L100 186" stroke="' + nuance(k, -0.3) + '" stroke-width="3"/><circle cx="108" cy="140" r="3.5" fill="#f4c430"/><circle cx="108" cy="158" r="3.5" fill="#f4c430"/><circle cx="108" cy="176" r="3.5" fill="#f4c430"/>' +
+                             '<path d="M52 176 Q100 192 148 176" stroke="#fff" stroke-width="6" fill="none" opacity="0.9"/>';
+    if (id === 'pull') r += '<path d="M56 140 Q100 152 144 140 M54 160 Q100 172 146 160" stroke="' + nuance(k, 0.4) + '" stroke-width="5" fill="none"/>';
+    return r;
+  }
+  function accessoireCou(id) {
+    var k = art(id).couleur;
+    if (id === 'noeud') return '<path d="M100 128 L78 116 L78 140 Z M100 128 L122 116 L122 140 Z" fill="' + k + '"/><circle cx="100" cy="128" r="6" fill="' + nuance(k, -0.3) + '"/>';
+    if (id === 'echarpe') return '<path d="M60 118 Q100 136 140 118 L142 130 Q100 148 58 130 Z" fill="' + k + '"/><path d="M118 132 L126 172 L112 172 L108 136Z" fill="' + k + '"/>';
+    var r = '<path d="M62 122 Q100 140 138 122" stroke="' + k + '" stroke-width="8" fill="none" stroke-linecap="round"/><circle cx="100" cy="134" r="5" fill="#f4c430"/>';
+    if (id === 'laisse' || id === 'laisse-luxe') r += '<path d="M100 136 Q140 170 196 150" stroke="' + k + '" stroke-width="' + (id === 'laisse-luxe' ? 5 : 3.5) + '" fill="none"/>' +
+                                                      (id === 'laisse-luxe' ? '<path d="M100 136 Q140 170 196 150" stroke="#f4c430" stroke-width="1.5" stroke-dasharray="4 6" fill="none"/>' : '');
+    return r;
+  }
+  function chapeau(id) {
+    var k = art(id).couleur;
+    if (id === 'bonnet') return '<path d="M58 60 Q60 18 100 16 Q140 18 142 60 Z" fill="' + k + '"/><rect x="54" y="52" width="92" height="14" rx="7" fill="#fff"/><circle cx="100" cy="14" r="10" fill="#fff"/>';
+    if (id === 'chapeau') return '<ellipse cx="100" cy="42" rx="46" ry="9" fill="' + k + '"/><path d="M72 42 Q72 6 100 6 Q128 6 128 42Z" fill="' + k + '"/><rect x="72" y="30" width="56" height="7" fill="#c0392b"/>';
+    if (id === 'couronne') return '<path d="M68 44 L72 14 L86 30 L100 8 L114 30 L128 14 L132 44 Z" fill="' + k + '" stroke="#c99a00" stroke-width="2"/><circle cx="100" cy="30" r="4" fill="#e53935"/>';
+    if (id === 'fleur') return '<g transform="translate(132 42)"><circle r="7" cx="0" cy="-9" fill="' + k + '"/><circle r="7" cx="9" cy="0" fill="' + k + '"/><circle r="7" cx="0" cy="9" fill="' + k + '"/><circle r="7" cx="-9" cy="0" fill="' + k + '"/><circle r="6" fill="#ffd54f"/></g>';
+    return '';
+  }
+
+  return { ESPECES: ESPECES, BESOINS: BESOINS, RECOMPENSE_JOUR: RECOMPENSE_JOUR, RECOMPENSE_SEMAINE: RECOMPENSE_SEMAINE, RAYONS: RAYONS, ARTICLES: ARTICLES,
+           niveaux: niveaux, humeur: humeur, estNuit: estNuit, dessin: dessin, art: art };
+})();

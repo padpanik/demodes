@@ -3,7 +3,7 @@
 // Les clés de stockage gardent l'ancien préfixe "brillant-" : les réglages déjà faits sont conservés.
 
 // Numéro de version affiché (à augmenter à chaque mise en ligne, avec brilliant.html et sw.js)
-const VERSION = '1.69';
+const VERSION = '1.70';
 
 // ---------- Stockage local ----------
 function lireStockage(cle) {
@@ -190,6 +190,9 @@ const Voix = {
 // Prototype : tout est gardé sur ce téléphone (pas encore de serveur).
 const Etoiles = {
   BAREME: { victoirePlusieurs: 5, partiePlusieurs: 2, victoireSeul: 2 },
+  PLAFOND_JOUR: 30,   // étoiles gagnées en jouant, au plus, par jour (les soins du compagnon comptent à part)
+  jour: function() { var d = new Date(); return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate(); },
+  gagneesAujourdhui: function() { var g = lireStockage('compagnon-gains-jeux'); return g && g.date === this.jour() ? g.n : 0; },
   solde: function() { return lireStockage('compagnon-etoiles') || 0; },
   // Ajoute (ou retire) des étoiles et note pourquoi
   ajouter: function(n, raison, discret) {
@@ -209,7 +212,17 @@ const Etoiles = {
     Object.keys(vus).filter(k => t - vus[k] < 7 * 86400000).forEach(k => { garder[k] = vus[k]; });
     ecrireStockage('compagnon-parties', garder);
     var b = this.BAREME, n = aPlusieurs ? (gagne ? b.victoirePlusieurs : b.partiePlusieurs) : (gagne ? b.victoireSeul : 0);
-    this.ajouter(n, (gagne ? 'Victoire' : 'Partie') + ' · ' + jeu + (aPlusieurs ? ' entre amis' : ''));
+    this.recompenseJeu(n, (gagne ? 'Victoire' : 'Partie') + ' · ' + jeu + (aPlusieurs ? ' entre amis' : ''));
+  },
+  // Étoiles gagnées en jouant, dans la limite du plafond du jour
+  recompenseJeu: function(n, raison) {
+    if (!n) return;
+    var deja = this.gagneesAujourdhui(), reste = Math.max(0, this.PLAFOND_JOUR - deja), donne = Math.min(n, reste);
+    ecrireStockage('compagnon-gains-jeux', { date: this.jour(), n: deja + donne });
+    if (donne) this.ajouter(donne, raison);
+    // La partie compte quand même pour les tâches du jour du compagnon
+    else { var j = lireStockage('compagnon-journal') || []; j.push({ h: Date.now(), n: 0, r: raison + ' (plafond du jour atteint)' }); ecrireStockage('compagnon-journal', j.slice(-80));
+           this.bulle('⭐ Plafond du jour atteint', 'Reviens demain pour gagner d\'autres étoiles'); }
   },
   // Petite bulle « +5 ⭐ » en haut de l'écran
   bulle: function(texte, sous) {
