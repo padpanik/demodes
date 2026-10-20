@@ -640,7 +640,7 @@
       mounted: function() { this.montrerAnimal(true); },
       methods: {
         // ---------- Dessin de l'animal (SVG fait par le code, dans compagnon-commun.js) ----------
-        dessin: function(a, humeur) { return CP.dessin(a, humeur, this.estNuit && humeur !== 'triste' && this.animal === a); },
+        dessin: function(a, humeur) { return CP.dessin(a, humeur, this.estNuit && humeur !== 'triste' && this.animal === a, this.maintenant); },
         // Aperçu en boutique : l'animal ne porte que cet accessoire
         apercuAccessoire: function(a) {
           var porte = {}; porte[a.slot] = a.id;

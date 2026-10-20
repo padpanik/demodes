@@ -80,12 +80,24 @@ var CP = (function () {
   }
   function estNuit(t) { var h = new Date(t || Date.now()).getHours(); return h >= 21 || h < 7; }
 
-  // dort : yeux fermés (la nuit)
-  function dessin(a, humeur, dort) {
+  // Ce qui se voit sur lui : faim (ventre qui gargouille), soif (langue tirée), manque de câlins (air triste).
+  // Les trois peuvent se voir en même temps. a.signes (résumé reçu d'un ami) ou calculé d'après ses besoins.
+  var SEUIL_SIGNE = 30;
+  function signes(a, t) {
+    if (a.signes) return a.signes;
+    if (!a.besoins) return null;
+    var n = niveaux(a, t);
+    return { faim: n.repas < SEUIL_SIGNE, soif: n.eau < SEUIL_SIGNE, calin: n.calin < SEUIL_SIGNE };
+  }
+  // dort : yeux fermés (la nuit) ; t : l'heure à laquelle lire ses besoins (maintenant par défaut)
+  function dessin(a, humeur, dort, t) {
+    var sg = signes(a, t);
     var c = a.couleur, fonce = nuance(c, -0.25), clair = nuance(c, 0.45), e = a.espece, p = a.porte || {};
     var noir = '#2b2b2b';
     if (e === 'panda') { fonce = noir; clair = nuance(c, 0.6); }
-    var s = '', triste = humeur === 'triste';
+    // Air triste : seulement le manque de câlins (sinon, pour un dessin sans besoins, l'humeur demandée)
+    var s = '', triste = sg ? sg.calin : humeur === 'triste';
+    if (sg && humeur === 'triste' && !sg.calin) humeur = 'calme';
     // Derrière : queue, ailes
     if (e === 'chat') s += '<path d="M150 170 Q190 150 178 105" stroke="' + c + '" stroke-width="13" fill="none" stroke-linecap="round"/>';
     if (e === 'chien') s += '<path d="M150 165 Q178 150 172 128" stroke="' + c + '" stroke-width="12" fill="none" stroke-linecap="round"/>';
@@ -150,7 +162,11 @@ var CP = (function () {
     s += '<ellipse cx="66" cy="98" rx="9" ry="6" fill="#f48fb1" opacity="0.55"/><ellipse cx="134" cy="98" rx="9" ry="6" fill="#f48fb1" opacity="0.55"/>';
     if (e === 'oie') s += '<path d="M82 98 Q100 84 118 98 Q100 104 82 98Z" fill="#f7a531"/><path d="M84 99 Q100 106 116 99 Q100 120 84 99Z" fill="#e8891a"/>';
     else s += e === 'dragon' || e === 'tortue' ? '<circle cx="94" cy="96" r="2.5" fill="' + fonce + '"/><circle cx="106" cy="96" r="2.5" fill="' + fonce + '"/>' : '<ellipse cx="100" cy="96" rx="6" ry="4.5" fill="#3b2a2a"/>';
-    if (e !== 'oie') s += triste ? '<path d="M90 112 q10 -8 20 0" stroke="#3b2a2a" stroke-width="3" fill="none" stroke-linecap="round"/>'
+    var langue = sg && sg.soif && !dort;
+    if (langue) s += e === 'oie' ? '<path d="M96 104 Q96 118 100 119 Q104 118 104 104 Z" fill="#ef6f8a"/>'
+      : '<path d="M88 106 Q100 114 112 106" stroke="#3b2a2a" stroke-width="3" fill="none" stroke-linecap="round"/>' +
+        '<path d="M92 108 Q91 127 100 128 Q109 127 108 108 Q100 112 92 108Z" fill="#ef6f8a" stroke="#c94f6b" stroke-width="1.5"/><path d="M100 112 V122" stroke="#c94f6b" stroke-width="1.5" stroke-linecap="round"/>';
+    else if (e !== 'oie') s += triste ? '<path d="M90 112 q10 -8 20 0" stroke="#3b2a2a" stroke-width="3" fill="none" stroke-linecap="round"/>'
        : humeur === 'content' ? '<path d="M88 104 q12 14 24 0" stroke="#3b2a2a" stroke-width="3" fill="#e57373" stroke-linecap="round"/>'
        : '<path d="M92 106 q8 6 16 0" stroke="#3b2a2a" stroke-width="3" fill="none" stroke-linecap="round"/>';
     if (e === 'chevre') s += '<path d="M94 122 Q100 146 106 122 Z" fill="#e8e2d6"/>';
@@ -158,6 +174,9 @@ var CP = (function () {
     if (e === 'chat' || e === 'renard' || e === 'raton' || e === 'ecureuil') s += '<path d="M60 98 l-22 -4 M60 104 l-22 4 M140 98 l22 -4 M140 104 l22 4" stroke="#2b2b2b" stroke-width="1.5" opacity="0.5"/>';
     if (p.cou) s += accessoireCou(p.cou);
     if (p.tete) s += chapeau(p.tete);
+    if (sg && sg.faim) s += '<g stroke="#b5562a" stroke-width="4.5" fill="none" stroke-linecap="round">' +
+      '<path d="M40 150 q-7 10 0 20 M30 145 q-10 15 0 30 M160 150 q7 10 0 20 M170 145 q10 15 0 30"/>' +
+      '<animate attributeName="opacity" values="1;0.15;1;0.15;1" dur="1.6s" repeatCount="indefinite"/></g>';
     // Reflets : lumière venant d'en haut à gauche (tête et ventre)
     s += '<ellipse cx="80" cy="56" rx="20" ry="12" fill="#fff" opacity="0.28" transform="rotate(-25 80 56)"/>';
     s += '<ellipse cx="74" cy="138" rx="14" ry="8" fill="#fff" opacity="0.18" transform="rotate(-30 74 138)"/>';
@@ -404,7 +423,7 @@ var CP = (function () {
   }
 
   return { ESPECES: ESPECES, demarrerVeille: demarrerVeille, verifierVeille: verifierVeille, reglagesMessages: reglagesMessages, BESOINS: BESOINS, RECOMPENSE_JOUR: RECOMPENSE_JOUR, RECOMPENSE_SEMAINE: RECOMPENSE_SEMAINE, RAYONS: RAYONS, ARTICLES: ARTICLES,
-           niveaux: niveaux, humeur: humeur, age: age, estNuit: estNuit, dessin: dessin, art: art,
+           niveaux: niveaux, humeur: humeur, signes: signes, age: age, estNuit: estNuit, dessin: dessin, art: art,
            NIVEAUX_DEFI: NIVEAUX_DEFI, DEFIS: DEFIS, BLOCS: BLOCS, ETAGERE_MAX: ETAGERE_MAX, etatDefis: etatDefis, verifierDefis: verifierDefis,
            lireMaison: lireMaison, ecrireMaison: ecrireMaison, trophees: trophees, coupe: coupe, defisDeLaSemaine: defisDeLaSemaine };
 })();

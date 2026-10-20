@@ -61,14 +61,16 @@ var SalonGlobal = (function () {
     if (!a || !a.espece) return null;
     var h = '';
     try { if (typeof CP !== 'undefined') h = CP.humeur(CP.niveaux(a)); } catch (e) {}
-    return { e: a.espece, c: a.couleur, n: a.nom, p: a.porte || {}, ne: a.ne || 0, h: h };
+    var sg = null;
+    try { if (typeof CP !== 'undefined' && CP.signes) sg = CP.signes(a); } catch (e) {}
+    return { e: a.espece, c: a.couleur, n: a.nom, p: a.porte || {}, ne: a.ne || 0, h: h, s: sg ? (sg.faim ? 'f' : '') + (sg.soif ? 's' : '') + (sg.calin ? 'c' : '') : '' };
   }
   function nettoyerCompagnon(c) {
     if (!c || typeof c !== 'object' || !/^[a-z]{2,10}$/.test(c.e)) return null;
     var p = {};
     Object.keys(c.p || {}).slice(0, 12).forEach(k => { if (/^[a-z0-9-]{1,12}$/.test(k) && /^[a-z0-9-]{1,20}$/.test(c.p[k])) p[k] = c.p[k]; });
     return { e: c.e, c: /^#[0-9a-f]{6}$/i.test(c.c) ? c.c : '#c8915a', n: String(c.n || '').slice(0, 16), p: p, ne: +c.ne || 0,
-             h: ['content', 'calme', 'triste'].indexOf(c.h) !== -1 ? c.h : '' };
+             h: ['content', 'calme', 'triste'].indexOf(c.h) !== -1 ? c.h : '', s: typeof c.s === 'string' && /^f?s?c?$/.test(c.s) ? c.s : undefined };
   }
   function ageCompagnon(ne) {
     if (!ne) return '';
@@ -79,7 +81,9 @@ var SalonGlobal = (function () {
   function dessinCompagnon(c, taille) {
     if (!c || typeof CP === 'undefined') return '';
     return '<svg viewBox="0 -6 200 216" width="' + taille + '" height="' + taille + '" style="flex-shrink:0">' +
-           CP.dessin({ espece: c.e, couleur: c.c, porte: c.p }, c.h || 'calme', false) + '</svg>';
+           CP.dessin({ espece: c.e, couleur: c.c, porte: c.p,
+                      signes: typeof c.s === 'string' ? { faim: c.s.indexOf('f') >= 0, soif: c.s.indexOf('s') >= 0, calin: c.s.indexOf('c') >= 0 } : undefined },
+                     c.h || 'calme', false) + '</svg>';
   }
   function suisInvisible() { return !!profil().invisible; }
   function basculerInvisible() { var q = profil(); q.invisible = !q.invisible; enregistrerProfil(q); }
