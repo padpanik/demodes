@@ -188,6 +188,7 @@ Bataille navale : `bataille-sauvegarde`, `bataille-prive` (ma flotte en salon), 
 - À deux : la flotte ne quitte jamais le téléphone (`bataille-prive`) ; empreinte SHA-256 (flotte + sel) au départ,
   le téléphone visé répond seul à chaque tir, à la fin chacun dévoile sa flotte et l'autre vérifie l'empreinte et toutes les réponses
   (message affiché **seulement en cas d'incohérence**, comme dans Assaut). La musique de victoire attend la fin de la sirène du dernier coulé.
+  La partie compte **tout de suite** pour le compagnon (`compterFin`), sans attendre la fin des sons (on peut quitter la page aussitôt).
   Le premier tireur alterne à chaque partie.
 
 ### Gribouille (dessiner et deviner, chacun pour soi)

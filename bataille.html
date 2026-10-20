@@ -1169,6 +1169,7 @@
             return empreinte(p.flotte, p.sel).then(h => this.envoyerJeu({ type: 'PRET', partieId: p.partieId, hash: h }));
           }
           partie = BN.nouvellePartie(copie(this.flotte), this.flotteIA, this.collesPartie, this.rejouerSiTouche);
+          partie.id = nouvelId();   // pour ne compter qu'une fois la partie dans les étoiles du compagnon
           this.phase = 'jeu';
           this.ajouterLog('Nouvelle partie contre l\'ordinateur (' + this.niveau + ').', true);
           this.publierSolo();
@@ -1271,12 +1272,16 @@
         },
         // Fin par le dernier navire coulé : on laisse l'explosion et la sirène se terminer avant la musique de fin
         sonFinApresCoule: function(gagne, raison) {
+          // La partie compte tout de suite pour le compagnon (gagnée ou perdue), même si l'on quitte la page avant la fin des sons
+          this.compterFin(gagne);
           var delai = raison !== 'flotte' ? 300 : tamponsSons.sirene ? 1500 + tamponsSons.sirene.duration * 1000 + 200 : 1800;
           clearTimeout(this._timerSonFin);
           this._timerSonFin = setTimeout(() => this.sonFin(gagne), delai);
         },
+        compterFin: function(gagne) {
+          Etoiles.finDePartie('Bataille navale', gagne, !!this.role, this.role ? (this.pub && this.pub.partieId) : (partie && partie.id));
+        },
         sonFin: function(gagne) {
-          Etoiles.finDePartie('Bataille navale', gagne, !!this.role, this.partie && this.partie.id);
           if (gagne) { this.son('victoire'); this.vibre([100, 60, 100, 60, 250]); } else this.vibre([200, 100, 200]);
         },
 

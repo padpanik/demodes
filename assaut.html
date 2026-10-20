@@ -1054,6 +1054,7 @@
             });
           }
           partie = AS.nouvellePartie(this.modePartie, this.placement, this.placementIA, 'A');
+          partie.id = nouvelId();   // pour ne compter qu'une fois la partie dans les étoiles du compagnon
           this.phase = 'jeu';
           this.ajouterLog('Nouvelle partie ' + this.modePartie + ' contre l\'ordinateur.', true);
           this.publierSolo();
@@ -1236,7 +1237,7 @@
           this.sauvegarder();
         },
         sonFin: function(gagne) {
-          Etoiles.finDePartie('Assaut', gagne, !!this.role, this.partie && this.partie.id);
+          Etoiles.finDePartie('Assaut', gagne, !!this.role, this.role ? (this.pub && this.pub.partieId) : (partie && partie.id));
           if (gagne) { this.son('victoire'); this.vibre([100, 60, 100, 60, 250]); } else this.vibre([200, 100, 200]);
         },
 
