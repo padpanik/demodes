@@ -84,7 +84,23 @@
     .article .btn { width: 100%; padding: 8px 4px; font-size: 0.9em; }
     .article.porte { box-shadow: 0 0 0 2.5px #2f8a5b; }
 
+    /* ---------- Confirmation d'achat ---------- */
+    .voile-achat { position: fixed; inset: 0; z-index: 3000; background: rgba(15,25,35,0.45); display: flex; align-items: center; justify-content: center; padding: 16px; }
+    .fenetre-achat { background: #fff; border-radius: 22px; padding: 18px; width: 100%; max-width: 320px; text-align: center; box-shadow: 0 12px 40px rgba(0,0,0,0.3); }
+    .ico-achat { font-size: 56px; height: 76px; display: flex; align-items: center; justify-content: center; }
+    .ico-achat svg { width: 86px; height: 76px; }
+    .titre-achat { font-weight: 900; font-size: 1.25em; margin: 4px 0 10px; }
+    .compte-achat { width: 100%; border-collapse: collapse; margin-bottom: 14px; font-size: 1.05em; }
+    .compte-achat td { padding: 5px 4px; text-align: left; }
+    .compte-achat td:last-child { text-align: right; font-weight: 800; }
+    .compte-achat tr.reste td { border-top: 2px solid #eef1f3; color: #7a5600; }
+    .boutons-achat { display: flex; gap: 8px; }
+    .boutons-achat .btn { flex: 1; padding: 12px 6px; }
+
     /* ---------- Adoption ---------- */
+    .apercu-adoption { text-align: center; background: linear-gradient(#f6e7cf, #e9cfa8); border-radius: 18px; padding: 10px 0 8px; margin-bottom: 8px; }
+    .apercu-adoption svg { width: 150px; height: 160px; }
+    .apercu-adoption .nom-apercu { font-weight: 900; font-size: 1.2em; }
     .choix-animaux { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
     .choix-animaux button { background: #fff; border: 2.5px solid transparent; border-radius: 16px; padding: 6px 2px 8px; font: inherit; font-weight: 800; cursor: pointer; box-shadow: 0 1px 2px rgba(0,0,0,0.08); }
     .choix-animaux button.actif { border-color: #2c3e50; }
@@ -117,6 +133,10 @@
       </section>
       <section class="carte" v-if="adoption.espece">
         <div class="titre-carte">2. Sa couleur et son nom</div>
+        <div class="apercu-adoption">
+          <svg viewBox="0 -6 200 216" v-html="dessin({ espece: adoption.espece, couleur: adoption.couleur, porte: {} }, 'content')"></svg>
+          <div class="nom-apercu">{{ adoption.nom.trim() || especeChoisie.nom }}</div>
+        </div>
         <div class="pastilles"><button v-for="c in especeChoisie.couleurs" :key="c" :class="{ actif: adoption.couleur === c }" :style="{ background: c }" @click="adoption.couleur = c"></button></div>
         <label class="champ">Son nom<input type="text" v-model="adoption.nom" maxlength="16" :placeholder="'ex : ' + especeChoisie.exemple"></label>
         <button class="btn principal btn-large" :disabled="!adoption.nom.trim()" @click="adopter">💛 Adopter {{ adoption.nom.trim() || '' }}</button>
@@ -180,10 +200,10 @@
             <div class="ico" v-else><svg :view-box.camel="a.slot === 'corps' ? '0 0 200 210' : '30 0 140 150'" v-html="apercuAccessoire(a)"></svg></div>
             <div class="nom">{{ a.nom }}</div>
             <div class="desc">{{ a.desc }}</div>
-            <button v-if="!possede(a)" class="btn principal" :disabled="etoiles < a.prix" @click="acheter(a)">⭐ {{ a.prix }}</button>
+            <button v-if="!possede(a)" class="btn principal" :disabled="etoiles < a.prix" @click="enAchat = a">⭐ {{ a.prix }}</button>
             <button v-else-if="a.conso" class="btn principal" @click="utiliser(a)">Donner ({{ stock(a) }})</button>
             <button v-else class="btn" @click="porter(a)">{{ estPorte(a) ? '✓ ' + (a.place ? 'En place' : 'Porté') : (a.place ? 'Installer' : 'Mettre') }}</button>
-            <button v-if="possede(a) && a.conso" class="btn" style="margin-top:2px" :disabled="etoiles < a.prix" @click="acheter(a)">+1 · ⭐ {{ a.prix }}</button>
+            <button v-if="possede(a) && a.conso" class="btn" style="margin-top:2px" :disabled="etoiles < a.prix" @click="enAchat = a">+1 · ⭐ {{ a.prix }}</button>
           </div>
         </div>
       </template>
@@ -210,6 +230,23 @@
         <button class="btn" style="width:100%;margin-bottom:20px" @click="reprendreAdoption">Adopter un autre compagnon…</button>
       </template>
     </template>
+    <!-- Confirmation d'achat -->
+    <div v-if="enAchat" class="voile-achat" @click.self="enAchat = null">
+      <div class="fenetre-achat" role="dialog" aria-label="Confirmer l'achat">
+        <div class="ico-achat" v-if="enAchat.ico">{{ enAchat.ico }}</div>
+        <div class="ico-achat" v-else><svg :view-box.camel="enAchat.slot === 'corps' ? '0 0 200 210' : '30 0 140 150'" v-html="apercuAccessoire(enAchat)"></svg></div>
+        <div class="titre-achat">{{ enAchat.nom }}</div>
+        <table class="compte-achat">
+          <tr><td>Tes étoiles</td><td>⭐ {{ etoiles }}</td></tr>
+          <tr><td>Prix</td><td>− ⭐ {{ enAchat.prix }}</td></tr>
+          <tr class="reste"><td>Il te restera</td><td>⭐ {{ etoiles - enAchat.prix }}</td></tr>
+        </table>
+        <div class="boutons-achat">
+          <button class="btn" @click="enAchat = null">Annuler</button>
+          <button class="btn principal" :disabled="etoiles < enAchat.prix" @click="confirmerAchat">Acheter</button>
+        </div>
+      </div>
+    </div>
   </div>
 
   <script src="commun.js"></script>
@@ -236,6 +273,7 @@
         etoiles: Etoiles.solde(),
         journal: [],
         onglet: 'soins',
+        enAchat: null,          // article dont on confirme l'achat
         rayon: 'tete',
         maintenant: Date.now(),
         effets: [],
@@ -377,6 +415,7 @@
         possede: function(a) { return !!(this.animal.possede || {})[a.id]; },
         stock: function(a) { return (this.animal.possede || {})[a.id] || 0; },
         estPorte: function(a) { return !!a.slot && (this.animal.porte || {})[a.slot] === a.id; },
+        confirmerAchat: function() { var a = this.enAchat; this.enAchat = null; if (a) this.acheter(a); },
         acheter: function(a) {
           if (Etoiles.solde() < a.prix) return;
           Etoiles.ajouter(-a.prix, 'Achat : ' + a.nom, true);

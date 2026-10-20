@@ -234,7 +234,8 @@ Bataille navale : `bataille-sauvegarde`, `bataille-prive` (ma flotte en salon), 
 
 ### Mon compagnon (prototype : piste d'un futur Désdale « centre de loisirs pour personnes âgées »)
 - But : petites obligations quotidiennes douces et envie de jouer **ensemble** pour gâter son animal. Grand texte, gros boutons.
-- Animaux (SVG dessinés par le code) : chat, chien, chèvre, dragon, lapin, renard ; une couleur au choix, un nom.
+- Animaux (SVG dessinés par le code) : chat, chien, chèvre, dragon, lapin, renard, panda ; une couleur au choix (aperçu en grand), un nom.
+- Achat : fenêtre de confirmation (solde, prix, reste) ; bouton grisé si le solde ne suffit pas.
 - Besoins Repas, Eau, Toilette, Câlins (en %, baissent avec le temps réel : vides en 14 h, 12 h, 40 h, 20 h). **Il ne meurt jamais** :
   il devient triste et le dit. La nuit (21 h – 7 h) il dort ; neige à la fenêtre en hiver (décembre à février).
 - Tâches du jour : nourrir 2 fois, eau, 3 câlins, une partie avec des amis → +3 ⭐ ; +10 ⭐ tous les 7 jours de suite. 10 ⭐ offertes à l'adoption.
