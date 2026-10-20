@@ -91,7 +91,7 @@ var CP = (function () {
                               '<path d="M146 172 Q196 172 190 140 l10 -6 l-14 -2 Q182 160 146 158 Z" fill="' + c + '"/>';
     // Corps
     s += '<g class="corps-anime">';
-    s += '<ellipse cx="100" cy="200" rx="58" ry="8" fill="rgba(0,0,0,0.13)"/>';
+    s += '<ellipse cx="100" cy="201" rx="60" ry="9" fill="rgba(0,0,0,0.22)" filter="url(#v-flou)"/>';
     s += '<ellipse cx="100" cy="158" rx="54" ry="42" fill="' + c + '"/>';
     s += '<ellipse cx="100" cy="166" rx="32" ry="28" fill="' + clair + '"/>';
     s += '<ellipse cx="74" cy="196" rx="15" ry="8" fill="' + fonce + '"/><ellipse cx="126" cy="196" rx="15" ry="8" fill="' + fonce + '"/>';
@@ -117,7 +117,7 @@ var CP = (function () {
     // Yeux : ouverts, fermés (la nuit), tristes
     if (dort) s += '<path d="M72 80 q8 6 16 0" stroke="' + (e === 'panda' ? '#fff' : '#2b2b2b') + '" stroke-width="3.5" fill="none" stroke-linecap="round"/><path d="M112 80 q8 6 16 0" stroke="' + (e === 'panda' ? '#fff' : '#2b2b2b') + '" stroke-width="3.5" fill="none" stroke-linecap="round"/>';
     else s += '<g class="yeux"><ellipse cx="80" cy="80" rx="8" ry="10" fill="#2b2b2b"/><ellipse cx="120" cy="80" rx="8" ry="10" fill="#2b2b2b"/>' +
-              '<circle cx="83" cy="76" r="3" fill="#fff"/><circle cx="123" cy="76" r="3" fill="#fff"/></g>' +
+              '<circle cx="83" cy="76" r="3.4" fill="#fff"/><circle cx="123" cy="76" r="3.4" fill="#fff"/><circle cx="77" cy="85" r="1.6" fill="#fff" opacity="0.7"/><circle cx="117" cy="85" r="1.6" fill="#fff" opacity="0.7"/></g>' +
               (triste ? '<path d="M68 68 L86 62 M132 68 L114 62" stroke="#2b2b2b" stroke-width="3" stroke-linecap="round"/><ellipse cx="128" cy="94" rx="3" ry="5" fill="#7fc8f8"/>' : '');
     // Joues, nez, bouche
     s += '<ellipse cx="66" cy="98" rx="9" ry="6" fill="#f48fb1" opacity="0.55"/><ellipse cx="134" cy="98" rx="9" ry="6" fill="#f48fb1" opacity="0.55"/>';
@@ -129,8 +129,22 @@ var CP = (function () {
     if (e === 'chat' || e === 'renard') s += '<path d="M60 98 l-22 -4 M60 104 l-22 4 M140 98 l22 -4 M140 104 l22 4" stroke="#2b2b2b" stroke-width="1.5" opacity="0.5"/>';
     if (p.cou) s += accessoireCou(p.cou);
     if (p.tete) s += chapeau(p.tete);
+    // Reflets : lumière venant d'en haut à gauche (tête et ventre)
+    s += '<ellipse cx="80" cy="56" rx="20" ry="12" fill="#fff" opacity="0.28" transform="rotate(-25 80 56)"/>';
+    s += '<ellipse cx="74" cy="138" rx="14" ry="8" fill="#fff" opacity="0.18" transform="rotate(-30 74 138)"/>';
     s += '</g>';
-    return s;
+    return relief(s, { c: c, f: fonce, l: clair, n: noir });
+  }
+  // « Niveau 1 » de relief : chaque couleur unie devient un dégradé arrondi (clair en haut à gauche, sombre en bas à droite)
+  function relief(s, couleurs) {
+    var defs = '<defs><filter id="v-flou" x="-20%" y="-50%" width="140%" height="200%"><feGaussianBlur stdDeviation="3.5"/></filter>';
+    Object.keys(couleurs).forEach(k => {
+      var c = couleurs[k], id = 'v-' + c.slice(1);
+      defs += '<radialGradient id="' + id + '" cx="35%" cy="30%" r="80%"><stop offset="0" stop-color="' + nuance(c, 0.38) + '"/>' +
+              '<stop offset="0.55" stop-color="' + c + '"/><stop offset="1" stop-color="' + nuance(c, -0.22) + '"/></radialGradient>';
+      s = s.split('fill="' + c + '"').join('fill="url(#' + id + ')"');
+    });
+    return defs + '</defs>' + s;
   }
   function nuance(hex, k) {
     var n = parseInt(hex.slice(1), 16), r = n >> 16, g = (n >> 8) & 255, b = n & 255;

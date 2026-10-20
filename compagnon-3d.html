@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Maquette 3D · Désdale</title>
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <meta name="theme-color" content="#f3f5f7">
+  <link rel="icon" type="image/png" href="favicon.png">
+  <!-- Maquette « niveau 2 » : vraie 3D construite par le code (Three.js, version figée) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <link rel="stylesheet" href="commun.css">
+  <style>
+    body { font-size: 17px; }
+    .scene3d { position: relative; height: 400px; border-radius: 22px; overflow: hidden; box-shadow: 0 4px 16px rgba(29,43,54,0.15);
+               background: radial-gradient(ellipse at 50% 35%, #fff6e6 0%, #f3dcb8 60%, #e3c497 100%); touch-action: none; }
+    .scene3d canvas { display: block; width: 100%; height: 100%; }
+    .scene3d .aide3d { position: absolute; left: 0; right: 0; bottom: 8px; text-align: center; font-size: 0.8em; color: #8a6a3a; pointer-events: none; }
+    .coeur { position: absolute; font-size: 30px; pointer-events: none; animation: monte 1.4s ease-out forwards; }
+    @keyframes monte { from { opacity: 1; transform: translate(-50%, 0) scale(0.7); } to { opacity: 0; transform: translate(-50%, -110px) scale(1.25); } }
+    .reglages3d { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 12px 0; }
+    .reglages3d .pastille { width: 40px; height: 40px; border-radius: 50%; border: 3px solid #fff; box-shadow: 0 0 0 1.5px #c9d2d9; cursor: pointer; }
+    .reglages3d .pastille.actif { box-shadow: 0 0 0 3px #1d2b36; }
+    .reglages3d .btn { width: auto; padding: 9px 14px; }
+    .reglages3d .btn.actif { background: #2c3e50; color: #fff; }
+    .note3d { font-size: 0.85em; color: #5b6b78; line-height: 1.45; }
+    .erreur3d { padding: 40px 16px; text-align: center; color: #8a6a3a; }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="barre"><a class="lien-jeux" href="compagnon.html">⇦ Mon compagnon</a></div>
+    <header class="hero"><div style="font-size:40px">🧪</div><div><h1>Chien en 3D</h1><p>Maquette pour comparer avec le dessin actuel</p></div></header>
+
+    <div class="scene3d" id="scene">
+      <div class="aide3d">Glisse pour le faire tourner · touche-le pour un câlin</div>
+    </div>
+
+    <div class="reglages3d" id="couleurs"></div>
+    <div class="reglages3d">
+      <button class="btn" id="b-bonnet">🧢 Bonnet</button>
+      <button class="btn actif" id="b-collier">🎀 Collier</button>
+      <button class="btn" id="b-calin">❤️ Câlin</button>
+      <button class="btn" id="b-dodo">😴 Dodo</button>
+    </div>
+    <p class="note3d">Cette maquette assemble le chien avec des formes simples (sphères, cylindres, anneaux), éclairées et ombrées en temps réel :
+      il respire, cligne des yeux, remue la queue et les oreilles, et saute de joie quand on le câline. Les accessoires devront être refaits en 3D,
+      un par un. C'est plus lourd pour un vieux téléphone que le dessin actuel.</p>
+  </div>
+
+  <script src="commun.js"></script>
+  <script>
+    if (!ACCES.memorise()) location.replace('index.html');
+
+    (function () {
+      var boite = document.getElementById('scene');
+      if (typeof THREE === 'undefined') { boite.innerHTML = '<div class="erreur3d">La 3D n\'a pas pu se charger sur ce téléphone.</div>'; return; }
+
+      // ---------- Scène, caméra, lumières ----------
+      var rendu = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+      rendu.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+      rendu.shadowMap.enabled = true;
+      rendu.shadowMap.type = THREE.PCFSoftShadowMap;
+      boite.insertBefore(rendu.domElement, boite.firstChild);
+      var scene = new THREE.Scene();
+      var camera = new THREE.PerspectiveCamera(32, 1, 0.1, 100);
+      camera.position.set(0, 2.4, 8.2);
+      camera.lookAt(0, 1.45, 0);
+      scene.add(new THREE.HemisphereLight(0xfff4e0, 0xb08a5a, 0.75));
+      var soleil = new THREE.DirectionalLight(0xffffff, 0.85);
+      soleil.position.set(-3, 6, 4);
+      soleil.castShadow = true;
+      soleil.shadow.mapSize.set(1024, 1024);
+      soleil.shadow.camera.left = -3; soleil.shadow.camera.right = 3; soleil.shadow.camera.top = 4; soleil.shadow.camera.bottom = -2;
+      soleil.shadow.radius = 6;
+      scene.add(soleil);
+      var contre = new THREE.DirectionalLight(0xffe0b0, 0.35);
+      contre.position.set(3, 3, -4);
+      scene.add(contre);
+      // Sol : un tapis rond qui reçoit l'ombre
+      var sol = new THREE.Mesh(new THREE.CircleGeometry(2.6, 48), new THREE.MeshStandardMaterial({ color: 0xd9a066, roughness: 0.95 }));
+      sol.rotation.x = -Math.PI / 2; sol.receiveShadow = true;
+      scene.add(sol);
+      var bord = new THREE.Mesh(new THREE.TorusGeometry(2.6, 0.06, 8, 64), new THREE.MeshStandardMaterial({ color: 0xc0392b, roughness: 0.8 }));
+      bord.rotation.x = -Math.PI / 2; bord.position.y = 0.02;
+      scene.add(bord);
+
+      // ---------- Matières ----------
+      var mPoil = new THREE.MeshStandardMaterial({ color: 0xc8915a, roughness: 0.75 });
+      var mClair = new THREE.MeshStandardMaterial({ color: 0xf1dcc0, roughness: 0.8 });
+      var mFonce = new THREE.MeshStandardMaterial({ color: 0x8a5a33, roughness: 0.8 });
+      var mNoir = new THREE.MeshStandardMaterial({ color: 0x1d1d1d, roughness: 0.18, metalness: 0.1 });
+      var mBlanc = new THREE.MeshBasicMaterial({ color: 0xffffff });
+      var mRose = new THREE.MeshStandardMaterial({ color: 0xf28fa8, roughness: 0.6 });
+      var mRouge = new THREE.MeshStandardMaterial({ color: 0xd64541, roughness: 0.5 });
+      var mOr = new THREE.MeshStandardMaterial({ color: 0xf4c430, roughness: 0.3, metalness: 0.6 });
+      var mBleu = new THREE.MeshStandardMaterial({ color: 0x3a8fd8, roughness: 0.85 });
+
+      function boule(r, mat, x, y, z, sx, sy, sz) {
+        var m = new THREE.Mesh(new THREE.SphereGeometry(r, 32, 24), mat);
+        m.position.set(x || 0, y || 0, z || 0);
+        m.scale.set(sx || 1, sy || 1, sz || 1);
+        m.castShadow = true;
+        return m;
+      }
+      function cylindre(r1, r2, h, mat, x, y, z) {
+        var m = new THREE.Mesh(new THREE.CylinderGeometry(r1, r2, h, 24), mat);
+        m.position.set(x, y, z); m.castShadow = true;
+        return m;
+      }
+
+      // ---------- Le chien (assis, face à nous) ----------
+      var chien = new THREE.Group();
+      scene.add(chien);
+      var corps = new THREE.Group();
+      chien.add(corps);
+      corps.add(boule(1, mPoil, 0, 1.0, 0, 0.88, 0.95, 0.85));                 // tronc
+      corps.add(boule(1, mClair, 0, 0.95, 0.42, 0.58, 0.72, 0.45));           // ventre
+      // Pattes arrière (cuisses repliées) et avant
+      [-1, 1].forEach(s => {
+        corps.add(boule(1, mPoil, s * 0.6, 0.42, 0.05, 0.38, 0.34, 0.55));
+        corps.add(boule(1, mFonce, s * 0.62, 0.12, 0.5, 0.2, 0.12, 0.28));
+        corps.add(cylindre(0.17, 0.19, 0.75, mPoil, s * 0.32, 0.42, 0.58));
+        corps.add(boule(1, mClair, s * 0.32, 0.08, 0.68, 0.22, 0.12, 0.28));
+      });
+      // Queue (pivot à sa base pour la faire remuer)
+      var queue = new THREE.Group();
+      queue.position.set(0, 0.55, -0.75);
+      queue.rotation.x = -0.9;
+      var bout = cylindre(0.07, 0.11, 0.7, mPoil, 0, 0.35, 0);
+      queue.add(bout); queue.add(boule(0.1, mClair, 0, 0.72, 0));
+      corps.add(queue);
+
+      // Tête
+      var tete = new THREE.Group();
+      tete.position.set(0, 2.15, 0.08);
+      corps.add(tete);
+      tete.add(boule(0.78, mPoil, 0, 0, 0));
+      tete.add(boule(1, mClair, 0, -0.2, 0.58, 0.4, 0.3, 0.32));             // museau
+      tete.add(boule(0.11, mNoir, 0, -0.1, 0.9));                               // truffe
+      tete.add(boule(0.035, mBlanc, -0.03, -0.06, 1.0));
+      // Bouche : un petit sourire et la langue
+      var sourire = new THREE.Mesh(new THREE.TorusGeometry(0.12, 0.022, 8, 24, Math.PI), mNoir);
+      sourire.position.set(0, -0.3, 0.86); sourire.rotation.z = Math.PI;
+      tete.add(sourire);
+      var langue = boule(1, mRose, 0, -0.42, 0.82, 0.08, 0.06, 0.05);
+      tete.add(langue);
+      // Yeux (avec reflets) et joues
+      var yeux = [];
+      [-1, 1].forEach(s => {
+        var oeil = new THREE.Group();
+        oeil.position.set(s * 0.27, 0.14, 0.71);
+        oeil.add(boule(0.125, mNoir, 0, 0, 0, 1, 1.2, 0.6));
+        oeil.add(boule(0.04, mBlanc, 0.04, 0.05, 0.08));
+        oeil.add(boule(0.018, mBlanc, -0.04, -0.05, 0.08));
+        tete.add(oeil); yeux.push(oeil);
+        tete.add(boule(1, mRose, s * 0.45, -0.15, 0.55, 0.12, 0.07, 0.04));
+      });
+      // Oreilles tombantes (pivot en haut pour les faire bouger)
+      var oreilles = [];
+      [-1, 1].forEach(s => {
+        var o = new THREE.Group();
+        o.position.set(s * 0.6, 0.38, -0.05);
+        o.add(boule(1, mFonce, s * 0.08, -0.45, 0, 0.2, 0.52, 0.34));
+        o.rotation.z = s * 0.35;
+        tete.add(o); oreilles.push(o);
+      });
+
+      // ---------- Accessoires ----------
+      var collier = new THREE.Group();
+      var anneau = new THREE.Mesh(new THREE.TorusGeometry(0.58, 0.07, 12, 48), mRouge);
+      anneau.rotation.x = Math.PI / 2; anneau.castShadow = true;
+      collier.add(anneau);
+      collier.add(boule(0.1, mOr, 0, -0.1, 0.6));
+      collier.position.set(0, 1.62, 0.05);
+      corps.add(collier);
+      var bonnet = new THREE.Group();
+      var calotte = new THREE.Mesh(new THREE.SphereGeometry(0.62, 32, 16, 0, Math.PI * 2, 0, Math.PI / 2), mBleu);
+      calotte.scale.set(1, 1.15, 1); calotte.castShadow = true;
+      bonnet.add(calotte);
+      var revers = new THREE.Mesh(new THREE.TorusGeometry(0.62, 0.12, 12, 48), new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.95 }));
+      revers.rotation.x = Math.PI / 2;
+      bonnet.add(revers);
+      bonnet.add(boule(0.17, new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 1 }), 0, 0.78, 0));
+      bonnet.position.set(0, 0.46, -0.05); bonnet.rotation.x = -0.15;
+      bonnet.visible = false;
+      tete.add(bonnet);
+
+      // ---------- Réglages ----------
+      var COULEURS = [[0xc8915a, 0xf1dcc0, 0x8a5a33], [0xf4e6d4, 0xffffff, 0xd9c2a3], [0x5b4636, 0xc9a27a, 0x3b2a20], [0xe8c07a, 0xfff1d6, 0xb88a4a]];
+      var zone = document.getElementById('couleurs');
+      COULEURS.forEach((c, k) => {
+        var b = document.createElement('button');
+        b.className = 'pastille' + (k ? '' : ' actif');
+        b.style.background = '#' + c[0].toString(16).padStart(6, '0');
+        b.onclick = () => {
+          mPoil.color.setHex(c[0]); mClair.color.setHex(c[1]); mFonce.color.setHex(c[2]);
+          zone.querySelectorAll('.pastille').forEach(x => x.classList.remove('actif')); b.classList.add('actif');
+        };
+        zone.appendChild(b);
+      });
+      function bascule(id, obj) {
+        var b = document.getElementById(id);
+        b.onclick = () => { obj.visible = !obj.visible; b.classList.toggle('actif', obj.visible); };
+      }
+      bascule('b-bonnet', bonnet); bascule('b-collier', collier);
+      var joie = 0, dodo = false, saut = 0;
+      function calin(x, y) {
+        joie = 2.5; saut = 1;
+        for (var k = 0; k < 3; k++) {
+          var c = document.createElement('div');
+          c.className = 'coeur'; c.textContent = '❤️';
+          c.style.left = (x != null ? x : boite.clientWidth / 2) + (k - 1) * 34 + 'px';
+          c.style.top = (y != null ? y : boite.clientHeight * 0.35) + 'px';
+          c.style.animationDelay = k * 0.12 + 's';
+          boite.appendChild(c);
+          setTimeout(((e) => () => e.remove())(c), 1700);
+        }
+        vibrer(20);
+      }
+      document.getElementById('b-calin').onclick = () => calin();
+      document.getElementById('b-dodo').onclick = function () { dodo = !dodo; this.classList.toggle('actif', dodo); };
+
+      // ---------- Tourner du doigt, toucher pour un câlin ----------
+      var appui = null, angle = 0.35, vitesse = 0;
+      boite.addEventListener('pointerdown', e => { appui = { x: e.clientX, x0: e.clientX, t: Date.now() }; try { boite.setPointerCapture(e.pointerId); } catch (x) {} });
+      boite.addEventListener('pointermove', e => {
+        if (!appui) return;
+        var dx = e.clientX - appui.x; appui.x = e.clientX;
+        angle += dx * 0.012; vitesse = dx * 0.012;
+      });
+      boite.addEventListener('pointerup', e => {
+        if (appui && Math.abs(e.clientX - appui.x0) < 6 && Date.now() - appui.t < 400) {
+          var r = boite.getBoundingClientRect();
+          calin(e.clientX - r.left, e.clientY - r.top - 40);
+        }
+        appui = null;
+      });
+
+      // ---------- Animation ----------
+      function taille() {
+        var w = boite.clientWidth, h = boite.clientHeight;
+        rendu.setSize(w, h, false);
+        camera.aspect = w / h; camera.updateProjectionMatrix();
+      }
+      window.addEventListener('resize', taille);
+      taille();
+      var horloge = new THREE.Clock(), prochainClin = 3.5;
+      function boucle() {
+        var t = horloge.getElapsedTime(), dt = Math.min(0.05, horloge.getDelta ? 0.016 : 0.016);
+        // Revient doucement de face quand on le lâche
+        if (!appui) { angle += vitesse; vitesse *= 0.9; angle += (0.35 * Math.sin(t * 0.3) * 0.3 - angle) * 0.01; }
+        chien.rotation.y = angle;
+        // Respiration
+        var resp = 1 + Math.sin(t * (dodo ? 1.2 : 2.2)) * (dodo ? 0.03 : 0.018);
+        corps.scale.set(1, resp, 1);
+        // Saut de joie
+        if (saut > 0) { saut = Math.max(0, saut - 0.03); corps.position.y = Math.sin((1 - saut) * Math.PI * 2) * 0.35 * saut; } else corps.position.y = 0;
+        joie = Math.max(0, joie - 0.016);
+        // Queue : remue plus vite quand il est content
+        queue.rotation.z = Math.sin(t * (joie > 0 ? 22 : 7)) * (dodo ? 0.08 : joie > 0 ? 0.7 : 0.35);
+        // Tête un peu penchée, oreilles qui bougent
+        tete.rotation.z = dodo ? 0.25 : Math.sin(t * 0.8) * 0.08;
+        tete.rotation.x = dodo ? 0.35 : Math.sin(t * 0.6) * 0.05 - (joie > 0 ? 0.12 : 0);
+        oreilles.forEach((o, k) => { var s = k ? 1 : -1; o.rotation.z = s * (0.35 + Math.sin(t * 3 + k) * 0.05 + (joie > 0 ? 0.18 * Math.sin(t * 18) : 0)); });
+        // Yeux : clignent de temps en temps, fermés pour le dodo
+        var ouvert = 1;
+        if (dodo) ouvert = 0.1;
+        else if (t > prochainClin) { ouvert = 0.1; if (t > prochainClin + 0.12) prochainClin = t + 2.5 + Math.random() * 3; }
+        yeux.forEach(o => { o.scale.y = ouvert; });
+        langue.visible = !dodo && joie > 0;
+        rendu.render(scene, camera);
+        requestAnimationFrame(boucle);
+      }
+      boucle();
+      window._chien3d = { scene: scene, chien: chien, calin: calin };
+    })();
+  </script>
+</body>
+</html>
