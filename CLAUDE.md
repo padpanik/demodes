@@ -34,6 +34,7 @@ Tout est en français : interface, commentaires du code, messages de commit, ré
 | `agents.html` + `agents-regles.js` | Agents secrets (version maison du jeu d'espions en mots, sans le nom ni les visuels de la marque) : deux équipes, un chef par équipe voit la carte secrète. Mots et règles dans `agents-regles.js` (testable avec Node). |
 | `quatre.html` + `quatre-regles.js` | Quatre en ligne (version maison du classique « aligner 4 jetons », sans le nom de la marque). Solo contre l'ordinateur (3 niveaux) ou à deux en salon. Moteur + ordinateur (minimax) dans `quatre-regles.js` (testable avec Node). |
 | `domino.html` + `domino-regles.js` | Dominos (double-six) avec l'option **Triominos**. Solo contre 1 à 3 ordinateurs, ou salon de 2 à 4 (mains gardées par l'hôte, chacun ne reçoit que la sienne). Moteur + ordinateur + géométrie triangulaire dans `domino-regles.js` (testable avec Node). |
+| `lettres.html` + `lettres-regles.js` + `lettres-mots.txt` | **Lettres croisées** (version maison du jeu de lettres sur grille, sans le nom ni les visuels de la marque). Salon de 2 à 4 seulement, pas de solo (chevalets et sac gardés par l'hôte). Plateau, bonus, points dans `lettres-regles.js` (testable avec Node). Dictionnaire libre `lettres-mots.txt` (~311 000 mots, licence MIT, voir `lettres-mots-licence.txt`), une ligne par mot codée « préfixe commun » (1er caractère = longueur reprise du mot précédent, en hexadécimal). |
 | `compagnon.html` + `compagnon-commun.js` | **Mon compagnon** (prototype, façon « animal virtuel ») : on adopte un animal dessiné en SVG, on en prend soin chaque jour, et les ⭐ gagnées en jouant (`Etoiles` dans `commun.js`) achètent accessoires et déco. Espèces, besoins, boutique et dessin SVG dans `compagnon-commun.js` (aussi utilisé par l'accueil). Pas de réseau propre. |
 | `compagnon-3d.html` | Maquette « niveau 2 » : le chien en vraie 3D (Three.js **r128** par CDN, uniquement sur cette page). **Mise de côté** par l'utilisateur (plus de lien dans le jeu, page gardée pour plus tard). |
 | `sons/` | Sons enregistrés de la Bataille navale (MP3 libres de droits) et leurs sources (`LICENCES.txt`). |
@@ -60,7 +61,7 @@ Pas d'étape de construction, pas de dépendance à ajouter.
   150 000 itérations, 48 octets. Octets 0–31 : `EMPREINTE` publiée ; octets 32–39 : « clé de salon »,
   jamais publiée, gardée dans `localStorage['brillant-acces']`.
 - La clé de salon entre dans l'identifiant réseau : `'dm-' + cléSalon + '-' + [jeu + '-'] + nomSimplifié`.
-  Préfixes de jeu : aucun pour Brilliant, `yams`, `bg`, `as`, `bn`, `gb`, `pb`, `ag`, `ql`, `dm`. Sans le bon code, impossible de joindre un salon.
+  Préfixes de jeu : aucun pour Brilliant, `yams`, `bg`, `as`, `bn`, `gb`, `pb`, `ag`, `ql`, `dm`, `lc`. Sans le bon code, impossible de joindre un salon.
 - Changer le code = recalculer l'empreinte dans les deux fichiers ; tous les salons changent d'identifiant.
 
 ## Réseau (identique dans les trois jeux)
@@ -118,6 +119,7 @@ Petit bac : `petitbac-sauvegarde`, `petitbac-dernier-salon`, `petitbac-reglages`
 Agents secrets : `agents-sauvegarde` (dont `maCle`, la carte secrète si on est chef), `agents-dernier-salon`.
 Quatre en ligne : `quatre-sauvegarde` (salon), `quatre-solo` (partie contre l'ordinateur), `quatre-niveau`, `quatre-stats`, `quatre-dernier-salon`.
 Dominos : `domino-sauvegarde` (salon ; chez l'hôte, l'état complet avec toutes les mains), `domino-solo` (partie contre l'ordinateur), `domino-jeu`, `domino-ordis`, `domino-buts`, `domino-dernier-salon`.
+Lettres croisées : `lettres-sauvegarde` (salon ; chez l'hôte, l'état complet avec chevalets et sac), `lettres-dernier-salon`.
 Mon compagnon : `compagnon-animal` (espèce, nom, couleur, besoins, objets possédés et portés, série de jours), `compagnon-etoiles` (solde),
 `compagnon-journal` (dernières étoiles gagnées ou dépensées), `compagnon-parties` (parties déjà récompensées), `compagnon-jour` (tâches du jour),
 `compagnon-cadeau` (bonus de bienvenue donné), `compagnon-ancien`, `compagnon-gains-jeux` (étoiles gagnées en jouant aujourd'hui),
@@ -251,6 +253,23 @@ Bataille navale : `bataille-sauvegarde`, `bataille-prive` (ma flotte en salon), 
 - Salon : l'hôte choisit le jeu et les points dans la salle d'attente et lance la partie (2 à 4, les suivants regardent). Joueur absent :
   l'hôte peut « jouer à sa place » (un coup de l'ordinateur). Hôte disparu : un joueur rouvre le salon, mais les mains étaient chez
   l'hôte, donc retour à la salle d'attente. Étoiles du compagnon à la fin de la **partie**.
+
+### Lettres croisées (demandé « multijoueur uniquement »)
+- Nom maison (pas le nom de la marque). De 2 à 4 joueurs en salon, les suivants regardent ; pas de solo.
+- Plateau 15 × 15, bonus classiques (L×2, L×3, M×2, M×3, centre M×2 avec l'étoile), 102 jetons à la répartition et aux valeurs
+  françaises (2 jokers à 0). Chevalet de 7. Mots sur une ligne ou colonne, sans trou, touchant l'existant ; 1er mot sur l'étoile.
+  Bonus seulement sous les lettres posées ce tour-ci ; 7 lettres d'un coup : +50. Échange possible s'il reste au moins 7 jetons ;
+  passer. Fin : chevalet vidé sac vide (le joueur gagne les points restant chez les autres, qui les perdent), ou tout le monde passe
+  deux fois de suite (chacun perd ce qui lui reste).
+- Écran : toucher une lettre du chevalet puis une case ; toucher une lettre posée la reprend ; joker : choix de la lettre (A–Z).
+  Aperçu en direct des mots et des points (ou de l'erreur). 🔀 mélange le chevalet, 🔍 grossit le plateau (il défile).
+  On peut préparer son mot pendant le tour des autres (lettres reprises si la case est prise entre-temps).
+- **Dictionnaire + vote** : l'hôte vérifie chaque mot formé dans `lettres-mots.txt`. Mot inconnu (la liste n'a pas tous les petits
+  mots du jeu officiel, ex. QI, OK) : les autres joueurs présents votent 👍 / 👎 ; refusé si plus de la moitié dit 👎, sinon accepté
+  (personne pour voter : accepté). Refusé : les lettres reviennent à leur place chez le joueur, qui rejoue. L'auteur peut reprendre ses lettres pendant le vote.
+- Réseau : l'hôte arbitre et garde chevalets et sac ; chacun ne reçoit que son chevalet (`LC.vuePour`), tous révélés à la fin.
+  Joueur du tour absent : l'hôte peut « passer son tour ». Hôte disparu : un joueur rouvre le salon, retour à la salle d'attente
+  (comme les Dominos). L'hôte peut arrêter la partie depuis l'accueil du jeu. Étoiles du compagnon à la fin de la partie.
 
 ### Mon compagnon (prototype : piste d'un futur Désdale « centre de loisirs pour personnes âgées »)
 - But : petites obligations quotidiennes douces et envie de jouer **ensemble** pour gâter son animal. Grand texte, gros boutons.
