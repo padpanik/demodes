@@ -117,7 +117,8 @@ Agents secrets : `agents-sauvegarde` (dont `maCle`, la carte secrète si on est 
 Quatre en ligne : `quatre-sauvegarde` (salon), `quatre-solo` (partie contre l'ordinateur), `quatre-niveau`, `quatre-stats`, `quatre-dernier-salon`.
 Mon compagnon : `compagnon-animal` (espèce, nom, couleur, besoins, objets possédés et portés, série de jours), `compagnon-etoiles` (solde),
 `compagnon-journal` (dernières étoiles gagnées ou dépensées), `compagnon-parties` (parties déjà récompensées), `compagnon-jour` (tâches du jour),
-`compagnon-cadeau` (bonus de bienvenue donné), `compagnon-ancien`, `compagnon-gains-jeux` (étoiles gagnées en jouant aujourd'hui).
+`compagnon-cadeau` (bonus de bienvenue donné), `compagnon-ancien`, `compagnon-gains-jeux` (étoiles gagnées en jouant aujourd'hui),
+`compagnon-reglages`, `compagnon-veille`, `compagnon-evenements` (parties terminées), `compagnon-defis`, `compagnon-trophees`, `compagnon-maison`.
 Bataille navale : `bataille-sauvegarde`, `bataille-prive` (ma flotte en salon), `bataille-dernier-salon`, `bataille-stats`, `bataille-colles`, `bataille-rejouer`, `bataille-niveau`, `bataille-style`.
 
 ## Règles des jeux (choix de l'utilisateur, à ne pas changer sans lui)
@@ -250,6 +251,15 @@ Bataille navale : `bataille-sauvegarde`, `bataille-prive` (ma flotte en salon), 
 - Étoiles des jeux (`Etoiles.finDePartie`, une fois par partie) : à plusieurs +5 victoire / +2 partie ; seul +2 victoire ; Yams solo +2.
   **Plafond : 30 ⭐ par jour en jouant** (`compagnon-gains-jeux`) ; au-delà la partie compte pour les tâches mais ne rapporte rien.
   Branché dans tous les jeux sauf Brilliant (qui n'utilise pas `commun.js`). Tout est local au téléphone (prototype, sans serveur).
+- **Défis de la semaine** (`DEFIS` dans `compagnon-commun.js`) : chaque semaine (lundi → dimanche) un défi Facile, Moyen, Difficile,
+  **les mêmes pour tout le monde** (tirés d'après le numéro de semaine, 6 par niveau, pas de répétition avant 6 semaines). Ils se lisent dans
+  le journal des parties `compagnon-evenements` (`Etoiles.evenement`, appelé par `finDePartie` ; Yams solo et Quatre en ligne solo
+  ajoutent le score / le niveau de l'ordinateur). Réussite : une **coupe** bronze / argent / or (non achetable, SVG `CP.coupe`) et
+  +3 / +5 / +8 ⭐ hors plafond ; les trois de la semaine : une **clé** pour construire une pièce. `compagnon-defis` (semaine en cours),
+  `compagnon-trophees` (coupes). Outils d'essai dans l'onglet 🏆 pour valider un défi ou recevoir une clé.
+- **Maison qui s'agrandit** (`compagnon-maison` : pièces, clés, pièce où il est, coupes sur l'étagère) : les pièces défilent de gauche à droite
+  (glisser ou flèches). Salon (étagère de 3 coupes sous la fenêtre), Salle des trophées (offerte à la 1re coupe, deux vitrines),
+  puis au choix avec une clé : Jardin, Chambre (il y dort la nuit), Cuisine, Salle de jeux. « Appeler » le fait venir dans la pièce affichée.
 - Accueil : carte « Mon compagnon » (son dessin, son humeur, les étoiles) fixée en haut avec « En ligne », au-dessus de la liste des jeux qui défile.
 - Boutique : tête, cou (dont laisse et laisse de grande marque), habits (manteau d'hiver…), couchage (coussin → château), déco, friandises.
 

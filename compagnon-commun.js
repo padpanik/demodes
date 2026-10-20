@@ -258,6 +258,124 @@ var CP = (function () {
     } catch (e) {}
   }
 
+
+  // ================== DÉFIS DE LA SEMAINE, TROPHÉES ET MAISON ==================
+  // Chaque semaine (du lundi au dimanche), trois défis : facile, moyen, difficile. Les mêmes pour tout le monde
+  // (tirés d'après le numéro de la semaine). Ils se lisent dans le journal des parties (Etoiles.evenement, dans commun.js).
+  // Un défi réussi rapporte une coupe (bronze, argent, or) qu'on ne peut pas acheter, et des étoiles hors plafond.
+  // Les trois défis de la même semaine : une clé pour agrandir la maison d'une pièce au choix.
+  var NIVEAUX_DEFI = [
+    { id: 'bronze', nom: 'Facile', metal: 'Bronze', coupe: 'Coupe de bronze', couleurs: ['#f6c79a', '#c98146', '#7a4220'], etoiles: 3 },
+    { id: 'argent', nom: 'Moyen', metal: 'Argent', coupe: 'Coupe d\'argent', couleurs: ['#ffffff', '#c3ccd4', '#6f7c88'], etoiles: 5 },
+    { id: 'or', nom: 'Difficile', metal: 'Or', coupe: 'Coupe d\'or', couleurs: ['#fff4b0', '#f0b92a', '#9a6400'], etoiles: 8 }
+  ];
+  function nb(f) { return evs => evs.filter(f).length; }
+  var QL4 = 'Quatre en ligne';
+  // Six défis par niveau : ils reviennent tous avant qu'un même défi ne repasse
+  var DEFIS = [
+    { id: 'ql-normal', niv: 0, ico: '🔴', but: 1, titre: 'Battre l\'ordinateur « Normal » ou « Fort » au Quatre en ligne', compte: nb(e => e.jeu === QL4 && !e.p && e.g && e.i && (e.i.niveau === 'normal' || e.i.niveau === 'fort')) },
+    { id: 'yams-solo', niv: 0, ico: '🎲', but: 2, titre: 'Finir 2 parties de Yams seul', compte: nb(e => e.jeu === 'Yams' && !e.p) },
+    { id: 'bn-solo', niv: 0, ico: '⚓', but: 1, titre: 'Couler la flotte de l\'ordinateur à la Bataille navale', compte: nb(e => e.jeu === 'Bataille navale' && !e.p && e.g) },
+    { id: 'as-solo', niv: 0, ico: '🚩', but: 1, titre: 'Prendre le drapeau de l\'ordinateur à l\'Assaut', compte: nb(e => e.jeu === 'Assaut' && !e.p && e.g) },
+    { id: 'solo-3', niv: 0, ico: '🧩', but: 3, titre: 'Terminer 3 parties seul, au jeu de ton choix', compte: nb(e => !e.p) },
+    { id: 'ql-3', niv: 0, ico: '🟡', but: 3, titre: 'Gagner 3 parties de Quatre en ligne', compte: nb(e => e.jeu === QL4 && e.g) },
+    { id: 'amis-3', niv: 1, ico: '🤝', but: 3, titre: 'Jouer 3 parties avec des amis', compte: nb(e => e.p) },
+    { id: 'gb-2', niv: 1, ico: '✏️', but: 2, titre: 'Jouer 2 parties de Gribouille', compte: nb(e => e.jeu === 'Gribouille') },
+    { id: 'pb-1', niv: 1, ico: '📝', but: 1, titre: 'Jouer une partie de Petit bac', compte: nb(e => e.jeu === 'Petit bac') },
+    { id: 'jeux-3', niv: 1, ico: '🎪', but: 3, titre: 'Jouer à 3 jeux différents avec des amis', compte: evs => Object.keys(evs.filter(e => e.p).reduce((o, e) => { o[e.jeu] = 1; return o; }, {})).length },
+    { id: 'yams-amis', niv: 1, ico: '🎲', but: 2, titre: 'Jouer 2 parties de Yams à plusieurs', compte: nb(e => e.jeu === 'Yams' && e.p) },
+    { id: 'ag-1', niv: 1, ico: '🕵️', but: 1, titre: 'Jouer une partie d\'Agents secrets', compte: nb(e => e.jeu === 'Agents secrets') },
+    { id: 'bg-gagne', niv: 2, ico: '🎯', but: 1, titre: 'Gagner une partie de Backgammon', compte: nb(e => e.jeu === 'Backgammon' && e.g) },
+    { id: 'ql-fort', niv: 2, ico: '🧠', but: 1, titre: 'Battre l\'ordinateur « Fort » au Quatre en ligne', compte: nb(e => e.jeu === QL4 && !e.p && e.g && e.i && e.i.niveau === 'fort') },
+    { id: 'ag-gagne', niv: 2, ico: '🕵️', but: 1, titre: 'Gagner une partie d\'Agents secrets', compte: nb(e => e.jeu === 'Agents secrets' && e.g) },
+    { id: 'amis-gagne-3', niv: 2, ico: '👑', but: 3, titre: 'Gagner 3 parties contre des amis', compte: nb(e => e.p && e.g) },
+    { id: 'pb-gagne', niv: 2, ico: '📝', but: 1, titre: 'Gagner une partie de Petit bac', compte: nb(e => e.jeu === 'Petit bac' && e.g) },
+    { id: 'gb-gagne', niv: 2, ico: '🖍️', but: 1, titre: 'Gagner une partie de Gribouille', compte: nb(e => e.jeu === 'Gribouille' && e.g) }
+  ];
+  // Les pièces de la maison : le salon au départ, la salle des trophées à la première coupe, les autres avec une clé
+  var BLOCS = [
+    { id: 'salon', nom: 'Salon', ico: '🛋️', desc: 'Sa pièce de tous les jours' },
+    { id: 'trophees', nom: 'Salle des trophées', ico: '🏆', desc: 'S\'ouvre avec ta première coupe', auto: true },
+    { id: 'jardin', nom: 'Jardin', ico: '🌳', desc: 'De l\'herbe, des fleurs et des papillons' },
+    { id: 'chambre', nom: 'Chambre', ico: '🛏️', desc: 'Il y dort la nuit, bien au chaud' },
+    { id: 'cuisine', nom: 'Cuisine', ico: '🍲', desc: 'Ses gamelles et le goûter' },
+    { id: 'jeux', nom: 'Salle de jeux', ico: '🎲', desc: 'Pour les soirées entre amis' }
+  ];
+  var ETAGERE_MAX = 3;
+  function lundi(t) { var d = new Date(t || Date.now()); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() - (d.getDay() + 6) % 7); return d; }
+  function cleSemaine(t) { var d = lundi(t); return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate(); }
+  // Semaines écoulées depuis le lundi 1er janvier 2024
+  function numeroSemaine(t) { var d = lundi(t); return Math.round((Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) - Date.UTC(2024, 0, 1)) / 604800000); }
+  function defisDeLaSemaine(t) {
+    var n = numeroSemaine(t);
+    return [0, 1, 2].map(niv => { var l = DEFIS.filter(d => d.niv === niv); return l[((n * 5 + niv * 2) % l.length + l.length) % l.length]; });
+  }
+  function lireMaison() {
+    var m = Object.assign({ blocs: ['salon'], cles: 0, piece: 'salon', etagere: [] }, lireV('compagnon-maison') || {});
+    if (m.blocs.indexOf('salon') < 0) m.blocs.unshift('salon');
+    return m;
+  }
+  function ecrireMaison(m) { ecrireV('compagnon-maison', m); }
+  function trophees() { return lireV('compagnon-trophees') || []; }
+  // Où en sont les défis de la semaine
+  function etatDefis(t) {
+    t = t || Date.now();
+    var debut = lundi(t).getTime(), cle = cleSemaine(t);
+    var evs = (lireV('compagnon-evenements') || []).filter(e => e.h >= debut);
+    var st = lireV('compagnon-defis');
+    if (!st || st.semaine !== cle) st = { semaine: cle, reussis: {}, bonus: false };
+    var defis = defisDeLaSemaine(t).map(d => ({ id: d.id, niv: d.niv, ico: d.ico, titre: d.titre, but: d.but,
+      n: Math.min(d.but, d.compte(evs)), fait: !!st.reussis[d.id], niveau: NIVEAUX_DEFI[d.niv] }));
+    defis.forEach(d => { if (d.fait) d.n = d.but; });
+    return { semaine: cle, fin: debut + 7 * 86400000, defis: defis, bonus: !!st.bonus, st: st };
+  }
+  // Valide les défis atteints (ou celui qu'on force, pour les essais) ; annonce : petite bulle de victoire
+  function verifierDefis(annonce, forcer) {
+    if (!lireV('compagnon-animal')) return [];
+    var e = etatDefis(), st = e.st, nouveaux = [];
+    e.defis.forEach(d => { if (!st.reussis[d.id] && (d.n >= d.but || forcer === d.id)) { st.reussis[d.id] = Date.now(); nouveaux.push(d); } });
+    if (!nouveaux.length) return [];
+    var tr = trophees(), m = lireMaison(), t = Date.now();
+    nouveaux.forEach(d => {
+      var k = e.semaine + ':' + d.id;
+      tr.push({ k: k, id: d.id, niv: d.niv, ico: d.ico, titre: d.titre, h: t });
+      if (m.etagere.length < ETAGERE_MAX) m.etagere.push(k);
+      if (typeof Etoiles !== 'undefined') Etoiles.ajouter(d.niveau.etoiles, 'Défi réussi : ' + d.titre, true);
+    });
+    var salle = false, cle = false;
+    if (m.blocs.indexOf('trophees') < 0) { m.blocs.push('trophees'); salle = true; }
+    if (!st.bonus && e.defis.every(d => st.reussis[d.id])) { st.bonus = true; m.cles = (m.cles || 0) + 1; cle = true; }
+    ecrireV('compagnon-defis', st); ecrireV('compagnon-trophees', tr); ecrireMaison(m);
+    try { window.dispatchEvent(new CustomEvent('cp-defis', { detail: nouveaux })); } catch (e) {}   // la page du compagnon se met à jour
+    if (annonce && typeof Etoiles !== 'undefined') {
+      var a = [];
+      nouveaux.forEach(d => a.push(['🏆 Défi réussi ! +' + d.niveau.etoiles + ' ⭐', d.niveau.coupe + ' · ' + d.titre]));
+      if (salle) a.push(['🏆 Nouvelle pièce : la salle des trophées', 'Va voir ta coupe chez ton compagnon']);
+      if (cle) a.push(['🗝️ Ta maison peut s\'agrandir !', 'Les trois défis de la semaine sont réussis']);
+      a.forEach((x, i) => setTimeout(() => Etoiles.bulle(x[0], x[1]), i * 3400));
+    }
+    return nouveaux;
+  }
+  // Une coupe en SVG (viewBox 0 0 60 72) : métal du niveau, emblème du défi ; eteint : pas encore gagnée
+  function coupe(niv, ico, eteint) {
+    var c = eteint ? ['#eef1f3', '#d3dae0', '#aab4bd'] : NIVEAUX_DEFI[niv].couleurs, id = 'cp-m-' + (eteint ? 'gris' : NIVEAUX_DEFI[niv].id);
+    var f = 'url(#' + id + ')';
+    return '<defs><linearGradient id="' + id + '" x1="0" x2="1" y1="0" y2="0.3"><stop offset="0" stop-color="' + c[2] + '"/><stop offset="0.3" stop-color="' + c[0] + '"/>' +
+      '<stop offset="0.55" stop-color="' + c[1] + '"/><stop offset="1" stop-color="' + c[2] + '"/></linearGradient></defs>' +
+      '<path d="M15 12 Q3 12 5 24 Q7 34 19 37" stroke="' + f + '" stroke-width="4.5" fill="none" stroke-linecap="round"/>' +
+      '<path d="M45 12 Q57 12 55 24 Q53 34 41 37" stroke="' + f + '" stroke-width="4.5" fill="none" stroke-linecap="round"/>' +
+      '<path d="M12 7 H48 Q49 36 30 43 Q11 36 12 7Z" fill="' + f + '"/>' +
+      '<ellipse cx="30" cy="7" rx="18" ry="3.6" fill="' + c[0] + '"/><ellipse cx="30" cy="7.6" rx="14.5" ry="2.2" fill="' + c[2] + '" opacity="0.45"/>' +
+      '<rect x="26.5" y="42" width="7" height="9" fill="' + f + '"/><path d="M19 51 H41 L44 59 H16Z" fill="' + f + '"/>' +
+      '<rect x="12" y="59" width="36" height="10" rx="2.5" fill="' + (eteint ? '#c5cdd4' : '#5a3a26') + '"/>' +
+      '<rect x="20" y="62" width="20" height="4" rx="1" fill="' + (eteint ? '#e3e8ec' : c[1]) + '" opacity="0.85"/>' +
+      '<circle cx="30" cy="21" r="9.5" fill="#fff" opacity="' + (eteint ? 0.6 : 0.5) + '"/>' +
+      '<text x="30" y="25.2" font-size="11.5" text-anchor="middle"' + (eteint ? ' opacity="0.35"' : '') + '>' + ico + '</text>' +
+      (eteint ? '' : '<path d="M17 11 Q18 28 25 37" stroke="#fff" stroke-width="2.2" fill="none" opacity="0.55" stroke-linecap="round"/>');
+  }
+
   return { ESPECES: ESPECES, demarrerVeille: demarrerVeille, verifierVeille: verifierVeille, reglagesMessages: reglagesMessages, BESOINS: BESOINS, RECOMPENSE_JOUR: RECOMPENSE_JOUR, RECOMPENSE_SEMAINE: RECOMPENSE_SEMAINE, RAYONS: RAYONS, ARTICLES: ARTICLES,
-           niveaux: niveaux, humeur: humeur, age: age, estNuit: estNuit, dessin: dessin, art: art };
+           niveaux: niveaux, humeur: humeur, age: age, estNuit: estNuit, dessin: dessin, art: art,
+           NIVEAUX_DEFI: NIVEAUX_DEFI, DEFIS: DEFIS, BLOCS: BLOCS, ETAGERE_MAX: ETAGERE_MAX, etatDefis: etatDefis, verifierDefis: verifierDefis,
+           lireMaison: lireMaison, ecrireMaison: ecrireMaison, trophees: trophees, coupe: coupe, defisDeLaSemaine: defisDeLaSemaine };
 })();

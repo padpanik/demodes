@@ -20,7 +20,9 @@
     body { font-size: 17px; }
     .etoiles { display: inline-flex; align-items: center; gap: 4px; background: #fff3c4; color: #7a5600; font-weight: 900; border-radius: 14px; padding: 4px 12px; font-size: 1.05em; }
     .onglets-cp { display: flex; gap: 4px; background: #e3e8ec; border-radius: 14px; padding: 4px; margin-bottom: 10px; }
-    .onglets-cp button { flex: 1; border: none; background: transparent; border-radius: 10px; padding: 10px 4px; font: inherit; font-weight: 700; color: #5b6b78; cursor: pointer; }
+    .onglets-cp button { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 1px; border: none; background: transparent; border-radius: 10px; padding: 6px 2px; font: inherit; font-size: 0.8em; font-weight: 700; white-space: nowrap; color: #5b6b78; cursor: pointer; }
+    .onglets-cp button .i { font-size: 1.45em; line-height: 1.1; position: relative; }
+    .onglets-cp button .pastille { position: absolute; top: -2px; right: -8px; width: 9px; height: 9px; border-radius: 50%; background: #e5533d; }
     .onglets-cp button.actif { background: #fff; color: #1d2b36; box-shadow: 0 1px 3px rgba(0,0,0,0.12); }
 
     /* ---------- La pièce ---------- */
@@ -50,6 +52,109 @@
     @keyframes monte { from { opacity: 1; transform: translate(-50%, 0) scale(0.7); } to { opacity: 0; transform: translate(calc(-50% + var(--dx, 0px)), -90px) scale(1.2); } }
     .bulle-cp { position: absolute; left: 12px; top: 12px; max-width: 46%; background: #fff; border-radius: 14px; padding: 6px 10px; font-size: 0.82em; font-weight: 700; color: #3b4b57; box-shadow: 0 2px 6px rgba(0,0,0,0.12); }
     .nuit .mur { filter: brightness(0.62); } .nuit .sol { filter: brightness(0.7); }
+
+    /* ---------- La maison : des pièces côte à côte, on glisse de l'une à l'autre ---------- */
+    .maison { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; border-radius: 22px; box-shadow: 0 4px 16px rgba(29,43,54,0.15);
+              scrollbar-width: none; -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain; }
+    .maison::-webkit-scrollbar { display: none; }
+    .maison .scene { flex: 0 0 100%; scroll-snap-align: center; scroll-snap-stop: always; border-radius: 0; box-shadow: none; }
+    .nav-maison { display: flex; align-items: center; gap: 6px; margin-top: 6px; }
+    .nav-maison .fleche { border: none; background: #fff; border-radius: 12px; width: 40px; height: 34px; font-size: 18px; font-weight: 900; color: #2c3e50; box-shadow: 0 1px 2px rgba(0,0,0,0.1); cursor: pointer; }
+    .nav-maison .fleche:disabled { opacity: 0.3; }
+    .nav-maison .milieu { flex: 1; text-align: center; min-width: 0; }
+    .nav-maison .nom-piece { font-weight: 800; font-size: 0.95em; }
+    .nav-maison .points { display: flex; justify-content: center; align-items: center; gap: 6px; margin-top: 3px; height: 22px; }
+    .nav-maison .points span { flex-shrink: 0;  width: 8px; height: 8px; border-radius: 50%; background: #c9d2d9; }
+    .nav-maison .points span.actif { background: #2c3e50; transform: scale(1.25); }
+    .nav-maison .points span.ici { box-shadow: 0 0 0 2px #f0a500; }
+    .ou-est { margin-left: 4px; border: none; background: #fff3c4; color: #7a5600; border-radius: 10px; padding: 2px 8px; font: inherit; font-size: 0.72em; white-space: nowrap; font-weight: 800; cursor: pointer; }
+    .appeler { position: absolute; left: 50%; bottom: 18px; transform: translateX(-50%); z-index: 3; border: none; background: rgba(255,255,255,0.92); color: #2c3e50;
+               border-radius: 16px; padding: 10px 16px; font: inherit; font-weight: 800; box-shadow: 0 3px 10px rgba(0,0,0,0.2); cursor: pointer; white-space: nowrap; }
+    .petit-animal .animal { width: 160px; margin-left: -80px; }
+    /* Salon : étagère des coupes sous la fenêtre */
+    .etagere { position: absolute; right: 14px; top: 116px; width: 104px; height: 40px; display: flex; justify-content: space-around; align-items: flex-end; }
+    .etagere::after { content: ''; position: absolute; left: -4px; right: -4px; bottom: -6px; height: 7px; border-radius: 2px; background: linear-gradient(#b07a45, #8a5a2e); box-shadow: 0 4px 5px rgba(0,0,0,0.2); }
+    .etagere svg { width: 28px; height: 34px; filter: drop-shadow(0 2px 1px rgba(0,0,0,0.25)); }
+    /* Salle des trophées */
+    .piece-trophees { background: repeating-linear-gradient(90deg, #6b4428 0 38px, #613d23 38px 40px); }
+    .piece-trophees .projecteur { position: absolute; top: -40px; width: 160px; height: 200px; background: radial-gradient(ellipse at 50% 0, rgba(255,240,200,0.35), transparent 70%); pointer-events: none; }
+    .piece-trophees .tapis { position: absolute; left: 0; right: 0; bottom: 0; height: 30%; background: linear-gradient(#8e1f2a, #6d1520); }
+    .piece-trophees .tapis::before { content: ''; position: absolute; left: 0; right: 0; top: 0; height: 6px; background: #d4a845; }
+    .vitrine { position: absolute; top: 14px; width: 96px; height: 186px; display: grid; grid-template-rows: repeat(3, 1fr); background: rgba(0,0,0,0.18); border: 3px solid #c79a5b; border-radius: 8px; padding: 0 4px; }
+    .vitrine.g { left: 10px; } .vitrine.d { right: 10px; }
+    .vitrine .rayon { display: flex; justify-content: space-around; align-items: flex-end; border-bottom: 5px solid #c79a5b; }
+    .vitrine .rayon:last-child { border-bottom: none; }
+    .vitrine svg { width: 34px; height: 42px; filter: drop-shadow(0 2px 2px rgba(0,0,0,0.4)); }
+    .vitrine .vide { width: 34px; height: 42px; }
+    .plaque { position: absolute; left: 12px; bottom: 10px; background: linear-gradient(#f3d27a, #c99a2e); color: #4a3000; font-weight: 900; font-size: 12px; padding: 3px 10px; border-radius: 6px; white-space: nowrap; box-shadow: 0 2px 4px rgba(0,0,0,0.3); }
+    /* Jardin */
+    .piece-jardin { background: linear-gradient(#8fd3ff, #d8f1ff 70%); }
+    .nuit.piece-jardin { background: linear-gradient(#0f2347, #2b4a7d 70%); }
+    .piece-jardin .colline { position: absolute; left: -30%; right: -30%; bottom: 22%; height: 34%; border-radius: 50% 50% 0 0; background: #9fd88a; }
+    .piece-jardin .barriere { position: absolute; left: 0; right: 0; bottom: 30%; height: 36px; background: repeating-linear-gradient(90deg, #fffdf6 0 12px, transparent 12px 26px), linear-gradient(transparent 9px, #fffdf6 9px 15px, transparent 15px 23px, #fffdf6 23px 29px, transparent 29px); }
+    .piece-jardin .herbe { position: absolute; left: 0; right: 0; bottom: 0; height: 32%; background: linear-gradient(#7cc96b, #57a647); }
+    .piece-jardin .nuage { position: absolute; font-size: 34px; opacity: 0.95; animation: nuage 40s linear infinite; }
+    @keyframes nuage { from { transform: translateX(-60px); } to { transform: translateX(380px); } }
+    .piece-jardin .papillon { position: absolute; font-size: 22px; animation: papillon 7s ease-in-out infinite; }
+    @keyframes papillon { 0%, 100% { transform: translate(0, 0) rotate(-8deg); } 25% { transform: translate(40px, -24px) rotate(10deg); } 50% { transform: translate(80px, 6px) rotate(-6deg); } 75% { transform: translate(30px, 18px) rotate(8deg); } }
+    .nuit.piece-jardin .herbe, .nuit.piece-jardin .colline { filter: brightness(0.55); }
+    /* Chambre */
+    .piece-chambre { background: radial-gradient(#ffffff88 2px, transparent 2.5px) 0 0 / 26px 26px, linear-gradient(#dfe5f7, #cbd6f0); }
+    .piece-chambre .parquet { position: absolute; left: 0; right: 0; bottom: 0; height: 30%; background: repeating-linear-gradient(90deg, #b98c62 0 46px, #a97d55 46px 48px); }
+    .piece-chambre .tapis-rond { position: absolute; left: 50%; bottom: 8px; width: 210px; height: 40px; margin-left: -105px; border-radius: 50%; background: radial-gradient(#f7c6d6, #e8a3bb); }
+    .piece-chambre .lucarne { position: absolute; left: 22px; top: 20px; width: 70px; height: 70px; border-radius: 50%; border: 6px solid #fff; background: linear-gradient(#0f2347, #2b4a7d); overflow: hidden; color: #fff8c4; font-size: 12px; text-align: center; line-height: 22px; }
+    .lit { position: absolute; left: 8px; bottom: 26px; width: 118px; height: 66px; }
+    .lit .tete-lit { position: absolute; left: 0; bottom: 0; width: 16px; height: 66px; border-radius: 8px 8px 2px 2px; background: #8a5a3c; }
+    .lit .matelas { position: absolute; left: 10px; right: 0; bottom: 10px; height: 26px; border-radius: 6px; background: #fff; }
+    .lit .couverture { position: absolute; left: 44px; right: -2px; bottom: 8px; height: 30px; border-radius: 8px 8px 4px 4px; background: repeating-linear-gradient(45deg, #5c7ccf 0 10px, #6f8edb 10px 20px); }
+    .lit .oreiller { position: absolute; left: 16px; bottom: 30px; width: 30px; height: 16px; border-radius: 8px; background: #f5f0e6; }
+    .lit .pied { position: absolute; bottom: 0; width: 8px; height: 12px; background: #6b4428; } 
+    .mobile { position: absolute; right: 70px; top: 0; font-size: 22px; text-align: center; line-height: 1; transform-origin: top center; animation: balance 4s ease-in-out infinite; }
+    .mobile::before { content: ''; display: block; width: 2px; height: 34px; margin: 0 auto; background: #8a97a1; }
+    @keyframes balance { 0%, 100% { transform: rotate(-6deg); } 50% { transform: rotate(6deg); } }
+    .zzz { position: absolute; left: 50%; bottom: 190px; font-size: 22px; font-weight: 900; color: #5c7ccf; animation: zzz 3s ease-out infinite; pointer-events: none; }
+    @keyframes zzz { from { opacity: 0; transform: translate(10px, 10px) scale(0.7); } 30% { opacity: 1; } to { opacity: 0; transform: translate(40px, -40px) scale(1.2); } }
+    /* Cuisine */
+    .piece-cuisine { background: linear-gradient(90deg, rgba(0,0,0,0.06) 1px, transparent 1px) 0 0 / 24px 24px, linear-gradient(rgba(0,0,0,0.06) 1px, transparent 1px) 0 0 / 24px 24px, #fbf6ea; }
+    .piece-cuisine .carrelage { position: absolute; left: 0; right: 0; bottom: 0; height: 30%; background: repeating-conic-gradient(#e7ddd0 0 25%, #fffaf2 0 50%) 0 0 / 28px 28px; }
+    .piece-cuisine .plan { position: absolute; left: 0; right: 84px; bottom: 30%; height: 64px; background: #9fc3d6; border-top: 10px solid #e9d6b8; }
+    .piece-cuisine .plan::after { content: ''; position: absolute; inset: 8px 8px 6px; background: repeating-linear-gradient(90deg, transparent 0 4px, rgba(255,255,255,0.35) 4px 6px, transparent 6px 58px); }
+    .piece-cuisine .frigo { position: absolute; right: 10px; bottom: 30%; width: 66px; height: 150px; border-radius: 10px 10px 4px 4px; background: linear-gradient(90deg, #e9eef2, #fff 40%, #dfe6eb); box-shadow: inset 0 -100px 0 -98px #b8c3cc; }
+    .piece-cuisine .frigo::before { content: ''; position: absolute; left: 8px; top: 18px; width: 4px; height: 28px; border-radius: 2px; background: #9aa6b0; box-shadow: 0 58px 0 #9aa6b0; }
+    .piece-cuisine .etagere-pots { position: absolute; left: 18px; top: 36px; width: 150px; border-bottom: 6px solid #b07a45; text-align: center; font-size: 26px; letter-spacing: 6px; }
+    /* Salle de jeux */
+    .piece-jeux { background: repeating-linear-gradient(90deg, #2f5d50 0 30px, #2b5649 30px 60px); }
+    .piece-jeux .parquet { position: absolute; left: 0; right: 0; bottom: 0; height: 30%; background: repeating-linear-gradient(90deg, #c49a6c 0 54px, #b58b5e 54px 56px); }
+    .table-jeux { position: absolute; left: 10px; bottom: 30px; width: 110px; height: 60px; }
+    .table-jeux .plateau { position: absolute; left: 0; right: 0; top: 0; height: 26px; border-radius: 50%; background: radial-gradient(#3f9a5c, #2b7a45); border: 4px solid #7a4f2c; }
+    .table-jeux .pied { position: absolute; left: 50%; top: 24px; width: 10px; height: 36px; margin-left: -5px; background: #6b4428; }
+    .table-jeux .des { position: absolute; left: 0; right: 0; top: -14px; text-align: center; font-size: 20px; }
+    .grille4 { position: absolute; right: 14px; bottom: 26px; width: 84px; display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; padding: 4px; border-radius: 6px; background: #2a62c9; box-shadow: 0 3px 6px rgba(0,0,0,0.3); }
+    .grille4 i { aspect-ratio: 1; border-radius: 50%; background: #eef4ff; }
+    .boites { position: absolute; right: 16px; top: 28px; display: flex; flex-direction: column; gap: 3px; }
+    .boites span { display: block; height: 14px; border-radius: 3px; box-shadow: 0 2px 2px rgba(0,0,0,0.3); }
+
+    /* ---------- Défis ---------- */
+    .defi { display: flex; gap: 10px; align-items: center; background: #fff; border-radius: 16px; padding: 10px; margin-bottom: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.06); }
+    .defi.fait { background: linear-gradient(135deg, #fffbea, #fff1c6); box-shadow: 0 0 0 2px #f0c040; }
+    .defi svg { width: 50px; height: 60px; flex-shrink: 0; }
+    .defi .txt { flex: 1; min-width: 0; }
+    .defi .niv { font-size: 0.75em; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; }
+    .defi .titre-defi { font-weight: 800; line-height: 1.2; margin: 2px 0 5px; }
+    .defi .gain { font-size: 0.8em; color: #6b7a86; margin-top: 3px; }
+    .bonus-maison { display: flex; gap: 8px; align-items: center; background: #eef6ff; border-radius: 14px; padding: 8px 12px; font-size: 0.9em; font-weight: 700; color: #2c4f75; }
+    .blocs { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .bloc { background: #fff; border: 2px solid #e3e8ec; border-radius: 16px; padding: 10px 8px; text-align: center; font: inherit; }
+    .bloc .ico { font-size: 2em; }
+    .bloc .nom { font-weight: 800; font-size: 0.92em; }
+    .bloc .desc { font-size: 0.75em; color: #6b7a86; line-height: 1.2; }
+    .bloc.construit { border-color: #2f8a5b; background: #f1fbf5; }
+    .bloc.choix { border-color: #f0a500; cursor: pointer; background: #fffbea; }
+    .bloc.ferme { opacity: 0.55; }
+    .trophees-grille { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+    .trophees-grille button { background: #f6f8fa; border: 2px solid transparent; border-radius: 12px; padding: 4px 2px; cursor: pointer; font: inherit; font-size: 0.68em; color: #6b7a86; line-height: 1.15; }
+    .trophees-grille button.expose { border-color: #f0a500; background: #fffbea; }
+    .trophees-grille svg { width: 40px; height: 48px; display: block; margin: 0 auto 2px; }
 
     /* ---------- Besoins et soins ---------- */
     .tete-cp { display: flex; align-items: center; gap: 8px; margin: 10px 2px 6px; }
@@ -144,21 +249,90 @@
     </template>
 
     <template v-else>
-      <!-- ===== La pièce et l'animal ===== -->
-      <div class="scene" :class="{ nuit: estNuit }">
-        <div class="mur" :style="{ background: fondMur }"></div>
-        <div class="fenetre" :style="{ background: ciel }">
-          <span class="astre">{{ estNuit ? '🌙' : '☀️' }}</span>
-          <div v-if="estHiver" class="flocons">❄ ❄ ❄ ❄<br>&nbsp;❄ ❄ ❄<br>❄ ❄ ❄ ❄<br>&nbsp;❄ ❄ ❄<br>❄ ❄ ❄ ❄</div>
+      <!-- ===== La maison : une pièce par écran, on glisse de l'une à l'autre ===== -->
+      <div class="maison" ref="maison" @scroll.passive="surDefilement">
+        <div v-for="p in pieces" :key="p.id" class="scene" :class="['piece-' + p.id, { nuit: estNuit, 'petit-animal': p.id !== 'salon' }]">
+          <!-- Salon -->
+          <template v-if="p.id === 'salon'">
+            <div class="mur" :style="{ background: fondMur }"></div>
+            <div class="fenetre" :style="{ background: ciel }">
+              <span class="astre">{{ estNuit ? '🌙' : '☀️' }}</span>
+              <div v-if="estHiver" class="flocons">❄ ❄ ❄ ❄<br>&nbsp;❄ ❄ ❄<br>❄ ❄ ❄ ❄<br>&nbsp;❄ ❄ ❄<br>❄ ❄ ❄ ❄</div>
+            </div>
+            <div v-if="animal.porte && animal.porte.fenetre" class="rideaux"></div>
+            <div class="sol"></div>
+            <div v-for="d in decorsVisibles" :key="d.id" class="deco" :style="d.style">{{ d.ico }}</div>
+            <div v-if="surEtagere.length" class="etagere"><svg v-for="t in surEtagere" :key="t.k" viewBox="0 0 60 72" v-html="CP.coupe(t.niv, t.ico)"></svg></div>
+          </template>
+          <!-- Salle des trophées : deux vitrines, les coupes les plus récentes devant -->
+          <template v-else-if="p.id === 'trophees'">
+            <div class="projecteur" style="left:-30px"></div><div class="projecteur" style="right:-30px"></div>
+            <div class="tapis"></div>
+            <div v-for="(v, iv) in vitrines" :key="iv" class="vitrine" :class="iv ? 'd' : 'g'">
+              <div v-for="(rg, ir) in v" :key="ir" class="rayon">
+                <template v-for="(t, it) in rg"><svg v-if="t" :key="it" viewBox="0 0 60 72" v-html="CP.coupe(t.niv, t.ico)"></svg><span v-else :key="it" class="vide"></span></template>
+              </div>
+            </div>
+            <div class="plaque">{{ trophees.length }} coupe{{ trophees.length > 1 ? 's' : '' }}</div>
+          </template>
+          <!-- Jardin -->
+          <template v-else-if="p.id === 'jardin'">
+            <span class="nuage" style="top:14px;left:0">☁️</span><span class="nuage" style="top:46px;left:-120px;animation-delay:-18s;font-size:26px">☁️</span>
+            <span style="position:absolute;right:18px;top:14px;font-size:34px">{{ estNuit ? '🌙' : '☀️' }}</span>
+            <div class="colline"></div><div class="barriere"></div><div class="herbe"></div>
+            <span class="deco" style="left:-6px;bottom:52px;font-size:104px">🌳</span>
+            <span class="deco" style="right:14px;bottom:20px;font-size:28px">🌷</span><span class="deco" style="right:48px;bottom:8px;font-size:22px">🌼</span>
+            <span class="deco" style="left:96px;bottom:6px;font-size:22px">🌻</span><span class="deco" style="right:24px;bottom:64px;font-size:30px">🪺</span>
+            <span v-if="!estNuit" class="papillon" style="left:150px;top:96px">🦋</span>
+          </template>
+          <!-- Chambre : il y dort la nuit -->
+          <template v-else-if="p.id === 'chambre'">
+            <div class="lucarne">✦ &nbsp;✧<br>&nbsp;✧ ✦<br>✦ &nbsp;&nbsp;✧</div>
+            <div class="mobile">⭐<br>🌙</div>
+            <div class="parquet"></div><div class="tapis-rond"></div>
+            <div class="lit"><div class="tete-lit"></div><div class="matelas"></div><div class="oreiller"></div><div class="couverture"></div>
+              <div class="pied" style="left:10px"></div><div class="pied" style="right:4px"></div></div>
+            <span class="deco" style="right:14px;bottom:30px;font-size:34px">🧸</span>
+            <span class="deco" style="right:110px;top:30px;font-size:30px">🖼️</span>
+          </template>
+          <!-- Cuisine -->
+          <template v-else-if="p.id === 'cuisine'">
+            <div class="etagere-pots">🫙🍯🫖</div>
+            <div class="carrelage"></div><div class="plan"></div><div class="frigo"></div>
+            <span class="deco" style="left:30px;bottom:160px;font-size:30px">🧺</span><span class="deco" style="left:120px;bottom:160px;font-size:26px">🍎</span>
+            <span class="deco" style="left:14px;bottom:14px;font-size:34px">🥣</span><span class="deco" style="left:54px;bottom:10px;font-size:26px">💧</span>
+            <span class="deco" style="right:24px;top:22px;font-size:28px">🕰️</span>
+          </template>
+          <!-- Salle de jeux -->
+          <template v-else-if="p.id === 'jeux'">
+            <span class="deco" style="left:20px;top:22px;font-size:42px">🎯</span>
+            <div class="boites"><span style="width:70px;background:#e5533d"></span><span style="width:64px;background:#f4c430"></span><span style="width:74px;background:#3a8fd8"></span><span style="width:60px;background:#7e57c2"></span></div>
+            <div class="parquet"></div>
+            <div class="table-jeux"><div class="pied"></div><div class="plateau"></div><div class="des">🎲🎲</div></div>
+            <div class="grille4"><i v-for="(c, k) in GRILLE4" :key="k" :style="c ? { background: c } : null"></i></div>
+            <span class="deco" style="left:22px;bottom:4px;font-size:24px">🧩</span>
+          </template>
+
+          <!-- L'animal est dans cette pièce, ou on peut l'appeler -->
+          <template v-if="p.id === ouEst">
+            <div class="bulle-cp" v-if="message">{{ message }}</div>
+            <div class="animal" :class="humeurClasse" @click="caresser">
+              <svg viewBox="0 0 200 210" v-html="dessin(animal, humeurClasse)"></svg>
+            </div>
+            <div v-if="dort" class="zzz">z</div>
+            <div v-for="f in effets" :key="f.id" class="effet" :style="{ '--dx': f.dx + 'px' }">{{ f.ico }}</div>
+          </template>
+          <button v-else class="appeler" @click="appeler(p.id)">🐾 Appeler {{ animal.nom }}</button>
         </div>
-        <div v-if="animal.porte && animal.porte.fenetre" class="rideaux"></div>
-        <div class="sol"></div>
-        <div v-for="d in decorsVisibles" :key="d.id" class="deco" :style="d.style">{{ d.ico }}</div>
-        <div class="bulle-cp" v-if="message">{{ message }}</div>
-        <div class="animal" :class="humeurClasse" @click="caresser">
-          <svg viewBox="0 0 200 210" v-html="dessin(animal, humeurClasse)"></svg>
+      </div>
+      <div class="nav-maison" v-if="pieces.length > 1">
+        <button class="fleche" :disabled="pieceVue === 0" @click="allerA(pieceVue - 1)" aria-label="Pièce précédente">‹</button>
+        <div class="milieu">
+          <div class="nom-piece">{{ pieces[pieceVue].ico }} {{ pieces[pieceVue].nom }}</div>
+          <div class="points"><span v-for="(p, i) in pieces" :key="p.id" :class="{ actif: i === pieceVue, ici: p.id === ouEst }"></span>
+            <button v-if="pieces[pieceVue].id !== ouEst" class="ou-est" @click="allerA(pieces.findIndex(x => x.id === ouEst))">🐾 Où est {{ animal.nom }} ?</button></div>
         </div>
-        <div v-for="f in effets" :key="f.id" class="effet" :style="{ '--dx': f.dx + 'px' }">{{ f.ico }}</div>
+        <button class="fleche" :disabled="pieceVue === pieces.length - 1" @click="allerA(pieceVue + 1)" aria-label="Pièce suivante">›</button>
       </div>
 
       <div class="tete-cp">
@@ -167,9 +341,10 @@
       </div>
 
       <div class="onglets-cp">
-        <button :class="{ actif: onglet === 'soins' }" @click="onglet = 'soins'">❤️ Soins</button>
-        <button :class="{ actif: onglet === 'boutique' }" @click="onglet = 'boutique'">🛍️ Boutique</button>
-        <button :class="{ actif: onglet === 'etoiles' }" @click="onglet = 'etoiles'">⭐ Étoiles</button>
+        <button :class="{ actif: onglet === 'soins' }" @click="onglet = 'soins'"><span class="i">❤️</span>Soins</button>
+        <button :class="{ actif: onglet === 'boutique' }" @click="onglet = 'boutique'"><span class="i">🛍️</span>Boutique</button>
+        <button :class="{ actif: onglet === 'defis' }" @click="onglet = 'defis'; majDefis()"><span class="i">🏆<span v-if="defisRestants" class="pastille"></span></span>Défis</button>
+        <button :class="{ actif: onglet === 'etoiles' }" @click="onglet = 'etoiles'"><span class="i">⭐</span>Étoiles</button>
       </div>
 
       <!-- ===== Soins ===== -->
@@ -216,6 +391,60 @@
             <button v-if="possede(a) && a.conso" class="btn" style="margin-top:2px" :disabled="etoiles < a.prix" @click="enAchat = a">+1 · ⭐ {{ a.prix }}</button>
           </div>
         </div>
+      </template>
+
+      <!-- ===== Défis de la semaine, coupes, maison ===== -->
+      <template v-else-if="onglet === 'defis'">
+        <section class="carte">
+          <div class="titre-carte">🏆 Défis de la semaine</div>
+          <div class="aide" style="margin:-4px 0 8px">Les mêmes pour tous les amis · {{ finSemaine }}</div>
+          <div v-for="d in defis.defis" :key="d.id" class="defi" :class="{ fait: d.fait }">
+            <svg viewBox="0 0 60 72" v-html="CP.coupe(d.niv, d.ico, !d.fait)"></svg>
+            <div class="txt">
+              <div class="niv" :style="{ color: d.niveau.couleurs[2] }">{{ d.niveau.nom }} · {{ d.niveau.coupe }}</div>
+              <div class="titre-defi">{{ d.titre }}</div>
+              <div class="jauge"><span :style="{ width: (100 * d.n / d.but) + '%', background: d.fait ? '#f0b92a' : '#3a8fd8' }"></span></div>
+              <div class="gain">{{ d.fait ? '✅ Réussi ! +' + d.niveau.etoiles + ' ⭐' : d.n + ' / ' + d.but + ' · récompense : la coupe et +' + d.niveau.etoiles + ' ⭐' }}</div>
+            </div>
+          </div>
+          <div class="bonus-maison">
+            <span style="font-size:1.6em">🗝️</span>
+            <span v-if="defis.bonus">Les trois défis sont réussis : ta maison a gagné une pièce !</span>
+            <span v-else>Réussis les trois défis de la semaine pour agrandir la maison ({{ defis.defis.filter(d => d.fait).length }} / 3)</span>
+          </div>
+        </section>
+
+        <section class="carte">
+          <div class="titre-carte">🏠 La maison de {{ animal.nom }}</div>
+          <div v-if="maison.cles" class="aide" style="margin:-4px 0 8px;color:#7a5600;font-weight:800">🗝️ Tu as {{ maison.cles }} clé{{ maison.cles > 1 ? 's' : '' }} : touche la pièce à construire.</div>
+          <div class="blocs">
+            <button v-for="b in CP.BLOCS" :key="b.id" class="bloc" :class="{ construit: aBloc(b.id), choix: !aBloc(b.id) && !b.auto && maison.cles > 0, ferme: !aBloc(b.id) && !(maison.cles > 0 && !b.auto) }"
+                    @click="construire(b)">
+              <div class="ico">{{ aBloc(b.id) ? b.ico : '🔒' }}</div>
+              <div class="nom">{{ b.nom }}</div>
+              <div class="desc">{{ aBloc(b.id) ? '✓ Construite' : b.desc }}</div>
+            </button>
+          </div>
+        </section>
+
+        <section class="carte">
+          <div class="titre-carte">Mes coupes</div>
+          <div v-if="trophees.length" class="aide" style="margin:-4px 0 8px">Touche une coupe pour la poser sur l'étagère du salon ({{ maison.etagere.length }} / {{ CP.ETAGERE_MAX }}).</div>
+          <div class="trophees-grille" v-if="trophees.length">
+            <button v-for="t in trophees.slice().reverse()" :key="t.k" :class="{ expose: maison.etagere.indexOf(t.k) >= 0 }" @click="exposer(t)">
+              <svg viewBox="0 0 60 72" v-html="CP.coupe(t.niv, t.ico)"></svg>{{ dateCourte(t.h) }}
+            </button>
+          </div>
+          <div v-else class="aide">Pas encore de coupe : réussis un défi de la semaine !</div>
+        </section>
+
+        <details class="carte" style="margin-bottom:16px">
+          <summary style="font-weight:800;cursor:pointer">🛠️ Outils d'essai</summary>
+          <div class="aide" style="margin:6px 0">Pour la mise au point : valider un défi sans jouer, ou recevoir une clé.</div>
+          <button v-for="d in defis.defis" :key="'f' + d.id" class="btn" style="width:100%;margin-bottom:6px" :disabled="d.fait" @click="forcerDefi(d)">Réussir « {{ d.niveau.nom }} »</button>
+          <button class="btn" style="width:100%;margin-bottom:6px" @click="donnerCle">🗝️ Recevoir une clé</button>
+          <button class="btn" style="width:100%;color:#c0392b" @click="effacerDefis">Effacer défis, coupes et pièces</button>
+        </details>
       </template>
 
       <!-- ===== Étoiles ===== -->
@@ -276,13 +505,16 @@
       couchage: 'left:12px;bottom:20px;font-size:76px', plante: 'right:10px;bottom:22px;font-size:52px', mur: 'left:24px;top:52px;font-size:46px',
       mur2: 'left:132px;top:26px;font-size:34px', lampe: 'right:124px;top:112px;font-size:30px', jouet: 'right:76px;bottom:12px;font-size:30px'
     };
+    // Petite partie en cours dessinée dans la salle de jeux (7 × 6, rangée du haut d'abord)
+    const GRILLE4 = (function () { var g = new Array(42).fill(''), R = '#e5533d', J = '#f4c430';
+      [[35, R], [36, J], [37, R], [38, J], [39, J], [30, R], [31, J], [32, R], [24, J], [23, R]].forEach(x => { g[x[0]] = x[1]; }); return g; })();
     function heureFr(t) { return new Date(t).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }); }
     function jourDe(t) { var d = new Date(t); return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate(); }
 
     new Vue({
       el: '#app',
       data: {
-        CP: CP, ESPECES: ESPECES, BESOINS: BESOINS, RAYONS: RAYONS, Etoiles: Etoiles, RECOMPENSE_JOUR: RECOMPENSE_JOUR, RECOMPENSE_SEMAINE: RECOMPENSE_SEMAINE,
+        CP: CP, GRILLE4: GRILLE4, ESPECES: ESPECES, BESOINS: BESOINS, RAYONS: RAYONS, Etoiles: Etoiles, RECOMPENSE_JOUR: RECOMPENSE_JOUR, RECOMPENSE_SEMAINE: RECOMPENSE_SEMAINE,
         animal: lireStockage('compagnon-animal'),
         adoption: { espece: '', couleur: '', nom: '' },
         etoiles: Etoiles.solde(),
@@ -296,7 +528,12 @@
         maintenant: Date.now(),
         effets: [],
         message: '',
-        jour: { date: '', faits: {}, recompense: false }
+        jour: { date: '', faits: {}, recompense: false },
+        // Défis de la semaine, coupes gagnées, pièces de la maison
+        defis: CP.etatDefis(),
+        trophees: CP.trophees(),
+        maison: CP.lireMaison(),
+        pieceVue: 0
       },
       computed: {
         gagneesJeux: function() { this.etoiles; return Etoiles.gagneesAujourdhui(); },
@@ -321,6 +558,26 @@
           });
           return r;
         },
+        // ---------- Maison ----------
+        pieces: function() { return CP.BLOCS.filter(b => this.maison.blocs.indexOf(b.id) >= 0); },
+        dort: function() { return this.estNuit && this.humeurClasse !== 'triste'; },
+        // La pièce où il se trouve : sa chambre la nuit s'il en a une, sinon là où on l'a appelé
+        ouEst: function() {
+          if (this.estNuit && this.aBloc('chambre')) return 'chambre';
+          return this.aBloc(this.maison.piece) ? this.maison.piece : 'salon';
+        },
+        surEtagere: function() { return this.maison.etagere.map(k => this.trophees.find(t => t.k === k)).filter(Boolean); },
+        // Deux vitrines de 3 rayons, 2 coupes par rayon : les 12 plus récentes
+        vitrines: function() {
+          var l = this.trophees.slice().reverse().slice(0, 12), v = [];
+          for (var iv = 0; iv < 2; iv++) { var rg = []; for (var ir = 0; ir < 3; ir++) rg.push([l[iv * 6 + ir * 2] || null, l[iv * 6 + ir * 2 + 1] || null]); v.push(rg); }
+          return v;
+        },
+        defisRestants: function() { return this.maison.cles > 0; },
+        finSemaine: function() {
+          var j = Math.ceil((this.defis.fin - this.maintenant) / 86400000);
+          return j <= 1 ? 'dernier jour aujourd\'hui !' : 'encore ' + j + ' jours (nouveaux défis lundi)';
+        },
         articlesDuRayon: function() { return ARTICLES.filter(a => a.rayon === this.rayon); },
         // Petites obligations du jour
         tachesDuJour: function() {
@@ -334,14 +591,18 @@
         }
       },
       created: function() {
-        setInterval(() => { this.maintenant = Date.now(); this.etoiles = Etoiles.solde(); }, 20000);
+        setInterval(() => { this.maintenant = Date.now(); this.etoiles = Etoiles.solde(); this.defis = CP.etatDefis(); }, 20000);
         this.chargerJour();
         this.majJournal();
         // Une partie jouée aujourd'hui (repérée dans le journal des étoiles) compte pour les tâches du jour
         var auj = jourDe(Date.now());
         if ((lireStockage('compagnon-journal') || []).some(j => jourDe(j.h) === auj && /entre amis/.test(j.r))) { this.jour.faits.jeu = 1; this.verifierJour(); }
         if (this.animal) this.accueil();
+        this.majDefis();
+        window.addEventListener('cp-defis', () => this.majDefis(true));
+        document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') { this.maintenant = Date.now(); this.majDefis(); } });
       },
+      mounted: function() { this.montrerAnimal(true); },
       methods: {
         // ---------- Dessin de l'animal (SVG fait par le code, dans compagnon-commun.js) ----------
         dessin: function(a, humeur) { return CP.dessin(a, humeur, this.estNuit && humeur !== 'triste' && this.animal === a); },
@@ -361,6 +622,7 @@
                           possede: ancien ? ancien.possede : {}, porte: {}, serie: 0, dernierJourComplet: '' };
           this.sauver();
           this.message = 'Bonjour ! Je m\'appelle ' + this.animal.nom + ' 🥰';
+          this.montrerAnimal(true);
           if (!lireStockage('compagnon-cadeau')) { ecrireStockage('compagnon-cadeau', true); Etoiles.ajouter(10, 'Cadeau de bienvenue'); this.etoiles = Etoiles.solde(); this.majJournal(); }
         },
         // Repartir de rien (utile pour les essais) : tout ce qui concerne le compagnon et les étoiles est effacé
@@ -370,7 +632,7 @@
           this.animal = null;
           this.adoption = { espece: '', couleur: '', nom: '' };
           this.etoiles = Etoiles.solde();
-          this.chargerJour(); this.majJournal();
+          this.chargerJour(); this.majJournal(); this.majDefis();
           this.onglet = 'soins';
           window.scrollTo(0, 0);
         },
@@ -480,6 +742,63 @@
           this.message = 'Un régal ! 😋';
           this.sauver();
         },
+
+        // ---------- Maison ----------
+        aBloc: function(id) { return this.maison.blocs.indexOf(id) >= 0; },
+        surDefilement: function() {
+          var el = this.$refs.maison;
+          if (el) this.pieceVue = Math.max(0, Math.min(this.pieces.length - 1, Math.round(el.scrollLeft / el.clientWidth)));
+        },
+        allerA: function(i, instant) {
+          var el = this.$refs.maison;
+          if (!el || i < 0) return;
+          this.pieceVue = i;
+          el.scrollTo({ left: i * el.clientWidth, behavior: instant ? 'auto' : 'smooth' });
+        },
+        montrerAnimal: function(instant) { this.$nextTick(() => this.allerA(this.pieces.findIndex(p => p.id === this.ouEst), instant)); },
+        appeler: function(id) {
+          if (this.estNuit && this.aBloc('chambre')) { this.montrerAnimal(); this.message = 'Chut… je dors 😴'; return; }
+          this.$set(this.maison, 'piece', id);
+          CP.ecrireMaison(this.maison);
+          this.message = { salon: 'Me voilà ! 🐾', trophees: 'Elles brillent, nos coupes ! ✨', jardin: 'Youpi, dehors ! 🌼', chambre: 'Une petite sieste ? 😌',
+                           cuisine: 'Ça sent bon par ici ! 😋', jeux: 'On fait une partie ? 🎲' }[id] || 'Me voilà ! 🐾';
+          this.$nextTick(() => this.animer('🐾', 2));
+        },
+        construire: function(b) {
+          if (this.aBloc(b.id) || b.auto || !(this.maison.cles > 0)) return;
+          if (!confirm('Construire : ' + b.nom + ' ? (une clé)')) return;
+          this.maison.blocs.push(b.id);
+          this.maison.cles--;
+          this.$set(this.maison, 'piece', b.id);
+          CP.ecrireMaison(this.maison);
+          this.message = 'Oh ! Une nouvelle pièce ! 🤩';
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+          this.montrerAnimal();
+          this.$nextTick(() => this.animer('✨', 4));
+        },
+        exposer: function(t) {
+          var e = this.maison.etagere, i = e.indexOf(t.k);
+          if (i >= 0) e.splice(i, 1);
+          else { if (e.length >= CP.ETAGERE_MAX) e.shift(); e.push(t.k); }
+          CP.ecrireMaison(this.maison);
+        },
+        // ---------- Défis ----------
+        majDefis: function(gagne) {
+          var nouveaux = gagne ? [1] : CP.verifierDefis(true);
+          this.defis = CP.etatDefis();
+          this.trophees = CP.trophees();
+          this.maison = CP.lireMaison();
+          if (nouveaux.length) { this.etoiles = Etoiles.solde(); this.majJournal(); this.message = 'Bravo ! Une nouvelle coupe 🏆'; this.$nextTick(() => this.animer('🏆', 3)); }
+        },
+        forcerDefi: function(d) { CP.verifierDefis(true, d.id); this.majDefis(); this.etoiles = Etoiles.solde(); this.majJournal(); },
+        donnerCle: function() { this.maison.cles = (this.maison.cles || 0) + 1; CP.ecrireMaison(this.maison); },
+        effacerDefis: function() {
+          if (!confirm('Effacer les défis de la semaine, les coupes, les pièces construites et l\'historique des parties ?')) return;
+          ['compagnon-defis', 'compagnon-trophees', 'compagnon-maison', 'compagnon-evenements'].forEach(k => { try { localStorage.removeItem(k); } catch (e) {} });
+          this.majDefis();
+          this.montrerAnimal(true);
+        },
+        dateCourte: function(h) { return new Date(h).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' }); },
 
         // ---------- Étoiles ----------
         majJournal: function() { this.journal = (lireStockage('compagnon-journal') || []).slice().reverse().slice(0, 25); },

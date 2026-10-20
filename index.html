@@ -75,6 +75,7 @@
     .carte-compagnon .infos-cp { flex: 1; min-width: 0; display: flex; flex-direction: column; }
     .carte-compagnon .nom-cp { font-weight: 800; font-size: 1.15em; }
     .carte-compagnon .etat-cp { font-size: 0.85em; color: #6b5a3a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .carte-compagnon .defis-cp { margin-left: 6px; font-size: 0.6em; font-weight: 800; color: #9a6400; background: #fff; border-radius: 8px; padding: 1px 6px; vertical-align: 2px; }
     .carte-compagnon .etoiles-cp { background: #fff; color: #7a5600; font-weight: 900; border-radius: 12px; padding: 4px 10px; flex-shrink: 0; }
     .ico-cp { width: 51px; height: 51px; border-radius: 14px; background: #fff3c4; display: flex; align-items: center; justify-content: center; font-size: 30px; flex-shrink: 0; }
     .jeu > .ico-cp { height: 56px; }
@@ -121,7 +122,7 @@
           <svg v-if="compagnon" viewBox="0 -6 200 216" v-html="compagnon.dessin"></svg>
           <span v-else class="ico-cp">🐾</span>
           <span class="infos-cp">
-            <span class="nom-cp">{{ compagnon ? compagnon.nom : 'Mon compagnon' }} <small v-if="compagnon" style="font-weight:600;font-size:0.6em;color:#9a7a2a">{{ compagnon.age }}</small></span>
+            <span class="nom-cp">{{ compagnon ? compagnon.nom : 'Mon compagnon' }} <small v-if="compagnon" style="font-weight:600;font-size:0.6em;color:#9a7a2a">{{ compagnon.age }}</small><small v-if="compagnon && compagnon.defis" class="defis-cp">🏆 {{ compagnon.defis }}</small></span>
             <span class="etat-cp">{{ compagnon ? compagnon.etat : 'Adopte un petit animal' }}</span>
           </span>
           <span class="etoiles-cp">⭐ {{ compagnon ? compagnon.etoiles : etoiles }}</span>
@@ -210,7 +211,8 @@
           if (!a || typeof CP === 'undefined') return null;
           var n = CP.niveaux(a), h = CP.humeur(n), nuit = CP.estNuit() && h !== 'triste';
           var bas = CP.BESOINS.filter(b => n[b.id] < 30).map(b => ({ repas: 'a faim', eau: 'a soif', toilette: 'voudrait un bain', calin: 'voudrait un câlin' })[b.id]);
-          return { nom: a.nom, age: CP.age(a.ne), dessin: CP.dessin(a, h, nuit), etoiles: Etoiles.solde(),
+          var d = CP.etatDefis ? CP.etatDefis().defis : [];
+          return { nom: a.nom, age: CP.age(a.ne), dessin: CP.dessin(a, h, nuit), etoiles: Etoiles.solde(), defis: d.length ? d.filter(x => x.fait).length + '/3' : '',
                    etat: bas.length ? '😟 ' + bas.join(', ') : nuit ? '😴 Dort paisiblement' : h === 'content' ? '😊 Très heureux' : '🙂 Va bien' };
         },
         jeux: function() {
@@ -231,6 +233,8 @@
       },
       created: function() {
         setInterval(() => { this.maj++; }, 30000);   // humeur du compagnon et étoiles à jour
+        // Un défi de la semaine réussi pendant une partie (si le module n'était pas encore chargé) : on le valide ici
+        setTimeout(() => { try { if (CP.verifierDefis(true).length) this.maj++; } catch (e) {} }, 1200);
         // Glisser au doigt : il faut pouvoir bloquer le défilement de la page pendant le tri
         document.addEventListener('touchmove', (e) => { if (this.glisse) { e.preventDefault(); this.deplacer(e.touches[0].clientY); } else this.bougeAvant(e.touches[0]); }, { passive: false });
         document.addEventListener('touchend', () => this.finAppui());

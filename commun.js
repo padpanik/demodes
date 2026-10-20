@@ -3,7 +3,7 @@
 // Les clés de stockage gardent l'ancien préfixe "brillant-" : les réglages déjà faits sont conservés.
 
 // Numéro de version affiché (à augmenter à chaque mise en ligne, avec brilliant.html et sw.js)
-const VERSION = '1.75';
+const VERSION = '1.76';
 
 // ---------- Stockage local ----------
 function lireStockage(cle) {
@@ -204,13 +204,22 @@ const Etoiles = {
     if (!discret && n > 0) this.bulle('+' + n + ' ⭐', raison);
   },
   // Fin d'une partie : récompense selon victoire et nombre de joueurs (une seule fois par partie)
-  finDePartie: function(jeu, gagne, aPlusieurs, idPartie) {
+  // Journal des parties terminées (lu par les défis de la semaine du compagnon) : jeu, victoire, à plusieurs, détails
+  evenement: function(jeu, gagne, aPlusieurs, info) {
+    var ev = lireStockage('compagnon-evenements') || [];
+    ev.push({ h: Date.now(), jeu: jeu, g: !!gagne, p: !!aPlusieurs, i: info || {} });
+    ecrireStockage('compagnon-evenements', ev.slice(-150));
+    // Défi réussi ? (le module du compagnon est chargé par le salon global sur toutes les pages)
+    setTimeout(() => { try { if (typeof CP !== 'undefined' && CP.verifierDefis) CP.verifierDefis(true); } catch (e) {} }, 1500);
+  },
+  finDePartie: function(jeu, gagne, aPlusieurs, idPartie, info) {
     var cle = jeu + ':' + (idPartie || ''), vus = lireStockage('compagnon-parties') || {}, t = Date.now();
     if (idPartie ? vus[cle] : (vus[cle] && t - vus[cle] < 30000)) return;
     vus[cle] = t;
     var garder = {};
     Object.keys(vus).filter(k => t - vus[k] < 7 * 86400000).forEach(k => { garder[k] = vus[k]; });
     ecrireStockage('compagnon-parties', garder);
+    this.evenement(jeu, gagne, aPlusieurs, info);
     var b = this.BAREME, n = aPlusieurs ? (gagne ? b.victoirePlusieurs : b.partiePlusieurs) : (gagne ? b.victoireSeul : 0);
     this.recompenseJeu(n, (gagne ? 'Victoire' : 'Partie') + ' · ' + jeu + (aPlusieurs ? ' entre amis' : ''));
   },
