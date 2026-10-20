@@ -253,6 +253,11 @@
     .groupe-admin .btn { width: 100%; padding: 10px 6px; }
     .sous-titre-admin { font-weight: 800; font-size: 0.9em; color: #5b6b78; }
 
+    /* ---------- Visite chez un ami ---------- */
+    .visite-cp { margin-top: 2px; background: linear-gradient(135deg, #fff8e1, #ffeccc); }
+    .actions-visite { display: flex; gap: 8px; margin-top: 8px; }
+    .actions-visite .btn { flex: 1; text-align: center; text-decoration: none; padding: 12px 6px; }
+
     /* ---------- Adoption ---------- */
     .apercu-adoption { text-align: center; background: linear-gradient(#f6e7cf, #e9cfa8); border-radius: 18px; padding: 10px 0 8px; margin-bottom: 8px; }
     .apercu-adoption svg { width: 150px; height: 160px; }
@@ -276,7 +281,15 @@
     </div>
 
     <!-- ===== Adoption ===== -->
-    <template v-if="!animal">
+    <!-- Visite chez un ami : on frappe à la porte -->
+    <section v-if="visite && visite.etat !== 'ok'" class="carte" style="text-align:center;margin-top:20px">
+      <div style="font-size:44px">{{ visite.etat === 'echec' ? '🚪' : '🏡' }}</div>
+      <div class="titre-carte">{{ visite.etat === 'echec' ? 'Personne n\'ouvre…' : 'Je frappe à la porte de ' + (visite.pseudo || 'ton ami') + '…' }}</div>
+      <div class="aide" v-if="visite.etat === 'echec'">{{ visite.pseudo || 'Ton ami' }} n'est peut-être plus connecté, ou n'a pas encore de compagnon.</div>
+      <a class="btn" style="display:inline-block;margin-top:10px;text-decoration:none" href="compagnon.html">↩ Rentrer chez moi</a>
+    </section>
+
+    <template v-if="!animal && !visite">
       <header class="hero"><div style="font-size:44px">🏡</div><div><h1>Mon compagnon</h1><p>Adopte un petit animal et prends-en soin</p></div></header>
       <section class="carte">
         <div class="titre-carte">1. Choisis ton compagnon</div>
@@ -299,7 +312,7 @@
       </section>
     </template>
 
-    <template v-else>
+    <template v-else-if="animal && (!visite || visite.etat === 'ok')">
       <!-- ===== La maison : une pièce par écran, on glisse de l'une à l'autre ===== -->
       <div class="maison" ref="maison" @scroll.passive="surDefilement">
         <div v-for="p in pieces" :key="p.id" class="scene" :class="['piece-' + p.id, { nuit: estNuit, 'petit-animal': p.id !== 'salon' }]">
@@ -391,7 +404,17 @@
         <span class="humeur">{{ texteHumeur }}</span>
       </div>
 
-      <div class="onglets-cp">
+      <!-- En visite : pas d'onglets, juste un câlin possible et le retour -->
+      <section v-if="visite" class="carte visite-cp">
+        <div class="titre-carte">🏠 Chez {{ visite.pseudo }}</div>
+        <div class="aide">Glisse pour voir ses pièces. Touche {{ animal.nom }} pour lui faire un câlin : il le sentira chez {{ visite.pseudo }} ❤️</div>
+        <div class="actions-visite">
+          <button class="btn principal" @click="calinVisite">❤️ Câlin à {{ animal.nom }}</button>
+          <a class="btn" href="compagnon.html">↩ Rentrer chez moi</a>
+        </div>
+      </section>
+
+      <div class="onglets-cp" v-if="!visite">
         <button :class="{ actif: onglet === 'soins' }" @click="onglet = 'soins'"><span class="i">❤️</span>Soins</button>
         <button :class="{ actif: onglet === 'boutique' }" @click="onglet = 'boutique'"><span class="i">🛍️</span>Boutique</button>
         <button :class="{ actif: onglet === 'defis' }" @click="onglet = 'defis'; majDefis()"><span class="i">🏆<span v-if="defisRestants" class="pastille"></span></span>Défis</button>
@@ -399,7 +422,7 @@
       </div>
 
       <!-- ===== Soins ===== -->
-      <template v-if="onglet === 'soins'">
+      <template v-if="!visite && onglet === 'soins'">
         <div class="besoins">
           <button v-for="b in BESOINS" :key="b.id" class="besoin" :class="{ bas: niveaux[b.id] < 30 }" @click="soigner(b)">
             <div class="haut"><span class="ico">{{ b.ico }}</span>{{ b.nom }}</div>
@@ -419,7 +442,7 @@
 
 
       <!-- ===== Boutique ===== -->
-      <template v-else-if="onglet === 'boutique'">
+      <template v-else-if="!visite && onglet === 'boutique'">
         <div class="rayons"><button v-for="r in RAYONS" :key="r.id" :class="{ actif: rayon === r.id }" @click="rayon = r.id">{{ r.nom }}</button></div>
         <div class="articles">
           <div v-for="a in articlesDuRayon" :key="a.id" class="article" :class="{ porte: estPorte(a) }">
@@ -436,7 +459,7 @@
       </template>
 
       <!-- ===== Défis de la semaine, coupes, maison ===== -->
-      <template v-else-if="onglet === 'defis'">
+      <template v-else-if="!visite && onglet === 'defis'">
         <section class="carte">
           <div class="titre-carte">🏆 Défis de la semaine</div>
           <div class="aide" style="margin:-4px 0 8px">Les mêmes pour tous les amis · {{ finSemaine }}</div>
@@ -482,8 +505,8 @@
 
       </template>
 
-      <!-- ===== Étoiles ===== -->
-      <template v-else>
+      <!-- ===== Réglages ===== -->
+      <template v-else-if="!visite">
         <!-- Les petits mots du compagnon : messages et notifications -->
         <section class="carte">
           <div class="titre-carte">💬 Les petits mots de {{ animal.nom }}</div>
@@ -617,6 +640,8 @@
         maison: CP.lireMaison(),
         pieceVue: 0,
         // Vie de l'animal dans la pièce : position (% de la largeur), sens, marche, posture, geste en cours
+        // Visite chez un ami connecté (compagnon.html?visite=…) : sa maison, en lecture seule
+        visite: null,
         vie: { x: 50, dir: 1, marche: false, posture: 'assis', geste: '', duree: 0, objet: '', sieste: false },
         admin: { ouvert: false, actif: ADMIN.actif(), mdp: '', erreur: '', calcul: false }
       },
@@ -684,12 +709,24 @@
         setInterval(() => { this.maintenant = Date.now(); this.etoiles = Etoiles.solde(); this.defis = CP.etatDefis(); }, 20000);
         this.chargerJour();
         this.majJournal();
-        // Une partie jouée aujourd'hui avec des amis (gagnée ou perdue) compte pour les tâches du jour
-        this.verifierPartieAmis();
-        if (this.animal) this.accueil();
-        this.majDefis();
+        var idVisite = new URLSearchParams(location.search).get('visite');
+        if (idVisite) { this.visite = { id: idVisite, pseudo: '', etat: 'attente' }; this.demanderVisite(); }
+        else {
+          // Une partie jouée aujourd'hui avec des amis (gagnée ou perdue) compte pour les tâches du jour
+          this.verifierPartieAmis();
+          if (this.animal) this.accueil();
+          this.majDefis();
+        }
+        // Un ami a fait un câlin à mon compagnon pendant sa visite
+        window.addEventListener('cp-exterieur', () => {
+          if (this.visite) return;
+          this.animal = lireStockage('compagnon-animal');
+          this.maintenant = Date.now();
+          this.message = 'Un ami m\'a fait un câlin ! 🥰';
+          this.$nextTick(() => this.animer('❤️', 3));
+        });
         window.addEventListener('cp-defis', () => this.majDefis(true));
-        document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') { this.maintenant = Date.now(); this.chargerJour(); this.verifierPartieAmis(); this.majDefis(); } });
+        document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && !this.visite) { this.maintenant = Date.now(); this.chargerJour(); this.verifierPartieAmis(); this.majDefis(); } });
       },
       mounted: function() { this.montrerAnimal(true); this.demarrerVie(); },
       methods: {
@@ -732,11 +769,13 @@
           ecrireStockage('compagnon-ancien', this.animal);
           this.animal = null;
         },
-        sauver: function() { ecrireStockage('compagnon-animal', this.animal); },
+        sauver: function() { if (!this.visite) ecrireStockage('compagnon-animal', this.animal); },
+        ecrireMaison: function() { if (!this.visite) CP.ecrireMaison(this.maison); },
 
         // ---------- Soins ----------
         couleurJauge: function(v) { return v < 25 ? '#e5533d' : v < 55 ? '#f0a500' : '#3cb371'; },
         soigner: function(b) {
+          if (this.visite) return this.calinVisite();
           var n = this.niveaux[b.id];
           if (n >= 98) { this.message = b.id === 'calin' ? 'Encore un câlin ? Avec plaisir !' : 'Merci, ça va très bien pour l\'instant 😊'; if (b.id !== 'calin') return; }
           this.changerBesoin(b.id, b.gain);
@@ -961,7 +1000,7 @@
         allerALaCuisine: function() {
           this.message = 'Je vais voir ma gamelle 🥣';
           this.$set(this.maison, 'piece', 'cuisine');
-          CP.ecrireMaison(this.maison);
+          this.ecrireMaison();
           this.vie.x = 50; this.vie.posture = 'assis';
           this.montrerAnimal();
           this._occupe = Date.now() + 2500;
@@ -973,6 +1012,45 @@
           this._occupe = Date.now() + ms;
           clearTimeout(this._finGeste);
           this._finGeste = setTimeout(() => { if (v.geste === g) v.geste = ''; }, ms);
+        },
+
+        // ---------- Visite chez un ami (par le salon global, de téléphone à téléphone) ----------
+        demanderVisite: function(n) {
+          n = n || 0;
+          var sg = window.SalonGlobal;
+          if (!sg || !sg.pret || !sg.pret()) { if (n > 40) { this.visite.etat = 'echec'; return; } return setTimeout(() => this.demanderVisite(n + 1), 500); }
+          var m = sg.membre(this.visite.id);
+          this.visite.pseudo = m ? m.pseudo : 'ton ami';
+          sg.demander(this.visite.id, { type: 'MAISON?' }, d => {
+            if (!d || d.aucun || !d.a || !ESPECES.some(e => e.id === d.a.espece)) { this.visite.etat = 'echec'; return; }
+            var a = d.a, propre = {};
+            BESOINS.forEach(b => { var x = a.besoins && a.besoins[b.id]; propre[b.id] = { v: +(x && x.v) || 0, t: +(x && x.t) || Date.now() }; });
+            var porte = {};
+            Object.keys(a.porte || {}).forEach(k => { if (CP.art(a.porte[k]).id) porte[k] = a.porte[k]; });
+            this.animal = { espece: a.espece, couleur: /^#[0-9a-f]{6}$/i.test(a.couleur) ? a.couleur : '#c8915a', nom: String(a.nom || '').slice(0, 16),
+                            ne: +a.ne || 0, besoins: propre, possede: {}, porte: porte, serie: 0 };
+            var mm = d.maison || {};
+            this.maison = { blocs: ['salon'].concat((mm.blocs || []).filter(b => b !== 'salon' && CP.BLOCS.some(x => x.id === b))), cles: 0,
+                            piece: String(mm.piece || 'salon'), etagere: (mm.etagere || []).slice(0, 3) };
+            this.trophees = (d.trophees || []).slice(0, 15).filter(t => t && t.k).map(t => ({ k: String(t.k), niv: Math.max(0, Math.min(2, +t.niv || 0)), ico: String(t.ico || '🏆').slice(0, 4), titre: String(t.titre || ''), h: +t.h || 0 }));
+            if (d.pseudo) this.visite.pseudo = String(d.pseudo).slice(0, 20);
+            this.visite.etat = 'ok';
+            this.maintenant = Date.now();
+            this.message = 'Bienvenue chez ' + this.visite.pseudo + ' ! 👋';
+            this.$nextTick(() => { this.montrerAnimal(true); this.demarrerVie(); });
+          });
+        },
+        calinVisite: function() {
+          if (!this.visite || this.visite.etat !== 'ok') return;
+          var t = Date.now();
+          if (t - (this._dernierCalinVisite || 0) < 15000) { this.message = 'Merci, encore un petit moment 😊'; return; }
+          this._dernierCalinVisite = t;
+          window.SalonGlobal.envoyerA(this.visite.id, { type: 'CALIN' });
+          if (this.vie.posture === 'couche' && !this.dort) { this.vie.posture = 'assis'; this.vie.sieste = false; }
+          this.animer('❤️', 3);
+          if (!this.dort) this.geste('queue', 1800);
+          this.message = 'Merci pour le câlin ! 🥰';
+          vibrer(20);
         },
 
         // ---------- Maison ----------
@@ -991,7 +1069,7 @@
         appeler: function(id) {
           if (this.estNuit && this.aBloc('chambre')) { this.montrerAnimal(); this.message = 'Chut… je dors 😴'; return; }
           this.$set(this.maison, 'piece', id);
-          CP.ecrireMaison(this.maison);
+          this.ecrireMaison();
           this.message = { salon: 'Me voilà ! 🐾', trophees: 'Elles brillent, nos coupes ! ✨', jardin: 'Youpi, dehors ! 🌼', chambre: 'Une petite sieste ? 😌',
                            cuisine: 'Ça sent bon par ici ! 😋', jeux: 'On fait une partie ? 🎲' }[id] || 'Me voilà ! 🐾';
           this.$nextTick(() => this.animer('🐾', 2));
@@ -1002,7 +1080,7 @@
           this.maison.blocs.push(b.id);
           this.maison.cles--;
           this.$set(this.maison, 'piece', b.id);
-          CP.ecrireMaison(this.maison);
+          this.ecrireMaison();
           this.message = 'Oh ! Une nouvelle pièce ! 🤩';
           window.scrollTo({ top: 0, behavior: 'smooth' });
           this.montrerAnimal();
@@ -1012,10 +1090,11 @@
           var e = this.maison.etagere, i = e.indexOf(t.k);
           if (i >= 0) e.splice(i, 1);
           else { if (e.length >= CP.ETAGERE_MAX) e.shift(); e.push(t.k); }
-          CP.ecrireMaison(this.maison);
+          this.ecrireMaison();
         },
         // ---------- Défis ----------
         majDefis: function(gagne) {
+          if (this.visite) return;
           var nouveaux = gagne ? [1] : CP.verifierDefis(true);
           this.defis = CP.etatDefis();
           this.trophees = CP.trophees();
@@ -1023,7 +1102,7 @@
           if (nouveaux.length) { this.etoiles = Etoiles.solde(); this.majJournal(); this.message = 'Bravo ! Une nouvelle coupe 🏆'; this.$nextTick(() => this.animer('🏆', 3)); }
         },
         forcerDefi: function(d) { if (!ADMIN.actif()) return; CP.verifierDefis(true, d.id); this.majDefis(); this.etoiles = Etoiles.solde(); this.majJournal(); },
-        donnerCle: function() { if (!ADMIN.actif()) return; this.maison.cles = (this.maison.cles || 0) + 1; CP.ecrireMaison(this.maison); },
+        donnerCle: function() { if (!ADMIN.actif()) return; this.maison.cles = (this.maison.cles || 0) + 1; this.ecrireMaison(); },
         effacerDefis: function() {
           if (!ADMIN.actif()) return;
           if (!confirm('Effacer les défis de la semaine, les coupes, les pièces construites et l\'historique des parties ?')) return;

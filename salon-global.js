@@ -228,6 +228,14 @@ var SalonGlobal = (function () {
         break;
       }
       case 'OU': if (membres[id]) { membres[id].ou = nettoyerOu(d.ou); diffuserMembres(); rendre(); } break;
+      // Message pour un seul membre (visite de maison, câlin…) : l'hôte le fait passer
+      case 'RELAIS': {
+        if (!membres[id] || !d.m || JSON.stringify(d.m).length > 60000) return;
+        var dest = String(d.a || '');
+        if (dest === monId()) recevoirRelais(id, d.m);
+        else if (conns[dest]) { try { conns[dest].send({ t: 'RELAIS', de: id, m: d.m }); } catch (e) {} }
+        break;
+      }
       case 'PROFIL': if (membres[id]) { Object.assign(membres[id], nettoyerProfil(d.profil)); diffuserMembres(); rendre(); } break;
       case 'MSG': {
         if (!membres[id]) return;
@@ -256,7 +264,66 @@ var SalonGlobal = (function () {
       case 'MEMBRES': membres = {}; (d.membres || []).forEach(m => { membres[m.id] = m; }); rendre(); break;
       case 'HISTO': (d.messages || []).forEach(m => ajouterMessage(m, true)); rendre(); break;
       case 'MSG': ajouterMessage(d.m); break;
+      case 'RELAIS': recevoirRelais(String(d.de || ''), d.m || {}); break;
     }
+  }
+
+  // ================== VISITES DE MAISONS (Mon compagnon) ==================
+  // Un ami connecté demande à voir ma maison : mon téléphone lui envoie un instantané (lecture seule).
+  // Il peut faire un câlin à mon compagnon : le câlin compte ici. Rien ne passe par un serveur.
+  var attentes = {};        // demandes en cours : q -> rappel
+  var derniersCalins = {};  // id du visiteur -> heure du dernier câlin (pas plus d'un toutes les 15 s)
+  function envoyerA(id, m) { envoyer({ t: 'RELAIS', a: id, m: m }); }
+  function demander(id, m, rappel, delai) {
+    var q = Math.random().toString(36).slice(2, 10);
+    attentes[q] = rappel;
+    m.q = q;
+    envoyerA(id, m);
+    setTimeout(() => { if (attentes[q]) { delete attentes[q]; rappel(null); } }, delai || 12000);
+  }
+  function instantaneMaison() {
+    var a = lire('compagnon-animal');
+    if (!a || !a.espece) return null;
+    var m = lire('compagnon-maison') || {}, tr = lire('compagnon-trophees') || [];
+    var etagere = (m.etagere || []).slice(0, 3);
+    return {
+      a: { espece: a.espece, couleur: a.couleur, nom: a.nom, ne: a.ne, porte: a.porte || {}, besoins: a.besoins, possede: {} },
+      maison: { blocs: (m.blocs || ['salon']).slice(0, 10), piece: m.piece || 'salon', etagere: etagere, cles: 0 },
+      trophees: tr.slice(-12).concat(tr.filter(t => etagere.indexOf(t.k) >= 0 && tr.slice(-12).indexOf(t) < 0)).map(t => ({ k: t.k, niv: t.niv, ico: t.ico, titre: t.titre, h: t.h })),
+      pseudo: publicProfil().pseudo
+    };
+  }
+  function recevoirRelais(de, m) {
+    var qui = (membres[de] && membres[de].pseudo) || 'Un ami';
+    if (m.type === 'MAISON?') {
+      envoyerA(de, { type: 'MAISON', r: m.q, donnees: instantaneMaison() });
+      if (lire('compagnon-animal')) toast('👀 ' + esc(qui) + ' visite ta maison');
+    } else if (m.type === 'MAISON') {
+      var rappel = attentes[m.r];
+      if (rappel) { delete attentes[m.r]; rappel(m.donnees || { aucun: true }, de); }
+    } else if (m.type === 'CALIN') {
+      var t = Date.now(), a = lire('compagnon-animal');
+      if (!a || !a.besoins || t - (derniersCalins[de] || 0) < 15000) return;
+      derniersCalins[de] = t;
+      var b = a.besoins.calin || { v: 0, t: t };
+      var actuel = typeof CP !== 'undefined' ? CP.niveaux(a, t).calin : b.v;
+      a.besoins.calin = { v: Math.min(100, actuel + 20), t: t };
+      ecrire('compagnon-animal', a);
+      try { window.dispatchEvent(new CustomEvent('cp-exterieur')); } catch (e) {}   // la page du compagnon se met à jour
+      toast('❤️ ' + esc(qui) + ' a fait un câlin à ' + esc(a.nom));
+    }
+  }
+  // Petite annonce en haut de l'écran
+  function toast(html) {
+    try {
+      var d = document.createElement('div');
+      d.style.cssText = 'position:fixed;left:50%;top:12px;transform:translateX(-50%);z-index:4600;background:#fff8e7;color:#5b3d00;border-radius:16px;padding:9px 16px;' +
+        'font:700 15px system-ui,sans-serif;box-shadow:0 6px 20px rgba(0,0,0,.2);max-width:calc(100% - 32px);text-align:center;pointer-events:none;transition:opacity .5s';
+      d.innerHTML = html;
+      document.body.appendChild(d);
+      setTimeout(() => { d.style.opacity = '0'; }, 3500);
+      setTimeout(() => d.remove(), 4100);
+    } catch (e) {}
   }
 
   // ---------- Messages ----------
@@ -392,6 +459,7 @@ var SalonGlobal = (function () {
       '.sg-cp{display:flex;align-items:center;gap:4px;font-size:12px;color:#7a5a20;margin-top:1px}.sg-cp span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}',
       '.sg-btn{border:1.5px solid #2c3e50;background:#fff;border-radius:10px;padding:6px 10px;font:700 13px system-ui,sans-serif;color:#2c3e50;cursor:pointer}',
       '.sg-btn.plein{background:#2c3e50;color:#fff}',
+      '.sg-actions{display:flex;flex-direction:column;gap:5px;flex-shrink:0}',
       '.sg-msg{display:flex;gap:8px;margin:7px 0;align-items:flex-start}.sg-msg .sg-bloc{min-width:0;flex:1}',
       '.sg-msg .sg-entete{font-size:12px;color:#6b7a86}.sg-msg .sg-entete b{color:#1d2b36}',
       '.sg-msg .sg-texte{background:#f1f4f6;border-radius:4px 12px 12px 12px;padding:6px 10px;display:inline-block;max-width:100%;word-wrap:break-word;white-space:pre-wrap;font-size:15px}',
@@ -506,7 +574,8 @@ var SalonGlobal = (function () {
     var corps = el.panneau.querySelector('#sg-corps'), pied = el.panneau.querySelector('.sg-pied');
     if (onglet === 'presents') { corps.innerHTML = vueInvisible() + vuePresents(); pied.innerHTML = ''; pied.style.display = 'none';
       corps.querySelector('[data-invisible]').onclick = basculerInvisible;
-      corps.querySelectorAll('[data-rejoindre]').forEach(x => { x.onclick = () => rejoindrePartie(x.dataset.rejoindre); }); }
+      corps.querySelectorAll('[data-rejoindre]').forEach(x => { x.onclick = () => rejoindrePartie(x.dataset.rejoindre); });
+      corps.querySelectorAll('[data-visiter]').forEach(x => { x.onclick = () => { location.href = 'compagnon.html?visite=' + encodeURIComponent(x.dataset.visiter); }; }); }
     else if (onglet === 'profil') { pied.innerHTML = ''; pied.style.display = 'none'; vueProfil(corps); }
     else {
       var canal = onglet === 'salon' ? c : 'tous';
@@ -548,7 +617,8 @@ var SalonGlobal = (function () {
       var cp = m.cp && typeof CP !== 'undefined' ? '<div class="sg-cp">' + dessinCompagnon(m.cp, 30) + '<span>' + esc(m.cp.n) + (m.cp.ne ? ' · ' + esc(ageCompagnon(m.cp.ne)) : '') + '</span></div>' : '';
       return '<div class="sg-membre">' + avatar(m, 34) + '<div class="sg-qui"><div class="sg-nom">' + esc(m.pseudo) + (m.id === moi ? ' (moi)' : '') + '</div>' +
              '<div class="sg-ou">' + esc(ouTexte(m.ou)) + '</div>' + cp + '</div>' +
-             (peutRejoindre ? '<button class="sg-btn plein" data-rejoindre="' + esc(m.id) + '">Rejoindre</button>' : '') + '</div>';
+             '<div class="sg-actions">' + (peutRejoindre ? '<button class="sg-btn plein" data-rejoindre="' + esc(m.id) + '">Rejoindre</button>' : '') +
+             (m.cp && m.id !== moi ? '<button class="sg-btn" data-visiter="' + esc(m.id) + '">🏠 Visiter</button>' : '') + '</div></div>';
     }).join('');
   }
   function vueMessage(m) {
@@ -607,5 +677,5 @@ var SalonGlobal = (function () {
   var script = document.currentScript;
   if (script && script.dataset.jeu) demarrer(script.dataset.jeu);
 
-  return { demarrer: demarrer, ouvrir: ouvrir_panneau, _etat: () => ({ role: role, membres: membres, messages: messages, ou: ou() }) };
+  return { demarrer: demarrer, ouvrir: ouvrir_panneau, pret: () => !!role, membre: id => membres[id] || null, demander: demander, envoyerA: envoyerA, _etat: () => ({ role: role, membres: membres, messages: messages, ou: ou() }) };
 })();

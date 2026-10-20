@@ -305,6 +305,13 @@ Bataille navale : `bataille-sauvegarde`, `bataille-prive` (ma flotte en salon), 
   renifle la plante, regarde par la fenêtre (soleil, neige, étoiles), admire ses coupes. Cuisine : gamelle (« vide » s'il a faim),
   frigo. Jardin : sieste sous l'arbre, fleurs, papillon. Chambre : sieste sur le lit, nounours. Salle de jeux : lance les dés, regarde
   la grille. Trophées : admire. S'il a faim et qu'il y a une cuisine, il y part tout seul attendre près de sa gamelle.
+- **Visite chez un ami connecté** : bouton « 🏠 Visiter » dans la liste des présents du salon global (si l'ami a un compagnon) →
+  `compagnon.html?visite=<id>`. Le salon global relaie un message à un seul membre (`RELAIS`, via l'hôte) : `MAISON?` → l'ami
+  répond un instantané (animal, pièces, étagère, 12 dernières coupes ; `instantaneMaison`) et voit « 👀 X visite ta maison ».
+  En visite : sa maison en lecture seule (pièces, vie, objets), pas d'onglets, **rien n'est enregistré** chez le visiteur
+  (`sauver` / `ecrireMaison` / `majDefis` coupés). Câlin (bouton ou toucher l'animal) : `CALIN` → +20 % de câlins chez l'ami,
+  au plus un toutes les 15 s par visiteur, bulle « ❤️ X a fait un câlin à … » (événement `cp-exterieur` pour mettre sa page à jour).
+  Ami parti ou sans compagnon : « Personne n'ouvre… » (attente 12 s). API : `SalonGlobal.pret / membre / demander / envoyerA`.
 - Accueil : carte « Mon compagnon » (son dessin, son humeur, les étoiles) fixée en haut avec « En ligne », au-dessus de la liste des jeux qui défile.
 - Boutique : tête, cou (dont laisse et laisse de grande marque), habits (manteau d'hiver…), couchage (coussin → château), déco, friandises.
 
