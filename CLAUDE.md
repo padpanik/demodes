@@ -34,7 +34,7 @@ Tout est en français : interface, commentaires du code, messages de commit, ré
 | `agents.html` + `agents-regles.js` | Agents secrets (version maison du jeu d'espions en mots, sans le nom ni les visuels de la marque) : deux équipes, un chef par équipe voit la carte secrète. Mots et règles dans `agents-regles.js` (testable avec Node). |
 | `quatre.html` + `quatre-regles.js` | Quatre en ligne (version maison du classique « aligner 4 jetons », sans le nom de la marque). Solo contre l'ordinateur (3 niveaux) ou à deux en salon. Moteur + ordinateur (minimax) dans `quatre-regles.js` (testable avec Node). |
 | `domino.html` + `domino-regles.js` | Dominos (double-six) avec l'option **Triominos**. Solo contre 1 à 3 ordinateurs, ou salon de 2 à 4 (mains gardées par l'hôte, chacun ne reçoit que la sienne). Moteur + ordinateur + géométrie triangulaire dans `domino-regles.js` (testable avec Node). |
-| `lettres.html` + `lettres-regles.js` + `lettres-mots.txt` | **Lettres croisées** (version maison du jeu de lettres sur grille, sans le nom ni les visuels de la marque). Salon de 2 à 4 seulement, pas de solo (chevalets et sac gardés par l'hôte). Plateau, bonus, points dans `lettres-regles.js` (testable avec Node). Dictionnaire libre `lettres-mots.txt` (~311 000 mots, licence MIT, voir `lettres-mots-licence.txt`), une ligne par mot codée « préfixe commun » (1er caractère = longueur reprise du mot précédent, en hexadécimal). |
+| `lettres.html` + `lettres-regles.js` + `lettres-mots.txt` | **Lettres croisées** (version maison du jeu de lettres sur grille, sans le nom ni les visuels de la marque). Solo contre 1 à 3 ordinateurs (3 niveaux), ou salon de 2 à 4 (chevalets et sac gardés par l'hôte). Plateau, bonus, points, arbre de mots et ordinateur dans `lettres-regles.js` (testable avec Node). Dictionnaire libre `lettres-mots.txt` (~311 000 mots, licence MIT, voir `lettres-mots-licence.txt`), une ligne par mot codée « préfixe commun » (1er caractère = longueur reprise du mot précédent, en hexadécimal). |
 | `compagnon.html` + `compagnon-commun.js` | **Mon compagnon** (prototype, façon « animal virtuel ») : on adopte un animal dessiné en SVG, on en prend soin chaque jour, et les ⭐ gagnées en jouant (`Etoiles` dans `commun.js`) achètent accessoires et déco. Espèces, besoins, boutique et dessin SVG dans `compagnon-commun.js` (aussi utilisé par l'accueil). Pas de réseau propre. |
 | `compagnon-3d.html` | Maquette « niveau 2 » : le chien en vraie 3D (Three.js **r128** par CDN, uniquement sur cette page). **Mise de côté** par l'utilisateur (plus de lien dans le jeu, page gardée pour plus tard). |
 | `sons/` | Sons enregistrés de la Bataille navale (MP3 libres de droits) et leurs sources (`LICENCES.txt`). |
@@ -119,7 +119,7 @@ Petit bac : `petitbac-sauvegarde`, `petitbac-dernier-salon`, `petitbac-reglages`
 Agents secrets : `agents-sauvegarde` (dont `maCle`, la carte secrète si on est chef), `agents-dernier-salon`.
 Quatre en ligne : `quatre-sauvegarde` (salon), `quatre-solo` (partie contre l'ordinateur), `quatre-niveau`, `quatre-stats`, `quatre-dernier-salon`.
 Dominos : `domino-sauvegarde` (salon ; chez l'hôte, l'état complet avec toutes les mains), `domino-solo` (partie contre l'ordinateur), `domino-jeu`, `domino-ordis`, `domino-buts`, `domino-dernier-salon`.
-Lettres croisées : `lettres-sauvegarde` (salon ; chez l'hôte, l'état complet avec chevalets et sac), `lettres-dernier-salon`.
+Lettres croisées : `lettres-sauvegarde` (salon ; chez l'hôte, l'état complet avec chevalets et sac), `lettres-solo` (partie contre l'ordinateur), `lettres-niveau`, `lettres-ordis`, `lettres-dernier-salon`.
 Mon compagnon : `compagnon-animal` (espèce, nom, couleur, besoins, objets possédés et portés, série de jours), `compagnon-etoiles` (solde),
 `compagnon-journal` (dernières étoiles gagnées ou dépensées), `compagnon-parties` (parties déjà récompensées), `compagnon-jour` (tâches du jour),
 `compagnon-cadeau` (bonus de bienvenue donné), `compagnon-ancien`, `compagnon-gains-jeux` (étoiles gagnées en jouant aujourd'hui),
@@ -254,8 +254,8 @@ Bataille navale : `bataille-sauvegarde`, `bataille-prive` (ma flotte en salon), 
   l'hôte peut « jouer à sa place » (un coup de l'ordinateur). Hôte disparu : un joueur rouvre le salon, mais les mains étaient chez
   l'hôte, donc retour à la salle d'attente. Étoiles du compagnon à la fin de la **partie**.
 
-### Lettres croisées (demandé « multijoueur uniquement »)
-- Nom maison (pas le nom de la marque). De 2 à 4 joueurs en salon, les suivants regardent ; pas de solo.
+### Lettres croisées
+- Nom maison (pas le nom de la marque). De 2 à 4 joueurs en salon, les suivants regardent ; ou seul contre 1 à 3 ordinateurs.
 - Plateau 15 × 15, bonus classiques (L×2, L×3, M×2, M×3, centre M×2 avec l'étoile), 102 jetons à la répartition et aux valeurs
   françaises (2 jokers à 0). Chevalet de 7. Mots sur une ligne ou colonne, sans trou, touchant l'existant ; 1er mot sur l'étoile.
   Bonus seulement sous les lettres posées ce tour-ci ; 7 lettres d'un coup : +50. Échange possible s'il reste au moins 7 jetons ;
@@ -270,6 +270,13 @@ Bataille navale : `bataille-sauvegarde`, `bataille-prive` (ma flotte en salon), 
 - Réseau : l'hôte arbitre et garde chevalets et sac ; chacun ne reçoit que son chevalet (`LC.vuePour`), tous révélés à la fin.
   Joueur du tour absent : l'hôte peut « passer son tour ». Hôte disparu : un joueur rouvre le salon, retour à la salle d'attente
   (comme les Dominos). L'hôte peut arrêter la partie depuis l'accueil du jeu. Étoiles du compagnon à la fin de la partie.
+- **Solo** (ajouté ensuite à la demande de l'utilisateur, avec un niveau à limiter) : le dictionnaire est chargé en arbre compact
+  (`LC.construireArbre`, typed arrays, ~590 000 nœuds) qui sert aussi à vérifier les mots ; l'ordinateur cherche tous ses coups par la
+  méthode des ancres (`LC.coupsPossibles`) et ne joue que des mots du dictionnaire. Niveaux (`LC.NIVEAUX`, `LC.ordinateur`) :
+  **Facile** mots de 5 lettres au plus, sans joker, coup au hasard dans la moitié la moins payante (~130 pts par partie à deux) ;
+  **Normal** 8 lettres au plus, coup entre 55 % et 85 % du classement (~250) ; **Fort** tous les mots, meilleur coup (~450-550).
+  Sans coup : il échange ses lettres sauf jokers, E et S (sac ≥ 7), sinon passe. Seul, pas de vote : un mot hors dictionnaire
+  demande une confirmation au joueur. Série de victoires par niveau (`Etoiles.serie('lettres-<niveau>')`).
 
 ### Mon compagnon (prototype : piste d'un futur Désdale « centre de loisirs pour personnes âgées »)
 - But : petites obligations quotidiennes douces et envie de jouer **ensemble** pour gâter son animal. Grand texte, gros boutons.

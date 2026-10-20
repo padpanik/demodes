@@ -17,6 +17,9 @@
   <link rel="stylesheet" href="commun.css">
   <style>
     .logo-lc { width: 51px; height: 51px; display: flex; align-items: center; justify-content: center; }
+    .segment { display: flex; background: #e3e8ec; border-radius: 10px; padding: 3px; gap: 3px; margin-bottom: 8px; }
+    .segment button { flex: 1; border: none; background: transparent; border-radius: 8px; padding: 8px 4px; font: inherit; font-weight: 600; color: #5b6b78; cursor: pointer; }
+    .segment button.actif { background: #fff; color: #1d2b36; box-shadow: 0 1px 3px rgba(0,0,0,0.12); }
     .petit-titre { font-size: 0.85em; font-weight: 700; color: #5b6b78; margin: 6px 0 4px; }
     .regles ul { padding-left: 18px; margin: 8px 0 0; font-size: 0.88em; line-height: 1.45; color: #3b4b57; }
     .panneau-vide { text-align: center; padding: 36px 16px; color: #5b6b78; }
@@ -116,7 +119,7 @@
         <div class="logo-lc" v-html="logo"></div>
         <div>
           <h1>Lettres croisées</h1>
-          <p>Désdale · des mots sur la grille, de 2 à 4 joueurs</p>
+          <p>Désdale · des mots sur la grille, seul contre l'ordinateur ou de 2 à 4</p>
         </div>
       </header>
 
@@ -135,6 +138,21 @@
         <button v-if="role === 'hote' && e && e.phase !== 'fin'" class="btn" style="width:100%;margin-top:8px" @click="arreter">Arrêter la partie en cours (salle d'attente)</button>
       </section>
 
+      <section class="carte" v-if="!role">
+        <div class="titre-carte">Seul contre l'ordinateur</div>
+        <div class="petit-titre">Niveau de l'ordinateur</div>
+        <div class="segment">
+          <button v-for="(nom, n) in NIVEAUX_NOMS" :key="n" :class="{ actif: niveau === n }" @click="niveau = n">{{ nom }}</button>
+        </div>
+        <div class="aide" style="margin-top:0">{{ AIDE_NIVEAUX[niveau] }}</div>
+        <div class="petit-titre">Nombre d'ordinateurs contre toi</div>
+        <div class="segment">
+          <button v-for="n in [1, 2, 3]" :key="n" :class="{ actif: nbOrdis === n }" @click="nbOrdis = n">🤖 {{ n }}</button>
+        </div>
+        <button class="btn principal" style="width:100%" @click="demarrerSolo">🤖 {{ soloEnCours ? 'Reprendre la partie' : 'Jouer seul' }}</button>
+        <button v-if="soloEnCours" class="btn" style="width:100%;margin-top:6px" @click="nouveauSolo">Nouvelle partie ({{ NIVEAUX_NOMS[niveau] }})</button>
+        <div class="aide" v-if="serieRecord > 1">Record : {{ serieRecord }} parties gagnées d'affilée ({{ NIVEAUX_NOMS[niveau] }}).</div>
+      </section>
       <section class="carte" v-if="!role">
         <div class="titre-carte">À plusieurs (2 à 4), chacun sur son téléphone</div>
         <label class="champ">Ton pseudo
@@ -159,7 +177,7 @@
           <li>On marque les points de chaque mot formé (le mot principal et ceux qui se croisent). Cases colorées : <strong>L×2 / L×3</strong> (la lettre compte double / triple), <strong>M×2 / M×3</strong> (le mot compte double / triple), seulement pour les lettres posées ce tour-ci.</li>
           <li>Les 7 lettres d'un coup : <strong>+50</strong>. Les deux jokers valent 0 point et remplacent n'importe quelle lettre.</li>
           <li>On peut aussi <strong>échanger</strong> des lettres (s'il en reste au moins 7 dans le sac) ou <strong>passer</strong>.</li>
-          <li>Mot absent du dictionnaire : les autres joueurs <strong>votent</strong>. S'il est refusé, les lettres reviennent et on rejoue.</li>
+          <li>Mot absent du dictionnaire : les autres joueurs <strong>votent</strong>. S'il est refusé, les lettres reviennent et on rejoue. Seul contre l'ordinateur, c'est toi qui décides.</li>
           <li>Fin : quand un joueur a posé toutes ses lettres et que le sac est vide (il gagne les points restant chez les autres, qui les perdent), ou quand tout le monde passe deux fois de suite.</li>
         </ul>
       </details>
@@ -177,7 +195,7 @@
     <div v-show="onglet === 'play'">
       <div v-if="!pub" class="panneau-vide">
         <div class="grand">🔤</div>
-        <p>Entre dans un salon depuis l'accueil.</p>
+        <p>Joue seul ou entre dans un salon depuis l'accueil.</p>
         <button class="btn principal" @click="onglet = 'config'">Aller à l'accueil</button>
       </div>
 
@@ -217,14 +235,14 @@
 
         <!-- Vote sur un mot inconnu du dictionnaire -->
         <div class="vote-lc" v-if="e.phase === 'verif' && e.verif">
-          <div class="aide" style="margin:0">{{ e.verif.j === moi ? 'Mot inconnu du dictionnaire, les autres votent :' : e.verif.j + ' propose un mot inconnu du dictionnaire :' }}</div>
+          <div class="aide" style="margin:0">{{ e.verif.j === moiJ ? 'Mot inconnu du dictionnaire, les autres votent :' : e.verif.j + ' propose un mot inconnu du dictionnaire :' }}</div>
           <div class="mots">{{ e.verif.inconnus.join(', ') }}</div>
           <div class="aide" style="margin:0">{{ e.verif.mots.join(', ') }} · {{ e.verif.points }} points · votes {{ nbVotes }}/{{ votants.length }}</div>
-          <div class="actions-lc" v-if="votants.indexOf(moi) !== -1">
-            <button class="btn" :class="{ moi: e.verif.votes[moi] === true }" @click="voter(true)">👍 Accepter</button>
-            <button class="btn" :class="{ moi: e.verif.votes[moi] === false }" @click="voter(false)">👎 Refuser</button>
+          <div class="actions-lc" v-if="votants.indexOf(moiJ) !== -1">
+            <button class="btn" :class="{ moi: e.verif.votes[moiJ] === true }" @click="voter(true)">👍 Accepter</button>
+            <button class="btn" :class="{ moi: e.verif.votes[moiJ] === false }" @click="voter(false)">👎 Refuser</button>
           </div>
-          <div class="actions-lc" v-if="e.verif.j === moi">
+          <div class="actions-lc" v-if="e.verif.j === moiJ">
             <button class="btn" @click="envoyerJeu({ type: 'ANNULER', partieId: pub.partieId })">↺ Reprendre mes lettres</button>
           </div>
         </div>
@@ -256,7 +274,7 @@
 
         <!-- Fin de partie -->
         <div class="fin-lc" v-else>
-          <div class="titre">{{ e.fin.gagnants.indexOf(moi) !== -1 ? (e.fin.gagnants.length > 1 ? '🤝 Égalité, tu fais partie des gagnants !' : '🏆 Tu gagnes la partie !') : '🏆 ' + e.fin.gagnants.join(' et ') + (e.fin.gagnants.length > 1 ? ' gagnent' : ' gagne') }}</div>
+          <div class="titre">{{ e.fin.gagnants.indexOf(moiJ) !== -1 ? (e.fin.gagnants.length > 1 ? '🤝 Égalité, tu fais partie des gagnants !' : '🏆 Tu gagnes la partie !') : '🏆 ' + e.fin.gagnants.join(' et ') + (e.fin.gagnants.length > 1 ? ' gagnent' : ' gagne') }}</div>
           <div class="aide" style="text-align:center;margin-bottom:6px">{{ e.journal[e.journal.length - 1] }}</div>
           <table>
             <tr v-for="(j, k) in classement" :key="j">
@@ -295,6 +313,12 @@
     const NOM_JEU = 'Lettres croisées';
     const ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
     const LIB_BONUS = { MT: 'M×3', MD: 'M×2', LT: 'L×3', LD: 'L×2' };
+    const ORDIS = ['🤖 Ordi', '🤖 Ordi 2', '🤖 Ordi 3'];
+    const NIVEAUX_NOMS = { facile: 'Facile', normal: 'Normal', fort: 'Fort' };
+    const AIDE_NIVEAUX = { facile: 'Petits mots (5 lettres au plus), sans joker, rarement le meilleur coup.',
+                           normal: 'Mots de 8 lettres au plus, de bons coups sans être les meilleurs.',
+                           fort: 'Connaît tous les mots du dictionnaire et joue toujours le meilleur coup.' };
+    function estOrdi(n) { return ORDIS.indexOf(n) !== -1; }
     function copie(o) { return JSON.parse(JSON.stringify(o)); }
     const LOGO = '<svg width="51" height="51" viewBox="0 0 51 51">' +
       [[3, 15, 'L', -8], [18, 6, 'E', 4], [33, 17, 'T', -3]].map(t => '<g transform="rotate(' + t[3] + ' ' + (t[0] + 7.5) + ' ' + (t[1] + 7.5) + ')"><rect x="' + t[0] + '" y="' + t[1] + '" width="16" height="16" rx="3" fill="#f6dfa6" stroke="#8a5a35" stroke-width="1.4"/>' +
@@ -302,14 +326,16 @@
       '<rect x="4" y="38" width="43" height="8" rx="2" fill="#8a5a35"/></svg>';
 
     // ---------- Dictionnaire (chargé une fois, ~170 Ko compressé) ----------
-    let DICO = null, promesseDico = null;
+    // Rangé dans un arbre de lettres compact : il sert à vérifier les mots et à l'ordinateur pour chercher ses coups.
+    let ARBRE = null, DICO = null, promesseDico = null;
     function chargerDico() {
       if (DICO) return Promise.resolve(DICO);
       if (!promesseDico) promesseDico = fetch('lettres-mots.txt').then(r => r.ok ? r.text() : Promise.reject())
-        .then(t => { DICO = LC.lireDictionnaire(t); return DICO; })
+        .then(t => { ARBRE = LC.construireArbre(t); DICO = { has: m => LC.existe(ARBRE, m) }; return DICO; })
         .catch(() => { promesseDico = null; return null; });
       return promesseDico;
     }
+    let etatSolo = null;      // en solo : l'état complet (chevalets des ordinateurs et sac compris)
 
     // ================== RÉSEAU ==================
     let peer = null;
@@ -338,6 +364,10 @@
         pub: null,
         joueurs: [],
         solo: false,
+        soloEnCours: false,
+        niveau: lireStockage('lettres-niveau') || 'normal',
+        nbOrdis: lireStockage('lettres-ordis') || 1,
+        NIVEAUX_NOMS: NIVEAUX_NOMS, AIDE_NIVEAUX: AIDE_NIVEAUX,
         poses: [],             // mes lettres posées mais pas encore jouées : [{ i: rang dans le chevalet, c: case, l: lettre du joker }]
         choisi: -1,            // lettre du chevalet touchée
         ordre: [0, 1, 2, 3, 4, 5, 6],   // ordre d'affichage du chevalet (🔀)
@@ -360,20 +390,23 @@
       },
       computed: {
         moi: function() { return this.pseudoInput.trim() || 'Moi'; },
+        // En solo, je suis le premier joueur de la partie enregistrée
+        moiJ: function() { return this.solo && this.e ? this.e.joueurs[0] : this.moi; },
+        serieRecord: function() { this.soloEnCours; return Etoiles.meilleureSerie('lettres-' + this.niveau); },
         vibrationSupportee: function() { return typeof navigator.vibrate === 'function'; },
         connexionTexte: function() { return { ok: 'en ligne', connexion: 'connexion…', perdue: 'reconnexion…', aucune: 'hors ligne' }[this.connexion]; },
         e: function() { return this.pub && this.pub.e; },
         presents: function() { return this.pub ? this.pub.ordre.filter(p => this.estPresent(p)) : []; },
-        estJoueur: function() { return !!this.e && this.e.joueurs.indexOf(this.moi) !== -1; },
-        monChevalet: function() { return (this.e && this.e.chevalets[this.moi]) || []; },
+        estJoueur: function() { return !!this.e && this.e.joueurs.indexOf(this.moiJ) !== -1; },
+        monChevalet: function() { return (this.e && this.e.chevalets[this.moiJ]) || []; },
         monTour: function() {
           var e = this.e;
-          return !!e && e.phase === 'jeu' && e.joueurs[e.tour] === this.moi && this.connexion === 'ok';
+          return !!e && e.phase === 'jeu' && e.joueurs[e.tour] === this.moiJ && (this.solo || this.connexion === 'ok');
         },
         joueurDuTourAbsent: function() { var e = this.e; return !!e && e.phase === 'jeu' && !this.estPresent(e.joueurs[e.tour]); },
         joueursAff: function() {
           var e = this.e;
-          return e.joueurs.map((j, k) => ({ nom: (j === this.moi ? 'Moi' : j) + ' · ' + e.nbLettres[j], score: e.scores[j],
+          return e.joueurs.map((j, k) => ({ nom: (j === this.moiJ ? 'Moi' : j) + ' · ' + e.nbLettres[j], score: e.scores[j],
                                             actif: e.phase !== 'fin' && e.tour === k, absent: !this.estPresent(j) }));
         },
         // Les 225 cases : lettres posées, mes lettres en attente, lettres soumises au vote, dernier coup
@@ -388,7 +421,7 @@
                      etat: t ? 'pose' : ver[c] ? 'verif' : a[c] ? 'mien' : '', dernier: !!(t && dern[c]) };
           });
         },
-        analyse: function() { return this.poses.length && this.e && this.estJoueur ? LC.analyser(this.e, this.moi, this.poses) : null; },
+        analyse: function() { return this.poses.length && this.e && this.estJoueur ? LC.analyser(this.e, this.moiJ, this.poses) : null; },
         inconnus: function() {
           var a = this.analyse;
           if (!a || a.erreur || !this.dicoPret) return [];
@@ -399,7 +432,7 @@
           if (!a) return this.e && this.e.dernier && this.e.phase !== 'verif' ? 'Dernier coup : ' + this.e.dernier.mots.join(', ') + ' (' + this.e.dernier.j + ', +' + this.e.dernier.points + ')' : '';
           if (a.erreur) return a.erreur;
           var t = a.mots.map(m => m.mot + ' ' + m.points).join(' · ') + (a.bingo ? ' · +50' : '') + ' = ' + a.points + ' pts';
-          if (this.inconnus.length) t += ' · ' + this.inconnus.join(', ') + ' : vote';
+          if (this.inconnus.length) t += ' · ' + this.inconnus.join(', ') + (this.solo ? ' : hors dictionnaire' : ' : vote');
           return t;
         },
         apercuClasse: function() { var a = this.analyse; return a ? (a.erreur ? 'erreur' : 'ok') : ''; },
@@ -418,8 +451,8 @@
           if (!e) return '';
           if (e.phase === 'fin') return 'Partie terminée';
           if (e.phase === 'verif') {
-            if (e.verif.j === this.moi) return 'Les autres votent sur ton mot…';
-            return this.votants.indexOf(this.moi) !== -1 && e.verif.votes[this.moi] === undefined ? 'Vote : ce mot est-il valable ?' : 'Vote en cours…';
+            if (e.verif.j === this.moiJ) return 'Les autres votent sur ton mot…';
+            return this.votants.indexOf(this.moiJ) !== -1 && e.verif.votes[this.moiJ] === undefined ? 'Vote : ce mot est-il valable ?' : 'Vote en cours…';
           }
           var j = e.joueurs[e.tour];
           if (this.monTour) {
@@ -427,6 +460,7 @@
             if (!this.poses.length) return this.choisi >= 0 ? 'Touche une case du plateau.' : 'À toi : touche une lettre, puis une case.';
             return 'Touche ✓ Jouer quand ton mot est prêt.';
           }
+          if (estOrdi(j)) return j + ' réfléchit…';
           return this.estPresent(j) ? 'Au tour de ' + j + '…' : 'Au tour de ' + j + ' (absent)…';
         }
       },
@@ -434,6 +468,8 @@
         sonActif: function(v) { ecrireStockage('brillant-son', v); },
         vibrationActive: function(v) { ecrireStockage('brillant-vibration', v); if (v) vibrer(40); },
         pseudoInput: function() { this.sauvegarder(); },
+        niveau: function(v) { ecrireStockage('lettres-niveau', v); },
+        nbOrdis: function(v) { ecrireStockage('lettres-ordis', v); },
         // Nouveau chevalet (après un coup, un échange, une nouvelle partie) : on repart de zéro
         'monChevalet': function(n, a) {
           if ((n || []).join('') === (a || []).join('')) return;
@@ -457,6 +493,7 @@
       },
       created: function() {
         if (!ACCES.cleSalon) return;
+        this.majSoloEnCours();
         this.restaurer();
         chargerDico().then(d => { this.dicoPret = !!d; });
         setInterval(() => this.battement(), 4000);
@@ -474,10 +511,81 @@
         basculerSon: function() { this.sonActif = !this.sonActif; if (this.sonActif) Sons.jouer('toc'); },
         valeur: function(l) { return LC.valeur(l); },
         estPresent: function(p) {
-          if (p === this.moi) return true;
+          if (this.solo || p === this.moi || estOrdi(p)) return true;
           if (this.role === 'hote') return !!(salle.infos[p] && salle.infos[p].connecte);
           var j = this.joueurs.find(x => x.pseudo === p);
           return !j || j.connecte !== false;
+        },
+
+        // ================== SOLO CONTRE L'ORDINATEUR ==================
+        majSoloEnCours: function() { var s = lireStockage('lettres-solo'); this.soloEnCours = !!(s && s.phase !== 'fin'); },
+        demarrerSolo: function() {
+          var s = lireStockage('lettres-solo');
+          if (s && s.phase !== 'fin') { etatSolo = s; this.lancerSolo(); }
+          else this.nouveauSolo();
+        },
+        nouveauSolo: function() {
+          etatSolo = LC.nouvellePartie([this.moi].concat(ORDIS.slice(0, this.nbOrdis)));
+          etatSolo.niveau = this.niveau;
+          etatSolo.partieId = nouvelId();
+          this.lancerSolo();
+        },
+        lancerSolo: function() {
+          this.solo = true;
+          this.pub = null;
+          this.poses = [];
+          this.majSolo(true);
+          this.onglet = 'play';
+          this.tourOrdi();
+        },
+        majSolo: function(debut) {
+          var ancien = this.pub;
+          this.pub = { phase: 'jeu', ordre: etatSolo.joueurs, partieId: etatSolo.partieId, e: LC.vuePour(etatSolo, etatSolo.joueurs[0]) };
+          if (!debut && ancien) this.reagir(ancien, this.pub);
+          ecrireStockage('lettres-solo', etatSolo);
+          this.majSoloEnCours();
+        },
+        quitterSolo: function() { clearTimeout(this._timerOrdi); this.solo = false; this.pub = null; etatSolo = null; this.poses = []; this.onglet = 'config'; this.majSoloEnCours(); },
+        // L'ordinateur joue (après un petit temps, pour qu'on voie le coup précédent)
+        tourOrdi: function() {
+          clearTimeout(this._timerOrdi);
+          var e = etatSolo;
+          if (!this.solo || !e || e.phase !== 'jeu' || !estOrdi(LC.joueurDuTour(e))) return;
+          this._timerOrdi = setTimeout(() => {
+            chargerDico().then(() => {
+              if (!this.solo || etatSolo !== e || e.phase !== 'jeu' || !ARBRE) return;
+              var j = LC.joueurDuTour(e), a = LC.ordinateur(e, j, ARBRE, e.niveau);
+              if (a.type === 'poser') LC.poser(e, j, a.poses);
+              else if (a.type === 'echanger') LC.echanger(e, j, a.rangs);
+              else LC.passer(e, j);
+              this.majSolo();
+              this.tourOrdi();
+            });
+          }, 1100 + Math.random() * 600);
+        },
+        traiterSolo: function(m) {
+          var e = etatSolo, j = e && e.joueurs[0];
+          if (!e) return;
+          if (m.type === 'POSER') {
+            if (e.phase !== 'jeu' || LC.joueurDuTour(e) !== j) return;
+            var a = LC.analyser(e, j, m.poses);
+            if (a.erreur) { this.poses = m.poses; return; }
+            var inconnus = a.mots.map(x => x.mot).filter((w, k, t) => !(DICO && DICO.has(w)) && t.indexOf(w) === k);
+            // Seul, pas de vote : on décide soi-même (la liste n'a pas tous les petits mots)
+            if (inconnus.length && !confirm(inconnus.join(', ') + (inconnus.length > 1 ? ' ne sont' : ' n\'est') + ' pas dans le dictionnaire.\n\nLe compter quand même ?')) { this.poses = m.poses; return; }
+            LC.poser(e, j, m.poses);
+          } else if (m.type === 'PASSER') { if (LC.passer(e, j).erreur) return; }
+          else if (m.type === 'ECHANGER') { if (LC.echanger(e, j, m.rangs).erreur) return; }
+          else if (m.type === 'NOUVELLE') {
+            etatSolo = LC.nouvellePartie(e.joueurs.slice());
+            etatSolo.niveau = e.niveau;
+            etatSolo.partieId = nouvelId();
+            this.poses = [];
+            this.majSolo(true);
+            return this.tourOrdi();
+          } else return;
+          this.majSolo();
+          this.tourOrdi();
         },
 
         // ================== ACTIONS DU JOUEUR ==================
@@ -517,9 +625,9 @@
         },
         jouer: function() {
           if (!this.peutJouer) return this.vibre(60);
-          this.envoyerJeu({ type: 'POSER', partieId: this.pub.partieId, poses: copie(this.poses) });
-          this._posesEnvoyees = copie(this.poses);
+          var poses = copie(this.poses);
           this.poses = []; this.choisi = -1;
+          this.envoyerJeu({ type: 'POSER', partieId: this.pub.partieId, poses: poses });
         },
         debutEchange: function() { this.reprendre(); this.modeEchange = true; this.aEchanger = {}; },
         echanger: function() {
@@ -536,6 +644,7 @@
         voter: function(oui) { this.envoyerJeu({ type: 'VOTE', partieId: this.pub.partieId, oui: oui }); },
         arreter: function() { if (confirm('Arrêter la partie et revenir à la salle d\'attente ?')) this.envoyerJeu({ type: 'ARRETER' }); },
         envoyerJeu: function(m) {
+          if (this.solo) return this.traiterSolo(m);
           if (this.role === 'hote') return this.traiterJeu(monPseudo, m);
           if (this.connexion !== 'ok') return;
           this.envoyerHote({ action: 'JEU', m: m });
@@ -629,7 +738,7 @@
           this.sauvegarder();
         },
         reagir: function(a, p) {
-          var ea = a && a.e, e = p.e, moi = this.moi;
+          var ea = a && a.e, e = p.e, moi = this.moiJ;
           if (!e) return;
           var memePartie = ea && a.partieId === p.partieId;
           if (memePartie && e.nbCoups > ea.nbCoups) {
@@ -647,7 +756,8 @@
           if (e.phase === 'fin' && (!memePartie || ea.phase !== 'fin') && e.joueurs.indexOf(moi) !== -1) {
             var gagne = e.fin.gagnants.indexOf(moi) !== -1;
             if (gagne) { setTimeout(() => this.son('victoire'), 300); this.vibre([100, 60, 100]); }
-            Etoiles.finDePartie(NOM_JEU, gagne, true, p.partieId, { joueurs: e.joueurs.length, score: e.scores[moi] });
+            Etoiles.finDePartie(NOM_JEU, gagne, !this.solo, p.partieId, { joueurs: e.joueurs.length, score: e.scores[moi] });
+            if (this.solo) Etoiles.serie('lettres-' + (e.niveau || 'normal'), gagne, NOM_JEU, NIVEAUX_NOMS[e.niveau]);
           }
         },
         publier: function() {
@@ -706,6 +816,7 @@
         },
         entrerSalon: function() {
           if (this.role || this._entree) return;
+          if (this.solo) this.quitterSolo();
           if (!this.validerPseudo()) return;
           if (!this.channelInput.trim()) { alert('Saisis un nom de salon.'); return; }
           fermerAutresSalons('lettres');   // un seul salon à la fois sur ce téléphone

@@ -205,9 +205,163 @@ var LC = (function () {
     return mots;
   }
 
+  // ---------- Arbre des mots (pour l'ordinateur) ----------
+  // Construit d'après la liste triée, dans des tableaux compacts (~590 000 nœuds, ~6 Mo) :
+  // L = lettre (0 à 25), T = fin de mot, P = premier enfant, S = frère suivant (0 = aucun ; la racine est le nœud 0).
+  function construireArbre(texte) {
+    var lignes = texte.split('\n'), max = 1;
+    lignes.forEach(l => { if (l && l[0] !== '#') max += l.length; });
+    var L = new Uint8Array(max), T = new Uint8Array(max), P = new Int32Array(max), S = new Int32Array(max), D = new Int32Array(max);
+    var n = 1, chemin = [0], prec = '';
+    lignes.forEach(ligne => {
+      if (!ligne || ligne[0] === '#') return;
+      var k = parseInt(ligne[0], 16), m = prec.slice(0, k) + ligne.slice(1);
+      // Liste triée : le mot reprend les k premiers nœuds du chemin précédent, puis on ajoute la suite
+      chemin.length = k + 1;
+      for (var i = k; i < m.length; i++) {
+        var p = chemin[i], x = n++;
+        L[x] = m.charCodeAt(i) - 65;
+        if (D[p]) S[D[p]] = x; else P[p] = x;
+        D[p] = x;
+        chemin.push(x);
+      }
+      T[chemin[m.length]] = 1;
+      prec = m;
+    });
+    return { L: L, T: T, P: P, S: S, n: n };
+  }
+  function enfant(a, n, c) { for (var k = a.P[n]; k; k = a.S[k]) { if (a.L[k] === c) return k; if (a.L[k] > c) return 0; } return 0; }
+  function existe(a, mot) {
+    var n = 0;
+    for (var i = 0; i < mot.length; i++) { n = enfant(a, n, mot.charCodeAt(i) - 65); if (!n) return false; }
+    return !!a.T[n];
+  }
+
+  // ---------- Tous les coups possibles (méthode des « ancres ») ----------
+  // opts : { maxLong (longueur de mot maxi), jokers (false : l'ordinateur ne s'en sert pas) }
+  // Renvoie [{ poses, points, mots, bingo }], sans doublon.
+  function coupsPossibles(e, j, a, opts) {
+    opts = opts || {};
+    var maxLong = opts.maxLong || N, chev = e.chevalets[j] || [], cnt = new Array(26).fill(0), jokers = 0;
+    chev.forEach(l => { if (l === '?') jokers++; else cnt[l.charCodeAt(0) - 65]++; });
+    if (opts.jokers === false) jokers = 0;
+    var occ = c => e.plateau[c] ? e.plateau[c].l.charCodeAt(0) - 65 : -1;
+    var premier = premierCoup(e), vus = {}, res = [];
+    [true, false].forEach(horiz => {
+      for (var ligne = 0; ligne < N; ligne++) {
+        var cel = k => horiz ? ligne * N + k : k * N + ligne;
+        // Lettres permises sur chaque case vide (selon le mot qui se formerait en travers)
+        var masque = [], ancre = [];
+        for (var k = 0; k < N; k++) {
+          var c = cel(k);
+          if (occ(c) >= 0) { masque.push(0); ancre.push(false); continue; }
+          var pas = horiz ? N : 1, haut = '', bas = '';
+          for (var x = c - pas; x >= 0 && (horiz || Math.floor(x / N) === ligne) && e.plateau[x]; x -= pas) haut = e.plateau[x].l + haut;
+          for (var y = c + pas; y < N * N && (horiz || Math.floor(y / N) === ligne) && e.plateau[y]; y += pas) bas += e.plateau[y].l;
+          var m = 0x3ffffff;
+          if (haut || bas) { m = 0; for (var l = 0; l < 26; l++) if (existe(a, haut + String.fromCharCode(65 + l) + bas)) m |= 1 << l; }
+          masque.push(m);
+          ancre.push(premier ? c === CENTRE : voisins(c).some(v => e.plateau[v]));
+        }
+        for (var an = 0; an < N; an++) {
+          if (!ancre[an] || !masque[an]) continue;
+          if (an > 0 && occ(cel(an - 1)) >= 0) {
+            // Des lettres déjà posées à gauche de l'ancre : elles commencent le mot
+            var deb = an, n = 0;
+            while (deb > 0 && occ(cel(deb - 1)) >= 0) deb--;
+            for (var q = deb; q < an && n >= 0; q++) { n = enfant(a, n, occ(cel(q))); if (!n) n = -1; }
+            if (n > 0) etendre(n, an, an, deb, new Array(an - deb).fill(null));
+          } else {
+            var limite = 0;
+            while (an - limite - 1 >= 0 && occ(cel(an - limite - 1)) < 0 && !ancre[an - limite - 1]) limite++;
+            gauche(0, an, limite, []);
+          }
+        }
+        function gauche(n, an, limite, part) {
+          etendre(n, an, an, an - part.length, part);
+          if (limite <= 0) return;
+          for (var ch = a.P[n]; ch; ch = a.S[ch]) {
+            var l = a.L[ch];
+            if (cnt[l]) { cnt[l]--; part.push({ l: l, j: false }); gauche(ch, an, limite - 1, part); part.pop(); cnt[l]++; }
+            if (jokers) { jokers--; part.push({ l: l, j: true }); gauche(ch, an, limite - 1, part); part.pop(); jokers++; }
+          }
+        }
+        // part : lettres déjà choisies (posées de deb à k - 1, sauf les cases déjà occupées)
+        function etendre(n, k, an, deb, part) {
+          if (k - deb > maxLong) return;
+          if (k >= N || occ(cel(k)) < 0) {
+            if (a.T[n] && k > an) noter(deb, part);
+            if (k >= N) return;
+            var m = masque[k];
+            for (var ch = a.P[n]; ch; ch = a.S[ch]) {
+              var l = a.L[ch];
+              if (!(m >> l & 1)) continue;
+              if (cnt[l]) { cnt[l]--; part.push({ l: l, j: false }); etendre(ch, k + 1, an, deb, part); part.pop(); cnt[l]++; }
+              if (jokers) { jokers--; part.push({ l: l, j: true }); etendre(ch, k + 1, an, deb, part); part.pop(); jokers++; }
+            }
+          } else {
+            var f = enfant(a, n, occ(cel(k)));
+            if (f) { part.push(null); etendre(f, k + 1, an, deb, part); part.pop(); }
+          }
+        }
+        function noter(deb, part) {
+          var poses = [], pris = {}, cle = [];
+          for (var i = 0; i < part.length; i++) {
+            var t = part[i];
+            if (!t) continue;
+            var c = cel(deb + i), lettre = String.fromCharCode(65 + t.l), r = -1;
+            for (var z = 0; z < chev.length; z++) if (!pris[z] && (t.j ? chev[z] === '?' : chev[z] === lettre)) { r = z; break; }
+            if (r < 0) return;
+            pris[r] = true;
+            poses.push(t.j ? { i: r, c: c, l: lettre } : { i: r, c: c });
+            cle.push(c + (t.j ? '*' : '') + lettre);
+          }
+          if (!poses.length) return;
+          cle = cle.sort().join(',');
+          if (vus[cle]) return;
+          vus[cle] = true;
+          var an = analyser(e, j, poses);
+          if (an.erreur || !an.mots.every(w => existe(a, w.mot))) return;
+          res.push({ poses: poses, points: an.points, mots: an.mots.map(w => w.mot), bingo: an.bingo });
+        }
+      }
+    });
+    return res;
+  }
+
+  // ---------- L'ordinateur ----------
+  // Trois niveaux : il connaît moins de mots (longueur maxi) et ne choisit pas toujours le meilleur coup.
+  //   facile : mots de 5 lettres au plus, pas de joker, un coup au hasard parmi la moitié la moins payante ;
+  //   normal : 8 lettres au plus, un coup « bon sans plus » (entre 55 % et 85 % du classement) ;
+  //   fort   : tous les mots, le meilleur coup.
+  var NIVEAUX = { facile: { maxLong: 5, jokers: false }, normal: { maxLong: 8 }, fort: {} };
+  function ordinateur(e, j, a, niveau, hasard) {
+    hasard = hasard || Math.random;
+    niveau = NIVEAUX[niveau] ? niveau : 'normal';
+    var l = coupsPossibles(e, j, a, NIVEAUX[niveau]).sort((x, y) => x.points - y.points), choix = null;
+    if (l.length) {
+      if (niveau === 'fort') { var best = l.filter(x => x.points === l[l.length - 1].points); choix = best[Math.floor(hasard() * best.length)]; }
+      else {
+        var de = niveau === 'facile' ? 0 : 0.55, a2 = niveau === 'facile' ? 0.5 : 0.85;
+        var i0 = Math.floor(de * (l.length - 1)), i1 = Math.max(i0, Math.floor(a2 * (l.length - 1)));
+        choix = l[i0 + Math.floor(hasard() * (i1 - i0 + 1))];
+      }
+      return { type: 'poser', poses: choix.poses };
+    }
+    // Rien à poser : il échange ses lettres difficiles (s'il peut), sinon il passe
+    var chev = e.chevalets[j];
+    if (e.sac.length >= 7) {
+      var rangs = [];
+      chev.forEach((x, i) => { if (x !== '?' && x !== 'E' && x !== 'S') rangs.push(i); });
+      if (rangs.length) return { type: 'echanger', rangs: rangs };
+    }
+    return { type: 'passer' };
+  }
+
   return { N: N, CENTRE: CENTRE, LETTRES: LETTRES, BONUS: BONUS, valeur: valeur, nouvellePartie: nouvellePartie, analyser: analyser,
            poser: poser, passer: passer, echanger: echanger, joueurDuTour: joueurDuTour, reste: reste, vuePour: vuePour, noter: noter,
-           lireDictionnaire: lireDictionnaire, premierCoup: premierCoup };
+           lireDictionnaire: lireDictionnaire, premierCoup: premierCoup, construireArbre: construireArbre, existe: existe,
+           coupsPossibles: coupsPossibles, ordinateur: ordinateur, NIVEAUX: NIVEAUX };
 })();
 
 if (typeof module !== 'undefined') module.exports = LC;
