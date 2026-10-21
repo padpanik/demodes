@@ -76,6 +76,11 @@
     .chevalet .lettre.choisie { transform: translateY(-6px); box-shadow: 0 0 0 3px #ff9800, 0 4px 4px rgba(0,0,0,0.3); }
     .chevalet .lettre.echange { transform: translateY(-6px); box-shadow: 0 0 0 3px #8e44ad; }
     .chevalet .lettre.posee { visibility: hidden; }
+    .chevalet.rangement { box-shadow: inset 0 -4px 0 rgba(0,0,0,0.25), 0 0 0 3px #1c7ed6; }
+    .chevalet.rangement .lettre { touch-action: none; cursor: grab; animation: frise 0.9s ease-in-out infinite alternate; }
+    .chevalet.rangement .lettre:nth-child(2n) { animation-delay: -0.45s; }
+    .chevalet.rangement .lettre.glisse { animation: none; transform: scale(1.12); z-index: 2; box-shadow: 0 0 0 3px #1c7ed6, 0 6px 8px rgba(0,0,0,0.3); }
+    @keyframes frise { from { transform: rotate(-2deg); } to { transform: rotate(2deg); } }
     .actions-lc { display: flex; gap: 6px; margin-top: 7px; flex-wrap: wrap; }
     .actions-lc .btn { flex: 1; min-width: 22%; padding-left: 4px; padding-right: 4px; }
     .journal-lc { font-size: 0.78em; color: #6b7a86; text-align: center; margin-top: 5px; min-height: 1.2em; }
@@ -187,6 +192,7 @@
           <li>On marque les points de chaque mot formé (le mot principal et ceux qui se croisent). Cases colorées : <strong>L×2 / L×3</strong> (la lettre compte double / triple), <strong>M×2 / M×3</strong> (le mot compte double / triple), seulement pour les lettres posées ce tour-ci.</li>
           <li>Les 7 lettres d'un coup : <strong>+50</strong>. Les deux jokers valent 0 point et remplacent n'importe quelle lettre.</li>
           <li>Le dernier mot de chacun s'affiche sous son score : touche-le (ou un mot du « Dernier coup ») pour lire sa définition sur le Wiktionnaire.</li>
+          <li>🔀 : range tes lettres à la main (fais-les glisser, ou touche-en deux pour les échanger), puis « Retour à la partie ».</li>
           <li>Toucher deux fois rapidement le plateau le grossit (ou le remet en entier) : pratique pour viser une case.</li>
           <li>On peut aussi <strong>échanger</strong> des lettres (s'il en reste au moins 7 dans le sac) ou <strong>passer</strong>.</li>
           <li>Mot absent du dictionnaire : les autres joueurs <strong>votent</strong>. S'il est refusé, les lettres reviennent et on rejoue. Seul contre l'ordinateur, c'est toi qui décides.</li>
@@ -278,20 +284,25 @@
 
         <template v-if="e.phase !== 'fin'">
           <!-- Mon chevalet -->
-          <div class="chevalet" v-if="estJoueur">
-            <button v-for="i in ordre" :key="i + '-' + monChevalet[i]" class="lettre"
-                    :class="{ choisie: choisi === i, posee: estPosee(i), echange: modeEchange && aEchanger[i] }" @click="toucherLettre(i)">
+          <div class="chevalet" v-if="estJoueur" ref="chevalet" :class="{ rangement: rangement }">
+            <button v-for="(i, pos) in ordre" :key="i + '-' + monChevalet[i]" class="lettre"
+                    :class="{ choisie: rangement ? rangeChoisi === pos : choisi === i, posee: estPosee(i), echange: modeEchange && aEchanger[i] }"
+                    @click="!rangement && toucherLettre(i)" @pointerdown="rangement && debutRangement($event, pos)">
               {{ monChevalet[i] === '?' ? '' : monChevalet[i] }}<span class="v">{{ monChevalet[i] === '?' ? '' : valeur(monChevalet[i]) }}</span>
             </button>
           </div>
-          <div class="actions-lc" v-if="estJoueur && modeEchange">
+          <div class="actions-lc" v-if="estJoueur && rangement">
+            <button class="btn" @click="melanger">🔀 Mélanger</button>
+            <button class="btn principal" @click="basculerRangement">✓ Retour à la partie</button>
+          </div>
+          <div class="actions-lc" v-else-if="estJoueur && modeEchange">
             <button class="btn principal" :disabled="!nbAEchanger" @click="echanger">Échanger {{ nbAEchanger || '' }} lettre{{ nbAEchanger > 1 ? 's' : '' }}</button>
             <button class="btn" @click="modeEchange = false">Annuler</button>
           </div>
           <div class="actions-lc" v-else-if="estJoueur && e.phase === 'jeu'">
             <button class="btn principal" :disabled="!peutJouer" @click="jouer">✓ Jouer</button>
             <button class="btn" v-if="poses.length" @click="reprendre">↺</button>
-            <button class="btn" v-else @click="melanger">🔀</button>
+            <button class="btn" v-else @click="basculerRangement" title="Ranger mes lettres">🔀</button>
             <button class="btn" :disabled="!monTour || e.nbSac < 7" @click="debutEchange">Échanger</button>
             <button class="btn" :disabled="!monTour" @click="passer">Passer</button>
           </div>
@@ -403,6 +414,8 @@
         choisi: -1,            // lettre du chevalet touchée
         ordre: [0, 1, 2, 3, 4, 5, 6],   // ordre d'affichage du chevalet (🔀)
         modeEchange: false,
+        rangement: false,      // 🔀 : on range ses lettres à la main (glisser, ou toucher deux lettres pour les échanger)
+        rangeChoisi: -1,
         aEchanger: {},
         jokerPour: null,       // { i, c } : joker en attente de sa lettre
         zoom: false,
@@ -494,8 +507,10 @@
             return this.votants.indexOf(this.moiJ) !== -1 && e.verif.votes[this.moiJ] === undefined ? 'Vote : ce mot est-il valable ?' : 'Vote en cours…';
           }
           var j = e.joueurs[e.tour];
+          if (this.rangement) return 'Range tes lettres : fais-les glisser, ou touche-en deux pour les échanger.';
           if (this.monTour) {
             if (this.modeEchange) return 'Touche les lettres à échanger.';
+            if (this.rangement) return 'Range tes lettres : fais-les glisser.';
             if (!this.poses.length) return this.choisi >= 0 ? 'Touche une case du plateau.' : 'À toi : touche une lettre, puis une case.';
             return 'Touche ✓ Jouer quand ton mot est prêt.';
           }
@@ -518,6 +533,7 @@
         // Un autre joueur a posé : mes lettres préparées sur des cases désormais prises reviennent
         'e.nbCoups': function() { if (this.e) this.poses = this.poses.filter(p => !this.e.plateau[p.c]); },
         'e.tour': function() { this.modeEchange = false; this.aEchanger = {}; },
+        'e.phase': function(p) { if (p === 'fin') this.rangement = false; },
         // Loupe : on centre la vue sur mes lettres en cours, le dernier coup ou l'étoile
         zoom: function(v) {
           this.vibre(v ? [20, 30, 20] : 25);
@@ -654,7 +670,7 @@
         },
         // Renvoie de quoi défaire ce qui vient d'être fait (ou rien)
         poserOuReprendre: function(c) {
-          if (!this.estJoueur || this.e.phase === 'fin' || this.modeEchange) return null;
+          if (!this.estJoueur || this.e.phase === 'fin' || this.modeEchange || this.rangement) return null;
           var k = this.poses.findIndex(p => p.c === c);
           if (k !== -1) {   // on reprend la lettre
             var ote = this.poses.splice(k, 1)[0], avant = this.choisi;
@@ -681,6 +697,48 @@
           this.choisi = -1;
         },
         reprendre: function() { this.poses = []; this.choisi = -1; },
+        // 🔀 : premier appui, on range ses lettres à la main ; second appui, retour à la partie
+        basculerRangement: function() {
+          this.rangement = !this.rangement;
+          this.rangeChoisi = -1; this.choisi = -1;
+          this.vibre(20);
+        },
+        debutRangement: function(ev, pos) {
+          var el = ev.currentTarget, x0 = ev.clientX, g = { pos: pos, bouge: false };
+          try { el.setPointerCapture(ev.pointerId); } catch (e) {}
+          var bouger = e2 => {
+            if (!g.bouge && Math.abs(e2.clientX - x0) < 8) return;
+            if (!g.bouge) { g.bouge = true; this.rangeChoisi = -1; }
+            // La lettre prend la place de celle sous le doigt
+            var cases = [].slice.call(this.$refs.chevalet.children), cible = g.pos, d = Infinity;
+            cases.forEach((b, k) => { var r = b.getBoundingClientRect(), m = Math.abs(e2.clientX - (r.left + r.width / 2)); if (m < d) { d = m; cible = k; } });
+            if (cible !== g.pos) {
+              var o = this.ordre.slice(), x = o.splice(g.pos, 1)[0];
+              o.splice(cible, 0, x);
+              this.ordre = o; g.pos = cible;
+              this.vibre(8);
+            }
+            this.$nextTick(() => { cases = [].slice.call(this.$refs.chevalet.children); cases.forEach((b, k) => b.classList.toggle('glisse', k === g.pos)); });
+          };
+          var fin = () => {
+            window.removeEventListener('pointermove', bouger);
+            window.removeEventListener('pointerup', fin);
+            window.removeEventListener('pointercancel', fin);
+            [].slice.call(this.$refs.chevalet ? this.$refs.chevalet.children : []).forEach(b => b.classList.remove('glisse'));
+            if (g.bouge) return;
+            // Simple toucher : on choisit une lettre, puis une autre pour les échanger
+            if (this.rangeChoisi < 0) { this.rangeChoisi = g.pos; return; }
+            if (this.rangeChoisi !== g.pos) {
+              var o = this.ordre.slice(), a = o[this.rangeChoisi];
+              o[this.rangeChoisi] = o[g.pos]; o[g.pos] = a;
+              this.ordre = o; this.vibre(10);
+            }
+            this.rangeChoisi = -1;
+          };
+          window.addEventListener('pointermove', bouger);
+          window.addEventListener('pointerup', fin);
+          window.addEventListener('pointercancel', fin);
+        },
         melanger: function() {
           var o = this.ordre.slice();
           for (var k = o.length - 1; k > 0; k--) { var r = Math.floor(Math.random() * (k + 1)), x = o[k]; o[k] = o[r]; o[r] = x; }

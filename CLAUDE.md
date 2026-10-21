@@ -262,7 +262,9 @@ Bataille navale : `bataille-sauvegarde`, `bataille-prive` (ma flotte en salon), 
   passer. Fin : chevalet vidé sac vide (le joueur gagne les points restant chez les autres, qui les perdent), ou tout le monde passe
   deux fois de suite (chacun perd ce qui lui reste).
 - Écran : toucher une lettre du chevalet puis une case ; toucher une lettre posée la reprend ; joker : choix de la lettre (A–Z).
-  Aperçu en direct des mots et des points (ou de l'erreur). 🔀 mélange le chevalet, 🔍 grossit le plateau (il défile) ;
+  Aperçu en direct des mots et des points (ou de l'erreur). 🔀 = **ranger ses lettres** (1er appui : le chevalet s'encadre de bleu,
+  les lettres frétillent, on les fait glisser ou on en touche deux pour les échanger, bouton « 🔀 Mélanger » ; « ✓ Retour à la partie »
+  ou 2e appui pour revenir ; le plateau ne pose rien pendant ce temps ; `rangement`, `debutRangement`). 🔍 grossit le plateau (il défile) ;
   **double toucher** sur une case : même effet, centré sur elle (le premier toucher est annulé, `poserOuReprendre` renvoie de quoi le défaire).
   On peut préparer son mot pendant le tour des autres (lettres reprises si la case est prise entre-temps).
   Loupe (bouton ou double toucher) : petite vibration en grossissant et en rétrécissant.
