@@ -145,8 +145,8 @@
            :style="glisse === j.id ? { transform: 'translateY(' + decalY + 'px) scale(1.03)' } : null"
            :href="j.page" @click="cliquer($event, j.id)" @contextmenu.prevent
            @touchstart="debutAppui($event, j.id)" @mousedown="debutAppui($event, j.id)">
-          <!-- Nouvelles icônes (icones-jeux.js) ; les anciennes restent disponibles, au choix en bas de page -->
-          <span v-if="iconesNeuves" class="ico-neuve" v-html="icone(j.id)"></span>
+          <!-- Nouvelles icônes (icones-jeux.js) ; les anciennes restent disponibles, au choix en bas de page (pleines, claires ou anciennes) -->
+          <span v-if="choixIcones !== 'anciennes'" class="ico-neuve" v-html="icone(j.id, choixIcones)"></span>
           <template v-else>
             <div v-if="j.id === 'brilliant'" class="ico-grille"><span v-for="(c, i) in grille" :key="i" :style="{ background: c }"></span></div>
             <div v-else-if="j.id === 'yams'" class="ico-des"><span v-for="n in [5, 3, 6, 2, 4]" :key="n">{{ n }}</span></div>
@@ -175,9 +175,8 @@
         <div v-else class="aide">Sur iPhone : touche <strong>Partager</strong> puis <strong>« Sur l'écran d'accueil »</strong>.</div>
       </section>
 
-      <div class="choix-icones">Icônes des jeux :
-        <button :class="{ actif: iconesNeuves }" @click="choisirIcones(true)">Nouvelles</button>
-        <button :class="{ actif: !iconesNeuves }" @click="choisirIcones(false)">Anciennes</button>
+      <div class="choix-icones">Icônes :
+        <button v-for="o in [['nouvelles', 'Pleines'], ['claires', 'Claires'], ['anciennes', 'Anciennes']]" :key="o[0]" :class="{ actif: choixIcones === o[0] }" @click="choisirIcones(o[0])">{{ o[1] }}</button>
       </div>
       <p class="version" style="margin-top:10px">Désdale · version {{ version }}</p>
     </template>
@@ -211,7 +210,7 @@
         glisse: null,      // jeu soulevé par un appui long
         decalY: 0,
         maj: 0,
-        iconesNeuves: IconesJeux.nouvelles(),
+        choixIcones: IconesJeux.choix(),
         logo: [B, J, R, V],
         grille: [J, V, B, R, M, V, O, R, J],
         installPossible: false,
@@ -269,8 +268,8 @@
         if (ACCES.memorise()) { this.accesOk = true; this.reprendre(); }
       },
       methods: {
-        icone: function(id) { return IconesJeux.svg(id, 54); },
-        choisirIcones: function(v) { IconesJeux.choisir(v); this.iconesNeuves = v; },
+        icone: function(id, choix) { return IconesJeux.svg(id, 54, choix === 'claires' ? 'clair' : 'plein'); },
+        choisirIcones: function(v) { IconesJeux.choisir(v); this.choixIcones = v; },
         // Au lancement de l'appli, une partie en salon reprend directement (sauf si on vient choisir un jeu)
         reprendre: function() {
           if (/[?&]choix\b/.test(location.search)) return;

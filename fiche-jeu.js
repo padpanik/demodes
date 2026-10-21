@@ -19,7 +19,7 @@
 (function () {
   var CSS = `
   .fiche-jeu { width: 100%; }
-  .fj-tete { position: relative; display: flex; align-items: center; gap: 12px; padding: 2px 72px 10px 4px; }
+  .fj-tete { position: relative; display: flex; align-items: center; gap: 12px; padding: 2px 94px 10px 4px; }
   .fj-tete .fj-logo { flex-shrink: 0; display: flex; align-items: center; justify-content: center; min-width: 44px; }
   .fj-tete .fj-titre { min-width: 0; }
   .fj-tete h1 { margin: 0; font-size: 1.45em; line-height: 1.15; letter-spacing: -0.5px; }
