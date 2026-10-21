@@ -646,6 +646,13 @@
             <button class="btn" @click="toutRemplir">❤️ Remplir tous ses besoins</button>
           </div>
           <div class="groupe-admin">
+            <div class="sous-titre-admin">🎉 Voir une fête (essai, sur ce téléphone)</div>
+            <select class="champ-admin" :value="feteEssai" @change="choisirFeteEssai($event.target.value)">
+              <option value="">📅 Calendrier normal</option>
+              <option v-for="f in listeFetes" :key="f.id" :value="f.id">{{ f.ico }} {{ f.nom }}</option>
+            </select>
+          </div>
+          <div class="groupe-admin">
             <div class="sous-titre-admin">🗑️ Effacer</div>
             <button class="btn" style="color:#c0392b" @click="effacerDefis">Effacer défis, coupes et pièces</button>
             <button class="btn" style="color:#c0392b" @click="admin.ouvert = false; toutEffacer()">🗑️ Tout remettre à zéro</button>
@@ -752,6 +759,8 @@
         arrange: false,        // mode « Arranger la déco »
         decoChoisi: null,      // emplacement (slot) de l'objet choisi
         vie: { x: 50, dir: 1, marche: false, posture: 'assis', geste: '', duree: 0, objet: '', sieste: false },
+        feteEssai: lireStockage('compagnon-fete-essai') || '',
+        listeFetes: CP.FETES.concat([{ id: 'anniversaire', nom: 'Anniversaire', ico: '🎂' }]),
         admin: { ouvert: false, actif: ADMIN.actif(), mdp: '', erreur: '', calcul: false }
       },
       computed: {
@@ -817,8 +826,8 @@
           if (this.rayon === 'saison') return this.fete ? ARTICLES.filter(a => a.fete === this.fete.id) : [];
           return ARTICLES.filter(a => a.rayon === this.rayon && (!a.fete || this.possede(a)));
         },
-        fete: function() { return CP.feteDu(this.maintenant); },
-        prochaine: function() { return CP.prochaineFete(this.maintenant); },
+        fete: function() { this.feteEssai; return CP.feteDu(this.maintenant, this.animal && this.animal.ne); },
+        prochaine: function() { return CP.prochaineFete(this.maintenant, this.animal && this.animal.ne); },
         rayons: function() { return this.fete ? [{ id: 'saison', nom: this.fete.ico + ' ' + this.fete.nom }].concat(RAYONS) : RAYONS; },
         // Guirlande de fanions aux couleurs de la fête, accrochée en deux arcs en haut de la pièce
         guirlande: function() {
@@ -842,7 +851,7 @@
       },
       watch: {
         // La fête se termine pendant qu'on regarde son rayon : retour aux rayons habituels
-        fete: function(f) { if (!f && this.rayon === 'saison') this.rayon = 'tete'; }
+        fete: function(f) { if (!f && this.rayon === 'saison') this.rayon = 'tete'; this.cadeauAnniversaire(); }
       },
       created: function() {
         if (this.fete) this.rayon = 'saison';
@@ -854,7 +863,7 @@
         else {
           // Une partie jouée aujourd'hui avec des amis (gagnée ou perdue) compte pour les tâches du jour
           this.verifierPartieAmis();
-          if (this.animal) this.accueil();
+          if (this.animal) { this.accueil(); this.$nextTick(() => this.cadeauAnniversaire()); }
           this.majDefis();
         }
         // Un ami a fait un câlin à mon compagnon pendant sa visite
@@ -984,7 +993,26 @@
 
         // ---------- Boutique ----------
         dateFr: function(d) { return d ? (d.getDate() === 1 ? '1er' : d.getDate()) + ' ' + d.toLocaleDateString('fr-FR', { month: 'long' }) : ''; },
-        deFete: function(f) { return { 'nouvel-an': 'du Nouvel an', 'saint-valentin': 'de la Saint-Valentin', paques: 'de Pâques', ete: 'de l\'été', halloween: 'd\'Halloween', noel: 'de Noël' }[f.id] || 'de fête'; },
+        deFete: function(f) {
+          if (f.id === 'anniversaire') return 'd\'anniversaire de ' + this.animal.nom;
+          return { 'nouvel-an': 'du Nouvel an', chandeleur: 'de la Chandeleur', 'saint-valentin': 'de la Saint-Valentin', 'saint-patrick': 'de la Saint-Patrick',
+                   paques: 'de Pâques', musique: 'de la Fête de la musique', ete: 'de l\'été', halloween: 'd\'Halloween', noel: 'de Noël' }[f.id] || 'de fête';
+        },
+        choisirFeteEssai: function(id) {
+          this.feteEssai = id;
+          ecrireStockage('compagnon-fete-essai', id || null);
+          if (this.fete) this.rayon = 'saison';
+        },
+        // Le jour de son anniversaire : un cadeau de 10 ⭐, une fois par an
+        cadeauAnniversaire: function() {
+          var f = this.fete;
+          if (this.visite || !f || f.id !== 'anniversaire' || !f.estJourJ || this.feteEssai) return;
+          if (lireStockage('compagnon-anniv') === f.annee) return;
+          ecrireStockage('compagnon-anniv', f.annee);
+          Etoiles.ajouter(10, 'Cadeau d\'anniversaire de ' + this.animal.nom, false);
+          this.etoiles = Etoiles.solde(); this.majJournal();
+          this.message = f.voeux;
+        },
         possede: function(a) { return !!(this.animal.possede || {})[a.id]; },
         stock: function(a) { return (this.animal.possede || {})[a.id] || 0; },
         estPorte: function(a) { return !!a.slot && (this.animal.porte || {})[a.slot] === a.id; },
