@@ -98,7 +98,7 @@
 <body>
   <div id="app" v-cloak class="app">
 
-    <fiche-jeu nom="Backgammon" resume="Désdale · à deux, avec le videau" :onglet.sync="onglet" :son.sync="sonActif" :connexion="role ? connexion : ''">
+    <fiche-jeu jeu="backgammon" nom="Backgammon" resume="Désdale · à deux, avec le videau" :onglet.sync="onglet" :son.sync="sonActif" :connexion="role ? connexion : ''">
       <template v-slot:logo>
         <div class="logo-bg"><span v-for="(c, i) in ['#8a5a35', '#e9d6b0', '#8a5a35', '#e9d6b0']" :key="i" :style="{ background: c }"></span></div>
       </template>
@@ -266,6 +266,7 @@
     </div>
   </div>
 
+  <script src="icones-jeux.js"></script>
   <script src="fiche-jeu.js"></script>
   <script src="commun.js"></script>
   <script src="etoiles.js"></script>

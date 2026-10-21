@@ -91,7 +91,7 @@
 <body>
   <div id="app" v-cloak class="app">
 
-    <fiche-jeu nom="Agents secrets" resume="Désdale · deux équipes, un mot pour tout dire" :onglet.sync="onglet" :son.sync="sonActif" :connexion="role ? connexion : ''">
+    <fiche-jeu jeu="agents" nom="Agents secrets" resume="Désdale · deux équipes, un mot pour tout dire" :onglet.sync="onglet" :son.sync="sonActif" :connexion="role ? connexion : ''">
       <template v-slot:logo>
         <div class="logo-ag"><span v-for="(c, k) in ['#c0392b','#e6dcc3','#2f6fb0','#2f6fb0','#1d2b36','#c0392b','#e6dcc3','#c0392b','#2f6fb0']" :key="k" :style="{ background: c }"></span></div>
       </template>
@@ -243,6 +243,7 @@
     </fiche-jeu>
   </div>
 
+  <script src="icones-jeux.js"></script>
   <script src="fiche-jeu.js"></script>
   <script src="commun.js"></script>
   <script src="etoiles.js"></script>

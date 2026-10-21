@@ -542,7 +542,7 @@
 
     <template v-else>
 
-    <fiche-jeu nom="Brilliant" resume="Désdale · le roll &amp; write à jouer ensemble" :onglet.sync="actif_tab" :son.sync="sonActif" :connexion="role ? connexion : ''">
+    <fiche-jeu jeu="brilliant" nom="Brilliant" resume="Désdale · le roll &amp; write à jouer ensemble" :onglet.sync="actif_tab" :son.sync="sonActif" :connexion="role ? connexion : ''">
       <template v-slot:logo>
         <div class="logo"><span v-for="c in logoCouleurs" :key="c" :style="{ background: c }"></span></div>
       </template>
@@ -872,6 +872,7 @@
     </template>
   </div>
 
+  <script src="icones-jeux.js"></script>
   <script src="fiche-jeu.js"></script>
   <script src="etoiles.js"></script>   <!-- étoiles de « Mon compagnon » (utilise lireStockage / ecrireStockage d'ici) -->
   <script>
@@ -1041,7 +1042,7 @@
     function lireLigne(ligne) { return ligne.trim().split(/\s+/); }
 
     // Numéro de version affiché sur l'accueil (à augmenter à chaque mise en ligne)
-    const VERSION = '2.10';
+    const VERSION = '2.11';
 
     // ================== ACCÈS PRIVÉ ==================
     // Application réservée à un cercle d'amis : un code est demandé au premier lancement.

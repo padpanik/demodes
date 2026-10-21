@@ -3,9 +3,9 @@
 // 4 onglets sur toute la largeur (🎲 Partie · ▶️ Jouer · ⚙️ Réglages · 📖 Règles), puis le contenu de l'onglet choisi.
 // Chaque jeu ne fournit que ses particularités, par des « emplacements » (slots) :
 //
-//   <fiche-jeu nom="Yams" resume="Désdale · 5 dés, 5 colonnes" :onglet.sync="onglet"
+//   <fiche-jeu jeu="yams" nom="Yams" resume="Désdale · 5 dés, 5 colonnes" :onglet.sync="onglet"
 //              :son.sync="sonActif" :connexion="role ? connexion : ''">
-//     <template v-slot:logo> … </template>        logo (dessin du jeu)
+//     <template v-slot:logo> … </template>        ancien logo (montré si l'on a choisi « Anciennes » icônes sur l'accueil)
 //     <template v-slot:partie> … </template>      onglet Partie : salon, jouer seul…
 //     <template v-slot:jouer> … </template>       onglet Jouer : l'écran de jeu
 //     <template v-slot:reglages> … </template>    onglet Réglages (après les réglages de base, voir <reglages-base>)
@@ -79,13 +79,15 @@
 
   Vue.component('fiche-jeu', {
     props: {
+      jeu: String,                                     // identifiant du jeu, pour sa nouvelle icône (icones-jeux.js)
       nom: String,
       resume: String,
       onglet: { type: String, default: 'config' },
       son: { type: Boolean, default: undefined },     // bouton 🔊 pendant le jeu (absent si non fourni)
       connexion: { type: String, default: '' }         // '' : pas de salon ; 'ok' : point vert ; autre : point orange
     },
-    data: function () { return { ONGLETS: ONGLETS, RETOUR: RETOUR, SON: SON }; },
+    data: function () { return { ONGLETS: ONGLETS, RETOUR: RETOUR, SON: SON, icNeuves: typeof IconesJeux !== 'undefined' && IconesJeux.nouvelles() }; },
+    computed: { iconeNeuve: function () { return this.jeu && this.icNeuves ? IconesJeux.svg(this.jeu, 52) : ''; } },
     methods: {
       choisir: function (cle) { this.$emit('update:onglet', cle); this.$emit('onglet', cle); },
       basculerSon: function () {
@@ -97,7 +99,7 @@
     template: `
       <div class="fiche-jeu">
         <header class="fj-tete" v-show="onglet !== 'play'">
-          <div class="fj-logo"><slot name="logo"></slot></div>
+          <div class="fj-logo" v-if="iconeNeuve" v-html="iconeNeuve"></div><div class="fj-logo" v-else><slot name="logo"></slot></div>
           <div class="fj-titre"><h1>{{ nom }}</h1><p>{{ resume }}</p></div>
           <a class="fj-retour" href="index.html?choix" title="Retour à la liste des jeux"><span class="fj-retour-ico" v-html="RETOUR"></span>Jeux</a>
         </header>

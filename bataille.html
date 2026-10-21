@@ -221,7 +221,7 @@
   </defs></svg>
   <div id="app" v-cloak class="app" :class="'style-' + styleVisuel">
 
-    <fiche-jeu nom="Bataille navale" resume="Désdale · coule la flotte adverse" :onglet.sync="onglet" :son.sync="sonActif" :connexion="role ? connexion : ''">
+    <fiche-jeu jeu="bataille" nom="Bataille navale" resume="Désdale · coule la flotte adverse" :onglet.sync="onglet" :son.sync="sonActif" :connexion="role ? connexion : ''">
       <template v-slot:logo>
         <div class="logo-bn"><span v-for="(x, k) in ['', 'e', '', 'n', 'n', 't', '', '', 'e']" :key="k" :class="x"></span></div>
       </template>
@@ -449,6 +449,7 @@
     </div>
   </div>
 
+  <script src="icones-jeux.js"></script>
   <script src="fiche-jeu.js"></script>
   <script src="commun.js"></script>
   <script src="etoiles.js"></script>

@@ -92,7 +92,7 @@
 <body>
   <div id="app" v-cloak class="app">
 
-    <fiche-jeu nom="Petit bac" resume="Désdale · une lettre, un mot par catégorie" :onglet.sync="onglet" :son.sync="sonActif" :connexion="role ? connexion : ''">
+    <fiche-jeu jeu="petitbac" nom="Petit bac" resume="Désdale · une lettre, un mot par catégorie" :onglet.sync="onglet" :son.sync="sonActif" :connexion="role ? connexion : ''">
       <template v-slot:logo>
         <div class="logo-pb">B</div>
       </template>
@@ -275,6 +275,7 @@
     </fiche-jeu>
   </div>
 
+  <script src="icones-jeux.js"></script>
   <script src="fiche-jeu.js"></script>
   <script src="commun.js"></script>
   <script src="etoiles.js"></script>

@@ -87,7 +87,7 @@
 <body>
   <div id="app" v-cloak class="app">
 
-    <fiche-jeu nom="Dominos" resume="Désdale · dominos ou triominos, seul ou entre amis" :onglet.sync="onglet" :son.sync="sonActif" :connexion="role ? connexion : ''">
+    <fiche-jeu jeu="domino" nom="Dominos" resume="Désdale · dominos ou triominos, seul ou entre amis" :onglet.sync="onglet" :son.sync="sonActif" :connexion="role ? connexion : ''">
       <template v-slot:logo>
         <div class="logo-dm" v-html="logo"></div>
       </template>
@@ -291,6 +291,7 @@
     </fiche-jeu>
   </div>
 
+  <script src="icones-jeux.js"></script>
   <script src="fiche-jeu.js"></script>
   <script src="commun.js"></script>
   <script src="etoiles.js"></script>

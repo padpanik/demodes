@@ -105,7 +105,7 @@
   <div id="app" v-cloak class="app">
 
     <!-- BARRE DU HAUT -->
-    <fiche-jeu nom="Yams" resume="Désdale · 5 dés, 5 colonnes" :onglet.sync="onglet" :son.sync="sonActif" :connexion="role ? connexion : ''">
+    <fiche-jeu jeu="yams" nom="Yams" resume="Désdale · 5 dés, 5 colonnes" :onglet.sync="onglet" :son.sync="sonActif" :connexion="role ? connexion : ''">
       <template v-slot:logo>
         <div class="logo-des">
           <div v-for="(v, k) in [5, 3, 6]" :key="k" class="de"><i v-for="p in 9" :key="p" :class="{ on: PIPS[v].indexOf(p - 1) !== -1 }"></i></div>
@@ -338,6 +338,7 @@
     </div>
   </div>
 
+  <script src="icones-jeux.js"></script>
   <script src="fiche-jeu.js"></script>
   <script src="commun.js"></script>
   <script src="etoiles.js"></script>

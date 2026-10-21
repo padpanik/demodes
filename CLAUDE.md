@@ -24,6 +24,7 @@ Tout est en français : interface, commentaires du code, messages de commit, ré
 | `index.html` | Code d'accès, puis choix du jeu. Reprend tout seul une partie en salon en cours (sauf avec `?choix`). |
 | `commun.js` / `commun.css` | Base partagée : `VERSION`, stockage local, `clientId`, `ACCES`, `Sons` (Web Audio), `Voix` (synthèse vocale), `vibrer`, enregistrement du service worker. |
 | `fiche-jeu.js` | **Composant commun des pages de jeu** (Vue 2, chargé par tous les jeux, Brilliant compris, avant le code de la page) : `<fiche-jeu>` (en-tête logo / nom / résumé, « ⇦ Jeux » en haut à droite, 4 onglets à logo, bouton 🔊 et point de connexion pendant le jeu) et `<reglages-base>` (sons, vibrations, voix, écran allumé). Ses styles sont injectés par le fichier. |
+| `icones-jeux.js` | **Icônes des jeux** (`IconesJeux.svg(jeu, taille)`) : même canevas pour tous (tuile arrondie, dégradé dans la couleur du jeu, reflet, dessin blanc), avec la marque de chaque jeu. Utilisées par l'accueil et l'en-tête de `<fiche-jeu>` (propriété `jeu`). Les anciennes icônes sont gardées (accueil : chaîne `v-else` ; jeux : slot `logo`), au choix en bas de l'accueil « Icônes des jeux : Nouvelles / Anciennes » (`desdale-icones`). |
 | `etoiles.js` | `Etoiles` (monnaie de « Mon compagnon ») : chargé juste après `commun.js` par toutes les pages, **et par `brilliant.html`** (il n'a besoin que de `lireStockage` / `ecrireStockage`). |
 | `brilliant.html` | Brilliant (roll & write). Page autonome historique : elle a **sa propre copie** de `ACCES`, `Sons`, `Voix`, `VERSION` (n'utilise pas `commun.js`). |
 | `yams.html` | Yams, solo et à plusieurs (chacun son tour). Utilise `commun.js`. |
@@ -93,7 +94,7 @@ Pas d'étape de construction, pas de dépendance à ajouter.
 ## Présentation commune des pages de jeu (demandée par l'utilisateur : « que tout le monde s'y retrouve »)
 
 - **Composant `<fiche-jeu>` (`fiche-jeu.js`)** : le canevas est commun, chaque jeu ne passe que ses particularités :
-  `<fiche-jeu nom="…" resume="Désdale · …" :onglet.sync="onglet" :son.sync="sonActif" :connexion="role ? connexion : ''">`
+  `<fiche-jeu jeu="yams" nom="…" resume="Désdale · …" :onglet.sync="onglet" :son.sync="sonActif" :connexion="role ? connexion : ''">`
   puis `<template v-slot:logo>`, `v-slot:partie`, `v-slot:jouer`, `v-slot:reglages`, `v-slot:regles` (et `v-slot:infos`, facultatif).
   Le contenu des slots reste écrit dans la page (mêmes données, mêmes `ref`). Onglets en `v-show` : rien n'est détruit.
   Modifier l'en-tête, les onglets ou leur style = modifier **seulement** `fiche-jeu.js`. Brilliant : `:onglet.sync="actif_tab"`.
@@ -137,7 +138,7 @@ Pas d'étape de construction, pas de dépendance à ajouter.
 
 Communs : `brillant-acces`, `brillant-client-id`, `brillant-son`, `brillant-vibration`, `brillant-voix`,
 `brillant-garder-ecran`, `brillant-entree-auto` (plus utilisé), `brillant-salons` (liste des salons, partagée), `desdale-dernier-jeu`, `desdale-ordre-jeux` (ordre des fiches de l'accueil, trié par appui long).
-Salon global : `desdale-profil` (pseudo, couleur, émoji, photo), `desdale-chat`, `desdale-chat-lus`, `desdale-bulle-y`.
+Salon global : `desdale-profil` (pseudo, couleur, émoji, photo), `desdale-icones` (« nouvelles » / « anciennes »), `desdale-chat`, `desdale-chat-lus`, `desdale-bulle-y`.
 Brilliant : `brillant-sauvegarde-v1`, `brillant-dernier-salon`, `brillant-records(-dates)`, `brillant-classements`, `brillant-rejoindre-auto`.
 Yams : `yams-sauvegarde`, `yams-dernier-salon`, `yams2-record`, `yams2-classements` (le « 2 » : barème maison).
 Assaut : `assaut-sauvegarde`, `assaut-prive` (mon armée en salon), `assaut-dernier-salon`, `assaut-mode`, `assaut-memoire`, `assaut-stats`, `assaut-dispositions`, `assaut-apparence`, `assaut-images`, `assaut-numerotation`, `assaut-couleur`.
@@ -389,7 +390,7 @@ Bataille navale : `bataille-sauvegarde`, `bataille-prive` (ma flotte en salon), 
   au plus un toutes les 15 s par visiteur, bulle « ❤️ X a fait un câlin à … » (événement `cp-exterieur` pour mettre sa page à jour).
   Ami parti ou sans compagnon : « Personne n'ouvre… » (attente 12 s). API : `SalonGlobal.pret / membre / demander / envoyerA`.
 - En-tête de la page : bouton « ‹ ▦ Jeux » comme dans les jeux, compteur d'étoiles avec une étoile dorée dessinée ; onglets Soins /
-  Boutique / Défis / Réglages en icônes au trait **colorées** (cœur rose, sac orange, coupe dorée, curseurs bleus) sur une pastille
+  Boutique / Défis / Réglages en icônes au trait **colorées** (cœur rose, sac bleu, coupe dorée, curseurs violets) sur une pastille
   teintée, plus vive sur l'onglet choisi (`ICONES_CP` dans `compagnon.html`).
 - Accueil : carte « Mon compagnon » (son dessin, son humeur, les étoiles) fixée en haut avec « En ligne », au-dessus de la liste des jeux qui défile.
 - Boutique : tête, cou (dont laisse et laisse de grande marque), habits (manteau d'hiver…), couchage (coussin → château), déco, friandises.
