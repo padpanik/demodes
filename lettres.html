@@ -28,9 +28,11 @@
     /* Joueurs */
     .joueurs-lc { display: flex; gap: 5px; margin: 2px 0 5px; }
     .joueurs-lc .j { flex: 1; min-width: 0; background: #fff; border-radius: 12px; padding: 4px 6px; box-shadow: 0 1px 2px rgba(0,0,0,0.06); text-align: center; }
-    .joueurs-lc .j.actif { box-shadow: 0 0 0 2.5px #1d2b36; }
+    .joueurs-lc .j { border-top: 4px solid var(--c); }
+    .joueurs-lc .j.actif { box-shadow: 0 0 0 2.5px var(--c); }
     .joueurs-lc .j.absent { opacity: 0.5; }
     .joueurs-lc .nom { font-weight: 700; font-size: 0.8em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .joueurs-lc .nb { font-size: 0.75em; color: #6b7a86; font-weight: 600; }
     .joueurs-lc .score { font-weight: 900; color: #1d2b36; font-size: 1.05em; }
     .statut-lc { text-align: center; font-weight: 700; color: #3b4b57; min-height: 21px; margin-bottom: 4px; font-size: 0.92em; }
     .statut-lc.moi { color: #2f8a5b; }
@@ -49,7 +51,8 @@
              display: flex; align-items: center; justify-content: center; font-weight: 900; color: #2b2116; font-size: calc(var(--t) * 0.62); line-height: 1; }
     .jeton .v { position: absolute; right: 1px; bottom: 0; font-size: calc(var(--t) * 0.3); font-weight: 700; }
     .jeton.joker { color: #a1621a; }
-    .jeton.dernier { box-shadow: inset 0 0 0 2px #ff9800; }
+    .jeton.marque { background: linear-gradient(160deg, #fbedc7, color-mix(in srgb, var(--c) 30%, #efd79c)); box-shadow: inset 0 0 0 2px var(--c); }
+    .jeton.recent { box-shadow: inset 0 0 0 3px var(--c), 0 0 5px var(--c); z-index: 1; }
     .jeton.mien { background: linear-gradient(160deg, #fff7c2, #ffe066); box-shadow: inset 0 0 0 2px #e67e22; }
     .jeton.verif { background: #fff3c4; box-shadow: inset 0 0 0 2px #8e44ad; animation: hesite 1s ease-in-out infinite alternate; }
     @keyframes hesite { to { box-shadow: inset 0 0 0 2px #d2a8e8; } }
@@ -225,9 +228,9 @@
 
       <template v-else-if="e">
         <div class="joueurs-lc">
-          <div v-for="j in joueursAff" :key="j.nom" class="j" :class="{ actif: j.actif, absent: j.absent }">
+          <div v-for="j in joueursAff" :key="j.nom" class="j" :class="{ actif: j.actif, absent: j.absent }" :style="{ '--c': j.coul }">
             <div class="nom">{{ j.nom }}</div>
-            <div class="score">{{ j.score }}</div>
+            <div><span class="score">{{ j.score }}</span> <span class="nb">· {{ j.nb }}</span></div>
           </div>
         </div>
         <div class="statut-lc" :class="{ moi: monTour }">{{ statut }}</div>
@@ -237,12 +240,12 @@
           <div class="grille" :class="{ zoom: zoom }">
             <div v-for="k in grille" :key="k.c" class="case" :class="[k.b, { centre: k.c === CENTRE }]" @click="toucherCase(k.c)">
               <span v-if="!k.l" class="bonus">{{ k.c === CENTRE ? '★' : k.lib }}</span>
-              <span v-else class="jeton" :class="{ joker: k.joker, dernier: k.dernier, mien: k.etat === 'mien', verif: k.etat === 'verif' }">{{ k.l }}<span class="v" v-if="!k.joker">{{ k.v }}</span></span>
+              <span v-else class="jeton" :class="{ joker: k.joker, marque: !!k.coul, recent: k.recent, mien: k.etat === 'mien', verif: k.etat === 'verif' }" :style="k.coul ? { '--c': k.coul } : null">{{ k.l }}<span class="v" v-if="!k.joker">{{ k.v }}</span></span>
             </div>
           </div>
         </div>
         <div class="ligne-apercu">
-          <div class="apercu-lc" :class="apercuClasse">{{ apercuTexte }}</div>
+          <div class="apercu-lc" :class="apercuClasse" :style="!analyse && e.dernier ? { color: couleurDe(e.dernier.j) } : null">{{ apercuTexte }}</div>
           <button class="zoom-btn" @click="zoom = !zoom">{{ zoom ? '🔍 −' : '🔍 +' }}</button>
         </div>
 
@@ -326,6 +329,8 @@
     const NOM_JEU = 'Lettres croisées';
     const ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
     const LIB_BONUS = { MT: 'M×3', MD: 'M×2', LT: 'L×3', LD: 'L×2' };
+    // Une couleur par joueur, dans l'ordre de la partie
+    const COULEURS = ['#e8590c', '#1c7ed6', '#2b8a3e', '#9c36b5'];
     const ORDIS = ['🤖 Ordi', '🤖 Ordi 2', '🤖 Ordi 3'];
     const NIVEAUX_NOMS = { facile: 'Facile', normal: 'Normal', fort: 'Fort' };
     const AIDE_NIVEAUX = { facile: 'Petits mots (5 lettres au plus), sans joker, rarement le meilleur coup.',
@@ -421,7 +426,7 @@
         joueurDuTourAbsent: function() { var e = this.e; return !!e && e.phase === 'jeu' && !this.estPresent(e.joueurs[e.tour]); },
         joueursAff: function() {
           var e = this.e;
-          return e.joueurs.map((j, k) => ({ nom: (j === this.moiJ ? 'Moi' : j) + ' · ' + e.nbLettres[j], score: e.scores[j],
+          return e.joueurs.map((j, k) => ({ nom: j === this.moiJ ? 'Moi' : j, nb: e.nbLettres[j], score: e.scores[j], coul: COULEURS[k],
                                             actif: e.phase !== 'fin' && e.tour === k, absent: !this.estPresent(j) }));
         },
         // Les 225 cases : lettres posées, mes lettres en attente, lettres soumises au vote, dernier coup
@@ -429,11 +434,15 @@
           var e = this.e, a = {}, ver = {}, dern = {};
           this.poses.forEach(p => { var l = this.monChevalet[p.i]; a[p.c] = { l: l === '?' ? p.l : l, joker: l === '?' }; });
           if (e.phase === 'verif' && e.verif) e.verif.lettres.forEach(x => { ver[x.c] = x; });
+          // Dernier mot de chaque joueur, dans sa couleur (le plus récent l'emporte quand deux mots se croisent)
+          var marques = {}, d = e.derniers || {};
+          Object.keys(d).sort((x, y) => d[x].n - d[y].n).forEach(j => { d[j].cases.forEach(c => { marques[c] = j; }); });
           if (e.dernier) e.dernier.cases.forEach(c => { dern[c] = true; });
           return e.plateau.map((t, c) => {
             var x = t || ver[c] || a[c], b = LC.BONUS[c];
             return { c: c, b: b, lib: LIB_BONUS[b] || '', l: x ? x.l : '', joker: !!(x && x.joker), v: x ? LC.valeur(x.l) : 0,
-                     etat: t ? 'pose' : ver[c] ? 'verif' : a[c] ? 'mien' : '', dernier: !!(t && dern[c]) };
+                     etat: t ? 'pose' : ver[c] ? 'verif' : a[c] ? 'mien' : '', recent: !!(t && dern[c]),
+                     coul: t && marques[c] ? this.couleurDe(marques[c]) : '' };
           });
         },
         analyse: function() { return this.poses.length && this.e && this.estJoueur ? LC.analyser(this.e, this.moiJ, this.poses) : null; },
@@ -496,6 +505,7 @@
         'e.tour': function() { this.modeEchange = false; this.aEchanger = {}; },
         // Loupe : on centre la vue sur mes lettres en cours, le dernier coup ou l'étoile
         zoom: function(v) {
+          this.vibre(v ? [20, 30, 20] : 25);
           if (!v) { this._centreZoom = undefined; return; }
           this.$nextTick(() => {
             var cadre = this.$refs.cadre, e = this.e;
@@ -526,6 +536,7 @@
         son: function(nom, arg) { if (this.sonActif) Sons.jouer(nom, arg); },
         basculerSon: function() { this.sonActif = !this.sonActif; if (this.sonActif) Sons.jouer('toc'); },
         valeur: function(l) { return LC.valeur(l); },
+        couleurDe: function(j) { var k = this.e ? this.e.joueurs.indexOf(j) : -1; return k >= 0 ? COULEURS[k] : ''; },
         estPresent: function(p) {
           if (this.solo || p === this.moi || estOrdi(p)) return true;
           if (this.role === 'hote') return !!(salle.infos[p] && salle.infos[p].connecte);

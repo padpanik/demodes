@@ -265,6 +265,10 @@ Bataille navale : `bataille-sauvegarde`, `bataille-prive` (ma flotte en salon), 
   Aperçu en direct des mots et des points (ou de l'erreur). 🔀 mélange le chevalet, 🔍 grossit le plateau (il défile) ;
   **double toucher** sur une case : même effet, centré sur elle (le premier toucher est annulé, `poserOuReprendre` renvoie de quoi le défaire).
   On peut préparer son mot pendant le tour des autres (lettres reprises si la case est prise entre-temps).
+  Loupe (bouton ou double toucher) : petite vibration en grossissant et en rétrécissant.
+- **Une couleur par joueur** (`COULEURS`, dans l'ordre de la partie : orange, bleu, vert, violet) sur sa carte ; le **dernier mot de
+  chacun** reste encadré et teinté de sa couleur (`e.derniers[joueur] = { cases du mot principal, n° du coup }`, le plus récent
+  l'emporte sur une case partagée) ; les lettres du tout dernier coup brillent un peu plus ; « Dernier coup : … » dans sa couleur.
 - **Dictionnaire + vote** : l'hôte vérifie chaque mot formé dans `lettres-mots.txt`. Mot inconnu (la liste n'a pas tous les petits
   mots du jeu officiel, ex. QI, OK) : les autres joueurs présents votent 👍 / 👎 ; refusé si plus de la moitié dit 👎, sinon accepté
   (personne pour voter : accepté). Refusé : les lettres reviennent à leur place chez le joueur, qui rejoue. L'auteur peut reprendre ses lettres pendant le vote.

@@ -140,6 +140,9 @@ var LC = (function () {
     e.passes = 0;
     e.nbCoups++;
     e.dernier = { j: j, cases: a.lettres.map(x => x.c), mots: a.mots.map(m => m.mot), points: a.points, bingo: a.bingo };
+    // Le dernier mot de chacun reste en évidence (dans sa couleur) : les cases du mot principal
+    e.derniers = e.derniers || {};
+    e.derniers[j] = { cases: a.mots[0].cases, n: e.nbCoups };
     noter(e, j + ' joue ' + a.mots.map(m => m.mot).join(', ') + ' : +' + a.points + (a.bingo ? ' (dont +50 pour les 7 lettres !)' : '') + '.');
     e.phase = 'jeu'; e.verif = null;
     if (!e.chevalets[j].length && !e.sac.length) return finir(e, j), a;
