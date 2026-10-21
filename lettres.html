@@ -37,7 +37,7 @@
 
     /* Plateau 15 × 15 */
     .cadre { position: relative; width: 100%; max-width: 344px; margin: 0 auto; aspect-ratio: 1; overflow: auto; border-radius: 10px;
-             background: #1f6f5c; padding: 3px; box-sizing: border-box; -webkit-overflow-scrolling: touch; container-type: inline-size; }
+             background: #1f6f5c; padding: 3px; box-sizing: border-box; -webkit-overflow-scrolling: touch; container-type: inline-size; touch-action: manipulation; }
     .grille { display: grid; grid-template-columns: repeat(15, var(--t)); grid-auto-rows: var(--t); gap: 1px; width: max-content; --t: calc((100cqw - 14px) / 15); }
     .grille.zoom { --t: 34px; }
     .case { position: relative; background: #e9e4d4; border-radius: 2px; display: flex; align-items: center; justify-content: center; cursor: pointer; user-select: none; -webkit-user-select: none; }
@@ -96,6 +96,8 @@
     .attente-lc .presents { display: flex; flex-wrap: wrap; gap: 6px; margin: 4px 0 10px; }
     .attente-lc .presents span { background: #eef4ff; border-radius: 12px; padding: 4px 10px; font-weight: 700; font-size: 0.9em; }
     .attente-lc .presents span.absent { opacity: 0.45; }
+    .attente-lc .presents span.robot { background: #eef1f3; }
+    .attente-lc .presents span.robot button { border: none; background: none; font: inherit; color: #c0392b; cursor: pointer; padding: 0 0 0 4px; }
   </style>
 </head>
 <body>
@@ -176,6 +178,7 @@
           <li>Chacun a 7 lettres. À son tour, on pose des lettres sur <strong>une seule ligne ou colonne</strong>, sans trou, pour former un mot qui croise ou touche ceux déjà posés. Le premier mot passe par l'étoile du centre.</li>
           <li>On marque les points de chaque mot formé (le mot principal et ceux qui se croisent). Cases colorées : <strong>L×2 / L×3</strong> (la lettre compte double / triple), <strong>M×2 / M×3</strong> (le mot compte double / triple), seulement pour les lettres posées ce tour-ci.</li>
           <li>Les 7 lettres d'un coup : <strong>+50</strong>. Les deux jokers valent 0 point et remplacent n'importe quelle lettre.</li>
+          <li>Toucher deux fois rapidement le plateau le grossit (ou le remet en entier) : pratique pour viser une case.</li>
           <li>On peut aussi <strong>échanger</strong> des lettres (s'il en reste au moins 7 dans le sac) ou <strong>passer</strong>.</li>
           <li>Mot absent du dictionnaire : les autres joueurs <strong>votent</strong>. S'il est refusé, les lettres reviennent et on rejoue. Seul contre l'ordinateur, c'est toi qui décides.</li>
           <li>Fin : quand un joueur a posé toutes ses lettres et que le sac est vide (il gagne les points restant chez les autres, qui les perdent), ou quand tout le monde passe deux fois de suite.</li>
@@ -203,11 +206,21 @@
       <section v-else-if="pub.phase === 'attente'" class="carte attente-lc">
         <div class="titre-carte">Salle d'attente</div>
         <div class="petit-titre">Présents ({{ presents.length }})</div>
-        <div class="presents"><span v-for="p in pub.ordre" :key="p" :class="{ absent: !estPresent(p) }">{{ p }}{{ p === moi ? ' (moi)' : '' }}</span></div>
-        <button v-if="role === 'hote'" class="btn principal" style="width:100%" :disabled="presents.length < 2" @click="envoyerJeu({ type: 'COMMENCER' })">
-          {{ presents.length < 2 ? 'En attente d\'un 2e joueur…' : 'Commencer (' + Math.min(4, presents.length) + ' joueurs)' }}</button>
+        <div class="presents">
+          <span v-for="p in pub.ordre" :key="p" :class="{ absent: !estPresent(p) }">{{ p }}{{ p === moi ? ' (moi)' : '' }}</span>
+          <span v-for="r in robots" :key="r" class="robot">{{ r }} <button v-if="role === 'hote'" @click="envoyerJeu({ type: 'ROBOT', ajouter: false, nom: r })" aria-label="Retirer">✕</button></span>
+        </div>
+        <button v-if="role === 'hote' && nbPartants < 4" class="btn" style="width:100%;margin-bottom:8px" @click="envoyerJeu({ type: 'ROBOT', ajouter: true })">🤖 Ajouter un ordinateur</button>
+        <template v-if="robots.length">
+          <div class="petit-titre">Niveau des ordinateurs {{ role === 'hote' ? '' : '(choisi par l\'hôte)' }}</div>
+          <div class="segment">
+            <button v-for="(nom, n) in NIVEAUX_NOMS" :key="n" :disabled="role !== 'hote'" :class="{ actif: (pub.niveau || 'normal') === n }" @click="envoyerJeu({ type: 'NIVEAU', niveau: n })">{{ nom }}</button>
+          </div>
+        </template>
+        <button v-if="role === 'hote'" class="btn principal" style="width:100%" :disabled="nbPartants < 2" @click="envoyerJeu({ type: 'COMMENCER' })">
+          {{ nbPartants < 2 ? 'En attente d\'un 2e joueur (ou d\'un ordinateur)…' : 'Commencer (' + nbPartants + ' joueurs)' }}</button>
         <div v-else class="aide">L'hôte lance la partie quand tout le monde est là.</div>
-        <div class="aide" v-if="presents.length > 4">Au-delà de 4, les suivants regardent la partie.</div>
+        <div class="aide" v-if="presents.length + robots.length > 4">On joue à 4 au plus : les joueurs passent avant les ordinateurs, les suivants regardent.</div>
       </section>
 
       <template v-else-if="e">
@@ -397,6 +410,8 @@
         connexionTexte: function() { return { ok: 'en ligne', connexion: 'connexion…', perdue: 'reconnexion…', aucune: 'hors ligne' }[this.connexion]; },
         e: function() { return this.pub && this.pub.e; },
         presents: function() { return this.pub ? this.pub.ordre.filter(p => this.estPresent(p)) : []; },
+        robots: function() { return (this.pub && this.pub.robots) || []; },
+        nbPartants: function() { var h = Math.min(4, this.presents.length); return h + Math.min(this.robots.length, 4 - h); },
         estJoueur: function() { return !!this.e && this.e.joueurs.indexOf(this.moiJ) !== -1; },
         monChevalet: function() { return (this.e && this.e.chevalets[this.moiJ]) || []; },
         monTour: function() {
@@ -441,7 +456,7 @@
         votants: function() {
           var e = this.e;
           if (!e || !e.verif) return [];
-          return e.joueurs.filter(j => j !== e.verif.j && this.estPresent(j));
+          return e.joueurs.filter(j => j !== e.verif.j && !estOrdi(j) && this.estPresent(j));
         },
         nbVotes: function() { var v = this.e.verif.votes; return this.votants.filter(j => v[j] !== undefined).length; },
         classement: function() { var e = this.e; return e.joueurs.slice().sort((a, b) => e.scores[b] - e.scores[a]); },
@@ -481,11 +496,12 @@
         'e.tour': function() { this.modeEchange = false; this.aEchanger = {}; },
         // Loupe : on centre la vue sur mes lettres en cours, le dernier coup ou l'étoile
         zoom: function(v) {
-          if (!v) return;
+          if (!v) { this._centreZoom = undefined; return; }
           this.$nextTick(() => {
             var cadre = this.$refs.cadre, e = this.e;
             if (!cadre || !e) return;
-            var c = this.poses.length ? this.poses[this.poses.length - 1].c : e.dernier ? e.dernier.cases[0] : LC.CENTRE, t = 35;
+            var c = this._centreZoom !== undefined ? this._centreZoom : this.poses.length ? this.poses[this.poses.length - 1].c : e.dernier ? e.dernier.cases[0] : LC.CENTRE, t = 35;
+            this._centreZoom = undefined;
             cadre.scrollLeft = (c % LC.N) * t - cadre.clientWidth / 2 + t / 2;
             cadre.scrollTop = Math.floor(c / LC.N) * t - cadre.clientHeight / 2 + t / 2;
           });
@@ -595,16 +611,35 @@
           if (this.estPosee(i)) return;
           this.choisi = this.choisi === i ? -1 : i;
         },
+        // Un toucher pose ou reprend une lettre ; deux touchers rapides sur la même case grossissent ou rétrécissent
+        // le plateau (le premier toucher est alors annulé).
         toucherCase: function(c) {
-          if (!this.estJoueur || this.e.phase === 'fin' || this.modeEchange) return;
+          var t = Date.now(), d = this._dernierToucher;
+          if (d && d.c === c && t - d.t < 380) {
+            this._dernierToucher = null;
+            if (d.annuler) d.annuler();
+            this._centreZoom = c;
+            this.zoom = !this.zoom;
+            return;
+          }
+          this._dernierToucher = { c: c, t: t, annuler: this.poserOuReprendre(c) };
+        },
+        // Renvoie de quoi défaire ce qui vient d'être fait (ou rien)
+        poserOuReprendre: function(c) {
+          if (!this.estJoueur || this.e.phase === 'fin' || this.modeEchange) return null;
           var k = this.poses.findIndex(p => p.c === c);
-          if (k !== -1) { this.choisi = -1; this.poses.splice(k, 1); return; }   // on reprend la lettre
-          if (this.e.plateau[c] || (this.e.phase === 'verif' && this.e.verif && this.e.verif.lettres.some(x => x.c === c))) return;
-          if (this.choisi < 0) return this.vibre(30);
+          if (k !== -1) {   // on reprend la lettre
+            var ote = this.poses.splice(k, 1)[0], avant = this.choisi;
+            this.choisi = -1;
+            return () => { this.poses.splice(k, 0, ote); this.choisi = avant; };
+          }
+          if (this.e.plateau[c] || (this.e.phase === 'verif' && this.e.verif && this.e.verif.lettres.some(x => x.c === c))) return null;
+          if (this.choisi < 0) return null;
           var i = this.choisi;
-          if (this.monChevalet[i] === '?') { this.jokerPour = { i: i, c: c }; return; }
+          if (this.monChevalet[i] === '?') { this.jokerPour = { i: i, c: c }; return () => { this.jokerPour = null; }; }
           this.poses.push({ i: i, c: c });
           this.apresPose();
+          return () => { this.poses = this.poses.filter(p => p.c !== c); this.choisi = i; };
         },
         choisirJoker: function(l) {
           var j = this.jokerPour;
@@ -658,11 +693,27 @@
           var e = pubHote.etat, hote = p === monPseudo, bonne = e && m.partieId === pubHote.partieId;
           if (m.type === 'COMMENCER') {
             if (!hote || pubHote.phase !== 'attente') return;
+            // Les joueurs présents d'abord, puis les ordinateurs, 4 au plus
             var joueurs = pubHote.ordre.filter(x => this.estConnecte(x)).slice(0, 4);
+            joueurs = joueurs.concat((pubHote.robots || []).slice(0, 4 - joueurs.length));
             if (joueurs.length < 2) return;
             pubHote.etat = LC.nouvellePartie(joueurs);
+            pubHote.etat.niveau = pubHote.niveau || 'normal';
             pubHote.partieId = nouvelId();
             pubHote.phase = 'jeu';
+          } else if (m.type === 'ROBOT') {
+            if (!hote || pubHote.phase !== 'attente') return;
+            var rs = pubHote.robots = pubHote.robots || [];
+            if (!m.ajouter) pubHote.robots = rs.filter(r => r !== m.nom);
+            else {
+              var libre = ORDIS.find(r => rs.indexOf(r) === -1);
+              if (!libre || Math.min(4, pubHote.ordre.filter(x => this.estConnecte(x)).length) + rs.length >= 4) return;
+              rs.push(libre);
+            }
+          } else if (m.type === 'NIVEAU') {
+            if (!hote || pubHote.phase !== 'attente' || !NIVEAUX_NOMS[m.niveau]) return;
+            pubHote.niveau = m.niveau;
+            ecrireStockage('lettres-niveau', m.niveau);
           } else if (m.type === 'POSER') {
             if (!bonne || e.phase !== 'jeu' || LC.joueurDuTour(e) !== p || !Array.isArray(m.poses)) return;
             // Le dictionnaire peut encore être en chargement : on attend
@@ -727,7 +778,8 @@
         },
         // Ce que voit chaque joueur : son chevalet seulement
         etatPour: function(pseudo) {
-          return { ordre: pubHote.ordre.slice(), phase: pubHote.phase, partieId: pubHote.partieId, e: pubHote.etat ? LC.vuePour(pubHote.etat, pseudo) : null };
+          return { ordre: pubHote.ordre.slice(), robots: (pubHote.robots || []).slice(), niveau: pubHote.niveau || 'normal', phase: pubHote.phase, partieId: pubHote.partieId,
+                   e: pubHote.etat ? LC.vuePour(pubHote.etat, pseudo) : null };
         },
 
         // ================== RÉCEPTION DE L'ÉTAT ==================
@@ -756,13 +808,32 @@
           if (e.phase === 'fin' && (!memePartie || ea.phase !== 'fin') && e.joueurs.indexOf(moi) !== -1) {
             var gagne = e.fin.gagnants.indexOf(moi) !== -1;
             if (gagne) { setTimeout(() => this.son('victoire'), 300); this.vibre([100, 60, 100]); }
-            Etoiles.finDePartie(NOM_JEU, gagne, !this.solo, p.partieId, { joueurs: e.joueurs.length, score: e.scores[moi] });
+            Etoiles.finDePartie(NOM_JEU, gagne, !this.solo && e.joueurs.filter(x => !estOrdi(x)).length > 1, p.partieId, { joueurs: e.joueurs.length, score: e.scores[moi] });
             if (this.solo) Etoiles.serie('lettres-' + (e.niveau || 'normal'), gagne, NOM_JEU, NIVEAUX_NOMS[e.niveau]);
           }
         },
         publier: function() {
           this.diffuser();
           this.appliquerPub(this.etatPour(monPseudo));
+          this.tourRobot();
+        },
+        // Chez l'hôte : les ordinateurs du salon jouent leur tour
+        tourRobot: function() {
+          var e = pubHote && pubHote.etat;
+          if (this.role !== 'hote' || !e || e.phase !== 'jeu' || !estOrdi(LC.joueurDuTour(e))) return;
+          var cle = pubHote.partieId + ':' + e.nbCoups + ':' + e.tour + ':' + e.passes;
+          if (this._robotPrevu === cle) return;
+          this._robotPrevu = cle;
+          setTimeout(() => {
+            chargerDico().then(() => {
+              if (this.role !== 'hote' || !pubHote || pubHote.etat !== e || e.phase !== 'jeu' || !ARBRE || cle !== pubHote.partieId + ':' + e.nbCoups + ':' + e.tour + ':' + e.passes) return;
+              var j = LC.joueurDuTour(e), a = LC.ordinateur(e, j, ARBRE, e.niveau);
+              if (a.type === 'poser') LC.poser(e, j, a.poses);
+              else if (a.type === 'echanger') LC.echanger(e, j, a.rangs);
+              else LC.passer(e, j);
+              this.publier();
+            });
+          }, 1300 + Math.random() * 700);
         },
         // ---------- Liste des salons ----------
         estSalonSaisi: function(nom) { return ACCES.simplifier(nom) === ACCES.simplifier(this.channelInput); },
@@ -876,7 +947,7 @@
         // L'hôte ne répond plus : on rouvre le salon. Les chevalets des autres étaient chez lui : la partie en cours s'arrête
         // (retour à la salle d'attente, on relance une partie).
         reprendreLeSalon: function() {
-          pubHote = { ordre: this.pub.ordre.slice(), phase: 'attente', partieId: null, etat: null };
+          pubHote = { ordre: this.pub.ordre.slice(), robots: (this.pub.robots || []).slice(), niveau: this.pub.niveau || 'normal', phase: 'attente', partieId: null, etat: null };
           salle = { infos: {} };
           pubHote.ordre.forEach(p => { if (p !== monPseudo) salle.infos[p] = { connecte: false, clientId: null }; });
           this._repriseParClient = true;
@@ -904,7 +975,7 @@
               this.onglet = 'play';
               this.finEntree(true);
               salle = { infos: {} };
-              pubHote = { ordre: [monPseudo], phase: 'attente', partieId: null, etat: null };
+              pubHote = { ordre: [monPseudo], robots: [], niveau: this.niveau, phase: 'attente', partieId: null, etat: null };
               this.ajouterLog(monPseudo + ' a ouvert le salon.', true);
             }
             this.publier();

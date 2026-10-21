@@ -262,7 +262,8 @@ Bataille navale : `bataille-sauvegarde`, `bataille-prive` (ma flotte en salon), 
   passer. Fin : chevalet vidé sac vide (le joueur gagne les points restant chez les autres, qui les perdent), ou tout le monde passe
   deux fois de suite (chacun perd ce qui lui reste).
 - Écran : toucher une lettre du chevalet puis une case ; toucher une lettre posée la reprend ; joker : choix de la lettre (A–Z).
-  Aperçu en direct des mots et des points (ou de l'erreur). 🔀 mélange le chevalet, 🔍 grossit le plateau (il défile).
+  Aperçu en direct des mots et des points (ou de l'erreur). 🔀 mélange le chevalet, 🔍 grossit le plateau (il défile) ;
+  **double toucher** sur une case : même effet, centré sur elle (le premier toucher est annulé, `poserOuReprendre` renvoie de quoi le défaire).
   On peut préparer son mot pendant le tour des autres (lettres reprises si la case est prise entre-temps).
 - **Dictionnaire + vote** : l'hôte vérifie chaque mot formé dans `lettres-mots.txt`. Mot inconnu (la liste n'a pas tous les petits
   mots du jeu officiel, ex. QI, OK) : les autres joueurs présents votent 👍 / 👎 ; refusé si plus de la moitié dit 👎, sinon accepté
@@ -270,6 +271,10 @@ Bataille navale : `bataille-sauvegarde`, `bataille-prive` (ma flotte en salon), 
 - Réseau : l'hôte arbitre et garde chevalets et sac ; chacun ne reçoit que son chevalet (`LC.vuePour`), tous révélés à la fin.
   Joueur du tour absent : l'hôte peut « passer son tour ». Hôte disparu : un joueur rouvre le salon, retour à la salle d'attente
   (comme les Dominos). L'hôte peut arrêter la partie depuis l'accueil du jeu. Étoiles du compagnon à la fin de la partie.
+- **Ordinateurs dans un salon** : dans la salle d'attente, l'hôte ajoute ou retire des 🤖 (4 joueurs au plus, les humains passent
+  avant) et choisit leur niveau (le même pour tous, `pubHote.robots` / `pubHote.niveau`). C'est le téléphone de l'hôte qui les fait
+  jouer (`tourRobot`, appelé après chaque `publier`). Ils ne votent pas. La partie ne compte « à plusieurs » pour le compagnon
+  que s'il y a au moins deux humains.
 - **Solo** (ajouté ensuite à la demande de l'utilisateur, avec un niveau à limiter) : le dictionnaire est chargé en arbre compact
   (`LC.construireArbre`, typed arrays, ~590 000 nœuds) qui sert aussi à vérifier les mots ; l'ordinateur cherche tous ses coups par la
   méthode des ancres (`LC.coupsPossibles`) et ne joue que des mots du dictionnaire. Niveaux (`LC.NIVEAUX`, `LC.ordinateur`) :
