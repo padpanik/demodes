@@ -81,7 +81,7 @@ var CP = (function () {
     { id: 'lunettes', fete: 'ete', rayon: 'tete', slot: 'tete', nom: 'Lunettes de soleil', desc: 'La classe en vacances', prix: 16, couleur: '#1d1d24' },
     { id: 'parasol', fete: 'ete', rayon: 'deco', slot: 'fete-ete', nom: 'Parasol', desc: 'Un coin d\'ombre', prix: 16, ico: '⛱️', place: true, pos: 'left:64%;bottom:40px', x: 72, taille: 50, phrase: 'Un peu d\'ombre, ça fait du bien 😎' },
     { id: 'glace', fete: 'ete', rayon: 'gourmand', nom: 'Glace', desc: 'Deux boules, vanille et fraise', prix: 4, ico: '🍦', conso: true, effets: { repas: 30, eau: 30, calin: 15 } },
-    { id: 'chapeau-sorciere', fete: 'halloween', rayon: 'tete', slot: 'tete', nom: 'Chapeau de sorcière', desc: 'Abracadabra !', prix: 14, couleur: '#5f3dc4' },
+    { id: 'chapeau-sorciere', fete: 'halloween', rayon: 'tete', slot: 'tete', nom: 'Chapeau de sorcière', desc: 'Abracadabra !', prix: 14, couleur: '#7048e8' },
     { id: 'cape-vampire', fete: 'halloween', rayon: 'corps', slot: 'corps', nom: 'Cape de vampire', desc: 'Doublée de rouge', prix: 20, couleur: '#1d1d24' },
     { id: 'citrouille', fete: 'halloween', rayon: 'deco', slot: 'fete-halloween', nom: 'Citrouille lanterne', desc: 'Elle s\'allume le soir', prix: 12, ico: '🎃', place: true, pos: 'left:22%;bottom:10px', x: 28, taille: 40, phrase: 'Elle me fait un clin d\'œil ! 🎃' },
     { id: 'bonbons', fete: 'halloween', rayon: 'gourmand', nom: 'Bonbons', desc: 'Un sachet de friandises', prix: 4, ico: '🍬', conso: true, effets: { repas: 30, calin: 25 } },
@@ -453,10 +453,10 @@ var CP = (function () {
     if (e === 'chevre') s += '<path d="M94 122 Q100 146 106 122 Z" fill="#e8e2d6"/>';
     if (e === 'ecureuil' && !triste) s += '<rect x="95.5" y="106" width="9" height="8" rx="2" fill="#fff" stroke="#d8cfc4" stroke-width="1"/><path d="M100 106 v8" stroke="#d8cfc4" stroke-width="1"/>';
     if (e === 'chat' || e === 'raton' || e === 'ecureuil') s += '<path d="M60 98 l-22 -4 M60 104 l-22 4 M140 98 l22 -4 M140 104 l22 4" stroke="#2b2b2b" stroke-width="1.5" opacity="0.5"/>';
+    // Reflets : lumière venant d'en haut à gauche (tête et ventre), sous les accessoires
+    s += '<ellipse cx="80" cy="56" rx="20" ry="12" fill="#fff" opacity="0.28" transform="rotate(-25 80 56)"/>';
     if (p.cou) s += accessoireCou(p.cou);
     if (p.tete) s += chapeau(p.tete);
-    // Reflets : lumière venant d'en haut à gauche (tête et ventre)
-    s += '<ellipse cx="80" cy="56" rx="20" ry="12" fill="#fff" opacity="0.28" transform="rotate(-25 80 56)"/>';
     s += '</g></g>';
     if (sg && sg.toilette) s += mouches();
     return relief(s, { c: c, f: fonce, l: clair, n: noir });
@@ -529,9 +529,24 @@ var CP = (function () {
     if (id === 'bonnet') return '<path d="M58 60 Q60 18 100 16 Q140 18 142 60 Z" fill="' + k + '"/><rect x="54" y="52" width="92" height="14" rx="7" fill="#fff"/><circle cx="100" cy="14" r="10" fill="#fff"/>';
     if (id === 'chapeau') return '<ellipse cx="100" cy="42" rx="46" ry="9" fill="' + k + '"/><path d="M72 42 Q72 6 100 6 Q128 6 128 42Z" fill="' + k + '"/><rect x="72" y="30" width="56" height="7" fill="#c0392b"/>';
     if (id === 'couronne') return '<path d="M68 44 L72 14 L86 30 L100 8 L114 30 L128 14 L132 44 Z" fill="' + k + '" stroke="#c99a00" stroke-width="2"/><circle cx="100" cy="30" r="4" fill="#e53935"/>';
-    if (id === 'chapeau-sorciere') return '<path d="M74 40 L98 4 Q104 0 116 6 Q106 10 108 20 L126 40 Z" fill="' + k + '"/>' +
-      '<path d="M78 34 L122 34 L126 40 L74 40 Z" fill="#f76707"/><rect x="95" y="33" width="9" height="8" rx="1.5" fill="none" stroke="#ffd43b" stroke-width="2"/>' +
-      '<ellipse cx="100" cy="42" rx="56" ry="9" fill="' + k + '"/><ellipse cx="100" cy="40" rx="40" ry="4" fill="' + nuance(k, -0.35) + '" opacity="0.5"/>';
+    if (id === 'chapeau-sorciere') {
+      // Chapeau de sorcière violet : pointe molle qui retombe et s'enroule en spirale, bord ondulé, toiles d'araignée et chauve-souris
+      var o = '#2a1745', fonce = nuance(k, -0.3), toile = (cx, cy, r) => {
+        var s = '';
+        for (var a = 0; a < 6; a++) { var g = a * Math.PI / 3 + 0.3; s += 'M' + cx + ' ' + cy + ' l' + (r * Math.cos(g)).toFixed(1) + ' ' + (r * Math.sin(g)).toFixed(1) + ' '; }
+        [0.45, 0.85].forEach(f => { s += 'M'; for (var a = 0; a <= 6; a++) { var g = a * Math.PI / 3 + 0.3; s += (a ? ' L' : '') + (cx + r * f * Math.cos(g)).toFixed(1) + ' ' + (cy + r * f * Math.sin(g)).toFixed(1); } s += ' '; });
+        return '<path d="' + s + '" stroke="' + o + '" stroke-width="0.9" fill="none" opacity="0.75"/>';
+      };
+      return '<path d="M128 15 C136 22 136 31 128 31 C122 31 121 25 126 23" stroke="' + o + '" stroke-width="7.5" fill="none" stroke-linecap="round"/>' +
+        '<path d="M128 15 C136 22 136 31 128 31 C122 31 121 25 126 23" stroke="' + k + '" stroke-width="4.5" fill="none" stroke-linecap="round"/>' +
+        '<path d="M76 41 C82 26 90 12 102 5 C114 0 126 4 131 13 L125 17 C120 11 114 11 112 17 C110 25 114 33 124 41 Z" fill="' + k + '" stroke="' + o + '" stroke-width="2" stroke-linejoin="round"/>' +
+        '<path d="M112 17 C110 25 114 33 124 41 L110 41 C106 31 106 22 110 14 Z" fill="' + fonce + '" opacity="0.45"/>' +
+        toile(94, 26, 7) + toile(111, 7, 4.5) + toile(118, 35, 5) +
+        '<path d="M38 45 Q52 36 78 38 Q100 41 122 38 Q148 36 162 45 Q150 53 100 52 Q50 53 38 45 Z" fill="' + k + '" stroke="' + o + '" stroke-width="2" stroke-linejoin="round"/>' +
+        '<path d="M50 47 Q100 55 150 47" stroke="' + fonce + '" stroke-width="2" fill="none" opacity="0.5"/>' +
+        '<path d="M54 42 q5 -6 11 -3 q2 -3 4 -1 q2 -2 4 1 q6 -3 11 3 q-4 0 -6 4 q-3 -2 -5 1 q-2 -3 -4 0 q-3 -3 -5 0 q-3 -4 -10 -5 z" fill="#1d1d24"/>' +
+        '<circle cx="67.5" cy="40" r="0.8" fill="#fff"/><circle cx="70.5" cy="40" r="0.8" fill="#fff"/>';
+    }
     if (id === 'bonnet-noel') return '<path d="M58 56 Q60 12 104 10 Q140 12 154 50 Q136 30 122 26 Q134 40 140 56 Z" fill="' + k + '"/>' +
       '<rect x="54" y="48" width="92" height="15" rx="7.5" fill="#fff"/><circle cx="154" cy="54" r="9" fill="#fff"/>';
     if (id === 'chapeau-anniv') return '<g transform="rotate(-12 100 40)"><path d="M78 44 L100 4 L122 44 Z" fill="' + k + '"/>' +
