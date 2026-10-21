@@ -388,6 +388,9 @@ Bataille navale : `bataille-sauvegarde`, `bataille-prive` (ma flotte en salon), 
   (`sauver` / `ecrireMaison` / `majDefis` coupés). Câlin (bouton ou toucher l'animal) : `CALIN` → +20 % de câlins chez l'ami,
   au plus un toutes les 15 s par visiteur, bulle « ❤️ X a fait un câlin à … » (événement `cp-exterieur` pour mettre sa page à jour).
   Ami parti ou sans compagnon : « Personne n'ouvre… » (attente 12 s). API : `SalonGlobal.pret / membre / demander / envoyerA`.
+- En-tête de la page : bouton « ‹ ▦ Jeux » comme dans les jeux, compteur d'étoiles avec une étoile dorée dessinée ; onglets Soins /
+  Boutique / Défis / Réglages en icônes au trait **colorées** (cœur rose, sac orange, coupe dorée, curseurs bleus) sur une pastille
+  teintée, plus vive sur l'onglet choisi (`ICONES_CP` dans `compagnon.html`).
 - Accueil : carte « Mon compagnon » (son dessin, son humeur, les étoiles) fixée en haut avec « En ligne », au-dessus de la liste des jeux qui défile.
 - Boutique : tête, cou (dont laisse et laisse de grande marque), habits (manteau d'hiver…), couchage (coussin → château), déco, friandises.
 
