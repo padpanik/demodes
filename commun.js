@@ -1,9 +1,9 @@
 // ================== DÉSDALE : BASE COMMUNE À TOUS LES JEUX ==================
-// Chargé par l'écran de choix (index.html) et par les jeux (yams.html…).
+// Chargé par l'écran de choix (index.html) et par les jeux (yams/index.html…).
 // Les clés de stockage gardent l'ancien préfixe "brillant-" : les réglages déjà faits sont conservés.
 
-// Numéro de version affiché (à augmenter à chaque mise en ligne, avec brilliant.html et sw.js)
-const VERSION = '2.18';
+// Numéro de version affiché (à augmenter à chaque mise en ligne, avec brilliant/index.html et sw.js)
+const VERSION = '2.19';
 
 // ---------- Stockage local ----------
 function lireStockage(cle) {
@@ -209,7 +209,7 @@ const Voix = {
   }
 };
 
-// Étoiles ⭐ de « Mon compagnon » : dans etoiles.js (aussi chargé par brilliant.html, qui n'utilise pas ce fichier)
+// Étoiles ⭐ de « Mon compagnon » : dans etoiles.js (aussi chargé par brilliant/index.html, qui n'utilise pas ce fichier)
 
 // ---------- Pseudo : choisi une fois sur le portail (profil du salon global), le même dans tous les jeux ----------
 function pseudoPortail() {

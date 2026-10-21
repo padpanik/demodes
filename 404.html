@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Désdale</title>
+  <script>
+    // Anciennes adresses (avant le rangement en dossiers) : yams.html → yams/, compagnon.html → compagnon/, etc.
+    // On garde la suite de l'adresse (?salon=…, ?visite=…) pour que les liens déjà partagés marchent encore.
+    (function () {
+      var p = location.pathname, m = /\/(brilliant|yams|backgammon|assaut|bataille|gribouille|petitbac|agents|quatre|domino|lettres|compagnon)\.html$/.exec(p);
+      if (m) location.replace(p.slice(0, m.index) + '/' + m[1] + '/' + location.search + location.hash);
+    })();
+  </script>
+  <style>body { font: 16px system-ui, sans-serif; text-align: center; padding: 40px 16px; color: #3b4b57; background: #f3f5f7; } a { color: #1c7ed6; font-weight: 700; }</style>
+</head>
+<body>
+  <p>Cette page n'existe pas (ou plus).</p>
+  <p><a id="accueil" href="/">Retour à l'accueil</a></p>
+  <script>
+    // Accueil du site : le premier dossier de l'adresse (GitHub Pages sert le site sous /nom-du-dépôt/)
+    var seg = location.pathname.split('/')[1];
+    document.getElementById('accueil').href = seg && seg.indexOf('.') < 0 ? '/' + seg + '/' : '/';
+  </script>
+</body>
+</html>

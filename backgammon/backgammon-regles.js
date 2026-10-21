@@ -1,5 +1,5 @@
 // ================== BACKGAMMON : RÈGLES ==================
-// Moteur sans affichage, utilisé par backgammon.html (et par l'hôte pour arbitrer).
+// Moteur sans affichage, utilisé par backgammon/index.html (et par l'hôte pour arbitrer).
 //
 // Plateau : flèches 1 à 24. pts[i] > 0 : pions de A (blanc), pts[i] < 0 : pions de B (noir).
 // A avance de 24 vers 1 (son jan intérieur : 1 à 6) ; B avance de 1 vers 24 (jan intérieur : 19 à 24).

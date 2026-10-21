@@ -1,7 +1,7 @@
 // ================== AGENTS SECRETS : MOTS ET RÈGLES ==================
 // Deux équipes, 25 mots ; le chef de chaque équipe voit la carte secrète et fait deviner ses agents
 // avec un seul mot et un nombre. Version maison du genre « jeu d'espions en mots ».
-// Utilisé par agents.html ; testable avec Node (module.exports en bas).
+// Utilisé par agents/index.html ; testable avec Node (module.exports en bas).
 
 var AG = (function () {
   // Mots maison, choisis pour leurs sens multiples (les doublons sont retirés plus bas)

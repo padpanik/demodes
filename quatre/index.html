@@ -2,6 +2,8 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
+  <!-- La page est rangée dans son dossier : les adresses relatives partent de la racine du site (fichiers communs) -->
+  <base href="../">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Quatre en ligne · Désdale</title>
   <meta name="robots" content="noindex, nofollow, noarchive">
@@ -173,7 +175,7 @@
   <script src="fiche-jeu.js"></script>
   <script src="commun.js"></script>
   <script src="etoiles.js"></script>
-  <script src="quatre-regles.js"></script>
+  <script src="quatre/quatre-regles.js"></script>
   <script>
     if (!ACCES.memorise()) location.replace('index.html');
 

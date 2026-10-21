@@ -2,6 +2,8 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
+  <!-- La page est rangée dans son dossier : les adresses relatives partent de la racine du site (fichiers communs) -->
+  <base href="../">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Bataille navale · Désdale</title>
   <meta name="robots" content="noindex, nofollow, noarchive">
@@ -453,7 +455,7 @@
   <script src="fiche-jeu.js"></script>
   <script src="commun.js"></script>
   <script src="etoiles.js"></script>
-  <script src="bataille-regles.js"></script>
+  <script src="bataille/bataille-regles.js"></script>
   <script>
     if (!ACCES.memorise()) location.replace('index.html');
 
@@ -475,9 +477,9 @@
     }
 
     // ---------- Sons de la mer ----------
-    // Enregistrements libres de droits (voir sons/LICENCES.txt), chargés au premier toucher ;
+    // Enregistrements libres de droits (voir bataille/sons/LICENCES.txt), chargés au premier toucher ;
     // tant qu'ils ne sont pas prêts (ou hors ligne), des sons fabriqués par le code les remplacent.
-    const FICHIERS_SONS = { plouf: 'sons/plouf.mp3', boum: 'sons/touche.mp3', sirene: 'sons/sirene.mp3' };
+    const FICHIERS_SONS = { plouf: 'bataille/sons/plouf.mp3', boum: 'bataille/sons/touche.mp3', sirene: 'bataille/sons/sirene.mp3' };
     const tamponsSons = {};
     let donneesSons = null;
     // Téléchargement tout de suite (simples fichiers), décodage dès que l'audio est débloqué par un toucher

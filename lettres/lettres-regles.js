@@ -1,6 +1,6 @@
 // ================== LETTRES CROISÉES : RÈGLES ==================
 // Version maison du jeu de lettres sur grille (sans le nom ni les visuels de la marque).
-// Utilisé par lettres.html ; testable avec Node (module.exports en bas).
+// Utilisé par lettres/index.html ; testable avec Node (module.exports en bas).
 //
 // Plateau 15 × 15 avec cases bonus (lettre compte double / triple, mot compte double / triple), centre = mot compte double.
 // 102 jetons (répartition et valeurs du jeu français, dont 2 jokers à 0 point). Chevalet de 7 lettres.

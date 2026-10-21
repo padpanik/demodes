@@ -9,18 +9,18 @@
 var SalonGlobal = (function () {
   var JEUX = {
     accueil: { nom: 'Accueil', page: 'index.html' },
-    brilliant: { nom: 'Brilliant', page: 'brilliant.html', cle: 'brillant-sauvegarde-v1' },
-    yams: { nom: 'Yams', page: 'yams.html', cle: 'yams-sauvegarde' },
-    backgammon: { nom: 'Backgammon', page: 'backgammon.html', cle: 'bg-sauvegarde' },
-    assaut: { nom: 'Assaut', page: 'assaut.html', cle: 'assaut-sauvegarde' },
-    bataille: { nom: 'Bataille navale', page: 'bataille.html', cle: 'bataille-sauvegarde' },
-    gribouille: { nom: 'Gribouille', page: 'gribouille.html', cle: 'gribouille-sauvegarde' },
-    petitbac: { nom: 'Petit bac', page: 'petitbac.html', cle: 'petitbac-sauvegarde' },
-    agents: { nom: 'Agents secrets', page: 'agents.html', cle: 'agents-sauvegarde' },
-    quatre: { nom: 'Quatre en ligne', page: 'quatre.html', cle: 'quatre-sauvegarde' },
-    domino: { nom: 'Dominos', page: 'domino.html', cle: 'domino-sauvegarde' },
-    lettres: { nom: 'Lettres croisées', page: 'lettres.html', cle: 'lettres-sauvegarde' },
-    compagnon: { nom: 'Mon compagnon', page: 'compagnon.html' }
+    brilliant: { nom: 'Brilliant', page: 'brilliant/', cle: 'brillant-sauvegarde-v1' },
+    yams: { nom: 'Yams', page: 'yams/', cle: 'yams-sauvegarde' },
+    backgammon: { nom: 'Backgammon', page: 'backgammon/', cle: 'bg-sauvegarde' },
+    assaut: { nom: 'Assaut', page: 'assaut/', cle: 'assaut-sauvegarde' },
+    bataille: { nom: 'Bataille navale', page: 'bataille/', cle: 'bataille-sauvegarde' },
+    gribouille: { nom: 'Gribouille', page: 'gribouille/', cle: 'gribouille-sauvegarde' },
+    petitbac: { nom: 'Petit bac', page: 'petitbac/', cle: 'petitbac-sauvegarde' },
+    agents: { nom: 'Agents secrets', page: 'agents/', cle: 'agents-sauvegarde' },
+    quatre: { nom: 'Quatre en ligne', page: 'quatre/', cle: 'quatre-sauvegarde' },
+    domino: { nom: 'Dominos', page: 'domino/', cle: 'domino-sauvegarde' },
+    lettres: { nom: 'Lettres croisées', page: 'lettres/', cle: 'lettres-sauvegarde' },
+    compagnon: { nom: 'Mon compagnon', page: 'compagnon/' }
   };
   var COULEURS = ['#e74c3c', '#e67e22', '#f1c40f', '#2ecc71', '#16a085', '#3498db', '#2c3e50', '#9b59b6', '#e84393', '#8d6e63'];
   var EMOJIS = ['😀', '😎', '🤓', '🥳', '😺', '🐶', '🦊', '🐼', '🐸', '🐧', '🦁', '🐙', '🦄', '🐲', '👻', '🤖', '👽', '🎃', '⭐', '🔥', '🌈', '🍕', '🎲', '⚓'];
@@ -432,7 +432,7 @@ var SalonGlobal = (function () {
     if (typeof CP !== 'undefined' && CP.demarrerVeille) CP.demarrerVeille(jeu);
     if (typeof CP === 'undefined') {
       var sc = document.createElement('script');
-      sc.src = 'compagnon-commun.js';
+      sc.src = 'compagnon/compagnon-commun.js';
       sc.onload = () => { dernierProfil = ''; rendre(); if (CP.demarrerVeille) CP.demarrerVeille(jeu); };
       document.head.appendChild(sc);
     }
@@ -580,7 +580,7 @@ var SalonGlobal = (function () {
     if (onglet === 'presents') { corps.innerHTML = vueInvisible() + vuePresents(); pied.innerHTML = ''; pied.style.display = 'none';
       corps.querySelector('[data-invisible]').onclick = basculerInvisible;
       corps.querySelectorAll('[data-rejoindre]').forEach(x => { x.onclick = () => rejoindrePartie(x.dataset.rejoindre); });
-      corps.querySelectorAll('[data-visiter]').forEach(x => { x.onclick = () => { location.href = 'compagnon.html?visite=' + encodeURIComponent(x.dataset.visiter); }; }); }
+      corps.querySelectorAll('[data-visiter]').forEach(x => { x.onclick = () => { location.href = 'compagnon/?visite=' + encodeURIComponent(x.dataset.visiter); }; }); }
     else if (onglet === 'profil') { pied.innerHTML = ''; pied.style.display = 'none'; vueProfil(corps); }
     else {
       var canal = onglet === 'salon' ? c : 'tous';

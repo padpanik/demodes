@@ -2,6 +2,8 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
+  <!-- La page est rangée dans son dossier : les adresses relatives partent de la racine du site (fichiers communs) -->
+  <base href="../">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Mon compagnon · Désdale</title>
   <meta name="robots" content="noindex, nofollow, noarchive">
@@ -336,7 +338,7 @@
       <div style="font-size:44px">{{ visite.etat === 'echec' ? '🚪' : '🏡' }}</div>
       <div class="titre-carte">{{ visite.etat === 'echec' ? 'Personne n\'ouvre…' : 'Je frappe à la porte de ' + (visite.pseudo || 'ton ami') + '…' }}</div>
       <div class="aide" v-if="visite.etat === 'echec'">{{ visite.pseudo || 'Ton ami' }} n'est peut-être plus connecté, ou n'a pas encore de compagnon.</div>
-      <a class="btn" style="display:inline-block;margin-top:10px;text-decoration:none" href="compagnon.html">↩ Rentrer chez moi</a>
+      <a class="btn" style="display:inline-block;margin-top:10px;text-decoration:none" href="compagnon/">↩ Rentrer chez moi</a>
     </section>
 
     <template v-if="!animal && !visite">
@@ -486,7 +488,7 @@
         <div class="aide">Glisse pour voir ses pièces. Touche {{ animal.nom }} pour lui faire un câlin : il le sentira chez {{ visite.pseudo }} ❤️</div>
         <div class="actions-visite">
           <button class="btn principal" @click="calinVisite">❤️ Câlin à {{ animal.nom }}</button>
-          <a class="btn" href="compagnon.html">↩ Rentrer chez moi</a>
+          <a class="btn" href="compagnon/">↩ Rentrer chez moi</a>
         </div>
       </section>
 
@@ -688,7 +690,7 @@
 
   <script src="commun.js"></script>
   <script src="etoiles.js"></script>
-  <script src="compagnon-commun.js"></script>
+  <script src="compagnon/compagnon-commun.js"></script>
   <script>
     if (!ACCES.memorise()) location.replace('index.html');
 
@@ -757,7 +759,7 @@
         maison: CP.lireMaison(),
         pieceVue: 0,
         // Vie de l'animal dans la pièce : position (% de la largeur), sens, marche, posture, geste en cours
-        // Visite chez un ami connecté (compagnon.html?visite=…) : sa maison, en lecture seule
+        // Visite chez un ami connecté (compagnon/index.html?visite=…) : sa maison, en lecture seule
         visite: null,
         arrange: false,        // mode « Arranger la déco »
         decoChoisi: null,      // emplacement (slot) de l'objet choisi

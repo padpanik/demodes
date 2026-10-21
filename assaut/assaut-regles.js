@@ -1,6 +1,6 @@
 // ================== ASSAUT : RÈGLES ET ORDINATEUR ==================
 // Jeu de stratégie à pièces cachées (version maison, règles classiques du genre).
-// Moteur sans affichage, utilisé par assaut.html ; testable avec Node.
+// Moteur sans affichage, utilisé par assaut/index.html ; testable avec Node.
 //
 // Plateau 10 × 10, cases numérotées 0..99 (ligne × 10 + colonne). A joue en bas (lignes 6 à 9),
 // B en haut (lignes 0 à 3). Deux lacs infranchissables au milieu.

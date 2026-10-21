@@ -2,6 +2,8 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
+  <!-- La page est rangée dans son dossier : les adresses relatives partent de la racine du site (fichiers communs) -->
+  <base href="../">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Lettres croisées · Désdale</title>
   <meta name="robots" content="noindex, nofollow, noarchive">
@@ -168,7 +170,7 @@
           <div class="aide" v-if="serieRecord > 1">Record : {{ serieRecord }} parties gagnées d'affilée ({{ NIVEAUX_NOMS[niveau] }}).</div>
         </section>
 
-        <p class="version">Désdale · Lettres croisées · version {{ version }}<br>Liste de mots : an-array-of-french-words (licence MIT, voir lettres-mots-licence.txt)</p>
+        <p class="version">Désdale · Lettres croisées · version {{ version }}<br>Liste de mots : an-array-of-french-words (licence MIT, voir lettres/lettres-mots-licence.txt)</p>
 
       </template>
 
@@ -336,7 +338,7 @@
   <script src="fiche-jeu.js"></script>
   <script src="commun.js"></script>
   <script src="etoiles.js"></script>
-  <script src="lettres-regles.js"></script>
+  <script src="lettres/lettres-regles.js"></script>
   <script>
     if (!ACCES.memorise()) location.replace('index.html');
 
@@ -366,7 +368,7 @@
     let ARBRE = null, DICO = null, promesseDico = null;
     function chargerDico() {
       if (DICO) return Promise.resolve(DICO);
-      if (!promesseDico) promesseDico = fetch('lettres-mots.txt').then(r => r.ok ? r.text() : Promise.reject())
+      if (!promesseDico) promesseDico = fetch('lettres/lettres-mots.txt').then(r => r.ok ? r.text() : Promise.reject())
         .then(t => { ARBRE = LC.construireArbre(t); DICO = { has: m => LC.existe(ARBRE, m) }; return DICO; })
         .catch(() => { promesseDico = null; return null; });
       return promesseDico;

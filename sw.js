@@ -3,41 +3,42 @@
 //   pour que l'application démarre vite, même avec un réseau faible ;
 // - nos propres pages, scripts et styles sont toujours pris sur le réseau d'abord : une nouvelle
 //   version mise en ligne sur GitHub est donc visible dès le prochain lancement.
-// Pensez à changer VERSION à chaque mise en ligne (même numéro que dans commun.js et brilliant.html).
+// Pensez à changer VERSION à chaque mise en ligne (même numéro que dans commun.js et brilliant/index.html).
 
-const VERSION = '2.18';
+const VERSION = '2.19';
 const CACHE = 'desdale-' + VERSION;
 
 const FICHIERS = [
+  // Une page par dossier (jeu/), les fichiers communs à la racine
   './',
   './index.html',
-  './brilliant.html',
-  './yams.html',
-  './backgammon.html',
-  './backgammon-regles.js',
-  './assaut.html',
-  './assaut-regles.js',
-  './bataille.html',
-  './bataille-regles.js',
-  './gribouille.html',
-  './gribouille-regles.js',
-  './petitbac.html',
-  './petitbac-regles.js',
-  './agents.html',
-  './agents-regles.js',
-  './quatre.html',
-  './quatre-regles.js',
-  './domino.html',
-  './domino-regles.js',
-  './lettres.html',
-  './lettres-regles.js',
-  './lettres-mots.txt',
-  './compagnon.html',
-  './compagnon-commun.js',
-  './compagnon-3d.html',
-  './sons/plouf.mp3',
-  './sons/touche.mp3',
-  './sons/sirene.mp3',
+  './brilliant/',
+  './yams/',
+  './backgammon/',
+  './backgammon/backgammon-regles.js',
+  './assaut/',
+  './assaut/assaut-regles.js',
+  './bataille/',
+  './bataille/bataille-regles.js',
+  './gribouille/',
+  './gribouille/gribouille-regles.js',
+  './petitbac/',
+  './petitbac/petitbac-regles.js',
+  './agents/',
+  './agents/agents-regles.js',
+  './quatre/',
+  './quatre/quatre-regles.js',
+  './domino/',
+  './domino/domino-regles.js',
+  './lettres/',
+  './lettres/lettres-regles.js',
+  './lettres/lettres-mots.txt',
+  './compagnon/',
+  './compagnon/compagnon-commun.js',
+  './compagnon/compagnon-3d.html',
+  './bataille/sons/plouf.mp3',
+  './bataille/sons/touche.mp3',
+  './bataille/sons/sirene.mp3',
   './commun.js',
   './fiche-jeu.js',
   './icones-jeux.js',
@@ -112,7 +113,7 @@ self.addEventListener('fetch', event => {
 // Toucher une notification du compagnon : on rouvre l'appli (ou on la ramène devant) sur sa page
 self.addEventListener('notificationclick', event => {
   event.notification.close();
-  const url = (event.notification.data && event.notification.data.url) || 'compagnon.html';
+  const url = (event.notification.data && event.notification.data.url) || 'compagnon/';
   event.waitUntil(self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(liste => {
     for (const c of liste) { if ('focus' in c) { c.navigate ? c.navigate(url).catch(() => {}) : null; return c.focus(); } }
     return self.clients.openWindow(url);

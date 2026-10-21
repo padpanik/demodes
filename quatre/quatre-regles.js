@@ -1,7 +1,7 @@
 // ================== QUATRE EN LIGNE : RÈGLES ET ORDINATEUR ==================
 // Grille de 7 colonnes sur 6 rangées ; on lâche un jeton dans une colonne, il tombe tout en bas.
 // Le premier qui aligne 4 jetons (ligne, colonne ou diagonale) gagne. Version maison du classique.
-// Utilisé par quatre.html ; testable avec Node (module.exports en bas).
+// Utilisé par quatre/index.html ; testable avec Node (module.exports en bas).
 
 var QL = (function () {
   var COLS = 7, RANGS = 6;

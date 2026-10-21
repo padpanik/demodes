@@ -14,7 +14,7 @@
 //   </fiche-jeu>
 //
 // Les onglets restent dans la page (v-show) : rien n'est détruit en changeant d'onglet.
-// Dépend seulement de Vue 2 (chargé aussi par brilliant.html, qui n'utilise pas commun.js).
+// Dépend seulement de Vue 2 (chargé aussi par brilliant/index.html, qui n'utilise pas commun.js).
 
 (function () {
   var CSS = `

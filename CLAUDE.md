@@ -19,27 +19,34 @@ Tout est en français : interface, commentaires du code, messages de commit, ré
 
 ## Fichiers
 
+**Un dossier par jeu** (demandé par l'utilisateur, pour qu'un humain s'y retrouve) : `yams/index.html`, `lettres/index.html` + `lettres/lettres-regles.js`…
+(adresse en ligne : `…/demodes/yams/`). **À la racine, seulement le commun ou l'unique** : `index.html` (accueil), `404.html`, `commun.js`, `commun.css`,
+`fiche-jeu.js`, `icones-jeux.js`, `etoiles.js`, `salon-global.js`, `sw.js`, manifest et icônes. Chaque page rangée dans un dossier commence par
+`<base href="../">` : toutes ses adresses relatives (scripts communs, `index.html?choix`, `compagnon/`, `fetch`, liens) partent de la racine ;
+ses propres fichiers s'écrivent donc avec le dossier (`src="lettres/lettres-regles.js"`, `fetch('lettres/lettres-mots.txt')`, `bataille/sons/…`).
+Lien vers un jeu : `yams/` (pas `yams.html`). `404.html` renvoie les anciennes adresses (`yams.html?salon=…` → `yams/?salon=…`).
+
 | Fichier | Rôle |
 |---|---|
 | `index.html` | Code d'accès, puis choix du jeu. Reprend tout seul une partie en salon en cours (sauf avec `?choix`). |
 | `commun.js` / `commun.css` | Base partagée : `VERSION`, stockage local, `clientId`, `ACCES`, `Sons` (Web Audio), `Voix` (synthèse vocale), `vibrer`, enregistrement du service worker. |
 | `fiche-jeu.js` | **Composant commun des pages de jeu** (Vue 2, chargé par tous les jeux, Brilliant compris, avant le code de la page) : `<fiche-jeu>` (en-tête logo / nom / résumé, « ⇦ Jeux » en haut à droite, 4 onglets à logo, bouton 🔊 et point de connexion pendant le jeu) et `<reglages-base>` (sons, vibrations, voix, écran allumé). Ses styles sont injectés par le fichier. |
 | `icones-jeux.js` | **Icônes des jeux** (`IconesJeux.svg(jeu, taille)`) : même canevas épuré pour tous (version « claire » choisie par l'utilisateur : tuile arrondie à plat, teinte pâle de la couleur du jeu, dessin du jeu dans sa couleur ; ni dégradé, ni reflet, ni ombre), avec la marque de chaque jeu. Accueil (68 px) et en-tête de `<fiche-jeu>` (propriété `jeu`, 64 px ; le slot `logo` n'est plus qu'un secours). Anciennes icônes retirées de l'accueil. |
-| `etoiles.js` | `Etoiles` (monnaie de « Mon compagnon ») : chargé juste après `commun.js` par toutes les pages, **et par `brilliant.html`** (il n'a besoin que de `lireStockage` / `ecrireStockage`). |
-| `brilliant.html` | Brilliant (roll & write). Page autonome historique : elle a **sa propre copie** de `ACCES`, `Sons`, `Voix`, `VERSION` (n'utilise pas `commun.js`). |
-| `yams.html` | Yams, solo et à plusieurs (chacun son tour). Utilise `commun.js`. |
-| `backgammon.html` + `backgammon-regles.js` | Backgammon à deux. Le moteur de règles est dans `backgammon-regles.js` (testable avec Node). |
-| `assaut.html` + `assaut-regles.js` | Assaut (stratégie à pièces cachées, version maison du genre « Stratego », sans le nom ni les visuels de la marque). Solo contre l'ordinateur, ou à deux (salon limité à 2, armées gardées sur chaque téléphone). Moteur + ordinateur dans `assaut-regles.js` (testable avec Node). |
-| `bataille.html` + `bataille-regles.js` | Bataille navale. Solo contre l'ordinateur (3 niveaux), ou à deux (salon limité à 2, flottes gardées sur chaque téléphone). Moteur + ordinateur dans `bataille-regles.js` (testable avec Node). |
-| `gribouille.html` + `gribouille-regles.js` | Gribouille : un joueur dessine, les autres devinent (à partir de 2, sans limite). Liste de mots maison et règles (normalisation, « tout près », indices, points) dans `gribouille-regles.js` (testable avec Node). |
-| `petitbac.html` + `petitbac-regles.js` | Petit bac : une lettre, un mot par catégorie (à partir de 2, sans limite). Catégories, normalisation, validité et points dans `petitbac-regles.js` (testable avec Node). |
-| `agents.html` + `agents-regles.js` | Agents secrets (version maison du jeu d'espions en mots, sans le nom ni les visuels de la marque) : deux équipes, un chef par équipe voit la carte secrète. Mots et règles dans `agents-regles.js` (testable avec Node). |
-| `quatre.html` + `quatre-regles.js` | Quatre en ligne (version maison du classique « aligner 4 jetons », sans le nom de la marque). Solo contre l'ordinateur (3 niveaux) ou à deux en salon. Moteur + ordinateur (minimax) dans `quatre-regles.js` (testable avec Node). |
-| `domino.html` + `domino-regles.js` | Dominos (double-six) avec l'option **Triominos**. Solo contre 1 à 3 ordinateurs, ou salon de 2 à 4 (mains gardées par l'hôte, chacun ne reçoit que la sienne). Moteur + ordinateur + géométrie triangulaire dans `domino-regles.js` (testable avec Node). |
-| `lettres.html` + `lettres-regles.js` + `lettres-mots.txt` | **Lettres croisées** (version maison du jeu de lettres sur grille, sans le nom ni les visuels de la marque). Solo contre 1 à 3 ordinateurs (3 niveaux), ou salon de 2 à 4 (chevalets et sac gardés par l'hôte). Plateau, bonus, points, arbre de mots et ordinateur dans `lettres-regles.js` (testable avec Node). Dictionnaire libre `lettres-mots.txt` (~311 000 mots, licence MIT, voir `lettres-mots-licence.txt`), une ligne par mot codée « préfixe commun » (1er caractère = longueur reprise du mot précédent, en hexadécimal), suivie d'un chiffre de fréquence (3 très courant, 2 courant, 1 connu, rien = rare ; d'après wordfreq, CC BY-SA 4.0). Abréviations retirées (CF, KM…). Pas d'ODS (liste officielle sous droits). |
-| `compagnon.html` + `compagnon-commun.js` | **Mon compagnon** (prototype, façon « animal virtuel ») : on adopte un animal dessiné en SVG, on en prend soin chaque jour, et les ⭐ gagnées en jouant (`Etoiles` dans `commun.js`) achètent accessoires et déco. Espèces, besoins, boutique et dessin SVG dans `compagnon-commun.js` (aussi utilisé par l'accueil). Pas de réseau propre. |
-| `compagnon-3d.html` | Maquette « niveau 2 » : le chien en vraie 3D (Three.js **r128** par CDN, uniquement sur cette page). **Mise de côté** par l'utilisateur (plus de lien dans le jeu, page gardée pour plus tard). |
-| `sons/` | Sons enregistrés de la Bataille navale (MP3 libres de droits) et leurs sources (`LICENCES.txt`). |
+| `etoiles.js` | `Etoiles` (monnaie de « Mon compagnon ») : chargé juste après `commun.js` par toutes les pages, **et par `brilliant/index.html`** (il n'a besoin que de `lireStockage` / `ecrireStockage`). |
+| `brilliant/index.html` | Brilliant (roll & write). Page autonome historique : elle a **sa propre copie** de `ACCES`, `Sons`, `Voix`, `VERSION` (n'utilise pas `commun.js`). |
+| `yams/index.html` | Yams, solo et à plusieurs (chacun son tour). Utilise `commun.js`. |
+| `backgammon/` : `index.html` + `backgammon-regles.js` | Backgammon à deux. Le moteur de règles est dans `backgammon-regles.js` (testable avec Node). |
+| `assaut/` : `index.html` + `assaut-regles.js` | Assaut (stratégie à pièces cachées, version maison du genre « Stratego », sans le nom ni les visuels de la marque). Solo contre l'ordinateur, ou à deux (salon limité à 2, armées gardées sur chaque téléphone). Moteur + ordinateur dans `assaut-regles.js` (testable avec Node). |
+| `bataille/` : `index.html` + `bataille-regles.js` | Bataille navale. Solo contre l'ordinateur (3 niveaux), ou à deux (salon limité à 2, flottes gardées sur chaque téléphone). Moteur + ordinateur dans `bataille-regles.js` (testable avec Node). |
+| `gribouille/` : `index.html` + `gribouille-regles.js` | Gribouille : un joueur dessine, les autres devinent (à partir de 2, sans limite). Liste de mots maison et règles (normalisation, « tout près », indices, points) dans `gribouille-regles.js` (testable avec Node). |
+| `petitbac/` : `index.html` + `petitbac-regles.js` | Petit bac : une lettre, un mot par catégorie (à partir de 2, sans limite). Catégories, normalisation, validité et points dans `petitbac-regles.js` (testable avec Node). |
+| `agents/` : `index.html` + `agents-regles.js` | Agents secrets (version maison du jeu d'espions en mots, sans le nom ni les visuels de la marque) : deux équipes, un chef par équipe voit la carte secrète. Mots et règles dans `agents-regles.js` (testable avec Node). |
+| `quatre/` : `index.html` + `quatre-regles.js` | Quatre en ligne (version maison du classique « aligner 4 jetons », sans le nom de la marque). Solo contre l'ordinateur (3 niveaux) ou à deux en salon. Moteur + ordinateur (minimax) dans `quatre-regles.js` (testable avec Node). |
+| `domino/` : `index.html` + `domino-regles.js` | Dominos (double-six) avec l'option **Triominos**. Solo contre 1 à 3 ordinateurs, ou salon de 2 à 4 (mains gardées par l'hôte, chacun ne reçoit que la sienne). Moteur + ordinateur + géométrie triangulaire dans `domino-regles.js` (testable avec Node). |
+| `lettres/` : `index.html` + `lettres-regles.js` + `lettres-mots.txt` | **Lettres croisées** (version maison du jeu de lettres sur grille, sans le nom ni les visuels de la marque). Solo contre 1 à 3 ordinateurs (3 niveaux), ou salon de 2 à 4 (chevalets et sac gardés par l'hôte). Plateau, bonus, points, arbre de mots et ordinateur dans `lettres-regles.js` (testable avec Node). Dictionnaire libre `lettres-mots.txt` (~311 000 mots, licence MIT, voir `lettres-mots-licence.txt`), une ligne par mot codée « préfixe commun » (1er caractère = longueur reprise du mot précédent, en hexadécimal), suivie d'un chiffre de fréquence (3 très courant, 2 courant, 1 connu, rien = rare ; d'après wordfreq, CC BY-SA 4.0). Abréviations retirées (CF, KM…). Pas d'ODS (liste officielle sous droits). |
+| `compagnon/` : `index.html` + `compagnon-commun.js` | **Mon compagnon** (prototype, façon « animal virtuel ») : on adopte un animal dessiné en SVG, on en prend soin chaque jour, et les ⭐ gagnées en jouant (`Etoiles` dans `commun.js`) achètent accessoires et déco. Espèces, besoins, boutique et dessin SVG dans `compagnon-commun.js` (aussi utilisé par l'accueil). Pas de réseau propre. |
+| `compagnon/compagnon-3d.html` | Maquette « niveau 2 » : le chien en vraie 3D (Three.js **r128** par CDN, uniquement sur cette page). **Mise de côté** par l'utilisateur (plus de lien dans le jeu, page gardée pour plus tard). |
+| `bataille/sons/` | Sons enregistrés de la Bataille navale (MP3 libres de droits) et leurs sources (`LICENCES.txt`). |
 | `salon-global.js` | **Salon global** commun à toutes les pages (présence, chat, profil), chargé en fin de page avec `data-jeu`. Indépendant du réseau des jeux. |
 | `sw.js` | Service worker (PWA) : nos fichiers en « réseau d'abord » avec `cache: 'no-cache'`, bibliothèques en cache. |
 | `manifest.webmanifest`, icônes | Installation comme application. |
@@ -51,15 +58,15 @@ Pas d'étape de construction, pas de dépendance à ajouter.
 ## À chaque mise en ligne
 
 1. Augmenter `VERSION` (même numéro, format `1.23`, plus de « beta ») dans **trois** fichiers :
-   `commun.js`, `brilliant.html`, `sw.js`.
-2. Nouveau fichier servi ? L'ajouter à `FICHIERS` dans `sw.js`.
-3. Nouveau jeu ? L'ajouter à la liste `jeux` d'`index.html` (avec la clé de sa sauvegarde pour le badge « partie en cours »).
+   `commun.js`, `brilliant/index.html`, `sw.js`.
+2. Nouveau fichier servi ? L'ajouter à `FICHIERS` dans `sw.js` (avec son dossier : `'./yams/'`, `'./lettres/lettres-regles.js'`).
+3. Nouveau jeu ? Son dossier (`jeu/index.html` avec `<base href="../">`, copier `lettres/index.html`), puis l'ajouter à la liste `jeux` d'`index.html` (avec la clé de sa sauvegarde pour le badge « partie en cours »).
 4. Vérifier la syntaxe des scripts (`node --check`) et l'absence d'échappements doublés (`\\'`) après une modification par script.
 5. Tester (voir plus bas), puis commit + push sur `main`. GitHub Pages met 1 à 2 minutes à publier.
 
 ## Accès privé
 
-- `ACCES` (dans `commun.js` **et** dans `brilliant.html`) : PBKDF2-SHA256, sel `demodes-acces-v1`,
+- `ACCES` (dans `commun.js` **et** dans `brilliant/index.html`) : PBKDF2-SHA256, sel `demodes-acces-v1`,
   150 000 itérations, 48 octets. Octets 0–31 : `EMPREINTE` publiée ; octets 32–39 : « clé de salon »,
   jamais publiée, gardée dans `localStorage['brillant-acces']`.
 - La clé de salon entre dans l'identifiant réseau : `'dm-' + cléSalon + '-' + [jeu + '-'] + nomSimplifié`.
@@ -88,7 +95,7 @@ Pas d'étape de construction, pas de dépendance à ajouter.
 - Jeux à deux (Backgammon, Assaut, Bataille navale) : si le salon est complet mais que l'autre joueur est **absent**
   (déconnecté), un nouveau venu prend sa place (`retirerJoueur`) au lieu d'être refusé.
 - **Un seul salon à la fois par téléphone** : entrer dans un salon (`entrerSalon`) appelle `fermerAutresSalons(jeu)`
-  (`commun.js`, copie dans `brilliant.html`), qui oublie le salon en cours des autres jeux (rôle et salon effacés de leur
+  (`commun.js`, copie dans `brilliant/index.html`), qui oublie le salon en cours des autres jeux (rôle et salon effacés de leur
   sauvegarde). L'accueil affiche le salon en cours avec un bouton « ✕ Quitter » (`oublierSalonDuJeu`).
 
 ## Présentation commune des pages de jeu (demandée par l'utilisateur : « que tout le monde s'y retrouve »)
@@ -111,11 +118,11 @@ Pas d'étape de construction, pas de dépendance à ajouter.
   seulement si le téléphone le permet), puis les réglages propres au jeu (apparence d'Assaut / Bataille navale) et le journal « Activité ».
 - **Pseudo unique, choisi sur le portail** (profil du salon global, `desdale-profil`) : plus de champ pseudo dans les jeux, juste
   « Ton pseudo : X · ✏️ Changer » (`ouvrirProfilPortail` ouvre l'onglet « Moi » de la bulle 💬). `pseudoPortail()` / `pseudoPour(cléSauvegarde)`
-  dans `commun.js` (copie dans `brilliant.html`) : dans un salon en cours, on garde le pseudo sous lequel on y est entré. Le salon global
+  dans `commun.js` (copie dans `brilliant/index.html`) : dans un salon en cours, on garde le pseudo sous lequel on y est entré. Le salon global
   envoie l'événement `desdale-profil` quand on change de profil ; les pages le suivent tant qu'elles ne sont pas dans un salon.
   Sans pseudo, « Entrer dans le salon » ouvre le profil.
 - Nouveau jeu : charger `fiche-jeu.js` avant le code de la page et remplir les slots (copier `lettres.html` par exemple).
-- Toutes les pages Vue : `<div id="app" v-cloak …>` et `[v-cloak] { display: none }` (dans `commun.css`, copie dans `brilliant.html`) :
+- Toutes les pages Vue : `<div id="app" v-cloak …>` et `[v-cloak] { display: none }` (dans `commun.css`, copie dans `brilliant/index.html`) :
   rien ne s'affiche avant la fin du rendu (plus de trame brute avec les `{{ … }}` une fraction de seconde).
 
 ## Salon global (`salon-global.js`)
@@ -419,7 +426,7 @@ Bataille navale : `bataille-sauvegarde`, `bataille-prive` (ma flotte en salon), 
 ### Autres choix déjà tranchés
 - Annonce vocale du tour : **seulement sur le téléphone du joueur concerné**, après 5 s sans lancer.
 - Sons fabriqués par le code (pas de fichiers audio), sauf la Bataille navale : sons enregistrés **libres de droits**
-  dans `sons/` (sources dans `sons/LICENCES.txt`), choisis par l'utilisateur : plouf (à l'eau), explosion (touché),
+  dans `bataille/sons/` (sources dans `bataille/sons/LICENCES.txt`), choisis par l'utilisateur : plouf (à l'eau), explosion (touché),
   et pour un coulé l'explosion **puis** la sirène. Sons fabriqués par le code en secours. Sons et vibrations réglables séparément.
 
 ## Tester

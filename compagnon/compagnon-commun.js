@@ -1,5 +1,5 @@
 // ================== MON COMPAGNON : ESPÈCES, BESOINS, BOUTIQUE ET DESSIN ==================
-// Partagé par compagnon.html et l'accueil (qui montre le compagnon sur sa carte).
+// Partagé par compagnon/index.html et l'accueil (qui montre le compagnon sur sa carte).
 
 var CP = (function () {
   var ESPECES = [
@@ -661,7 +661,7 @@ var CP = (function () {
       if ((reglagesMessages().notifications || important) && 'Notification' in window && Notification.permission === 'granted' && navigator.serviceWorker) {
         navigator.serviceWorker.ready.then(reg => reg.showNotification(a.nom, {
           body: msg.texte, icon: 'apple-touch-icon.png', badge: 'favicon.png', tag: 'compagnon', renotify: true,
-          data: { url: 'compagnon.html' }
+          data: { url: 'compagnon/' }
         })).catch(() => {});
       }
       return;
@@ -680,7 +680,7 @@ var CP = (function () {
       var dessinA = '<svg viewBox="0 -6 200 216" width="58" height="62" style="flex-shrink:0">' + dessin(a, msg.demande ? 'triste' : 'content', false) + '</svg>';
       d.innerHTML = dessinA + '<div style="flex:1;min-width:0"><div style="font-weight:900;color:#7a5600">' + String(a.nom).replace(/</g, '&lt;') + '</div>' +
         '<div>' + msg.texte + '</div></div>' +
-        (msg.demande ? '<a href="compagnon.html" style="flex-shrink:0;background:#2c3e50;color:#fff;border-radius:12px;padding:8px 10px;text-decoration:none;font-weight:800">J\'y vais</a>' : '');
+        (msg.demande ? '<a href="compagnon/" style="flex-shrink:0;background:#2c3e50;color:#fff;border-radius:12px;padding:8px 10px;text-decoration:none;font-weight:800">J\'y vais</a>' : '');
       document.body.appendChild(d);
       requestAnimationFrame(() => requestAnimationFrame(() => { d.style.transform = 'translate(-50%,0)'; }));
       var fermer = () => { d.style.transform = 'translate(-50%,-140%)'; setTimeout(() => d.remove(), 500); };

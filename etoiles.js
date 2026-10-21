@@ -1,6 +1,6 @@
 // ================== ÉTOILES ⭐ (monnaie de « Mon compagnon ») ==================
-// Fichier à part pour être chargé par toutes les pages, y compris brilliant.html (qui a ses propres copies de la base).
-// Il n'a besoin que de lireStockage / ecrireStockage (commun.js, ou leur copie dans brilliant.html).
+// Fichier à part pour être chargé par toutes les pages, y compris brilliant/index.html (qui a ses propres copies de la base).
+// Il n'a besoin que de lireStockage / ecrireStockage (commun.js, ou leur copie dans brilliant/index.html).
 
 // Gagnées en jouant, surtout à plusieurs : elles servent à acheter de quoi gâter son animal.
 // Prototype : tout est gardé sur ce téléphone (pas encore de serveur).

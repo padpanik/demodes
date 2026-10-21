@@ -1,6 +1,6 @@
 // ================== PETIT BAC : CATÉGORIES ET RÈGLES ==================
 // Une lettre, des catégories : chacun trouve un mot par catégorie commençant par la lettre.
-// Utilisé par petitbac.html ; testable avec Node (module.exports en bas).
+// Utilisé par petitbac/index.html ; testable avec Node (module.exports en bas).
 
 var PB = (function () {
   // Catégories proposées (les plus courantes d'abord) ; l'hôte en choisit quelques-unes

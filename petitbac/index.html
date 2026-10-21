@@ -2,6 +2,8 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
+  <!-- La page est rangée dans son dossier : les adresses relatives partent de la racine du site (fichiers communs) -->
+  <base href="../">
   <!-- resizes-content : quand le clavier s'ouvre, la page rétrécit (le champ en cours reste visible) -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
   <title>Petit bac · Désdale</title>
@@ -279,7 +281,7 @@
   <script src="fiche-jeu.js"></script>
   <script src="commun.js"></script>
   <script src="etoiles.js"></script>
-  <script src="petitbac-regles.js"></script>
+  <script src="petitbac/petitbac-regles.js"></script>
   <script>
     if (!ACCES.memorise()) location.replace('index.html');
 

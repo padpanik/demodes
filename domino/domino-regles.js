@@ -1,5 +1,5 @@
 // ================== DOMINOS ET TRIOMINOS : RÈGLES ET ORDINATEUR ==================
-// Utilisé par domino.html ; testable avec Node (module.exports en bas).
+// Utilisé par domino/index.html ; testable avec Node (module.exports en bas).
 //
 // Dominos (jeu « à la pioche », double-six, 28 pièces) : 7 dominos chacun à deux, 6 à trois ou quatre.
 //   On pose un domino à un bout de la chaîne si le chiffre correspond. Sinon on pioche jusqu'à pouvoir jouer,

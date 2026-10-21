@@ -89,7 +89,7 @@
       <div class="haut-fixe">
         <!-- Salon global : qui est en ligne (rempli par salon-global.js) -->
         <div id="sg-ici" style="margin-bottom:8px"></div>
-        <a class="carte-compagnon" href="compagnon.html" @click="retenir('compagnon')">
+        <a class="carte-compagnon" href="compagnon/" @click="retenir('compagnon')">
           <svg v-if="compagnon" viewBox="0 -6 200 216" v-html="compagnon.dessin"></svg>
           <span v-else class="ico-cp">🐾</span>
           <span class="infos-cp">
@@ -134,7 +134,7 @@
 
   <script src="commun.js"></script>
   <script src="etoiles.js"></script>
-  <script src="compagnon-commun.js"></script>
+  <script src="compagnon/compagnon-commun.js"></script>
   <script src="icones-jeux.js"></script>
   <script>
     const B = '#5dc1ec', V = '#7fcc8f', J = '#f7d24a', R = '#ee7163', M = '#b39ddb', O = '#f9a15a';
@@ -188,17 +188,17 @@
           this.maj;   // recalcul après « Quitter »
           var b = etatJeu('brillant-sauvegarde-v1'), y = etatJeu('yams-sauvegarde'), g = etatJeu('bg-sauvegarde'), a = etatJeu('assaut-sauvegarde'), n = etatJeu('bataille-sauvegarde'), d = etatJeu('gribouille-sauvegarde'), pb = etatJeu('petitbac-sauvegarde'), ag = etatJeu('agents-sauvegarde'), ql = etatJeu('quatre-sauvegarde'), dm = etatJeu('domino-sauvegarde'), lc = etatJeu('lettres-sauvegarde');
           return [
-            { id: 'brilliant', nom: 'Brilliant', page: 'brilliant.html', desc: 'Roll & write : remplis les zones de ta grille.', enCours: b && b.texte },
-            { id: 'yams', nom: 'Yams', page: 'yams.html', desc: '5 dés, 3 lancers, seul ou à plusieurs.', enCours: y && y.texte },
-            { id: 'backgammon', nom: 'Backgammon', page: 'backgammon.html', desc: 'À deux, avec le videau et les gammons.', enCours: g && g.texte },
-            { id: 'assaut', nom: 'Assaut', page: 'assaut.html', desc: 'Stratégie à pièces cachées, seul ou à deux.', enCours: a && a.texte },
-            { id: 'bataille', nom: 'Bataille navale', page: 'bataille.html', desc: 'Coule la flotte adverse, seul ou à deux.', enCours: n && n.texte },
-            { id: 'gribouille', nom: 'Gribouille', page: 'gribouille.html', desc: 'L\'un dessine, les autres devinent.', enCours: d && d.texte },
-            { id: 'petitbac', nom: 'Petit bac', page: 'petitbac.html', desc: 'Une lettre, un mot par catégorie, STOP !', enCours: pb && pb.texte },
-            { id: 'agents', nom: 'Agents secrets', page: 'agents.html', desc: 'Deux équipes, un mot et un nombre pour tout dire.', enCours: ag && ag.texte },
-            { id: 'quatre', nom: 'Quatre en ligne', page: 'quatre.html', desc: 'Aligne 4 jetons : seul contre l\'ordinateur ou à deux.', enCours: ql && ql.texte },
-            { id: 'domino', nom: 'Dominos', page: 'domino.html', desc: 'Dominos ou triominos, seul ou de 2 à 4.', enCours: dm && dm.texte },
-            { id: 'lettres', nom: 'Lettres croisées', page: 'lettres.html', desc: 'Des mots sur la grille, seul ou de 2 à 4.', enCours: lc && lc.texte }
+            { id: 'brilliant', nom: 'Brilliant', page: 'brilliant/', desc: 'Roll & write : remplis les zones de ta grille.', enCours: b && b.texte },
+            { id: 'yams', nom: 'Yams', page: 'yams/', desc: '5 dés, 3 lancers, seul ou à plusieurs.', enCours: y && y.texte },
+            { id: 'backgammon', nom: 'Backgammon', page: 'backgammon/', desc: 'À deux, avec le videau et les gammons.', enCours: g && g.texte },
+            { id: 'assaut', nom: 'Assaut', page: 'assaut/', desc: 'Stratégie à pièces cachées, seul ou à deux.', enCours: a && a.texte },
+            { id: 'bataille', nom: 'Bataille navale', page: 'bataille/', desc: 'Coule la flotte adverse, seul ou à deux.', enCours: n && n.texte },
+            { id: 'gribouille', nom: 'Gribouille', page: 'gribouille/', desc: 'L\'un dessine, les autres devinent.', enCours: d && d.texte },
+            { id: 'petitbac', nom: 'Petit bac', page: 'petitbac/', desc: 'Une lettre, un mot par catégorie, STOP !', enCours: pb && pb.texte },
+            { id: 'agents', nom: 'Agents secrets', page: 'agents/', desc: 'Deux équipes, un mot et un nombre pour tout dire.', enCours: ag && ag.texte },
+            { id: 'quatre', nom: 'Quatre en ligne', page: 'quatre/', desc: 'Aligne 4 jetons : seul contre l\'ordinateur ou à deux.', enCours: ql && ql.texte },
+            { id: 'domino', nom: 'Dominos', page: 'domino/', desc: 'Dominos ou triominos, seul ou de 2 à 4.', enCours: dm && dm.texte },
+            { id: 'lettres', nom: 'Lettres croisées', page: 'lettres/', desc: 'Des mots sur la grille, seul ou de 2 à 4.', enCours: lc && lc.texte }
           ];
         }
       },

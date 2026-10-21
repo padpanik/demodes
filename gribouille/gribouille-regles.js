@@ -1,6 +1,6 @@
 // ================== GRIBOUILLE : MOTS ET RÈGLES ==================
 // Un joueur dessine un mot, les autres le devinent ; le plus rapide marque le plus de points.
-// Utilisé par gribouille.html ; testable avec Node (module.exports en bas).
+// Utilisé par gribouille/index.html ; testable avec Node (module.exports en bas).
 
 var GB = (function () {
   // Mots à dessiner (liste maison), du plus simple au plus difficile, tous dessinables

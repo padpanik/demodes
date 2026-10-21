@@ -1,5 +1,5 @@
 // ================== BATAILLE NAVALE : MOTEUR DE RÈGLES ET ORDINATEUR ==================
-// Utilisé par bataille.html ; testable avec Node (module.exports en bas).
+// Utilisé par bataille/index.html ; testable avec Node (module.exports en bas).
 // Mer de 10 × 10 : case i = ligne * 10 + colonne (lignes 1 à 10, colonnes A à J).
 // Une flotte est un tableau de 5 navires { pos, h } dans l'ordre de FLOTTE :
 // pos = case de la proue (la plus en haut / à gauche), h = horizontal.
