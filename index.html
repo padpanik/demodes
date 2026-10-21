@@ -21,12 +21,12 @@
     .jeux { display: grid; gap: 12px; }
     .jeu {
       display: flex; align-items: center; gap: 14px; width: 100%; text-align: left;
-      padding: 18px 16px; border: 2px solid transparent; border-radius: 18px; background: #fff; cursor: pointer;
+      padding: 10px 6px 10px 12px; border: 2px solid transparent; border-radius: 18px; background: #fff; cursor: pointer;
       font: inherit; color: inherit; text-decoration: none; box-sizing: border-box;
       box-shadow: 0 1px 2px rgba(0,0,0,0.05), 0 4px 14px rgba(29,43,54,0.06);
     }
     /* Fiches de même hauteur : colonne d'icône fixe, descriptif sur deux lignes au plus */
-    .jeu { min-height: 98px; }
+    .jeu { min-height: 88px; }
     .jeu > :first-child { width: 68px; box-sizing: border-box; flex-shrink: 0; justify-content: center; }
     .jeu > div:nth-child(2) { flex: 1; min-width: 0; }
     .jeu .desc { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
@@ -40,7 +40,10 @@
     .jeu .desc { color: #6b7a86; font-size: 0.9em; margin-top: 2px; }
     .jeu .badge { display: inline-block; margin-top: 6px; font-size: 0.78em; font-weight: 700; color: #8a5a00; background: #fff3d6; border-radius: 8px; padding: 2px 8px; }
     .badge-quitter { margin-left: 8px; border: none; border-radius: 6px; background: #f3d9a8; color: #6b4500; font: inherit; font-weight: 700; padding: 1px 6px; cursor: pointer; }
-    .jeu .fleche { margin-left: auto; font-size: 1.4em; color: #a3adb5; }
+    /* Favori : étoile au bout de la fiche (les favoris passent en tête de liste) */
+    .jeu .favori { margin-left: auto; flex-shrink: 0; border: none; background: transparent; padding: 8px; line-height: 0; color: #b8c2ca; cursor: pointer; border-radius: 10px; }
+    .jeu .favori.oui { color: #f5b301; }
+    .jeu .favori:active { transform: scale(0.88); }
     /* Bloc fixe en haut : « En ligne » et « Mon compagnon » restent visibles quand on fait défiler les jeux */
     .haut-fixe { position: sticky; top: 0; z-index: 20; background: #f3f5f7; padding: 6px 0 10px; margin-bottom: 4px; }
     .carte-compagnon { display: flex; align-items: center; gap: 12px; background: linear-gradient(135deg, #fff8e1, #ffeccc); border-radius: 18px; padding: 8px 14px 8px 8px;
@@ -112,7 +115,10 @@
             <div class="desc">{{ j.desc }}</div>
             <span class="badge" v-if="j.enCours">{{ j.enCours }}<button class="badge-quitter" @click.prevent.stop="quitter(j)" aria-label="Quitter ce salon">✕ Quitter</button></span>
           </div>
-          <span class="fleche">›</span>
+          <button class="favori" :class="{ oui: favoris.includes(j.id) }" @click.prevent.stop="basculerFavori(j.id)"
+                  @touchstart.stop @mousedown.stop :aria-label="favoris.includes(j.id) ? 'Retirer des favoris' : 'Ajouter aux favoris'">
+            <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><path d="M12 3.6l2.5 5.2 5.7.8-4.1 4 1 5.6-5.1-2.7-5.1 2.7 1-5.6-4.1-4 5.7-.8z" :fill="favoris.includes(j.id) ? 'currentColor' : 'none'" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+          </button>
         </a>
       </transition-group>
 
@@ -151,6 +157,7 @@
         accesEnCours: false,
         dernierJeu: lireStockage('desdale-dernier-jeu') || '',
         ordre: lireStockage('desdale-ordre-jeux') || [],
+        favoris: lireStockage('desdale-favoris') || [],   // jeux mis en favori (étoile), affichés en premier
         glisse: null,      // jeu soulevé par un appui long
         decalY: 0,
         maj: 0,
@@ -160,10 +167,10 @@
         estIOS: /iphone|ipad|ipod/i.test(navigator.userAgent)
       },
       computed: {
-        // Jeux dans l'ordre choisi sur ce téléphone (les jeux inconnus de l'ordre gardent leur place par défaut, à la fin)
+        // Jeux dans l'ordre choisi sur ce téléphone, favoris d'abord (les jeux inconnus de l'ordre gardent leur place par défaut, à la fin)
         jeuxTries: function() {
-          var o = this.ordre, rang = (j) => { var i = o.indexOf(j.id); return i < 0 ? 100 : i; };
-          return this.jeux.map((j, k) => ({ j: j, k: k })).sort((a, b) => (rang(a.j) - rang(b.j)) || (a.k - b.k)).map(x => x.j);
+          var o = this.ordre, f = this.favoris, rang = (j) => { var i = o.indexOf(j.id); return i < 0 ? 100 : i; }, fav = (j) => f.includes(j.id) ? 0 : 1;
+          return this.jeux.map((j, k) => ({ j: j, k: k })).sort((a, b) => (fav(a.j) - fav(b.j)) || (rang(a.j) - rang(b.j)) || (a.k - b.k)).map(x => x.j);
         },
         etoiles: function() { this.maj; return Etoiles.solde(); },
         // Mon compagnon, dessiné sur sa carte avec son humeur du moment
@@ -218,6 +225,13 @@
           if (enSalon) location.replace(enSalon.page);
         },
         retenir: function(id) { ecrireStockage('desdale-dernier-jeu', id); },
+        basculerFavori: function(id) {
+          var f = this.favoris.filter(x => x !== id);
+          if (f.length === this.favoris.length) f.push(id);
+          this.favoris = f;
+          ecrireStockage('desdale-favoris', f);
+          vibrer(15);
+        },
         cliquer: function(e, id) {
           // Pas d'ouverture du jeu à la fin d'un tri
           if (this.glisse || Date.now() - (this._finTri || 0) < 500) { e.preventDefault(); return; }
