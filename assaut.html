@@ -146,7 +146,7 @@
   </style>
 </head>
 <body>
-  <div id="app" class="app" :style="variablesCouleurs">
+  <div id="app" v-cloak class="app" :style="variablesCouleurs">
 
     <fiche-jeu nom="Assaut" resume="Désdale · stratégie à pièces cachées" :onglet.sync="onglet" :son.sync="sonActif" :connexion="role ? connexion : ''">
       <template v-slot:logo>

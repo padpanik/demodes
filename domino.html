@@ -85,7 +85,7 @@
   </style>
 </head>
 <body>
-  <div id="app" class="app">
+  <div id="app" v-cloak class="app">
 
     <fiche-jeu nom="Dominos" resume="Désdale · dominos ou triominos, seul ou entre amis" :onglet.sync="onglet" :son.sync="sonActif" :connexion="role ? connexion : ''">
       <template v-slot:logo>

@@ -113,6 +113,8 @@ Pas d'étape de construction, pas de dépendance à ajouter.
   envoie l'événement `desdale-profil` quand on change de profil ; les pages le suivent tant qu'elles ne sont pas dans un salon.
   Sans pseudo, « Entrer dans le salon » ouvre le profil.
 - Nouveau jeu : charger `fiche-jeu.js` avant le code de la page et remplir les slots (copier `lettres.html` par exemple).
+- Toutes les pages Vue : `<div id="app" v-cloak …>` et `[v-cloak] { display: none }` (dans `commun.css`, copie dans `brilliant.html`) :
+  rien ne s'affiche avant la fin du rendu (plus de trame brute avec les `{{ … }}` une fraction de seconde).
 
 ## Salon global (`salon-global.js`)
 

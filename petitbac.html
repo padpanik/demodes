@@ -90,7 +90,7 @@
   </style>
 </head>
 <body>
-  <div id="app" class="app">
+  <div id="app" v-cloak class="app">
 
     <fiche-jeu nom="Petit bac" resume="Désdale · une lettre, un mot par catégorie" :onglet.sync="onglet" :son.sync="sonActif" :connexion="role ? connexion : ''">
       <template v-slot:logo>

@@ -114,7 +114,7 @@
   </style>
 </head>
 <body>
-  <div id="app" class="app">
+  <div id="app" v-cloak class="app">
 
     <fiche-jeu nom="Lettres croisées" resume="Désdale · des mots sur la grille, seul ou de 2 à 4" :onglet.sync="onglet" :son.sync="sonActif" :connexion="role ? connexion : ''">
       <template v-slot:logo>

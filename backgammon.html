@@ -96,7 +96,7 @@
   </style>
 </head>
 <body>
-  <div id="app" class="app">
+  <div id="app" v-cloak class="app">
 
     <fiche-jeu nom="Backgammon" resume="Désdale · à deux, avec le videau" :onglet.sync="onglet" :son.sync="sonActif" :connexion="role ? connexion : ''">
       <template v-slot:logo>

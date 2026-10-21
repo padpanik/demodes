@@ -22,6 +22,8 @@
   <script src="https://cdn.jsdelivr.net/npm/vue@2.7.16/dist/vue.min.js"></script>
   <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
   <style>
+    /* Rien n'est affiché tant que Vue n'a pas fini le rendu */
+    [v-cloak] { display: none !important; }
     body { margin: 0; background: #f3f5f7; color: #1d2b36; }
 
     /* ---------- Barre du haut : onglets + infos de partie ---------- */
@@ -524,7 +526,7 @@
 </head>
 <body>
 
-  <div id="app" class="grid-app">
+  <div id="app" v-cloak class="grid-app">
 
     <!-- ACCÈS PRIVÉ : écran affiché tant que le code n'a pas été saisi sur ce téléphone -->
     <div v-if="!accesOk" class="acces">
@@ -1039,7 +1041,7 @@
     function lireLigne(ligne) { return ligne.trim().split(/\s+/); }
 
     // Numéro de version affiché sur l'accueil (à augmenter à chaque mise en ligne)
-    const VERSION = '2.07';
+    const VERSION = '2.08';
 
     // ================== ACCÈS PRIVÉ ==================
     // Application réservée à un cercle d'amis : un code est demandé au premier lancement.
