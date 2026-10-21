@@ -140,29 +140,28 @@
           </div>
         </section>
 
-        <section class="carte">
-          <div class="pseudo-portail">Ton pseudo : <b>{{ pseudoInput || '(à choisir)' }}</b><button v-if="!role" class="lien-profil" @click="ouvrirProfil">✏️ {{ pseudoInput ? 'Changer' : 'Choisir' }}</button></div>
-          <label class="champ">Nom du salon
-            <input type="text" v-model="channelInput" placeholder="ex : partie-du-dimanche" :disabled="!!role" autocomplete="off">
-          </label>
-          <div class="salons-connus" v-if="!role && salonsConnus.length">
-            <span v-for="nom in salonsConnus" :key="nom" class="salon-puce" :class="{ actif: estSalonSaisi(nom) }">
-              <button class="nom" @click="channelInput = nom">{{ nom }}</button>
-              <button class="oter" @click="oublierSalon(nom)" aria-label="Retirer de la liste">✕</button>
-            </span>
-          </div>
-          <div class="aide" v-if="!role">Donnez-vous tous le même nom de salon : le premier arrivé l'ouvre, les suivants le rejoignent.</div>
-        </section>
-
         <template v-if="!role">
-          <button class="btn principal btn-large" @click="entrerSalon()" :disabled="entreeEnCours">
-            {{ entreeEnCours ? 'Connexion au salon…' : 'Entrer dans le salon' }}
-          </button>
-          <div class="actions-accueil">
-            <button class="btn" @click="demarrerSolo">🎲 {{ soloEnCours ? 'Reprendre seul' : 'Jouer seul' }}</button>
-            <button class="btn" @click="ouvrirTop">🏆 Top 10 solo</button>
-          </div>
-          <p class="statut" v-if="record">Ton record solo : {{ record }} pts</p>
+          <section class="carte">
+            <div class="titre-carte">À plusieurs, chacun sur son téléphone</div>
+            <div class="pseudo-portail">Ton pseudo : <b>{{ pseudoInput || '(à choisir)' }}</b><button class="lien-profil" @click="ouvrirProfil">✏️ {{ pseudoInput ? 'Changer' : 'Choisir' }}</button></div>
+            <label class="champ">Nom du salon
+              <input type="text" v-model="channelInput" placeholder="ex : partie-du-dimanche" autocomplete="off">
+            </label>
+            <div class="salons-connus" v-if="salonsConnus.length">
+              <span v-for="nom in salonsConnus" :key="nom" class="salon-puce" :class="{ actif: estSalonSaisi(nom) }">
+                <button class="nom" @click="channelInput = nom">{{ nom }}</button>
+                <button class="oter" @click="oublierSalon(nom)" aria-label="Retirer de la liste">✕</button>
+              </span>
+            </div>
+            <div class="aide">Donnez-vous tous le même nom de salon : le premier arrivé l'ouvre, les suivants le rejoignent.</div>
+            <button class="btn principal" style="width:100%;margin-top:8px" @click="entrerSalon()" :disabled="entreeEnCours">{{ entreeEnCours ? 'Connexion au salon…' : 'Entrer dans le salon' }}</button>
+          </section>
+          <section class="carte">
+            <div class="titre-carte">Seul</div>
+            <button class="btn principal" style="width:100%" @click="demarrerSolo">🎲 {{ soloEnCours ? 'Reprendre la partie' : 'Jouer seul' }}</button>
+            <button class="btn" style="width:100%;margin-top:6px" @click="ouvrirTop">🏆 Top 10 solo</button>
+            <div class="aide" v-if="record">Ton record solo : {{ record }} pts</div>
+          </section>
         </template>
 
         <p class="version">Désdale · Yams · version {{ version }}</p>

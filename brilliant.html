@@ -589,20 +589,6 @@
         </section>
 
         <section class="carte">
-          <div class="pseudo-portail">Ton pseudo : <b>{{ pseudoInput || '(à choisir)' }}</b><button v-if="!role" class="lien-profil" @click="ouvrirProfil">✏️ {{ pseudoInput ? 'Changer' : 'Choisir' }}</button></div>
-          <label class="champ">Nom du salon
-            <input type="text" id="channelInput" v-model="channelInput" placeholder="ex : partie-du-dimanche" :disabled="!!role" autocomplete="off">
-          </label>
-          <div class="salons-connus" v-if="!role && salonsConnus.length">
-            <span v-for="nom in salonsConnus" :key="nom" class="salon-puce" :class="{ actif: estSalonSaisi(nom) }">
-              <button class="nom" @click="choisirSalon(nom)" :title="'Choisir le salon ' + nom">{{ nom }}</button>
-              <button class="oter" @click="oublierSalon(nom)" :title="'Retirer ' + nom + ' de la liste'" aria-label="Retirer de la liste">✕</button>
-            </span>
-          </div>
-          <div class="aide" v-if="!role">Donnez-vous tous le même nom de salon : le premier arrivé l'ouvre, les suivants le rejoignent.</div>
-        </section>
-
-        <section class="carte">
           <div class="titre-carte">Niveau
             <small v-if="role === 'client'">choisi par 👑 {{ nomHote || 'l\'hôte' }}</small>
             <small v-else-if="role === 'hote'">c'est toi qui choisis (👑 hôte)</small>
@@ -617,14 +603,27 @@
         </section>
 
         <template v-if="!role">
-          <button class="btn principal solo-btn" @click="entrerSalon()" :disabled="entreeEnCours">
-            {{ entreeEnCours ? 'Connexion au salon…' : 'Entrer dans le salon' }}
-          </button>
-          <div class="actions-accueil">
-            <button class="btn" @click="demarrerSolo">🧩 Jouer seul</button>
-            <button class="btn" @click="ouvrirTop">🏆 Top 10 solo</button>
-          </div>
-          <p class="statut" v-if="recordNiveau">Ton record solo au niveau {{ level }} : {{ recordNiveau }} pts</p>
+          <section class="carte">
+            <div class="titre-carte">À plusieurs, chacun sur son téléphone</div>
+            <div class="pseudo-portail">Ton pseudo : <b>{{ pseudoInput || '(à choisir)' }}</b><button class="lien-profil" @click="ouvrirProfil">✏️ {{ pseudoInput ? 'Changer' : 'Choisir' }}</button></div>
+            <label class="champ">Nom du salon
+              <input type="text" id="channelInput" v-model="channelInput" placeholder="ex : partie-du-dimanche" autocomplete="off">
+            </label>
+            <div class="salons-connus" v-if="salonsConnus.length">
+              <span v-for="nom in salonsConnus" :key="nom" class="salon-puce" :class="{ actif: estSalonSaisi(nom) }">
+                <button class="nom" @click="choisirSalon(nom)" :title="'Choisir le salon ' + nom">{{ nom }}</button>
+                <button class="oter" @click="oublierSalon(nom)" :title="'Retirer ' + nom + ' de la liste'" aria-label="Retirer de la liste">✕</button>
+              </span>
+            </div>
+            <div class="aide">Donnez-vous tous le même nom de salon : le premier arrivé l'ouvre, les suivants le rejoignent.</div>
+            <button class="btn principal" style="width:100%;margin-top:8px" @click="entrerSalon()" :disabled="entreeEnCours">{{ entreeEnCours ? 'Connexion au salon…' : 'Entrer dans le salon' }}</button>
+          </section>
+          <section class="carte">
+            <div class="titre-carte">Seul</div>
+            <button class="btn principal" style="width:100%" @click="demarrerSolo">🧩 Jouer seul</button>
+            <button class="btn" style="width:100%;margin-top:6px" @click="ouvrirTop">🏆 Top 10 solo</button>
+            <div class="aide" v-if="recordNiveau">Ton record solo au niveau {{ level }} : {{ recordNiveau }} pts</div>
+          </section>
         </template>
 
         <p class="version">Désdale · version {{ version }}</p>
@@ -1040,7 +1039,7 @@
     function lireLigne(ligne) { return ligne.trim().split(/\s+/); }
 
     // Numéro de version affiché sur l'accueil (à augmenter à chaque mise en ligne)
-    const VERSION = '2.05';
+    const VERSION = '2.06';
 
     // ================== ACCÈS PRIVÉ ==================
     // Application réservée à un cercle d'amis : un code est demandé au premier lancement.

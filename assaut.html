@@ -177,7 +177,7 @@
         </section>
 
         <section class="carte">
-          <div class="titre-carte">Format <small v-if="role === 'client'">choisi par l'hôte</small><small v-else-if="!role">partie solo contre l'ordinateur</small></div>
+          <div class="titre-carte">Format <small v-if="role === 'client'">choisi par l'hôte</small><small v-else-if="!role">seul, ou dans le salon que tu ouvres</small></div>
           <div class="segment">
             <button :class="{ actif: formatAffiche === 'complet' }" :disabled="role === 'client'" @click="choisirFormat('complet')">Complète<small>40 pièces</small></button>
             <button :class="{ actif: formatAffiche === 'rapide' }" :disabled="role === 'client'" @click="choisirFormat('rapide')">Rapide<small>10 pièces</small></button>
@@ -187,13 +187,9 @@
         </section>
 
         <template v-if="!role">
-          <button class="btn principal btn-large" @click="nouvellePartie">{{ partieEnCours ? 'Nouvelle partie solo' : 'Jouer seul contre l\'ordinateur' }}</button>
-          <button class="btn btn-large" v-if="partieEnCours" @click="onglet = 'play'">Reprendre la partie en cours</button>
-          <p class="statut" v-if="statsTexte">{{ statsTexte }}</p>
-
           <section class="carte">
-            <div class="titre-carte">Partie à deux</div>
-            <div class="pseudo-portail">Ton pseudo : <b>{{ pseudoInput || '(à choisir)' }}</b><button v-if="!role" class="lien-profil" @click="ouvrirProfil">✏️ {{ pseudoInput ? 'Changer' : 'Choisir' }}</button></div>
+            <div class="titre-carte">À deux, chacun sur son téléphone</div>
+            <div class="pseudo-portail">Ton pseudo : <b>{{ pseudoInput || '(à choisir)' }}</b><button class="lien-profil" @click="ouvrirProfil">✏️ {{ pseudoInput ? 'Changer' : 'Choisir' }}</button></div>
             <label class="champ">Nom du salon
               <input type="text" v-model="channelInput" placeholder="ex : partie-du-dimanche" autocomplete="off">
             </label>
@@ -203,11 +199,15 @@
                 <button class="oter" @click="oublierSalon(nom)" aria-label="Retirer de la liste">✕</button>
               </span>
             </div>
-            <div class="aide">Chacun sur son téléphone : personne ne voit l'armée de l'autre. Le premier ouvre le salon et choisit le format.</div>
+            <div class="aide">Personne ne voit l'armée de l'autre. Le premier ouvre le salon et choisit le format.</div>
+            <button class="btn principal" style="width:100%;margin-top:8px" @click="entrerSalon()" :disabled="entreeEnCours">{{ entreeEnCours ? 'Connexion au salon…' : 'Entrer dans le salon' }}</button>
           </section>
-          <button class="btn btn-large" @click="entrerSalon()" :disabled="entreeEnCours">
-            {{ entreeEnCours ? 'Connexion au salon…' : 'Entrer dans le salon' }}
-          </button>
+          <section class="carte">
+            <div class="titre-carte">Seul contre l'ordinateur</div>
+            <button class="btn principal" style="width:100%" @click="nouvellePartie">🤖 {{ partieEnCours ? 'Nouvelle partie' : 'Jouer seul' }}</button>
+            <button class="btn" style="width:100%;margin-top:6px" v-if="partieEnCours" @click="onglet = 'play'">Reprendre la partie en cours</button>
+            <div class="aide" v-if="statsTexte">{{ statsTexte }}</div>
+          </section>
         </template>
 
         <p class="version">Désdale · Assaut · version {{ version }}</p>

@@ -42,6 +42,7 @@
   .pseudo-portail b { color: #1d2b36; }
   .lien-profil { border: none; background: #eef4ff; color: #1c5fb0; font: inherit; font-weight: 700; font-size: 0.88em; border-radius: 9px; padding: 4px 10px; cursor: pointer; }
   .carte.regles ul { padding-left: 18px; margin: 8px 0 0; font-size: 0.92em; line-height: 1.5; color: #3b4b57; }
+  .petit-titre { font-size: 0.85em; font-weight: 700; color: #5b6b78; margin: 6px 0 4px; }
   .fj-reglages-base label { display: flex; align-items: center; gap: 8px; padding: 5px 0; cursor: pointer; }
   `;
   var style = document.createElement('style');

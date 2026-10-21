@@ -101,6 +101,10 @@ Pas d'étape de construction, pas de dépendance à ajouter.
   (l'écran de jeu doit tenir sans défilement). Onglets sur toute la largeur, un logo par onglet : 🎲 Partie (`'config'`), ▶️ Jouer
   (`'play'`), ⚙️ Réglages (`'reglages'`), 📖 Règles (`'regles'`, règles en clair, sans repli). Pendant le jeu, à droite des onglets :
   🔊 et le point de connexion (écran allumé : dans Réglages ; Brilliant : niveau et 🎯 dans la ligne des scores).
+- **Onglet Partie des jeux solo + salon** (Yams, Brilliant, Assaut, Bataille navale, Quatre en ligne, Dominos, Lettres croisées) :
+  toujours **deux blocs**, « À plusieurs / À deux, chacun sur son téléphone » (pseudo, nom du salon, bouton « Entrer dans le salon »)
+  **en haut**, puis « Seul » / « Seul contre l'ordinateur » (ses options et le bouton « Jouer seul ») **en bas**. Les options qui servent
+  aux deux (niveau de Brilliant, format d'Assaut, règles de la Bataille navale) restent au-dessus des deux blocs.
 - Réglages : `<reglages-base :son.sync :vibration.sync :voix.sync :ecran.sync>` (on ne passe que ceux du jeu ; chacun s'affiche
   seulement si le téléphone le permet), puis les réglages propres au jeu (apparence d'Assaut / Bataille navale) et le journal « Activité ».
 - **Pseudo unique, choisi sur le portail** (profil du salon global, `desdale-profil`) : plus de champ pseudo dans les jeux, juste

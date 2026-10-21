@@ -84,14 +84,6 @@
 
         <template v-if="!role">
           <section class="carte">
-            <div class="titre-carte">Seul contre l'ordinateur</div>
-            <div class="segment">
-              <button v-for="n in NIVEAUX" :key="n.id" :class="{ actif: niveau === n.id }" @click="niveau = n.id">{{ n.nom }}</button>
-            </div>
-            <button class="btn principal" style="width:100%" @click="demarrerSolo">🤖 {{ soloEnCours ? 'Reprendre la partie' : 'Jouer seul' }}</button>
-            <div class="aide" v-if="statsSolo.parties">Contre l'ordinateur : {{ statsSolo.gagnees }} gagnée{{ statsSolo.gagnees > 1 ? 's' : '' }} sur {{ statsSolo.parties }}.<span v-if="meilleureSerie > 1"> Record au niveau {{ NIVEAUX.find(n => n.id === niveau).nom }} : {{ meilleureSerie }} victoires d'affilée.</span></div>
-          </section>
-          <section class="carte">
             <div class="titre-carte">À deux, chacun sur son téléphone</div>
             <div class="pseudo-portail">Ton pseudo : <b>{{ pseudoInput || '(à choisir)' }}</b><button v-if="!role" class="lien-profil" @click="ouvrirProfil">✏️ {{ pseudoInput ? 'Changer' : 'Choisir' }}</button></div>
             <label class="champ">Nom du salon
@@ -104,6 +96,14 @@
               </span>
             </div>
             <button class="btn principal" style="width:100%;margin-top:8px" @click="entrerSalon()" :disabled="entreeEnCours">{{ entreeEnCours ? 'Connexion au salon…' : 'Entrer dans le salon' }}</button>
+          </section>
+          <section class="carte">
+            <div class="titre-carte">Seul contre l'ordinateur</div>
+            <div class="segment">
+              <button v-for="n in NIVEAUX" :key="n.id" :class="{ actif: niveau === n.id }" @click="niveau = n.id">{{ n.nom }}</button>
+            </div>
+            <button class="btn principal" style="width:100%" @click="demarrerSolo">🤖 {{ soloEnCours ? 'Reprendre la partie' : 'Jouer seul' }}</button>
+            <div class="aide" v-if="statsSolo.parties">Contre l'ordinateur : {{ statsSolo.gagnees }} gagnée{{ statsSolo.gagnees > 1 ? 's' : '' }} sur {{ statsSolo.parties }}.<span v-if="meilleureSerie > 1"> Record au niveau {{ NIVEAUX.find(n => n.id === niveau).nom }} : {{ meilleureSerie }} victoires d'affilée.</span></div>
           </section>
         </template>
 

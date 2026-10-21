@@ -254,24 +254,12 @@
           <label class="case-a-cocher"><input type="checkbox" :checked="collesAffiche" :disabled="role === 'client'" @change="choisirRegle('colles', $event.target.checked)"> ⚓ Les navires peuvent se toucher</label>
           <label class="case-a-cocher"><input type="checkbox" :checked="rejouerAffiche" :disabled="role === 'client'" @change="choisirRegle('rejouer', $event.target.checked)"> 🎯 Rejouer tant qu'on touche</label>
           <div class="aide">Par défaut : navires séparés d'au moins une case (même en diagonale), un tir chacun son tour.<template v-if="role === 'hote'"> Un changement recommence le placement.</template></div>
-          <template v-if="!role">
-            <div class="titre-carte" style="margin-top:10px">Ordinateur</div>
-            <div class="segment">
-              <button :class="{ actif: niveau === 'facile' }" @click="niveau = 'facile'">Facile</button>
-              <button :class="{ actif: niveau === 'normal' }" @click="niveau = 'normal'">Normal</button>
-              <button :class="{ actif: niveau === 'fort' }" @click="niveau = 'fort'">Fort</button>
-            </div>
-          </template>
         </section>
 
         <template v-if="!role">
-          <button class="btn principal btn-large" @click="nouvellePartie">{{ partieEnCours ? 'Nouvelle partie solo' : 'Jouer seul contre l\'ordinateur' }}</button>
-          <button class="btn btn-large" v-if="partieEnCours" @click="onglet = 'play'">Reprendre la partie en cours</button>
-          <p class="statut" v-if="statsTexte">{{ statsTexte }}</p>
-
           <section class="carte">
-            <div class="titre-carte">Partie à deux</div>
-            <div class="pseudo-portail">Ton pseudo : <b>{{ pseudoInput || '(à choisir)' }}</b><button v-if="!role" class="lien-profil" @click="ouvrirProfil">✏️ {{ pseudoInput ? 'Changer' : 'Choisir' }}</button></div>
+            <div class="titre-carte">À deux, chacun sur son téléphone</div>
+            <div class="pseudo-portail">Ton pseudo : <b>{{ pseudoInput || '(à choisir)' }}</b><button class="lien-profil" @click="ouvrirProfil">✏️ {{ pseudoInput ? 'Changer' : 'Choisir' }}</button></div>
             <label class="champ">Nom du salon
               <input type="text" v-model="channelInput" placeholder="ex : partie-du-dimanche" autocomplete="off">
             </label>
@@ -281,11 +269,21 @@
                 <button class="oter" @click="oublierSalon(nom)" aria-label="Retirer de la liste">✕</button>
               </span>
             </div>
-            <div class="aide">Chacun sur son téléphone : ta flotte ne quitte jamais le tien. Le premier ouvre le salon et choisit les règles.</div>
+            <div class="aide">Ta flotte ne quitte jamais ton téléphone. Le premier ouvre le salon et choisit les règles.</div>
+            <button class="btn principal" style="width:100%;margin-top:8px" @click="entrerSalon()" :disabled="entreeEnCours">{{ entreeEnCours ? 'Connexion au salon…' : 'Entrer dans le salon' }}</button>
           </section>
-          <button class="btn btn-large" @click="entrerSalon()" :disabled="entreeEnCours">
-            {{ entreeEnCours ? 'Connexion au salon…' : 'Entrer dans le salon' }}
-          </button>
+          <section class="carte">
+            <div class="titre-carte">Seul contre l'ordinateur</div>
+            <div class="petit-titre">Niveau de l'ordinateur</div>
+            <div class="segment">
+              <button :class="{ actif: niveau === 'facile' }" @click="niveau = 'facile'">Facile</button>
+              <button :class="{ actif: niveau === 'normal' }" @click="niveau = 'normal'">Normal</button>
+              <button :class="{ actif: niveau === 'fort' }" @click="niveau = 'fort'">Fort</button>
+            </div>
+            <button class="btn principal" style="width:100%" @click="nouvellePartie">🤖 {{ partieEnCours ? 'Nouvelle partie' : 'Jouer seul' }}</button>
+            <button class="btn" style="width:100%;margin-top:6px" v-if="partieEnCours" @click="onglet = 'play'">Reprendre la partie en cours</button>
+            <div class="aide" v-if="statsTexte">{{ statsTexte }}</div>
+          </section>
         </template>
 
         <p class="version">Désdale · Bataille navale · version {{ version }}</p>
