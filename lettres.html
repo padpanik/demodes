@@ -118,10 +118,11 @@
 
     <div class="barre">
       <div id="menu">
-        <div @click="onglet = 'config'" :class="{ actif: onglet === 'config' }">Accueil</div>
+        <div @click="onglet = 'config'" :class="{ actif: onglet === 'config' }">Partie</div>
         <div @click="onglet = 'play'" :class="{ actif: onglet === 'play' }">Jouer</div>
+        <div @click="onglet = 'reglages'" :class="{ actif: onglet === 'reglages' }">Réglages</div>
+        <div @click="onglet = 'regles'" :class="{ actif: onglet === 'regles' }">Règles</div>
       </div>
-      <a v-if="onglet === 'config' && !role" class="lien-jeux" href="index.html?choix">⇦ Jeux</a>
       <div class="barre-infos" v-if="onglet === 'play'">
         <button class="btn-veille" :class="{ off: !sonActif }" @click="basculerSon">{{ sonActif ? '🔊' : '🔇' }}</button>
         <span v-if="role" class="point-co" :class="{ attente: connexion !== 'ok' }"></span>
@@ -130,6 +131,7 @@
 
     <!-- ACCUEIL -->
     <div v-show="onglet === 'config'">
+      <a v-if="!role" class="lien-jeux retour-jeux" href="index.html?choix">⇦ Tous les jeux</a>
       <header class="hero">
         <div class="logo-lc" v-html="logo"></div>
         <div>
@@ -170,9 +172,7 @@
       </section>
       <section class="carte" v-if="!role">
         <div class="titre-carte">À plusieurs (2 à 4), chacun sur son téléphone</div>
-        <label class="champ">Ton pseudo
-          <input type="text" v-model="pseudoInput" placeholder="ex : Alex" autocomplete="off" maxlength="20">
-        </label>
+        <div class="pseudo-portail">Ton pseudo : <b>{{ pseudoInput || '(à choisir)' }}</b><button v-if="!role" class="lien-profil" @click="ouvrirProfil">✏️ {{ pseudoInput ? 'Changer' : 'Choisir' }}</button></div>
         <label class="champ">Nom du salon
           <input type="text" v-model="channelInput" placeholder="ex : partie-du-dimanche" autocomplete="off">
         </label>
@@ -185,8 +185,22 @@
         <button class="btn principal" style="width:100%;margin-top:8px" @click="entrerSalon()" :disabled="entreeEnCours">{{ entreeEnCours ? 'Connexion au salon…' : 'Entrer dans le salon' }}</button>
       </section>
 
-      <details class="carte regles">
-        <summary>Règles</summary>
+      <p class="version">Désdale · Lettres croisées · version {{ version }}<br>Liste de mots : an-array-of-french-words (licence MIT, voir lettres-mots-licence.txt)</p>
+    </div>
+
+    <!-- RÉGLAGES -->
+    <div v-show="onglet === 'reglages'">
+      <section class="carte reglages">
+        <div class="titre-carte">Réglages</div>
+        <label class="case-a-cocher"><input type="checkbox" v-model="sonActif"> 🔊 Sons</label>
+        <label class="case-a-cocher" v-if="vibrationSupportee"><input type="checkbox" v-model="vibrationActive"> 📳 Vibrations</label>
+      </section>
+    </div>
+
+    <!-- RÈGLES -->
+    <div v-show="onglet === 'regles'">
+      <section class="carte regles">
+        <div class="titre-carte">Règles</div>
         <ul>
           <li>Chacun a 7 lettres. À son tour, on pose des lettres sur <strong>une seule ligne ou colonne</strong>, sans trou, pour former un mot qui croise ou touche ceux déjà posés. Le premier mot passe par l'étoile du centre.</li>
           <li>On marque les points de chaque mot formé (le mot principal et ceux qui se croisent). Cases colorées : <strong>L×2 / L×3</strong> (la lettre compte double / triple), <strong>M×2 / M×3</strong> (le mot compte double / triple), seulement pour les lettres posées ce tour-ci.</li>
@@ -198,23 +212,15 @@
           <li>Mot absent du dictionnaire : les autres joueurs <strong>votent</strong>. S'il est refusé, les lettres reviennent et on rejoue. Seul contre l'ordinateur, c'est toi qui décides.</li>
           <li>Fin : quand un joueur a posé toutes ses lettres et que le sac est vide (il gagne les points restant chez les autres, qui les perdent), ou quand tout le monde passe deux fois de suite.</li>
         </ul>
-      </details>
-
-      <section class="carte reglages">
-        <div class="titre-carte">Réglages</div>
-        <label class="case-a-cocher"><input type="checkbox" v-model="sonActif"> 🔊 Sons</label>
-        <label class="case-a-cocher" v-if="vibrationSupportee"><input type="checkbox" v-model="vibrationActive"> 📳 Vibrations</label>
       </section>
-
-      <p class="version">Désdale · Lettres croisées · version {{ version }}<br>Liste de mots : an-array-of-french-words (licence MIT, voir lettres-mots-licence.txt)</p>
     </div>
 
     <!-- JOUER -->
     <div v-show="onglet === 'play'">
       <div v-if="!pub" class="panneau-vide">
         <div class="grand">🔤</div>
-        <p>Joue seul ou entre dans un salon depuis l'accueil.</p>
-        <button class="btn principal" @click="onglet = 'config'">Aller à l'accueil</button>
+        <p>Joue seul ou entre dans un salon depuis l'onglet « Partie ».</p>
+        <button class="btn principal" @click="onglet = 'config'">Aller à l'onglet « Partie »</button>
       </div>
 
       <!-- Salle d'attente du salon -->
@@ -420,7 +426,7 @@
         zoom: false,
         dicoPret: false,
         historique: [],
-        pseudoInput: pseudoSauvegarde(),
+        pseudoInput: pseudoPour('lettres-sauvegarde'),
         channelInput: lireStockage('lettres-dernier-salon') || lireStockage('brillant-dernier-salon') || '',
         salonsConnus: lireStockage('brillant-salons') || [],
         role: null,
@@ -548,6 +554,8 @@
         }
       },
       created: function() {
+        // Le pseudo se choisit sur le portail (profil du salon global) ; on le suit tant qu'on n'est pas dans un salon
+        window.addEventListener('desdale-profil', () => { if (!this.role) this.pseudoInput = pseudoPortail(); });
         if (!ACCES.cleSalon) return;
         this.majSoloEnCours();
         this.restaurer();
@@ -558,6 +566,7 @@
         window.addEventListener('pageshow', () => this.auRetourPremierPlan());
       },
       methods: {
+        ouvrirProfil: function() { ouvrirProfilPortail(false); },
         ajouterLog: function(m, systeme) {
           this.historique.push({ m: m, s: !!systeme });
           if (this.historique.length > 100) this.historique.splice(0, this.historique.length - 100);
@@ -967,7 +976,7 @@
         // ---------- Entrée dans un salon ----------
         validerPseudo: function() {
           monPseudo = this.pseudoInput.trim();
-          if (!monPseudo) { alert('Merci de saisir un pseudo.'); return false; }
+          if (!monPseudo) { ouvrirProfilPortail(true); return false; }
           return true;
         },
         entrerSalon: function() {

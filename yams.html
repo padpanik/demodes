@@ -107,19 +107,20 @@
     <!-- BARRE DU HAUT -->
     <div class="barre">
       <div id="menu">
-        <div @click="onglet = 'config'" :class="{ actif: onglet === 'config' }">Accueil</div>
+        <div @click="onglet = 'config'" :class="{ actif: onglet === 'config' }">Partie</div>
         <div @click="onglet = 'play'" :class="{ actif: onglet === 'play' }">Jouer</div>
+        <div @click="onglet = 'reglages'" :class="{ actif: onglet === 'reglages' }">Réglages</div>
+        <div @click="onglet = 'regles'" :class="{ actif: onglet === 'regles' }">Règles</div>
       </div>
-      <a v-if="onglet === 'config' && !role" class="lien-jeux" href="index.html?choix">⇦ Jeux</a>
       <div class="barre-infos" v-if="onglet === 'play'">
         <button class="btn-veille" :class="{ off: !sonActif }" @click="basculerSon">{{ sonActif ? '🔊' : '🔇' }}</button>
-        <button v-if="veilleSupportee" class="btn-veille" :class="{ actif: veilleActive, off: !garderEcran }" @click="garderEcran = !garderEcran">{{ garderEcran ? '☀️' : '🌙' }}</button>
         <span v-if="role" class="point-co" :class="{ attente: connexion !== 'ok' }" :title="connexionTexte"></span>
       </div>
     </div>
 
     <!-- ACCUEIL -->
     <div v-show="onglet === 'config'">
+      <a v-if="!role" class="lien-jeux retour-jeux" href="index.html?choix">⇦ Tous les jeux</a>
       <header class="hero">
         <div class="logo-des">
           <div v-for="(v, k) in [5, 3, 6]" :key="k" class="de"><i v-for="p in 9" :key="p" :class="{ on: PIPS[v].indexOf(p - 1) !== -1 }"></i></div>
@@ -157,9 +158,7 @@
       </section>
 
       <section class="carte">
-        <label class="champ">Ton pseudo
-          <input type="text" v-model="pseudoInput" placeholder="ex : Alex" :disabled="!!role" autocomplete="off" maxlength="20">
-        </label>
+        <div class="pseudo-portail">Ton pseudo : <b>{{ pseudoInput || '(à choisir)' }}</b><button v-if="!role" class="lien-profil" @click="ouvrirProfil">✏️ {{ pseudoInput ? 'Changer' : 'Choisir' }}</button></div>
         <label class="champ">Nom du salon
           <input type="text" v-model="channelInput" placeholder="ex : partie-du-dimanche" :disabled="!!role" autocomplete="off">
         </label>
@@ -183,8 +182,31 @@
         <p class="statut" v-if="record">Ton record solo : {{ record }} pts</p>
       </template>
 
-      <details class="carte regles">
-        <summary>Règles</summary>
+      <p class="version">Désdale · Yams · version {{ version }}</p>
+    </div>
+
+    <!-- RÉGLAGES -->
+    <div v-show="onglet === 'reglages'">
+      <section class="carte reglages">
+        <div class="titre-carte">Réglages</div>
+        <label class="case-a-cocher"><input type="checkbox" v-model="sonActif"> 🔊 Sons</label>
+        <label class="case-a-cocher" v-if="vibrationSupportee"><input type="checkbox" v-model="vibrationActive"> 📳 Vibrations</label>
+        <label class="case-a-cocher" v-if="voixSupportee"><input type="checkbox" v-model="voixActive"> 🗣️ Annoncer mon tour</label>
+        <label class="case-a-cocher" v-if="veilleSupportee"><input type="checkbox" v-model="garderEcran"> ☀️ Garder l'écran allumé</label>
+      </section>
+      <details class="carte journal">
+        <summary>Activité <small v-if="historique.length">({{ historique.length }})</small></summary>
+        <ul>
+          <li v-for="(log, i) in historiqueRecent" :key="i" :class="{ 'sys-msg': log.s }">{{ log.m }}</li>
+          <li v-if="!historique.length" class="sys-msg">Rien pour l'instant.</li>
+        </ul>
+      </details>
+    </div>
+
+    <!-- RÈGLES -->
+    <div v-show="onglet === 'regles'">
+      <section class="carte regles">
+        <div class="titre-carte">Règles</div>
         <ul>
           <li>À ton tour : jusqu'à <strong>3 lancers</strong>. Entre deux lancers, touche les dés à <strong>garder</strong>.</li>
           <li>Ensuite tu inscris ton score dans <strong>une case</strong> (0 si la combinaison n'y est pas : la case est barrée).</li>
@@ -195,25 +217,7 @@
           <li>Chaque colonne est multipliée par son coefficient : Libre ×1, ↓ ×2, ↑ ×3, Sec ×4, Imp. ×5.</li>
           <li>La partie finit quand toutes les feuilles sont pleines (65 tours chacun). Le plus gros total de points gagne.</li>
         </ul>
-      </details>
-
-      <section class="carte reglages">
-        <div class="titre-carte">Réglages</div>
-        <label class="case-a-cocher"><input type="checkbox" v-model="sonActif"> 🔊 Sons</label>
-        <label class="case-a-cocher" v-if="vibrationSupportee"><input type="checkbox" v-model="vibrationActive"> 📳 Vibrations</label>
-        <label class="case-a-cocher" v-if="voixSupportee"><input type="checkbox" v-model="voixActive"> 🗣️ Annoncer mon tour</label>
-        <label class="case-a-cocher" v-if="veilleSupportee"><input type="checkbox" v-model="garderEcran"> ☀️ Garder l'écran allumé</label>
       </section>
-
-      <details class="carte journal">
-        <summary>Activité <small v-if="historique.length">({{ historique.length }})</small></summary>
-        <ul>
-          <li v-for="(log, i) in historiqueRecent" :key="i" :class="{ 'sys-msg': log.s }">{{ log.m }}</li>
-          <li v-if="!historique.length" class="sys-msg">Rien pour l'instant.</li>
-        </ul>
-      </details>
-
-      <p class="version">Désdale · Yams · version {{ version }}</p>
     </div>
 
     <!-- JOUER -->
@@ -222,7 +226,7 @@
         <div class="grand">🎲</div>
         <p>Aucune partie en cours.</p>
         <button class="btn principal" @click="demarrerSolo">Jouer seul</button>
-        <p class="aide">ou entre dans un salon depuis l'accueil</p>
+        <p class="aide">ou entre dans un salon depuis l'onglet « Partie »</p>
       </div>
       <template v-else>
         <!-- Joueurs : toucher un joueur affiche sa feuille -->
@@ -562,7 +566,7 @@
         COLONNES: COLONNES, LIGNES: LIGNES, PIPS: PIPS, nbCases: NB_CASES,
         version: VERSION,
         onglet: 'config',
-        pseudoInput: pseudoSauvegarde(),
+        pseudoInput: pseudoPour('yams-sauvegarde'),
         channelInput: lireStockage('yams-dernier-salon') || lireStockage('brillant-dernier-salon') || '',
         salonsConnus: lireStockage('brillant-salons') || [],
         role: null,             // null (hors salon) | 'hote' | 'client'
@@ -705,6 +709,8 @@
         }
       },
       created: function() {
+        // Le pseudo se choisit sur le portail (profil du salon global) ; on le suit tant qu'on n'est pas dans un salon
+        window.addEventListener('desdale-profil', () => { if (!this.role) this.pseudoInput = pseudoPortail(); });
         if (!ACCES.cleSalon) return;
         this.demarrer();
         setInterval(() => this.battement(), 4000);
@@ -713,6 +719,7 @@
         window.addEventListener('pageshow', () => this.auRetourPremierPlan());
       },
       methods: {
+        ouvrirProfil: function() { ouvrirProfilPortail(false); },
         nomLigne: function(id) { var l = LIGNES.find(x => x.id === id); return /^[1-6]$/.test(id) ? 'Les ' + id : l.nom; },
         nomColonne: function(id) { return COLONNES.find(c => c.id === id).nom; },
         nomColonneCourt: function(id) { return COLONNES.find(c => c.id === id).court; },
@@ -1110,7 +1117,7 @@
         // ---------- Entrée dans un salon : on tente de l'ouvrir, sinon on le rejoint ----------
         validerPseudo: function() {
           monPseudo = this.pseudoInput.trim();
-          if (!monPseudo) { alert('Merci de saisir un pseudo.'); return false; }
+          if (!monPseudo) { ouvrirProfilPortail(true); return false; }
           return true;
         },
         entrerSalon: function(silencieux) {

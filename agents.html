@@ -93,19 +93,20 @@
 
     <div class="barre">
       <div id="menu">
-        <div @click="onglet = 'config'" :class="{ actif: onglet === 'config' }">Accueil</div>
+        <div @click="onglet = 'config'" :class="{ actif: onglet === 'config' }">Partie</div>
         <div @click="onglet = 'play'" :class="{ actif: onglet === 'play' }">Jouer</div>
+        <div @click="onglet = 'reglages'" :class="{ actif: onglet === 'reglages' }">Réglages</div>
+        <div @click="onglet = 'regles'" :class="{ actif: onglet === 'regles' }">Règles</div>
       </div>
-      <a v-if="onglet === 'config' && !role" class="lien-jeux" href="index.html?choix">⇦ Jeux</a>
       <div class="barre-infos" v-if="onglet === 'play'">
         <button class="btn-veille" :class="{ off: !sonActif }" @click="basculerSon">{{ sonActif ? '🔊' : '🔇' }}</button>
-        <button v-if="veilleSupportee" class="btn-veille" :class="{ actif: veilleActive, off: !garderEcran }" @click="garderEcran = !garderEcran">{{ garderEcran ? '☀️' : '🌙' }}</button>
         <span v-if="role" class="point-co" :class="{ attente: connexion !== 'ok' }"></span>
       </div>
     </div>
 
     <!-- ACCUEIL -->
     <div v-show="onglet === 'config'">
+      <a v-if="!role" class="lien-jeux retour-jeux" href="index.html?choix">⇦ Tous les jeux</a>
       <header class="hero">
         <div class="logo-ag"><span v-for="(c, k) in ['#c0392b','#e6dcc3','#2f6fb0','#2f6fb0','#1d2b36','#c0392b','#e6dcc3','#c0392b','#2f6fb0']" :key="k" :style="{ background: c }"></span></div>
         <div>
@@ -131,9 +132,7 @@
       <template v-if="!role">
         <section class="carte">
           <div class="titre-carte">Entrer dans un salon</div>
-          <label class="champ">Ton pseudo
-            <input type="text" v-model="pseudoInput" placeholder="ex : Alex" autocomplete="off" maxlength="20">
-          </label>
+          <div class="pseudo-portail">Ton pseudo : <b>{{ pseudoInput || '(à choisir)' }}</b><button v-if="!role" class="lien-profil" @click="ouvrirProfil">✏️ {{ pseudoInput ? 'Changer' : 'Choisir' }}</button></div>
           <label class="champ">Nom du salon
             <input type="text" v-model="channelInput" placeholder="ex : partie-du-dimanche" autocomplete="off">
           </label>
@@ -148,24 +147,17 @@
         <button class="btn principal btn-large" @click="entrerSalon()" :disabled="entreeEnCours">{{ entreeEnCours ? 'Connexion au salon…' : 'Entrer dans le salon' }}</button>
       </template>
 
-      <details class="carte regles">
-        <summary>Règles</summary>
-        <ul>
-          <li>Deux équipes, <span style="color:var(--rouge);font-weight:700">rouge</span> et <span style="color:var(--bleu);font-weight:700">bleue</span>. Dans chaque équipe, un <strong>chef</strong> voit sur son téléphone la carte secrète : quels mots sont ses agents, ceux de l'autre équipe, les passants neutres et l'<strong>assassin</strong>.</li>
-          <li>À son tour, le chef donne <strong>un seul mot et un nombre</strong> (par exemple « océan 2 ») pour faire trouver plusieurs de ses agents.</li>
-          <li>Ses coéquipiers touchent un mot pour le proposer (tout le monde le voit), puis le retouchent pour le <strong>révéler</strong>. Ils ont droit au nombre annoncé plus un essai.</li>
-          <li>Un passant ou un agent adverse arrête le tour ; l'<strong>assassin fait perdre</strong> aussitôt. On peut aussi s'arrêter après un essai.</li>
-          <li>La première équipe qui trouve tous ses agents gagne (9 pour l'équipe qui commence, 8 pour l'autre).</li>
-        </ul>
-      </details>
+      <p class="version">Désdale · Agents secrets · version {{ version }}</p>
+    </div>
 
+    <!-- RÉGLAGES -->
+    <div v-show="onglet === 'reglages'">
       <section class="carte reglages">
         <div class="titre-carte">Réglages</div>
         <label class="case-a-cocher"><input type="checkbox" v-model="sonActif"> 🔊 Sons</label>
         <label class="case-a-cocher" v-if="vibrationSupportee"><input type="checkbox" v-model="vibrationActive"> 📳 Vibrations</label>
         <label class="case-a-cocher" v-if="veilleSupportee"><input type="checkbox" v-model="garderEcran"> ☀️ Garder l'écran allumé</label>
       </section>
-
       <details class="carte journal">
         <summary>Activité <small v-if="historique.length">({{ historique.length }})</small></summary>
         <ul>
@@ -173,16 +165,28 @@
           <li v-if="!historique.length" class="sys-msg">Rien pour l'instant.</li>
         </ul>
       </details>
+    </div>
 
-      <p class="version">Désdale · Agents secrets · version {{ version }}</p>
+    <!-- RÈGLES -->
+    <div v-show="onglet === 'regles'">
+      <section class="carte regles">
+        <div class="titre-carte">Règles</div>
+        <ul>
+          <li>Deux équipes, <span style="color:var(--rouge);font-weight:700">rouge</span> et <span style="color:var(--bleu);font-weight:700">bleue</span>. Dans chaque équipe, un <strong>chef</strong> voit sur son téléphone la carte secrète : quels mots sont ses agents, ceux de l'autre équipe, les passants neutres et l'<strong>assassin</strong>.</li>
+          <li>À son tour, le chef donne <strong>un seul mot et un nombre</strong> (par exemple « océan 2 ») pour faire trouver plusieurs de ses agents.</li>
+          <li>Ses coéquipiers touchent un mot pour le proposer (tout le monde le voit), puis le retouchent pour le <strong>révéler</strong>. Ils ont droit au nombre annoncé plus un essai.</li>
+          <li>Un passant ou un agent adverse arrête le tour ; l'<strong>assassin fait perdre</strong> aussitôt. On peut aussi s'arrêter après un essai.</li>
+          <li>La première équipe qui trouve tous ses agents gagne (9 pour l'équipe qui commence, 8 pour l'autre).</li>
+        </ul>
+      </section>
     </div>
 
     <!-- JOUER -->
     <div v-show="onglet === 'play'">
       <div v-if="!role || !pub" class="panneau-vide">
         <div class="grand">🕵️</div>
-        <p>Entre dans un salon depuis l'accueil pour jouer.</p>
-        <button class="btn principal" @click="onglet = 'config'">Aller à l'accueil</button>
+        <p>Entre dans un salon depuis l'onglet « Partie » pour jouer.</p>
+        <button class="btn principal" @click="onglet = 'config'">Aller à l'onglet « Partie »</button>
       </div>
 
       <!-- Composition des équipes -->
@@ -302,7 +306,7 @@
         saisieIndice: '',
         saisieNombre: 2,
         historique: [],
-        pseudoInput: pseudoSauvegarde(),
+        pseudoInput: pseudoPour('agents-sauvegarde'),
         channelInput: lireStockage('agents-dernier-salon') || lireStockage('brillant-dernier-salon') || '',
         salonsConnus: lireStockage('brillant-salons') || [],
         role: null,
@@ -383,6 +387,8 @@
         pseudoInput: function() { this.sauvegarder(); }
       },
       created: function() {
+        // Le pseudo se choisit sur le portail (profil du salon global) ; on le suit tant qu'on n'est pas dans un salon
+        window.addEventListener('desdale-profil', () => { if (!this.role) this.pseudoInput = pseudoPortail(); });
         if (!ACCES.cleSalon) return;
         this.restaurer();
         setInterval(() => this.battement(), 4000);
@@ -391,6 +397,7 @@
         window.addEventListener('pageshow', () => this.auRetourPremierPlan());
       },
       methods: {
+        ouvrirProfil: function() { ouvrirProfilPortail(false); },
         ajouterLog: function(m, systeme) {
           this.historique.push({ m: m, s: !!systeme });
           if (this.historique.length > 150) this.historique.splice(0, this.historique.length - 150);
@@ -646,7 +653,7 @@
         // ---------- Entrée dans un salon ----------
         validerPseudo: function() {
           monPseudo = this.pseudoInput.trim();
-          if (!monPseudo) { alert('Merci de saisir un pseudo.'); return false; }
+          if (!monPseudo) { ouvrirProfilPortail(true); return false; }
           return true;
         },
         entrerSalon: function() {

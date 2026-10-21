@@ -89,6 +89,19 @@ Pas d'étape de construction, pas de dépendance à ajouter.
   (`commun.js`, copie dans `brilliant.html`), qui oublie le salon en cours des autres jeux (rôle et salon effacés de leur
   sauvegarde). L'accueil affiche le salon en cours avec un bouton « ✕ Quitter » (`oublierSalonDuJeu`).
 
+## Présentation commune des pages de jeu (demandée par l'utilisateur : « que tout le monde s'y retrouve »)
+
+- **4 onglets partout**, dans cet ordre : **Partie** (`onglet = 'config'` ; Brilliant : `actif_tab`) : lien « ⇦ Tous les jeux »,
+  salon en cours, jouer seul, entrer dans un salon ; **Jouer** (`'play'`, l'écran de jeu) ; **Réglages** (`'reglages'` : sons,
+  vibrations, voix, écran allumé, apparence propre au jeu, journal « Activité ») ; **Règles** (`'regles'` : règles en clair, sans repli).
+  Barre de jeu réduite à 🔊 et au point de connexion (écran allumé : dans Réglages ; Brilliant : niveau et 🎯 dans la ligne des scores).
+- **Pseudo unique, choisi sur le portail** (profil du salon global, `desdale-profil`) : plus de champ pseudo dans les jeux, juste
+  « Ton pseudo : X · ✏️ Changer » (`ouvrirProfilPortail` ouvre l'onglet « Moi » de la bulle 💬). `pseudoPortail()` / `pseudoPour(cléSauvegarde)`
+  dans `commun.js` (copie dans `brilliant.html`) : dans un salon en cours, on garde le pseudo sous lequel on y est entré. Le salon global
+  envoie l'événement `desdale-profil` quand on change de profil ; les pages le suivent tant qu'elles ne sont pas dans un salon.
+  Sans pseudo, « Entrer dans le salon » ouvre le profil.
+- Nouveau jeu : reprendre ce gabarit (le script d'origine déplaçait les blocs `details.regles`, `section.reglages`, apparence, journal).
+
 ## Salon global (`salon-global.js`)
 
 - Un salon fixe `'dm-' + cléSalon + '-global'`, auquel chaque page se connecte toute seule (deuxième connexion PeerJS,

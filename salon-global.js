@@ -55,7 +55,11 @@ var SalonGlobal = (function () {
     return p;
   }
   function hash(s) { var h = 0; for (var i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0; return h; }
-  function enregistrerProfil(p) { ecrire(CLE_PROFIL, p); envoyer({ t: 'PROFIL', profil: publicProfil() }); majMoi(); rendre(); }
+  function enregistrerProfil(p) {
+    ecrire(CLE_PROFIL, p);
+    setTimeout(() => { envoyer({ t: 'PROFIL', profil: publicProfil() }); majMoi(); rendre(); }, 0);   // après la fin du « change » / « blur » en cours (sinon le champ disparaît sous le doigt)
+    try { window.dispatchEvent(new CustomEvent('desdale-profil')); } catch (e) {}   // les pages de jeu reprennent le nouveau pseudo
+  }
   function publicProfil() { var p = profil(); return { pseudo: (p.pseudo || '').slice(0, 20) || 'Anonyme', couleur: p.couleur, emoji: p.emoji || '', image: p.image || '', invisible: !!p.invisible, cp: compagnonResume() }; }
   // Mon compagnon (s'il y en a un), montré aux autres dans la liste des présents
   function compagnonResume() {

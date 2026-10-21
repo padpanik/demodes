@@ -100,19 +100,20 @@
 
     <div class="barre">
       <div id="menu">
-        <div @click="onglet = 'config'" :class="{ actif: onglet === 'config' }">Accueil</div>
+        <div @click="onglet = 'config'" :class="{ actif: onglet === 'config' }">Partie</div>
         <div @click="onglet = 'play'" :class="{ actif: onglet === 'play' }">Jouer</div>
+        <div @click="onglet = 'reglages'" :class="{ actif: onglet === 'reglages' }">Réglages</div>
+        <div @click="onglet = 'regles'" :class="{ actif: onglet === 'regles' }">Règles</div>
       </div>
-      <a v-if="onglet === 'config' && !role" class="lien-jeux" href="index.html?choix">⇦ Jeux</a>
       <div class="barre-infos" v-if="onglet === 'play'">
         <button class="btn-veille" :class="{ off: !sonActif }" @click="basculerSon">{{ sonActif ? '🔊' : '🔇' }}</button>
-        <button v-if="veilleSupportee" class="btn-veille" :class="{ actif: veilleActive, off: !garderEcran }" @click="garderEcran = !garderEcran">{{ garderEcran ? '☀️' : '🌙' }}</button>
         <span v-if="role" class="point-co" :class="{ attente: connexion !== 'ok' }"></span>
       </div>
     </div>
 
     <!-- ACCUEIL -->
     <div v-show="onglet === 'config'">
+      <a v-if="!role" class="lien-jeux retour-jeux" href="index.html?choix">⇦ Tous les jeux</a>
       <header class="hero">
         <div class="logo-bg"><span v-for="(c, i) in ['#8a5a35', '#e9d6b0', '#8a5a35', '#e9d6b0']" :key="i" :style="{ background: c }"></span></div>
         <div>
@@ -142,9 +143,7 @@
       </section>
 
       <section class="carte">
-        <label class="champ">Ton pseudo
-          <input type="text" v-model="pseudoInput" placeholder="ex : Alex" :disabled="!!role" autocomplete="off" maxlength="20">
-        </label>
+        <div class="pseudo-portail">Ton pseudo : <b>{{ pseudoInput || '(à choisir)' }}</b><button v-if="!role" class="lien-profil" @click="ouvrirProfil">✏️ {{ pseudoInput ? 'Changer' : 'Choisir' }}</button></div>
         <label class="champ">Nom du salon
           <input type="text" v-model="channelInput" placeholder="ex : partie-du-dimanche" :disabled="!!role" autocomplete="off">
         </label>
@@ -161,8 +160,31 @@
         {{ entreeEnCours ? 'Connexion au salon…' : 'Entrer dans le salon' }}
       </button>
 
-      <details class="carte regles">
-        <summary>Règles</summary>
+      <p class="version">Désdale · Backgammon · version {{ version }}</p>
+    </div>
+
+    <!-- RÉGLAGES -->
+    <div v-show="onglet === 'reglages'">
+      <section class="carte reglages">
+        <div class="titre-carte">Réglages</div>
+        <label class="case-a-cocher"><input type="checkbox" v-model="sonActif"> 🔊 Sons</label>
+        <label class="case-a-cocher" v-if="vibrationSupportee"><input type="checkbox" v-model="vibrationActive"> 📳 Vibrations</label>
+        <label class="case-a-cocher" v-if="voixSupportee"><input type="checkbox" v-model="voixActive"> 🗣️ Annoncer mon tour</label>
+        <label class="case-a-cocher" v-if="veilleSupportee"><input type="checkbox" v-model="garderEcran"> ☀️ Garder l'écran allumé</label>
+      </section>
+      <details class="carte journal">
+        <summary>Activité <small v-if="historique.length">({{ historique.length }})</small></summary>
+        <ul>
+          <li v-for="(log, i) in historiqueRecent" :key="i" :class="{ 'sys-msg': log.s }">{{ log.m }}</li>
+          <li v-if="!historique.length" class="sys-msg">Rien pour l'instant.</li>
+        </ul>
+      </details>
+    </div>
+
+    <!-- RÈGLES -->
+    <div v-show="onglet === 'regles'">
+      <section class="carte regles">
+        <div class="titre-carte">Règles</div>
         <ul>
           <li>Chacun avance ses 15 pions vers son jan intérieur (en bas à droite de ton écran), puis les sort. Le premier qui a tout sorti gagne.</li>
           <li>Chaque dé est un déplacement séparé ; un <strong>double</strong> se joue 4 fois. Tu dois jouer le plus de dés possible ; si un seul des deux passe, le plus fort.</li>
@@ -172,33 +194,15 @@
           <li>Partie gagnée : 1 × la mise. <strong>Gammon</strong> (l'autre n'a sorti aucun pion) : × 2. <strong>Backgammon</strong> (et il a encore un pion sur la barre ou dans ton jan) : × 3.</li>
           <li>Pour jouer : touche un pion, ses arrivées possibles s'allument en vert, touche l'arrivée. Tu peux annuler tes coups jusqu'à « Valider ».</li>
         </ul>
-      </details>
-
-      <section class="carte reglages">
-        <div class="titre-carte">Réglages</div>
-        <label class="case-a-cocher"><input type="checkbox" v-model="sonActif"> 🔊 Sons</label>
-        <label class="case-a-cocher" v-if="vibrationSupportee"><input type="checkbox" v-model="vibrationActive"> 📳 Vibrations</label>
-        <label class="case-a-cocher" v-if="voixSupportee"><input type="checkbox" v-model="voixActive"> 🗣️ Annoncer mon tour</label>
-        <label class="case-a-cocher" v-if="veilleSupportee"><input type="checkbox" v-model="garderEcran"> ☀️ Garder l'écran allumé</label>
       </section>
-
-      <details class="carte journal">
-        <summary>Activité <small v-if="historique.length">({{ historique.length }})</small></summary>
-        <ul>
-          <li v-for="(log, i) in historiqueRecent" :key="i" :class="{ 'sys-msg': log.s }">{{ log.m }}</li>
-          <li v-if="!historique.length" class="sys-msg">Rien pour l'instant.</li>
-        </ul>
-      </details>
-
-      <p class="version">Désdale · Backgammon · version {{ version }}</p>
     </div>
 
     <!-- JOUER -->
     <div v-show="onglet === 'play'">
       <div v-if="!role" class="panneau-vide">
         <div class="grand">🎲</div>
-        <p>Entre dans un salon depuis l'accueil pour jouer à deux.</p>
-        <button class="btn principal" @click="onglet = 'config'">Aller à l'accueil</button>
+        <p>Entre dans un salon depuis l'onglet « Partie » pour jouer à deux.</p>
+        <button class="btn principal" @click="onglet = 'config'">Aller à l'onglet « Partie »</button>
       </div>
       <div v-else-if="!etat || !etat.plateau" class="panneau-vide">
         <div class="grand">⏳</div>
@@ -433,7 +437,7 @@
         PIPS: PIPS,
         version: VERSION,
         onglet: 'config',
-        pseudoInput: pseudoSauvegarde(),
+        pseudoInput: pseudoPour('bg-sauvegarde'),
         channelInput: lireStockage('bg-dernier-salon') || lireStockage('brillant-dernier-salon') || '',
         salonsConnus: lireStockage('brillant-salons') || [],
         role: null,
@@ -594,6 +598,8 @@
         }
       },
       created: function() {
+        // Le pseudo se choisit sur le portail (profil du salon global) ; on le suit tant qu'on n'est pas dans un salon
+        window.addEventListener('desdale-profil', () => { if (!this.role) this.pseudoInput = pseudoPortail(); });
         if (!ACCES.cleSalon) return;
         this.demarrer();
         setInterval(() => this.battement(), 4000);
@@ -602,6 +608,7 @@
         window.addEventListener('pageshow', () => this.auRetourPremierPlan());
       },
       methods: {
+        ouvrirProfil: function() { ouvrirProfilPortail(false); },
         nomDe: function(c) { return (this.etat && this.etat.couleurs[c]) || '?'; },
         ajouterLog: function(m, systeme) {
           this.historique.push({ m: m, s: !!systeme });
@@ -774,7 +781,7 @@
         // ---------- Entrée dans un salon ----------
         validerPseudo: function() {
           monPseudo = this.pseudoInput.trim();
-          if (!monPseudo) { alert('Merci de saisir un pseudo.'); return false; }
+          if (!monPseudo) { ouvrirProfilPortail(true); return false; }
           return true;
         },
         entrerSalon: function(silencieux) {

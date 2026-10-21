@@ -3,7 +3,7 @@
 // Les clés de stockage gardent l'ancien préfixe "brillant-" : les réglages déjà faits sont conservés.
 
 // Numéro de version affiché (à augmenter à chaque mise en ligne, avec brilliant.html et sw.js)
-const VERSION = '2.03';
+const VERSION = '2.04';
 
 // ---------- Stockage local ----------
 function lireStockage(cle) {
@@ -210,6 +210,26 @@ const Voix = {
 };
 
 // Étoiles ⭐ de « Mon compagnon » : dans etoiles.js (aussi chargé par brilliant.html, qui n'utilise pas ce fichier)
+
+// ---------- Pseudo : choisi une fois sur le portail (profil du salon global), le même dans tous les jeux ----------
+function pseudoPortail() {
+  var p = lireStockage('desdale-profil');
+  if (p && p.pseudo) return p.pseudo;
+  // Pas encore de profil : le pseudo d'une ancienne partie, s'il y en a un
+  for (var j in SALONS_JEUX) { var s = lireStockage(SALONS_JEUX[j]); if (s && s.pseudo) return s.pseudo; }
+  return '';
+}
+// Dans un salon en cours, on garde le pseudo sous lequel on y est entré (sinon les autres ne nous reconnaîtraient plus)
+function pseudoPour(cleSauvegarde) {
+  var s = lireStockage(cleSauvegarde);
+  return s && s.role && s.salon && s.pseudo ? s.pseudo : pseudoPortail();
+}
+// Ouvre le profil du salon global (bulle 💬) pour choisir son pseudo
+function ouvrirProfilPortail(manquant) {
+  if (manquant) vibrer([40, 40, 40]);
+  if (window.SalonGlobal) SalonGlobal.ouvrir('profil');
+  else alert('Choisis ton pseudo sur l\'accueil de Désdale.');
+}
 
 // Vibration : Android uniquement (iPhone ne la propose pas aux pages web)
 function vibrer(motif) {

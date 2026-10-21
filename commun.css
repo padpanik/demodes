@@ -11,7 +11,7 @@ body { margin: 0; background: #f3f5f7; color: #1d2b36; }
 /* ---------- Barre du haut ---------- */
 .barre { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
 #menu { display: flex; background: #e3e8ec; border-radius: 11px; padding: 3px; }
-#menu div { padding: 6px 11px; border-radius: 8px; font-weight: 600; font-size: 0.95em; color: #5b6b78; cursor: pointer; user-select: none; }
+#menu div { padding: 6px 8px; border-radius: 8px; font-weight: 600; font-size: 0.88em; color: #5b6b78; cursor: pointer; user-select: none; }
 #menu div.actif { background: #fff; color: #1d2b36; box-shadow: 0 1px 3px rgba(0,0,0,0.12); }
 .barre-infos { display: flex; align-items: center; gap: 3px; font-size: 0.9em; white-space: nowrap; }
 .btn-veille { border: none; background: transparent; font-size: 1.05em; line-height: 1; padding: 3px 2px; border-radius: 8px; cursor: pointer; }
@@ -24,6 +24,12 @@ body { margin: 0; background: #f3f5f7; color: #1d2b36; }
   font-weight: 600; font-size: 0.9em; color: #3b5568; text-decoration: none;
   padding: 6px 10px; border-radius: 10px; background: #e3e8ec;
 }
+/* Pages de jeu : 4 onglets (Partie · Jouer · Réglages · Règles) */
+.retour-jeux { display: inline-block; margin: 0 0 6px; }
+.pseudo-portail { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin: 4px 0 10px; color: #3b4b57; }
+.pseudo-portail b { color: #1d2b36; }
+.lien-profil { border: none; background: #eef4ff; color: #1c5fb0; font: inherit; font-weight: 700; font-size: 0.88em; border-radius: 9px; padding: 4px 10px; cursor: pointer; }
+.carte.regles ul { padding-left: 18px; margin: 8px 0 0; font-size: 0.92em; line-height: 1.5; color: #3b4b57; }
 
 /* ---------- Accès privé ---------- */
 .acces { width: 100%; max-width: 340px; margin: 12vh auto 0; text-align: center; }
