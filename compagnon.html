@@ -112,6 +112,29 @@
     .o-nounours, .o-peluche { animation: serre 1.6s ease-in-out; }
     @keyframes serre { 0%, 100% { transform: scale(1); } 30%, 60% { transform: scale(1.18) rotate(-8deg); } }
     .o-gamelle, .o-fleurs, .o-plante { animation: frisson 0.5s ease-in-out 3; }
+    /* ---------- Fêtes : petites touches de saison dans les pièces (CP.FETES) ---------- */
+    .guirlande { position: absolute; left: 0; top: 0; width: 100%; height: 30px; pointer-events: none; z-index: 1; }
+    .ambiance { pointer-events: none; filter: drop-shadow(0 2px 1px rgba(0,0,0,0.15)); }
+    .ambiance.flotte { animation: flotte 3.2s ease-in-out infinite; }
+    @keyframes flotte { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+    .ambiance.balance { transform-origin: 50% 0; animation: balance 3s ease-in-out infinite; }
+    @keyframes balance { 0%, 100% { transform: rotate(-6deg); } 50% { transform: rotate(6deg); } }
+    .ambiance.scintille { animation: scintille 2.2s ease-in-out infinite; }
+    @keyframes scintille { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.45; transform: scale(0.85); } }
+    .ambiance.tombe { animation: tombe 6s ease-in infinite; }
+    @keyframes tombe { 0% { transform: translate(0, -60px) rotate(0); opacity: 0; } 15% { opacity: 1; } 100% { transform: translate(-40px, 80px) rotate(200deg); opacity: 0; } }
+    .ambiance.vole-loin { animation: vole-loin 9s linear infinite; }
+    @keyframes vole-loin { 0% { transform: translate(-200px, 20px); } 50% { transform: translate(0, -6px); } 100% { transform: translate(220px, 16px); } }
+    .ambiance.nuit-seule { display: none; } .nuit .ambiance.nuit-seule { display: block; animation: scintille 1.6s ease-in-out infinite; }
+    .fenetre .fete-fenetre { position: absolute; top: 20px; left: -24px; font-size: 16px; animation: traverse 7s linear infinite; }
+    @keyframes traverse { 0% { transform: translate(0, 0); } 50% { transform: translate(70px, -8px); } 100% { transform: translate(140px, 4px); } }
+    .fete-noel.piece-jardin .herbe { background: linear-gradient(#fbfdff, #dfe9f2); }
+    .fete-noel.piece-jardin .colline { background: #eef4f9; }
+    .lueur-fete { filter: drop-shadow(0 0 14px #ffa94d) !important; }
+    .banniere-fete { display: flex; align-items: center; gap: 10px; border-radius: 14px; padding: 8px 12px; margin-bottom: 8px; font-weight: 700; color: #3b4b57; font-size: 0.9em; }
+    .banniere-fete .ico { font-size: 1.8em; line-height: 1; }
+    .banniere-fete small { display: block; font-weight: 600; color: #6b7a86; }
+    .prochaine-fete { text-align: center; color: #6b7a86; font-size: 0.85em; margin: -2px 0 8px; }
     @keyframes frisson { 0%, 100% { transform: rotate(0); } 33% { transform: rotate(-8deg); } 66% { transform: rotate(8deg); } }
     .des.o-des { animation: lance 1.2s ease-out; }
     @keyframes lance { 0% { transform: translateY(0) rotate(0); } 40% { transform: translateY(-26px) rotate(200deg); } 100% { transform: translateY(0) rotate(360deg); } }
@@ -341,12 +364,13 @@
     <template v-else-if="animal && (!visite || visite.etat === 'ok')">
       <!-- ===== La maison : une pièce par écran, on glisse de l'une à l'autre ===== -->
       <div class="maison" :class="{ arrange: arrange }" ref="maison" @scroll.passive="surDefilement">
-        <div v-for="p in pieces" :key="p.id" class="scene" :class="['piece-' + p.id, { nuit: estNuit, 'petit-animal': p.id !== 'salon' }]">
+        <div v-for="p in pieces" :key="p.id" class="scene" :class="['piece-' + p.id, fete ? 'fete-' + fete.id : '', { nuit: estNuit, 'petit-animal': p.id !== 'salon' }]">
           <!-- Salon -->
           <template v-if="p.id === 'salon'">
             <div class="mur" :style="{ background: fondMur }"></div>
             <div class="fenetre" :style="{ background: ciel }">
               <span class="astre">{{ estNuit ? '🌙' : '☀️' }}</span>
+              <span v-if="fete && fete.fenetre && (fete.id !== 'nouvel-an' || estNuit)" class="fete-fenetre">{{ fete.fenetre }}</span>
               <div v-if="estHiver" class="flocons">❄ ❄ ❄ ❄<br>&nbsp;❄ ❄ ❄<br>❄ ❄ ❄ ❄<br>&nbsp;❄ ❄ ❄<br>❄ ❄ ❄ ❄</div>
             </div>
             <div v-if="animal.porte && animal.porte.fenetre" class="rideaux"></div>
@@ -400,6 +424,12 @@
             <div class="table-jeux"><div class="pied"></div><div class="plateau"></div><div class="des" :class="{ 'o-des': vie.objet === 'des' }">🎲🎲</div></div>
             <div class="grille4"><i v-for="(c, k) in GRILLE4" :key="k" :style="c ? { background: c } : null"></i></div>
             <span class="deco" style="left:22px;bottom:4px;font-size:24px">🧩</span>
+          </template>
+
+          <!-- Fête en cours : guirlande dans les pièces intérieures et quelques rappels discrets (CP.FETES) -->
+          <template v-if="fete">
+            <svg v-if="p.id !== 'jardin' && p.id !== 'trophees'" class="guirlande" viewBox="0 0 360 30" preserveAspectRatio="none" aria-hidden="true" v-html="guirlande"></svg>
+            <span v-for="(x, k) in (fete.ambiance[p.id] || [])" :key="'f' + k" class="deco ambiance" :class="x[2]" :style="x[1]" aria-hidden="true">{{ x[0] }}</span>
           </template>
 
           <!-- Déco achetée en boutique : dans la pièce choisie, à l'endroit choisi (mode « Arranger ») -->
@@ -488,7 +518,11 @@
 
       <!-- ===== Boutique ===== -->
       <template v-else-if="!visite && onglet === 'boutique'">
-        <div class="rayons"><button v-for="r in RAYONS" :key="r.id" :class="{ actif: rayon === r.id }" @click="rayon = r.id">{{ r.nom }}</button></div>
+        <div class="rayons"><button v-for="r in rayons" :key="r.id" :class="{ actif: rayon === r.id }" @click="rayon = r.id">{{ r.nom }}</button></div>
+        <div v-if="rayon === 'saison' && fete" class="banniere-fete" :style="{ background: 'linear-gradient(90deg, ' + fete.guirlande[0] + '33, ' + fete.guirlande[1] + '22)' }">
+          <span class="ico">{{ fete.ico }}</span><span>Boutique {{ deFete(fete) }}<small>Ces articles ne se vendent que jusqu'au {{ dateFr(fete.fin) }}. Une fois achetés, ils sont à toi pour toujours.</small></span>
+        </div>
+        <div v-else-if="!fete && prochaine" class="prochaine-fete">{{ prochaine.ico }} Prochaine boutique de fête : {{ prochaine.nom }}, dès le {{ dateFr(prochaine.debut) }}</div>
         <div class="articles">
           <div v-for="a in articlesDuRayon" :key="a.id" class="article" :class="{ porte: estPorte(a) }">
             <div class="ico" v-if="a.ico">{{ a.ico }}</div>
@@ -658,6 +692,11 @@
     // Taille de chaque objet, et sa place (en % de la largeur) tant qu'on ne l'a pas déplacé
     const TAILLES = { couchage: 76, plante: 52, mur: 46, mur2: 34, lampe: 30, jouet: 30 };
     const X_DEFAUT = { couchage: 15, plante: 88, mur: 15, mur2: 45, lampe: 60, jouet: 72 };
+    // Déco de fête (emplacements « fete-… ») : sa place par défaut est donnée par l'article (x en %, taille en px)
+    function artFete(slot) { return slot.indexOf('fete-') === 0 ? ARTICLES.find(a => a.slot === slot) : null; }
+    function placeDe(slot) { var a = artFete(slot); return PLACES[slot] || (a ? a.pos + ';font-size:' + a.taille + 'px' : ''); }
+    function tailleDe(slot) { var a = artFete(slot); return TAILLES[slot] || (a ? a.taille : 40); }
+    function xDefaut(slot) { var a = artFete(slot); return X_DEFAUT[slot] || (a ? a.x : 50); }
     // Petite partie en cours dessinée dans la salle de jeux (7 × 6, rangée du haut d'abord)
     const GRILLE4 = (function () { var g = new Array(42).fill(''), R = '#e5533d', J = '#f4c430';
       [[35, R], [36, J], [37, R], [38, J], [39, J], [30, R], [31, J], [32, R], [24, J], [23, R]].forEach(x => { g[x[0]] = x[1]; }); return g; })();
@@ -735,11 +774,11 @@
           var a = this.animal, p = (a && a.porte) || {}, deco = (a && a.deco) || {}, r = {};
           Object.keys(p).forEach(slot => {
             var art = ARTICLES.find(x => x.id === p[slot]);
-            if (!art || !art.place || !PLACES[slot]) return;
+            if (!art || !art.place || !placeDe(slot)) return;
             var d = deco[slot], piece = d && this.aBloc(d.piece) ? d.piece : 'salon';
-            var lueur = art.id === 'lampe' && this.estNuit ? ';filter:drop-shadow(0 0 14px #ffd54f)' : '';
-            var style = d ? 'left:' + d.x + '%;top:' + d.y + '%;font-size:' + TAILLES[slot] + 'px' : PLACES[slot];
-            (r[piece] = r[piece] || []).push({ slot: slot, id: art.id, nom: art.nom, ico: art.ico, libre: !!d, x: d ? d.x : X_DEFAUT[slot] || 50, style: style + lueur });
+            var lueur = (art.id === 'lampe' || art.id === 'citrouille') && this.estNuit ? ';filter:drop-shadow(0 0 14px ' + (art.id === 'lampe' ? '#ffd54f' : '#ff922b') + ')' : '';
+            var style = d ? 'left:' + d.x + '%;top:' + d.y + '%;font-size:' + tailleDe(slot) + 'px' : placeDe(slot);
+            (r[piece] = r[piece] || []).push({ slot: slot, id: art.id, nom: art.nom, ico: art.ico, libre: !!d, x: d ? d.x : xDefaut(slot), style: style + lueur });
           });
           return r;
         },
@@ -773,7 +812,23 @@
           var j = Math.ceil((this.defis.fin - this.maintenant) / 86400000);
           return j <= 1 ? 'dernier jour aujourd\'hui !' : 'encore ' + j + ' jours (nouveaux défis lundi)';
         },
-        articlesDuRayon: function() { return ARTICLES.filter(a => a.rayon === this.rayon); },
+        // Articles de saison : tous dans le rayon de la fête en cours ; ensuite, seulement ceux qu'on possède, dans leur rayon habituel
+        articlesDuRayon: function() {
+          if (this.rayon === 'saison') return this.fete ? ARTICLES.filter(a => a.fete === this.fete.id) : [];
+          return ARTICLES.filter(a => a.rayon === this.rayon && (!a.fete || this.possede(a)));
+        },
+        fete: function() { return CP.feteDu(this.maintenant); },
+        prochaine: function() { return CP.prochaineFete(this.maintenant); },
+        rayons: function() { return this.fete ? [{ id: 'saison', nom: this.fete.ico + ' ' + this.fete.nom }].concat(RAYONS) : RAYONS; },
+        // Guirlande de fanions aux couleurs de la fête, accrochée en deux arcs en haut de la pièce
+        guirlande: function() {
+          var c = this.fete ? this.fete.guirlande : [], s = '<path d="M0 3 Q90 20 180 3 Q270 20 360 3" stroke="#8a7a66" stroke-width="1.2" fill="none"/>';
+          for (var k = 0, x = 10; x < 360; x += 22, k++) {
+            var u = (x % 180) / 180, y = (1 - u) * (1 - u) * 3 + 2 * (1 - u) * u * 20 + u * u * 3;
+            s += '<path d="M' + (x - 6) + ' ' + y.toFixed(1) + ' L' + (x + 6) + ' ' + y.toFixed(1) + ' L' + x + ' ' + (y + 11).toFixed(1) + ' Z" fill="' + c[k % c.length] + '"/>';
+          }
+          return s;
+        },
         // Petites obligations du jour
         tachesDuJour: function() {
           var f = this.jour.faits;
@@ -785,7 +840,12 @@
           ];
         }
       },
+      watch: {
+        // La fête se termine pendant qu'on regarde son rayon : retour aux rayons habituels
+        fete: function(f) { if (!f && this.rayon === 'saison') this.rayon = 'tete'; }
+      },
       created: function() {
+        if (this.fete) this.rayon = 'saison';
         setInterval(() => { this.maintenant = Date.now(); this.etoiles = Etoiles.solde(); this.defis = CP.etatDefis(); }, 20000);
         this.chargerJour();
         this.majJournal();
@@ -923,6 +983,8 @@
         },
 
         // ---------- Boutique ----------
+        dateFr: function(d) { return d ? (d.getDate() === 1 ? '1er' : d.getDate()) + ' ' + d.toLocaleDateString('fr-FR', { month: 'long' }) : ''; },
+        deFete: function(f) { return { 'nouvel-an': 'du Nouvel an', 'saint-valentin': 'de la Saint-Valentin', paques: 'de Pâques', ete: 'de l\'été', halloween: 'd\'Halloween', noel: 'de Noël' }[f.id] || 'de fête'; },
         possede: function(a) { return !!(this.animal.possede || {})[a.id]; },
         stock: function(a) { return (this.animal.possede || {})[a.id] || 0; },
         estPorte: function(a) { return !!a.slot && (this.animal.porte || {})[a.slot] === a.id; },
@@ -1040,6 +1102,7 @@
             if (d.id === 'balle') l.push({ id: 'jouet', x: x, dir: dir, action: 'balle' });
             if (d.id === 'peluche') l.push({ id: 'jouet', x: x, dir: dir, action: 'calin-objet' });
             if (d.slot === 'plante') l.push({ id: 'plante', x: x, dir: dir, action: 'renifle', ico: '🌿' });
+            if (d.slot.indexOf('fete-') === 0) l.push({ id: d.slot, x: x, dir: dir, action: 'fete', ico: d.ico, phrase: (CP.art(d.id) || {}).phrase });
           });
           return l;
         },
@@ -1064,8 +1127,10 @@
             case 'renifle': finObjet(1500); this.geste('penche', 1800); this.animer(o.ico || '🌸', 1); dire('Hmm, ça sent bon !'); break;
             case 'fenetre':
               this.geste('regard', 2400);
-              dire(this.estNuit ? 'Que d\'étoiles ce soir ✨' : this.estHiver ? 'Oh, il neige ! ❄️' : 'Il fait beau dehors ☀️');
+              dire(this.fete && Math.random() < 0.5 ? this.fete.mots[Math.floor(Math.random() * this.fete.mots.length)]
+                   : this.estNuit ? 'Que d\'étoiles ce soir ✨' : this.estHiver ? 'Oh, il neige ! ❄️' : 'Il fait beau dehors ☀️');
               break;
+            case 'fete': finObjet(1500); this.geste('penche', 1800); this.animer(o.ico, 1); dire(o.phrase || 'C\'est la fête ! 🎉'); break;
             case 'admire': this.geste('regard', 2400); this.animer('✨', 2); dire('Nos belles coupes ! 🏆'); break;
             case 'gamelle':
               finObjet(1500); this.geste('penche', 1800);
@@ -1123,7 +1188,7 @@
           window.addEventListener('pointermove', bouger); window.addEventListener('pointerup', fin); window.addEventListener('pointercancel', fin);
         },
         changerPieceDeco: function(piece) {
-          var slot = this.decoChoisi, d = (this.animal.deco && this.animal.deco[slot]) || { x: X_DEFAUT[slot] || 50, y: 70 };
+          var slot = this.decoChoisi, d = (this.animal.deco && this.animal.deco[slot]) || { x: xDefaut(slot), y: 70 };
           this.placerDeco(slot, piece, d.x, d.y);
           this.sauver();
           this.allerA(this.pieces.findIndex(b => b.id === piece));

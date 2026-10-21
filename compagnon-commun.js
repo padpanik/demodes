@@ -55,9 +55,121 @@ var CP = (function () {
     { id: 'balle', rayon: 'deco', slot: 'jouet', nom: 'Balle', desc: 'Pour jouer', prix: 5, ico: '⚽', place: true },
     { id: 'peluche', rayon: 'deco', slot: 'jouet', nom: 'Peluche', desc: 'Son doudou', prix: 12, ico: '🧸', place: true },
     { id: 'biscuit', rayon: 'gourmand', nom: 'Biscuit', desc: 'Remplit l\'assiette et fait plaisir', prix: 3, ico: '🍪', conso: true, effets: { repas: 40, calin: 15 } },
-    { id: 'gateau', rayon: 'gourmand', nom: 'Gâteau de fête', desc: 'Un vrai festin', prix: 10, ico: '🎂', conso: true, effets: { repas: 100, calin: 40 } }
+    { id: 'gateau', rayon: 'gourmand', nom: 'Gâteau de fête', desc: 'Un vrai festin', prix: 10, ico: '🎂', conso: true, effets: { repas: 100, calin: 40 } },
+    // ----- Articles de saison (fete) : achetables seulement pendant la fête, gardés ensuite ; déco de fête : un emplacement par fête -----
+    { id: 'chapeau-fete', fete: 'nouvel-an', rayon: 'tete', slot: 'tete', nom: 'Chapeau de fête', desc: 'Pour le réveillon', prix: 12, couleur: '#e64980' },
+    { id: 'noeud-dore', fete: 'nouvel-an', rayon: 'cou', slot: 'cou', nom: 'Nœud doré', desc: 'Très chic pour le Nouvel an', prix: 15, couleur: '#f4c430' },
+    { id: 'boule-facettes', fete: 'nouvel-an', rayon: 'deco', slot: 'fete-nouvel-an', nom: 'Boule à facettes', desc: 'Ça brille de partout', prix: 18, ico: '🪩', place: true, pos: 'left:42%;top:2px', x: 48, taille: 34, phrase: 'Ça brille ! On danse ? 🪩' },
+    { id: 'galette', fete: 'nouvel-an', rayon: 'gourmand', nom: 'Galette des rois', desc: 'Qui aura la fève ?', prix: 6, ico: '🥧', conso: true, effets: { repas: 70, calin: 30 } },
+    { id: 'bandeau-coeurs', fete: 'saint-valentin', rayon: 'tete', slot: 'tete', nom: 'Serre-tête à cœurs', desc: 'Amoureux pour la journée', prix: 12, couleur: '#e03131' },
+    { id: 'collier-coeur', fete: 'saint-valentin', rayon: 'cou', slot: 'cou', nom: 'Collier cœur', desc: 'Un petit cœur qui brille', prix: 14, couleur: '#e03131' },
+    { id: 'bouquet', fete: 'saint-valentin', rayon: 'deco', slot: 'fete-saint-valentin', nom: 'Bouquet de fleurs', desc: 'Pour dire je t\'aime', prix: 14, ico: '💐', place: true, pos: 'left:34%;bottom:62px', x: 40, taille: 34, phrase: 'Elles sentent bon ! 💐' },
+    { id: 'chocolats', fete: 'saint-valentin', rayon: 'gourmand', nom: 'Chocolats', desc: 'Une boîte en forme de cœur', prix: 5, ico: '🍫', conso: true, effets: { repas: 40, calin: 40 } },
+    { id: 'oreilles-lapin', fete: 'paques', rayon: 'tete', slot: 'tete', nom: 'Oreilles de lapin', desc: 'Pour la chasse aux œufs', prix: 12, couleur: '#f8f9fa' },
+    { id: 'nid-oeufs', fete: 'paques', rayon: 'deco', slot: 'fete-paques', nom: 'Nid d\'œufs peints', desc: 'Tout doux, tout coloré', prix: 14, ico: '🪺', place: true, pos: 'left:28%;bottom:8px', x: 34, taille: 36, phrase: 'Il y a des œufs ! 🥚' },
+    { id: 'oeuf-chocolat', fete: 'paques', rayon: 'gourmand', nom: 'Œuf en chocolat', desc: 'Avec une surprise dedans', prix: 5, ico: '🥚', conso: true, effets: { repas: 50, calin: 25 } },
+    { id: 'chapeau-paille', fete: 'ete', rayon: 'tete', slot: 'tete', nom: 'Chapeau de paille', desc: 'Contre le soleil', prix: 14, couleur: '#e9c46a' },
+    { id: 'lunettes', fete: 'ete', rayon: 'tete', slot: 'tete', nom: 'Lunettes de soleil', desc: 'La classe en vacances', prix: 16, couleur: '#1d1d24' },
+    { id: 'parasol', fete: 'ete', rayon: 'deco', slot: 'fete-ete', nom: 'Parasol', desc: 'Un coin d\'ombre', prix: 16, ico: '⛱️', place: true, pos: 'left:64%;bottom:40px', x: 72, taille: 50, phrase: 'Un peu d\'ombre, ça fait du bien 😎' },
+    { id: 'glace', fete: 'ete', rayon: 'gourmand', nom: 'Glace', desc: 'Deux boules, vanille et fraise', prix: 4, ico: '🍦', conso: true, effets: { repas: 30, eau: 30, calin: 15 } },
+    { id: 'chapeau-sorciere', fete: 'halloween', rayon: 'tete', slot: 'tete', nom: 'Chapeau de sorcière', desc: 'Abracadabra !', prix: 14, couleur: '#5f3dc4' },
+    { id: 'cape-vampire', fete: 'halloween', rayon: 'corps', slot: 'corps', nom: 'Cape de vampire', desc: 'Doublée de rouge', prix: 20, couleur: '#1d1d24' },
+    { id: 'citrouille', fete: 'halloween', rayon: 'deco', slot: 'fete-halloween', nom: 'Citrouille lanterne', desc: 'Elle s\'allume le soir', prix: 12, ico: '🎃', place: true, pos: 'left:22%;bottom:10px', x: 28, taille: 40, phrase: 'Elle me fait un clin d\'œil ! 🎃' },
+    { id: 'bonbons', fete: 'halloween', rayon: 'gourmand', nom: 'Bonbons', desc: 'Un sachet de friandises', prix: 4, ico: '🍬', conso: true, effets: { repas: 30, calin: 25 } },
+    { id: 'bonnet-noel', fete: 'noel', rayon: 'tete', slot: 'tete', nom: 'Bonnet de Père Noël', desc: 'Ho, ho, ho !', prix: 14, couleur: '#e03131' },
+    { id: 'pull-noel', fete: 'noel', rayon: 'corps', slot: 'corps', nom: 'Pull de Noël', desc: 'Avec des flocons', prix: 22, couleur: '#c92a2a' },
+    { id: 'sapin', fete: 'noel', rayon: 'deco', slot: 'fete-noel', nom: 'Sapin de Noël', desc: 'Avec ses boules et son étoile', prix: 20, ico: '🎄', place: true, pos: 'left:78%;bottom:58px', x: 86, taille: 56, phrase: 'Il est beau notre sapin ! 🎄' },
+    { id: 'buche', fete: 'noel', rayon: 'gourmand', nom: 'Bûche de Noël', desc: 'Au chocolat', prix: 8, ico: '🍰', conso: true, effets: { repas: 90, calin: 40 } }
   ];
-  // Où se posent les objets de la pièce
+  // ================== FÊTES DE L'ANNÉE : boutique de saison et petites touches dans la maison ==================
+  // Pendant chaque période, la boutique ouvre un rayon de saison (articles achetables seulement à ce moment-là,
+  // gardés pour toujours une fois achetés) et la maison se pare de quelques rappels discrets (ambiance, par pièce).
+  // ambiance[pièce] = [émoji, style CSS, classe d'animation facultative] ; guirlande = couleurs des fanions (pièces intérieures)
+  function paques(y) {   // dimanche de Pâques (calcul de Meeus)
+    var a = y % 19, b = Math.floor(y / 100), c = y % 100, d = Math.floor(b / 4), e = b % 4, f = Math.floor((b + 8) / 25), g = Math.floor((b - f + 1) / 3);
+    var h = (19 * a + b - d - g + 15) % 30, i = Math.floor(c / 4), k = c % 4, l = (32 + 2 * e + 2 * i - h - k) % 7, m = Math.floor((a + 11 * h + 22 * l) / 451);
+    return new Date(y, Math.floor((h + l - 7 * m + 114) / 31) - 1, ((h + l - 7 * m + 114) % 31) + 1);
+  }
+  function jour(y, m, j) { return new Date(y, m - 1, j); }
+  var FETES = [
+    { id: 'nouvel-an', nom: 'Nouvel an', ico: '🎉', guirlande: ['#f4c430', '#d0d7de', '#4c6ef5'],
+      periode: y => [jour(y, 12, 27), jour(y + 1, 1, 10)], jourJ: y => jour(y + 1, 1, 1), voeux: 'Bonne année ! Plein de parties ensemble 🎉',
+      mots: ['Une part de galette ? Je cherche la fève ! 👑', 'Bonne année à tous les amis 🥳', 'Cette année, on gagne plein de coupes ! 🏆'],
+      fenetre: '🎆', ambiance: {
+        salon: [['🪩', 'left:150px;top:26px;font-size:24px', 'balance'], ['🎊', 'left:16px;bottom:96px;font-size:20px']],
+        cuisine: [['🥧', 'left:172px;bottom:160px;font-size:24px'], ['👑', 'left:200px;bottom:164px;font-size:16px']],
+        chambre: [['🎈', 'right:62px;top:44px;font-size:24px', 'flotte']],
+        jeux: [['🎉', 'right:40px;top:100px;font-size:24px']],
+        jardin: [['✨', 'left:150px;top:30px;font-size:20px', 'scintille'], ['🎆', 'left:60px;top:22px;font-size:26px', 'nuit-seule']],
+        trophees: [['🎊', 'left:50%;top:6px;font-size:20px']] } },
+    { id: 'saint-valentin', nom: 'Saint-Valentin', ico: '💝', guirlande: ['#e03131', '#f783ac', '#fff0f6'],
+      periode: y => [jour(y, 2, 1), jour(y, 2, 15)], jourJ: y => jour(y, 2, 14), voeux: 'Bonne Saint-Valentin ! Je t\'aime fort 💝',
+      mots: ['Tu es mon humain préféré 💕', 'Un câlin pour la Saint-Valentin ? 🥰', 'Je t\'ai gardé un chocolat… enfin presque 🍫'],
+      ambiance: {
+        salon: [['💌', 'left:110px;top:40px;font-size:24px'], ['🌹', 'right:44px;top:74px;font-size:20px']],
+        cuisine: [['🍫', 'left:172px;bottom:160px;font-size:22px']],
+        chambre: [['💕', 'right:70px;top:52px;font-size:22px', 'flotte']],
+        jeux: [['❤️', 'left:86px;top:34px;font-size:20px']],
+        jardin: [['💕', 'left:150px;top:96px;font-size:18px', 'flotte']] } },
+    { id: 'paques', nom: 'Pâques', ico: '🐣', guirlande: ['#ffd8a8', '#b2f2bb', '#d0bfff', '#a5d8ff'],
+      periode: y => { var p = paques(y); return [new Date(y, p.getMonth(), p.getDate() - 14), new Date(y, p.getMonth(), p.getDate() + 1)]; },
+      jourJ: y => paques(y), voeux: 'Joyeuses Pâques ! On cherche les œufs ? 🥚',
+      mots: ['J\'ai vu un œuf dans le jardin… 🥚', 'Les cloches sont passées ? 🔔', 'Un petit chocolat de Pâques ? 🍫'],
+      ambiance: {
+        salon: [['🐣', 'right:36px;top:78px;font-size:20px'], ['🌷', 'left:20px;bottom:96px;font-size:24px']],
+        cuisine: [['🥚', 'left:176px;bottom:160px;font-size:20px'], ['🍫', 'left:200px;bottom:160px;font-size:18px']],
+        chambre: [['🐇', 'right:52px;bottom:28px;font-size:24px']],
+        jeux: [['🥚', 'right:40px;top:102px;font-size:20px']],
+        jardin: [['🥚', 'left:32%;bottom:64px;font-size:16px'], ['🥚', 'left:70%;bottom:68px;font-size:14px'], ['🐣', 'left:52%;bottom:70px;font-size:18px'], ['🔔', 'left:200px;top:30px;font-size:20px', 'balance']] } },
+    { id: 'ete', nom: 'Été', ico: '☀️', guirlande: ['#ffd43b', '#4dabf7', '#ff8787', '#69db7c'],
+      periode: y => [jour(y, 6, 21), jour(y, 8, 31)], jourJ: y => jour(y, 7, 14), voeux: 'C\'est le 14 juillet ! Vive les feux d\'artifice 🎆',
+      mots: ['Il fait chaud ! Une glace ? 🍦', 'C\'est les vacances ! ☀️', 'On joue dehors ce soir ? 🌅'],
+      ambiance: {
+        salon: [['🌻', 'right:38px;top:74px;font-size:22px'], ['🕶️', 'left:24px;bottom:98px;font-size:20px']],
+        cuisine: [['🍉', 'left:172px;bottom:160px;font-size:24px']],
+        chambre: [['🐚', 'right:52px;bottom:28px;font-size:20px']],
+        jeux: [['🏖️', 'right:40px;top:100px;font-size:22px']],
+        jardin: [['⛱️', 'left:56%;bottom:58px;font-size:40px'], ['🍉', 'left:34%;bottom:66px;font-size:18px']] } },
+    { id: 'halloween', nom: 'Halloween', ico: '🎃', guirlande: ['#f76707', '#343a40', '#9775fa'],
+      periode: y => [jour(y, 10, 15), jour(y, 11, 2)], jourJ: y => jour(y, 10, 31), voeux: 'Joyeux Halloween ! Des bonbons ou un sort ? 🎃',
+      mots: ['Des bonbons ou un sort ? 🍬', 'J\'ai vu passer une chauve-souris ! 🦇', 'Bouh ! Je t\'ai fait peur ? 👻'],
+      fenetre: '🦇', ambiance: {
+        salon: [['🎃', 'right:34px;top:78px;font-size:20px'], ['🕸️', 'left:2px;top:26px;font-size:30px;opacity:0.55']],
+        cuisine: [['🍬', 'left:172px;bottom:160px;font-size:22px'], ['🍭', 'left:196px;bottom:162px;font-size:18px']],
+        chambre: [['👻', 'left:108px;top:56px;font-size:22px', 'flotte']],
+        jeux: [['🕸️', 'left:84px;top:28px;font-size:30px;opacity:0.55'], ['🎃', 'right:40px;top:100px;font-size:22px']],
+        jardin: [['🎃', 'left:60%;bottom:60px;font-size:26px'], ['🎃', 'left:32%;bottom:66px;font-size:18px'], ['🍂', 'left:200px;top:110px;font-size:18px', 'tombe'], ['🦇', 'left:150px;top:30px;font-size:20px', 'vole-loin']],
+        trophees: [['🕯️', 'left:50%;bottom:12px;font-size:22px']] } },
+    { id: 'noel', nom: 'Noël', ico: '🎄', guirlande: ['#e03131', '#2b8a3e', '#f4c430'],
+      periode: y => [jour(y, 12, 1), jour(y, 12, 26)], jourJ: y => jour(y, 12, 25), voeux: 'Joyeux Noël ! Tu crois que le Père Noël est passé ? 🎁',
+      mots: ['J\'ai écrit ma lettre au Père Noël 📮', 'Il neige, c\'est magique ❄️', 'On décore le sapin ensemble ? 🎄'],
+      ambiance: {
+        salon: [['🧦', 'left:104px;top:34px;font-size:22px', 'balance'], ['⭐', 'right:58px;top:74px;font-size:16px', 'scintille']],
+        cuisine: [['🍪', 'left:172px;bottom:160px;font-size:22px'], ['🥛', 'left:198px;bottom:160px;font-size:20px']],
+        chambre: [['🎁', 'right:52px;bottom:28px;font-size:24px'], ['🧦', 'left:112px;top:60px;font-size:20px', 'balance']],
+        jeux: [['🎁', 'right:30px;top:100px;font-size:22px'], ['🎁', 'right:58px;top:106px;font-size:16px']],
+        jardin: [['⛄', 'left:58%;bottom:58px;font-size:38px']],
+        trophees: [['🎀', 'left:50%;top:6px;font-size:22px']] } }
+  ];
+  // Fête en cours à la date t (ou null) ; la prochaine à venir
+  function bornes(f, t) {
+    var y = new Date(t).getFullYear(), r = null;
+    [y - 1, y, y + 1].forEach(a => { var p = f.periode(a), fin = new Date(p[1].getFullYear(), p[1].getMonth(), p[1].getDate() + 1); if (!r && t >= +p[0] && t < +fin) r = { debut: p[0], fin: p[1], annee: a }; });
+    return r;
+  }
+  function feteDu(t) {
+    t = t || Date.now();
+    for (var i = 0; i < FETES.length; i++) { var b = bornes(FETES[i], t); if (b) return Object.assign({}, FETES[i], b, { estJourJ: memeJour(FETES[i].jourJ(b.annee), t) }); }
+    return null;
+  }
+  function memeJour(d, t) { var x = new Date(t); return d.getFullYear() === x.getFullYear() && d.getMonth() === x.getMonth() && d.getDate() === x.getDate(); }
+  function prochaineFete(t) {
+    t = t || Date.now();
+    var y = new Date(t).getFullYear(), l = [];
+    FETES.forEach(f => [y - 1, y, y + 1].forEach(a => { var p = f.periode(a); if (+p[0] > t) l.push({ fete: f, debut: p[0] }); }));
+    l.sort((a, b) => a.debut - b.debut);
+    return l[0] ? Object.assign({}, l[0].fete, { debut: l[0].debut }) : null;
+  }
 
   // Besoins (en %) au moment t, d'après le dernier soin de chacun
   function niveaux(a, t) {
@@ -262,26 +374,59 @@ var CP = (function () {
   function habit(id, c) {
     var a = art(id), k = a.couleur;
     if (id === 'cape') return '<path d="M56 132 Q100 120 144 132 L154 196 Q100 206 46 196 Z" fill="' + k + '"/><ellipse cx="100" cy="166" rx="32" ry="28" fill="' + nuance(c, 0.45) + '"/>';
+    if (id === 'cape-vampire') return '<path d="M52 134 L36 92 L74 122 Z M148 134 L164 92 L126 122 Z" fill="#c92a2a"/>' +
+      '<path d="M54 130 Q100 118 146 130 L156 198 Q100 208 44 198 Z" fill="' + k + '"/><path d="M54 130 L44 198 L56 197 L64 136 Z M146 130 L156 198 L144 197 L136 136 Z" fill="#c92a2a"/>' +
+      '<ellipse cx="100" cy="166" rx="32" ry="28" fill="' + nuance(c, 0.45) + '"/>';
     var r = '<path d="M50 150 Q52 120 100 118 Q148 120 150 150 L148 178 Q100 192 52 178 Z" fill="' + k + '"/>';
     if (id === 'manteau') r += '<path d="M100 120 L100 186" stroke="' + nuance(k, -0.3) + '" stroke-width="3"/><circle cx="108" cy="140" r="3.5" fill="#f4c430"/><circle cx="108" cy="158" r="3.5" fill="#f4c430"/><circle cx="108" cy="176" r="3.5" fill="#f4c430"/>' +
                              '<path d="M52 176 Q100 192 148 176" stroke="#fff" stroke-width="6" fill="none" opacity="0.9"/>';
+    if (id === 'pull-noel') {
+      var z = 'M52 152'; for (var x = 52; x < 148; x += 8) z += ' L' + (x + 4) + ' 146 L' + (x + 8) + ' 152';
+      r += '<path d="' + z + '" stroke="#fff" stroke-width="3" fill="none" stroke-linejoin="round"/><path d="M54 164 Q100 176 146 164" stroke="#2b8a3e" stroke-width="7" fill="none"/>' +
+           '<g stroke="#fff" stroke-width="2" stroke-linecap="round"><path d="M76 132 v10 M71 137 h10 M72.5 133.5 l7 7 M79.5 133.5 l-7 7"/><path d="M124 132 v10 M119 137 h10 M120.5 133.5 l7 7 M127.5 133.5 l-7 7"/></g>';
+    }
     if (id === 'pull') r += '<path d="M56 140 Q100 152 144 140 M54 160 Q100 172 146 160" stroke="' + nuance(k, 0.4) + '" stroke-width="5" fill="none"/>';
     return r;
   }
   function accessoireCou(id) {
     var k = art(id).couleur;
-    if (id === 'noeud') return '<path d="M100 128 L78 116 L78 140 Z M100 128 L122 116 L122 140 Z" fill="' + k + '"/><circle cx="100" cy="128" r="6" fill="' + nuance(k, -0.3) + '"/>';
+    if (id === 'noeud' || id === 'noeud-dore') return '<path d="M100 128 L78 116 L78 140 Z M100 128 L122 116 L122 140 Z" fill="' + k + '"/><circle cx="100" cy="128" r="6" fill="' + nuance(k, -0.3) + '"/>';
     if (id === 'echarpe') return '<path d="M60 118 Q100 136 140 118 L142 130 Q100 148 58 130 Z" fill="' + k + '"/><path d="M118 132 L126 172 L112 172 L108 136Z" fill="' + k + '"/>';
+    if (id === 'collier-coeur') return '<path d="M62 122 Q100 140 138 122" stroke="' + k + '" stroke-width="7" fill="none" stroke-linecap="round"/>' + coeur(100, 140, 8, '#ff6b81') +
+      '<circle cx="97" cy="136" r="2" fill="#fff" opacity="0.7"/>';
     var r = '<path d="M62 122 Q100 140 138 122" stroke="' + k + '" stroke-width="8" fill="none" stroke-linecap="round"/><circle cx="100" cy="134" r="5" fill="#f4c430"/>';
     if (id === 'laisse' || id === 'laisse-luxe') r += '<path d="M100 136 Q140 170 196 150" stroke="' + k + '" stroke-width="' + (id === 'laisse-luxe' ? 5 : 3.5) + '" fill="none"/>' +
                                                       (id === 'laisse-luxe' ? '<path d="M100 136 Q140 170 196 150" stroke="#f4c430" stroke-width="1.5" stroke-dasharray="4 6" fill="none"/>' : '');
     return r;
+  }
+  function coeur(cx, cy, s, f) {
+    return '<path d="M' + cx + ' ' + (cy + s * 0.9) + ' C' + (cx - s * 1.6) + ' ' + (cy - s * 0.2) + ' ' + (cx - s * 0.6) + ' ' + (cy - s * 1.3) + ' ' + cx + ' ' + (cy - s * 0.4) +
+           ' C' + (cx + s * 0.6) + ' ' + (cy - s * 1.3) + ' ' + (cx + s * 1.6) + ' ' + (cy - s * 0.2) + ' ' + cx + ' ' + (cy + s * 0.9) + 'Z" fill="' + f + '"/>';
   }
   function chapeau(id) {
     var k = art(id).couleur;
     if (id === 'bonnet') return '<path d="M58 60 Q60 18 100 16 Q140 18 142 60 Z" fill="' + k + '"/><rect x="54" y="52" width="92" height="14" rx="7" fill="#fff"/><circle cx="100" cy="14" r="10" fill="#fff"/>';
     if (id === 'chapeau') return '<ellipse cx="100" cy="42" rx="46" ry="9" fill="' + k + '"/><path d="M72 42 Q72 6 100 6 Q128 6 128 42Z" fill="' + k + '"/><rect x="72" y="30" width="56" height="7" fill="#c0392b"/>';
     if (id === 'couronne') return '<path d="M68 44 L72 14 L86 30 L100 8 L114 30 L128 14 L132 44 Z" fill="' + k + '" stroke="#c99a00" stroke-width="2"/><circle cx="100" cy="30" r="4" fill="#e53935"/>';
+    if (id === 'chapeau-sorciere') return '<path d="M74 40 L98 4 Q104 0 116 6 Q106 10 108 20 L126 40 Z" fill="' + k + '"/>' +
+      '<path d="M78 34 L122 34 L126 40 L74 40 Z" fill="#f76707"/><rect x="95" y="33" width="9" height="8" rx="1.5" fill="none" stroke="#ffd43b" stroke-width="2"/>' +
+      '<ellipse cx="100" cy="42" rx="56" ry="9" fill="' + k + '"/><ellipse cx="100" cy="40" rx="40" ry="4" fill="' + nuance(k, -0.35) + '" opacity="0.5"/>';
+    if (id === 'bonnet-noel') return '<path d="M58 56 Q60 12 104 10 Q140 12 154 50 Q136 30 122 26 Q134 40 140 56 Z" fill="' + k + '"/>' +
+      '<rect x="54" y="48" width="92" height="15" rx="7.5" fill="#fff"/><circle cx="154" cy="54" r="9" fill="#fff"/>';
+    if (id === 'chapeau-fete') return '<g transform="rotate(14 100 40)"><path d="M78 44 L100 4 L122 44 Z" fill="' + k + '"/>' +
+      '<path d="M84 34 L110 12 M90 42 L116 22 M100 44 L119 30" stroke="#ffd43b" stroke-width="3.5" stroke-linecap="round"/>' +
+      '<circle cx="100" cy="5" r="6" fill="#ffd43b"/><path d="M78 44 Q100 50 122 44" stroke="#fff" stroke-width="3" fill="none" opacity="0.8"/></g>';
+    if (id === 'bandeau-coeurs') return '<path d="M56 64 Q58 34 100 32 Q142 34 144 64" stroke="' + k + '" stroke-width="6" fill="none" stroke-linecap="round"/>' +
+      '<path d="M84 34 Q78 22 76 12 M116 34 Q122 22 124 12" stroke="#495057" stroke-width="2" fill="none"/>' + coeur(76, 12, 9, '#ff6b81') + coeur(124, 12, 9, '#e03131');
+    if (id === 'oreilles-lapin') return '<ellipse cx="78" cy="14" rx="10" ry="24" fill="' + k + '" stroke="#dee2e6" stroke-width="1.5" transform="rotate(-14 78 30)"/>' +
+      '<ellipse cx="122" cy="14" rx="10" ry="24" fill="' + k + '" stroke="#dee2e6" stroke-width="1.5" transform="rotate(14 122 30)"/>' +
+      '<ellipse cx="78" cy="16" rx="5" ry="17" fill="#fcc2d7" transform="rotate(-14 78 30)"/><ellipse cx="122" cy="16" rx="5" ry="17" fill="#fcc2d7" transform="rotate(14 122 30)"/>' +
+      '<path d="M56 64 Q58 34 100 32 Q142 34 144 64" stroke="#f783ac" stroke-width="6" fill="none" stroke-linecap="round"/>';
+    if (id === 'chapeau-paille') return '<ellipse cx="100" cy="42" rx="58" ry="11" fill="' + k + '"/><path d="M72 42 Q72 14 100 14 Q128 14 128 42Z" fill="' + k + '"/>' +
+      '<rect x="72" y="32" width="56" height="7" fill="#e76f51"/><path d="M50 42 Q100 56 150 42 M80 22 Q100 18 120 22" stroke="' + nuance(k, -0.25) + '" stroke-width="1.5" fill="none" opacity="0.7"/>';
+    if (id === 'lunettes') return '<path d="M62 76 L46 70 M138 76 L154 70" stroke="' + k + '" stroke-width="3.5" stroke-linecap="round"/>' +
+      '<rect x="62" y="69" width="34" height="23" rx="10" fill="' + k + '"/><rect x="104" y="69" width="34" height="23" rx="10" fill="' + k + '"/><path d="M96 76 Q100 72 104 76" stroke="' + k + '" stroke-width="3.5" fill="none"/>' +
+      '<path d="M68 74 L76 74 M110 74 L118 74" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity="0.6"/>';
     if (id === 'fleur') return '<g transform="translate(132 42)"><circle r="7" cx="0" cy="-9" fill="' + k + '"/><circle r="7" cx="9" cy="0" fill="' + k + '"/><circle r="7" cx="0" cy="9" fill="' + k + '"/><circle r="7" cx="-9" cy="0" fill="' + k + '"/><circle r="6" fill="#ffd54f"/></g>';
     return '';
   }
@@ -321,9 +466,12 @@ var CP = (function () {
     var bas = BESOINS.filter(b => n[b.id] < 30 && t - (etat.demandes[b.id] || 0) > ESPACE_DEMANDE).sort((x, y) => n[x.id] - n[y.id]);
     if (bas.length && veille && veille.page !== 'compagnon') { msg = { texte: DEMANDES[bas[0].id], demande: true }; etat.demandes[bas[0].id] = t; }
     // 2) Le premier message de la journée : bonjour
-    else if (etat.jour !== jour) msg = { texte: (h < 12 ? 'Bonjour' : h < 18 ? 'Coucou' : 'Bonsoir') + qui + ' ! Je suis content de te voir 🐾' };
+    else if (etat.jour !== jour) { var fj = feteDu(t); msg = { texte: fj && fj.estJourJ ? fj.voeux : (h < 12 ? 'Bonjour' : h < 18 ? 'Coucou' : 'Bonsoir') + qui + ' ! Je suis content de te voir 🐾' }; }
     // 3) De temps en temps, un mot gentil
-    else if (forcer || (t - etat.dernier > ESPACE_GENTILS && Math.random() < 0.35)) msg = { texte: GENTILS[Math.floor(Math.random() * GENTILS.length)] };
+    else if (forcer || (t - etat.dernier > ESPACE_GENTILS && Math.random() < 0.35)) {
+      var fs = feteDu(t), l = fs ? GENTILS.concat(fs.mots, fs.mots) : GENTILS;   // pendant une fête, ses petits mots reviennent plus souvent
+      msg = { texte: l[Math.floor(Math.random() * l.length)] };
+    }
     if (!msg) return null;
     etat.dernier = t; etat.jour = jour;
     ecrireV('compagnon-veille', etat);
@@ -482,6 +630,7 @@ var CP = (function () {
   }
 
   return { ESPECES: ESPECES, demarrerVeille: demarrerVeille, verifierVeille: verifierVeille, reglagesMessages: reglagesMessages, BESOINS: BESOINS, RECOMPENSE_JOUR: RECOMPENSE_JOUR, RECOMPENSE_SEMAINE: RECOMPENSE_SEMAINE, RAYONS: RAYONS, ARTICLES: ARTICLES,
+           FETES: FETES, feteDu: feteDu, prochaineFete: prochaineFete, coeur: coeur,
            niveaux: niveaux, humeur: humeur, signes: signes, age: age, estNuit: estNuit, dessin: dessin, art: art,
            NIVEAUX_DEFI: NIVEAUX_DEFI, DEFIS: DEFIS, BLOCS: BLOCS, ETAGERE_MAX: ETAGERE_MAX, etatDefis: etatDefis, verifierDefis: verifierDefis,
            lireMaison: lireMaison, ecrireMaison: ecrireMaison, trophees: trophees, coupe: coupe, defisDeLaSemaine: defisDeLaSemaine };

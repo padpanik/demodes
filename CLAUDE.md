@@ -392,6 +392,16 @@ Bataille navale : `bataille-sauvegarde`, `bataille-prive` (ma flotte en salon), 
 - En-tête de la page : bouton « ‹ ▦ Jeux » comme dans les jeux, compteur d'étoiles avec une étoile dorée dessinée ; onglets Soins /
   Boutique / Défis / Réglages en icônes au trait **colorées** (cœur rose, sac bleu, coupe dorée, curseurs violets) sur une pastille
   teintée, plus vive sur l'onglet choisi (`ICONES_CP` dans `compagnon.html`).
+- **Fêtes de l'année** (`FETES`, `CP.feteDu(t)`, `CP.prochaineFete(t)` dans `compagnon-commun.js`) : Nouvel an (27 déc. → 10 janv.),
+  Saint-Valentin (1er → 15 févr.), Pâques (2 semaines avant → lundi, calcul de la date), Été (21 juin → 31 août), Halloween (15 oct. → 2 nov.),
+  Noël (1er → 26 déc.). Pendant la période : rayon de saison en tête de la boutique (bannière avec la date de fin), articles marqués `fete`
+  achetables **seulement à ce moment-là** et gardés ensuite (on les retrouve dans leur rayon habituel si on les possède) ; hors période,
+  « Prochaine boutique de fête : … dès le … ». Chaque fête : chapeau / habit / collier dessinés en SVG, une déco (emplacement `fete-<id>`,
+  place par défaut `pos` / `x` / `taille`, déplaçable avec « Arranger la déco », il s'en sert avec sa `phrase`) et une friandise.
+  **Rappels discrets dans la maison** sans rien acheter : guirlande de fanions aux couleurs de la fête dans les pièces intérieures,
+  quelques émojis par pièce (`ambiance`, animés doucement : flotte, balance, scintille…), un passage à la fenêtre (chauve-souris, feu
+  d'artifice la nuit du Nouvel an), jardin enneigé avec bonhomme de neige à Noël. Petits mots de saison plus fréquents, vœux le jour J
+  (31 oct., 25 déc., 1er janv., 14 févr., dimanche de Pâques, 14 juillet) au premier message du jour.
 - Accueil : carte « Mon compagnon » (son dessin, son humeur, les étoiles) fixée en haut avec « En ligne », au-dessus de la liste des jeux qui défile.
 - Boutique : tête, cou (dont laisse et laisse de grande marque), habits (manteau d'hiver…), couchage (coussin → château), déco, friandises.
 
