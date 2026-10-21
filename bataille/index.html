@@ -236,7 +236,7 @@
             <span class="pastille" :class="{ attente: connexion !== 'ok' }"></span>
             <div>
               <div class="salon-nom">Salon « {{ roomCode }} »</div>
-              <div class="salon-role">{{ role === 'hote' ? '👑 Tu es l\'hôte : tu choisis les règles' : 'Tu joues' }} en tant que {{ moi }} · {{ connexionTexte }}</div>
+              <div class="salon-role">{{ role === 'hote' ? '👑 Tu es l\'hôte : tu choisis les règles (onglet Règles)' : 'Tu joues' }} en tant que {{ moi }} · {{ connexionTexte }}</div>
             </div>
           </div>
           <div class="chips-joueurs">
@@ -249,13 +249,6 @@
             <button class="btn principal" @click="onglet = 'play'">Jouer →</button>
             <button class="btn" @click="quitterSalon">Quitter</button>
           </div>
-        </section>
-
-        <section class="carte">
-          <div class="titre-carte">Règles de la partie <small v-if="role === 'client'">choisies par l'hôte</small></div>
-          <label class="case-a-cocher"><input type="checkbox" :checked="collesAffiche" :disabled="role === 'client'" @change="choisirRegle('colles', $event.target.checked)"> ⚓ Les navires peuvent se toucher</label>
-          <label class="case-a-cocher"><input type="checkbox" :checked="rejouerAffiche" :disabled="role === 'client'" @change="choisirRegle('rejouer', $event.target.checked)"> 🎯 Rejouer tant qu'on touche</label>
-          <div class="aide">Par défaut : navires séparés d'au moins une case (même en diagonale), un tir chacun son tour.<template v-if="role === 'hote'"> Un changement recommence le placement.</template></div>
         </section>
 
         <template v-if="!role">
@@ -424,6 +417,13 @@
 
       <!-- RÈGLES -->
       <template v-slot:regles>
+        <section class="carte">
+          <div class="titre-carte">Options de la partie <small v-if="role === 'client'">choisies par l'hôte</small></div>
+          <label class="case-a-cocher"><input type="checkbox" :checked="collesAffiche" :disabled="role === 'client'" @change="choisirRegle('colles', $event.target.checked)"> ⚓ Les navires peuvent se toucher</label>
+          <label class="case-a-cocher"><input type="checkbox" :checked="rejouerAffiche" :disabled="role === 'client'" @change="choisirRegle('rejouer', $event.target.checked)"> 🎯 Rejouer tant qu'on touche</label>
+          <div class="aide">Par défaut : navires séparés d'au moins une case (même en diagonale), un tir chacun son tour.<template v-if="role === 'hote'"> Un changement recommence le placement.</template></div>
+        </section>
+
         <section class="carte regles">
           <div class="titre-carte">Règles</div>
           <ul>

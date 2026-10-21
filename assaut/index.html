@@ -184,8 +184,6 @@
             <button :class="{ actif: formatAffiche === 'complet' }" :disabled="role === 'client'" @click="choisirFormat('complet')">Complète<small>40 pièces</small></button>
             <button :class="{ actif: formatAffiche === 'rapide' }" :disabled="role === 'client'" @click="choisirFormat('rapide')">Rapide<small>10 pièces</small></button>
           </div>
-          <label class="case-a-cocher"><input type="checkbox" :checked="memoireAffichee" :disabled="role === 'client'" @change="choisirMemoire($event.target.checked)"> 👁 Garder à l'écran les pièces adverses révélées</label>
-          <div class="aide">Sans cette option, une pièce adverse vue en combat se recache : à toi de t'en souvenir.<template v-if="role === 'hote'"> Un changement recommence le placement.</template></div>
         </section>
 
         <template v-if="!role">
@@ -344,6 +342,12 @@
 
       <!-- RÈGLES -->
       <template v-slot:regles>
+        <section class="carte">
+          <div class="titre-carte">Options de la partie <small v-if="role === 'client'">choisies par l'hôte</small></div>
+          <label class="case-a-cocher"><input type="checkbox" :checked="memoireAffichee" :disabled="role === 'client'" @change="choisirMemoire($event.target.checked)"> 👁 Garder à l'écran les pièces adverses révélées</label>
+          <div class="aide">Sans cette option, une pièce adverse vue en combat se recache : à toi de t'en souvenir.<template v-if="role === 'hote'"> Un changement recommence le placement.</template></div>
+        </section>
+
         <section class="carte regles">
           <div class="titre-carte">Règles</div>
           <ul>
