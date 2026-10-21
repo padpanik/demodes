@@ -98,9 +98,10 @@ Pas d'étape de construction, pas de dépendance à ajouter.
   Le contenu des slots reste écrit dans la page (mêmes données, mêmes `ref`). Onglets en `v-show` : rien n'est détruit.
   Modifier l'en-tête, les onglets ou leur style = modifier **seulement** `fiche-jeu.js`. Brilliant : `:onglet.sync="actif_tab"`.
 - En-tête (logo, nom, résumé + bouton « ⇦ Jeux » en haut à droite) visible sur Partie, Réglages et Règles ; **caché sur Jouer**
-  (l'écran de jeu doit tenir sans défilement). Onglets sur toute la largeur, un logo par onglet : 🎲 Partie (`'config'`), ▶️ Jouer
-  (`'play'`), ⚙️ Réglages (`'reglages'`), 📖 Règles (`'regles'`, règles en clair, sans repli). Pendant le jeu, à droite des onglets :
-  🔊 et le point de connexion (écran allumé : dans Réglages ; Brilliant : niveau et 🎯 dans la ligne des scores).
+  (l'écran de jeu doit tenir sans défilement). Onglets sur toute la largeur, une icône au trait par onglet (SVG maison dans
+  `ICONES`, grises au repos, bleues sur l'onglet actif) : dé = Partie (`'config'`), lecture = Jouer (`'play'`), curseurs = Réglages
+  (`'reglages'`), livre ouvert = Règles (`'regles'`, règles en clair, sans repli). Bouton « ‹ ▦ Jeux » (chevron + grille, `RETOUR`).
+  Pendant le jeu, à droite des onglets : haut-parleur (`SON`, barré si coupé) et le point de connexion (écran allumé : dans Réglages ; Brilliant : niveau et 🎯 dans la ligne des scores).
 - **Onglet Partie des jeux solo + salon** (Yams, Brilliant, Assaut, Bataille navale, Quatre en ligne, Dominos, Lettres croisées) :
   toujours **deux blocs**, « À plusieurs / À deux, chacun sur son téléphone » (pseudo, nom du salon, bouton « Entrer dans le salon »)
   **en haut**, puis « Seul » / « Seul contre l'ordinateur » (ses options et le bouton « Jouer seul ») **en bas**. Les options qui servent

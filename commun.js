@@ -3,7 +3,7 @@
 // Les clés de stockage gardent l'ancien préfixe "brillant-" : les réglages déjà faits sont conservés.
 
 // Numéro de version affiché (à augmenter à chaque mise en ligne, avec brilliant.html et sw.js)
-const VERSION = '2.08';
+const VERSION = '2.09';
 
 // ---------- Stockage local ----------
 function lireStockage(cle) {

@@ -24,17 +24,19 @@
   .fj-tete .fj-titre { min-width: 0; }
   .fj-tete h1 { margin: 0; font-size: 1.45em; line-height: 1.15; letter-spacing: -0.5px; }
   .fj-tete p { margin: 2px 0 0; color: #6b7a86; font-size: 0.9em; line-height: 1.3; }
-  .fj-retour { position: absolute; top: 2px; right: 0; font-weight: 700; font-size: 0.85em; color: #3b5568; text-decoration: none;
+  .fj-retour-ico { display: inline-flex; align-items: center; margin-right: 4px; gap: 1px; line-height: 0; }
+  .fj-retour { position: absolute; top: 2px; right: 0; display: inline-flex; align-items: center; font-weight: 700; font-size: 0.85em; color: #3b5568; text-decoration: none;
                background: #e3e8ec; border-radius: 10px; padding: 7px 10px; }
   .fj-barre { display: flex; align-items: center; gap: 6px; margin-bottom: 8px; }
   .fj-onglets { flex: 1; display: flex; background: #e3e8ec; border-radius: 11px; padding: 3px; gap: 2px; }
   .fj-onglets button { flex: 1; border: none; background: transparent; font: inherit; display: flex; flex-direction: column; align-items: center; gap: 1px;
                        padding: 4px 2px; border-radius: 8px; font-weight: 600; font-size: 0.8em; color: #5b6b78; cursor: pointer; }
   .fj-onglets button.actif { background: #fff; color: #1d2b36; box-shadow: 0 1px 3px rgba(0,0,0,0.12); }
-  .fj-onglets .ico { font-size: 1.2em; line-height: 1.15; }
+  .fj-onglets .ico { display: flex; line-height: 0; color: #8795a1; transition: color 0.15s, transform 0.15s; }
+  .fj-onglets button.actif .ico { color: #1c7ed6; transform: translateY(-1px); }
   .fj-infos { display: flex; align-items: center; gap: 3px; white-space: nowrap; }
-  .fj-son { border: none; background: transparent; font-size: 1.05em; line-height: 1; padding: 3px 2px; border-radius: 8px; cursor: pointer; }
-  .fj-son.off { opacity: 0.45; }
+  .fj-son { border: none; background: transparent; color: #3b5568; line-height: 0; padding: 4px; border-radius: 8px; cursor: pointer; }
+  .fj-son.off { color: #9aa7b1; }
   .fj-point { width: 9px; height: 9px; border-radius: 50%; background: #42b983; }
   .fj-point.attente { background: #f0a030; animation: fj-clignote 1s infinite; }
   @keyframes fj-clignote { 50% { opacity: 0.3; } }
@@ -49,11 +51,30 @@
   style.textContent = CSS;
   document.head.appendChild(style);
 
+  // Icônes dessinées au trait (SVG maison, couleur du texte : grises au repos, colorées sur l'onglet actif)
+  function svg(corps) {
+    return '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + corps + '</svg>';
+  }
+  var ICONES = {
+    // Partie : un dé
+    config: svg('<rect x="3.5" y="3.5" width="17" height="17" rx="4.5"/><circle cx="8.5" cy="8.5" r="1.1" fill="currentColor" stroke="none"/><circle cx="15.5" cy="8.5" r="1.1" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.1" fill="currentColor" stroke="none"/><circle cx="8.5" cy="15.5" r="1.1" fill="currentColor" stroke="none"/><circle cx="15.5" cy="15.5" r="1.1" fill="currentColor" stroke="none"/>'),
+    // Jouer : lecture dans un cercle
+    play: svg('<circle cx="12" cy="12" r="8.75"/><path d="M10.2 8.6 L15.6 12 L10.2 15.4 Z" fill="currentColor"/>'),
+    // Réglages : trois curseurs
+    reglages: svg('<path d="M4 7h9M17 7h3M4 12h3M11 12h9M4 17h11M19 17h1"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="17" cy="17" r="2"/>'),
+    // Règles : livre ouvert
+    regles: svg('<path d="M12 6.5C10.2 5 7.6 4.5 4 4.8v12.6c3.6-.3 6.2.2 8 1.7 1.8-1.5 4.4-2 8-1.7V4.8c-3.6-.3-6.2.2-8 1.7z"/><path d="M12 6.5v12.6"/>')
+  };
+  var RETOUR = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.5 6 L8.5 12 L14.5 18"/></svg>' +
+               '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="6.5" height="6.5" rx="1.8"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.8"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1.8"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.8"/></svg>';
+  // Son : haut-parleur avec ondes, ou barré
+  var SON = { oui: svg('<path d="M4 9.5h3.2L12 5.5v13l-4.8-4H4z" fill="currentColor" fill-opacity="0.15"/><path d="M15.5 9.2a4 4 0 0 1 0 5.6M18 6.8a7.5 7.5 0 0 1 0 10.4"/>'),
+              non: svg('<path d="M4 9.5h3.2L12 5.5v13l-4.8-4H4z" fill="currentColor" fill-opacity="0.15"/><path d="M16 9.5l5 5M21 9.5l-5 5"/>') };
   var ONGLETS = [
-    { cle: 'config', ico: '🎲', nom: 'Partie' },
-    { cle: 'play', ico: '▶️', nom: 'Jouer' },
-    { cle: 'reglages', ico: '⚙️', nom: 'Réglages' },
-    { cle: 'regles', ico: '📖', nom: 'Règles' }
+    { cle: 'config', ico: ICONES.config, nom: 'Partie' },
+    { cle: 'play', ico: ICONES.play, nom: 'Jouer' },
+    { cle: 'reglages', ico: ICONES.reglages, nom: 'Réglages' },
+    { cle: 'regles', ico: ICONES.regles, nom: 'Règles' }
   ];
 
   Vue.component('fiche-jeu', {
@@ -64,7 +85,7 @@
       son: { type: Boolean, default: undefined },     // bouton 🔊 pendant le jeu (absent si non fourni)
       connexion: { type: String, default: '' }         // '' : pas de salon ; 'ok' : point vert ; autre : point orange
     },
-    data: function () { return { ONGLETS: ONGLETS }; },
+    data: function () { return { ONGLETS: ONGLETS, RETOUR: RETOUR, SON: SON }; },
     methods: {
       choisir: function (cle) { this.$emit('update:onglet', cle); this.$emit('onglet', cle); },
       basculerSon: function () {
@@ -78,15 +99,15 @@
         <header class="fj-tete" v-show="onglet !== 'play'">
           <div class="fj-logo"><slot name="logo"></slot></div>
           <div class="fj-titre"><h1>{{ nom }}</h1><p>{{ resume }}</p></div>
-          <a class="fj-retour" href="index.html?choix" title="Retour à la liste des jeux">⇦ Jeux</a>
+          <a class="fj-retour" href="index.html?choix" title="Retour à la liste des jeux"><span class="fj-retour-ico" v-html="RETOUR"></span>Jeux</a>
         </header>
         <div class="fj-barre">
           <nav class="fj-onglets">
-            <button v-for="o in ONGLETS" :key="o.cle" :class="{ actif: onglet === o.cle }" @click="choisir(o.cle)"><span class="ico">{{ o.ico }}</span>{{ o.nom }}</button>
+            <button v-for="o in ONGLETS" :key="o.cle" :class="{ actif: onglet === o.cle }" @click="choisir(o.cle)"><span class="ico" v-html="o.ico"></span>{{ o.nom }}</button>
           </nav>
           <div class="fj-infos" v-if="onglet === 'play'">
             <slot name="infos"></slot>
-            <button v-if="son !== undefined" class="fj-son" :class="{ off: !son }" @click="basculerSon">{{ son ? '🔊' : '🔇' }}</button>
+            <button v-if="son !== undefined" class="fj-son" :class="{ off: !son }" @click="basculerSon" :title="son ? 'Couper le son' : 'Remettre le son'" v-html="son ? SON.oui : SON.non"></button>
             <span v-if="connexion" class="fj-point" :class="{ attente: connexion !== 'ok' }"></span>
           </div>
         </div>
