@@ -5,7 +5,7 @@
 //
 //   <fiche-jeu jeu="yams" nom="Yams" resume="Désdale · 5 dés, 5 colonnes" :onglet.sync="onglet"
 //              :son.sync="sonActif" :connexion="role ? connexion : ''">
-//     <template v-slot:logo> … </template>        ancien logo (montré si l'on a choisi « Anciennes » icônes sur l'accueil)
+//     <template v-slot:logo> … </template>        ancien logo (montré seulement si icones-jeux.js n'est pas chargé)
 //     <template v-slot:partie> … </template>      onglet Partie : salon, jouer seul…
 //     <template v-slot:jouer> … </template>       onglet Jouer : l'écran de jeu
 //     <template v-slot:reglages> … </template>    onglet Réglages (après les réglages de base, voir <reglages-base>)
@@ -86,8 +86,8 @@
       son: { type: Boolean, default: undefined },     // bouton 🔊 pendant le jeu (absent si non fourni)
       connexion: { type: String, default: '' }         // '' : pas de salon ; 'ok' : point vert ; autre : point orange
     },
-    data: function () { return { ONGLETS: ONGLETS, RETOUR: RETOUR, SON: SON, icNeuves: typeof IconesJeux !== 'undefined' && IconesJeux.nouvelles() }; },
-    computed: { iconeNeuve: function () { return this.jeu && this.icNeuves ? IconesJeux.svg(this.jeu, 52) : ''; } },
+    data: function () { return { ONGLETS: ONGLETS, RETOUR: RETOUR, SON: SON, icNeuves: typeof IconesJeux !== 'undefined' }; },
+    computed: { iconeNeuve: function () { return this.jeu && this.icNeuves ? IconesJeux.svg(this.jeu, 64) : ''; } },
     methods: {
       choisir: function (cle) { this.$emit('update:onglet', cle); this.$emit('onglet', cle); },
       basculerSon: function () {

@@ -20,15 +20,14 @@
   <style>
     .jeux { display: grid; gap: 12px; }
     .jeu {
-      display: flex; align-items: center; gap: 16px; width: 100%; text-align: left;
+      display: flex; align-items: center; gap: 14px; width: 100%; text-align: left;
       padding: 18px 16px; border: 2px solid transparent; border-radius: 18px; background: #fff; cursor: pointer;
       font: inherit; color: inherit; text-decoration: none; box-sizing: border-box;
       box-shadow: 0 1px 2px rgba(0,0,0,0.05), 0 4px 14px rgba(29,43,54,0.06);
     }
     /* Fiches de même hauteur : colonne d'icône fixe, descriptif sur deux lignes au plus */
     .jeu { min-height: 98px; }
-    .jeu > :first-child { width: 56px; box-sizing: border-box; flex-shrink: 0; justify-content: center; }
-    .jeu > .ico-gb { height: 56px; }
+    .jeu > :first-child { width: 68px; box-sizing: border-box; flex-shrink: 0; justify-content: center; }
     .jeu > div:nth-child(2) { flex: 1; min-width: 0; }
     .jeu .desc { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
     .jeu { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
@@ -42,31 +41,6 @@
     .jeu .badge { display: inline-block; margin-top: 6px; font-size: 0.78em; font-weight: 700; color: #8a5a00; background: #fff3d6; border-radius: 8px; padding: 2px 8px; }
     .badge-quitter { margin-left: 8px; border: none; border-radius: 6px; background: #f3d9a8; color: #6b4500; font: inherit; font-weight: 700; padding: 1px 6px; cursor: pointer; }
     .jeu .fleche { margin-left: auto; font-size: 1.4em; color: #a3adb5; }
-    /* Icône Brilliant : petite grille de couleurs */
-    .ico-grille { display: grid; grid-template-columns: repeat(3, 14px); gap: 3px; flex-shrink: 0; }
-    .ico-grille span { width: 14px; height: 14px; border-radius: 4px; box-shadow: inset 0 -2px 0 rgba(0,0,0,0.18); }
-    /* Icône Yams : cinq dés */
-    .ico-des { display: grid; grid-template-columns: repeat(3, 15px); gap: 3px; flex-shrink: 0; width: 51px; justify-content: center; }
-    .ico-des span { width: 15px; height: 15px; border-radius: 4px; background: #fff; border: 1.5px solid #2c3e50; box-sizing: border-box;
-                    display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 800; }
-    /* Icône Backgammon : flèches du plateau */
-    .ico-bg { display: grid; grid-template-columns: repeat(3, 15px); grid-template-rows: 22px 22px; gap: 2px 3px; flex-shrink: 0; width: 51px; padding: 3px; box-sizing: content-box; background: #e9d6b0; border-radius: 6px; }
-    .ico-bg span { background: #8a5a35; clip-path: polygon(0 0, 100% 0, 50% 100%); }
-    .ico-bg span:nth-child(even) { background: #c48a52; }
-    .ico-bg span.bas { clip-path: polygon(50% 0, 100% 100%, 0 100%); }
-    /* Icône Assaut : petit plateau, deux camps et un lac */
-    .ico-as { display: grid; grid-template-columns: repeat(3, 15px); gap: 3px; flex-shrink: 0; width: 51px; }
-    .ico-as span { width: 15px; height: 15px; border-radius: 3px; }
-    /* Icône Bataille navale : un bout de mer avec un navire, un touché et une gerbe d'eau */
-    .ico-bn { display: grid; grid-template-columns: repeat(3, 15px); gap: 2px; flex-shrink: 0; width: 49px; padding: 1px; background: #2a6f97; border-radius: 5px; }
-    .ico-bn span { width: 15px; height: 15px; border-radius: 3px; background: rgba(255,255,255,0.12); position: relative; }
-    .ico-bn span.n { background: #8f9ba4; }
-    .ico-bn span.t::after { content: ''; position: absolute; inset: 3px; border-radius: 50%; background: radial-gradient(#ffe082, #ff6d00 55%, #c62828); }
-    .ico-bn span.e::after { content: ''; position: absolute; inset: 4px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.85); }
-    /* Icône Gribouille : un gribouillis et un crayon */
-    .ico-pb { width: 51px; height: 51px; border-radius: 10px; background: #fff; box-shadow: inset 0 0 0 2px #2c3e50; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-              font: 900 30px/1 Georgia, 'Times New Roman', serif; color: #c0392b; }
-    .jeu > .ico-pb { height: 56px; }
     /* Bloc fixe en haut : « En ligne » et « Mon compagnon » restent visibles quand on fait défiler les jeux */
     .haut-fixe { position: sticky; top: 0; z-index: 20; background: #f3f5f7; padding: 6px 0 10px; margin-bottom: 4px; }
     .carte-compagnon { display: flex; align-items: center; gap: 12px; background: linear-gradient(135deg, #fff8e1, #ffeccc); border-radius: 18px; padding: 8px 14px 8px 8px;
@@ -79,21 +53,7 @@
     .carte-compagnon .etoiles-cp { background: #fff; color: #7a5600; font-weight: 900; border-radius: 12px; padding: 4px 10px; flex-shrink: 0; }
     .ico-cp { width: 51px; height: 51px; border-radius: 14px; background: #fff3c4; display: flex; align-items: center; justify-content: center; font-size: 30px; flex-shrink: 0; }
     .jeu > .ico-cp { height: 56px; }
-    .ico-lc { width: 51px; height: 56px; border-radius: 10px; background: #1f6f5c; display: flex; align-items: center; justify-content: center; gap: 2px; flex-shrink: 0; }
-    .ico-lc span { width: 15px; height: 17px; border-radius: 3px; background: #f6dfa6; color: #2b2116; font-weight: 900; font-size: 12px; display: flex; align-items: center; justify-content: center; }
-    .ico-lc span:nth-child(2) { transform: translateY(-5px); }
-    .ico-dm { width: 51px; height: 56px; border-radius: 10px; background: #2f6b4f; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-    .ico-ql { width: 51px; height: 51px; border-radius: 10px; background: #1f5fae; display: grid; grid-template-columns: repeat(3, 12px); gap: 3px; align-content: center; justify-content: center; flex-shrink: 0; }
-    .jeu > .ico-ql { height: 56px; }
-    .ico-ql span { width: 12px; height: 12px; border-radius: 50%; background: #f3f5f7; }
-    .ico-ql span.r { background: #e53935; } .ico-ql span.j { background: #fbc02d; }
-    .ico-ag { display: grid; grid-template-columns: repeat(3, 15px); gap: 3px; flex-shrink: 0; }
-    .ico-ag span { width: 15px; height: 15px; border-radius: 4px; box-shadow: inset 0 -2px 0 rgba(0,0,0,0.15); }
-    .ico-gb { width: 51px; height: 51px; border-radius: 10px; background: #fff; box-shadow: inset 0 0 0 2px #2c3e50; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-    .ico-neuve { flex-shrink: 0; width: 54px; height: 56px; display: flex; align-items: center; justify-content: center; line-height: 0; }
-    .choix-icones { margin-top: 18px; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 0.85em; color: #6b7a86; }
-    .choix-icones button { border: none; background: #e3e8ec; color: #3b5568; font: inherit; font-weight: 700; border-radius: 9px; padding: 5px 10px; cursor: pointer; }
-    .choix-icones button.actif { background: #1c7ed6; color: #fff; }
+    .ico-neuve { flex-shrink: 0; width: 68px; height: 68px; display: flex; align-items: center; justify-content: center; line-height: 0; }
     .titre-section { font-weight: 700; color: #5b6b78; margin: 4px 4px 10px; }
   </style>
 </head>
@@ -145,21 +105,8 @@
            :style="glisse === j.id ? { transform: 'translateY(' + decalY + 'px) scale(1.03)' } : null"
            :href="j.page" @click="cliquer($event, j.id)" @contextmenu.prevent
            @touchstart="debutAppui($event, j.id)" @mousedown="debutAppui($event, j.id)">
-          <!-- Nouvelles icônes (icones-jeux.js) ; les anciennes restent disponibles, au choix en bas de page (pleines, claires ou anciennes) -->
-          <span v-if="choixIcones !== 'anciennes'" class="ico-neuve" v-html="icone(j.id, choixIcones)"></span>
-          <template v-else>
-            <div v-if="j.id === 'brilliant'" class="ico-grille"><span v-for="(c, i) in grille" :key="i" :style="{ background: c }"></span></div>
-            <div v-else-if="j.id === 'yams'" class="ico-des"><span v-for="n in [5, 3, 6, 2, 4]" :key="n">{{ n }}</span></div>
-            <div v-else-if="j.id === 'assaut'" class="ico-as"><span v-for="(c, k) in ['#b5422f','#b5422f','#b5422f','#5d9bc9','#a9c08c','#5d9bc9','#2f5f9e','#2f5f9e','#2f5f9e']" :key="k" :style="{ background: c }"></span></div>
-            <div v-else-if="j.id === 'gribouille'" class="ico-gb"><svg width="38" height="38" viewBox="0 0 38 38"><path d="M5 27 C 9 12, 14 30, 19 17 S 28 8, 33 20" fill="none" stroke="#e74c3c" stroke-width="3.5" stroke-linecap="round"/><path d="M24 33 l9 -9 l3 3 l-9 9 z" fill="#f2b134"/><path d="M24 33 l-2 5 l5 -2 z" fill="#2c3e50"/></svg></div>
-            <div v-else-if="j.id === 'petitbac'" class="ico-pb">B</div>
-            <div v-else-if="j.id === 'quatre'" class="ico-ql"><span v-for="(c, k) in ['', 'j', '', 'r', 'r', 'j', 'j', 'r', 'r']" :key="k" :class="c"></span></div>
-            <div v-else-if="j.id === 'domino'" class="ico-dm"><svg width="40" height="44" viewBox="0 0 40 44"><g transform="rotate(-14 20 22)"><rect x="10" y="2" width="20" height="40" rx="3.5" fill="#fffdf6" stroke="#2b2b2b" stroke-width="1.6"/><path d="M12.5 22 H27.5" stroke="#2b2b2b" stroke-width="1.6"/><circle cx="15" cy="8" r="2.2"/><circle cx="20" cy="12" r="2.2"/><circle cx="25" cy="16" r="2.2"/><circle cx="15" cy="28" r="2.2"/><circle cx="25" cy="28" r="2.2"/><circle cx="15" cy="36" r="2.2"/><circle cx="25" cy="36" r="2.2"/></g></svg></div>
-            <div v-else-if="j.id === 'lettres'" class="ico-lc"><span v-for="(l, k) in ['M', 'O', 'T']" :key="k">{{ l }}</span></div>
-            <div v-else-if="j.id === 'agents'" class="ico-ag"><span v-for="(c, k) in ['#c0392b','#e6dcc3','#2f6fb0','#2f6fb0','#1d2b36','#c0392b','#e6dcc3','#c0392b','#2f6fb0']" :key="k" :style="{ background: c }"></span></div>
-            <div v-else-if="j.id === 'bataille'" class="ico-bn"><span v-for="(x, k) in ['', 'e', '', 'n', 'n', 't', '', '', 'e']" :key="k" :class="x"></span></div>
-            <div v-else class="ico-bg"><span v-for="k in 6" :key="k" :class="{ bas: k > 3 }"></span></div>
-          </template>
+          <!-- Icône du jeu (icones-jeux.js) -->
+          <span class="ico-neuve" v-html="icone(j.id)"></span>
           <div>
             <div class="nom">{{ j.nom }}</div>
             <div class="desc">{{ j.desc }}</div>
@@ -175,10 +122,7 @@
         <div v-else class="aide">Sur iPhone : touche <strong>Partager</strong> puis <strong>« Sur l'écran d'accueil »</strong>.</div>
       </section>
 
-      <div class="choix-icones">Icônes :
-        <button v-for="o in [['nouvelles', 'Pleines'], ['claires', 'Claires'], ['anciennes', 'Anciennes']]" :key="o[0]" :class="{ actif: choixIcones === o[0] }" @click="choisirIcones(o[0])">{{ o[1] }}</button>
-      </div>
-      <p class="version" style="margin-top:10px">Désdale · version {{ version }}</p>
+      <p class="version" style="margin-top:18px">Désdale · version {{ version }}</p>
     </template>
   </div>
 
@@ -210,9 +154,7 @@
         glisse: null,      // jeu soulevé par un appui long
         decalY: 0,
         maj: 0,
-        choixIcones: IconesJeux.choix(),
         logo: [B, J, R, V],
-        grille: [J, V, B, R, M, V, O, R, J],
         installPossible: false,
         estInstallee: window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true,
         estIOS: /iphone|ipad|ipod/i.test(navigator.userAgent)
@@ -268,8 +210,7 @@
         if (ACCES.memorise()) { this.accesOk = true; this.reprendre(); }
       },
       methods: {
-        icone: function(id, choix) { return IconesJeux.svg(id, 54, choix === 'claires' ? 'clair' : 'plein'); },
-        choisirIcones: function(v) { IconesJeux.choisir(v); this.choixIcones = v; },
+        icone: function(id) { return IconesJeux.svg(id, 68); },
         // Au lancement de l'appli, une partie en salon reprend directement (sauf si on vient choisir un jeu)
         reprendre: function() {
           if (/[?&]choix\b/.test(location.search)) return;

@@ -1,13 +1,11 @@
-// ================== ICÔNES DES JEUX (nouvelle direction artistique) ==================
-// Même canevas pour tous, épuré : tuile carrée aux coins très arrondis, à plat, dans la couleur propre au jeu,
-// et un dessin blanc (avec, au besoin, une touche de couleur). Ni dégradé, ni reflet, ni ombre.
+// ================== ICÔNES DES JEUX ==================
+// Même canevas pour tous, épuré : tuile carrée aux coins très arrondis, à plat, d'une teinte pâle de la couleur du jeu,
+// et le dessin du jeu dans sa couleur (avec, au besoin, une touche blanche ou colorée). Ni dégradé, ni reflet, ni ombre.
 // Chaque jeu garde sa « marque » : grille colorée de Brilliant, dés du Yams, flèches du Backgammon, etc.
-// Dessins maison en SVG (aucune image officielle).
+// Dessins maison en SVG (aucune image officielle). Version choisie par l'utilisateur : « claire ».
 //
-//   IconesJeux.svg('yams', 52[, 'plein' | 'clair'])  → chaîne SVG
-//   IconesJeux.nouvelles()  → true si on affiche ces icônes ; IconesJeux.choix() → 'nouvelles' | 'claires' | 'anciennes'
-//   IconesJeux.choisir('nouvelles' | 'claires' | 'anciennes')
-// Les anciennes icônes restent dans index.html et dans le logo de chaque jeu, pour comparer avant de choisir.
+//   IconesJeux.svg('yams', 64)            → chaîne SVG (fond clair)
+//   IconesJeux.svg('yams', 64, 'plein')   → variante essayée puis écartée : fond de la couleur du jeu, dessin blanc
 
 var IconesJeux = (function () {
   var COULEURS = {
@@ -100,8 +98,8 @@ var IconesJeux = (function () {
   function svg(jeu, taille, fond) {
     var c = COULEURS[jeu], d = DESSINS[jeu];
     if (!c || !d) return '';
-    taille = taille || 52;
-    var clair = (fond || style()) === 'clair', dessin;
+    taille = taille || 64;
+    var clair = fond !== 'plein', dessin;
     B = clair ? c[1] : '#fff';
     dessin = d(clair ? [c[0], '#fff'] : c);
     B = '#fff';
@@ -109,17 +107,8 @@ var IconesJeux = (function () {
       '<rect x="2" y="2" width="52" height="52" rx="15" fill="' + (clair ? c[0] : c[1]) + '"' + (clair ? ' fill-opacity="0.16"' : '') + '/>' +
       dessin + '</svg>';
   }
-  // Choix gardé dans desdale-icones : 'nouvelles' (fond plein, par défaut), 'claires' (fond clair) ou 'anciennes'
-  function lire() { try { return JSON.parse(localStorage.getItem('desdale-icones') || 'null'); } catch (e) { return null; } }
-  function style() { return lire() === 'claires' ? 'clair' : 'plein'; }
   return {
     svg: svg,
-    couleur: function (jeu) { return (COULEURS[jeu] || ['#adb5bd'])[1]; },
-    nouvelles: function () { return lire() !== 'anciennes'; },
-    choix: function () { var v = lire(); return v === 'anciennes' || v === 'claires' ? v : 'nouvelles'; },
-    choisir: function (v) {
-      try { localStorage.setItem('desdale-icones', JSON.stringify(v)); } catch (e) {}
-      try { window.dispatchEvent(new CustomEvent('desdale-icones')); } catch (e) {}
-    }
+    couleur: function (jeu) { return (COULEURS[jeu] || ['#adb5bd'])[1]; }
   };
 })();
