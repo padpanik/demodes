@@ -109,6 +109,18 @@
         </section>
 
         <template v-if="!role">
+          <!-- Le jeu et les points servent aux deux : seul, ou dans le salon que tu ouvres (l'hôte peut encore les changer dans la salle d'attente) -->
+          <section class="carte">
+            <div class="titre-carte">Jeu <small>seul, ou dans le salon que tu ouvres</small></div>
+            <div class="segment">
+              <button :class="{ actif: jeuChoisi === 'domino' }" @click="jeuChoisi = 'domino'">🁫 Dominos</button>
+              <button :class="{ actif: jeuChoisi === 'triomino' }" @click="jeuChoisi = 'triomino'">🔺 Triominos</button>
+            </div>
+            <div class="petit-titre">Partie en</div>
+            <div class="segment">
+              <button v-for="b in BUTS[jeuChoisi]" :key="b" :class="{ actif: buts[jeuChoisi] === b }" @click="choisirBut(b)">{{ b }} points</button>
+            </div>
+          </section>
           <section class="carte">
             <div class="titre-carte">À plusieurs (2 à 4), chacun sur son téléphone</div>
             <div class="pseudo-portail">Ton pseudo : <b>{{ pseudoInput || '(à choisir)' }}</b><button v-if="!role" class="lien-profil" @click="ouvrirProfil">✏️ {{ pseudoInput ? 'Changer' : 'Choisir' }}</button></div>
@@ -125,18 +137,9 @@
           </section>
           <section class="carte">
             <div class="titre-carte">Seul contre l'ordinateur</div>
-            <div class="petit-titre">Jeu</div>
-            <div class="segment">
-              <button :class="{ actif: jeuChoisi === 'domino' }" @click="jeuChoisi = 'domino'">🁫 Dominos</button>
-              <button :class="{ actif: jeuChoisi === 'triomino' }" @click="jeuChoisi = 'triomino'">🔺 Triominos</button>
-            </div>
             <div class="petit-titre">Nombre d'ordinateurs contre toi</div>
             <div class="segment">
               <button v-for="n in [1, 2, 3]" :key="n" :class="{ actif: nbOrdis === n }" @click="nbOrdis = n">🤖 {{ n }}</button>
-            </div>
-            <div class="petit-titre">Partie en</div>
-            <div class="segment">
-              <button v-for="b in BUTS[jeuChoisi]" :key="b" :class="{ actif: buts[jeuChoisi] === b }" @click="choisirBut(b)">{{ b }} points</button>
             </div>
             <button class="btn principal" style="width:100%" @click="demarrerSolo">🤖 {{ soloEnCours ? 'Reprendre la partie' : 'Jouer seul' }}</button>
             <button v-if="soloEnCours" class="btn" style="width:100%;margin-top:6px" @click="nouveauSolo">Nouvelle partie ({{ NOMS[jeuChoisi] }})</button>
