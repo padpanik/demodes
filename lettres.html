@@ -83,6 +83,7 @@
     /* Vote sur un mot inconnu */
     .vote-lc { background: #fff; border-radius: 14px; padding: 10px; margin-top: 6px; box-shadow: 0 0 0 2px #d2a8e8; text-align: center; }
     .vote-lc .mots { font-weight: 900; font-size: 1.15em; letter-spacing: 1px; margin: 4px 0; }
+    .vote-lc .lien-ffsc { display: inline-block; margin-top: 4px; font-size: 0.82em; color: #1c7ed6; }
     .vote-lc .btn.moi { box-shadow: 0 0 0 3px #1d2b36; }
 
     /* Choix de la lettre d'un joker */
@@ -264,6 +265,7 @@
           <div class="aide" style="margin:0">{{ e.verif.j === moiJ ? 'Mot inconnu du dictionnaire, les autres votent :' : e.verif.j + ' propose un mot inconnu du dictionnaire :' }}</div>
           <div class="mots">{{ e.verif.inconnus.join(', ') }}</div>
           <div class="aide" style="margin:0">{{ e.verif.mots.join(', ') }} · {{ e.verif.points }} points · votes {{ nbVotes }}/{{ votants.length }}</div>
+          <a class="lien-ffsc" href="https://www.ffscrabble.fr/verificateur-de-mots/" target="_blank" rel="noopener">🔎 Vérifier dans l'ODS (site de la Fédération)</a>
           <div class="actions-lc" v-if="votants.indexOf(moiJ) !== -1">
             <button class="btn" :class="{ moi: e.verif.votes[moiJ] === true }" @click="voter(true)">👍 Accepter</button>
             <button class="btn" :class="{ moi: e.verif.votes[moiJ] === false }" @click="voter(false)">👎 Refuser</button>

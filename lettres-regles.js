@@ -202,7 +202,7 @@ var LC = (function () {
     var mots = new Set(), prec = '';
     texte.split('\n').forEach(ligne => {
       if (!ligne || ligne[0] === '#') return;
-      var k = parseInt(ligne[0], 16), m = prec.slice(0, k) + ligne.slice(1);
+      var k = parseInt(ligne[0], 16), m = prec.slice(0, k) + ligne.slice(1).replace(/[0-9]$/, '');
       mots.add(m); prec = m;
     });
     return mots;
@@ -218,7 +218,7 @@ var LC = (function () {
     var n = 1, chemin = [0], prec = '';
     lignes.forEach(ligne => {
       if (!ligne || ligne[0] === '#') return;
-      var k = parseInt(ligne[0], 16), m = prec.slice(0, k) + ligne.slice(1);
+      var k = parseInt(ligne[0], 16), m = prec.slice(0, k) + ligne.slice(1).replace(/[0-9]$/, '');
       // Liste triée : le mot reprend les k premiers nœuds du chemin précédent, puis on ajoute la suite
       chemin.length = k + 1;
       for (var i = k; i < m.length; i++) {
@@ -228,7 +228,9 @@ var LC = (function () {
         D[p] = x;
         chemin.push(x);
       }
-      T[chemin[m.length]] = 1;
+      // T = 1 + fréquence (chiffre en fin de ligne : 3 très courant, 2 courant, 1 connu, rien = rare)
+      var b = /[0-9]$/.test(ligne) ? +ligne[ligne.length - 1] : 0;
+      T[chemin[m.length]] = 1 + b;
       prec = m;
     });
     return { L: L, T: T, P: P, S: S, n: n };
@@ -245,7 +247,7 @@ var LC = (function () {
   // Renvoie [{ poses, points, mots, bingo }], sans doublon.
   function coupsPossibles(e, j, a, opts) {
     opts = opts || {};
-    var maxLong = opts.maxLong || N, chev = e.chevalets[j] || [], cnt = new Array(26).fill(0), jokers = 0;
+    var maxLong = opts.maxLong || N, freq = 1 + (opts.frequence || 0), chev = e.chevalets[j] || [], cnt = new Array(26).fill(0), jokers = 0;
     chev.forEach(l => { if (l === '?') jokers++; else cnt[l.charCodeAt(0) - 65]++; });
     if (opts.jokers === false) jokers = 0;
     var occ = c => e.plateau[c] ? e.plateau[c].l.charCodeAt(0) - 65 : -1;
@@ -293,7 +295,7 @@ var LC = (function () {
         function etendre(n, k, an, deb, part) {
           if (k - deb > maxLong) return;
           if (k >= N || occ(cel(k)) < 0) {
-            if (a.T[n] && k > an) noter(deb, part);
+            if (a.T[n] >= freq && k > an) noter(deb, part);
             if (k >= N) return;
             var m = masque[k];
             for (var ch = a.P[n]; ch; ch = a.S[ch]) {
@@ -333,11 +335,12 @@ var LC = (function () {
   }
 
   // ---------- L'ordinateur ----------
-  // Trois niveaux : il connaît moins de mots (longueur maxi) et ne choisit pas toujours le meilleur coup.
-  //   facile : mots de 5 lettres au plus, pas de joker, un coup au hasard parmi la moitié la moins payante ;
-  //   normal : 8 lettres au plus, un coup « bon sans plus » (entre 55 % et 85 % du classement) ;
+  // Trois niveaux : il connaît moins de mots (les plus courants, plus courts) et ne choisit pas toujours le meilleur coup.
+  //   facile : mots très courants de 6 lettres au plus, pas de joker, un coup au hasard parmi la moitié la moins payante ;
+  //   normal : mots courants de 8 lettres au plus, un coup « bon sans plus » (entre 55 % et 85 % du classement) ;
   //   fort   : tous les mots, le meilleur coup.
-  var NIVEAUX = { facile: { maxLong: 5, jokers: false }, normal: { maxLong: 8 }, fort: {} };
+  // (Le mot principal suit ces limites ; les petits mots formés en travers peuvent être n'importe quel mot de la liste.)
+  var NIVEAUX = { facile: { maxLong: 6, jokers: false, frequence: 3 }, normal: { maxLong: 8, frequence: 2 }, fort: {} };
   function ordinateur(e, j, a, niveau, hasard) {
     hasard = hasard || Math.random;
     niveau = NIVEAUX[niveau] ? niveau : 'normal';

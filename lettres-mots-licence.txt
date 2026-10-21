@@ -22,3 +22,8 @@ IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
 CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
 TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+---
+Chiffres de fréquence en fin de ligne (3 très courant, 2 courant, 1 connu) : calculés d'après wordfreq
+(Robyn Speer, https://github.com/rspeer/wordfreq ; code sous licence Apache 2.0, données sous licence CC BY-SA 4.0).
+Quelques abréviations et symboles ont été retirés de la liste (CC, CF, CG, CH, CL, CM, DG, DL, DM, KG, KM, MG, MS, PH).
