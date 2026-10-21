@@ -271,7 +271,8 @@
     .serie { font-size: 0.85em; color: #6b7a86; margin-top: 4px; }
 
     /* ---------- Boutique ---------- */
-    .rayons { display: flex; gap: 6px; overflow-x: auto; margin-bottom: 8px; padding-bottom: 2px; }
+    .rayons { display: flex; gap: 6px; overflow-x: auto; margin-bottom: 8px; padding-bottom: 2px; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+    .rayons::-webkit-scrollbar { display: none; }   /* on glisse au doigt, sans barre de défilement */
     .rayons button { flex-shrink: 0; border: 1.5px solid #c9d2d9; background: #fff; border-radius: 16px; padding: 7px 12px; font: inherit; font-size: 0.9em; font-weight: 700; color: #5b6b78; cursor: pointer; }
     .rayons button.actif { background: #2c3e50; border-color: #2c3e50; color: #fff; }
     .articles { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
