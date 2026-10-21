@@ -143,6 +143,7 @@ var LC = (function () {
     // Le dernier mot de chacun reste en évidence (dans sa couleur) : les cases du mot principal
     e.derniers = e.derniers || {};
     e.derniers[j] = { cases: a.mots[0].cases, n: e.nbCoups };
+    action(e, j, { t: 'mot' });
     noter(e, j + ' joue ' + a.mots.map(m => m.mot).join(', ') + ' : +' + a.points + (a.bingo ? ' (dont +50 pour les 7 lettres !)' : '') + '.');
     e.phase = 'jeu'; e.verif = null;
     if (!e.chevalets[j].length && !e.sac.length) return finir(e, j), a;
@@ -152,6 +153,7 @@ var LC = (function () {
   function passer(e, j) {
     if (e.phase !== 'jeu' || joueurDuTour(e) !== j) return { erreur: 'Ce n\'est pas ton tour.' };
     e.passes++;
+    action(e, j, { t: 'passe' });
     noter(e, j + ' passe.');
     if (e.passes >= 2 * e.joueurs.length) return finir(e, null), {};
     suivant(e);
@@ -167,11 +169,14 @@ var LC = (function () {
     piocher(e, j);
     e.sac = melanger(e.sac.concat(rendues), hasard);
     e.passes++;
+    action(e, j, { t: 'echange', n: rendues.length });
     noter(e, j + ' échange ' + rendues.length + ' lettre' + (rendues.length > 1 ? 's' : '') + '.');
     if (e.passes >= 2 * e.joueurs.length) return finir(e, null), {};
     suivant(e);
     return {};
   }
+  // Ce que chacun a fait à son dernier tour (affiché sous son score) : mot posé, passe ou échange de n lettres
+  function action(e, j, a) { e.actions = e.actions || {}; e.actions[j] = a; }
   function suivant(e) { e.tour = (e.tour + 1) % e.joueurs.length; }
   function reste(e, j) { return (e.chevalets[j] || []).reduce((s, l) => s + valeur(l), 0); }
   function finir(e, gagnantFin) {

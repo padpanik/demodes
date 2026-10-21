@@ -34,7 +34,7 @@
     .joueurs-lc .nom { font-weight: 700; font-size: 0.8em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .joueurs-lc .mot-def { display: block; font-size: 0.72em; font-weight: 800; color: var(--c); text-decoration: underline dotted; text-underline-offset: 2px;
                            white-space: nowrap; overflow: hidden; text-overflow: ellipsis; letter-spacing: 0.5px; }
-    .joueurs-lc .mot-def.vide { text-decoration: none; color: #c3ccd3; }
+    .joueurs-lc .mot-def.vide { text-decoration: none; color: #9aa7b1; font-style: italic; letter-spacing: 0; }
     .apercu-lc a { color: inherit; text-decoration: underline dotted; text-underline-offset: 2px; }
     .joueurs-lc .nb { font-size: 0.75em; color: #6b7a86; font-weight: 600; }
     .joueurs-lc .score { font-weight: 900; color: #1d2b36; font-size: 1.05em; }
@@ -237,7 +237,8 @@
           <div v-for="j in joueursAff" :key="j.nom" class="j" :class="{ actif: j.actif, absent: j.absent }" :style="{ '--c': j.coul }">
             <div class="nom">{{ j.nom }}</div>
             <div><span class="score">{{ j.score }}</span> <span class="nb">· {{ j.nb }}</span></div>
-            <a v-if="j.mot" class="mot-def" :href="lienDef(j.mot)" target="_blank" rel="noopener" title="Définition">{{ j.mot }}</a>
+            <div v-if="j.action" class="mot-def vide">{{ j.action }}</div>
+            <a v-else-if="j.mot" class="mot-def" :href="lienDef(j.mot)" target="_blank" rel="noopener" title="Définition">{{ j.mot }}</a>
             <div v-else class="mot-def vide">–</div>
           </div>
         </div>
@@ -439,6 +440,7 @@
         joueursAff: function() {
           var e = this.e;
           return e.joueurs.map((j, k) => ({ nom: j === this.moiJ ? 'Moi' : j, nb: e.nbLettres[j], score: e.scores[j], coul: COULEURS[k],
+                                            action: e.actions && e.actions[j] && e.actions[j].t !== 'mot' ? (e.actions[j].t === 'passe' ? 'Passe' : 'Échange ' + e.actions[j].n) : '',
                                             mot: e.derniers && e.derniers[j] ? e.derniers[j].cases.map(c => (e.plateau[c] || {}).l || '').join('') : '',
                                             actif: e.phase !== 'fin' && e.tour === k, absent: !this.estPresent(j) }));
         },

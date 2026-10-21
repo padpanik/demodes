@@ -269,6 +269,7 @@ Bataille navale : `bataille-sauvegarde`, `bataille-prive` (ma flotte en salon), 
 - **Une couleur par joueur** (`COULEURS`, dans l'ordre de la partie : orange, bleu, vert, violet) sur sa carte ; le **dernier mot de
   chacun** reste encadré et teinté de sa couleur (`e.derniers[joueur] = { cases du mot principal, n° du coup }`, le plus récent
   l'emporte sur une case partagée) ; les lettres du tout dernier coup brillent un peu plus ; « Dernier coup : … » dans sa couleur.
+- Sous le score de chacun : ce qu'il a fait à son dernier tour (`e.actions[joueur]`) : son mot, ou « Passe », ou « Échange N ».
 - **Définitions** : le dernier mot de chacun est écrit sous son score, et chaque mot de « Dernier coup » est un lien (`lienDef`)
   vers la recherche du **Wiktionnaire** (libre ; ses recherches retrouvent les accents et les formes conjuguées), dans un nouvel onglet.
 - **Dictionnaire + vote** : l'hôte vérifie chaque mot formé dans `lettres-mots.txt`. Mot inconnu (la liste n'a pas tous les petits
