@@ -402,7 +402,8 @@ Bataille navale : `bataille-sauvegarde`, `bataille-prive` (ma flotte en salon), 
   achetables **seulement à ce moment-là** et gardés ensuite (on les retrouve dans leur rayon habituel si on les possède) ; hors période,
   « Prochaine boutique de fête : … dès le … ». Chaque fête : chapeau / habit / collier dessinés en SVG, une déco (emplacement `fete-<id>`,
   place par défaut `pos` / `x` / `taille`, déplaçable avec « Arranger la déco », il s'en sert avec sa `phrase`) et une friandise.
-  **Rappels discrets dans la maison** sans rien acheter : guirlande de fanions aux couleurs de la fête dans les pièces intérieures,
+  **Rappels discrets dans la maison** sans rien acheter : une guirlande propre à chaque fête dans les pièces intérieures (`CP.guirlande`, `MOTIFS` :
+  étoiles et serpentins, crêpes et chandelles, cœurs, trèfles, œufs peints, notes, lampions, citrouilles et chauves-souris, guirlande lumineuse, ballons),
   quelques émojis par pièce (`ambiance`, animés doucement : flotte, balance, scintille…), un passage à la fenêtre (chauve-souris, feu
   d'artifice la nuit du Nouvel an), jardin enneigé avec bonhomme de neige à Noël. Petits mots de saison plus fréquents, vœux le jour J
   (2 févr., 14 févr., 17 mars, dimanche de Pâques, 21 juin, 31 oct., 25 déc., 1er janv., anniversaire) au premier message du jour.

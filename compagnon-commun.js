@@ -122,7 +122,7 @@ var CP = (function () {
         cuisine: [['🥞', 'left:170px;bottom:160px;font-size:24px'], ['🍯', 'left:198px;bottom:162px;font-size:18px']],
         chambre: [['🕯️', 'right:58px;bottom:30px;font-size:20px']],
         jeux: [['🥞', 'right:40px;top:102px;font-size:20px']] } },
-    { id: 'saint-valentin', nom: 'Saint-Valentin', ico: '💝', guirlande: ['#e03131', '#f783ac', '#fff0f6'],
+    { id: 'saint-valentin', nom: 'Saint-Valentin', ico: '💝', guirlande: ['#e03131', '#f783ac', '#c2255c'],
       periode: y => [jour(y, 2, 3), jour(y, 2, 15)], jourJ: y => jour(y, 2, 14), voeux: 'Bonne Saint-Valentin ! Je t\'aime fort 💝',
       mots: ['Tu es mon humain préféré 💕', 'Un câlin pour la Saint-Valentin ? 🥰', 'Je t\'ai gardé un chocolat… enfin presque 🍫'],
       ambiance: {
@@ -140,7 +140,7 @@ var CP = (function () {
         chambre: [['☘️', 'left:112px;top:56px;font-size:20px', 'flotte']],
         jeux: [['🪙', 'right:40px;top:102px;font-size:20px']],
         jardin: [['🌈', 'left:44%;top:14px;font-size:54px;opacity:0.8'], ['🍀', 'left:34%;bottom:64px;font-size:18px']] } },
-    { id: 'paques', nom: 'Pâques', ico: '🐣', guirlande: ['#ffd8a8', '#b2f2bb', '#d0bfff', '#a5d8ff'],
+    { id: 'paques', nom: 'Pâques', ico: '🐣', guirlande: ['#ffa94d', '#51cf66', '#9775fa', '#4dabf7', '#f783ac'],
       periode: y => { var p = paques(y); return [new Date(y, p.getMonth(), p.getDate() - 14), new Date(y, p.getMonth(), p.getDate() + 1)]; },
       jourJ: y => paques(y), voeux: 'Joyeuses Pâques ! On cherche les œufs ? 🥚',
       mots: ['J\'ai vu un œuf dans le jardin… 🥚', 'Les cloches sont passées ? 🔔', 'Un petit chocolat de Pâques ? 🍫'],
@@ -215,6 +215,55 @@ var CP = (function () {
     var y = new Date(t).getFullYear(), r = null;
     [y - 1, y, y + 1].forEach(a => { var p = f.periode(a), fin = new Date(p[1].getFullYear(), p[1].getMonth(), p[1].getDate() + 1); if (!r && t >= +p[0] && t < +fin) r = { debut: p[0], fin: p[1], annee: a }; });
     return r;
+  }
+  // Guirlande propre à chaque fête (motif suspendu le long d'un fil en deux arcs, 360 × 34) : citrouilles et chauves-souris,
+  // guirlande lumineuse, étoiles, cœurs, œufs peints, crêpes et chandelles, trèfles, notes, lampions, ballons
+  var MOTIFS = {
+    'nouvel-an': 'etoiles', chandeleur: 'crepes', 'saint-valentin': 'coeurs', 'saint-patrick': 'trefles', paques: 'oeufs',
+    musique: 'notes', ete: 'lampions', halloween: 'halloween', noel: 'lumieres', anniversaire: 'ballons'
+  };
+  function guirlande(f) {
+    if (!f) return '';
+    var motif = MOTIFS[f.id] || 'fanions', c = motif === 'lumieres' ? ['#ff6b6b', '#ffd43b', '#74c0fc', '#8ce99a', '#f783ac'] : f.guirlande, fil = motif === 'lumieres' ? '#2f6b3a' : motif === 'halloween' ? '#3b3b3b' : '#8a7a66';
+    var s = '<path d="M0 3 Q90 20 180 3 Q270 20 360 3" stroke="' + fil + '" stroke-width="' + (motif === 'lumieres' ? 1.8 : 1.2) + '" fill="none"/>';
+    var pas = motif === 'lumieres' ? 20 : 26;
+    for (var k = 0, x = 12; x < 360; x += pas, k++) {
+      var u = (x % 180) / 180, y = (1 - u) * (1 - u) * 3 + 2 * (1 - u) * u * 20 + u * u * 3, k2 = c[k % c.length];
+      var fx = n => (+n).toFixed(1), Y = d => fx(y + d);
+      var fil2 = l => '<path d="M' + x + ' ' + fx(y) + ' V' + Y(l) + '" stroke="' + fil + '" stroke-width="0.8"/>';
+      if (motif === 'halloween') s += k % 2
+        ? fil2(4) + '<path d="M' + x + ' ' + Y(6) + ' q-4 -4 -9 -1 q3 1 2 4 q3 -1 4 2 q1 -3 3 -3 q2 0 3 3 q1 -3 4 -2 q-1 -3 2 -4 q-5 -3 -9 1z" fill="#2b2b2b"/>'
+        : fil2(4) + '<ellipse cx="' + x + '" cy="' + Y(9) + '" rx="6.5" ry="5" fill="#f76707"/><path d="M' + x + ' ' + Y(9 - 5) + ' v10" stroke="#d9480f" stroke-width="0.8"/>' +
+          '<path d="M' + x + ' ' + Y(4.5) + ' l1.5 -2.5" stroke="#2b8a3e" stroke-width="1.6" stroke-linecap="round"/>';
+      else if (motif === 'lumieres') s += '<rect x="' + fx(x - 1.8) + '" y="' + Y(0.5) + '" width="3.6" height="3" rx="0.8" fill="#2f6b3a"/>' +
+        '<ellipse cx="' + x + '" cy="' + Y(7.5) + '" rx="3.4" ry="4.8" fill="' + k2 + '"/><ellipse cx="' + fx(x - 1) + '" cy="' + Y(6) + '" rx="1" ry="1.8" fill="#fff" opacity="0.6"/>' +
+        '<ellipse cx="' + x + '" cy="' + Y(7.5) + '" rx="6" ry="7" fill="' + k2 + '" opacity="0.18"/>';
+      else if (motif === 'etoiles') s += fil2(3) + etoile(x, y + 9, 5.5, k2) + (k % 2 ? '<path d="M' + fx(x + 7) + ' ' + Y(3) + ' q3 4 0 7 q-3 3 0 7" stroke="' + c[(k + 1) % c.length] + '" stroke-width="1.4" fill="none"/>' : '');
+      else if (motif === 'coeurs') s += fil2(3) + coeur(x, y + 8, 5, k2);
+      else if (motif === 'oeufs') s += fil2(3) + '<ellipse cx="' + x + '" cy="' + Y(9) + '" rx="4.4" ry="5.8" fill="' + k2 + '"/>' +
+        '<path d="M' + fx(x - 4.2) + ' ' + Y(9) + ' l2.1 -2 l2.1 2 l2.1 -2 l2.1 2" stroke="#fff" stroke-width="1.2" fill="none"/>';
+      else if (motif === 'crepes') s += k % 2
+        ? fil2(2) + '<rect x="' + fx(x - 1.6) + '" y="' + Y(7) + '" width="3.2" height="8" rx="0.8" fill="#fff8e1" stroke="#e8c37a" stroke-width="0.6"/>' +
+          '<ellipse cx="' + x + '" cy="' + Y(4.5) + '" rx="1.8" ry="2.8" fill="#ffa94d"/>'
+        : fil2(3) + '<circle cx="' + x + '" cy="' + Y(9) + '" r="6" fill="#f2c27b"/><circle cx="' + fx(x - 2) + '" cy="' + Y(8) + '" r="1.1" fill="#c98a3a"/><circle cx="' + fx(x + 2) + '" cy="' + Y(11) + '" r="0.9" fill="#c98a3a"/><circle cx="' + fx(x + 1.5) + '" cy="' + Y(6.5) + '" r="0.8" fill="#c98a3a"/>';
+      else if (motif === 'trefles') s += fil2(3) + '<path d="M' + x + ' ' + Y(9) + ' q1 4 3 6" stroke="' + k2 + '" stroke-width="1.3" fill="none"/>' +
+        coeur(x, y + 6.2, 2.8, k2) + '<g transform="rotate(120 ' + x + ' ' + Y(9) + ')">' + coeur(x, y + 6.2, 2.8, k2) + '</g><g transform="rotate(240 ' + x + ' ' + Y(9) + ')">' + coeur(x, y + 6.2, 2.8, k2) + '</g>';
+      else if (motif === 'notes') s += fil2(2) + '<ellipse cx="' + fx(x - 2) + '" cy="' + Y(12) + '" rx="3" ry="2.2" fill="' + k2 + '" transform="rotate(-20 ' + fx(x - 2) + ' ' + Y(12) + ')"/>' +
+        '<path d="M' + fx(x + 0.8) + ' ' + Y(12) + ' V' + Y(2) + (k % 2 ? ' h5 v3 h-5' : ' q4 2 3 6') + '" stroke="' + k2 + '" stroke-width="1.4" fill="' + (k % 2 ? k2 : 'none') + '"/>';
+      else if (motif === 'lampions') s += fil2(2) + '<rect x="' + fx(x - 2.5) + '" y="' + Y(2) + '" width="5" height="1.6" fill="#495057"/>' +
+        '<ellipse cx="' + x + '" cy="' + Y(9) + '" rx="5.5" ry="6" fill="' + k2 + '"/><path d="M' + fx(x - 5) + ' ' + Y(7) + ' h10 M' + fx(x - 5) + ' ' + Y(11) + ' h10" stroke="#fff" stroke-width="0.7" opacity="0.6"/>' +
+        '<rect x="' + fx(x - 2.5) + '" y="' + Y(14.5) + '" width="5" height="1.6" fill="#495057"/>';
+      else if (motif === 'ballons') s += '<path d="M' + x + ' ' + fx(y) + ' q2 3 0 5" stroke="#868e96" stroke-width="0.7" fill="none"/>' +
+        '<ellipse cx="' + x + '" cy="' + Y(10) + '" rx="4.6" ry="5.6" fill="' + k2 + '"/><path d="M' + fx(x - 1.2) + ' ' + Y(5) + ' l1.2 -1.4 l1.2 1.4z" fill="' + k2 + '"/>' +
+        '<ellipse cx="' + fx(x - 1.6) + '" cy="' + Y(8.5) + '" rx="1" ry="1.7" fill="#fff" opacity="0.6"/>';
+      else s += '<path d="M' + (x - 6) + ' ' + fx(y) + ' L' + (x + 6) + ' ' + fx(y) + ' L' + x + ' ' + Y(11) + ' Z" fill="' + k2 + '"/>';
+    }
+    return s;
+  }
+  function etoile(cx, cy, r, f) {
+    var p = '';
+    for (var i = 0; i < 10; i++) { var a = -Math.PI / 2 + i * Math.PI / 5, rr = i % 2 ? r * 0.45 : r; p += (i ? 'L' : 'M') + (cx + rr * Math.cos(a)).toFixed(1) + ' ' + (cy + rr * Math.sin(a)).toFixed(1); }
+    return '<path d="' + p + 'Z" fill="' + f + '"/>';
   }
   function feteDu(t, ne) {
     t = t || Date.now();
@@ -714,7 +763,7 @@ var CP = (function () {
   }
 
   return { ESPECES: ESPECES, demarrerVeille: demarrerVeille, verifierVeille: verifierVeille, reglagesMessages: reglagesMessages, BESOINS: BESOINS, RECOMPENSE_JOUR: RECOMPENSE_JOUR, RECOMPENSE_SEMAINE: RECOMPENSE_SEMAINE, RAYONS: RAYONS, ARTICLES: ARTICLES,
-           FETES: FETES, feteDu: feteDu, prochaineFete: prochaineFete, coeur: coeur,
+           FETES: FETES, guirlande: guirlande, feteDu: feteDu, prochaineFete: prochaineFete, coeur: coeur,
            niveaux: niveaux, humeur: humeur, signes: signes, age: age, estNuit: estNuit, dessin: dessin, art: art,
            NIVEAUX_DEFI: NIVEAUX_DEFI, DEFIS: DEFIS, BLOCS: BLOCS, ETAGERE_MAX: ETAGERE_MAX, etatDefis: etatDefis, verifierDefis: verifierDefis,
            lireMaison: lireMaison, ecrireMaison: ecrireMaison, trophees: trophees, coupe: coupe, defisDeLaSemaine: defisDeLaSemaine };

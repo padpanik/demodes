@@ -113,7 +113,7 @@
     @keyframes serre { 0%, 100% { transform: scale(1); } 30%, 60% { transform: scale(1.18) rotate(-8deg); } }
     .o-gamelle, .o-fleurs, .o-plante { animation: frisson 0.5s ease-in-out 3; }
     /* ---------- Fêtes : petites touches de saison dans les pièces (CP.FETES) ---------- */
-    .guirlande { position: absolute; left: 0; top: 0; width: 100%; height: 30px; pointer-events: none; z-index: 1; }
+    .guirlande { position: absolute; left: 0; top: 0; width: 100%; height: 34px; pointer-events: none; z-index: 1; }
     .ambiance { pointer-events: none; filter: drop-shadow(0 2px 1px rgba(0,0,0,0.15)); }
     .ambiance.flotte { animation: flotte 3.2s ease-in-out infinite; }
     @keyframes flotte { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
@@ -428,7 +428,7 @@
 
           <!-- Fête en cours : guirlande dans les pièces intérieures et quelques rappels discrets (CP.FETES) -->
           <template v-if="fete">
-            <svg v-if="p.id !== 'jardin' && p.id !== 'trophees'" class="guirlande" viewBox="0 0 360 30" preserveAspectRatio="none" aria-hidden="true" v-html="guirlande"></svg>
+            <svg v-if="p.id !== 'jardin' && p.id !== 'trophees'" class="guirlande" viewBox="0 0 360 34" preserveAspectRatio="xMidYMin slice" aria-hidden="true" v-html="guirlande"></svg>
             <span v-for="(x, k) in (fete.ambiance[p.id] || [])" :key="'f' + k" class="deco ambiance" :class="x[2]" :style="x[1]" aria-hidden="true">{{ x[0] }}</span>
           </template>
 
@@ -829,15 +829,8 @@
         fete: function() { this.feteEssai; return CP.feteDu(this.maintenant, this.animal && this.animal.ne); },
         prochaine: function() { return CP.prochaineFete(this.maintenant, this.animal && this.animal.ne); },
         rayons: function() { return this.fete ? [{ id: 'saison', nom: this.fete.ico + ' ' + this.fete.nom }].concat(RAYONS) : RAYONS; },
-        // Guirlande de fanions aux couleurs de la fête, accrochée en deux arcs en haut de la pièce
-        guirlande: function() {
-          var c = this.fete ? this.fete.guirlande : [], s = '<path d="M0 3 Q90 20 180 3 Q270 20 360 3" stroke="#8a7a66" stroke-width="1.2" fill="none"/>';
-          for (var k = 0, x = 10; x < 360; x += 22, k++) {
-            var u = (x % 180) / 180, y = (1 - u) * (1 - u) * 3 + 2 * (1 - u) * u * 20 + u * u * 3;
-            s += '<path d="M' + (x - 6) + ' ' + y.toFixed(1) + ' L' + (x + 6) + ' ' + y.toFixed(1) + ' L' + x + ' ' + (y + 11).toFixed(1) + ' Z" fill="' + c[k % c.length] + '"/>';
-          }
-          return s;
-        },
+        // Guirlande propre à la fête (CP.guirlande) : citrouilles et chauves-souris, guirlande lumineuse, cœurs…
+        guirlande: function() { return CP.guirlande(this.fete); },
         // Petites obligations du jour
         tachesDuJour: function() {
           var f = this.jour.faits;
