@@ -260,6 +260,7 @@
     .jauge { height: 12px; border-radius: 6px; background: #e3e8ec; overflow: hidden; }
     .jauge span { display: block; height: 100%; border-radius: 6px; transition: width 0.5s; }
     .besoin.bas { box-shadow: 0 0 0 2.5px #e67e22; }
+    .besoin .vide-alerte { font-size: 0.75em; font-weight: 800; color: #c92a2a; text-align: center; align-self: stretch; }
     .jour { background: #fff; border-radius: 16px; padding: 10px 12px; margin-top: 10px; box-shadow: 0 1px 2px rgba(0,0,0,0.06); }
     .jour .titre { font-weight: 800; margin-bottom: 4px; }
     .jour ul { list-style: none; padding: 0; margin: 0; }
@@ -503,8 +504,10 @@
             <div class="haut"><span class="ico">{{ b.ico }}</span>{{ b.nom }}</div>
             <div class="jauge"><span :style="{ width: niveaux[b.id] + '%', background: couleurJauge(niveaux[b.id]) }"></span></div>
             <span class="action">{{ b.action }}</span>
+            <span v-if="niveaux[b.id] === 0" class="vide-alerte">−1 ⭐ par heure</span>
           </button>
         </div>
+        <div class="aide" style="text-align:center;margin:-2px 0 8px">Une jauge à zéro ? Au bout d'une heure, {{ animal.nom }} perd une étoile ⭐ par heure (pas la nuit).</div>
         <div class="jour">
           <div class="titre">📅 Aujourd'hui</div>
           <ul>
@@ -856,7 +859,7 @@
         else {
           // Une partie jouée aujourd'hui avec des amis (gagnée ou perdue) compte pour les tâches du jour
           this.verifierPartieAmis();
-          if (this.animal) { this.accueil(); this.$nextTick(() => this.cadeauAnniversaire()); }
+          if (this.animal) { this.accueil(); this.$nextTick(() => this.cadeauAnniversaire()); setTimeout(() => { CP.surveiller(); this.etoiles = Etoiles.solde(); this.majJournal(); }, 1500); }
           this.majDefis();
         }
         // Un ami a fait un câlin à mon compagnon pendant sa visite
@@ -934,9 +937,11 @@
         },
         changerBesoin: function(id, gain) {
           var a = this.animal;
+          if (!this.visite) { CP.regler(a); this.etoiles = Etoiles.solde(); }   // les étoiles dues pour une jauge vide sont comptées avant de la remplir
           a.besoins[id] = { v: Math.min(100, this.niveaux[id] + gain), t: Date.now() };
           this.maintenant = Date.now();
           this.sauver();
+          if (!this.visite) CP.regler(a);   // plus de jauge vide : le compte repart de zéro
         },
         animer: function(ico, n) {
           for (var k = 0; k < n; k++) {

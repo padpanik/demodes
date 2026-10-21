@@ -564,6 +564,50 @@ var CP = (function () {
     return '';
   }
 
+  // ================== JAUGE VIDE : UNE ÉTOILE PERDUE PAR HEURE ==================
+  // Dès qu'une jauge tombe à 0, il prévient (bulle ou notification) ; une heure plus tard, s'il y a toujours une jauge vide,
+  // il perd 1 ⭐, puis 1 ⭐ par heure tant qu'une jauge reste vide. Pause la nuit (21 h – 8 h) : il dort, on ne compte pas.
+  // Compté aussi quand l'appli était fermée (au retour). État dans compagnon-penalite : { compte, reste, alerte }.
+  var HEURE = 3600000;
+  function nuitPenalite(t) { var h = new Date(t).getHours(); return h >= 21 || h < 8; }
+  function videA(a, b) { var s = a.besoins[b.id]; return s.t + s.v / (100 / b.heures) * HEURE; }   // moment où la jauge atteint 0
+  function jaugesVides(a, t) { return a && a.besoins ? BESOINS.filter(b => videA(a, b) <= (t || Date.now())) : []; }
+  function msDeJour(de, a) { var ms = 0; for (var x = de; x < a; x += 600000) if (!nuitPenalite(x)) ms += Math.min(600000, a - x); return ms; }
+  var NOMS_VIDE = { repas: 'ma gamelle', eau: 'mon eau', toilette: 'ma toilette', calin: 'mes câlins' };
+  function regler(a, t) {
+    t = t || Date.now();
+    if (!a || !a.besoins) return { perdu: 0, vides: [] };
+    var st = lireV('compagnon-penalite') || {}, vides = jaugesVides(a, t);
+    if (!vides.length) { if (st.compte || st.reste) ecrireV('compagnon-penalite', { alerte: st.alerte || 0 }); return { perdu: 0, vides: [] }; }
+    var debut = Math.min.apply(null, vides.map(b => videA(a, b)));
+    var nouveau = !st.compte || st.compte < debut;                       // nouvel épisode de jauge vide
+    var total = (nouveau ? 0 : st.reste || 0) + msDeJour(Math.max(debut, st.compte || 0), t);
+    var n = Math.floor(total / HEURE), perdu = 0;
+    st.compte = t; st.reste = total - n * HEURE;
+    if (n > 0 && typeof Etoiles !== 'undefined') {
+      perdu = Math.min(n, Etoiles.solde());
+      if (perdu) Etoiles.ajouter(-perdu, 'Jauge vide (' + vides.map(b => b.nom.toLowerCase()).join(', ') + ')', true);
+    }
+    ecrireV('compagnon-penalite', st);
+    return { perdu: perdu, vides: vides, debut: debut };
+  }
+  // À appeler régulièrement (toutes les pages) : compte les étoiles perdues et prévient, même si les petits mots sont coupés
+  function surveiller() {
+    var a = lireV('compagnon-animal');
+    if (!a || !a.besoins) return null;
+    var t = Date.now(), res = regler(a, t), msg = null;
+    if (res.perdu) msg = { texte: 'J\'ai perdu ' + res.perdu + ' ⭐… ' + NOMS_VIDE[res.vides[0].id] + (res.vides[0].id === 'calin' ? ' me manquent' : ' est vide') + ' depuis trop longtemps 😢', demande: true };
+    else if (res.vides.length && !nuitPenalite(t)) {
+      var st = lireV('compagnon-penalite') || {}, id = Math.round(res.debut / 60000);
+      if (st.alerte !== id) {
+        st.alerte = id; ecrireV('compagnon-penalite', st);
+        msg = { texte: '⚠️ ' + NOMS_VIDE[res.vides[0].id].replace(/^./, c => c.toUpperCase()) + (res.vides[0].id === 'calin' ? ' sont à zéro' : ' est à zéro') +
+                       ' ! Si personne ne s\'occupe de moi dans l\'heure, je perdrai une étoile ⭐ par heure.', demande: true };
+      }
+    }
+    if (msg) annoncer(a, msg, true);
+    return msg;
+  }
   // ================== VEILLE : le compagnon parle de lui-même tant que l'appli est ouverte ==================
   // Une petite bulle dans l'appli, ou une notification du téléphone si l'appli est en arrière-plan (et autorisée).
   // Pas plus d'un message toutes les 20 min, rien la nuit (il dort), une même demande au plus toutes les 3 h.
@@ -581,8 +625,8 @@ var CP = (function () {
   function demarrerVeille(page) {
     if (veille) return;
     veille = { page: page || '' };
-    setTimeout(verifierVeille, 20000);
-    setInterval(verifierVeille, 60000);
+    setTimeout(() => { surveiller(); verifierVeille(); }, 20000);
+    setInterval(() => { if (!surveiller()) verifierVeille(); }, 60000);
   }
   function verifierVeille(forcer) {
     var a = lireV('compagnon-animal'), r = reglagesMessages();
@@ -611,10 +655,10 @@ var CP = (function () {
     annoncer(a, msg);
     return msg;
   }
-  function annoncer(a, msg) {
-    // Appli en arrière-plan : notification du téléphone (si autorisée)
+  function annoncer(a, msg, important) {
+    // Appli en arrière-plan : notification du téléphone (si autorisée ; les alertes de jauge vide passent même si les petits mots sont coupés)
     if (document.visibilityState === 'hidden') {
-      if (reglagesMessages().notifications && 'Notification' in window && Notification.permission === 'granted' && navigator.serviceWorker) {
+      if ((reglagesMessages().notifications || important) && 'Notification' in window && Notification.permission === 'granted' && navigator.serviceWorker) {
         navigator.serviceWorker.ready.then(reg => reg.showNotification(a.nom, {
           body: msg.texte, icon: 'apple-touch-icon.png', badge: 'favicon.png', tag: 'compagnon', renotify: true,
           data: { url: 'compagnon.html' }
@@ -762,7 +806,7 @@ var CP = (function () {
       (eteint ? '' : '<path d="M17 11 Q18 28 25 37" stroke="#fff" stroke-width="2.2" fill="none" opacity="0.55" stroke-linecap="round"/>');
   }
 
-  return { ESPECES: ESPECES, demarrerVeille: demarrerVeille, verifierVeille: verifierVeille, reglagesMessages: reglagesMessages, BESOINS: BESOINS, RECOMPENSE_JOUR: RECOMPENSE_JOUR, RECOMPENSE_SEMAINE: RECOMPENSE_SEMAINE, RAYONS: RAYONS, ARTICLES: ARTICLES,
+  return { ESPECES: ESPECES, demarrerVeille: demarrerVeille, regler: regler, surveiller: surveiller, jaugesVides: jaugesVides, verifierVeille: verifierVeille, reglagesMessages: reglagesMessages, BESOINS: BESOINS, RECOMPENSE_JOUR: RECOMPENSE_JOUR, RECOMPENSE_SEMAINE: RECOMPENSE_SEMAINE, RAYONS: RAYONS, ARTICLES: ARTICLES,
            FETES: FETES, guirlande: guirlande, feteDu: feteDu, prochaineFete: prochaineFete, coeur: coeur,
            niveaux: niveaux, humeur: humeur, signes: signes, age: age, estNuit: estNuit, dessin: dessin, art: art,
            NIVEAUX_DEFI: NIVEAUX_DEFI, DEFIS: DEFIS, BLOCS: BLOCS, ETAGERE_MAX: ETAGERE_MAX, etatDefis: etatDefis, verifierDefis: verifierDefis,

@@ -152,7 +152,7 @@ Lettres croisées : `lettres-sauvegarde` (salon ; chez l'hôte, l'état complet 
 Mon compagnon : `compagnon-animal` (espèce, nom, couleur, besoins, objets possédés et portés, série de jours), `compagnon-etoiles` (solde),
 `compagnon-journal` (dernières étoiles gagnées ou dépensées), `compagnon-parties` (parties déjà récompensées), `compagnon-jour` (tâches du jour),
 `compagnon-cadeau` (bonus de bienvenue donné), `compagnon-ancien`, `compagnon-gains-jeux` (étoiles gagnées en jouant aujourd'hui),
-`compagnon-reglages`, `compagnon-veille`, `compagnon-series` (séries de victoires solo), `compagnon-evenements` (parties terminées), `compagnon-defis`, `compagnon-trophees`, `compagnon-maison`, `compagnon-anniv` (année du dernier cadeau d'anniversaire), `compagnon-fete-essai` (admin).
+`compagnon-reglages`, `compagnon-veille`, `compagnon-series` (séries de victoires solo), `compagnon-evenements` (parties terminées), `compagnon-defis`, `compagnon-trophees`, `compagnon-maison`, `compagnon-anniv` (année du dernier cadeau d'anniversaire), `compagnon-penalite` (jauge vide), `compagnon-fete-essai` (admin).
 Bataille navale : `bataille-sauvegarde`, `bataille-prive` (ma flotte en salon), `bataille-dernier-salon`, `bataille-stats`, `bataille-colles`, `bataille-rejouer`, `bataille-niveau`, `bataille-style`.
 
 ## Règles des jeux (choix de l'utilisateur, à ne pas changer sans lui)
@@ -350,6 +350,12 @@ Bataille navale : `bataille-sauvegarde`, `bataille-prive` (ma flotte en salon), 
 - Besoins Repas, Eau, Toilette, Câlins (en %, baissent avec le temps réel : vides en 14 h, 12 h, 40 h, 20 h). **Il ne meurt jamais** :
   il devient triste et le dit. **Signes sur le dessin, combinables** (besoin sous 30 %, `CP.signes`) : air triste = manque de câlins
   seulement, langue tirée = soif, traits qui gargouillent de chaque côté du ventre = faim ; deux mouches qui tournent au-dessus de la tête = besoin d'un bain ; envoyés aux amis dans le résumé (`cp.s`). La nuit (21 h – 7 h) il dort ; neige à la fenêtre en hiver (décembre à février).
+- **Jauge vide = étoiles perdues** (demandé par l'utilisateur, « un peu de piquant » ; `regler` / `surveiller` dans `compagnon-commun.js`) :
+  dès qu'une jauge tombe à 0, alerte préalable (bulle avec « J'y vais », ou notification si l'appli est en arrière-plan, même si les petits mots
+  sont coupés) ; une heure plus tard, s'il y a toujours une jauge vide, −1 ⭐, puis −1 ⭐ par heure tant qu'une jauge reste vide.
+  Pause la nuit (21 h – 8 h). Compté aussi pendant que l'appli était fermée (au retour) et avant chaque soin ; jamais sous 0 ⭐.
+  `surveiller` tourne toutes les minutes sur toutes les pages (`demarrerVeille`). État `compagnon-penalite` ({ compte, reste, alerte }).
+  Onglet Soins : « −1 ⭐ par heure » sous une jauge vide, et la règle rappelée sous les jauges.
 - Tâches du jour : nourrir 2 fois, eau, 3 câlins, une partie avec des amis → +3 ⭐ ; +10 ⭐ tous les 7 jours de suite. 10 ⭐ offertes à l'adoption.
 - Étoiles des jeux (`Etoiles.finDePartie`, une fois par partie) : à plusieurs +5 victoire / +2 partie ; seul +2 victoire ; Yams solo +2.
   **Plafond : 30 ⭐ par jour en jouant** (`compagnon-gains-jeux`) ; au-delà la partie compte pour les tâches mais ne rapporte rien.
