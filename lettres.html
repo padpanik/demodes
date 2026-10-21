@@ -32,6 +32,10 @@
     .joueurs-lc .j.actif { box-shadow: 0 0 0 2.5px var(--c); }
     .joueurs-lc .j.absent { opacity: 0.5; }
     .joueurs-lc .nom { font-weight: 700; font-size: 0.8em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .joueurs-lc .mot-def { display: block; font-size: 0.72em; font-weight: 800; color: var(--c); text-decoration: underline dotted; text-underline-offset: 2px;
+                           white-space: nowrap; overflow: hidden; text-overflow: ellipsis; letter-spacing: 0.5px; }
+    .joueurs-lc .mot-def.vide { text-decoration: none; color: #c3ccd3; }
+    .apercu-lc a { color: inherit; text-decoration: underline dotted; text-underline-offset: 2px; }
     .joueurs-lc .nb { font-size: 0.75em; color: #6b7a86; font-weight: 600; }
     .joueurs-lc .score { font-weight: 900; color: #1d2b36; font-size: 1.05em; }
     .statut-lc { text-align: center; font-weight: 700; color: #3b4b57; min-height: 21px; margin-bottom: 4px; font-size: 0.92em; }
@@ -181,6 +185,7 @@
           <li>Chacun a 7 lettres. À son tour, on pose des lettres sur <strong>une seule ligne ou colonne</strong>, sans trou, pour former un mot qui croise ou touche ceux déjà posés. Le premier mot passe par l'étoile du centre.</li>
           <li>On marque les points de chaque mot formé (le mot principal et ceux qui se croisent). Cases colorées : <strong>L×2 / L×3</strong> (la lettre compte double / triple), <strong>M×2 / M×3</strong> (le mot compte double / triple), seulement pour les lettres posées ce tour-ci.</li>
           <li>Les 7 lettres d'un coup : <strong>+50</strong>. Les deux jokers valent 0 point et remplacent n'importe quelle lettre.</li>
+          <li>Le dernier mot de chacun s'affiche sous son score : touche-le (ou un mot du « Dernier coup ») pour lire sa définition sur le Wiktionnaire.</li>
           <li>Toucher deux fois rapidement le plateau le grossit (ou le remet en entier) : pratique pour viser une case.</li>
           <li>On peut aussi <strong>échanger</strong> des lettres (s'il en reste au moins 7 dans le sac) ou <strong>passer</strong>.</li>
           <li>Mot absent du dictionnaire : les autres joueurs <strong>votent</strong>. S'il est refusé, les lettres reviennent et on rejoue. Seul contre l'ordinateur, c'est toi qui décides.</li>
@@ -231,6 +236,8 @@
           <div v-for="j in joueursAff" :key="j.nom" class="j" :class="{ actif: j.actif, absent: j.absent }" :style="{ '--c': j.coul }">
             <div class="nom">{{ j.nom }}</div>
             <div><span class="score">{{ j.score }}</span> <span class="nb">· {{ j.nb }}</span></div>
+            <a v-if="j.mot" class="mot-def" :href="lienDef(j.mot)" target="_blank" rel="noopener" title="Définition">{{ j.mot }}</a>
+            <div v-else class="mot-def vide">–</div>
           </div>
         </div>
         <div class="statut-lc" :class="{ moi: monTour }">{{ statut }}</div>
@@ -245,7 +252,10 @@
           </div>
         </div>
         <div class="ligne-apercu">
-          <div class="apercu-lc" :class="apercuClasse" :style="!analyse && e.dernier ? { color: couleurDe(e.dernier.j) } : null">{{ apercuTexte }}</div>
+          <div v-if="!analyse && e.dernier && e.phase !== 'verif'" class="apercu-lc" :style="{ color: couleurDe(e.dernier.j) }">
+            Dernier coup :<template v-for="(m, k) in e.dernier.mots">{{ k ? ',' : '' }} <a :key="k" :href="lienDef(m)" target="_blank" rel="noopener">{{ m }}</a></template>
+            ({{ e.dernier.j === moiJ ? 'moi' : e.dernier.j }}, +{{ e.dernier.points }})</div>
+          <div v-else class="apercu-lc" :class="apercuClasse">{{ apercuTexte }}</div>
           <button class="zoom-btn" @click="zoom = !zoom">{{ zoom ? '🔍 −' : '🔍 +' }}</button>
         </div>
 
@@ -427,6 +437,7 @@
         joueursAff: function() {
           var e = this.e;
           return e.joueurs.map((j, k) => ({ nom: j === this.moiJ ? 'Moi' : j, nb: e.nbLettres[j], score: e.scores[j], coul: COULEURS[k],
+                                            mot: e.derniers && e.derniers[j] ? e.derniers[j].cases.map(c => (e.plateau[c] || {}).l || '').join('') : '',
                                             actif: e.phase !== 'fin' && e.tour === k, absent: !this.estPresent(j) }));
         },
         // Les 225 cases : lettres posées, mes lettres en attente, lettres soumises au vote, dernier coup
@@ -536,6 +547,8 @@
         son: function(nom, arg) { if (this.sonActif) Sons.jouer(nom, arg); },
         basculerSon: function() { this.sonActif = !this.sonActif; if (this.sonActif) Sons.jouer('toc'); },
         valeur: function(l) { return LC.valeur(l); },
+        // Définition d'un mot : recherche sur le Wiktionnaire (libre ; il retrouve les accents et les formes conjuguées)
+        lienDef: function(m) { return 'https://fr.wiktionary.org/w/index.php?search=' + encodeURIComponent(m.toLowerCase()); },
         couleurDe: function(j) { var k = this.e ? this.e.joueurs.indexOf(j) : -1; return k >= 0 ? COULEURS[k] : ''; },
         estPresent: function(p) {
           if (this.solo || p === this.moi || estOrdi(p)) return true;
