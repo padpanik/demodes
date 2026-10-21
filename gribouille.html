@@ -94,208 +94,195 @@
 <body>
   <div id="app" class="app">
 
-    <div class="barre">
-      <div id="menu">
-        <div @click="onglet = 'config'" :class="{ actif: onglet === 'config' }">Partie</div>
-        <div @click="onglet = 'play'" :class="{ actif: onglet === 'play' }">Jouer</div>
-        <div @click="onglet = 'reglages'" :class="{ actif: onglet === 'reglages' }">Réglages</div>
-        <div @click="onglet = 'regles'" :class="{ actif: onglet === 'regles' }">Règles</div>
-      </div>
-      <div class="barre-infos" v-if="onglet === 'play'">
-        <button class="btn-veille" :class="{ off: !sonActif }" @click="basculerSon">{{ sonActif ? '🔊' : '🔇' }}</button>
-        <span v-if="role" class="point-co" :class="{ attente: connexion !== 'ok' }"></span>
-      </div>
-    </div>
-
-    <!-- ACCUEIL -->
-    <div v-show="onglet === 'config'">
-      <a v-if="!role" class="lien-jeux retour-jeux" href="index.html?choix">⇦ Tous les jeux</a>
-      <header class="hero">
+    <fiche-jeu nom="Gribouille" resume="Désdale · dessine, les autres devinent" :onglet.sync="onglet" :son.sync="sonActif" :connexion="role ? connexion : ''">
+      <template v-slot:logo>
         <div class="logo-gb"><svg width="38" height="38" viewBox="0 0 38 38"><path d="M5 27 C 9 12, 14 30, 19 17 S 28 8, 33 20" fill="none" stroke="#e74c3c" stroke-width="3.5" stroke-linecap="round"/><path d="M24 33 l9 -9 l3 3 l-9 9 z" fill="#f2b134"/><path d="M24 33 l-2 5 l5 -2 z" fill="#2c3e50"/></svg></div>
-        <div>
-          <h1>Gribouille</h1>
-          <p>Désdale · dessine, les autres devinent</p>
-        </div>
-      </header>
+      </template>
 
-      <section class="carte salon-actif" v-if="role">
-        <div class="salon-tete">
-          <span class="pastille" :class="{ attente: connexion !== 'ok' }"></span>
-          <div>
-            <div class="salon-nom">Salon « {{ roomCode }} »</div>
-            <div class="salon-role">{{ role === 'hote' ? '👑 Tu es l\'hôte : tu lances les parties' : 'Tu joues' }} en tant que {{ moi }} · {{ connexionTexte }}</div>
+      <!-- PARTIE : salon, jouer seul -->
+      <template v-slot:partie>
+        <section class="carte salon-actif" v-if="role">
+          <div class="salon-tete">
+            <span class="pastille" :class="{ attente: connexion !== 'ok' }"></span>
+            <div>
+              <div class="salon-nom">Salon « {{ roomCode }} »</div>
+              <div class="salon-role">{{ role === 'hote' ? '👑 Tu es l\'hôte : tu lances les parties' : 'Tu joues' }} en tant que {{ moi }} · {{ connexionTexte }}</div>
+            </div>
           </div>
-        </div>
-        <div class="chips-joueurs">
-          <span v-for="j in bandeau" :key="j.pseudo" class="chip" :class="{ absent: !j.connecte }">{{ j.pseudo }} · {{ j.score }} pts<span v-if="!j.connecte"> 💤</span></span>
-        </div>
-        <div class="actions-accueil">
-          <button class="btn principal" @click="onglet = 'play'">Jouer →</button>
-          <button class="btn" @click="quitterSalon">Quitter</button>
-        </div>
-      </section>
+          <div class="chips-joueurs">
+            <span v-for="j in bandeau" :key="j.pseudo" class="chip" :class="{ absent: !j.connecte }">{{ j.pseudo }} · {{ j.score }} pts<span v-if="!j.connecte"> 💤</span></span>
+          </div>
+          <div class="actions-accueil">
+            <button class="btn principal" @click="onglet = 'play'">Jouer →</button>
+            <button class="btn" @click="quitterSalon">Quitter</button>
+          </div>
+        </section>
 
-      <template v-if="!role">
-        <section class="carte">
-          <div class="titre-carte">Entrer dans un salon</div>
-          <div class="pseudo-portail">Ton pseudo : <b>{{ pseudoInput || '(à choisir)' }}</b><button v-if="!role" class="lien-profil" @click="ouvrirProfil">✏️ {{ pseudoInput ? 'Changer' : 'Choisir' }}</button></div>
-          <label class="champ">Nom du salon
-            <input type="text" v-model="channelInput" placeholder="ex : partie-du-dimanche" autocomplete="off">
-          </label>
-          <div class="salons-connus" v-if="salonsConnus.length">
-            <span v-for="nom in salonsConnus" :key="nom" class="salon-puce" :class="{ actif: estSalonSaisi(nom) }">
-              <button class="nom" @click="channelInput = nom">{{ nom }}</button>
-              <button class="oter" @click="oublierSalon(nom)" aria-label="Retirer de la liste">✕</button>
+        <template v-if="!role">
+          <section class="carte">
+            <div class="titre-carte">Entrer dans un salon</div>
+            <div class="pseudo-portail">Ton pseudo : <b>{{ pseudoInput || '(à choisir)' }}</b><button v-if="!role" class="lien-profil" @click="ouvrirProfil">✏️ {{ pseudoInput ? 'Changer' : 'Choisir' }}</button></div>
+            <label class="champ">Nom du salon
+              <input type="text" v-model="channelInput" placeholder="ex : partie-du-dimanche" autocomplete="off">
+            </label>
+            <div class="salons-connus" v-if="salonsConnus.length">
+              <span v-for="nom in salonsConnus" :key="nom" class="salon-puce" :class="{ actif: estSalonSaisi(nom) }">
+                <button class="nom" @click="channelInput = nom">{{ nom }}</button>
+                <button class="oter" @click="oublierSalon(nom)" aria-label="Retirer de la liste">✕</button>
+              </span>
+            </div>
+            <div class="aide">À partir de deux joueurs, chacun sur son téléphone. Le premier ouvre le salon et lance les parties.</div>
+          </section>
+          <button class="btn principal btn-large" @click="entrerSalon()" :disabled="entreeEnCours">{{ entreeEnCours ? 'Connexion au salon…' : 'Entrer dans le salon' }}</button>
+        </template>
+
+        <p class="version">Désdale · Gribouille · version {{ version }}</p>
+
+      </template>
+
+      <!-- JOUER -->
+      <template v-slot:jouer>
+        <div v-if="!role || !pub" class="panneau-vide">
+          <div class="grand">✏️</div>
+          <p>Entre dans un salon depuis l'onglet « Partie » pour jouer.</p>
+          <button class="btn principal" @click="onglet = 'config'">Aller à l'onglet « Partie »</button>
+        </div>
+
+        <!-- Salle d'attente : l'hôte règle la partie et la lance -->
+        <section v-else-if="pub.phase === 'attente'" class="carte">
+          <div class="titre-carte">Salon « {{ roomCode }} »</div>
+          <ul class="attente-liste">
+            <li v-for="j in bandeau" :key="j.pseudo"><span>{{ j.hote ? '👑 ' : '' }}{{ j.pseudo }}<span v-if="!j.connecte"> 💤</span></span><span class="sys-msg">{{ j.victoires ? '🏆 ' + j.victoires : '' }}</span></li>
+          </ul>
+          <div class="titre-option">Temps pour dessiner</div>
+          <div class="segment">
+            <button v-for="d in [60, 80, 120]" :key="d" :class="{ actif: pub.duree === d }" :disabled="role !== 'hote'" @click="reglage('duree', d)">{{ d }} s</button>
+          </div>
+          <div class="titre-option">Manches (chacun dessine une fois par manche)</div>
+          <div class="segment">
+            <button v-for="n in [1, 2, 3]" :key="n" :class="{ actif: pub.nbManches === n }" :disabled="role !== 'hote'" @click="reglage('nbManches', n)">{{ n }}</button>
+          </div>
+          <button v-if="role === 'hote'" class="btn principal btn-large" :disabled="nbConnectes < 2" @click="commencerPartie">{{ nbConnectes < 2 ? 'En attente d\'un 2e joueur…' : 'Lancer la partie' }}</button>
+          <p v-else class="statut">En attente que l'hôte lance la partie…</p>
+        </section>
+
+        <template v-else>
+          <div class="joueurs-bande">
+            <span v-for="j in bandeau" :key="j.pseudo" :class="{ dessine: j.pseudo === pub.dessinateur, trouve: j.trouve, absent: !j.connecte }">
+              {{ j.pseudo === pub.dessinateur ? '✏️ ' : j.trouve ? '✅ ' : '' }}{{ j.pseudo }} <strong>{{ j.score }}</strong>
             </span>
           </div>
-          <div class="aide">À partir de deux joueurs, chacun sur son téléphone. Le premier ouvre le salon et lance les parties.</div>
+
+          <div class="info">
+            <div v-if="pub.phase === 'dessin' && jeDessine && monMot" class="indice mot-a-dessiner"><small>Dessine :</small>{{ monMot }}</div>
+            <div v-else-if="pub.phase === 'dessin'" class="indice"><span v-if="pub.categorie" class="theme">{{ pub.categorie }}</span>{{ pub.indice }}<small>{{ pub.longueur }} lettres</small></div>
+            <div v-else-if="pub.phase === 'choix'" class="indice mot-a-dessiner"><small>{{ jeDessine ? 'À toi :' : pub.dessinateur + ' choisit un mot…' }}</small></div>
+            <div v-else-if="pub.phase === 'bilan'" class="indice mot-a-dessiner"><small>C'était :</small>{{ pub.motRevele }}</div>
+            <div v-else class="indice mot-a-dessiner"><small>Partie terminée</small></div>
+            <div v-if="pub.phase === 'dessin' || pub.phase === 'choix'" class="chrono" :class="{ urgent: resteSec <= 10 }" :style="{ '--part': partRestante }"><span>{{ resteSec }}</span></div>
+          </div>
+
+          <div class="toile-boite" ref="boite" :class="{ dessinateur: jeDessine && pub.phase === 'dessin' }"
+               @pointerdown="appuiToile" @pointermove="glisseToile" @pointerup="lacheToile" @pointercancel="lacheToile">
+            <canvas ref="toile"></canvas>
+            <!-- Choix du mot -->
+            <div v-if="pub.phase === 'choix'" class="toile-voile">
+              <template v-if="jeDessine && mesMots">
+                <div>Choisis le mot à dessiner :</div>
+                <div class="choix-mots"><button v-for="(m, i) in mesMots" :key="m" @click="choisirMot(i)">{{ m }}</button></div>
+              </template>
+              <template v-else><div class="grand">🤔</div><div><strong>{{ pub.dessinateur }}</strong> choisit un mot…</div></template>
+            </div>
+            <!-- Bilan du tour -->
+            <div v-else-if="pub.phase === 'bilan'" class="toile-voile">
+              <div>Le mot était</div>
+              <div class="mot-revele">{{ pub.motRevele }}</div>
+              <ul class="gains">
+                <li v-for="g in gainsTour" :key="g.p"><span>{{ g.p === pub.dessinateur ? '✏️ ' : '' }}{{ g.p }}</span><strong>+{{ g.pts }}</strong></li>
+                <li v-if="!gainsTour.length" class="sys-msg">Personne n'a trouvé.</li>
+              </ul>
+            </div>
+            <!-- Fin de partie -->
+            <div v-else-if="pub.phase === 'fin'" class="toile-voile">
+              <div class="grand">🏆</div>
+              <div><strong>{{ classement[0] && classement[0].pseudo }}</strong> gagne la partie !</div>
+              <ol class="podium" style="width:100%;max-width:240px">
+                <li v-for="j in classement" :key="j.pseudo"><span>{{ j.pseudo }}</span><span>{{ j.score }} pts</span></li>
+              </ol>
+              <button v-if="role === 'hote'" class="btn principal" @click="partieSuivante">Nouvelle partie</button>
+              <div v-else class="sys-msg">L'hôte peut relancer une partie.</div>
+            </div>
+          </div>
+
+          <!-- Dessinateur : couleurs, épaisseurs, gomme, annuler, tout effacer -->
+          <template v-if="jeDessine && pub.phase === 'dessin'">
+            <div class="outils">
+              <button v-for="c in COULEURS" :key="c" class="pastille-coul" :class="{ actif: !outil.gomme && outil.couleur === c }" :style="{ background: c }" @click="outil.couleur = c; outil.gomme = false" :aria-label="'Couleur ' + c"></button>
+            </div>
+            <div class="outils">
+              <div class="epaisseurs">
+                <button v-for="(e, k) in EPAISSEURS" :key="e" class="outil" :class="{ actif: !outil.gomme && outil.epaisseur === e }" @click="outil.epaisseur = e; outil.gomme = false" :aria-label="'Épaisseur ' + (k + 1)">
+                  <span class="point" :style="{ width: 4 + k * 5 + 'px', height: 4 + k * 5 + 'px', background: outil.couleur }"></span>
+                </button>
+              </div>
+              <button class="outil" :class="{ actif: outil.gomme }" @click="outil.gomme = !outil.gomme">🧽 Gomme</button>
+              <button class="outil" @click="annulerTrait" aria-label="Annuler le dernier trait">↶</button>
+              <button class="outil" @click="toutEffacer" aria-label="Tout effacer">🗑️</button>
+            </div>
+          </template>
+
+          <!-- Les autres : propositions -->
+          <template v-else-if="pub.phase !== 'fin'">
+            <div class="fil">
+              <div v-for="(l, k) in filAffiche" :key="k" :class="l.type">
+                <template v-if="l.type === 'msg'"><span class="qui">{{ l.p }} :</span> {{ l.t }}</template>
+                <template v-else-if="l.type === 'trouve'">🎉 {{ l.p }} a trouvé !</template>
+                <template v-else>{{ l.t }}</template>
+              </div>
+            </div>
+            <form class="saisie" :class="{ bloquee: !peutDeviner }" @submit.prevent="proposer">
+              <input type="text" v-model="saisie" :placeholder="placeholderSaisie" :disabled="!peutDeviner" autocomplete="off" autocapitalize="none" spellcheck="false" maxlength="40" enterkeyhint="send">
+              <button class="btn principal" type="submit" :disabled="!peutDeviner || !saisie.trim()">➤</button>
+            </form>
+          </template>
+        </template>
+
+      </template>
+
+      <!-- RÉGLAGES -->
+      <template v-slot:reglages>
+        <section class="carte reglages">
+          <div class="titre-carte">Réglages</div>
+          <reglages-base :son.sync="sonActif" :vibration.sync="vibrationActive" :ecran.sync="garderEcran"></reglages-base>
         </section>
-        <button class="btn principal btn-large" @click="entrerSalon()" :disabled="entreeEnCours">{{ entreeEnCours ? 'Connexion au salon…' : 'Entrer dans le salon' }}</button>
+        <details class="carte journal">
+          <summary>Activité <small v-if="historique.length">({{ historique.length }})</small></summary>
+          <ul>
+            <li v-for="(log, i) in historiqueRecent" :key="i" :class="{ 'sys-msg': log.s }">{{ log.m }}</li>
+            <li v-if="!historique.length" class="sys-msg">Rien pour l'instant.</li>
+          </ul>
+        </details>
+
       </template>
 
-      <p class="version">Désdale · Gribouille · version {{ version }}</p>
-    </div>
+      <!-- RÈGLES -->
+      <template v-slot:regles>
+        <section class="carte regles">
+          <div class="titre-carte">Règles</div>
+          <ul>
+            <li>Chacun son tour, un joueur choisit un mot parmi trois et le <strong>dessine</strong> ; les autres voient le dessin se faire en direct et tapent leurs propositions.</li>
+            <li>{{ dureeAffichee }} secondes par dessin. Le nombre de lettres est affiché, puis une ou deux lettres se dévoilent avec le temps.</li>
+            <li>Celui qui trouve gagne des points selon sa rapidité (bonus pour le 1er et le 2e). Le dessinateur gagne {{ GB.POINTS_DESSINATEUR }} points pour chaque joueur qui trouve.</li>
+            <li>Pas d'accents ni de majuscules à respecter. « Tout près ! » s'affiche quand il ne manque presque rien.</li>
+            <li>Chacun dessine une fois par manche ; le meilleur total gagne la partie.</li>
+          </ul>
+        </section>
 
-    <!-- RÉGLAGES -->
-    <div v-show="onglet === 'reglages'">
-      <section class="carte reglages">
-        <div class="titre-carte">Réglages</div>
-        <label class="case-a-cocher"><input type="checkbox" v-model="sonActif"> 🔊 Sons</label>
-        <label class="case-a-cocher" v-if="vibrationSupportee"><input type="checkbox" v-model="vibrationActive"> 📳 Vibrations</label>
-        <label class="case-a-cocher" v-if="veilleSupportee"><input type="checkbox" v-model="garderEcran"> ☀️ Garder l'écran allumé</label>
-      </section>
-      <details class="carte journal">
-        <summary>Activité <small v-if="historique.length">({{ historique.length }})</small></summary>
-        <ul>
-          <li v-for="(log, i) in historiqueRecent" :key="i" :class="{ 'sys-msg': log.s }">{{ log.m }}</li>
-          <li v-if="!historique.length" class="sys-msg">Rien pour l'instant.</li>
-        </ul>
-      </details>
-    </div>
-
-    <!-- RÈGLES -->
-    <div v-show="onglet === 'regles'">
-      <section class="carte regles">
-        <div class="titre-carte">Règles</div>
-        <ul>
-          <li>Chacun son tour, un joueur choisit un mot parmi trois et le <strong>dessine</strong> ; les autres voient le dessin se faire en direct et tapent leurs propositions.</li>
-          <li>{{ dureeAffichee }} secondes par dessin. Le nombre de lettres est affiché, puis une ou deux lettres se dévoilent avec le temps.</li>
-          <li>Celui qui trouve gagne des points selon sa rapidité (bonus pour le 1er et le 2e). Le dessinateur gagne {{ GB.POINTS_DESSINATEUR }} points pour chaque joueur qui trouve.</li>
-          <li>Pas d'accents ni de majuscules à respecter. « Tout près ! » s'affiche quand il ne manque presque rien.</li>
-          <li>Chacun dessine une fois par manche ; le meilleur total gagne la partie.</li>
-        </ul>
-      </section>
-    </div>
-
-    <!-- JOUER -->
-    <div v-show="onglet === 'play'">
-      <div v-if="!role || !pub" class="panneau-vide">
-        <div class="grand">✏️</div>
-        <p>Entre dans un salon depuis l'onglet « Partie » pour jouer.</p>
-        <button class="btn principal" @click="onglet = 'config'">Aller à l'onglet « Partie »</button>
-      </div>
-
-      <!-- Salle d'attente : l'hôte règle la partie et la lance -->
-      <section v-else-if="pub.phase === 'attente'" class="carte">
-        <div class="titre-carte">Salon « {{ roomCode }} »</div>
-        <ul class="attente-liste">
-          <li v-for="j in bandeau" :key="j.pseudo"><span>{{ j.hote ? '👑 ' : '' }}{{ j.pseudo }}<span v-if="!j.connecte"> 💤</span></span><span class="sys-msg">{{ j.victoires ? '🏆 ' + j.victoires : '' }}</span></li>
-        </ul>
-        <div class="titre-option">Temps pour dessiner</div>
-        <div class="segment">
-          <button v-for="d in [60, 80, 120]" :key="d" :class="{ actif: pub.duree === d }" :disabled="role !== 'hote'" @click="reglage('duree', d)">{{ d }} s</button>
-        </div>
-        <div class="titre-option">Manches (chacun dessine une fois par manche)</div>
-        <div class="segment">
-          <button v-for="n in [1, 2, 3]" :key="n" :class="{ actif: pub.nbManches === n }" :disabled="role !== 'hote'" @click="reglage('nbManches', n)">{{ n }}</button>
-        </div>
-        <button v-if="role === 'hote'" class="btn principal btn-large" :disabled="nbConnectes < 2" @click="commencerPartie">{{ nbConnectes < 2 ? 'En attente d\'un 2e joueur…' : 'Lancer la partie' }}</button>
-        <p v-else class="statut">En attente que l'hôte lance la partie…</p>
-      </section>
-
-      <template v-else>
-        <div class="joueurs-bande">
-          <span v-for="j in bandeau" :key="j.pseudo" :class="{ dessine: j.pseudo === pub.dessinateur, trouve: j.trouve, absent: !j.connecte }">
-            {{ j.pseudo === pub.dessinateur ? '✏️ ' : j.trouve ? '✅ ' : '' }}{{ j.pseudo }} <strong>{{ j.score }}</strong>
-          </span>
-        </div>
-
-        <div class="info">
-          <div v-if="pub.phase === 'dessin' && jeDessine && monMot" class="indice mot-a-dessiner"><small>Dessine :</small>{{ monMot }}</div>
-          <div v-else-if="pub.phase === 'dessin'" class="indice"><span v-if="pub.categorie" class="theme">{{ pub.categorie }}</span>{{ pub.indice }}<small>{{ pub.longueur }} lettres</small></div>
-          <div v-else-if="pub.phase === 'choix'" class="indice mot-a-dessiner"><small>{{ jeDessine ? 'À toi :' : pub.dessinateur + ' choisit un mot…' }}</small></div>
-          <div v-else-if="pub.phase === 'bilan'" class="indice mot-a-dessiner"><small>C'était :</small>{{ pub.motRevele }}</div>
-          <div v-else class="indice mot-a-dessiner"><small>Partie terminée</small></div>
-          <div v-if="pub.phase === 'dessin' || pub.phase === 'choix'" class="chrono" :class="{ urgent: resteSec <= 10 }" :style="{ '--part': partRestante }"><span>{{ resteSec }}</span></div>
-        </div>
-
-        <div class="toile-boite" ref="boite" :class="{ dessinateur: jeDessine && pub.phase === 'dessin' }"
-             @pointerdown="appuiToile" @pointermove="glisseToile" @pointerup="lacheToile" @pointercancel="lacheToile">
-          <canvas ref="toile"></canvas>
-          <!-- Choix du mot -->
-          <div v-if="pub.phase === 'choix'" class="toile-voile">
-            <template v-if="jeDessine && mesMots">
-              <div>Choisis le mot à dessiner :</div>
-              <div class="choix-mots"><button v-for="(m, i) in mesMots" :key="m" @click="choisirMot(i)">{{ m }}</button></div>
-            </template>
-            <template v-else><div class="grand">🤔</div><div><strong>{{ pub.dessinateur }}</strong> choisit un mot…</div></template>
-          </div>
-          <!-- Bilan du tour -->
-          <div v-else-if="pub.phase === 'bilan'" class="toile-voile">
-            <div>Le mot était</div>
-            <div class="mot-revele">{{ pub.motRevele }}</div>
-            <ul class="gains">
-              <li v-for="g in gainsTour" :key="g.p"><span>{{ g.p === pub.dessinateur ? '✏️ ' : '' }}{{ g.p }}</span><strong>+{{ g.pts }}</strong></li>
-              <li v-if="!gainsTour.length" class="sys-msg">Personne n'a trouvé.</li>
-            </ul>
-          </div>
-          <!-- Fin de partie -->
-          <div v-else-if="pub.phase === 'fin'" class="toile-voile">
-            <div class="grand">🏆</div>
-            <div><strong>{{ classement[0] && classement[0].pseudo }}</strong> gagne la partie !</div>
-            <ol class="podium" style="width:100%;max-width:240px">
-              <li v-for="j in classement" :key="j.pseudo"><span>{{ j.pseudo }}</span><span>{{ j.score }} pts</span></li>
-            </ol>
-            <button v-if="role === 'hote'" class="btn principal" @click="partieSuivante">Nouvelle partie</button>
-            <div v-else class="sys-msg">L'hôte peut relancer une partie.</div>
-          </div>
-        </div>
-
-        <!-- Dessinateur : couleurs, épaisseurs, gomme, annuler, tout effacer -->
-        <template v-if="jeDessine && pub.phase === 'dessin'">
-          <div class="outils">
-            <button v-for="c in COULEURS" :key="c" class="pastille-coul" :class="{ actif: !outil.gomme && outil.couleur === c }" :style="{ background: c }" @click="outil.couleur = c; outil.gomme = false" :aria-label="'Couleur ' + c"></button>
-          </div>
-          <div class="outils">
-            <div class="epaisseurs">
-              <button v-for="(e, k) in EPAISSEURS" :key="e" class="outil" :class="{ actif: !outil.gomme && outil.epaisseur === e }" @click="outil.epaisseur = e; outil.gomme = false" :aria-label="'Épaisseur ' + (k + 1)">
-                <span class="point" :style="{ width: 4 + k * 5 + 'px', height: 4 + k * 5 + 'px', background: outil.couleur }"></span>
-              </button>
-            </div>
-            <button class="outil" :class="{ actif: outil.gomme }" @click="outil.gomme = !outil.gomme">🧽 Gomme</button>
-            <button class="outil" @click="annulerTrait" aria-label="Annuler le dernier trait">↶</button>
-            <button class="outil" @click="toutEffacer" aria-label="Tout effacer">🗑️</button>
-          </div>
-        </template>
-
-        <!-- Les autres : propositions -->
-        <template v-else-if="pub.phase !== 'fin'">
-          <div class="fil">
-            <div v-for="(l, k) in filAffiche" :key="k" :class="l.type">
-              <template v-if="l.type === 'msg'"><span class="qui">{{ l.p }} :</span> {{ l.t }}</template>
-              <template v-else-if="l.type === 'trouve'">🎉 {{ l.p }} a trouvé !</template>
-              <template v-else>{{ l.t }}</template>
-            </div>
-          </div>
-          <form class="saisie" :class="{ bloquee: !peutDeviner }" @submit.prevent="proposer">
-            <input type="text" v-model="saisie" :placeholder="placeholderSaisie" :disabled="!peutDeviner" autocomplete="off" autocapitalize="none" spellcheck="false" maxlength="40" enterkeyhint="send">
-            <button class="btn principal" type="submit" :disabled="!peutDeviner || !saisie.trim()">➤</button>
-          </form>
-        </template>
       </template>
-    </div>
+    </fiche-jeu>
   </div>
 
+  <script src="fiche-jeu.js"></script>
   <script src="commun.js"></script>
   <script src="etoiles.js"></script>
   <script src="gribouille-regles.js"></script>

@@ -221,237 +221,222 @@
   </defs></svg>
   <div id="app" class="app" :class="'style-' + styleVisuel">
 
-    <div class="barre">
-      <div id="menu">
-        <div @click="onglet = 'config'" :class="{ actif: onglet === 'config' }">Partie</div>
-        <div @click="onglet = 'play'" :class="{ actif: onglet === 'play' }">Jouer</div>
-        <div @click="onglet = 'reglages'" :class="{ actif: onglet === 'reglages' }">Réglages</div>
-        <div @click="onglet = 'regles'" :class="{ actif: onglet === 'regles' }">Règles</div>
-      </div>
-      <div class="barre-infos" v-if="onglet === 'play'">
-        <button class="btn-veille" :class="{ off: !sonActif }" @click="basculerSon">{{ sonActif ? '🔊' : '🔇' }}</button>
-        <span v-if="role" class="point-co" :class="{ attente: connexion !== 'ok' }"></span>
-      </div>
-    </div>
-
-    <!-- ACCUEIL -->
-    <div v-show="onglet === 'config'">
-      <a v-if="!role" class="lien-jeux retour-jeux" href="index.html?choix">⇦ Tous les jeux</a>
-      <header class="hero">
+    <fiche-jeu nom="Bataille navale" resume="Désdale · coule la flotte adverse" :onglet.sync="onglet" :son.sync="sonActif" :connexion="role ? connexion : ''">
+      <template v-slot:logo>
         <div class="logo-bn"><span v-for="(x, k) in ['', 'e', '', 'n', 'n', 't', '', '', 'e']" :key="k" :class="x"></span></div>
-        <div>
-          <h1>Bataille navale</h1>
-          <p>Désdale · coule la flotte adverse</p>
-        </div>
-      </header>
-
-      <!-- Salon en cours -->
-      <section class="carte salon-actif" v-if="role">
-        <div class="salon-tete">
-          <span class="pastille" :class="{ attente: connexion !== 'ok' }"></span>
-          <div>
-            <div class="salon-nom">Salon « {{ roomCode }} »</div>
-            <div class="salon-role">{{ role === 'hote' ? '👑 Tu es l\'hôte : tu choisis les règles' : 'Tu joues' }} en tant que {{ moi }} · {{ connexionTexte }}</div>
-          </div>
-        </div>
-        <div class="chips-joueurs">
-          <span v-for="j in bandeau" :key="j.pseudo" class="chip" :class="{ absent: !j.connecte }">
-            {{ j.pseudo }} · {{ j.score }} victoire{{ j.score > 1 ? 's' : '' }}<span v-if="!j.connecte"> 💤</span>
-          </span>
-          <span v-if="pub && pub.ordre.length < 2" class="chip absent">en attente d'un adversaire…</span>
-        </div>
-        <div class="actions-accueil">
-          <button class="btn principal" @click="onglet = 'play'">Jouer →</button>
-          <button class="btn" @click="quitterSalon">Quitter</button>
-        </div>
-      </section>
-
-      <section class="carte">
-        <div class="titre-carte">Règles de la partie <small v-if="role === 'client'">choisies par l'hôte</small></div>
-        <label class="case-a-cocher"><input type="checkbox" :checked="collesAffiche" :disabled="role === 'client'" @change="choisirRegle('colles', $event.target.checked)"> ⚓ Les navires peuvent se toucher</label>
-        <label class="case-a-cocher"><input type="checkbox" :checked="rejouerAffiche" :disabled="role === 'client'" @change="choisirRegle('rejouer', $event.target.checked)"> 🎯 Rejouer tant qu'on touche</label>
-        <div class="aide">Par défaut : navires séparés d'au moins une case (même en diagonale), un tir chacun son tour.<template v-if="role === 'hote'"> Un changement recommence le placement.</template></div>
-        <template v-if="!role">
-          <div class="titre-carte" style="margin-top:10px">Ordinateur</div>
-          <div class="segment">
-            <button :class="{ actif: niveau === 'facile' }" @click="niveau = 'facile'">Facile</button>
-            <button :class="{ actif: niveau === 'normal' }" @click="niveau = 'normal'">Normal</button>
-            <button :class="{ actif: niveau === 'fort' }" @click="niveau = 'fort'">Fort</button>
-          </div>
-        </template>
-      </section>
-
-      <template v-if="!role">
-        <button class="btn principal btn-large" @click="nouvellePartie">{{ partieEnCours ? 'Nouvelle partie solo' : 'Jouer seul contre l\'ordinateur' }}</button>
-        <button class="btn btn-large" v-if="partieEnCours" @click="onglet = 'play'">Reprendre la partie en cours</button>
-        <p class="statut" v-if="statsTexte">{{ statsTexte }}</p>
-
-        <section class="carte">
-          <div class="titre-carte">Partie à deux</div>
-          <div class="pseudo-portail">Ton pseudo : <b>{{ pseudoInput || '(à choisir)' }}</b><button v-if="!role" class="lien-profil" @click="ouvrirProfil">✏️ {{ pseudoInput ? 'Changer' : 'Choisir' }}</button></div>
-          <label class="champ">Nom du salon
-            <input type="text" v-model="channelInput" placeholder="ex : partie-du-dimanche" autocomplete="off">
-          </label>
-          <div class="salons-connus" v-if="salonsConnus.length">
-            <span v-for="nom in salonsConnus" :key="nom" class="salon-puce" :class="{ actif: estSalonSaisi(nom) }">
-              <button class="nom" @click="channelInput = nom">{{ nom }}</button>
-              <button class="oter" @click="oublierSalon(nom)" aria-label="Retirer de la liste">✕</button>
-            </span>
-          </div>
-          <div class="aide">Chacun sur son téléphone : ta flotte ne quitte jamais le tien. Le premier ouvre le salon et choisit les règles.</div>
-        </section>
-        <button class="btn btn-large" @click="entrerSalon()" :disabled="entreeEnCours">
-          {{ entreeEnCours ? 'Connexion au salon…' : 'Entrer dans le salon' }}
-        </button>
       </template>
 
-      <p class="version">Désdale · Bataille navale · version {{ version }}</p>
-    </div>
-
-    <!-- RÉGLAGES -->
-    <div v-show="onglet === 'reglages'">
-      <section class="carte reglages">
-        <div class="titre-carte">Réglages</div>
-        <label class="case-a-cocher"><input type="checkbox" v-model="sonActif"> 🔊 Sons</label>
-        <label class="case-a-cocher" v-if="vibrationSupportee"><input type="checkbox" v-model="vibrationActive"> 📳 Vibrations</label>
-        <label class="case-a-cocher" v-if="voixSupportee"><input type="checkbox" v-model="voixActive"> 🗣️ Annoncer mon tour</label>
-        <label class="case-a-cocher" v-if="veilleSupportee"><input type="checkbox" v-model="garderEcran"> ☀️ Garder l'écran allumé</label>
-      </section>
-      <section class="carte">
-        <div class="titre-carte">Apparence <small>sur ce téléphone</small></div>
-        <div class="segment">
-          <button :class="{ actif: styleVisuel === 'realiste' }" @click="styleVisuel = 'realiste'">Réaliste<small>acier, feu et fumée</small></button>
-          <button :class="{ actif: styleVisuel === 'plateau' }" @click="styleVisuel = 'plateau'">Jeu de société<small>fiches rouges et blanches</small></button>
-        </div>
-      </section>
-      <details class="carte journal">
-        <summary>Activité <small v-if="historique.length">({{ historique.length }})</small></summary>
-        <ul>
-          <li v-for="(log, i) in historiqueRecent" :key="i" :class="{ 'sys-msg': log.s }">{{ log.m }}</li>
-          <li v-if="!historique.length" class="sys-msg">Rien pour l'instant.</li>
-        </ul>
-      </details>
-    </div>
-
-    <!-- RÈGLES -->
-    <div v-show="onglet === 'regles'">
-      <section class="carte regles">
-        <div class="titre-carte">Règles</div>
-        <ul>
-          <li>Chacun cache sa flotte sur une mer de 10 × 10 : <strong>porte-avions (5)</strong>, <strong>croiseur (4)</strong>, <strong>contre-torpilleur (3)</strong>, <strong>sous-marin (3)</strong> et <strong>torpilleur (2)</strong>, à l'horizontale ou à la verticale.</li>
-          <li>À tour de rôle, on tire sur une case de la mer adverse : <strong>à l'eau</strong>, <strong>touché</strong>, ou <strong>coulé</strong> quand toutes les cases d'un navire sont touchées (son nom est alors annoncé).</li>
-          <li>Le premier qui coule toute la flotte adverse gagne.</li>
-          <li>Pour tirer : touche une case pour viser, puis touche-la encore pour faire feu.</li>
-          <li>À deux : ta flotte reste sur ton téléphone, qui répond tout seul aux tirs. À la fin, chacun dévoile sa flotte et l'appli vérifie que personne n'a menti.</li>
-        </ul>
-      </section>
-    </div>
-
-    <!-- JOUER -->
-    <div v-show="onglet === 'play'">
-      <div v-if="role && (!pub || pub.ordre.length < 2) && !phase" class="panneau-vide">
-        <div class="grand">⏳</div>
-        <p>En attente d'un adversaire.<br>Donne-lui le nom du salon : <strong>{{ roomCode }}</strong></p>
-      </div>
-      <div v-else-if="!phase" class="panneau-vide">
-        <div class="grand">⚓</div>
-        <p>Aucune partie en cours.</p>
-        <button class="btn principal" @click="nouvellePartie">Jouer seul contre l'ordinateur</button>
-      </div>
-      <template v-else>
-        <div class="joueurs-bande" v-if="role && pub">
-          <span v-for="j in bandeau" :key="j.pseudo" :class="{ actif: phase === 'jeu' && etat && etat.tour === j.c, absent: !j.connecte }">
-            {{ j.pseudo }} <strong>{{ j.score }}</strong>
-          </span>
-        </div>
-        <div class="consigne" :class="{ alerte: !!message }">{{ message || consigne }}</div>
-
-        <!-- Placement : ma mer en grand, la réserve de navires en dessous -->
-        <template v-if="phase === 'placement'">
-          <div class="mer">
-            <div class="lettres"><span v-for="l in BN.LETTRES" :key="l">{{ l }}</span></div>
-            <div class="mer-corps">
-              <div class="chiffres"><span v-for="n in 10" :key="n">{{ n }}</span></div>
-              <div class="plan">
-                <div class="eau placement" ref="merPlacement" @pointerdown="appui" @pointermove="glisse" @pointerup="lache" @pointercancel="glissement = null">
-                  <div v-for="x in celluleMoi" :key="x.i" class="cell" :class="x.classes"></div>
-                  <div class="navires">
-                    <div v-for="n in naviresMoi" :key="n.id" class="navire" :class="n.classes" :style="n.style"><svg :view-box.camel="n.vb" v-html="n.svg"></svg></div>
-                  </div>
-                </div>
-                <!-- Le navire choisi garde son bouton « pivoter » tant qu'il n'est pas validé (toucher ailleurs le valide) -->
-                <div v-if="boutonsNavire" class="boutons-nav" :class="boutonsNavire.sens" :style="boutonsNavire.style">
-                  <button @click="tourner" aria-label="Pivoter">↻</button>
-                </div>
-              </div>
+      <!-- PARTIE : salon, jouer seul -->
+      <template v-slot:partie>
+        <!-- Salon en cours -->
+        <section class="carte salon-actif" v-if="role">
+          <div class="salon-tete">
+            <span class="pastille" :class="{ attente: connexion !== 'ok' }"></span>
+            <div>
+              <div class="salon-nom">Salon « {{ roomCode }} »</div>
+              <div class="salon-role">{{ role === 'hote' ? '👑 Tu es l\'hôte : tu choisis les règles' : 'Tu joues' }} en tant que {{ moi }} · {{ connexionTexte }}</div>
             </div>
           </div>
-          <div class="reserve" v-if="!jeSuisPret && reserve.length">
-            <button v-for="n in reserve" :key="n.id" class="reserve-nav" :class="{ choisie: selNav === n.id }" @click="choisirNavire(n.id)">
-              <svg class="mini-nav" :view-box.camel="'0 0 ' + n.t * 100 + ' 100'" :style="{ width: n.t * 13 + 'px' }" v-html="dessin(n.id, true)"></svg>{{ n.nom }}
-            </button>
+          <div class="chips-joueurs">
+            <span v-for="j in bandeau" :key="j.pseudo" class="chip" :class="{ absent: !j.connecte }">
+              {{ j.pseudo }} · {{ j.score }} victoire{{ j.score > 1 ? 's' : '' }}<span v-if="!j.connecte"> 💤</span>
+            </span>
+            <span v-if="pub && pub.ordre.length < 2" class="chip absent">en attente d'un adversaire…</span>
           </div>
-          <div class="actions" v-if="!jeSuisPret">
-            <button class="btn" v-if="selNav !== null && flotte[selNav]" @click="retirerNavire">↩ Retirer</button>
-            <button class="btn" v-else @click="placerAuHasard">🎲 {{ reserve.length && reserve.length < 5 ? 'Compléter' : 'Hasard' }}</button>
-            <button class="btn" @click="viderPlacement" :disabled="reserve.length === 5" aria-label="Vider la mer"><span class="ico-vider">⟲</span> Vider</button>
-            <button class="btn principal" @click="commencer" :disabled="reserve.length > 0">Prêt ✓</button>
+          <div class="actions-accueil">
+            <button class="btn principal" @click="onglet = 'play'">Jouer →</button>
+            <button class="btn" @click="quitterSalon">Quitter</button>
           </div>
+        </section>
+
+        <section class="carte">
+          <div class="titre-carte">Règles de la partie <small v-if="role === 'client'">choisies par l'hôte</small></div>
+          <label class="case-a-cocher"><input type="checkbox" :checked="collesAffiche" :disabled="role === 'client'" @change="choisirRegle('colles', $event.target.checked)"> ⚓ Les navires peuvent se toucher</label>
+          <label class="case-a-cocher"><input type="checkbox" :checked="rejouerAffiche" :disabled="role === 'client'" @change="choisirRegle('rejouer', $event.target.checked)"> 🎯 Rejouer tant qu'on touche</label>
+          <div class="aide">Par défaut : navires séparés d'au moins une case (même en diagonale), un tir chacun son tour.<template v-if="role === 'hote'"> Un changement recommence le placement.</template></div>
+          <template v-if="!role">
+            <div class="titre-carte" style="margin-top:10px">Ordinateur</div>
+            <div class="segment">
+              <button :class="{ actif: niveau === 'facile' }" @click="niveau = 'facile'">Facile</button>
+              <button :class="{ actif: niveau === 'normal' }" @click="niveau = 'normal'">Normal</button>
+              <button :class="{ actif: niveau === 'fort' }" @click="niveau = 'fort'">Fort</button>
+            </div>
+          </template>
+        </section>
+
+        <template v-if="!role">
+          <button class="btn principal btn-large" @click="nouvellePartie">{{ partieEnCours ? 'Nouvelle partie solo' : 'Jouer seul contre l\'ordinateur' }}</button>
+          <button class="btn btn-large" v-if="partieEnCours" @click="onglet = 'play'">Reprendre la partie en cours</button>
+          <p class="statut" v-if="statsTexte">{{ statsTexte }}</p>
+
+          <section class="carte">
+            <div class="titre-carte">Partie à deux</div>
+            <div class="pseudo-portail">Ton pseudo : <b>{{ pseudoInput || '(à choisir)' }}</b><button v-if="!role" class="lien-profil" @click="ouvrirProfil">✏️ {{ pseudoInput ? 'Changer' : 'Choisir' }}</button></div>
+            <label class="champ">Nom du salon
+              <input type="text" v-model="channelInput" placeholder="ex : partie-du-dimanche" autocomplete="off">
+            </label>
+            <div class="salons-connus" v-if="salonsConnus.length">
+              <span v-for="nom in salonsConnus" :key="nom" class="salon-puce" :class="{ actif: estSalonSaisi(nom) }">
+                <button class="nom" @click="channelInput = nom">{{ nom }}</button>
+                <button class="oter" @click="oublierSalon(nom)" aria-label="Retirer de la liste">✕</button>
+              </span>
+            </div>
+            <div class="aide">Chacun sur son téléphone : ta flotte ne quitte jamais le tien. Le premier ouvre le salon et choisit les règles.</div>
+          </section>
+          <button class="btn btn-large" @click="entrerSalon()" :disabled="entreeEnCours">
+            {{ entreeEnCours ? 'Connexion au salon…' : 'Entrer dans le salon' }}
+          </button>
         </template>
 
-        <!-- Partie : la mer adverse en grand, la mienne en petit -->
-        <div v-else class="zone-jeu">
-          <div class="titre-mer"><span>🎯 Mer de {{ nomAdversaireCourt }}</span><small>{{ mesTirsTexte }}</small></div>
-          <div class="mer">
-            <div class="lettres"><span v-for="l in BN.LETTRES" :key="l">{{ l }}</span></div>
-            <div class="mer-corps">
-              <div class="chiffres"><span v-for="n in 10" :key="n">{{ n }}</span></div>
-              <div class="plan">
-                <div class="eau adv" :class="{ active: monTour, inactive: phase === 'jeu' && !monTour }">
-                  <div v-for="x in celluleAdv" :key="x.i" class="cell" :class="x.classes" @click="toucherAdv(x.i)">
-                    <div v-if="x.marque" class="marque" :class="x.marque"></div>
-                  </div>
-                  <div class="navires">
-                    <div v-for="n in naviresAdv" :key="n.id" class="navire" :class="n.classes" :style="n.style"><svg :view-box.camel="n.vb" v-html="n.svg"></svg></div>
-                  </div>
-                </div>
-              </div>
-            </div>
+        <p class="version">Désdale · Bataille navale · version {{ version }}</p>
+
+      </template>
+
+      <!-- JOUER -->
+      <template v-slot:jouer>
+        <div v-if="role && (!pub || pub.ordre.length < 2) && !phase" class="panneau-vide">
+          <div class="grand">⏳</div>
+          <p>En attente d'un adversaire.<br>Donne-lui le nom du salon : <strong>{{ roomCode }}</strong></p>
+        </div>
+        <div v-else-if="!phase" class="panneau-vide">
+          <div class="grand">⚓</div>
+          <p>Aucune partie en cours.</p>
+          <button class="btn principal" @click="nouvellePartie">Jouer seul contre l'ordinateur</button>
+        </div>
+        <template v-else>
+          <div class="joueurs-bande" v-if="role && pub">
+            <span v-for="j in bandeau" :key="j.pseudo" :class="{ actif: phase === 'jeu' && etat && etat.tour === j.c, absent: !j.connecte }">
+              {{ j.pseudo }} <strong>{{ j.score }}</strong>
+            </span>
           </div>
-          <div class="bas">
+          <div class="consigne" :class="{ alerte: !!message }">{{ message || consigne }}</div>
+
+          <!-- Placement : ma mer en grand, la réserve de navires en dessous -->
+          <template v-if="phase === 'placement'">
             <div class="mer">
+              <div class="lettres"><span v-for="l in BN.LETTRES" :key="l">{{ l }}</span></div>
               <div class="mer-corps">
+                <div class="chiffres"><span v-for="n in 10" :key="n">{{ n }}</span></div>
                 <div class="plan">
-                  <div class="eau">
-                    <div v-for="x in celluleMoi" :key="x.i" class="cell" :class="x.classes">
-                      <div v-if="x.marque" class="marque" :class="x.marque"></div>
-                    </div>
+                  <div class="eau placement" ref="merPlacement" @pointerdown="appui" @pointermove="glisse" @pointerup="lache" @pointercancel="glissement = null">
+                    <div v-for="x in celluleMoi" :key="x.i" class="cell" :class="x.classes"></div>
                     <div class="navires">
                       <div v-for="n in naviresMoi" :key="n.id" class="navire" :class="n.classes" :style="n.style"><svg :view-box.camel="n.vb" v-html="n.svg"></svg></div>
                     </div>
                   </div>
+                  <!-- Le navire choisi garde son bouton « pivoter » tant qu'il n'est pas validé (toucher ailleurs le valide) -->
+                  <div v-if="boutonsNavire" class="boutons-nav" :class="boutonsNavire.sens" :style="boutonsNavire.style">
+                    <button @click="tourner" aria-label="Pivoter">↻</button>
+                  </div>
                 </div>
               </div>
             </div>
-            <div class="panneau">
-              <div class="titre">Flotte de {{ nomAdversaireCourt }}</div>
-              <div class="flotte-etat">
-                <div v-for="n in flotteAdvEtat" :key="n.id" class="nav adv" :class="{ coule: n.coule }" :title="n.nom"><svg class="mini-nav" :view-box.camel="'0 0 ' + n.t * 100 + ' 100'" :style="{ width: n.t * 12 + 'px' }" v-html="dessin(n.id, true)"></svg></div>
-              </div>
-              <div class="titre">Ma flotte</div>
-              <div class="flotte-etat">
-                <div v-for="n in maFlotteEtat" :key="n.id" class="nav" :class="{ coule: n.coule }" :title="n.nom"><svg class="mini-nav" :view-box.camel="'0 0 ' + n.t * 100 + ' 100'" :style="{ width: n.t * 12 + 'px' }" v-html="dessin(n.id, true)"></svg><span v-if="n.touches && !n.coule" class="impacts">{{ '●'.repeat(n.touches) }}</span></div>
-              </div>
-              <div class="verif ko" v-if="phase === 'fin' && verif && !verif.ok">{{ verif.texte }}</div>
-              <button class="btn" v-if="phase === 'jeu'" @click="abandonner">Abandonner</button>
-              <button class="btn principal" v-if="phase === 'fin'" @click="rejouer">{{ role ? 'Partie suivante' : 'Rejouer' }}</button>
-              <button class="btn" v-if="phase === 'fin'" @click="finMasquee = false">Résultat</button>
+            <div class="reserve" v-if="!jeSuisPret && reserve.length">
+              <button v-for="n in reserve" :key="n.id" class="reserve-nav" :class="{ choisie: selNav === n.id }" @click="choisirNavire(n.id)">
+                <svg class="mini-nav" :view-box.camel="'0 0 ' + n.t * 100 + ' 100'" :style="{ width: n.t * 13 + 'px' }" v-html="dessin(n.id, true)"></svg>{{ n.nom }}
+              </button>
             </div>
+            <div class="actions" v-if="!jeSuisPret">
+              <button class="btn" v-if="selNav !== null && flotte[selNav]" @click="retirerNavire">↩ Retirer</button>
+              <button class="btn" v-else @click="placerAuHasard">🎲 {{ reserve.length && reserve.length < 5 ? 'Compléter' : 'Hasard' }}</button>
+              <button class="btn" @click="viderPlacement" :disabled="reserve.length === 5" aria-label="Vider la mer"><span class="ico-vider">⟲</span> Vider</button>
+              <button class="btn principal" @click="commencer" :disabled="reserve.length > 0">Prêt ✓</button>
+            </div>
+          </template>
+
+          <!-- Partie : la mer adverse en grand, la mienne en petit -->
+          <div v-else class="zone-jeu">
+            <div class="titre-mer"><span>🎯 Mer de {{ nomAdversaireCourt }}</span><small>{{ mesTirsTexte }}</small></div>
+            <div class="mer">
+              <div class="lettres"><span v-for="l in BN.LETTRES" :key="l">{{ l }}</span></div>
+              <div class="mer-corps">
+                <div class="chiffres"><span v-for="n in 10" :key="n">{{ n }}</span></div>
+                <div class="plan">
+                  <div class="eau adv" :class="{ active: monTour, inactive: phase === 'jeu' && !monTour }">
+                    <div v-for="x in celluleAdv" :key="x.i" class="cell" :class="x.classes" @click="toucherAdv(x.i)">
+                      <div v-if="x.marque" class="marque" :class="x.marque"></div>
+                    </div>
+                    <div class="navires">
+                      <div v-for="n in naviresAdv" :key="n.id" class="navire" :class="n.classes" :style="n.style"><svg :view-box.camel="n.vb" v-html="n.svg"></svg></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="bas">
+              <div class="mer">
+                <div class="mer-corps">
+                  <div class="plan">
+                    <div class="eau">
+                      <div v-for="x in celluleMoi" :key="x.i" class="cell" :class="x.classes">
+                        <div v-if="x.marque" class="marque" :class="x.marque"></div>
+                      </div>
+                      <div class="navires">
+                        <div v-for="n in naviresMoi" :key="n.id" class="navire" :class="n.classes" :style="n.style"><svg :view-box.camel="n.vb" v-html="n.svg"></svg></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="panneau">
+                <div class="titre">Flotte de {{ nomAdversaireCourt }}</div>
+                <div class="flotte-etat">
+                  <div v-for="n in flotteAdvEtat" :key="n.id" class="nav adv" :class="{ coule: n.coule }" :title="n.nom"><svg class="mini-nav" :view-box.camel="'0 0 ' + n.t * 100 + ' 100'" :style="{ width: n.t * 12 + 'px' }" v-html="dessin(n.id, true)"></svg></div>
+                </div>
+                <div class="titre">Ma flotte</div>
+                <div class="flotte-etat">
+                  <div v-for="n in maFlotteEtat" :key="n.id" class="nav" :class="{ coule: n.coule }" :title="n.nom"><svg class="mini-nav" :view-box.camel="'0 0 ' + n.t * 100 + ' 100'" :style="{ width: n.t * 12 + 'px' }" v-html="dessin(n.id, true)"></svg><span v-if="n.touches && !n.coule" class="impacts">{{ '●'.repeat(n.touches) }}</span></div>
+                </div>
+                <div class="verif ko" v-if="phase === 'fin' && verif && !verif.ok">{{ verif.texte }}</div>
+                <button class="btn" v-if="phase === 'jeu'" @click="abandonner">Abandonner</button>
+                <button class="btn principal" v-if="phase === 'fin'" @click="rejouer">{{ role ? 'Partie suivante' : 'Rejouer' }}</button>
+                <button class="btn" v-if="phase === 'fin'" @click="finMasquee = false">Résultat</button>
+              </div>
+            </div>
+            <div v-if="annonce" :key="annonce.cle" class="annonce" :class="['r-' + annonce.type, { contre: !annonce.moi }]"><small>{{ annonce.qui }}</small>{{ annonce.texte }}</div>
           </div>
-          <div v-if="annonce" :key="annonce.cle" class="annonce" :class="['r-' + annonce.type, { contre: !annonce.moi }]"><small>{{ annonce.qui }}</small>{{ annonce.texte }}</div>
-        </div>
+        </template>
+
       </template>
-    </div>
+
+      <!-- RÉGLAGES -->
+      <template v-slot:reglages>
+        <section class="carte reglages">
+          <div class="titre-carte">Réglages</div>
+          <reglages-base :son.sync="sonActif" :vibration.sync="vibrationActive" :voix.sync="voixActive" :ecran.sync="garderEcran"></reglages-base>
+        </section>
+        <section class="carte">
+          <div class="titre-carte">Apparence <small>sur ce téléphone</small></div>
+          <div class="segment">
+            <button :class="{ actif: styleVisuel === 'realiste' }" @click="styleVisuel = 'realiste'">Réaliste<small>acier, feu et fumée</small></button>
+            <button :class="{ actif: styleVisuel === 'plateau' }" @click="styleVisuel = 'plateau'">Jeu de société<small>fiches rouges et blanches</small></button>
+          </div>
+        </section>
+        <details class="carte journal">
+          <summary>Activité <small v-if="historique.length">({{ historique.length }})</small></summary>
+          <ul>
+            <li v-for="(log, i) in historiqueRecent" :key="i" :class="{ 'sys-msg': log.s }">{{ log.m }}</li>
+            <li v-if="!historique.length" class="sys-msg">Rien pour l'instant.</li>
+          </ul>
+        </details>
+
+      </template>
+
+      <!-- RÈGLES -->
+      <template v-slot:regles>
+        <section class="carte regles">
+          <div class="titre-carte">Règles</div>
+          <ul>
+            <li>Chacun cache sa flotte sur une mer de 10 × 10 : <strong>porte-avions (5)</strong>, <strong>croiseur (4)</strong>, <strong>contre-torpilleur (3)</strong>, <strong>sous-marin (3)</strong> et <strong>torpilleur (2)</strong>, à l'horizontale ou à la verticale.</li>
+            <li>À tour de rôle, on tire sur une case de la mer adverse : <strong>à l'eau</strong>, <strong>touché</strong>, ou <strong>coulé</strong> quand toutes les cases d'un navire sont touchées (son nom est alors annoncé).</li>
+            <li>Le premier qui coule toute la flotte adverse gagne.</li>
+            <li>Pour tirer : touche une case pour viser, puis touche-la encore pour faire feu.</li>
+            <li>À deux : ta flotte reste sur ton téléphone, qui répond tout seul aux tirs. À la fin, chacun dévoile sa flotte et l'appli vérifie que personne n'a menti.</li>
+          </ul>
+        </section>
+
+      </template>
+    </fiche-jeu>
 
     <!-- FIN DE PARTIE -->
     <div v-if="phase === 'fin' && fin && !finMasquee" class="fin-backdrop" @click.self="finMasquee = true">
@@ -466,6 +451,7 @@
     </div>
   </div>
 
+  <script src="fiche-jeu.js"></script>
   <script src="commun.js"></script>
   <script src="etoiles.js"></script>
   <script src="bataille-regles.js"></script>

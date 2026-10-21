@@ -116,224 +116,211 @@
 <body>
   <div id="app" class="app">
 
-    <div class="barre">
-      <div id="menu">
-        <div @click="onglet = 'config'" :class="{ actif: onglet === 'config' }">Partie</div>
-        <div @click="onglet = 'play'" :class="{ actif: onglet === 'play' }">Jouer</div>
-        <div @click="onglet = 'reglages'" :class="{ actif: onglet === 'reglages' }">Réglages</div>
-        <div @click="onglet = 'regles'" :class="{ actif: onglet === 'regles' }">Règles</div>
-      </div>
-      <div class="barre-infos" v-if="onglet === 'play'">
-        <button class="btn-veille" :class="{ off: !sonActif }" @click="basculerSon">{{ sonActif ? '🔊' : '🔇' }}</button>
-        <span v-if="role" class="point-co" :class="{ attente: connexion !== 'ok' }"></span>
-      </div>
-    </div>
-
-    <!-- ACCUEIL -->
-    <div v-show="onglet === 'config'">
-      <a v-if="!role" class="lien-jeux retour-jeux" href="index.html?choix">⇦ Tous les jeux</a>
-      <header class="hero">
+    <fiche-jeu nom="Lettres croisées" resume="Désdale · des mots sur la grille, seul ou de 2 à 4" :onglet.sync="onglet" :son.sync="sonActif" :connexion="role ? connexion : ''">
+      <template v-slot:logo>
         <div class="logo-lc" v-html="logo"></div>
-        <div>
-          <h1>Lettres croisées</h1>
-          <p>Désdale · des mots sur la grille, seul contre l'ordinateur ou de 2 à 4</p>
-        </div>
-      </header>
+      </template>
 
-      <section class="carte salon-actif" v-if="role">
-        <div class="salon-tete">
-          <span class="pastille" :class="{ attente: connexion !== 'ok' }"></span>
-          <div>
-            <div class="salon-nom">Salon « {{ roomCode }} »</div>
-            <div class="salon-role">Tu joues en tant que {{ moi }} · {{ connexionTexte }}</div>
-          </div>
-        </div>
-        <div class="actions-accueil">
-          <button class="btn principal" @click="onglet = 'play'">Jouer →</button>
-          <button class="btn" @click="quitterSalon">Quitter</button>
-        </div>
-        <button v-if="role === 'hote' && e && e.phase !== 'fin'" class="btn" style="width:100%;margin-top:8px" @click="arreter">Arrêter la partie en cours (salle d'attente)</button>
-      </section>
-
-      <section class="carte" v-if="!role">
-        <div class="titre-carte">Seul contre l'ordinateur</div>
-        <div class="petit-titre">Niveau de l'ordinateur</div>
-        <div class="segment">
-          <button v-for="(nom, n) in NIVEAUX_NOMS" :key="n" :class="{ actif: niveau === n }" @click="niveau = n">{{ nom }}</button>
-        </div>
-        <div class="aide" style="margin-top:0">{{ AIDE_NIVEAUX[niveau] }}</div>
-        <div class="petit-titre">Nombre d'ordinateurs contre toi</div>
-        <div class="segment">
-          <button v-for="n in [1, 2, 3]" :key="n" :class="{ actif: nbOrdis === n }" @click="nbOrdis = n">🤖 {{ n }}</button>
-        </div>
-        <button class="btn principal" style="width:100%" @click="demarrerSolo">🤖 {{ soloEnCours ? 'Reprendre la partie' : 'Jouer seul' }}</button>
-        <button v-if="soloEnCours" class="btn" style="width:100%;margin-top:6px" @click="nouveauSolo">Nouvelle partie ({{ NIVEAUX_NOMS[niveau] }})</button>
-        <div class="aide" v-if="serieRecord > 1">Record : {{ serieRecord }} parties gagnées d'affilée ({{ NIVEAUX_NOMS[niveau] }}).</div>
-      </section>
-      <section class="carte" v-if="!role">
-        <div class="titre-carte">À plusieurs (2 à 4), chacun sur son téléphone</div>
-        <div class="pseudo-portail">Ton pseudo : <b>{{ pseudoInput || '(à choisir)' }}</b><button v-if="!role" class="lien-profil" @click="ouvrirProfil">✏️ {{ pseudoInput ? 'Changer' : 'Choisir' }}</button></div>
-        <label class="champ">Nom du salon
-          <input type="text" v-model="channelInput" placeholder="ex : partie-du-dimanche" autocomplete="off">
-        </label>
-        <div class="salons-connus" v-if="salonsConnus.length">
-          <span v-for="nom in salonsConnus" :key="nom" class="salon-puce" :class="{ actif: estSalonSaisi(nom) }">
-            <button class="nom" @click="channelInput = nom">{{ nom }}</button>
-            <button class="oter" @click="oublierSalon(nom)" aria-label="Retirer de la liste">✕</button>
-          </span>
-        </div>
-        <button class="btn principal" style="width:100%;margin-top:8px" @click="entrerSalon()" :disabled="entreeEnCours">{{ entreeEnCours ? 'Connexion au salon…' : 'Entrer dans le salon' }}</button>
-      </section>
-
-      <p class="version">Désdale · Lettres croisées · version {{ version }}<br>Liste de mots : an-array-of-french-words (licence MIT, voir lettres-mots-licence.txt)</p>
-    </div>
-
-    <!-- RÉGLAGES -->
-    <div v-show="onglet === 'reglages'">
-      <section class="carte reglages">
-        <div class="titre-carte">Réglages</div>
-        <label class="case-a-cocher"><input type="checkbox" v-model="sonActif"> 🔊 Sons</label>
-        <label class="case-a-cocher" v-if="vibrationSupportee"><input type="checkbox" v-model="vibrationActive"> 📳 Vibrations</label>
-      </section>
-    </div>
-
-    <!-- RÈGLES -->
-    <div v-show="onglet === 'regles'">
-      <section class="carte regles">
-        <div class="titre-carte">Règles</div>
-        <ul>
-          <li>Chacun a 7 lettres. À son tour, on pose des lettres sur <strong>une seule ligne ou colonne</strong>, sans trou, pour former un mot qui croise ou touche ceux déjà posés. Le premier mot passe par l'étoile du centre.</li>
-          <li>On marque les points de chaque mot formé (le mot principal et ceux qui se croisent). Cases colorées : <strong>L×2 / L×3</strong> (la lettre compte double / triple), <strong>M×2 / M×3</strong> (le mot compte double / triple), seulement pour les lettres posées ce tour-ci.</li>
-          <li>Les 7 lettres d'un coup : <strong>+50</strong>. Les deux jokers valent 0 point et remplacent n'importe quelle lettre.</li>
-          <li>Le dernier mot de chacun s'affiche sous son score : touche-le (ou un mot du « Dernier coup ») pour lire sa définition sur le Wiktionnaire.</li>
-          <li>🔀 : range tes lettres à la main (fais-les glisser, ou touche-en deux pour les échanger), puis « Retour à la partie ».</li>
-          <li>Toucher deux fois rapidement le plateau le grossit (ou le remet en entier) : pratique pour viser une case.</li>
-          <li>On peut aussi <strong>échanger</strong> des lettres (s'il en reste au moins 7 dans le sac) ou <strong>passer</strong>.</li>
-          <li>Mot absent du dictionnaire : les autres joueurs <strong>votent</strong>. S'il est refusé, les lettres reviennent et on rejoue. Seul contre l'ordinateur, c'est toi qui décides.</li>
-          <li>Fin : quand un joueur a posé toutes ses lettres et que le sac est vide (il gagne les points restant chez les autres, qui les perdent), ou quand tout le monde passe deux fois de suite.</li>
-        </ul>
-      </section>
-    </div>
-
-    <!-- JOUER -->
-    <div v-show="onglet === 'play'">
-      <div v-if="!pub" class="panneau-vide">
-        <div class="grand">🔤</div>
-        <p>Joue seul ou entre dans un salon depuis l'onglet « Partie ».</p>
-        <button class="btn principal" @click="onglet = 'config'">Aller à l'onglet « Partie »</button>
-      </div>
-
-      <!-- Salle d'attente du salon -->
-      <section v-else-if="pub.phase === 'attente'" class="carte attente-lc">
-        <div class="titre-carte">Salle d'attente</div>
-        <div class="petit-titre">Présents ({{ presents.length }})</div>
-        <div class="presents">
-          <span v-for="p in pub.ordre" :key="p" :class="{ absent: !estPresent(p) }">{{ p }}{{ p === moi ? ' (moi)' : '' }}</span>
-          <span v-for="r in robots" :key="r" class="robot">{{ r }} <button v-if="role === 'hote'" @click="envoyerJeu({ type: 'ROBOT', ajouter: false, nom: r })" aria-label="Retirer">✕</button></span>
-        </div>
-        <button v-if="role === 'hote' && nbPartants < 4" class="btn" style="width:100%;margin-bottom:8px" @click="envoyerJeu({ type: 'ROBOT', ajouter: true })">🤖 Ajouter un ordinateur</button>
-        <template v-if="robots.length">
-          <div class="petit-titre">Niveau des ordinateurs {{ role === 'hote' ? '' : '(choisi par l\'hôte)' }}</div>
-          <div class="segment">
-            <button v-for="(nom, n) in NIVEAUX_NOMS" :key="n" :disabled="role !== 'hote'" :class="{ actif: (pub.niveau || 'normal') === n }" @click="envoyerJeu({ type: 'NIVEAU', niveau: n })">{{ nom }}</button>
-          </div>
-        </template>
-        <button v-if="role === 'hote'" class="btn principal" style="width:100%" :disabled="nbPartants < 2" @click="envoyerJeu({ type: 'COMMENCER' })">
-          {{ nbPartants < 2 ? 'En attente d\'un 2e joueur (ou d\'un ordinateur)…' : 'Commencer (' + nbPartants + ' joueurs)' }}</button>
-        <div v-else class="aide">L'hôte lance la partie quand tout le monde est là.</div>
-        <div class="aide" v-if="presents.length + robots.length > 4">On joue à 4 au plus : les joueurs passent avant les ordinateurs, les suivants regardent.</div>
-      </section>
-
-      <template v-else-if="e">
-        <div class="joueurs-lc">
-          <div v-for="j in joueursAff" :key="j.nom" class="j" :class="{ actif: j.actif, absent: j.absent }" :style="{ '--c': j.coul }">
-            <div class="nom">{{ j.nom }}</div>
-            <div><span class="score">{{ j.score }}</span> <span class="nb">· {{ j.nb }}</span></div>
-            <div v-if="j.action" class="mot-def vide">{{ j.action }}</div>
-            <a v-else-if="j.mot" class="mot-def" :href="lienDef(j.mot)" target="_blank" rel="noopener" title="Définition">{{ j.mot }}</a>
-            <div v-else class="mot-def vide">–</div>
-          </div>
-        </div>
-        <div class="statut-lc" :class="{ moi: monTour }">{{ statut }}</div>
-
-        <!-- Plateau -->
-        <div class="cadre" ref="cadre">
-          <div class="grille" :class="{ zoom: zoom }">
-            <div v-for="k in grille" :key="k.c" class="case" :class="[k.b, { centre: k.c === CENTRE }]" @click="toucherCase(k.c)">
-              <span v-if="!k.l" class="bonus">{{ k.c === CENTRE ? '★' : k.lib }}</span>
-              <span v-else class="jeton" :class="{ joker: k.joker, marque: !!k.coul, recent: k.recent, mien: k.etat === 'mien', verif: k.etat === 'verif' }" :style="k.coul ? { '--c': k.coul } : null">{{ k.l }}<span class="v" v-if="!k.joker">{{ k.v }}</span></span>
+      <!-- PARTIE : salon, jouer seul -->
+      <template v-slot:partie>
+        <section class="carte salon-actif" v-if="role">
+          <div class="salon-tete">
+            <span class="pastille" :class="{ attente: connexion !== 'ok' }"></span>
+            <div>
+              <div class="salon-nom">Salon « {{ roomCode }} »</div>
+              <div class="salon-role">Tu joues en tant que {{ moi }} · {{ connexionTexte }}</div>
             </div>
           </div>
-        </div>
-        <div class="ligne-apercu">
-          <div v-if="!analyse && e.dernier && e.phase !== 'verif'" class="apercu-lc" :style="{ color: couleurDe(e.dernier.j) }">
-            Dernier coup :<template v-for="(m, k) in e.dernier.mots">{{ k ? ',' : '' }} <a :key="k" :href="lienDef(m)" target="_blank" rel="noopener">{{ m }}</a></template>
-            ({{ e.dernier.j === moiJ ? 'moi' : e.dernier.j }}, +{{ e.dernier.points }})</div>
-          <div v-else class="apercu-lc" :class="apercuClasse">{{ apercuTexte }}</div>
-          <button class="zoom-btn" @click="zoom = !zoom">{{ zoom ? '🔍 −' : '🔍 +' }}</button>
+          <div class="actions-accueil">
+            <button class="btn principal" @click="onglet = 'play'">Jouer →</button>
+            <button class="btn" @click="quitterSalon">Quitter</button>
+          </div>
+          <button v-if="role === 'hote' && e && e.phase !== 'fin'" class="btn" style="width:100%;margin-top:8px" @click="arreter">Arrêter la partie en cours (salle d'attente)</button>
+        </section>
+
+        <section class="carte" v-if="!role">
+          <div class="titre-carte">Seul contre l'ordinateur</div>
+          <div class="petit-titre">Niveau de l'ordinateur</div>
+          <div class="segment">
+            <button v-for="(nom, n) in NIVEAUX_NOMS" :key="n" :class="{ actif: niveau === n }" @click="niveau = n">{{ nom }}</button>
+          </div>
+          <div class="aide" style="margin-top:0">{{ AIDE_NIVEAUX[niveau] }}</div>
+          <div class="petit-titre">Nombre d'ordinateurs contre toi</div>
+          <div class="segment">
+            <button v-for="n in [1, 2, 3]" :key="n" :class="{ actif: nbOrdis === n }" @click="nbOrdis = n">🤖 {{ n }}</button>
+          </div>
+          <button class="btn principal" style="width:100%" @click="demarrerSolo">🤖 {{ soloEnCours ? 'Reprendre la partie' : 'Jouer seul' }}</button>
+          <button v-if="soloEnCours" class="btn" style="width:100%;margin-top:6px" @click="nouveauSolo">Nouvelle partie ({{ NIVEAUX_NOMS[niveau] }})</button>
+          <div class="aide" v-if="serieRecord > 1">Record : {{ serieRecord }} parties gagnées d'affilée ({{ NIVEAUX_NOMS[niveau] }}).</div>
+        </section>
+        <section class="carte" v-if="!role">
+          <div class="titre-carte">À plusieurs (2 à 4), chacun sur son téléphone</div>
+          <div class="pseudo-portail">Ton pseudo : <b>{{ pseudoInput || '(à choisir)' }}</b><button v-if="!role" class="lien-profil" @click="ouvrirProfil">✏️ {{ pseudoInput ? 'Changer' : 'Choisir' }}</button></div>
+          <label class="champ">Nom du salon
+            <input type="text" v-model="channelInput" placeholder="ex : partie-du-dimanche" autocomplete="off">
+          </label>
+          <div class="salons-connus" v-if="salonsConnus.length">
+            <span v-for="nom in salonsConnus" :key="nom" class="salon-puce" :class="{ actif: estSalonSaisi(nom) }">
+              <button class="nom" @click="channelInput = nom">{{ nom }}</button>
+              <button class="oter" @click="oublierSalon(nom)" aria-label="Retirer de la liste">✕</button>
+            </span>
+          </div>
+          <button class="btn principal" style="width:100%;margin-top:8px" @click="entrerSalon()" :disabled="entreeEnCours">{{ entreeEnCours ? 'Connexion au salon…' : 'Entrer dans le salon' }}</button>
+        </section>
+
+        <p class="version">Désdale · Lettres croisées · version {{ version }}<br>Liste de mots : an-array-of-french-words (licence MIT, voir lettres-mots-licence.txt)</p>
+
+      </template>
+
+      <!-- JOUER -->
+      <template v-slot:jouer>
+        <div v-if="!pub" class="panneau-vide">
+          <div class="grand">🔤</div>
+          <p>Joue seul ou entre dans un salon depuis l'onglet « Partie ».</p>
+          <button class="btn principal" @click="onglet = 'config'">Aller à l'onglet « Partie »</button>
         </div>
 
-        <!-- Vote sur un mot inconnu du dictionnaire -->
-        <div class="vote-lc" v-if="e.phase === 'verif' && e.verif">
-          <div class="aide" style="margin:0">{{ e.verif.j === moiJ ? 'Mot inconnu du dictionnaire, les autres votent :' : e.verif.j + ' propose un mot inconnu du dictionnaire :' }}</div>
-          <div class="mots">{{ e.verif.inconnus.join(', ') }}</div>
-          <div class="aide" style="margin:0">{{ e.verif.mots.join(', ') }} · {{ e.verif.points }} points · votes {{ nbVotes }}/{{ votants.length }}</div>
-          <a class="lien-ffsc" href="https://www.ffscrabble.fr/verificateur-de-mots/" target="_blank" rel="noopener">🔎 Vérifier dans l'ODS (site de la Fédération)</a>
-          <div class="actions-lc" v-if="votants.indexOf(moiJ) !== -1">
-            <button class="btn" :class="{ moi: e.verif.votes[moiJ] === true }" @click="voter(true)">👍 Accepter</button>
-            <button class="btn" :class="{ moi: e.verif.votes[moiJ] === false }" @click="voter(false)">👎 Refuser</button>
+        <!-- Salle d'attente du salon -->
+        <section v-else-if="pub.phase === 'attente'" class="carte attente-lc">
+          <div class="titre-carte">Salle d'attente</div>
+          <div class="petit-titre">Présents ({{ presents.length }})</div>
+          <div class="presents">
+            <span v-for="p in pub.ordre" :key="p" :class="{ absent: !estPresent(p) }">{{ p }}{{ p === moi ? ' (moi)' : '' }}</span>
+            <span v-for="r in robots" :key="r" class="robot">{{ r }} <button v-if="role === 'hote'" @click="envoyerJeu({ type: 'ROBOT', ajouter: false, nom: r })" aria-label="Retirer">✕</button></span>
           </div>
-          <div class="actions-lc" v-if="e.verif.j === moiJ">
-            <button class="btn" @click="envoyerJeu({ type: 'ANNULER', partieId: pub.partieId })">↺ Reprendre mes lettres</button>
-          </div>
-        </div>
+          <button v-if="role === 'hote' && nbPartants < 4" class="btn" style="width:100%;margin-bottom:8px" @click="envoyerJeu({ type: 'ROBOT', ajouter: true })">🤖 Ajouter un ordinateur</button>
+          <template v-if="robots.length">
+            <div class="petit-titre">Niveau des ordinateurs {{ role === 'hote' ? '' : '(choisi par l\'hôte)' }}</div>
+            <div class="segment">
+              <button v-for="(nom, n) in NIVEAUX_NOMS" :key="n" :disabled="role !== 'hote'" :class="{ actif: (pub.niveau || 'normal') === n }" @click="envoyerJeu({ type: 'NIVEAU', niveau: n })">{{ nom }}</button>
+            </div>
+          </template>
+          <button v-if="role === 'hote'" class="btn principal" style="width:100%" :disabled="nbPartants < 2" @click="envoyerJeu({ type: 'COMMENCER' })">
+            {{ nbPartants < 2 ? 'En attente d\'un 2e joueur (ou d\'un ordinateur)…' : 'Commencer (' + nbPartants + ' joueurs)' }}</button>
+          <div v-else class="aide">L'hôte lance la partie quand tout le monde est là.</div>
+          <div class="aide" v-if="presents.length + robots.length > 4">On joue à 4 au plus : les joueurs passent avant les ordinateurs, les suivants regardent.</div>
+        </section>
 
-        <template v-if="e.phase !== 'fin'">
-          <!-- Mon chevalet -->
-          <div class="chevalet" v-if="estJoueur" ref="chevalet" :class="{ rangement: rangement }">
-            <button v-for="(i, pos) in ordre" :key="i + '-' + monChevalet[i]" class="lettre"
-                    :class="{ choisie: rangement ? rangeChoisi === pos : choisi === i, posee: estPosee(i), echange: modeEchange && aEchanger[i] }"
-                    @click="!rangement && toucherLettre(i)" @pointerdown="rangement && debutRangement($event, pos)">
-              {{ monChevalet[i] === '?' ? '' : monChevalet[i] }}<span class="v">{{ monChevalet[i] === '?' ? '' : valeur(monChevalet[i]) }}</span>
-            </button>
+        <template v-else-if="e">
+          <div class="joueurs-lc">
+            <div v-for="j in joueursAff" :key="j.nom" class="j" :class="{ actif: j.actif, absent: j.absent }" :style="{ '--c': j.coul }">
+              <div class="nom">{{ j.nom }}</div>
+              <div><span class="score">{{ j.score }}</span> <span class="nb">· {{ j.nb }}</span></div>
+              <div v-if="j.action" class="mot-def vide">{{ j.action }}</div>
+              <a v-else-if="j.mot" class="mot-def" :href="lienDef(j.mot)" target="_blank" rel="noopener" title="Définition">{{ j.mot }}</a>
+              <div v-else class="mot-def vide">–</div>
+            </div>
           </div>
-          <div class="actions-lc" v-if="estJoueur && rangement">
-            <button class="btn principal" @click="basculerRangement">✓ Retour à la partie</button>
+          <div class="statut-lc" :class="{ moi: monTour }">{{ statut }}</div>
+
+          <!-- Plateau -->
+          <div class="cadre" ref="cadre">
+            <div class="grille" :class="{ zoom: zoom }">
+              <div v-for="k in grille" :key="k.c" class="case" :class="[k.b, { centre: k.c === CENTRE }]" @click="toucherCase(k.c)">
+                <span v-if="!k.l" class="bonus">{{ k.c === CENTRE ? '★' : k.lib }}</span>
+                <span v-else class="jeton" :class="{ joker: k.joker, marque: !!k.coul, recent: k.recent, mien: k.etat === 'mien', verif: k.etat === 'verif' }" :style="k.coul ? { '--c': k.coul } : null">{{ k.l }}<span class="v" v-if="!k.joker">{{ k.v }}</span></span>
+              </div>
+            </div>
           </div>
-          <div class="actions-lc" v-else-if="estJoueur && modeEchange">
-            <button class="btn principal" :disabled="!nbAEchanger" @click="echanger">Échanger {{ nbAEchanger || '' }} lettre{{ nbAEchanger > 1 ? 's' : '' }}</button>
-            <button class="btn" @click="modeEchange = false">Annuler</button>
+          <div class="ligne-apercu">
+            <div v-if="!analyse && e.dernier && e.phase !== 'verif'" class="apercu-lc" :style="{ color: couleurDe(e.dernier.j) }">
+              Dernier coup :<template v-for="(m, k) in e.dernier.mots">{{ k ? ',' : '' }} <a :key="k" :href="lienDef(m)" target="_blank" rel="noopener">{{ m }}</a></template>
+              ({{ e.dernier.j === moiJ ? 'moi' : e.dernier.j }}, +{{ e.dernier.points }})</div>
+            <div v-else class="apercu-lc" :class="apercuClasse">{{ apercuTexte }}</div>
+            <button class="zoom-btn" @click="zoom = !zoom">{{ zoom ? '🔍 −' : '🔍 +' }}</button>
           </div>
-          <div class="actions-lc" v-else-if="estJoueur && e.phase === 'jeu'">
-            <button class="btn principal" :disabled="!peutJouer" @click="jouer">✓ Jouer</button>
-            <button class="btn" v-if="poses.length" @click="reprendre">↺</button>
-            <button class="btn" v-else @click="basculerRangement" title="Ranger mes lettres">🔀</button>
-            <button class="btn" :disabled="!monTour || e.nbSac < 7" @click="debutEchange">Échanger</button>
-            <button class="btn" :disabled="!monTour" @click="passer">Passer</button>
+
+          <!-- Vote sur un mot inconnu du dictionnaire -->
+          <div class="vote-lc" v-if="e.phase === 'verif' && e.verif">
+            <div class="aide" style="margin:0">{{ e.verif.j === moiJ ? 'Mot inconnu du dictionnaire, les autres votent :' : e.verif.j + ' propose un mot inconnu du dictionnaire :' }}</div>
+            <div class="mots">{{ e.verif.inconnus.join(', ') }}</div>
+            <div class="aide" style="margin:0">{{ e.verif.mots.join(', ') }} · {{ e.verif.points }} points · votes {{ nbVotes }}/{{ votants.length }}</div>
+            <a class="lien-ffsc" href="https://www.ffscrabble.fr/verificateur-de-mots/" target="_blank" rel="noopener">🔎 Vérifier dans l'ODS (site de la Fédération)</a>
+            <div class="actions-lc" v-if="votants.indexOf(moiJ) !== -1">
+              <button class="btn" :class="{ moi: e.verif.votes[moiJ] === true }" @click="voter(true)">👍 Accepter</button>
+              <button class="btn" :class="{ moi: e.verif.votes[moiJ] === false }" @click="voter(false)">👎 Refuser</button>
+            </div>
+            <div class="actions-lc" v-if="e.verif.j === moiJ">
+              <button class="btn" @click="envoyerJeu({ type: 'ANNULER', partieId: pub.partieId })">↺ Reprendre mes lettres</button>
+            </div>
           </div>
-          <div class="actions-lc" v-if="role === 'hote' && joueurDuTourAbsent">
-            <button class="btn" @click="envoyerJeu({ type: 'REMPLACER', partieId: pub.partieId })">Passer le tour de {{ e.joueurs[e.tour] }} (absent)</button>
+
+          <template v-if="e.phase !== 'fin'">
+            <!-- Mon chevalet -->
+            <div class="chevalet" v-if="estJoueur" ref="chevalet" :class="{ rangement: rangement }">
+              <button v-for="(i, pos) in ordre" :key="i + '-' + monChevalet[i]" class="lettre"
+                      :class="{ choisie: rangement ? rangeChoisi === pos : choisi === i, posee: estPosee(i), echange: modeEchange && aEchanger[i] }"
+                      @click="!rangement && toucherLettre(i)" @pointerdown="rangement && debutRangement($event, pos)">
+                {{ monChevalet[i] === '?' ? '' : monChevalet[i] }}<span class="v">{{ monChevalet[i] === '?' ? '' : valeur(monChevalet[i]) }}</span>
+              </button>
+            </div>
+            <div class="actions-lc" v-if="estJoueur && rangement">
+              <button class="btn principal" @click="basculerRangement">✓ Retour à la partie</button>
+            </div>
+            <div class="actions-lc" v-else-if="estJoueur && modeEchange">
+              <button class="btn principal" :disabled="!nbAEchanger" @click="echanger">Échanger {{ nbAEchanger || '' }} lettre{{ nbAEchanger > 1 ? 's' : '' }}</button>
+              <button class="btn" @click="modeEchange = false">Annuler</button>
+            </div>
+            <div class="actions-lc" v-else-if="estJoueur && e.phase === 'jeu'">
+              <button class="btn principal" :disabled="!peutJouer" @click="jouer">✓ Jouer</button>
+              <button class="btn" v-if="poses.length" @click="reprendre">↺</button>
+              <button class="btn" v-else @click="basculerRangement" title="Ranger mes lettres">🔀</button>
+              <button class="btn" :disabled="!monTour || e.nbSac < 7" @click="debutEchange">Échanger</button>
+              <button class="btn" :disabled="!monTour" @click="passer">Passer</button>
+            </div>
+            <div class="actions-lc" v-if="role === 'hote' && joueurDuTourAbsent">
+              <button class="btn" @click="envoyerJeu({ type: 'REMPLACER', partieId: pub.partieId })">Passer le tour de {{ e.joueurs[e.tour] }} (absent)</button>
+            </div>
+            <div class="journal-lc">{{ e.journal[e.journal.length - 1] }} · Sac : {{ e.nbSac }}</div>
+          </template>
+
+          <!-- Fin de partie -->
+          <div class="fin-lc" v-else>
+            <div class="titre">{{ e.fin.gagnants.indexOf(moiJ) !== -1 ? (e.fin.gagnants.length > 1 ? '🤝 Égalité, tu fais partie des gagnants !' : '🏆 Tu gagnes la partie !') : '🏆 ' + e.fin.gagnants.join(' et ') + (e.fin.gagnants.length > 1 ? ' gagnent' : ' gagne') }}</div>
+            <div class="aide" style="text-align:center;margin-bottom:6px">{{ e.journal[e.journal.length - 1] }}</div>
+            <table>
+              <tr v-for="(j, k) in classement" :key="j">
+                <td>{{ ['🥇', '🥈', '🥉', '4.'][k] }} {{ j }}</td>
+                <td class="reste">{{ (e.chevalets[j] || []).join(' ') }}<template v-if="e.fin.restes[j]"> (−{{ e.fin.restes[j] }})</template><template v-else-if="j === e.fin.premierFini"> (+{{ bonusFin }})</template></td>
+                <td>{{ e.scores[j] }}</td>
+              </tr>
+            </table>
+            <div class="actions-lc">
+              <button v-if="estJoueur || role === 'hote'" class="btn principal" @click="envoyerJeu({ type: 'NOUVELLE' })">Nouvelle partie</button>
+            </div>
           </div>
-          <div class="journal-lc">{{ e.journal[e.journal.length - 1] }} · Sac : {{ e.nbSac }}</div>
         </template>
 
-        <!-- Fin de partie -->
-        <div class="fin-lc" v-else>
-          <div class="titre">{{ e.fin.gagnants.indexOf(moiJ) !== -1 ? (e.fin.gagnants.length > 1 ? '🤝 Égalité, tu fais partie des gagnants !' : '🏆 Tu gagnes la partie !') : '🏆 ' + e.fin.gagnants.join(' et ') + (e.fin.gagnants.length > 1 ? ' gagnent' : ' gagne') }}</div>
-          <div class="aide" style="text-align:center;margin-bottom:6px">{{ e.journal[e.journal.length - 1] }}</div>
-          <table>
-            <tr v-for="(j, k) in classement" :key="j">
-              <td>{{ ['🥇', '🥈', '🥉', '4.'][k] }} {{ j }}</td>
-              <td class="reste">{{ (e.chevalets[j] || []).join(' ') }}<template v-if="e.fin.restes[j]"> (−{{ e.fin.restes[j] }})</template><template v-else-if="j === e.fin.premierFini"> (+{{ bonusFin }})</template></td>
-              <td>{{ e.scores[j] }}</td>
-            </tr>
-          </table>
-          <div class="actions-lc">
-            <button v-if="estJoueur || role === 'hote'" class="btn principal" @click="envoyerJeu({ type: 'NOUVELLE' })">Nouvelle partie</button>
-          </div>
-        </div>
       </template>
-    </div>
+
+      <!-- RÉGLAGES -->
+      <template v-slot:reglages>
+        <section class="carte reglages">
+          <div class="titre-carte">Réglages</div>
+          <reglages-base :son.sync="sonActif" :vibration.sync="vibrationActive"></reglages-base>
+        </section>
+
+      </template>
+
+      <!-- RÈGLES -->
+      <template v-slot:regles>
+        <section class="carte regles">
+          <div class="titre-carte">Règles</div>
+          <ul>
+            <li>Chacun a 7 lettres. À son tour, on pose des lettres sur <strong>une seule ligne ou colonne</strong>, sans trou, pour former un mot qui croise ou touche ceux déjà posés. Le premier mot passe par l'étoile du centre.</li>
+            <li>On marque les points de chaque mot formé (le mot principal et ceux qui se croisent). Cases colorées : <strong>L×2 / L×3</strong> (la lettre compte double / triple), <strong>M×2 / M×3</strong> (le mot compte double / triple), seulement pour les lettres posées ce tour-ci.</li>
+            <li>Les 7 lettres d'un coup : <strong>+50</strong>. Les deux jokers valent 0 point et remplacent n'importe quelle lettre.</li>
+            <li>Le dernier mot de chacun s'affiche sous son score : touche-le (ou un mot du « Dernier coup ») pour lire sa définition sur le Wiktionnaire.</li>
+            <li>🔀 : range tes lettres à la main (fais-les glisser, ou touche-en deux pour les échanger), puis « Retour à la partie ».</li>
+            <li>Toucher deux fois rapidement le plateau le grossit (ou le remet en entier) : pratique pour viser une case.</li>
+            <li>On peut aussi <strong>échanger</strong> des lettres (s'il en reste au moins 7 dans le sac) ou <strong>passer</strong>.</li>
+            <li>Mot absent du dictionnaire : les autres joueurs <strong>votent</strong>. S'il est refusé, les lettres reviennent et on rejoue. Seul contre l'ordinateur, c'est toi qui décides.</li>
+            <li>Fin : quand un joueur a posé toutes ses lettres et que le sac est vide (il gagne les points restant chez les autres, qui les perdent), ou quand tout le monde passe deux fois de suite.</li>
+          </ul>
+        </section>
+
+      </template>
+    </fiche-jeu>
 
     <!-- Lettre du joker -->
     <div class="voile" v-if="jokerPour !== null" @click.self="jokerPour = null">
@@ -345,6 +332,7 @@
     </div>
   </div>
 
+  <script src="fiche-jeu.js"></script>
   <script src="commun.js"></script>
   <script src="etoiles.js"></script>
   <script src="lettres-regles.js"></script>

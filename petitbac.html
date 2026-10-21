@@ -92,203 +92,190 @@
 <body>
   <div id="app" class="app">
 
-    <div class="barre">
-      <div id="menu">
-        <div @click="onglet = 'config'" :class="{ actif: onglet === 'config' }">Partie</div>
-        <div @click="onglet = 'play'" :class="{ actif: onglet === 'play' }">Jouer</div>
-        <div @click="onglet = 'reglages'" :class="{ actif: onglet === 'reglages' }">Réglages</div>
-        <div @click="onglet = 'regles'" :class="{ actif: onglet === 'regles' }">Règles</div>
-      </div>
-      <div class="barre-infos" v-if="onglet === 'play'">
-        <button class="btn-veille" :class="{ off: !sonActif }" @click="basculerSon">{{ sonActif ? '🔊' : '🔇' }}</button>
-        <span v-if="role" class="point-co" :class="{ attente: connexion !== 'ok' }"></span>
-      </div>
-    </div>
-
-    <!-- ACCUEIL -->
-    <div v-show="onglet === 'config'">
-      <a v-if="!role" class="lien-jeux retour-jeux" href="index.html?choix">⇦ Tous les jeux</a>
-      <header class="hero">
+    <fiche-jeu nom="Petit bac" resume="Désdale · une lettre, un mot par catégorie" :onglet.sync="onglet" :son.sync="sonActif" :connexion="role ? connexion : ''">
+      <template v-slot:logo>
         <div class="logo-pb">B</div>
-        <div>
-          <h1>Petit bac</h1>
-          <p>Désdale · une lettre, un mot par catégorie</p>
-        </div>
-      </header>
-
-      <section class="carte salon-actif" v-if="role">
-        <div class="salon-tete">
-          <span class="pastille" :class="{ attente: connexion !== 'ok' }"></span>
-          <div>
-            <div class="salon-nom">Salon « {{ roomCode }} »</div>
-            <div class="salon-role">{{ role === 'hote' ? '👑 Tu es l\'hôte : tu règles et lances les parties' : 'Tu joues' }} en tant que {{ moi }} · {{ connexionTexte }}</div>
-          </div>
-        </div>
-        <div class="chips-joueurs">
-          <span v-for="j in bandeau" :key="j.pseudo" class="chip" :class="{ absent: !j.connecte }">{{ j.pseudo }} · {{ j.score }} pts<span v-if="!j.connecte"> 💤</span></span>
-        </div>
-        <div class="actions-accueil">
-          <button class="btn principal" @click="onglet = 'play'">Jouer →</button>
-          <button class="btn" @click="quitterSalon">Quitter</button>
-        </div>
-      </section>
-
-      <template v-if="!role">
-        <section class="carte">
-          <div class="titre-carte">Entrer dans un salon</div>
-          <div class="pseudo-portail">Ton pseudo : <b>{{ pseudoInput || '(à choisir)' }}</b><button v-if="!role" class="lien-profil" @click="ouvrirProfil">✏️ {{ pseudoInput ? 'Changer' : 'Choisir' }}</button></div>
-          <label class="champ">Nom du salon
-            <input type="text" v-model="channelInput" placeholder="ex : partie-du-dimanche" autocomplete="off">
-          </label>
-          <div class="salons-connus" v-if="salonsConnus.length">
-            <span v-for="nom in salonsConnus" :key="nom" class="salon-puce" :class="{ actif: estSalonSaisi(nom) }">
-              <button class="nom" @click="channelInput = nom">{{ nom }}</button>
-              <button class="oter" @click="oublierSalon(nom)" aria-label="Retirer de la liste">✕</button>
-            </span>
-          </div>
-          <div class="aide">À partir de deux joueurs, chacun sur son téléphone. Le premier ouvre le salon et règle la partie.</div>
-        </section>
-        <button class="btn principal btn-large" @click="entrerSalon()" :disabled="entreeEnCours">{{ entreeEnCours ? 'Connexion au salon…' : 'Entrer dans le salon' }}</button>
       </template>
 
-      <p class="version">Désdale · Petit bac · version {{ version }}</p>
-    </div>
-
-    <!-- RÉGLAGES -->
-    <div v-show="onglet === 'reglages'">
-      <section class="carte reglages">
-        <div class="titre-carte">Réglages</div>
-        <label class="case-a-cocher"><input type="checkbox" v-model="sonActif"> 🔊 Sons</label>
-        <label class="case-a-cocher" v-if="vibrationSupportee"><input type="checkbox" v-model="vibrationActive"> 📳 Vibrations</label>
-        <label class="case-a-cocher" v-if="veilleSupportee"><input type="checkbox" v-model="garderEcran"> ☀️ Garder l'écran allumé</label>
-      </section>
-      <details class="carte journal">
-        <summary>Activité <small v-if="historique.length">({{ historique.length }})</small></summary>
-        <ul>
-          <li v-for="(log, i) in historiqueRecent" :key="i" :class="{ 'sys-msg': log.s }">{{ log.m }}</li>
-          <li v-if="!historique.length" class="sys-msg">Rien pour l'instant.</li>
-        </ul>
-      </details>
-    </div>
-
-    <!-- RÈGLES -->
-    <div v-show="onglet === 'regles'">
-      <section class="carte regles">
-        <div class="titre-carte">Règles</div>
-        <ul>
-          <li>Une lettre est tirée au hasard. Pour chaque catégorie, trouve un mot qui commence par cette lettre (« le », « la », « l' », « un »… ne comptent pas).</li>
-          <li>Le premier qui a tout rempli peut crier <strong>STOP !</strong> : les autres ont encore 3 secondes. Sinon, la manche s'arrête à la fin du chrono.</li>
-          <li>Ensuite, chacun vérifie les réponses des autres : une réponse refusée par plus de la moitié des autres joueurs ne compte pas.</li>
-          <li>Points : <strong>{{ PB.POINTS.unique }}</strong> pour une réponse que personne d'autre n'a, <strong>{{ PB.POINTS.partage }}</strong> si quelqu'un a la même, <strong>{{ PB.POINTS.seul }}</strong> si tu es le seul à avoir trouvé dans la catégorie, 0 pour une case vide ou refusée.</li>
-          <li>Le meilleur total après la dernière manche gagne.</li>
-        </ul>
-      </section>
-    </div>
-
-    <!-- JOUER -->
-    <div v-show="onglet === 'play'">
-      <div v-if="!role || !pub" class="panneau-vide">
-        <div class="grand">🅱️</div>
-        <p>Entre dans un salon depuis l'onglet « Partie » pour jouer.</p>
-        <button class="btn principal" @click="onglet = 'config'">Aller à l'onglet « Partie »</button>
-      </div>
-
-      <!-- Salle d'attente : l'hôte règle la partie et la lance -->
-      <section v-else-if="pub.phase === 'attente'" class="carte">
-        <div class="titre-carte">Salon « {{ roomCode }} »</div>
-        <ul class="attente-liste">
-          <li v-for="j in bandeau" :key="j.pseudo"><span>{{ j.hote ? '👑 ' : '' }}{{ j.pseudo }}<span v-if="!j.connecte"> 💤</span></span><span class="sys-msg">{{ j.victoires ? '🏆 ' + j.victoires : '' }}</span></li>
-        </ul>
-        <div class="titre-option">Catégories ({{ pub.categories.length }})</div>
-        <div class="puces-cat">
-          <button v-for="c in PB.CATEGORIES" :key="c" :class="{ actif: pub.categories.indexOf(c) !== -1 }" :disabled="role !== 'hote'" @click="basculerCategorie(c)">{{ c }}</button>
-        </div>
-        <div class="titre-option">Temps par manche</div>
-        <div class="segment">
-          <button v-for="d in [60, 90, 120, 180]" :key="d" :class="{ actif: pub.duree === d }" :disabled="role !== 'hote'" @click="reglage('duree', d)">{{ d < 120 ? d + ' s' : d / 60 + ' min' }}</button>
-        </div>
-        <div class="titre-option">Manches (une lettre par manche)</div>
-        <div class="segment">
-          <button v-for="n in [3, 5, 8]" :key="n" :class="{ actif: pub.nbManches === n }" :disabled="role !== 'hote'" @click="reglage('nbManches', n)">{{ n }}</button>
-        </div>
-        <div class="titre-option">Lettres</div>
-        <div class="segment">
-          <button :class="{ actif: !pub.difficiles }" :disabled="role !== 'hote'" @click="reglage('difficiles', false)">Sans KQWXYZ</button>
-          <button :class="{ actif: pub.difficiles }" :disabled="role !== 'hote'" @click="reglage('difficiles', true)">Toutes</button>
-        </div>
-        <button v-if="role === 'hote'" class="btn principal btn-large" :disabled="nbConnectes < 2 || pub.categories.length < 3" @click="commencerPartie">
-          {{ nbConnectes < 2 ? 'En attente d\'un 2e joueur…' : pub.categories.length < 3 ? 'Choisis au moins 3 catégories' : 'Lancer la partie' }}</button>
-        <p v-else class="statut">En attente que l'hôte lance la partie…</p>
-      </section>
-
-      <template v-else>
-        <div class="tete-manche">
-          <div class="lettre">{{ pub.lettre || '?' }}</div>
-          <div class="milieu">
-            <div class="titre">Manche {{ pub.manche }}/{{ pub.nbManches }}</div>
-            <div class="sous">{{ sousTitre }}</div>
-          </div>
-          <div v-if="pub.phase === 'ecriture' || pub.phase === 'stop'" class="chrono" :class="{ urgent: resteSec <= 10 }" :style="{ '--part': partRestante }"><span>{{ resteSec }}</span></div>
-        </div>
-
-        <!-- Écriture -->
-        <template v-if="pub.phase === 'ecriture' || pub.phase === 'stop' || pub.phase === 'collecte'">
-          <div v-if="pub.phase === 'stop'" class="bandeau-stop">STOP ! ({{ pub.stopPar }}) · {{ resteSec }}</div>
-          <div class="grille">
-            <div class="ligne-cat" v-for="(c, k) in pub.categories" :key="pub.mancheId + '-' + k">
-              <label :for="'cat' + k">{{ c }}</label>
-              <input :id="'cat' + k" type="text" maxlength="40" autocomplete="off" autocapitalize="sentences" spellcheck="false" enterkeyhint="next"
-                     :value="mesReponses[k] || ''" :class="classeSaisie(k)" :disabled="!peutEcrire"
-                     @input="saisir(k, $event.target.value)" @keydown.enter.prevent="champSuivant(k)">
+      <!-- PARTIE : salon, jouer seul -->
+      <template v-slot:partie>
+        <section class="carte salon-actif" v-if="role">
+          <div class="salon-tete">
+            <span class="pastille" :class="{ attente: connexion !== 'ok' }"></span>
+            <div>
+              <div class="salon-nom">Salon « {{ roomCode }} »</div>
+              <div class="salon-role">{{ role === 'hote' ? '👑 Tu es l\'hôte : tu règles et lances les parties' : 'Tu joues' }} en tant que {{ moi }} · {{ connexionTexte }}</div>
             </div>
           </div>
-          <div class="bas-ecriture">
-            <button class="btn-stop" :disabled="!peutStop" @click="crierStop">{{ pub.phase === 'ecriture' ? (peutStop ? 'STOP !' : 'Remplis tout pour dire STOP (' + nbRemplies + '/' + pub.categories.length + ')') : pub.phase === 'stop' ? 'Vite, finis !' : 'On ramasse les copies…' }}</button>
-            <div class="progres">
-              <span v-for="j in bandeau" :key="j.pseudo" :class="{ fini: (pub.progres[j.pseudo] || 0) === pub.categories.length, absent: !j.connecte }">{{ j.pseudo }} {{ pub.progres[j.pseudo] || 0 }}/{{ pub.categories.length }}</span>
-            </div>
+          <div class="chips-joueurs">
+            <span v-for="j in bandeau" :key="j.pseudo" class="chip" :class="{ absent: !j.connecte }">{{ j.pseudo }} · {{ j.score }} pts<span v-if="!j.connecte"> 💤</span></span>
           </div>
-        </template>
-
-        <!-- Vérification des réponses -->
-        <template v-else-if="pub.phase === 'vote'">
-          <div class="nav-cat">
-            <button :disabled="catVue === 0" @click="catVue--" aria-label="Catégorie précédente">‹</button>
-            <div class="nom-cat">{{ pub.categories[catVue] }}<small>{{ catVue + 1 }} / {{ pub.categories.length }} · lettre {{ pub.lettre }}</small></div>
-            <button :disabled="catVue >= pub.categories.length - 1" @click="catVue++" aria-label="Catégorie suivante">›</button>
+          <div class="actions-accueil">
+            <button class="btn principal" @click="onglet = 'play'">Jouer →</button>
+            <button class="btn" @click="quitterSalon">Quitter</button>
           </div>
-          <div class="points-cat"><span v-for="(c, k) in pub.categories" :key="k" :class="{ ici: k === catVue }" @click="catVue = k"></span></div>
-          <div v-for="r in reponsesVues" :key="r.p" class="rep" :class="{ refuse: !r.ok }">
-            <span class="qui">{{ r.p === moi ? 'Moi' : r.p }}</span>
-            <span class="mot"><span v-if="!r.t" class="vide">rien</span><span v-else class="texte">{{ r.t }}</span>
-              <span v-if="r.t && r.raison" class="etat">{{ r.raison }}</span></span>
-            <span class="pts" v-if="r.ok">+{{ r.pts }}</span>
-            <button v-if="r.t && r.p !== moi && r.lettreOk" class="btn-vote" :class="{ contre: r.monVote }" @click="voter(r.p)">{{ r.monVote ? '👎 Refusé' : '👎' }}</button>
-          </div>
-          <div class="aide-vote">Touche 👎 pour refuser une réponse qui ne va pas. Points provisoires.</div>
-          <button class="btn principal btn-large" :class="{ }" @click="basculerPret" :disabled="connexion !== 'ok'">{{ jeSuisPret ? '✓ Prêt · en attente (' + pub.prets.length + '/' + nbConnectes + ')' : 'J\'ai tout vérifié ✓' }}</button>
-          <button v-if="role === 'hote'" class="btn" style="margin-top:6px;width:100%" @click="compterPoints">Compter les points maintenant</button>
-        </template>
-
-        <!-- Bilan de la manche et fin de partie -->
-        <section v-else class="carte">
-          <div class="titre-carte">{{ pub.phase === 'fin' ? '🏆 ' + (classement[0] && classement[0].pseudo) + ' gagne !' : 'Points de la manche « ' + pub.lettre + ' »' }}</div>
-          <ol class="podium">
-            <li v-for="j in classement" :key="j.pseudo"><span>{{ j.pseudo }}<span v-if="pub.phase === 'bilan'" class="gain">+{{ pub.gains[j.pseudo] || 0 }}</span></span><span>{{ j.score }} pts</span></li>
-          </ol>
-          <template v-if="pub.phase === 'bilan'">
-            <button v-if="role === 'hote'" class="btn principal btn-large" @click="mancheSuivante">{{ pub.manche >= pub.nbManches ? 'Classement final' : 'Manche suivante' }}</button>
-            <p v-else class="statut">L'hôte lance la suite…</p>
-          </template>
-          <template v-else>
-            <button v-if="role === 'hote'" class="btn principal btn-large" @click="partieSuivante">Nouvelle partie</button>
-            <p v-else class="statut">L'hôte peut relancer une partie.</p>
-          </template>
         </section>
+
+        <template v-if="!role">
+          <section class="carte">
+            <div class="titre-carte">Entrer dans un salon</div>
+            <div class="pseudo-portail">Ton pseudo : <b>{{ pseudoInput || '(à choisir)' }}</b><button v-if="!role" class="lien-profil" @click="ouvrirProfil">✏️ {{ pseudoInput ? 'Changer' : 'Choisir' }}</button></div>
+            <label class="champ">Nom du salon
+              <input type="text" v-model="channelInput" placeholder="ex : partie-du-dimanche" autocomplete="off">
+            </label>
+            <div class="salons-connus" v-if="salonsConnus.length">
+              <span v-for="nom in salonsConnus" :key="nom" class="salon-puce" :class="{ actif: estSalonSaisi(nom) }">
+                <button class="nom" @click="channelInput = nom">{{ nom }}</button>
+                <button class="oter" @click="oublierSalon(nom)" aria-label="Retirer de la liste">✕</button>
+              </span>
+            </div>
+            <div class="aide">À partir de deux joueurs, chacun sur son téléphone. Le premier ouvre le salon et règle la partie.</div>
+          </section>
+          <button class="btn principal btn-large" @click="entrerSalon()" :disabled="entreeEnCours">{{ entreeEnCours ? 'Connexion au salon…' : 'Entrer dans le salon' }}</button>
+        </template>
+
+        <p class="version">Désdale · Petit bac · version {{ version }}</p>
+
       </template>
-    </div>
+
+      <!-- JOUER -->
+      <template v-slot:jouer>
+        <div v-if="!role || !pub" class="panneau-vide">
+          <div class="grand">🅱️</div>
+          <p>Entre dans un salon depuis l'onglet « Partie » pour jouer.</p>
+          <button class="btn principal" @click="onglet = 'config'">Aller à l'onglet « Partie »</button>
+        </div>
+
+        <!-- Salle d'attente : l'hôte règle la partie et la lance -->
+        <section v-else-if="pub.phase === 'attente'" class="carte">
+          <div class="titre-carte">Salon « {{ roomCode }} »</div>
+          <ul class="attente-liste">
+            <li v-for="j in bandeau" :key="j.pseudo"><span>{{ j.hote ? '👑 ' : '' }}{{ j.pseudo }}<span v-if="!j.connecte"> 💤</span></span><span class="sys-msg">{{ j.victoires ? '🏆 ' + j.victoires : '' }}</span></li>
+          </ul>
+          <div class="titre-option">Catégories ({{ pub.categories.length }})</div>
+          <div class="puces-cat">
+            <button v-for="c in PB.CATEGORIES" :key="c" :class="{ actif: pub.categories.indexOf(c) !== -1 }" :disabled="role !== 'hote'" @click="basculerCategorie(c)">{{ c }}</button>
+          </div>
+          <div class="titre-option">Temps par manche</div>
+          <div class="segment">
+            <button v-for="d in [60, 90, 120, 180]" :key="d" :class="{ actif: pub.duree === d }" :disabled="role !== 'hote'" @click="reglage('duree', d)">{{ d < 120 ? d + ' s' : d / 60 + ' min' }}</button>
+          </div>
+          <div class="titre-option">Manches (une lettre par manche)</div>
+          <div class="segment">
+            <button v-for="n in [3, 5, 8]" :key="n" :class="{ actif: pub.nbManches === n }" :disabled="role !== 'hote'" @click="reglage('nbManches', n)">{{ n }}</button>
+          </div>
+          <div class="titre-option">Lettres</div>
+          <div class="segment">
+            <button :class="{ actif: !pub.difficiles }" :disabled="role !== 'hote'" @click="reglage('difficiles', false)">Sans KQWXYZ</button>
+            <button :class="{ actif: pub.difficiles }" :disabled="role !== 'hote'" @click="reglage('difficiles', true)">Toutes</button>
+          </div>
+          <button v-if="role === 'hote'" class="btn principal btn-large" :disabled="nbConnectes < 2 || pub.categories.length < 3" @click="commencerPartie">
+            {{ nbConnectes < 2 ? 'En attente d\'un 2e joueur…' : pub.categories.length < 3 ? 'Choisis au moins 3 catégories' : 'Lancer la partie' }}</button>
+          <p v-else class="statut">En attente que l'hôte lance la partie…</p>
+        </section>
+
+        <template v-else>
+          <div class="tete-manche">
+            <div class="lettre">{{ pub.lettre || '?' }}</div>
+            <div class="milieu">
+              <div class="titre">Manche {{ pub.manche }}/{{ pub.nbManches }}</div>
+              <div class="sous">{{ sousTitre }}</div>
+            </div>
+            <div v-if="pub.phase === 'ecriture' || pub.phase === 'stop'" class="chrono" :class="{ urgent: resteSec <= 10 }" :style="{ '--part': partRestante }"><span>{{ resteSec }}</span></div>
+          </div>
+
+          <!-- Écriture -->
+          <template v-if="pub.phase === 'ecriture' || pub.phase === 'stop' || pub.phase === 'collecte'">
+            <div v-if="pub.phase === 'stop'" class="bandeau-stop">STOP ! ({{ pub.stopPar }}) · {{ resteSec }}</div>
+            <div class="grille">
+              <div class="ligne-cat" v-for="(c, k) in pub.categories" :key="pub.mancheId + '-' + k">
+                <label :for="'cat' + k">{{ c }}</label>
+                <input :id="'cat' + k" type="text" maxlength="40" autocomplete="off" autocapitalize="sentences" spellcheck="false" enterkeyhint="next"
+                       :value="mesReponses[k] || ''" :class="classeSaisie(k)" :disabled="!peutEcrire"
+                       @input="saisir(k, $event.target.value)" @keydown.enter.prevent="champSuivant(k)">
+              </div>
+            </div>
+            <div class="bas-ecriture">
+              <button class="btn-stop" :disabled="!peutStop" @click="crierStop">{{ pub.phase === 'ecriture' ? (peutStop ? 'STOP !' : 'Remplis tout pour dire STOP (' + nbRemplies + '/' + pub.categories.length + ')') : pub.phase === 'stop' ? 'Vite, finis !' : 'On ramasse les copies…' }}</button>
+              <div class="progres">
+                <span v-for="j in bandeau" :key="j.pseudo" :class="{ fini: (pub.progres[j.pseudo] || 0) === pub.categories.length, absent: !j.connecte }">{{ j.pseudo }} {{ pub.progres[j.pseudo] || 0 }}/{{ pub.categories.length }}</span>
+              </div>
+            </div>
+          </template>
+
+          <!-- Vérification des réponses -->
+          <template v-else-if="pub.phase === 'vote'">
+            <div class="nav-cat">
+              <button :disabled="catVue === 0" @click="catVue--" aria-label="Catégorie précédente">‹</button>
+              <div class="nom-cat">{{ pub.categories[catVue] }}<small>{{ catVue + 1 }} / {{ pub.categories.length }} · lettre {{ pub.lettre }}</small></div>
+              <button :disabled="catVue >= pub.categories.length - 1" @click="catVue++" aria-label="Catégorie suivante">›</button>
+            </div>
+            <div class="points-cat"><span v-for="(c, k) in pub.categories" :key="k" :class="{ ici: k === catVue }" @click="catVue = k"></span></div>
+            <div v-for="r in reponsesVues" :key="r.p" class="rep" :class="{ refuse: !r.ok }">
+              <span class="qui">{{ r.p === moi ? 'Moi' : r.p }}</span>
+              <span class="mot"><span v-if="!r.t" class="vide">rien</span><span v-else class="texte">{{ r.t }}</span>
+                <span v-if="r.t && r.raison" class="etat">{{ r.raison }}</span></span>
+              <span class="pts" v-if="r.ok">+{{ r.pts }}</span>
+              <button v-if="r.t && r.p !== moi && r.lettreOk" class="btn-vote" :class="{ contre: r.monVote }" @click="voter(r.p)">{{ r.monVote ? '👎 Refusé' : '👎' }}</button>
+            </div>
+            <div class="aide-vote">Touche 👎 pour refuser une réponse qui ne va pas. Points provisoires.</div>
+            <button class="btn principal btn-large" :class="{ }" @click="basculerPret" :disabled="connexion !== 'ok'">{{ jeSuisPret ? '✓ Prêt · en attente (' + pub.prets.length + '/' + nbConnectes + ')' : 'J\'ai tout vérifié ✓' }}</button>
+            <button v-if="role === 'hote'" class="btn" style="margin-top:6px;width:100%" @click="compterPoints">Compter les points maintenant</button>
+          </template>
+
+          <!-- Bilan de la manche et fin de partie -->
+          <section v-else class="carte">
+            <div class="titre-carte">{{ pub.phase === 'fin' ? '🏆 ' + (classement[0] && classement[0].pseudo) + ' gagne !' : 'Points de la manche « ' + pub.lettre + ' »' }}</div>
+            <ol class="podium">
+              <li v-for="j in classement" :key="j.pseudo"><span>{{ j.pseudo }}<span v-if="pub.phase === 'bilan'" class="gain">+{{ pub.gains[j.pseudo] || 0 }}</span></span><span>{{ j.score }} pts</span></li>
+            </ol>
+            <template v-if="pub.phase === 'bilan'">
+              <button v-if="role === 'hote'" class="btn principal btn-large" @click="mancheSuivante">{{ pub.manche >= pub.nbManches ? 'Classement final' : 'Manche suivante' }}</button>
+              <p v-else class="statut">L'hôte lance la suite…</p>
+            </template>
+            <template v-else>
+              <button v-if="role === 'hote'" class="btn principal btn-large" @click="partieSuivante">Nouvelle partie</button>
+              <p v-else class="statut">L'hôte peut relancer une partie.</p>
+            </template>
+          </section>
+        </template>
+
+      </template>
+
+      <!-- RÉGLAGES -->
+      <template v-slot:reglages>
+        <section class="carte reglages">
+          <div class="titre-carte">Réglages</div>
+          <reglages-base :son.sync="sonActif" :vibration.sync="vibrationActive" :ecran.sync="garderEcran"></reglages-base>
+        </section>
+        <details class="carte journal">
+          <summary>Activité <small v-if="historique.length">({{ historique.length }})</small></summary>
+          <ul>
+            <li v-for="(log, i) in historiqueRecent" :key="i" :class="{ 'sys-msg': log.s }">{{ log.m }}</li>
+            <li v-if="!historique.length" class="sys-msg">Rien pour l'instant.</li>
+          </ul>
+        </details>
+
+      </template>
+
+      <!-- RÈGLES -->
+      <template v-slot:regles>
+        <section class="carte regles">
+          <div class="titre-carte">Règles</div>
+          <ul>
+            <li>Une lettre est tirée au hasard. Pour chaque catégorie, trouve un mot qui commence par cette lettre (« le », « la », « l' », « un »… ne comptent pas).</li>
+            <li>Le premier qui a tout rempli peut crier <strong>STOP !</strong> : les autres ont encore 3 secondes. Sinon, la manche s'arrête à la fin du chrono.</li>
+            <li>Ensuite, chacun vérifie les réponses des autres : une réponse refusée par plus de la moitié des autres joueurs ne compte pas.</li>
+            <li>Points : <strong>{{ PB.POINTS.unique }}</strong> pour une réponse que personne d'autre n'a, <strong>{{ PB.POINTS.partage }}</strong> si quelqu'un a la même, <strong>{{ PB.POINTS.seul }}</strong> si tu es le seul à avoir trouvé dans la catégorie, 0 pour une case vide ou refusée.</li>
+            <li>Le meilleur total après la dernière manche gagne.</li>
+          </ul>
+        </section>
+
+      </template>
+    </fiche-jeu>
   </div>
 
+  <script src="fiche-jeu.js"></script>
   <script src="commun.js"></script>
   <script src="etoiles.js"></script>
   <script src="petitbac-regles.js"></script>

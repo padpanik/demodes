@@ -98,171 +98,156 @@
 <body>
   <div id="app" class="app">
 
-    <div class="barre">
-      <div id="menu">
-        <div @click="onglet = 'config'" :class="{ actif: onglet === 'config' }">Partie</div>
-        <div @click="onglet = 'play'" :class="{ actif: onglet === 'play' }">Jouer</div>
-        <div @click="onglet = 'reglages'" :class="{ actif: onglet === 'reglages' }">Réglages</div>
-        <div @click="onglet = 'regles'" :class="{ actif: onglet === 'regles' }">Règles</div>
-      </div>
-      <div class="barre-infos" v-if="onglet === 'play'">
-        <button class="btn-veille" :class="{ off: !sonActif }" @click="basculerSon">{{ sonActif ? '🔊' : '🔇' }}</button>
-        <span v-if="role" class="point-co" :class="{ attente: connexion !== 'ok' }"></span>
-      </div>
-    </div>
-
-    <!-- ACCUEIL -->
-    <div v-show="onglet === 'config'">
-      <a v-if="!role" class="lien-jeux retour-jeux" href="index.html?choix">⇦ Tous les jeux</a>
-      <header class="hero">
+    <fiche-jeu nom="Backgammon" resume="Désdale · à deux, avec le videau" :onglet.sync="onglet" :son.sync="sonActif" :connexion="role ? connexion : ''">
+      <template v-slot:logo>
         <div class="logo-bg"><span v-for="(c, i) in ['#8a5a35', '#e9d6b0', '#8a5a35', '#e9d6b0']" :key="i" :style="{ background: c }"></span></div>
-        <div>
-          <h1>Backgammon</h1>
-          <p>Désdale · à deux, avec le videau</p>
-        </div>
-      </header>
-
-      <section class="carte salon-actif" v-if="role">
-        <div class="salon-tete">
-          <span class="pastille" :class="{ attente: connexion !== 'ok' }"></span>
-          <div>
-            <div class="salon-nom">Salon « {{ roomCode }} »</div>
-            <div class="salon-role">{{ role === 'hote' ? '👑 Tu es l\'hôte' : 'Tu joues' }} en tant que {{ moi }} · {{ connexionTexte }}</div>
-          </div>
-        </div>
-        <div class="chips-joueurs">
-          <span v-for="j in bandeau" :key="j.pseudo" class="chip" :class="{ absent: !j.connecte }">
-            <span class="pion-mini" :style="{ background: j.c === 'A' ? '#efe4cc' : '#2d1f1a', border: '1px solid #9c8a64' }"></span>{{ j.pseudo }} · {{ j.score }} pt{{ j.score > 1 ? 's' : '' }}<span v-if="!j.connecte"> 💤</span>
-          </span>
-          <span v-if="etat && etat.ordre.length < 2" class="chip absent">en attente d'un adversaire…</span>
-        </div>
-        <div class="actions-accueil">
-          <button class="btn principal" @click="onglet = 'play'">Jouer →</button>
-          <button class="btn" @click="quitterSalon">Quitter</button>
-        </div>
-      </section>
-
-      <section class="carte">
-        <div class="pseudo-portail">Ton pseudo : <b>{{ pseudoInput || '(à choisir)' }}</b><button v-if="!role" class="lien-profil" @click="ouvrirProfil">✏️ {{ pseudoInput ? 'Changer' : 'Choisir' }}</button></div>
-        <label class="champ">Nom du salon
-          <input type="text" v-model="channelInput" placeholder="ex : partie-du-dimanche" :disabled="!!role" autocomplete="off">
-        </label>
-        <div class="salons-connus" v-if="!role && salonsConnus.length">
-          <span v-for="nom in salonsConnus" :key="nom" class="salon-puce" :class="{ actif: estSalonSaisi(nom) }">
-            <button class="nom" @click="channelInput = nom">{{ nom }}</button>
-            <button class="oter" @click="oublierSalon(nom)" aria-label="Retirer de la liste">✕</button>
-          </span>
-        </div>
-        <div class="aide" v-if="!role">Partie à deux : donnez-vous le même nom de salon. Le premier l'ouvre, le second le rejoint.</div>
-      </section>
-
-      <button v-if="!role" class="btn principal btn-large" @click="entrerSalon()" :disabled="entreeEnCours">
-        {{ entreeEnCours ? 'Connexion au salon…' : 'Entrer dans le salon' }}
-      </button>
-
-      <p class="version">Désdale · Backgammon · version {{ version }}</p>
-    </div>
-
-    <!-- RÉGLAGES -->
-    <div v-show="onglet === 'reglages'">
-      <section class="carte reglages">
-        <div class="titre-carte">Réglages</div>
-        <label class="case-a-cocher"><input type="checkbox" v-model="sonActif"> 🔊 Sons</label>
-        <label class="case-a-cocher" v-if="vibrationSupportee"><input type="checkbox" v-model="vibrationActive"> 📳 Vibrations</label>
-        <label class="case-a-cocher" v-if="voixSupportee"><input type="checkbox" v-model="voixActive"> 🗣️ Annoncer mon tour</label>
-        <label class="case-a-cocher" v-if="veilleSupportee"><input type="checkbox" v-model="garderEcran"> ☀️ Garder l'écran allumé</label>
-      </section>
-      <details class="carte journal">
-        <summary>Activité <small v-if="historique.length">({{ historique.length }})</small></summary>
-        <ul>
-          <li v-for="(log, i) in historiqueRecent" :key="i" :class="{ 'sys-msg': log.s }">{{ log.m }}</li>
-          <li v-if="!historique.length" class="sys-msg">Rien pour l'instant.</li>
-        </ul>
-      </details>
-    </div>
-
-    <!-- RÈGLES -->
-    <div v-show="onglet === 'regles'">
-      <section class="carte regles">
-        <div class="titre-carte">Règles</div>
-        <ul>
-          <li>Chacun avance ses 15 pions vers son jan intérieur (en bas à droite de ton écran), puis les sort. Le premier qui a tout sorti gagne.</li>
-          <li>Chaque dé est un déplacement séparé ; un <strong>double</strong> se joue 4 fois. Tu dois jouer le plus de dés possible ; si un seul des deux passe, le plus fort.</li>
-          <li>Une flèche avec <strong>2 pions adverses</strong> ou plus est fermée. Un pion adverse <strong>seul</strong> est pris : il part sur la barre et doit rentrer avant tout autre coup.</li>
-          <li>On ne sort ses pions que quand ils sont <strong>tous</strong> dans son jan intérieur.</li>
-          <li><strong>Videau</strong> : avant de lancer, tu peux doubler la mise. L'autre accepte (il prend le videau et pourra redoubler) ou abandonne et perd la mise en cours.</li>
-          <li>Partie gagnée : 1 × la mise. <strong>Gammon</strong> (l'autre n'a sorti aucun pion) : × 2. <strong>Backgammon</strong> (et il a encore un pion sur la barre ou dans ton jan) : × 3.</li>
-          <li>Pour jouer : touche un pion, ses arrivées possibles s'allument en vert, touche l'arrivée. Tu peux annuler tes coups jusqu'à « Valider ».</li>
-        </ul>
-      </section>
-    </div>
-
-    <!-- JOUER -->
-    <div v-show="onglet === 'play'">
-      <div v-if="!role" class="panneau-vide">
-        <div class="grand">🎲</div>
-        <p>Entre dans un salon depuis l'onglet « Partie » pour jouer à deux.</p>
-        <button class="btn principal" @click="onglet = 'config'">Aller à l'onglet « Partie »</button>
-      </div>
-      <div v-else-if="!etat || !etat.plateau" class="panneau-vide">
-        <div class="grand">⏳</div>
-        <p>En attente d'un adversaire.<br>Donne-lui le nom du salon : <strong>{{ roomCode }}</strong></p>
-      </div>
-      <template v-else>
-        <div class="joueurs-bande">
-          <span v-for="j in bandeau" :key="j.pseudo" class="joueur" :class="{ actif: etat.tour && etat.tour.c === j.c && !etat.fin, absent: !j.connecte }">
-            <span class="pion-mini" :style="{ background: j.c === 'A' ? '#efe4cc' : '#2d1f1a', border: '1px solid #9c8a64' }"></span>{{ j.pseudo }}<strong>{{ j.score }}</strong>
-          </span>
-          <span class="joueur" v-if="etat.cube.val > 1 || etat.cube.owner">Videau <strong>{{ etat.cube.val }}</strong></span>
-        </div>
-        <div class="consigne" :class="{ alerte: !!message }">{{ message || consigne }}</div>
-
-        <!-- Plateau vu de mon côté : mon jan intérieur en bas à droite -->
-        <div class="plateau">
-          <div v-for="(f, k) in fleches" :key="f.i" class="fleche" :class="classeFleche(f)"
-               :style="{ gridRow: f.haut ? 1 : 3, gridColumn: f.col, '--coul': f.sombre ? '#a0522d' : '#d9b07a' }"
-               @click="cliquer(f.i)">
-            <div v-for="n in Math.min(f.n, 5)" :key="n" class="pion" :class="[f.c, { dernier: n === Math.min(f.n, 5) && dernierArrivee === f.i }]">{{ n === 5 && f.n > 5 ? f.n : '' }}</div>
-          </div>
-          <div class="milieu"></div><div class="milieu2"></div>
-          <div class="barre-plateau" :class="{ choisie: selection === 'bar' }" @click="cliquer('bar')">
-            <div class="pions"><div v-for="n in Math.min(barre.eux, 4)" :key="'e' + n" class="pion" :class="adv">{{ n === 4 && barre.eux > 4 ? barre.eux : '' }}</div></div>
-            <div class="cube" v-if="etat.cube" :style="{ alignSelf: 'center' }" :title="etat.cube.owner ? 'Videau à ' + nomDe(etat.cube.owner) : 'Videau au centre'">{{ etat.cube.val > 1 ? etat.cube.val : 64 }}</div>
-            <div class="pions"><div v-for="n in Math.min(barre.moi, 4)" :key="'m' + n" class="pion" :class="maC">{{ n === 4 && barre.moi > 4 ? barre.moi : '' }}</div></div>
-          </div>
-          <div class="sortie" :class="{ cible: cibleSortie }" @click="cliquer('off')">
-            <div class="tas"><small v-if="sortis.eux">{{ sortis.eux }}</small><i v-for="n in sortis.eux" :key="'e' + n" :class="adv"></i></div>
-            <div class="tas"><i v-for="n in sortis.moi" :key="'m' + n" :class="maC"></i><small v-if="sortis.moi">{{ sortis.moi }}</small></div>
-          </div>
-        </div>
-        <div class="course"><span>Course : toi {{ courseMoi }}</span><span>{{ nomDe(adv) }} {{ courseEux }}</span></div>
-
-        <!-- Dés -->
-        <div class="zone-des">
-          <template v-if="desAffiches.length">
-            <div v-for="(d, k) in desAffiches" :key="k" class="de" :class="[couleurDes, { utilise: d.utilise, petit: desAffiches.length > 2, roule: desRoulent }]">
-              <i v-for="p in 9" :key="p" :class="{ on: PIPS[d.v].indexOf(p - 1) !== -1 }"></i>
-            </div>
-          </template>
-        </div>
-
-        <div class="actions" v-if="etat.fin">
-          <button class="btn principal" @click="jouer({ type: 'SUIVANTE' })" :disabled="etat.ordre.length < 2">Partie suivante</button>
-        </div>
-        <div class="actions" v-else-if="etat.offre && etat.offre.c !== maC">
-          <button class="btn danger" @click="jouer({ type: 'REPONDRE', accepte: false })">Abandonner (−{{ etat.cube.val }})</button>
-          <button class="btn principal" @click="jouer({ type: 'REPONDRE', accepte: true })">Accepter ({{ etat.cube.val * 2 }})</button>
-        </div>
-        <div class="actions" v-else-if="monTour && etat.tour.phase === 'lancer' && !etat.offre">
-          <button class="btn" v-if="peutDoubler" @click="doubler" style="flex: 0 0 38%">Doubler ×2</button>
-          <button class="btn principal" @click="jouer({ type: 'LANCER' })" :disabled="desRoulent">🎲 Lancer</button>
-        </div>
-        <div class="actions" v-else-if="monTour && etat.tour.phase === 'jouer'">
-          <button class="btn" @click="jouer({ type: 'ANNULER' })" :disabled="!etat.tour.joues.length" style="flex: 0 0 38%">↶ Annuler</button>
-          <button class="btn valider" @click="jouer({ type: 'VALIDER' })" :disabled="etat.tour.joues.length < etat.tour.max">✓ Valider</button>
-        </div>
       </template>
-    </div>
+
+      <!-- PARTIE : salon, jouer seul -->
+      <template v-slot:partie>
+        <section class="carte salon-actif" v-if="role">
+          <div class="salon-tete">
+            <span class="pastille" :class="{ attente: connexion !== 'ok' }"></span>
+            <div>
+              <div class="salon-nom">Salon « {{ roomCode }} »</div>
+              <div class="salon-role">{{ role === 'hote' ? '👑 Tu es l\'hôte' : 'Tu joues' }} en tant que {{ moi }} · {{ connexionTexte }}</div>
+            </div>
+          </div>
+          <div class="chips-joueurs">
+            <span v-for="j in bandeau" :key="j.pseudo" class="chip" :class="{ absent: !j.connecte }">
+              <span class="pion-mini" :style="{ background: j.c === 'A' ? '#efe4cc' : '#2d1f1a', border: '1px solid #9c8a64' }"></span>{{ j.pseudo }} · {{ j.score }} pt{{ j.score > 1 ? 's' : '' }}<span v-if="!j.connecte"> 💤</span>
+            </span>
+            <span v-if="etat && etat.ordre.length < 2" class="chip absent">en attente d'un adversaire…</span>
+          </div>
+          <div class="actions-accueil">
+            <button class="btn principal" @click="onglet = 'play'">Jouer →</button>
+            <button class="btn" @click="quitterSalon">Quitter</button>
+          </div>
+        </section>
+
+        <section class="carte">
+          <div class="pseudo-portail">Ton pseudo : <b>{{ pseudoInput || '(à choisir)' }}</b><button v-if="!role" class="lien-profil" @click="ouvrirProfil">✏️ {{ pseudoInput ? 'Changer' : 'Choisir' }}</button></div>
+          <label class="champ">Nom du salon
+            <input type="text" v-model="channelInput" placeholder="ex : partie-du-dimanche" :disabled="!!role" autocomplete="off">
+          </label>
+          <div class="salons-connus" v-if="!role && salonsConnus.length">
+            <span v-for="nom in salonsConnus" :key="nom" class="salon-puce" :class="{ actif: estSalonSaisi(nom) }">
+              <button class="nom" @click="channelInput = nom">{{ nom }}</button>
+              <button class="oter" @click="oublierSalon(nom)" aria-label="Retirer de la liste">✕</button>
+            </span>
+          </div>
+          <div class="aide" v-if="!role">Partie à deux : donnez-vous le même nom de salon. Le premier l'ouvre, le second le rejoint.</div>
+        </section>
+
+        <button v-if="!role" class="btn principal btn-large" @click="entrerSalon()" :disabled="entreeEnCours">
+          {{ entreeEnCours ? 'Connexion au salon…' : 'Entrer dans le salon' }}
+        </button>
+
+        <p class="version">Désdale · Backgammon · version {{ version }}</p>
+
+      </template>
+
+      <!-- JOUER -->
+      <template v-slot:jouer>
+        <div v-if="!role" class="panneau-vide">
+          <div class="grand">🎲</div>
+          <p>Entre dans un salon depuis l'onglet « Partie » pour jouer à deux.</p>
+          <button class="btn principal" @click="onglet = 'config'">Aller à l'onglet « Partie »</button>
+        </div>
+        <div v-else-if="!etat || !etat.plateau" class="panneau-vide">
+          <div class="grand">⏳</div>
+          <p>En attente d'un adversaire.<br>Donne-lui le nom du salon : <strong>{{ roomCode }}</strong></p>
+        </div>
+        <template v-else>
+          <div class="joueurs-bande">
+            <span v-for="j in bandeau" :key="j.pseudo" class="joueur" :class="{ actif: etat.tour && etat.tour.c === j.c && !etat.fin, absent: !j.connecte }">
+              <span class="pion-mini" :style="{ background: j.c === 'A' ? '#efe4cc' : '#2d1f1a', border: '1px solid #9c8a64' }"></span>{{ j.pseudo }}<strong>{{ j.score }}</strong>
+            </span>
+            <span class="joueur" v-if="etat.cube.val > 1 || etat.cube.owner">Videau <strong>{{ etat.cube.val }}</strong></span>
+          </div>
+          <div class="consigne" :class="{ alerte: !!message }">{{ message || consigne }}</div>
+
+          <!-- Plateau vu de mon côté : mon jan intérieur en bas à droite -->
+          <div class="plateau">
+            <div v-for="(f, k) in fleches" :key="f.i" class="fleche" :class="classeFleche(f)"
+                 :style="{ gridRow: f.haut ? 1 : 3, gridColumn: f.col, '--coul': f.sombre ? '#a0522d' : '#d9b07a' }"
+                 @click="cliquer(f.i)">
+              <div v-for="n in Math.min(f.n, 5)" :key="n" class="pion" :class="[f.c, { dernier: n === Math.min(f.n, 5) && dernierArrivee === f.i }]">{{ n === 5 && f.n > 5 ? f.n : '' }}</div>
+            </div>
+            <div class="milieu"></div><div class="milieu2"></div>
+            <div class="barre-plateau" :class="{ choisie: selection === 'bar' }" @click="cliquer('bar')">
+              <div class="pions"><div v-for="n in Math.min(barre.eux, 4)" :key="'e' + n" class="pion" :class="adv">{{ n === 4 && barre.eux > 4 ? barre.eux : '' }}</div></div>
+              <div class="cube" v-if="etat.cube" :style="{ alignSelf: 'center' }" :title="etat.cube.owner ? 'Videau à ' + nomDe(etat.cube.owner) : 'Videau au centre'">{{ etat.cube.val > 1 ? etat.cube.val : 64 }}</div>
+              <div class="pions"><div v-for="n in Math.min(barre.moi, 4)" :key="'m' + n" class="pion" :class="maC">{{ n === 4 && barre.moi > 4 ? barre.moi : '' }}</div></div>
+            </div>
+            <div class="sortie" :class="{ cible: cibleSortie }" @click="cliquer('off')">
+              <div class="tas"><small v-if="sortis.eux">{{ sortis.eux }}</small><i v-for="n in sortis.eux" :key="'e' + n" :class="adv"></i></div>
+              <div class="tas"><i v-for="n in sortis.moi" :key="'m' + n" :class="maC"></i><small v-if="sortis.moi">{{ sortis.moi }}</small></div>
+            </div>
+          </div>
+          <div class="course"><span>Course : toi {{ courseMoi }}</span><span>{{ nomDe(adv) }} {{ courseEux }}</span></div>
+
+          <!-- Dés -->
+          <div class="zone-des">
+            <template v-if="desAffiches.length">
+              <div v-for="(d, k) in desAffiches" :key="k" class="de" :class="[couleurDes, { utilise: d.utilise, petit: desAffiches.length > 2, roule: desRoulent }]">
+                <i v-for="p in 9" :key="p" :class="{ on: PIPS[d.v].indexOf(p - 1) !== -1 }"></i>
+              </div>
+            </template>
+          </div>
+
+          <div class="actions" v-if="etat.fin">
+            <button class="btn principal" @click="jouer({ type: 'SUIVANTE' })" :disabled="etat.ordre.length < 2">Partie suivante</button>
+          </div>
+          <div class="actions" v-else-if="etat.offre && etat.offre.c !== maC">
+            <button class="btn danger" @click="jouer({ type: 'REPONDRE', accepte: false })">Abandonner (−{{ etat.cube.val }})</button>
+            <button class="btn principal" @click="jouer({ type: 'REPONDRE', accepte: true })">Accepter ({{ etat.cube.val * 2 }})</button>
+          </div>
+          <div class="actions" v-else-if="monTour && etat.tour.phase === 'lancer' && !etat.offre">
+            <button class="btn" v-if="peutDoubler" @click="doubler" style="flex: 0 0 38%">Doubler ×2</button>
+            <button class="btn principal" @click="jouer({ type: 'LANCER' })" :disabled="desRoulent">🎲 Lancer</button>
+          </div>
+          <div class="actions" v-else-if="monTour && etat.tour.phase === 'jouer'">
+            <button class="btn" @click="jouer({ type: 'ANNULER' })" :disabled="!etat.tour.joues.length" style="flex: 0 0 38%">↶ Annuler</button>
+            <button class="btn valider" @click="jouer({ type: 'VALIDER' })" :disabled="etat.tour.joues.length < etat.tour.max">✓ Valider</button>
+          </div>
+        </template>
+
+      </template>
+
+      <!-- RÉGLAGES -->
+      <template v-slot:reglages>
+        <section class="carte reglages">
+          <div class="titre-carte">Réglages</div>
+          <reglages-base :son.sync="sonActif" :vibration.sync="vibrationActive" :voix.sync="voixActive" :ecran.sync="garderEcran"></reglages-base>
+        </section>
+        <details class="carte journal">
+          <summary>Activité <small v-if="historique.length">({{ historique.length }})</small></summary>
+          <ul>
+            <li v-for="(log, i) in historiqueRecent" :key="i" :class="{ 'sys-msg': log.s }">{{ log.m }}</li>
+            <li v-if="!historique.length" class="sys-msg">Rien pour l'instant.</li>
+          </ul>
+        </details>
+
+      </template>
+
+      <!-- RÈGLES -->
+      <template v-slot:regles>
+        <section class="carte regles">
+          <div class="titre-carte">Règles</div>
+          <ul>
+            <li>Chacun avance ses 15 pions vers son jan intérieur (en bas à droite de ton écran), puis les sort. Le premier qui a tout sorti gagne.</li>
+            <li>Chaque dé est un déplacement séparé ; un <strong>double</strong> se joue 4 fois. Tu dois jouer le plus de dés possible ; si un seul des deux passe, le plus fort.</li>
+            <li>Une flèche avec <strong>2 pions adverses</strong> ou plus est fermée. Un pion adverse <strong>seul</strong> est pris : il part sur la barre et doit rentrer avant tout autre coup.</li>
+            <li>On ne sort ses pions que quand ils sont <strong>tous</strong> dans son jan intérieur.</li>
+            <li><strong>Videau</strong> : avant de lancer, tu peux doubler la mise. L'autre accepte (il prend le videau et pourra redoubler) ou abandonne et perd la mise en cours.</li>
+            <li>Partie gagnée : 1 × la mise. <strong>Gammon</strong> (l'autre n'a sorti aucun pion) : × 2. <strong>Backgammon</strong> (et il a encore un pion sur la barre ou dans ton jan) : × 3.</li>
+            <li>Pour jouer : touche un pion, ses arrivées possibles s'allument en vert, touche l'arrivée. Tu peux annuler tes coups jusqu'à « Valider ».</li>
+          </ul>
+        </section>
+
+      </template>
+    </fiche-jeu>
 
     <!-- FIN DE PARTIE -->
     <div v-if="etat && etat.fin && !finMasquee" class="fin-backdrop" @click.self="finMasquee = true">
@@ -281,6 +266,7 @@
     </div>
   </div>
 
+  <script src="fiche-jeu.js"></script>
   <script src="commun.js"></script>
   <script src="etoiles.js"></script>
   <script src="backgammon-regles.js"></script>

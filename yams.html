@@ -105,210 +105,195 @@
   <div id="app" class="app">
 
     <!-- BARRE DU HAUT -->
-    <div class="barre">
-      <div id="menu">
-        <div @click="onglet = 'config'" :class="{ actif: onglet === 'config' }">Partie</div>
-        <div @click="onglet = 'play'" :class="{ actif: onglet === 'play' }">Jouer</div>
-        <div @click="onglet = 'reglages'" :class="{ actif: onglet === 'reglages' }">Réglages</div>
-        <div @click="onglet = 'regles'" :class="{ actif: onglet === 'regles' }">Règles</div>
-      </div>
-      <div class="barre-infos" v-if="onglet === 'play'">
-        <button class="btn-veille" :class="{ off: !sonActif }" @click="basculerSon">{{ sonActif ? '🔊' : '🔇' }}</button>
-        <span v-if="role" class="point-co" :class="{ attente: connexion !== 'ok' }" :title="connexionTexte"></span>
-      </div>
-    </div>
-
-    <!-- ACCUEIL -->
-    <div v-show="onglet === 'config'">
-      <a v-if="!role" class="lien-jeux retour-jeux" href="index.html?choix">⇦ Tous les jeux</a>
-      <header class="hero">
+    <fiche-jeu nom="Yams" resume="Désdale · 5 dés, 5 colonnes" :onglet.sync="onglet" :son.sync="sonActif" :connexion="role ? connexion : ''">
+      <template v-slot:logo>
         <div class="logo-des">
           <div v-for="(v, k) in [5, 3, 6]" :key="k" class="de"><i v-for="p in 9" :key="p" :class="{ on: PIPS[v].indexOf(p - 1) !== -1 }"></i></div>
         </div>
-        <div>
-          <h1>Yams</h1>
-          <p>Désdale · 5 dés, 5 colonnes</p>
-        </div>
-      </header>
-
-      <!-- Salon en cours -->
-      <section class="carte salon-actif" v-if="role">
-        <div class="salon-tete">
-          <span class="pastille" :class="{ attente: connexion !== 'ok' }"></span>
-          <div>
-            <div class="salon-nom">Salon « {{ roomCode }} »</div>
-            <div class="salon-role">{{ role === 'hote' ? '👑 Tu es l\'hôte' : (jeSuisSpectateur ? 'Tu regardes' : 'Tu joues') + ' en tant que ' + moi }} · {{ connexionTexte }}</div>
-          </div>
-        </div>
-        <div v-if="jeSuisSpectateur" class="encart">
-          <strong>⏳ Une partie est en cours dans ce salon.</strong><br>
-          Tu peux la suivre depuis l'onglet Jouer ; tu joueras à la prochaine partie.
-        </div>
-        <div class="chips-joueurs">
-          <span v-for="j in joueurs" :key="j.pseudo" class="chip" :class="{ absent: !j.connecte }">
-            <span v-if="j.hote">👑</span> {{ j.pseudo }}<span v-if="!j.connecte"> 💤</span>
-          </span>
-          <span v-for="s in spectateurs" :key="'s' + s" class="chip absent">👀 {{ s }}</span>
-        </div>
-        <div class="actions-accueil">
-          <button class="btn principal" @click="onglet = 'play'">Jouer →</button>
-          <button class="btn" @click="ouvrirTop">🏆 Top 10</button>
-          <button class="btn" @click="quitterSalon">Quitter</button>
-        </div>
-      </section>
-
-      <section class="carte">
-        <div class="pseudo-portail">Ton pseudo : <b>{{ pseudoInput || '(à choisir)' }}</b><button v-if="!role" class="lien-profil" @click="ouvrirProfil">✏️ {{ pseudoInput ? 'Changer' : 'Choisir' }}</button></div>
-        <label class="champ">Nom du salon
-          <input type="text" v-model="channelInput" placeholder="ex : partie-du-dimanche" :disabled="!!role" autocomplete="off">
-        </label>
-        <div class="salons-connus" v-if="!role && salonsConnus.length">
-          <span v-for="nom in salonsConnus" :key="nom" class="salon-puce" :class="{ actif: estSalonSaisi(nom) }">
-            <button class="nom" @click="channelInput = nom">{{ nom }}</button>
-            <button class="oter" @click="oublierSalon(nom)" aria-label="Retirer de la liste">✕</button>
-          </span>
-        </div>
-        <div class="aide" v-if="!role">Donnez-vous tous le même nom de salon : le premier arrivé l'ouvre, les suivants le rejoignent.</div>
-      </section>
-
-      <template v-if="!role">
-        <button class="btn principal btn-large" @click="entrerSalon()" :disabled="entreeEnCours">
-          {{ entreeEnCours ? 'Connexion au salon…' : 'Entrer dans le salon' }}
-        </button>
-        <div class="actions-accueil">
-          <button class="btn" @click="demarrerSolo">🎲 {{ soloEnCours ? 'Reprendre seul' : 'Jouer seul' }}</button>
-          <button class="btn" @click="ouvrirTop">🏆 Top 10 solo</button>
-        </div>
-        <p class="statut" v-if="record">Ton record solo : {{ record }} pts</p>
       </template>
 
-      <p class="version">Désdale · Yams · version {{ version }}</p>
-    </div>
-
-    <!-- RÉGLAGES -->
-    <div v-show="onglet === 'reglages'">
-      <section class="carte reglages">
-        <div class="titre-carte">Réglages</div>
-        <label class="case-a-cocher"><input type="checkbox" v-model="sonActif"> 🔊 Sons</label>
-        <label class="case-a-cocher" v-if="vibrationSupportee"><input type="checkbox" v-model="vibrationActive"> 📳 Vibrations</label>
-        <label class="case-a-cocher" v-if="voixSupportee"><input type="checkbox" v-model="voixActive"> 🗣️ Annoncer mon tour</label>
-        <label class="case-a-cocher" v-if="veilleSupportee"><input type="checkbox" v-model="garderEcran"> ☀️ Garder l'écran allumé</label>
-      </section>
-      <details class="carte journal">
-        <summary>Activité <small v-if="historique.length">({{ historique.length }})</small></summary>
-        <ul>
-          <li v-for="(log, i) in historiqueRecent" :key="i" :class="{ 'sys-msg': log.s }">{{ log.m }}</li>
-          <li v-if="!historique.length" class="sys-msg">Rien pour l'instant.</li>
-        </ul>
-      </details>
-    </div>
-
-    <!-- RÈGLES -->
-    <div v-show="onglet === 'regles'">
-      <section class="carte regles">
-        <div class="titre-carte">Règles</div>
-        <ul>
-          <li>À ton tour : jusqu'à <strong>3 lancers</strong>. Entre deux lancers, touche les dés à <strong>garder</strong>.</li>
-          <li>Ensuite tu inscris ton score dans <strong>une case</strong> (0 si la combinaison n'y est pas : la case est barrée).</li>
-          <li><strong>Libre</strong> : dans l'ordre que tu veux. <strong>↓ Descendante</strong> : de haut en bas, dans l'ordre. <strong>↑ Montante</strong> : de bas en haut. <strong>Sec (sèche)</strong> : seulement avec ton <strong>1er lancer</strong>. <strong>Imp. (Imposée)</strong> : juste après ton 1er lancer, touche la case que tu vises dans cette colonne ; tu peux encore relancer, mais tu devras t'y inscrire à la fin du tour.</li>
-          <li><strong>1 à 6</strong> : total des dés de ce chiffre. <strong>Bonus +35</strong> si le haut d'une colonne atteint 61.</li>
-          <li><strong>Full</strong> (3 + 2) : total des dés + 30. <strong>Carré</strong> (4 identiques) : total + 20. <strong>Grande suite</strong> (2-3-4-5-6) : 50. <strong>Petite suite</strong> (1-2-3-4-5) : 45. <strong>Yams</strong> (5 identiques) : total + 50.</li>
-          <li><strong>Chance +</strong> et <strong>Chance −</strong> : total des 5 dés ; la Chance − doit être strictement plus petite que la Chance + de la même colonne, sinon elle vaut 0.</li>
-          <li>Chaque colonne est multipliée par son coefficient : Libre ×1, ↓ ×2, ↑ ×3, Sec ×4, Imp. ×5.</li>
-          <li>La partie finit quand toutes les feuilles sont pleines (65 tours chacun). Le plus gros total de points gagne.</li>
-        </ul>
-      </section>
-    </div>
-
-    <!-- JOUER -->
-    <div v-show="onglet === 'play'">
-      <div v-if="!etat" class="panneau-vide">
-        <div class="grand">🎲</div>
-        <p>Aucune partie en cours.</p>
-        <button class="btn principal" @click="demarrerSolo">Jouer seul</button>
-        <p class="aide">ou entre dans un salon depuis l'onglet « Partie »</p>
-      </div>
-      <template v-else>
-        <!-- Joueurs : toucher un joueur affiche sa feuille -->
-        <div class="joueurs-bande" v-if="!etat.solo">
-          <button v-for="j in classementLive" :key="j.pseudo" class="joueur"
-                  :class="{ actif: etat.tour.joueur === j.pseudo, moi: j.pseudo === moi, vue: pseudoVue === j.pseudo, absent: !j.connecte }"
-                  @click="vue = j.pseudo">
-            {{ etat.tour.joueur === j.pseudo ? '🎲 ' : '' }}{{ j.pseudo }}<strong>{{ j.total }}</strong>
-          </button>
-          <span v-for="s in spectateurs" :key="'s' + s" class="joueur spectateur">👀 {{ s }}</span>
-        </div>
-        <div class="joueurs-bande" v-else>
-          <span class="joueur moi">Tour <strong>{{ Math.min(nbCases, casesRemplies(etat.feuilles[pseudoVue]) + 1) }}</strong>/{{ nbCases }}</span>
-          <span class="joueur" v-if="record">🏆 <strong>{{ record }}</strong></span>
-        </div>
-
-        <div class="consigne" :class="{ alerte: !!message }">{{ message || consigne }}</div>
-
-        <table class="feuille" v-if="feuilleVue">
-          <colgroup><col style="width: 22%"><col v-for="c in COLONNES" :key="c.id"></colgroup>
-          <thead>
-            <tr><th></th><th v-for="c in COLONNES" :key="c.id" class="col">{{ c.court }}<small>×{{ c.coef }}</small></th></tr>
-          </thead>
-          <tbody>
-            <template v-for="(l, i) in LIGNES">
-              <tr :key="l.id">
-                <td class="lib">{{ l.court }}</td>
-                <td v-for="c in COLONNES" :key="c.id" :class="classeCase(c.id, l.id)" @click="toucherCase(c.id, l.id)">{{ texteCase(c.id, l.id) }}</td>
-              </tr>
-              <template v-if="i === 5">
-                <tr class="somme" :key="'haut'">
-                  <td class="lib">Haut</td>
-                  <td v-for="c in COLONNES" :key="c.id">{{ totauxVue.cols[c.id].haut }}</td>
-                </tr>
-                <tr class="somme" :key="'bonus'">
-                  <td class="lib">Bonus</td>
-                  <td v-for="c in COLONNES" :key="c.id" :class="{ 'bonus-ok': totauxVue.cols[c.id].bonus, manque: !totauxVue.cols[c.id].bonus }">{{ texteBonus(c.id) }}</td>
-                </tr>
-              </template>
-            </template>
-            <tr class="somme">
-              <td class="lib">Total</td>
-              <td v-for="c in COLONNES" :key="c.id">{{ totauxVue.cols[c.id].total }}</td>
-            </tr>
-            <tr class="total">
-              <td class="lib">Points</td>
-              <td v-for="c in COLONNES" :key="c.id">{{ totauxVue.cols[c.id].points }}</td>
-            </tr>
-          </tbody>
-        </table>
-        <div class="grand-total" v-if="feuilleVue"><small>{{ pseudoVue === moi ? 'Ton total' : 'Total de ' + pseudoVue }} :</small> {{ totauxVue.total }}</div>
-
-        <!-- Dés -->
-        <div class="zone-des">
-          <div v-for="(v, i) in desAffiches" :key="i" class="de"
-               :class="{ vide: !v, garde: etat.tour.garde[i] && etat.tour.lancer > 0, roule: desRoulent && !etat.tour.garde[i] }"
-               @click="toucherDe(i)">
-            <i v-for="p in 9" :key="p" :class="{ on: v && PIPS[v].indexOf(p - 1) !== -1 }"></i>
+      <!-- PARTIE : salon, jouer seul -->
+      <template v-slot:partie>
+        <!-- Salon en cours -->
+        <section class="carte salon-actif" v-if="role">
+          <div class="salon-tete">
+            <span class="pastille" :class="{ attente: connexion !== 'ok' }"></span>
+            <div>
+              <div class="salon-nom">Salon « {{ roomCode }} »</div>
+              <div class="salon-role">{{ role === 'hote' ? '👑 Tu es l\'hôte' : (jeSuisSpectateur ? 'Tu regardes' : 'Tu joues') + ' en tant que ' + moi }} · {{ connexionTexte }}</div>
+            </div>
           </div>
-        </div>
-        <div class="legende-des">{{ legendeDes }}</div>
+          <div v-if="jeSuisSpectateur" class="encart">
+            <strong>⏳ Une partie est en cours dans ce salon.</strong><br>
+            Tu peux la suivre depuis l'onglet Jouer ; tu joueras à la prochaine partie.
+          </div>
+          <div class="chips-joueurs">
+            <span v-for="j in joueurs" :key="j.pseudo" class="chip" :class="{ absent: !j.connecte }">
+              <span v-if="j.hote">👑</span> {{ j.pseudo }}<span v-if="!j.connecte"> 💤</span>
+            </span>
+            <span v-for="s in spectateurs" :key="'s' + s" class="chip absent">👀 {{ s }}</span>
+          </div>
+          <div class="actions-accueil">
+            <button class="btn principal" @click="onglet = 'play'">Jouer →</button>
+            <button class="btn" @click="ouvrirTop">🏆 Top 10</button>
+            <button class="btn" @click="quitterSalon">Quitter</button>
+          </div>
+        </section>
 
-        <div class="actions" v-if="!etat.fin">
-          <button class="btn" v-if="monTour && !selection && etat.tour.annonce && etat.tour.lancer === 1" @click="jouer({ type: 'ANNONCER', ligne: null })" style="flex: 0 0 30%">✕ Annonce</button>
-          <button class="btn principal" v-if="monTour && !selection" @click="lancer" :disabled="!peutLancer">
-            🎲 Lancer <small v-if="etat.tour.lancer > 0">({{ 3 - etat.tour.lancer }} restant{{ etat.tour.lancer < 2 ? 's' : '' }})</small>
+        <section class="carte">
+          <div class="pseudo-portail">Ton pseudo : <b>{{ pseudoInput || '(à choisir)' }}</b><button v-if="!role" class="lien-profil" @click="ouvrirProfil">✏️ {{ pseudoInput ? 'Changer' : 'Choisir' }}</button></div>
+          <label class="champ">Nom du salon
+            <input type="text" v-model="channelInput" placeholder="ex : partie-du-dimanche" :disabled="!!role" autocomplete="off">
+          </label>
+          <div class="salons-connus" v-if="!role && salonsConnus.length">
+            <span v-for="nom in salonsConnus" :key="nom" class="salon-puce" :class="{ actif: estSalonSaisi(nom) }">
+              <button class="nom" @click="channelInput = nom">{{ nom }}</button>
+              <button class="oter" @click="oublierSalon(nom)" aria-label="Retirer de la liste">✕</button>
+            </span>
+          </div>
+          <div class="aide" v-if="!role">Donnez-vous tous le même nom de salon : le premier arrivé l'ouvre, les suivants le rejoignent.</div>
+        </section>
+
+        <template v-if="!role">
+          <button class="btn principal btn-large" @click="entrerSalon()" :disabled="entreeEnCours">
+            {{ entreeEnCours ? 'Connexion au salon…' : 'Entrer dans le salon' }}
           </button>
-          <template v-if="monTour && selection">
-            <button class="btn" @click="selection = null" style="flex: 0 0 30%">Annuler</button>
-            <button class="btn valider" :class="{ nul: selection.pts === 0 }" @click="inscrire">
-              {{ selection.pts === 0 ? 'Barrer' : 'Inscrire ' + selection.pts }} · {{ nomLigne(selection.ligne) }} {{ nomColonneCourt(selection.col) }}
+          <div class="actions-accueil">
+            <button class="btn" @click="demarrerSolo">🎲 {{ soloEnCours ? 'Reprendre seul' : 'Jouer seul' }}</button>
+            <button class="btn" @click="ouvrirTop">🏆 Top 10 solo</button>
+          </div>
+          <p class="statut" v-if="record">Ton record solo : {{ record }} pts</p>
+        </template>
+
+        <p class="version">Désdale · Yams · version {{ version }}</p>
+
+      </template>
+
+      <!-- JOUER -->
+      <template v-slot:jouer>
+        <div v-if="!etat" class="panneau-vide">
+          <div class="grand">🎲</div>
+          <p>Aucune partie en cours.</p>
+          <button class="btn principal" @click="demarrerSolo">Jouer seul</button>
+          <p class="aide">ou entre dans un salon depuis l'onglet « Partie »</p>
+        </div>
+        <template v-else>
+          <!-- Joueurs : toucher un joueur affiche sa feuille -->
+          <div class="joueurs-bande" v-if="!etat.solo">
+            <button v-for="j in classementLive" :key="j.pseudo" class="joueur"
+                    :class="{ actif: etat.tour.joueur === j.pseudo, moi: j.pseudo === moi, vue: pseudoVue === j.pseudo, absent: !j.connecte }"
+                    @click="vue = j.pseudo">
+              {{ etat.tour.joueur === j.pseudo ? '🎲 ' : '' }}{{ j.pseudo }}<strong>{{ j.total }}</strong>
             </button>
-          </template>
-        </div>
-        <div class="actions" v-else>
-          <button class="btn" @click="finMasquee = false">Voir le résultat</button>
-          <button class="btn principal" v-if="role !== 'client'" @click="nouvellePartie">🔄 Rejouer</button>
-        </div>
-        <button v-if="role === 'hote' && joueurActifAbsent" class="petit-btn" @click="actionHote('SAUTER')">Passer le tour de {{ etat.tour.joueur }} 💤</button>
-        <button v-if="role === 'hote' && !etat.fin && !etat.tour.joueur" class="petit-btn" @click="terminerPartie">Terminer la partie maintenant</button>
+            <span v-for="s in spectateurs" :key="'s' + s" class="joueur spectateur">👀 {{ s }}</span>
+          </div>
+          <div class="joueurs-bande" v-else>
+            <span class="joueur moi">Tour <strong>{{ Math.min(nbCases, casesRemplies(etat.feuilles[pseudoVue]) + 1) }}</strong>/{{ nbCases }}</span>
+            <span class="joueur" v-if="record">🏆 <strong>{{ record }}</strong></span>
+          </div>
+
+          <div class="consigne" :class="{ alerte: !!message }">{{ message || consigne }}</div>
+
+          <table class="feuille" v-if="feuilleVue">
+            <colgroup><col style="width: 22%"><col v-for="c in COLONNES" :key="c.id"></colgroup>
+            <thead>
+              <tr><th></th><th v-for="c in COLONNES" :key="c.id" class="col">{{ c.court }}<small>×{{ c.coef }}</small></th></tr>
+            </thead>
+            <tbody>
+              <template v-for="(l, i) in LIGNES">
+                <tr :key="l.id">
+                  <td class="lib">{{ l.court }}</td>
+                  <td v-for="c in COLONNES" :key="c.id" :class="classeCase(c.id, l.id)" @click="toucherCase(c.id, l.id)">{{ texteCase(c.id, l.id) }}</td>
+                </tr>
+                <template v-if="i === 5">
+                  <tr class="somme" :key="'haut'">
+                    <td class="lib">Haut</td>
+                    <td v-for="c in COLONNES" :key="c.id">{{ totauxVue.cols[c.id].haut }}</td>
+                  </tr>
+                  <tr class="somme" :key="'bonus'">
+                    <td class="lib">Bonus</td>
+                    <td v-for="c in COLONNES" :key="c.id" :class="{ 'bonus-ok': totauxVue.cols[c.id].bonus, manque: !totauxVue.cols[c.id].bonus }">{{ texteBonus(c.id) }}</td>
+                  </tr>
+                </template>
+              </template>
+              <tr class="somme">
+                <td class="lib">Total</td>
+                <td v-for="c in COLONNES" :key="c.id">{{ totauxVue.cols[c.id].total }}</td>
+              </tr>
+              <tr class="total">
+                <td class="lib">Points</td>
+                <td v-for="c in COLONNES" :key="c.id">{{ totauxVue.cols[c.id].points }}</td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="grand-total" v-if="feuilleVue"><small>{{ pseudoVue === moi ? 'Ton total' : 'Total de ' + pseudoVue }} :</small> {{ totauxVue.total }}</div>
+
+          <!-- Dés -->
+          <div class="zone-des">
+            <div v-for="(v, i) in desAffiches" :key="i" class="de"
+                 :class="{ vide: !v, garde: etat.tour.garde[i] && etat.tour.lancer > 0, roule: desRoulent && !etat.tour.garde[i] }"
+                 @click="toucherDe(i)">
+              <i v-for="p in 9" :key="p" :class="{ on: v && PIPS[v].indexOf(p - 1) !== -1 }"></i>
+            </div>
+          </div>
+          <div class="legende-des">{{ legendeDes }}</div>
+
+          <div class="actions" v-if="!etat.fin">
+            <button class="btn" v-if="monTour && !selection && etat.tour.annonce && etat.tour.lancer === 1" @click="jouer({ type: 'ANNONCER', ligne: null })" style="flex: 0 0 30%">✕ Annonce</button>
+            <button class="btn principal" v-if="monTour && !selection" @click="lancer" :disabled="!peutLancer">
+              🎲 Lancer <small v-if="etat.tour.lancer > 0">({{ 3 - etat.tour.lancer }} restant{{ etat.tour.lancer < 2 ? 's' : '' }})</small>
+            </button>
+            <template v-if="monTour && selection">
+              <button class="btn" @click="selection = null" style="flex: 0 0 30%">Annuler</button>
+              <button class="btn valider" :class="{ nul: selection.pts === 0 }" @click="inscrire">
+                {{ selection.pts === 0 ? 'Barrer' : 'Inscrire ' + selection.pts }} · {{ nomLigne(selection.ligne) }} {{ nomColonneCourt(selection.col) }}
+              </button>
+            </template>
+          </div>
+          <div class="actions" v-else>
+            <button class="btn" @click="finMasquee = false">Voir le résultat</button>
+            <button class="btn principal" v-if="role !== 'client'" @click="nouvellePartie">🔄 Rejouer</button>
+          </div>
+          <button v-if="role === 'hote' && joueurActifAbsent" class="petit-btn" @click="actionHote('SAUTER')">Passer le tour de {{ etat.tour.joueur }} 💤</button>
+          <button v-if="role === 'hote' && !etat.fin && !etat.tour.joueur" class="petit-btn" @click="terminerPartie">Terminer la partie maintenant</button>
+        </template>
+
       </template>
-    </div>
+
+      <!-- RÉGLAGES -->
+      <template v-slot:reglages>
+        <section class="carte reglages">
+          <div class="titre-carte">Réglages</div>
+          <reglages-base :son.sync="sonActif" :vibration.sync="vibrationActive" :voix.sync="voixActive" :ecran.sync="garderEcran"></reglages-base>
+        </section>
+        <details class="carte journal">
+          <summary>Activité <small v-if="historique.length">({{ historique.length }})</small></summary>
+          <ul>
+            <li v-for="(log, i) in historiqueRecent" :key="i" :class="{ 'sys-msg': log.s }">{{ log.m }}</li>
+            <li v-if="!historique.length" class="sys-msg">Rien pour l'instant.</li>
+          </ul>
+        </details>
+
+      </template>
+
+      <!-- RÈGLES -->
+      <template v-slot:regles>
+        <section class="carte regles">
+          <div class="titre-carte">Règles</div>
+          <ul>
+            <li>À ton tour : jusqu'à <strong>3 lancers</strong>. Entre deux lancers, touche les dés à <strong>garder</strong>.</li>
+            <li>Ensuite tu inscris ton score dans <strong>une case</strong> (0 si la combinaison n'y est pas : la case est barrée).</li>
+            <li><strong>Libre</strong> : dans l'ordre que tu veux. <strong>↓ Descendante</strong> : de haut en bas, dans l'ordre. <strong>↑ Montante</strong> : de bas en haut. <strong>Sec (sèche)</strong> : seulement avec ton <strong>1er lancer</strong>. <strong>Imp. (Imposée)</strong> : juste après ton 1er lancer, touche la case que tu vises dans cette colonne ; tu peux encore relancer, mais tu devras t'y inscrire à la fin du tour.</li>
+            <li><strong>1 à 6</strong> : total des dés de ce chiffre. <strong>Bonus +35</strong> si le haut d'une colonne atteint 61.</li>
+            <li><strong>Full</strong> (3 + 2) : total des dés + 30. <strong>Carré</strong> (4 identiques) : total + 20. <strong>Grande suite</strong> (2-3-4-5-6) : 50. <strong>Petite suite</strong> (1-2-3-4-5) : 45. <strong>Yams</strong> (5 identiques) : total + 50.</li>
+            <li><strong>Chance +</strong> et <strong>Chance −</strong> : total des 5 dés ; la Chance − doit être strictement plus petite que la Chance + de la même colonne, sinon elle vaut 0.</li>
+            <li>Chaque colonne est multipliée par son coefficient : Libre ×1, ↓ ×2, ↑ ×3, Sec ×4, Imp. ×5.</li>
+            <li>La partie finit quand toutes les feuilles sont pleines (65 tours chacun). Le plus gros total de points gagne.</li>
+          </ul>
+        </section>
+
+      </template>
+    </fiche-jeu>
 
     <!-- TOP 10 SOLO -->
     <div v-if="topOuvert" class="fin-backdrop" @click.self="topOuvert = false">
@@ -354,6 +339,7 @@
     </div>
   </div>
 
+  <script src="fiche-jeu.js"></script>
   <script src="commun.js"></script>
   <script src="etoiles.js"></script>
   <script>

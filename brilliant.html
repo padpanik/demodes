@@ -58,12 +58,6 @@
     }
     .btn-veille.off { opacity: 0.45; }
     .lien-jeux { font-weight: 600; font-size: 0.9em; color: #3b5568; text-decoration: none; padding: 6px 10px; border-radius: 10px; background: #e3e8ec; }
-    /* Comme dans commun.css : lien vers les jeux, pseudo du portail, règles */
-    .retour-jeux { display: inline-block; margin: 0 0 6px; }
-    .pseudo-portail { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin: 4px 0 10px; color: #3b4b57; }
-    .pseudo-portail b { color: #1d2b36; }
-    .lien-profil { border: none; background: #eef4ff; color: #1c5fb0; font: inherit; font-weight: 700; font-size: 0.88em; border-radius: 9px; padding: 4px 10px; cursor: pointer; }
-    .carte.regles ul { padding-left: 18px; margin: 8px 0 0; font-size: 0.92em; line-height: 1.5; color: #3b4b57; }
     .btn-veille.actif { background: #fff5d6; }
     .barre-infos .point-co { width: 9px; height: 9px; border-radius: 50%; background: #42b983; }
     .barre-infos .point-co.attente { background: #f0a030; animation: clignote 1s infinite; }
@@ -85,7 +79,7 @@
     .acces .acces-erreur { color: #c0392b; font-weight: 600; margin-top: 12px; }
 
     /* ---------- Accueil ---------- */
-    #config, .onglet-plein { width: 100%; }
+    #config { width: 100%; }
     .hero { display: flex; align-items: center; gap: 14px; padding: 10px 4px 16px; }
     .logo { display: grid; grid-template-columns: repeat(2, 24px); gap: 4px; transform: rotate(-8deg); }
     .logo span {
@@ -546,162 +540,285 @@
 
     <template v-else>
 
-    <!-- MENU -->
-    <div class="barre">
-      <div id="menu">
-        <div @click="setTab('config')" :class="{actif:actif_tab=='config'}">Partie</div>
-        <div @click="setTab('play')" :class="{actif:actif_tab=='play'}">Jouer</div>
-        <div @click="setTab('reglages')" :class="{actif:actif_tab=='reglages'}">Réglages</div>
-        <div @click="setTab('regles')" :class="{actif:actif_tab=='regles'}">Règles</div>
-      </div>
-      <div class="barre-infos" v-if="actif_tab === 'play'">
-        <button class="btn-veille" :class="{ off: !sonActif }" @click="basculerSon"
-                :title="sonActif ? 'Sons activés' : 'Sons coupés'">
-          {{ sonActif ? '🔊' : '🔇' }}
-        </button>
-        <span v-if="role" class="point-co" :class="{ attente: connexion !== 'ok' }" :title="connexionTexte"></span>
-      </div>
-    </div>
-
-    <!-- CONFIG -->
-    <div v-show='actif_tab=="config"' id="config">
-      <a v-if="!role" class="lien-jeux retour-jeux" href="index.html?choix">⇦ Tous les jeux</a>
-      <header class="hero">
+    <fiche-jeu nom="Brilliant" resume="Désdale · le roll &amp; write à jouer ensemble" :onglet.sync="actif_tab" :son.sync="sonActif" :connexion="role ? connexion : ''">
+      <template v-slot:logo>
         <div class="logo"><span v-for="c in logoCouleurs" :key="c" :style="{ background: c }"></span></div>
-        <div>
-          <h1>Désdale</h1>
-          <p>Brilliant · le roll &amp; write à jouer ensemble</p>
-        </div>
-      </header>
-
-      <!-- Salon en cours -->
-      <section class="carte salon-actif" v-if="role">
-        <div class="salon-tete">
-          <span class="pastille" :class="{ attente: connexion !== 'ok' }"></span>
-          <div>
-            <div class="salon-nom">Salon « {{ roomCode }} »</div>
-            <div class="salon-role">{{ role === 'hote' ? '👑 Tu es l\'hôte : tu choisis le niveau' : (enAttentePartie ? 'Tu es en attente' : 'Tu joues') + ' en tant que ' + pseudoInput }} · {{ connexionTexte }}</div>
-          </div>
-        </div>
-
-        <!-- Partie déjà commencée : on attend la suivante -->
-        <div v-if="enAttentePartie" class="attente-partie">
-          <template v-if="partieDisponible">
-            <strong>🎲 Une nouvelle partie commence !</strong>
-            <button class="btn principal" @click="rejoindreProchaine">Rejoindre la partie</button>
-          </template>
-          <template v-else>
-            <strong>⏳ Une partie est en cours dans ce salon</strong>
-            <div>{{ infoAttente }} Tu pourras jouer dès la prochaine partie.</div>
-            <label class="case-a-cocher">
-              <input type="checkbox" v-model="rejoindreAuto"> Rejoindre automatiquement la prochaine partie
-            </label>
-          </template>
-        </div>
-
-        <div class="chips-joueurs">
-          <span v-for="j in joueurs" :key="j.pseudo" class="chip" :class="{ absent: j.connecte === false }">
-            <span v-if="j.hote" title="Hôte : il choisit le niveau">👑</span> {{ j.pseudo }}
-            <small v-if="enAttentePartie">{{ scores[j.pseudo] || 0 }} pts</small>
-            <small v-else>{{ j.connecte === false ? '💤' : (j.pret ? '✓' : '…') }}</small>
-          </span>
-          <span v-for="a in joueursEnAttente" :key="'att-' + a" class="chip absent">⏳ {{ a }}</span>
-        </div>
-        <div class="actions-accueil">
-          <button class="btn principal" v-if="!enAttentePartie" @click="setTab('play')">Jouer →</button>
-          <button class="btn" @click="ouvrirTop">🏆 Top 10</button>
-          <button class="btn" @click="quitterSalon">Quitter</button>
-        </div>
-        <button class="btn solo-btn solo-salon" @click="demarrerSolo">🧩 Jouer seul <small>(quitte le salon)</small></button>
-      </section>
-
-      <section class="carte">
-        <div class="pseudo-portail">Ton pseudo : <b>{{ pseudoInput || '(à choisir)' }}</b><button v-if="!role" class="lien-profil" @click="ouvrirProfil">✏️ {{ pseudoInput ? 'Changer' : 'Choisir' }}</button></div>
-        <label class="champ">Nom du salon
-          <input type="text" id="channelInput" v-model="channelInput" placeholder="ex : partie-du-dimanche" :disabled="!!role" autocomplete="off">
-        </label>
-        <div class="salons-connus" v-if="!role && salonsConnus.length">
-          <span v-for="nom in salonsConnus" :key="nom" class="salon-puce" :class="{ actif: estSalonSaisi(nom) }">
-            <button class="nom" @click="choisirSalon(nom)" :title="'Choisir le salon ' + nom">{{ nom }}</button>
-            <button class="oter" @click="oublierSalon(nom)" :title="'Retirer ' + nom + ' de la liste'" aria-label="Retirer de la liste">✕</button>
-          </span>
-        </div>
-        <div class="aide" v-if="!role">Donnez-vous tous le même nom de salon : le premier arrivé l'ouvre, les suivants le rejoignent.</div>
-      </section>
-
-      <section class="carte">
-        <div class="titre-carte">Niveau
-          <small v-if="role === 'client'">choisi par 👑 {{ nomHote || 'l\'hôte' }}</small>
-          <small v-else-if="role === 'hote'">c'est toi qui choisis (👑 hôte)</small>
-        </div>
-        <div class="niveaux">
-          <button v-for="n in 4" :key="n" class="niveau-btn" :class="{ actif: level === n }"
-                  :disabled="role === 'client'" @click="changerNiveau(n)">
-            <div class="mini"><span v-for="(c, i) in miniCartes[n]" :key="i" :style="{ background: c }"></span></div>
-            Niveau {{ n }}
-          </button>
-        </div>
-      </section>
-
-      <template v-if="!role">
-        <button class="btn principal solo-btn" @click="entrerSalon()" :disabled="entreeEnCours">
-          {{ entreeEnCours ? 'Connexion au salon…' : 'Entrer dans le salon' }}
-        </button>
-        <div class="actions-accueil">
-          <button class="btn" @click="demarrerSolo">🧩 Jouer seul</button>
-          <button class="btn" @click="ouvrirTop">🏆 Top 10 solo</button>
-        </div>
-        <p class="statut" v-if="recordNiveau">Ton record solo au niveau {{ level }} : {{ recordNiveau }} pts</p>
       </template>
 
-      <p class="version">Désdale · version {{ version }}</p>
-    </div>
+      <!-- PARTIE : salon, jouer seul, niveau -->
+      <template v-slot:partie>
+        <!-- Salon en cours -->
+        <section class="carte salon-actif" v-if="role">
+          <div class="salon-tete">
+            <span class="pastille" :class="{ attente: connexion !== 'ok' }"></span>
+            <div>
+              <div class="salon-nom">Salon « {{ roomCode }} »</div>
+              <div class="salon-role">{{ role === 'hote' ? '👑 Tu es l\'hôte : tu choisis le niveau' : (enAttentePartie ? 'Tu es en attente' : 'Tu joues') + ' en tant que ' + pseudoInput }} · {{ connexionTexte }}</div>
+            </div>
+          </div>
 
-    <!-- RÉGLAGES -->
-    <div v-show='actif_tab=="reglages"' class="onglet-plein">
-      <!-- Réglages -->
-      <section class="carte reglages">
-        <div class="titre-carte">Réglages</div>
-        <label class="case-a-cocher"><input type="checkbox" v-model="sonActif"> 🔊 Sons</label>
-        <label class="case-a-cocher" v-if="vibrationSupportee"><input type="checkbox" v-model="vibrationActive"> 📳 Vibrations</label>
-        <label class="case-a-cocher" v-if="voixSupportee"><input type="checkbox" v-model="voixActive"> 🗣️ Annoncer mon tour</label>
-        <label class="case-a-cocher" v-if="veilleSupportee"><input type="checkbox" v-model="garderEcran"> ☀️ Garder l'écran allumé</label>
-      </section>
+          <!-- Partie déjà commencée : on attend la suivante -->
+          <div v-if="enAttentePartie" class="attente-partie">
+            <template v-if="partieDisponible">
+              <strong>🎲 Une nouvelle partie commence !</strong>
+              <button class="btn principal" @click="rejoindreProchaine">Rejoindre la partie</button>
+            </template>
+            <template v-else>
+              <strong>⏳ Une partie est en cours dans ce salon</strong>
+              <div>{{ infoAttente }} Tu pourras jouer dès la prochaine partie.</div>
+              <label class="case-a-cocher">
+                <input type="checkbox" v-model="rejoindreAuto"> Rejoindre automatiquement la prochaine partie
+              </label>
+            </template>
+          </div>
 
-      <!-- Installation comme une application -->
-      <section class="carte installer" v-if="!estInstallee && (installPossible || estIOS)">
-        <div class="titre-carte">📲 Installer l'application</div>
-        <button v-if="installPossible" class="btn principal" @click="installer">Ajouter à l'écran d'accueil</button>
-        <div v-else class="aide">Sur iPhone : touche <strong>Partager</strong> <span style="font-size:1.1em">⎋</span> puis <strong>« Sur l'écran d'accueil »</strong>.</div>
-      </section>
+          <div class="chips-joueurs">
+            <span v-for="j in joueurs" :key="j.pseudo" class="chip" :class="{ absent: j.connecte === false }">
+              <span v-if="j.hote" title="Hôte : il choisit le niveau">👑</span> {{ j.pseudo }}
+              <small v-if="enAttentePartie">{{ scores[j.pseudo] || 0 }} pts</small>
+              <small v-else>{{ j.connecte === false ? '💤' : (j.pret ? '✓' : '…') }}</small>
+            </span>
+            <span v-for="a in joueursEnAttente" :key="'att-' + a" class="chip absent">⏳ {{ a }}</span>
+          </div>
+          <div class="actions-accueil">
+            <button class="btn principal" v-if="!enAttentePartie" @click="setTab('play')">Jouer →</button>
+            <button class="btn" @click="ouvrirTop">🏆 Top 10</button>
+            <button class="btn" @click="quitterSalon">Quitter</button>
+          </div>
+          <button class="btn solo-btn solo-salon" @click="demarrerSolo">🧩 Jouer seul <small>(quitte le salon)</small></button>
+        </section>
 
-      <details class="carte journal">
-        <summary>Activité <small v-if="historique.length">({{ historique.length }})</small></summary>
-        <ul>
-          <li v-for="(log, i) in historiqueRecent" :key="i" :class="{ 'sys-msg': log.system }">{{ log.msg }}</li>
-          <li v-if="!historique.length" class="sys-msg">Rien pour l'instant.</li>
-        </ul>
-      </details>
+        <section class="carte">
+          <div class="pseudo-portail">Ton pseudo : <b>{{ pseudoInput || '(à choisir)' }}</b><button v-if="!role" class="lien-profil" @click="ouvrirProfil">✏️ {{ pseudoInput ? 'Changer' : 'Choisir' }}</button></div>
+          <label class="champ">Nom du salon
+            <input type="text" id="channelInput" v-model="channelInput" placeholder="ex : partie-du-dimanche" :disabled="!!role" autocomplete="off">
+          </label>
+          <div class="salons-connus" v-if="!role && salonsConnus.length">
+            <span v-for="nom in salonsConnus" :key="nom" class="salon-puce" :class="{ actif: estSalonSaisi(nom) }">
+              <button class="nom" @click="choisirSalon(nom)" :title="'Choisir le salon ' + nom">{{ nom }}</button>
+              <button class="oter" @click="oublierSalon(nom)" :title="'Retirer ' + nom + ' de la liste'" aria-label="Retirer de la liste">✕</button>
+            </span>
+          </div>
+          <div class="aide" v-if="!role">Donnez-vous tous le même nom de salon : le premier arrivé l'ouvre, les suivants le rejoignent.</div>
+        </section>
 
-    </div>
+        <section class="carte">
+          <div class="titre-carte">Niveau
+            <small v-if="role === 'client'">choisi par 👑 {{ nomHote || 'l\'hôte' }}</small>
+            <small v-else-if="role === 'hote'">c'est toi qui choisis (👑 hôte)</small>
+          </div>
+          <div class="niveaux">
+            <button v-for="n in 4" :key="n" class="niveau-btn" :class="{ actif: level === n }"
+                    :disabled="role === 'client'" @click="changerNiveau(n)">
+              <div class="mini"><span v-for="(c, i) in miniCartes[n]" :key="i" :style="{ background: c }"></span></div>
+              Niveau {{ n }}
+            </button>
+          </div>
+        </section>
 
-    <!-- RÈGLES -->
-    <div v-show='actif_tab=="regles"' class="onglet-plein">
-      <section class="carte regles">
-        <div class="titre-carte">Règles</div>
-        <ul>
-          <li>Chacun a la même grille de cases colorées, partagée en <strong>zones</strong>. Chaque zone a sa règle : <strong>?</strong> tout est permis, <strong>=</strong> tous les chiffres identiques, <strong>≠</strong> tous différents, <strong>XO</strong> deux valeurs différentes au plus, <strong>1-3</strong> ou <strong>4-6</strong> seulement ces chiffres.</li>
-          <li><strong>Départ</strong> : chacun inscrit les chiffres 1 à 6 dans sa grille, un seul par zone (les étoiles ✦ sont des cases conseillées).</li>
-          <li>À chaque lancer de <strong>deux dés</strong>, chacun inscrit la valeur d'un dé dans une case vide <strong>à côté</strong> (dessus, dessous, gauche ou droite) d'une case qui porte la valeur de l'autre dé, en respectant la règle de la zone. Les cases possibles s'allument ; dés rouges = aucun coup, on passe.</li>
-          <li>Une zone remplie rapporte son <strong>gain</strong> : les premiers à la remplir prennent les plus gros, le dernier gain reste toujours disponible.</li>
-          <li>La partie s'arrête quand quelqu'un atteint <strong>26 points</strong> (24 à trois, 22 à quatre, 20 à cinq et plus) ; le plus haut score gagne.</li>
-          <li>L'hôte 👑 choisit le niveau (4 grilles de plus en plus difficiles).</li>
-          <li><strong>Seul</strong> : 44 lancers ; aux lancers 18, 24, 28, 32, 36, 40 et 44, on barre d'abord le plus gros gain d'une zone au choix. Les meilleurs scores vont au Top 10 du salon.</li>
-        </ul>
-      </section>
-    </div>
+        <template v-if="!role">
+          <button class="btn principal solo-btn" @click="entrerSalon()" :disabled="entreeEnCours">
+            {{ entreeEnCours ? 'Connexion au salon…' : 'Entrer dans le salon' }}
+          </button>
+          <div class="actions-accueil">
+            <button class="btn" @click="demarrerSolo">🧩 Jouer seul</button>
+            <button class="btn" @click="ouvrirTop">🏆 Top 10 solo</button>
+          </div>
+          <p class="statut" v-if="recordNiveau">Ton record solo au niveau {{ level }} : {{ recordNiveau }} pts</p>
+        </template>
 
-    <!-- TOP 10 SOLO -->
+        <p class="version">Désdale · version {{ version }}</p>
+
+      </template>
+
+      <!-- JOUER -->
+      <template v-slot:jouer>
+        <div v-show="enAttentePartie" class="panneau-attente">
+          <div class="grand">⏳</div>
+          <strong>Une partie est en cours.</strong><br>
+          Tu pourras jouer dès la prochaine partie.
+          <div style="margin-top:14px"><button class="btn" @click="setTab('config')">Voir le salon</button></div>
+        </div>
+
+        <div v-show="!enAttentePartie" id="play">
+          <!-- Connexion perdue : reconnexion automatique en cours -->
+          <div v-if="role && connexion !== 'ok'" class="bandeau-connexion">
+            ⚠ {{ role === 'hote' ? 'Salon hors ligne, récupération…' : 'Hôte injoignable, reconnexion…' }}
+            <small>(ta grille est sauvegardée)</small>
+          </div>
+
+          <!-- Scores (piste de score) -->
+          <!-- Ligne compacte : niveau, scores et objectif -->
+          <div class="scores solo-ligne" v-if="modeSolo">
+            <span class="joueur">Niv. <strong>{{ level }}</strong></span>
+            <span class="joueur moi"><strong>{{ soloScore }}</strong> pts</span>
+            <span class="joueur">🎲 <strong>{{ soloTraits }}</strong>/{{ soloLancersTotal }}</span>
+            <span class="joueur penalite" v-if="soloProchainePenalite" title="Prochaine case Solo">⚠ au {{ soloProchainePenalite }}<sup>e</sup></span>
+            <span class="joueur" v-if="recordNiveau">🏆 {{ recordNiveau }}</span>
+          </div>
+          <div class="jauge" v-if="modeSolo"><div :style="{ width: (soloTraits / soloLancersTotal * 100) + '%' }"></div></div>
+          <div class="scores" v-if="!modeSolo && scoresListe.length">
+            <span class="joueur">Niv. {{ level }} · 🎯 {{ seuil }}</span>
+            <span v-for="j in scoresListe" :key="j.pseudo" class="joueur" :class="{ moi: j.moi, absent: j.absent }">
+              {{ j.pseudo }} <strong>{{ j.points }}</strong>
+            </span>
+          </div>
+          <div class="jauge" v-if="!modeSolo && scoresListe.length"><div :style="{ width: Math.min(100, monScore / seuil * 100) + '%' }"></div></div>
+
+          <!-- Bandeau des zones : règle + gains, comme les cases Décompte de la fiche -->
+          <div class="zones-strip">
+            <div
+              v-for="z in zonesListe"
+              :key="z.id"
+              class="zone-chip"
+              :class="{ actif: zoneSurlignee === z.id }"
+              :style="{ backgroundColor: z.color }"
+              @click="basculerZone(z.id)"
+            >
+              <span v-if="z.rempli === z.total" class="coche">✓</span>
+              <span v-if="z.ambigu" class="sym-mini">{{ z.symbole }}</span>
+              <span class="gains"><span v-for="(g, i) in z.gains" :key="i" :class="classeGain(z.id, i)">{{ g }}</span></span>
+            </div>
+          </div>
+
+          <!-- Solo : pénalité à choisir -->
+          <div v-if="modeSolo && soloPenalite" class="depart-panel penalite-panel">
+            <span>⚠ <strong>Case Solo</strong> : barre le plus gros gain d'une zone</span>
+            <button class="principal" @click="appliquerPenaliteSolo" :disabled="!soloPenaliteChoix">
+              {{ soloPenaliteChoix ? 'Barrer le ' + soloPenaliteChoix.gain : 'Touche une zone' }}
+            </button>
+          </div>
+
+          <!-- Phase de départ : 1 à 6 dans 6 zones différentes -->
+          <div v-if="phase === 'depart'" class="depart-panel">
+            <div class="ligne">
+              <span>Départ : 1 à 6, <strong>un par zone</strong></span>
+              <span class="restants">
+                <span v-for="n in 6" :key="n" :class="{ pose: departUtilises.indexOf(n) !== -1 }">{{ n }}</span>
+              </span>
+            </div>
+            <button @click="departEtoilesHasard">✦ Étoiles au hasard</button>
+            <button @click="effacerDepart" :disabled="!departUtilises.length">Effacer</button>
+            <button class="principal" @click="validerDepart" :disabled="departUtilises.length < 6">Valider</button>
+          </div>
+
+          <!-- Rappel de la zone choisie : règle + chiffres encore possibles -->
+          <div class="zone-info" :style="{ background: zoneInfo ? zoneInfo.fond : 'transparent' }">
+            <span v-if="message" class="alerte">{{ message }}</span>
+            <template v-else-if="zoneInfo">
+              <div class="titre">{{ zoneInfo.titre }} · <span class="possibles" v-html="zoneInfo.possibles"></span></div>
+              <div class="regle">{{ zoneInfo.regle }}</div>
+            </template>
+            <span v-else class="sys-msg" style="display:block; padding-top:0.6em;">{{ aideGenerale }}</span>
+          </div>
+
+          <div
+            class="grid-container"
+            :style="{
+              'grid-template-columns': 'repeat(' + size + ', 1fr)',
+              'grid-template-rows': 'repeat(' + size + ', 1fr)'
+            }"
+          >
+            <div
+              v-for="cell in grid"
+              :key="cell.id"
+              class="cell"
+              :class="{ 'is-selected': cell.selected, estompee: zoneSurlignee && cell.zone !== zoneSurlignee, jouable: cell.jouable }"
+              :style="{ background: cell.fond }"
+              @click="toggleCell(cell, $event)"
+            >
+              <div class="gem" :style="{ backgroundColor: cell.color }">
+                <span v-if="cell.label" class="label" :class="{ depart: cell.depart }">{{ cell.label }}</span>
+                <span v-else class="sym" :class="{ petit: cell.symbole.length > 1 }">{{ cell.symbole }}</span>
+                <span v-if="cell.etoile && !cell.label" class="star">✦</span>
+              </div>
+            </div>
+
+            <!-- Zone invisible pour fermer le picker si on clique à côté -->
+            <div v-if="picker.show" class="picker-backdrop" @click="closePicker"></div>
+
+            <div v-if="picker.show" class="picker-box" :style="{ top: picker.y + 'px', left: picker.x + 'px'}">
+              <button v-for="num in pickerChoix" :key="num" @click="selectNumber(num)">{{ num }}</button>
+            </div>
+          </div>
+
+          <!-- Dés : une seule ligne (dés + bouton), puis les actions et l'état du tour -->
+          <div class="dice-section">
+            <div class="des-ligne">
+              <div class="des-bloc">
+                <div class="dice-container">
+                  <div class="dice" :class="{ roule: desRoulent, bloque: aucunCoup && !desRoulent }">{{ desRoulent ? desAnim[0] : (dice1 !== null ? dice1 : '?') }}</div>
+                  <div class="dice" :class="{ roule: desRoulent, bloque: aucunCoup && !desRoulent }">{{ desRoulent ? desAnim[1] : (dice2 !== null ? dice2 : '?') }}</div>
+                </div>
+                <div class="dice-lanceur" v-if="last_player">lancés par<br><strong>{{ last_player }}</strong></div>
+              </div>
+              <button class="roll-btn" v-if="!partieTerminee" @click="rollDice" :disabled="!peutLancerLocal">🎲 Lancer</button>
+              <button class="roll-btn" v-else-if="role !== 'client'" @click="nouvellePartie">🔄 Rejouer</button>
+            </div>
+            <div class="actions-coup" v-if="phase === 'jeu' && lancerId > 0 && !partieTerminee">
+              <button @click="passer" :disabled="aJoue || (modeSolo && soloPenalite)">Je passe</button>
+              <button @click="annulerCoup" :disabled="!dernierCoup">↶ Annuler mon coup</button>
+            </div>
+            <div class="statut-tour">
+              <span v-if="partieTerminee">Partie terminée.</span>
+              <span v-else-if="attenteTexte" class="attente">{{ attenteTexte }}</span>
+              <span v-else-if="modeSolo && phase === 'jeu'">
+                {{ soloLancersTotal - soloTraits }} lancer{{ soloLancersTotal - soloTraits > 1 ? 's' : '' }} restant{{ soloLancersTotal - soloTraits > 1 ? 's' : '' }}
+              </span>
+              <template v-else-if="role && prochainLanceur">
+                <template v-if="prochainAbsent">🎲 {{ prochainLanceur }} est absent : n'importe qui peut lancer</template>
+                <template v-else>🎲 À <strong>{{ prochainLanceur === monPseudoAffiche ? 'toi' : prochainLanceur }}</strong> de lancer</template>
+              </template>
+            </div>
+            <button v-if="absentsBloquants" class="petit-btn" @click="leverPatience">Ne plus attendre les absents 💤</button>
+          </div>
+        </div>
+      </template>
+
+      <!-- RÉGLAGES -->
+      <template v-slot:reglages>
+        <!-- Réglages -->
+        <section class="carte reglages">
+          <div class="titre-carte">Réglages</div>
+          <reglages-base :son.sync="sonActif" :vibration.sync="vibrationActive" :voix.sync="voixActive" :ecran.sync="garderEcran"></reglages-base>
+        </section>
+
+        <!-- Installation comme une application -->
+        <section class="carte installer" v-if="!estInstallee && (installPossible || estIOS)">
+          <div class="titre-carte">📲 Installer l'application</div>
+          <button v-if="installPossible" class="btn principal" @click="installer">Ajouter à l'écran d'accueil</button>
+          <div v-else class="aide">Sur iPhone : touche <strong>Partager</strong> <span style="font-size:1.1em">⎋</span> puis <strong>« Sur l'écran d'accueil »</strong>.</div>
+        </section>
+
+        <details class="carte journal">
+          <summary>Activité <small v-if="historique.length">({{ historique.length }})</small></summary>
+          <ul>
+            <li v-for="(log, i) in historiqueRecent" :key="i" :class="{ 'sys-msg': log.system }">{{ log.msg }}</li>
+            <li v-if="!historique.length" class="sys-msg">Rien pour l'instant.</li>
+          </ul>
+        </details>
+
+
+      </template>
+
+      <!-- RÈGLES -->
+      <template v-slot:regles>
+        <section class="carte regles">
+          <div class="titre-carte">Règles</div>
+          <ul>
+            <li>Chacun a la même grille de cases colorées, partagée en <strong>zones</strong>. Chaque zone a sa règle : <strong>?</strong> tout est permis, <strong>=</strong> tous les chiffres identiques, <strong>≠</strong> tous différents, <strong>XO</strong> deux valeurs différentes au plus, <strong>1-3</strong> ou <strong>4-6</strong> seulement ces chiffres.</li>
+            <li><strong>Départ</strong> : chacun inscrit les chiffres 1 à 6 dans sa grille, un seul par zone (les étoiles ✦ sont des cases conseillées).</li>
+            <li>À chaque lancer de <strong>deux dés</strong>, chacun inscrit la valeur d'un dé dans une case vide <strong>à côté</strong> (dessus, dessous, gauche ou droite) d'une case qui porte la valeur de l'autre dé, en respectant la règle de la zone. Les cases possibles s'allument ; dés rouges = aucun coup, on passe.</li>
+            <li>Une zone remplie rapporte son <strong>gain</strong> : les premiers à la remplir prennent les plus gros, le dernier gain reste toujours disponible.</li>
+            <li>La partie s'arrête quand quelqu'un atteint <strong>26 points</strong> (24 à trois, 22 à quatre, 20 à cinq et plus) ; le plus haut score gagne.</li>
+            <li>L'hôte 👑 choisit le niveau (4 grilles de plus en plus difficiles).</li>
+            <li><strong>Seul</strong> : 44 lancers ; aux lancers 18, 24, 28, 32, 36, 40 et 44, on barre d'abord le plus gros gain d'une zone au choix. Les meilleurs scores vont au Top 10 du salon.</li>
+          </ul>
+        </section>
+
+      </template>
+    </fiche-jeu>
+
     <div v-if="topOuvert" class="fin-backdrop" @click.self="topOuvert = false">
       <div class="fin-box top-box">
         <h2>🏆 Top 10 solo</h2>
@@ -722,7 +839,6 @@
       </div>
     </div>
 
-    <!-- FIN DE PARTIE -->
     <div v-if="finPartie && !finMasquee" class="fin-backdrop">
       <div class="fin-box">
         <template v-if="finPartie.solo">
@@ -752,150 +868,10 @@
       </div>
     </div>
 
-    <!-- PLAY -->
-    <div v-show='actif_tab=="play" && enAttentePartie' class="panneau-attente">
-      <div class="grand">⏳</div>
-      <strong>Une partie est en cours.</strong><br>
-      Tu pourras jouer dès la prochaine partie.
-      <div style="margin-top:14px"><button class="btn" @click="setTab('config')">Voir le salon</button></div>
-    </div>
-    <div v-show='actif_tab=="play" && !enAttentePartie' id="play">
-      <!-- Connexion perdue : reconnexion automatique en cours -->
-      <div v-if="role && connexion !== 'ok'" class="bandeau-connexion">
-        ⚠ {{ role === 'hote' ? 'Salon hors ligne, récupération…' : 'Hôte injoignable, reconnexion…' }}
-        <small>(ta grille est sauvegardée)</small>
-      </div>
-
-      <!-- Scores (piste de score) -->
-      <!-- Ligne compacte : niveau, scores et objectif -->
-      <div class="scores solo-ligne" v-if="modeSolo">
-        <span class="joueur">Niv. <strong>{{ level }}</strong></span>
-        <span class="joueur moi"><strong>{{ soloScore }}</strong> pts</span>
-        <span class="joueur">🎲 <strong>{{ soloTraits }}</strong>/{{ soloLancersTotal }}</span>
-        <span class="joueur penalite" v-if="soloProchainePenalite" title="Prochaine case Solo">⚠ au {{ soloProchainePenalite }}<sup>e</sup></span>
-        <span class="joueur" v-if="recordNiveau">🏆 {{ recordNiveau }}</span>
-      </div>
-      <div class="jauge" v-if="modeSolo"><div :style="{ width: (soloTraits / soloLancersTotal * 100) + '%' }"></div></div>
-      <div class="scores" v-if="!modeSolo && scoresListe.length">
-        <span class="joueur">Niv. {{ level }} · 🎯 {{ seuil }}</span>
-        <span v-for="j in scoresListe" :key="j.pseudo" class="joueur" :class="{ moi: j.moi, absent: j.absent }">
-          {{ j.pseudo }} <strong>{{ j.points }}</strong>
-        </span>
-      </div>
-      <div class="jauge" v-if="!modeSolo && scoresListe.length"><div :style="{ width: Math.min(100, monScore / seuil * 100) + '%' }"></div></div>
-
-      <!-- Bandeau des zones : règle + gains, comme les cases Décompte de la fiche -->
-      <div class="zones-strip">
-        <div
-          v-for="z in zonesListe"
-          :key="z.id"
-          class="zone-chip"
-          :class="{ actif: zoneSurlignee === z.id }"
-          :style="{ backgroundColor: z.color }"
-          @click="basculerZone(z.id)"
-        >
-          <span v-if="z.rempli === z.total" class="coche">✓</span>
-          <span v-if="z.ambigu" class="sym-mini">{{ z.symbole }}</span>
-          <span class="gains"><span v-for="(g, i) in z.gains" :key="i" :class="classeGain(z.id, i)">{{ g }}</span></span>
-        </div>
-      </div>
-
-      <!-- Solo : pénalité à choisir -->
-      <div v-if="modeSolo && soloPenalite" class="depart-panel penalite-panel">
-        <span>⚠ <strong>Case Solo</strong> : barre le plus gros gain d'une zone</span>
-        <button class="principal" @click="appliquerPenaliteSolo" :disabled="!soloPenaliteChoix">
-          {{ soloPenaliteChoix ? 'Barrer le ' + soloPenaliteChoix.gain : 'Touche une zone' }}
-        </button>
-      </div>
-
-      <!-- Phase de départ : 1 à 6 dans 6 zones différentes -->
-      <div v-if="phase === 'depart'" class="depart-panel">
-        <div class="ligne">
-          <span>Départ : 1 à 6, <strong>un par zone</strong></span>
-          <span class="restants">
-            <span v-for="n in 6" :key="n" :class="{ pose: departUtilises.indexOf(n) !== -1 }">{{ n }}</span>
-          </span>
-        </div>
-        <button @click="departEtoilesHasard">✦ Étoiles au hasard</button>
-        <button @click="effacerDepart" :disabled="!departUtilises.length">Effacer</button>
-        <button class="principal" @click="validerDepart" :disabled="departUtilises.length < 6">Valider</button>
-      </div>
-
-      <!-- Rappel de la zone choisie : règle + chiffres encore possibles -->
-      <div class="zone-info" :style="{ background: zoneInfo ? zoneInfo.fond : 'transparent' }">
-        <span v-if="message" class="alerte">{{ message }}</span>
-        <template v-else-if="zoneInfo">
-          <div class="titre">{{ zoneInfo.titre }} · <span class="possibles" v-html="zoneInfo.possibles"></span></div>
-          <div class="regle">{{ zoneInfo.regle }}</div>
-        </template>
-        <span v-else class="sys-msg" style="display:block; padding-top:0.6em;">{{ aideGenerale }}</span>
-      </div>
-
-      <div
-        class="grid-container"
-        :style="{
-          'grid-template-columns': 'repeat(' + size + ', 1fr)',
-          'grid-template-rows': 'repeat(' + size + ', 1fr)'
-        }"
-      >
-        <div
-          v-for="cell in grid"
-          :key="cell.id"
-          class="cell"
-          :class="{ 'is-selected': cell.selected, estompee: zoneSurlignee && cell.zone !== zoneSurlignee, jouable: cell.jouable }"
-          :style="{ background: cell.fond }"
-          @click="toggleCell(cell, $event)"
-        >
-          <div class="gem" :style="{ backgroundColor: cell.color }">
-            <span v-if="cell.label" class="label" :class="{ depart: cell.depart }">{{ cell.label }}</span>
-            <span v-else class="sym" :class="{ petit: cell.symbole.length > 1 }">{{ cell.symbole }}</span>
-            <span v-if="cell.etoile && !cell.label" class="star">✦</span>
-          </div>
-        </div>
-
-        <!-- Zone invisible pour fermer le picker si on clique à côté -->
-        <div v-if="picker.show" class="picker-backdrop" @click="closePicker"></div>
-
-        <div v-if="picker.show" class="picker-box" :style="{ top: picker.y + 'px', left: picker.x + 'px'}">
-          <button v-for="num in pickerChoix" :key="num" @click="selectNumber(num)">{{ num }}</button>
-        </div>
-      </div>
-
-      <!-- Dés : une seule ligne (dés + bouton), puis les actions et l'état du tour -->
-      <div class="dice-section">
-        <div class="des-ligne">
-          <div class="des-bloc">
-            <div class="dice-container">
-              <div class="dice" :class="{ roule: desRoulent, bloque: aucunCoup && !desRoulent }">{{ desRoulent ? desAnim[0] : (dice1 !== null ? dice1 : '?') }}</div>
-              <div class="dice" :class="{ roule: desRoulent, bloque: aucunCoup && !desRoulent }">{{ desRoulent ? desAnim[1] : (dice2 !== null ? dice2 : '?') }}</div>
-            </div>
-            <div class="dice-lanceur" v-if="last_player">lancés par<br><strong>{{ last_player }}</strong></div>
-          </div>
-          <button class="roll-btn" v-if="!partieTerminee" @click="rollDice" :disabled="!peutLancerLocal">🎲 Lancer</button>
-          <button class="roll-btn" v-else-if="role !== 'client'" @click="nouvellePartie">🔄 Rejouer</button>
-        </div>
-        <div class="actions-coup" v-if="phase === 'jeu' && lancerId > 0 && !partieTerminee">
-          <button @click="passer" :disabled="aJoue || (modeSolo && soloPenalite)">Je passe</button>
-          <button @click="annulerCoup" :disabled="!dernierCoup">↶ Annuler mon coup</button>
-        </div>
-        <div class="statut-tour">
-          <span v-if="partieTerminee">Partie terminée.</span>
-          <span v-else-if="attenteTexte" class="attente">{{ attenteTexte }}</span>
-          <span v-else-if="modeSolo && phase === 'jeu'">
-            {{ soloLancersTotal - soloTraits }} lancer{{ soloLancersTotal - soloTraits > 1 ? 's' : '' }} restant{{ soloLancersTotal - soloTraits > 1 ? 's' : '' }}
-          </span>
-          <template v-else-if="role && prochainLanceur">
-            <template v-if="prochainAbsent">🎲 {{ prochainLanceur }} est absent : n'importe qui peut lancer</template>
-            <template v-else>🎲 À <strong>{{ prochainLanceur === monPseudoAffiche ? 'toi' : prochainLanceur }}</strong> de lancer</template>
-          </template>
-        </div>
-        <button v-if="absentsBloquants" class="petit-btn" @click="leverPatience">Ne plus attendre les absents 💤</button>
-      </div>
-    </div>
-
     </template>
   </div>
 
+  <script src="fiche-jeu.js"></script>
   <script src="etoiles.js"></script>   <!-- étoiles de « Mon compagnon » (utilise lireStockage / ecrireStockage d'ici) -->
   <script>
     // ================== DONNÉES DU JEU ==================
@@ -1064,7 +1040,7 @@
     function lireLigne(ligne) { return ligne.trim().split(/\s+/); }
 
     // Numéro de version affiché sur l'accueil (à augmenter à chaque mise en ligne)
-    const VERSION = '2.04';
+    const VERSION = '2.05';
 
     // ================== ACCÈS PRIVÉ ==================
     // Application réservée à un cercle d'amis : un code est demandé au premier lancement.

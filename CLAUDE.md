@@ -23,6 +23,7 @@ Tout est en français : interface, commentaires du code, messages de commit, ré
 |---|---|
 | `index.html` | Code d'accès, puis choix du jeu. Reprend tout seul une partie en salon en cours (sauf avec `?choix`). |
 | `commun.js` / `commun.css` | Base partagée : `VERSION`, stockage local, `clientId`, `ACCES`, `Sons` (Web Audio), `Voix` (synthèse vocale), `vibrer`, enregistrement du service worker. |
+| `fiche-jeu.js` | **Composant commun des pages de jeu** (Vue 2, chargé par tous les jeux, Brilliant compris, avant le code de la page) : `<fiche-jeu>` (en-tête logo / nom / résumé, « ⇦ Jeux » en haut à droite, 4 onglets à logo, bouton 🔊 et point de connexion pendant le jeu) et `<reglages-base>` (sons, vibrations, voix, écran allumé). Ses styles sont injectés par le fichier. |
 | `etoiles.js` | `Etoiles` (monnaie de « Mon compagnon ») : chargé juste après `commun.js` par toutes les pages, **et par `brilliant.html`** (il n'a besoin que de `lireStockage` / `ecrireStockage`). |
 | `brilliant.html` | Brilliant (roll & write). Page autonome historique : elle a **sa propre copie** de `ACCES`, `Sons`, `Voix`, `VERSION` (n'utilise pas `commun.js`). |
 | `yams.html` | Yams, solo et à plusieurs (chacun son tour). Utilise `commun.js`. |
@@ -91,16 +92,23 @@ Pas d'étape de construction, pas de dépendance à ajouter.
 
 ## Présentation commune des pages de jeu (demandée par l'utilisateur : « que tout le monde s'y retrouve »)
 
-- **4 onglets partout**, dans cet ordre : **Partie** (`onglet = 'config'` ; Brilliant : `actif_tab`) : lien « ⇦ Tous les jeux »,
-  salon en cours, jouer seul, entrer dans un salon ; **Jouer** (`'play'`, l'écran de jeu) ; **Réglages** (`'reglages'` : sons,
-  vibrations, voix, écran allumé, apparence propre au jeu, journal « Activité ») ; **Règles** (`'regles'` : règles en clair, sans repli).
-  Barre de jeu réduite à 🔊 et au point de connexion (écran allumé : dans Réglages ; Brilliant : niveau et 🎯 dans la ligne des scores).
+- **Composant `<fiche-jeu>` (`fiche-jeu.js`)** : le canevas est commun, chaque jeu ne passe que ses particularités :
+  `<fiche-jeu nom="…" resume="Désdale · …" :onglet.sync="onglet" :son.sync="sonActif" :connexion="role ? connexion : ''">`
+  puis `<template v-slot:logo>`, `v-slot:partie`, `v-slot:jouer`, `v-slot:reglages`, `v-slot:regles` (et `v-slot:infos`, facultatif).
+  Le contenu des slots reste écrit dans la page (mêmes données, mêmes `ref`). Onglets en `v-show` : rien n'est détruit.
+  Modifier l'en-tête, les onglets ou leur style = modifier **seulement** `fiche-jeu.js`. Brilliant : `:onglet.sync="actif_tab"`.
+- En-tête (logo, nom, résumé + bouton « ⇦ Jeux » en haut à droite) visible sur Partie, Réglages et Règles ; **caché sur Jouer**
+  (l'écran de jeu doit tenir sans défilement). Onglets sur toute la largeur, un logo par onglet : 🎲 Partie (`'config'`), ▶️ Jouer
+  (`'play'`), ⚙️ Réglages (`'reglages'`), 📖 Règles (`'regles'`, règles en clair, sans repli). Pendant le jeu, à droite des onglets :
+  🔊 et le point de connexion (écran allumé : dans Réglages ; Brilliant : niveau et 🎯 dans la ligne des scores).
+- Réglages : `<reglages-base :son.sync :vibration.sync :voix.sync :ecran.sync>` (on ne passe que ceux du jeu ; chacun s'affiche
+  seulement si le téléphone le permet), puis les réglages propres au jeu (apparence d'Assaut / Bataille navale) et le journal « Activité ».
 - **Pseudo unique, choisi sur le portail** (profil du salon global, `desdale-profil`) : plus de champ pseudo dans les jeux, juste
   « Ton pseudo : X · ✏️ Changer » (`ouvrirProfilPortail` ouvre l'onglet « Moi » de la bulle 💬). `pseudoPortail()` / `pseudoPour(cléSauvegarde)`
   dans `commun.js` (copie dans `brilliant.html`) : dans un salon en cours, on garde le pseudo sous lequel on y est entré. Le salon global
   envoie l'événement `desdale-profil` quand on change de profil ; les pages le suivent tant qu'elles ne sont pas dans un salon.
   Sans pseudo, « Entrer dans le salon » ouvre le profil.
-- Nouveau jeu : reprendre ce gabarit (le script d'origine déplaçait les blocs `details.regles`, `section.reglages`, apparence, journal).
+- Nouveau jeu : charger `fiche-jeu.js` avant le code de la page et remplir les slots (copier `lettres.html` par exemple).
 
 ## Salon global (`salon-global.js`)
 

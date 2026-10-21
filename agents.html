@@ -91,172 +91,159 @@
 <body>
   <div id="app" class="app">
 
-    <div class="barre">
-      <div id="menu">
-        <div @click="onglet = 'config'" :class="{ actif: onglet === 'config' }">Partie</div>
-        <div @click="onglet = 'play'" :class="{ actif: onglet === 'play' }">Jouer</div>
-        <div @click="onglet = 'reglages'" :class="{ actif: onglet === 'reglages' }">Réglages</div>
-        <div @click="onglet = 'regles'" :class="{ actif: onglet === 'regles' }">Règles</div>
-      </div>
-      <div class="barre-infos" v-if="onglet === 'play'">
-        <button class="btn-veille" :class="{ off: !sonActif }" @click="basculerSon">{{ sonActif ? '🔊' : '🔇' }}</button>
-        <span v-if="role" class="point-co" :class="{ attente: connexion !== 'ok' }"></span>
-      </div>
-    </div>
-
-    <!-- ACCUEIL -->
-    <div v-show="onglet === 'config'">
-      <a v-if="!role" class="lien-jeux retour-jeux" href="index.html?choix">⇦ Tous les jeux</a>
-      <header class="hero">
+    <fiche-jeu nom="Agents secrets" resume="Désdale · deux équipes, un mot pour tout dire" :onglet.sync="onglet" :son.sync="sonActif" :connexion="role ? connexion : ''">
+      <template v-slot:logo>
         <div class="logo-ag"><span v-for="(c, k) in ['#c0392b','#e6dcc3','#2f6fb0','#2f6fb0','#1d2b36','#c0392b','#e6dcc3','#c0392b','#2f6fb0']" :key="k" :style="{ background: c }"></span></div>
-        <div>
-          <h1>Agents secrets</h1>
-          <p>Désdale · deux équipes, un mot pour tout dire</p>
-        </div>
-      </header>
+      </template>
 
-      <section class="carte salon-actif" v-if="role">
-        <div class="salon-tete">
-          <span class="pastille" :class="{ attente: connexion !== 'ok' }"></span>
-          <div>
-            <div class="salon-nom">Salon « {{ roomCode }} »</div>
-            <div class="salon-role">{{ role === 'hote' ? '👑 Tu es l\'hôte : tu lances les parties' : 'Tu joues' }} en tant que {{ moi }} · {{ connexionTexte }}</div>
+      <!-- PARTIE : salon, jouer seul -->
+      <template v-slot:partie>
+        <section class="carte salon-actif" v-if="role">
+          <div class="salon-tete">
+            <span class="pastille" :class="{ attente: connexion !== 'ok' }"></span>
+            <div>
+              <div class="salon-nom">Salon « {{ roomCode }} »</div>
+              <div class="salon-role">{{ role === 'hote' ? '👑 Tu es l\'hôte : tu lances les parties' : 'Tu joues' }} en tant que {{ moi }} · {{ connexionTexte }}</div>
+            </div>
           </div>
-        </div>
-        <div class="actions-accueil">
-          <button class="btn principal" @click="onglet = 'play'">Jouer →</button>
-          <button class="btn" @click="quitterSalon">Quitter</button>
-        </div>
-      </section>
-
-      <template v-if="!role">
-        <section class="carte">
-          <div class="titre-carte">Entrer dans un salon</div>
-          <div class="pseudo-portail">Ton pseudo : <b>{{ pseudoInput || '(à choisir)' }}</b><button v-if="!role" class="lien-profil" @click="ouvrirProfil">✏️ {{ pseudoInput ? 'Changer' : 'Choisir' }}</button></div>
-          <label class="champ">Nom du salon
-            <input type="text" v-model="channelInput" placeholder="ex : partie-du-dimanche" autocomplete="off">
-          </label>
-          <div class="salons-connus" v-if="salonsConnus.length">
-            <span v-for="nom in salonsConnus" :key="nom" class="salon-puce" :class="{ actif: estSalonSaisi(nom) }">
-              <button class="nom" @click="channelInput = nom">{{ nom }}</button>
-              <button class="oter" @click="oublierSalon(nom)" aria-label="Retirer de la liste">✕</button>
-            </span>
+          <div class="actions-accueil">
+            <button class="btn principal" @click="onglet = 'play'">Jouer →</button>
+            <button class="btn" @click="quitterSalon">Quitter</button>
           </div>
-          <div class="aide">À partir de quatre joueurs (deux équipes de deux), chacun sur son téléphone.</div>
         </section>
-        <button class="btn principal btn-large" @click="entrerSalon()" :disabled="entreeEnCours">{{ entreeEnCours ? 'Connexion au salon…' : 'Entrer dans le salon' }}</button>
+
+        <template v-if="!role">
+          <section class="carte">
+            <div class="titre-carte">Entrer dans un salon</div>
+            <div class="pseudo-portail">Ton pseudo : <b>{{ pseudoInput || '(à choisir)' }}</b><button v-if="!role" class="lien-profil" @click="ouvrirProfil">✏️ {{ pseudoInput ? 'Changer' : 'Choisir' }}</button></div>
+            <label class="champ">Nom du salon
+              <input type="text" v-model="channelInput" placeholder="ex : partie-du-dimanche" autocomplete="off">
+            </label>
+            <div class="salons-connus" v-if="salonsConnus.length">
+              <span v-for="nom in salonsConnus" :key="nom" class="salon-puce" :class="{ actif: estSalonSaisi(nom) }">
+                <button class="nom" @click="channelInput = nom">{{ nom }}</button>
+                <button class="oter" @click="oublierSalon(nom)" aria-label="Retirer de la liste">✕</button>
+              </span>
+            </div>
+            <div class="aide">À partir de quatre joueurs (deux équipes de deux), chacun sur son téléphone.</div>
+          </section>
+          <button class="btn principal btn-large" @click="entrerSalon()" :disabled="entreeEnCours">{{ entreeEnCours ? 'Connexion au salon…' : 'Entrer dans le salon' }}</button>
+        </template>
+
+        <p class="version">Désdale · Agents secrets · version {{ version }}</p>
+
       </template>
 
-      <p class="version">Désdale · Agents secrets · version {{ version }}</p>
-    </div>
+      <!-- JOUER -->
+      <template v-slot:jouer>
+        <div v-if="!role || !pub" class="panneau-vide">
+          <div class="grand">🕵️</div>
+          <p>Entre dans un salon depuis l'onglet « Partie » pour jouer.</p>
+          <button class="btn principal" @click="onglet = 'config'">Aller à l'onglet « Partie »</button>
+        </div>
 
-    <!-- RÉGLAGES -->
-    <div v-show="onglet === 'reglages'">
-      <section class="carte reglages">
-        <div class="titre-carte">Réglages</div>
-        <label class="case-a-cocher"><input type="checkbox" v-model="sonActif"> 🔊 Sons</label>
-        <label class="case-a-cocher" v-if="vibrationSupportee"><input type="checkbox" v-model="vibrationActive"> 📳 Vibrations</label>
-        <label class="case-a-cocher" v-if="veilleSupportee"><input type="checkbox" v-model="garderEcran"> ☀️ Garder l'écran allumé</label>
-      </section>
-      <details class="carte journal">
-        <summary>Activité <small v-if="historique.length">({{ historique.length }})</small></summary>
-        <ul>
-          <li v-for="(log, i) in historiqueRecent" :key="i" :class="{ 'sys-msg': log.s }">{{ log.m }}</li>
-          <li v-if="!historique.length" class="sys-msg">Rien pour l'instant.</li>
-        </ul>
-      </details>
-    </div>
-
-    <!-- RÈGLES -->
-    <div v-show="onglet === 'regles'">
-      <section class="carte regles">
-        <div class="titre-carte">Règles</div>
-        <ul>
-          <li>Deux équipes, <span style="color:var(--rouge);font-weight:700">rouge</span> et <span style="color:var(--bleu);font-weight:700">bleue</span>. Dans chaque équipe, un <strong>chef</strong> voit sur son téléphone la carte secrète : quels mots sont ses agents, ceux de l'autre équipe, les passants neutres et l'<strong>assassin</strong>.</li>
-          <li>À son tour, le chef donne <strong>un seul mot et un nombre</strong> (par exemple « océan 2 ») pour faire trouver plusieurs de ses agents.</li>
-          <li>Ses coéquipiers touchent un mot pour le proposer (tout le monde le voit), puis le retouchent pour le <strong>révéler</strong>. Ils ont droit au nombre annoncé plus un essai.</li>
-          <li>Un passant ou un agent adverse arrête le tour ; l'<strong>assassin fait perdre</strong> aussitôt. On peut aussi s'arrêter après un essai.</li>
-          <li>La première équipe qui trouve tous ses agents gagne (9 pour l'équipe qui commence, 8 pour l'autre).</li>
-        </ul>
-      </section>
-    </div>
-
-    <!-- JOUER -->
-    <div v-show="onglet === 'play'">
-      <div v-if="!role || !pub" class="panneau-vide">
-        <div class="grand">🕵️</div>
-        <p>Entre dans un salon depuis l'onglet « Partie » pour jouer.</p>
-        <button class="btn principal" @click="onglet = 'config'">Aller à l'onglet « Partie »</button>
-      </div>
-
-      <!-- Composition des équipes -->
-      <section v-else-if="pub.phase === 'attente'" class="carte">
-        <div class="titre-carte">Salon « {{ roomCode }} » · les équipes</div>
-        <div class="equipes">
-          <div v-for="e in ['R', 'B']" :key="e" class="equipe" :class="e">
-            <h3>{{ e === 'R' ? '🔴 Rouges' : '🔵 Bleus' }} <small v-if="pub.victoires[e]">· 🏆 {{ pub.victoires[e] }}</small></h3>
-            <ul>
-              <li v-for="j in membres(e)" :key="j.pseudo" :class="{ absent: !j.connecte }">{{ pub.chefs[e] === j.pseudo ? '🕵️ ' : '' }}{{ j.pseudo }}{{ j.pseudo === moi ? ' (moi)' : '' }}</li>
-            </ul>
-            <button v-if="monEquipe !== e" class="btn" @click="choisirEquipe(e)">Rejoindre</button>
-            <button v-else-if="pub.chefs[e] !== moi" class="btn" @click="devenirChef">🕵️ Être le chef</button>
-            <div v-else class="sys-msg" style="font-size:0.8em;text-align:center">Tu es le chef</div>
+        <!-- Composition des équipes -->
+        <section v-else-if="pub.phase === 'attente'" class="carte">
+          <div class="titre-carte">Salon « {{ roomCode }} » · les équipes</div>
+          <div class="equipes">
+            <div v-for="e in ['R', 'B']" :key="e" class="equipe" :class="e">
+              <h3>{{ e === 'R' ? '🔴 Rouges' : '🔵 Bleus' }} <small v-if="pub.victoires[e]">· 🏆 {{ pub.victoires[e] }}</small></h3>
+              <ul>
+                <li v-for="j in membres(e)" :key="j.pseudo" :class="{ absent: !j.connecte }">{{ pub.chefs[e] === j.pseudo ? '🕵️ ' : '' }}{{ j.pseudo }}{{ j.pseudo === moi ? ' (moi)' : '' }}</li>
+              </ul>
+              <button v-if="monEquipe !== e" class="btn" @click="choisirEquipe(e)">Rejoindre</button>
+              <button v-else-if="pub.chefs[e] !== moi" class="btn" @click="devenirChef">🕵️ Être le chef</button>
+              <div v-else class="sys-msg" style="font-size:0.8em;text-align:center">Tu es le chef</div>
+            </div>
           </div>
-        </div>
-        <div class="sans-equipe" v-if="sansEquipe.length">Sans équipe : {{ sansEquipe.join(', ') }}</div>
-        <button v-if="role === 'hote'" class="btn" style="width:100%;margin-bottom:8px" @click="melangerEquipes">🎲 Équipes et chefs au hasard</button>
-        <button v-if="role === 'hote'" class="btn principal btn-large" :disabled="!!problemeDepart" @click="commencerPartie">{{ problemeDepart || 'Lancer la partie' }}</button>
-        <p v-else class="statut">{{ problemeDepart || 'Prêt : l\'hôte peut lancer la partie.' }}</p>
-      </section>
+          <div class="sans-equipe" v-if="sansEquipe.length">Sans équipe : {{ sansEquipe.join(', ') }}</div>
+          <button v-if="role === 'hote'" class="btn" style="width:100%;margin-bottom:8px" @click="melangerEquipes">🎲 Équipes et chefs au hasard</button>
+          <button v-if="role === 'hote'" class="btn principal btn-large" :disabled="!!problemeDepart" @click="commencerPartie">{{ problemeDepart || 'Lancer la partie' }}</button>
+          <p v-else class="statut">{{ problemeDepart || 'Prêt : l\'hôte peut lancer la partie.' }}</p>
+        </section>
 
-      <template v-else>
-        <div class="score-ag">
-          <span class="pastille-eq R" :class="{ joue: pub.tour === 'R' && pub.phase !== 'fin' }" style="color:var(--rouge)"><span style="color:#fff">{{ restants.R }}</span></span>
-          <div class="qui-joue">{{ texteTour }}</div>
-          <span class="pastille-eq B" :class="{ joue: pub.tour === 'B' && pub.phase !== 'fin' }" style="color:var(--bleu)"><span style="color:#fff">{{ restants.B }}</span></span>
-        </div>
-
-        <div v-if="pub.phase === 'fin'" class="fin-ag" :class="pub.gagnant">{{ pub.gagnant === 'R' ? '🔴 Les Rouges' : '🔵 Les Bleus' }} gagnent{{ pub.raison === 'assassin' ? ' (assassin révélé)' : '' }} !</div>
-        <div v-else class="barre-indice" :class="pub.tour">
-          <!-- Le chef dont c'est le tour écrit son indice -->
-          <form v-if="pub.phase === 'indice' && jeSuisChefDuTour" class="form-indice" @submit.prevent="donnerIndice">
-            <input type="text" v-model="saisieIndice" placeholder="Ton indice (un mot)" maxlength="24" autocomplete="off" autocapitalize="none" spellcheck="false" enterkeyhint="send">
-            <select v-model="saisieNombre" aria-label="Nombre de mots"><option v-for="n in [1,2,3,4,5,6,7,8,9,'∞']" :key="n" :value="n">{{ n }}</option></select>
-            <button class="btn principal" type="submit">OK</button>
-          </form>
-          <template v-else-if="pub.phase === 'indice'"><span>🕵️ <strong>{{ pub.chefs[pub.tour] }}</strong> réfléchit à un indice…</span></template>
-          <template v-else>
-            <span class="mot-indice">{{ pub.indice.mot }}</span><span class="nb">{{ pub.indice.n }}</span>
-            <small>{{ pub.essais >= 90 ? 'essais libres' : pub.essais + (pub.essais > 1 ? ' essais' : ' essai') }}</small>
-          </template>
-        </div>
-
-        <div class="plateau">
-          <div v-for="(m, i) in pub.mots" :key="pub.partieId + '-' + i" class="carte-ag" :class="classeCarte(i)" @click="toucherCarte(i)">
-            <span class="txt">{{ m }}</span>
-            <span v-if="pub.revelees[i] === 'A'" class="icone">💀</span>
-            <span v-if="!pub.revelees[i] && pointes(i).length" class="doigts"><span v-for="p in pointes(i)" :key="p">{{ p.slice(0, 2) }}</span></span>
+        <template v-else>
+          <div class="score-ag">
+            <span class="pastille-eq R" :class="{ joue: pub.tour === 'R' && pub.phase !== 'fin' }" style="color:var(--rouge)"><span style="color:#fff">{{ restants.R }}</span></span>
+            <div class="qui-joue">{{ texteTour }}</div>
+            <span class="pastille-eq B" :class="{ joue: pub.tour === 'B' && pub.phase !== 'fin' }" style="color:var(--bleu)"><span style="color:#fff">{{ restants.B }}</span></span>
           </div>
-        </div>
 
-        <div class="actions-ag">
-          <div class="aide-ag">{{ aideAction }}</div>
-          <button v-if="pub.phase === 'devine' && jeDevine" class="btn" :disabled="!pub.nbRevelees" @click="finirTour">Fin du tour</button>
-          <button v-if="pub.phase === 'fin' && role === 'hote'" class="btn principal" @click="revenirEquipes">Nouvelle partie</button>
-        </div>
-        <!-- Chef parti : un coéquipier prend sa place ; sans équipe : on peut en rejoindre une -->
-        <div class="actions-ag" v-if="pub.phase !== 'fin' && (!monEquipe || (!jeSuisChef && pub.chefs[monEquipe] && !connectes[pub.chefs[monEquipe]]) || (monEquipe && !pub.chefs[monEquipe]))">
-          <template v-if="!monEquipe">
-            <button class="btn" style="flex:1;color:var(--rouge)" @click="choisirEquipe('R')">Rejoindre les Rouges</button>
-            <button class="btn" style="flex:1;color:var(--bleu)" @click="choisirEquipe('B')">Rejoindre les Bleus</button>
-          </template>
-          <button v-else class="btn" style="flex:1" @click="devenirChef">🕵️ Le chef est absent : devenir chef</button>
-        </div>
-        <div class="journal-ag"><div v-for="(l, k) in pub.journal.slice(-3)" :key="k">{{ l }}</div></div>
+          <div v-if="pub.phase === 'fin'" class="fin-ag" :class="pub.gagnant">{{ pub.gagnant === 'R' ? '🔴 Les Rouges' : '🔵 Les Bleus' }} gagnent{{ pub.raison === 'assassin' ? ' (assassin révélé)' : '' }} !</div>
+          <div v-else class="barre-indice" :class="pub.tour">
+            <!-- Le chef dont c'est le tour écrit son indice -->
+            <form v-if="pub.phase === 'indice' && jeSuisChefDuTour" class="form-indice" @submit.prevent="donnerIndice">
+              <input type="text" v-model="saisieIndice" placeholder="Ton indice (un mot)" maxlength="24" autocomplete="off" autocapitalize="none" spellcheck="false" enterkeyhint="send">
+              <select v-model="saisieNombre" aria-label="Nombre de mots"><option v-for="n in [1,2,3,4,5,6,7,8,9,'∞']" :key="n" :value="n">{{ n }}</option></select>
+              <button class="btn principal" type="submit">OK</button>
+            </form>
+            <template v-else-if="pub.phase === 'indice'"><span>🕵️ <strong>{{ pub.chefs[pub.tour] }}</strong> réfléchit à un indice…</span></template>
+            <template v-else>
+              <span class="mot-indice">{{ pub.indice.mot }}</span><span class="nb">{{ pub.indice.n }}</span>
+              <small>{{ pub.essais >= 90 ? 'essais libres' : pub.essais + (pub.essais > 1 ? ' essais' : ' essai') }}</small>
+            </template>
+          </div>
+
+          <div class="plateau">
+            <div v-for="(m, i) in pub.mots" :key="pub.partieId + '-' + i" class="carte-ag" :class="classeCarte(i)" @click="toucherCarte(i)">
+              <span class="txt">{{ m }}</span>
+              <span v-if="pub.revelees[i] === 'A'" class="icone">💀</span>
+              <span v-if="!pub.revelees[i] && pointes(i).length" class="doigts"><span v-for="p in pointes(i)" :key="p">{{ p.slice(0, 2) }}</span></span>
+            </div>
+          </div>
+
+          <div class="actions-ag">
+            <div class="aide-ag">{{ aideAction }}</div>
+            <button v-if="pub.phase === 'devine' && jeDevine" class="btn" :disabled="!pub.nbRevelees" @click="finirTour">Fin du tour</button>
+            <button v-if="pub.phase === 'fin' && role === 'hote'" class="btn principal" @click="revenirEquipes">Nouvelle partie</button>
+          </div>
+          <!-- Chef parti : un coéquipier prend sa place ; sans équipe : on peut en rejoindre une -->
+          <div class="actions-ag" v-if="pub.phase !== 'fin' && (!monEquipe || (!jeSuisChef && pub.chefs[monEquipe] && !connectes[pub.chefs[monEquipe]]) || (monEquipe && !pub.chefs[monEquipe]))">
+            <template v-if="!monEquipe">
+              <button class="btn" style="flex:1;color:var(--rouge)" @click="choisirEquipe('R')">Rejoindre les Rouges</button>
+              <button class="btn" style="flex:1;color:var(--bleu)" @click="choisirEquipe('B')">Rejoindre les Bleus</button>
+            </template>
+            <button v-else class="btn" style="flex:1" @click="devenirChef">🕵️ Le chef est absent : devenir chef</button>
+          </div>
+          <div class="journal-ag"><div v-for="(l, k) in pub.journal.slice(-3)" :key="k">{{ l }}</div></div>
+        </template>
+
       </template>
-    </div>
+
+      <!-- RÉGLAGES -->
+      <template v-slot:reglages>
+        <section class="carte reglages">
+          <div class="titre-carte">Réglages</div>
+          <reglages-base :son.sync="sonActif" :vibration.sync="vibrationActive" :ecran.sync="garderEcran"></reglages-base>
+        </section>
+        <details class="carte journal">
+          <summary>Activité <small v-if="historique.length">({{ historique.length }})</small></summary>
+          <ul>
+            <li v-for="(log, i) in historiqueRecent" :key="i" :class="{ 'sys-msg': log.s }">{{ log.m }}</li>
+            <li v-if="!historique.length" class="sys-msg">Rien pour l'instant.</li>
+          </ul>
+        </details>
+
+      </template>
+
+      <!-- RÈGLES -->
+      <template v-slot:regles>
+        <section class="carte regles">
+          <div class="titre-carte">Règles</div>
+          <ul>
+            <li>Deux équipes, <span style="color:var(--rouge);font-weight:700">rouge</span> et <span style="color:var(--bleu);font-weight:700">bleue</span>. Dans chaque équipe, un <strong>chef</strong> voit sur son téléphone la carte secrète : quels mots sont ses agents, ceux de l'autre équipe, les passants neutres et l'<strong>assassin</strong>.</li>
+            <li>À son tour, le chef donne <strong>un seul mot et un nombre</strong> (par exemple « océan 2 ») pour faire trouver plusieurs de ses agents.</li>
+            <li>Ses coéquipiers touchent un mot pour le proposer (tout le monde le voit), puis le retouchent pour le <strong>révéler</strong>. Ils ont droit au nombre annoncé plus un essai.</li>
+            <li>Un passant ou un agent adverse arrête le tour ; l'<strong>assassin fait perdre</strong> aussitôt. On peut aussi s'arrêter après un essai.</li>
+            <li>La première équipe qui trouve tous ses agents gagne (9 pour l'équipe qui commence, 8 pour l'autre).</li>
+          </ul>
+        </section>
+
+      </template>
+    </fiche-jeu>
   </div>
 
+  <script src="fiche-jeu.js"></script>
   <script src="commun.js"></script>
   <script src="etoiles.js"></script>
   <script src="agents-regles.js"></script>

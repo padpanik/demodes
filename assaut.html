@@ -148,234 +148,219 @@
 <body>
   <div id="app" class="app" :style="variablesCouleurs">
 
-    <div class="barre">
-      <div id="menu">
-        <div @click="onglet = 'config'" :class="{ actif: onglet === 'config' }">Partie</div>
-        <div @click="onglet = 'play'" :class="{ actif: onglet === 'play' }">Jouer</div>
-        <div @click="onglet = 'reglages'" :class="{ actif: onglet === 'reglages' }">Réglages</div>
-        <div @click="onglet = 'regles'" :class="{ actif: onglet === 'regles' }">Règles</div>
-      </div>
-      <div class="barre-infos" v-if="onglet === 'play'">
-        <button class="btn-veille" :class="{ off: !sonActif }" @click="basculerSon">{{ sonActif ? '🔊' : '🔇' }}</button>
-        <span v-if="role" class="point-co" :class="{ attente: connexion !== 'ok' }"></span>
-      </div>
-    </div>
-
-    <!-- ACCUEIL -->
-    <div v-show="onglet === 'config'">
-      <a v-if="!role" class="lien-jeux retour-jeux" href="index.html?choix">⇦ Tous les jeux</a>
-      <header class="hero">
+    <fiche-jeu nom="Assaut" resume="Désdale · stratégie à pièces cachées" :onglet.sync="onglet" :son.sync="sonActif" :connexion="role ? connexion : ''">
+      <template v-slot:logo>
         <div class="logo-as"><span v-for="(x, k) in logo" :key="k" :style="{ background: x.c }">{{ x.t }}</span></div>
-        <div>
-          <h1>Assaut</h1>
-          <p>Désdale · stratégie à pièces cachées</p>
-        </div>
-      </header>
+      </template>
 
-      <!-- Salon en cours -->
-      <section class="carte salon-actif" v-if="role">
-        <div class="salon-tete">
-          <span class="pastille" :class="{ attente: connexion !== 'ok' }"></span>
-          <div>
-            <div class="salon-nom">Salon « {{ roomCode }} »</div>
-            <div class="salon-role">{{ role === 'hote' ? '👑 Tu es l\'hôte : tu choisis le format' : 'Tu joues' }} en tant que {{ moi }} · {{ connexionTexte }}</div>
+      <!-- PARTIE : salon, jouer seul -->
+      <template v-slot:partie>
+        <!-- Salon en cours -->
+        <section class="carte salon-actif" v-if="role">
+          <div class="salon-tete">
+            <span class="pastille" :class="{ attente: connexion !== 'ok' }"></span>
+            <div>
+              <div class="salon-nom">Salon « {{ roomCode }} »</div>
+              <div class="salon-role">{{ role === 'hote' ? '👑 Tu es l\'hôte : tu choisis le format' : 'Tu joues' }} en tant que {{ moi }} · {{ connexionTexte }}</div>
+            </div>
           </div>
-        </div>
-        <div class="chips-joueurs">
-          <span v-for="j in bandeau" :key="j.pseudo" class="chip" :class="{ absent: !j.connecte }">
-            <span class="pastille-c" :style="{ background: couleurCamp(j.c) }"></span>{{ j.pseudo }} · {{ j.score }} victoire{{ j.score > 1 ? 's' : '' }}<span v-if="!j.connecte"> 💤</span>
-          </span>
-          <span v-if="pub && pub.ordre.length < 2" class="chip absent">en attente d'un adversaire…</span>
-        </div>
-        <div class="actions-accueil">
-          <button class="btn principal" @click="onglet = 'play'">Jouer →</button>
-          <button class="btn" @click="quitterSalon">Quitter</button>
-        </div>
-      </section>
-
-      <section class="carte">
-        <div class="titre-carte">Format <small v-if="role === 'client'">choisi par l'hôte</small><small v-else-if="!role">partie solo contre l'ordinateur</small></div>
-        <div class="segment">
-          <button :class="{ actif: formatAffiche === 'complet' }" :disabled="role === 'client'" @click="choisirFormat('complet')">Complète<small>40 pièces</small></button>
-          <button :class="{ actif: formatAffiche === 'rapide' }" :disabled="role === 'client'" @click="choisirFormat('rapide')">Rapide<small>10 pièces</small></button>
-        </div>
-        <label class="case-a-cocher"><input type="checkbox" :checked="memoireAffichee" :disabled="role === 'client'" @change="choisirMemoire($event.target.checked)"> 👁 Garder à l'écran les pièces adverses révélées</label>
-        <div class="aide">Sans cette option, une pièce adverse vue en combat se recache : à toi de t'en souvenir.<template v-if="role === 'hote'"> Un changement recommence le placement.</template></div>
-      </section>
-
-      <template v-if="!role">
-        <button class="btn principal btn-large" @click="nouvellePartie">{{ partieEnCours ? 'Nouvelle partie solo' : 'Jouer seul contre l\'ordinateur' }}</button>
-        <button class="btn btn-large" v-if="partieEnCours" @click="onglet = 'play'">Reprendre la partie en cours</button>
-        <p class="statut" v-if="statsTexte">{{ statsTexte }}</p>
+          <div class="chips-joueurs">
+            <span v-for="j in bandeau" :key="j.pseudo" class="chip" :class="{ absent: !j.connecte }">
+              <span class="pastille-c" :style="{ background: couleurCamp(j.c) }"></span>{{ j.pseudo }} · {{ j.score }} victoire{{ j.score > 1 ? 's' : '' }}<span v-if="!j.connecte"> 💤</span>
+            </span>
+            <span v-if="pub && pub.ordre.length < 2" class="chip absent">en attente d'un adversaire…</span>
+          </div>
+          <div class="actions-accueil">
+            <button class="btn principal" @click="onglet = 'play'">Jouer →</button>
+            <button class="btn" @click="quitterSalon">Quitter</button>
+          </div>
+        </section>
 
         <section class="carte">
-          <div class="titre-carte">Partie à deux</div>
-          <div class="pseudo-portail">Ton pseudo : <b>{{ pseudoInput || '(à choisir)' }}</b><button v-if="!role" class="lien-profil" @click="ouvrirProfil">✏️ {{ pseudoInput ? 'Changer' : 'Choisir' }}</button></div>
-          <label class="champ">Nom du salon
-            <input type="text" v-model="channelInput" placeholder="ex : partie-du-dimanche" autocomplete="off">
-          </label>
-          <div class="salons-connus" v-if="salonsConnus.length">
-            <span v-for="nom in salonsConnus" :key="nom" class="salon-puce" :class="{ actif: estSalonSaisi(nom) }">
-              <button class="nom" @click="channelInput = nom">{{ nom }}</button>
-              <button class="oter" @click="oublierSalon(nom)" aria-label="Retirer de la liste">✕</button>
-            </span>
+          <div class="titre-carte">Format <small v-if="role === 'client'">choisi par l'hôte</small><small v-else-if="!role">partie solo contre l'ordinateur</small></div>
+          <div class="segment">
+            <button :class="{ actif: formatAffiche === 'complet' }" :disabled="role === 'client'" @click="choisirFormat('complet')">Complète<small>40 pièces</small></button>
+            <button :class="{ actif: formatAffiche === 'rapide' }" :disabled="role === 'client'" @click="choisirFormat('rapide')">Rapide<small>10 pièces</small></button>
           </div>
-          <div class="aide">Chacun sur son téléphone : personne ne voit l'armée de l'autre. Le premier ouvre le salon et choisit le format.</div>
+          <label class="case-a-cocher"><input type="checkbox" :checked="memoireAffichee" :disabled="role === 'client'" @change="choisirMemoire($event.target.checked)"> 👁 Garder à l'écran les pièces adverses révélées</label>
+          <div class="aide">Sans cette option, une pièce adverse vue en combat se recache : à toi de t'en souvenir.<template v-if="role === 'hote'"> Un changement recommence le placement.</template></div>
         </section>
-        <button class="btn btn-large" @click="entrerSalon()" :disabled="entreeEnCours">
-          {{ entreeEnCours ? 'Connexion au salon…' : 'Entrer dans le salon' }}
-        </button>
+
+        <template v-if="!role">
+          <button class="btn principal btn-large" @click="nouvellePartie">{{ partieEnCours ? 'Nouvelle partie solo' : 'Jouer seul contre l\'ordinateur' }}</button>
+          <button class="btn btn-large" v-if="partieEnCours" @click="onglet = 'play'">Reprendre la partie en cours</button>
+          <p class="statut" v-if="statsTexte">{{ statsTexte }}</p>
+
+          <section class="carte">
+            <div class="titre-carte">Partie à deux</div>
+            <div class="pseudo-portail">Ton pseudo : <b>{{ pseudoInput || '(à choisir)' }}</b><button v-if="!role" class="lien-profil" @click="ouvrirProfil">✏️ {{ pseudoInput ? 'Changer' : 'Choisir' }}</button></div>
+            <label class="champ">Nom du salon
+              <input type="text" v-model="channelInput" placeholder="ex : partie-du-dimanche" autocomplete="off">
+            </label>
+            <div class="salons-connus" v-if="salonsConnus.length">
+              <span v-for="nom in salonsConnus" :key="nom" class="salon-puce" :class="{ actif: estSalonSaisi(nom) }">
+                <button class="nom" @click="channelInput = nom">{{ nom }}</button>
+                <button class="oter" @click="oublierSalon(nom)" aria-label="Retirer de la liste">✕</button>
+              </span>
+            </div>
+            <div class="aide">Chacun sur son téléphone : personne ne voit l'armée de l'autre. Le premier ouvre le salon et choisit le format.</div>
+          </section>
+          <button class="btn btn-large" @click="entrerSalon()" :disabled="entreeEnCours">
+            {{ entreeEnCours ? 'Connexion au salon…' : 'Entrer dans le salon' }}
+          </button>
+        </template>
+
+        <p class="version">Désdale · Assaut · version {{ version }}</p>
+
       </template>
 
-      <p class="version">Désdale · Assaut · version {{ version }}</p>
-    </div>
-
-    <!-- RÉGLAGES -->
-    <div v-show="onglet === 'reglages'">
-      <section class="carte reglages">
-        <div class="titre-carte">Réglages</div>
-        <label class="case-a-cocher"><input type="checkbox" v-model="sonActif"> 🔊 Sons</label>
-        <label class="case-a-cocher" v-if="vibrationSupportee"><input type="checkbox" v-model="vibrationActive"> 📳 Vibrations</label>
-        <label class="case-a-cocher" v-if="voixSupportee"><input type="checkbox" v-model="voixActive"> 🗣️ Annoncer mon tour</label>
-        <label class="case-a-cocher" v-if="veilleSupportee"><input type="checkbox" v-model="garderEcran"> ☀️ Garder l'écran allumé</label>
-      </section>
-      <section class="carte">
-        <div class="titre-carte">Apparence des pièces <small>sur ce téléphone</small></div>
-        <div class="segment">
-          <button :class="{ actif: apparence === 'symboles' }" @click="apparence = 'symboles'">Symboles</button>
-          <button :class="{ actif: apparence === 'chiffres' }" @click="apparence = 'chiffres'">Chiffres</button>
-          <button :class="{ actif: apparence === 'images' }" @click="apparence = 'images'">Mes images</button>
+      <!-- JOUER -->
+      <template v-slot:jouer>
+        <div v-if="role && (!pub || pub.ordre.length < 2) && !phase" class="panneau-vide">
+          <div class="grand">⏳</div>
+          <p>En attente d'un adversaire.<br>Donne-lui le nom du salon : <strong>{{ roomCode }}</strong></p>
         </div>
-        <div class="couleurs">
-          <span class="titre-couleurs">Ma couleur</span>
-          <button v-for="x in COULEURS" :key="x.id" class="pastille-choix" :class="{ actif: maCouleur === x.id }"
-                  :style="{ background: x.v }" :aria-label="x.nom" :title="x.nom" @click="maCouleur = x.id"></button>
+        <div v-else-if="!phase" class="panneau-vide">
+          <div class="grand">⚔️</div>
+          <p>Aucune partie en cours.</p>
+          <button class="btn principal" @click="nouvellePartie">Jouer seul contre l'ordinateur</button>
         </div>
-        <div class="segment" style="margin-top:8px">
-          <button :class="{ actif: numerotation === 'moderne' }" @click="numerotation = 'moderne'">Moderne<small>Maréchal 10 · Espion 1</small></button>
-          <button :class="{ actif: numerotation === 'ancienne' }" @click="numerotation = 'ancienne'">Ancienne<small>Maréchal 1 · Éclaireur 9</small></button>
-        </div>
-        <template v-if="apparence === 'images'">
-          <div class="aide">Touche un grade pour lui donner une image (par exemple la photo d'une pièce de ton propre jeu). Les images restent sur ce téléphone : elles ne sont ni publiées ni envoyées à l'adversaire.</div>
-          <div class="apparence-grille">
-            <button v-for="g in AS.GRADES" :key="g" @click="choisirImage(g)">
-              <img v-if="images[g]" :src="images[g]" alt="">
-              <span v-else class="vide">{{ AS.ICONES[g] }}</span>
-              {{ AS.NOMS[g] }}
-              <span v-if="images[g]" class="oter-img" role="button" aria-label="Retirer l'image" @click.stop="retirerImage(g)">✕</span>
-            </button>
-          </div>
-          <input type="file" accept="image/*" ref="fichierImage" style="display:none" @change="imageChoisie">
-          <!-- Toutes d'un coup : chaque fichier va au grade que son nom désigne (marechal.png, bombe.jpg, 10.png…) -->
-          <button class="btn" style="margin-top:8px;width:100%" @click="$refs.fichiersImages.value = ''; $refs.fichiersImages.click()">📂 Plusieurs images d'un coup</button>
-          <div class="aide">Nomme les fichiers d'après le grade (maréchal, général, colonel, commandant, capitaine, lieutenant, sergent, démineur, éclaireur, espion, bombe, drapeau) ou d'après le chiffre.</div>
-          <input type="file" accept="image/*" multiple ref="fichiersImages" style="display:none" @change="imagesChoisies">
-        </template>
-      </section>
-      <details class="carte journal">
-        <summary>Activité <small v-if="historique.length">({{ historique.length }})</small></summary>
-        <ul>
-          <li v-for="(log, i) in historiqueRecent" :key="i" :class="{ 'sys-msg': log.s }">{{ log.m }}</li>
-          <li v-if="!historique.length" class="sys-msg">Rien pour l'instant.</li>
-        </ul>
-      </details>
-    </div>
-
-    <!-- RÈGLES -->
-    <div v-show="onglet === 'regles'">
-      <section class="carte regles">
-        <div class="titre-carte">Règles</div>
-        <ul>
-          <li>Chaque camp place ses pièces face cachée dans ses 4 premières rangées. But : <strong>prendre le drapeau</strong> adverse, ou bloquer l'adversaire (il ne peut plus bouger).</li>
-          <li>À ton tour, une pièce avance d'une case (pas en diagonale, pas dans les lacs). L'<strong>éclaireur ({{ chiffre(2) }})</strong> file en ligne droite d'autant de cases libres qu'il veut, et peut attaquer au bout.</li>
-          <li><strong>Bombes</strong> et <strong>drapeau</strong> ne bougent jamais.</li>
-          <li>Attaquer une pièce : les deux grades sont révélés, le plus fort reste, l'autre sort. Égalité : les deux sortent.</li>
-          <li>Une <strong>bombe</strong> détruit toute pièce qui l'attaque, sauf le <strong>démineur ({{ chiffre(3) }})</strong>. L'<strong>espion ({{ chiffre(1) }})</strong> bat le maréchal ({{ chiffre(10) }}) s'il l'attaque, mais perd contre tout le reste.</li>
-          <li>Pas plus de 3 allers-retours de suite entre les deux mêmes cases.</li>
-          <li>À deux : ton armée reste sur ton téléphone. Seuls les grades des pièces qui combattent sont échangés ; à la fin, l'appli vérifie que personne n'a triché.</li>
-        </ul>
-        <table class="tableau-grades">
-          <tr v-for="g in AS.GRADES" :key="g"><td><strong>{{ typeof g === 'number' ? chiffre(g) : AS.ICONES[g] }}</strong> {{ typeof g === 'number' ? AS.ICONES[g] : '' }}</td><td>{{ AS.NOMS[g] }}</td><td style="text-align:right">×{{ AS.ARMEES.complet[g] || 0 }} · ×{{ AS.ARMEES.rapide[g] || 0 }}</td></tr>
-          <tr><td></td><td class="sys-msg">nombre : complète · rapide</td><td></td></tr>
-        </table>
-      </section>
-    </div>
-
-    <!-- JOUER -->
-    <div v-show="onglet === 'play'">
-      <div v-if="role && (!pub || pub.ordre.length < 2) && !phase" class="panneau-vide">
-        <div class="grand">⏳</div>
-        <p>En attente d'un adversaire.<br>Donne-lui le nom du salon : <strong>{{ roomCode }}</strong></p>
-      </div>
-      <div v-else-if="!phase" class="panneau-vide">
-        <div class="grand">⚔️</div>
-        <p>Aucune partie en cours.</p>
-        <button class="btn principal" @click="nouvellePartie">Jouer seul contre l'ordinateur</button>
-      </div>
-      <template v-else>
-        <div class="joueurs-bande" v-if="role && pub">
-          <span v-for="j in bandeau" :key="j.pseudo" :class="{ actif: phase === 'jeu' && vue && vue.tour === j.c, absent: !j.connecte }">
-            <span class="pastille-c" :style="{ background: couleurCamp(j.c) }"></span>{{ j.pseudo }} <strong>{{ j.score }}</strong>
-          </span>
-        </div>
-        <div class="consigne" :class="{ alerte: !!message }">{{ message || consigne }}</div>
-        <div class="bandeau-combat" v-if="phase !== 'placement' && combats.length">
-          <div v-for="(t, k) in combats" :key="k">{{ t }}</div>
-        </div>
-
-        <div class="plateau">
-          <div v-for="x in cases" :key="x.d" class="case" :class="x.classes" @click="toucher(x.i)">
-            <div v-if="x.p" class="piece" :class="x.p.classes"><img v-if="x.p.img" class="img" :src="x.p.img" alt=""><span v-else class="sym">{{ x.p.sym }}</span><span v-if="x.p.num" class="num">{{ x.p.num }}</span></div>
-          </div>
-          <!-- Pièce adverse qui se déplace (glisse de sa case de départ à son arrivée) -->
-          <div v-if="anim" class="fantome" :style="anim.style">
-            <div class="piece" :class="anim.p.classes"><img v-if="anim.p.img" class="img" :src="anim.p.img" alt=""><span v-else class="sym">{{ anim.p.sym }}</span><span v-if="anim.p.num" class="num">{{ anim.p.num }}</span></div>
-          </div>
-        </div>
-
-        <!-- Placement -->
-        <template v-if="phase === 'placement'">
-          <!-- Réserve : les pièces encore à poser -->
-          <div class="reserve" v-if="!jeSuisPret && (reserveTotal || selection !== null)">
-            <button v-for="x in reserve" :key="x.g" v-if="x.n" class="reserve-piece" :class="{ choisie: choixReserve === x.g }" @click="choisirReserve(x.g)">
-              <img v-if="apparence === 'images' && images[x.g]" class="img-reserve" :src="images[x.g]" alt=""><span v-else class="sym">{{ AS.ICONES[x.g] }}</span><span class="txt">{{ typeof x.g === 'number' ? chiffre(x.g) : '' }}×{{ x.n }}</span>
-            </button>
-            <button v-if="selection !== null" class="reserve-piece retour" @click="retirerSelection">↩ Retirer</button>
-          </div>
-          <div class="actions" v-if="!jeSuisPret">
-            <button class="btn" @click="placerAuHasard">🎲 {{ reserveTotal && placement.length ? 'Compléter' : 'Hasard' }}</button>
-            <button class="btn" @click="viderPlacement" :disabled="!placement.length">🧹 Vider</button>
-            <button class="btn" @click="enregistrerDisposition" :disabled="reserveTotal > 0" aria-label="Garder cette disposition">💾</button>
-            <button class="btn principal" @click="commencer" :disabled="reserveTotal > 0">Prêt ✓</button>
-          </div>
-          <div class="dispositions" v-if="!jeSuisPret && dispositions[modePartie].length">
-            Mes dispositions :
-            <span v-for="(d, k) in dispositions[modePartie]" :key="k" class="salon-puce">
-              <button class="nom" @click="chargerDisposition(k)">n° {{ k + 1 }}</button>
-              <button class="oter" @click="oublierDisposition(k)" aria-label="Supprimer">✕</button>
-            </span>
-          </div>
-        </template>
-
-        <!-- Partie -->
         <template v-else>
-          <!-- Pièces sorties : une vignette par pièce (la longueur des deux rangées montre l'écart) -->
-          <div v-for="ligne in piecesPrises" :key="ligne.cle" class="prises">
-            <span v-for="(g, k) in ligne.pieces" :key="k" class="mini" :class="ligne.c">
-              <img v-if="apparence === 'images' && images[g]" :src="images[g]" alt="">
-              <span v-else class="s">{{ apparence === 'chiffres' && typeof g === 'number' ? chiffre(g) : AS.ICONES[g] }}</span>
-              <span v-if="typeof g === 'number' && apparence !== 'chiffres'" class="n">{{ chiffre(g) }}</span>
+          <div class="joueurs-bande" v-if="role && pub">
+            <span v-for="j in bandeau" :key="j.pseudo" :class="{ actif: phase === 'jeu' && vue && vue.tour === j.c, absent: !j.connecte }">
+              <span class="pastille-c" :style="{ background: couleurCamp(j.c) }"></span>{{ j.pseudo }} <strong>{{ j.score }}</strong>
             </span>
           </div>
-          <div class="verif ko" v-if="phase === 'fin' && verif && !verif.ok">{{ verif.texte }}</div>
-          <div class="actions">
-            <button class="btn" v-if="phase === 'jeu'" @click="abandonner">Abandonner</button>
-            <button class="btn principal" v-if="phase === 'fin'" @click="rejouer">{{ role ? 'Partie suivante' : 'Rejouer' }}</button>
-            <button class="btn" v-if="phase === 'fin'" @click="finMasquee = false">Résultat</button>
+          <div class="consigne" :class="{ alerte: !!message }">{{ message || consigne }}</div>
+          <div class="bandeau-combat" v-if="phase !== 'placement' && combats.length">
+            <div v-for="(t, k) in combats" :key="k">{{ t }}</div>
           </div>
+
+          <div class="plateau">
+            <div v-for="x in cases" :key="x.d" class="case" :class="x.classes" @click="toucher(x.i)">
+              <div v-if="x.p" class="piece" :class="x.p.classes"><img v-if="x.p.img" class="img" :src="x.p.img" alt=""><span v-else class="sym">{{ x.p.sym }}</span><span v-if="x.p.num" class="num">{{ x.p.num }}</span></div>
+            </div>
+            <!-- Pièce adverse qui se déplace (glisse de sa case de départ à son arrivée) -->
+            <div v-if="anim" class="fantome" :style="anim.style">
+              <div class="piece" :class="anim.p.classes"><img v-if="anim.p.img" class="img" :src="anim.p.img" alt=""><span v-else class="sym">{{ anim.p.sym }}</span><span v-if="anim.p.num" class="num">{{ anim.p.num }}</span></div>
+            </div>
+          </div>
+
+          <!-- Placement -->
+          <template v-if="phase === 'placement'">
+            <!-- Réserve : les pièces encore à poser -->
+            <div class="reserve" v-if="!jeSuisPret && (reserveTotal || selection !== null)">
+              <button v-for="x in reserve" :key="x.g" v-if="x.n" class="reserve-piece" :class="{ choisie: choixReserve === x.g }" @click="choisirReserve(x.g)">
+                <img v-if="apparence === 'images' && images[x.g]" class="img-reserve" :src="images[x.g]" alt=""><span v-else class="sym">{{ AS.ICONES[x.g] }}</span><span class="txt">{{ typeof x.g === 'number' ? chiffre(x.g) : '' }}×{{ x.n }}</span>
+              </button>
+              <button v-if="selection !== null" class="reserve-piece retour" @click="retirerSelection">↩ Retirer</button>
+            </div>
+            <div class="actions" v-if="!jeSuisPret">
+              <button class="btn" @click="placerAuHasard">🎲 {{ reserveTotal && placement.length ? 'Compléter' : 'Hasard' }}</button>
+              <button class="btn" @click="viderPlacement" :disabled="!placement.length">🧹 Vider</button>
+              <button class="btn" @click="enregistrerDisposition" :disabled="reserveTotal > 0" aria-label="Garder cette disposition">💾</button>
+              <button class="btn principal" @click="commencer" :disabled="reserveTotal > 0">Prêt ✓</button>
+            </div>
+            <div class="dispositions" v-if="!jeSuisPret && dispositions[modePartie].length">
+              Mes dispositions :
+              <span v-for="(d, k) in dispositions[modePartie]" :key="k" class="salon-puce">
+                <button class="nom" @click="chargerDisposition(k)">n° {{ k + 1 }}</button>
+                <button class="oter" @click="oublierDisposition(k)" aria-label="Supprimer">✕</button>
+              </span>
+            </div>
+          </template>
+
+          <!-- Partie -->
+          <template v-else>
+            <!-- Pièces sorties : une vignette par pièce (la longueur des deux rangées montre l'écart) -->
+            <div v-for="ligne in piecesPrises" :key="ligne.cle" class="prises">
+              <span v-for="(g, k) in ligne.pieces" :key="k" class="mini" :class="ligne.c">
+                <img v-if="apparence === 'images' && images[g]" :src="images[g]" alt="">
+                <span v-else class="s">{{ apparence === 'chiffres' && typeof g === 'number' ? chiffre(g) : AS.ICONES[g] }}</span>
+                <span v-if="typeof g === 'number' && apparence !== 'chiffres'" class="n">{{ chiffre(g) }}</span>
+              </span>
+            </div>
+            <div class="verif ko" v-if="phase === 'fin' && verif && !verif.ok">{{ verif.texte }}</div>
+            <div class="actions">
+              <button class="btn" v-if="phase === 'jeu'" @click="abandonner">Abandonner</button>
+              <button class="btn principal" v-if="phase === 'fin'" @click="rejouer">{{ role ? 'Partie suivante' : 'Rejouer' }}</button>
+              <button class="btn" v-if="phase === 'fin'" @click="finMasquee = false">Résultat</button>
+            </div>
+          </template>
         </template>
+
       </template>
-    </div>
+
+      <!-- RÉGLAGES -->
+      <template v-slot:reglages>
+        <section class="carte reglages">
+          <div class="titre-carte">Réglages</div>
+          <reglages-base :son.sync="sonActif" :vibration.sync="vibrationActive" :voix.sync="voixActive" :ecran.sync="garderEcran"></reglages-base>
+        </section>
+        <section class="carte">
+          <div class="titre-carte">Apparence des pièces <small>sur ce téléphone</small></div>
+          <div class="segment">
+            <button :class="{ actif: apparence === 'symboles' }" @click="apparence = 'symboles'">Symboles</button>
+            <button :class="{ actif: apparence === 'chiffres' }" @click="apparence = 'chiffres'">Chiffres</button>
+            <button :class="{ actif: apparence === 'images' }" @click="apparence = 'images'">Mes images</button>
+          </div>
+          <div class="couleurs">
+            <span class="titre-couleurs">Ma couleur</span>
+            <button v-for="x in COULEURS" :key="x.id" class="pastille-choix" :class="{ actif: maCouleur === x.id }"
+                    :style="{ background: x.v }" :aria-label="x.nom" :title="x.nom" @click="maCouleur = x.id"></button>
+          </div>
+          <div class="segment" style="margin-top:8px">
+            <button :class="{ actif: numerotation === 'moderne' }" @click="numerotation = 'moderne'">Moderne<small>Maréchal 10 · Espion 1</small></button>
+            <button :class="{ actif: numerotation === 'ancienne' }" @click="numerotation = 'ancienne'">Ancienne<small>Maréchal 1 · Éclaireur 9</small></button>
+          </div>
+          <template v-if="apparence === 'images'">
+            <div class="aide">Touche un grade pour lui donner une image (par exemple la photo d'une pièce de ton propre jeu). Les images restent sur ce téléphone : elles ne sont ni publiées ni envoyées à l'adversaire.</div>
+            <div class="apparence-grille">
+              <button v-for="g in AS.GRADES" :key="g" @click="choisirImage(g)">
+                <img v-if="images[g]" :src="images[g]" alt="">
+                <span v-else class="vide">{{ AS.ICONES[g] }}</span>
+                {{ AS.NOMS[g] }}
+                <span v-if="images[g]" class="oter-img" role="button" aria-label="Retirer l'image" @click.stop="retirerImage(g)">✕</span>
+              </button>
+            </div>
+            <input type="file" accept="image/*" ref="fichierImage" style="display:none" @change="imageChoisie">
+            <!-- Toutes d'un coup : chaque fichier va au grade que son nom désigne (marechal.png, bombe.jpg, 10.png…) -->
+            <button class="btn" style="margin-top:8px;width:100%" @click="$refs.fichiersImages.value = ''; $refs.fichiersImages.click()">📂 Plusieurs images d'un coup</button>
+            <div class="aide">Nomme les fichiers d'après le grade (maréchal, général, colonel, commandant, capitaine, lieutenant, sergent, démineur, éclaireur, espion, bombe, drapeau) ou d'après le chiffre.</div>
+            <input type="file" accept="image/*" multiple ref="fichiersImages" style="display:none" @change="imagesChoisies">
+          </template>
+        </section>
+        <details class="carte journal">
+          <summary>Activité <small v-if="historique.length">({{ historique.length }})</small></summary>
+          <ul>
+            <li v-for="(log, i) in historiqueRecent" :key="i" :class="{ 'sys-msg': log.s }">{{ log.m }}</li>
+            <li v-if="!historique.length" class="sys-msg">Rien pour l'instant.</li>
+          </ul>
+        </details>
+
+      </template>
+
+      <!-- RÈGLES -->
+      <template v-slot:regles>
+        <section class="carte regles">
+          <div class="titre-carte">Règles</div>
+          <ul>
+            <li>Chaque camp place ses pièces face cachée dans ses 4 premières rangées. But : <strong>prendre le drapeau</strong> adverse, ou bloquer l'adversaire (il ne peut plus bouger).</li>
+            <li>À ton tour, une pièce avance d'une case (pas en diagonale, pas dans les lacs). L'<strong>éclaireur ({{ chiffre(2) }})</strong> file en ligne droite d'autant de cases libres qu'il veut, et peut attaquer au bout.</li>
+            <li><strong>Bombes</strong> et <strong>drapeau</strong> ne bougent jamais.</li>
+            <li>Attaquer une pièce : les deux grades sont révélés, le plus fort reste, l'autre sort. Égalité : les deux sortent.</li>
+            <li>Une <strong>bombe</strong> détruit toute pièce qui l'attaque, sauf le <strong>démineur ({{ chiffre(3) }})</strong>. L'<strong>espion ({{ chiffre(1) }})</strong> bat le maréchal ({{ chiffre(10) }}) s'il l'attaque, mais perd contre tout le reste.</li>
+            <li>Pas plus de 3 allers-retours de suite entre les deux mêmes cases.</li>
+            <li>À deux : ton armée reste sur ton téléphone. Seuls les grades des pièces qui combattent sont échangés ; à la fin, l'appli vérifie que personne n'a triché.</li>
+          </ul>
+          <table class="tableau-grades">
+            <tr v-for="g in AS.GRADES" :key="g"><td><strong>{{ typeof g === 'number' ? chiffre(g) : AS.ICONES[g] }}</strong> {{ typeof g === 'number' ? AS.ICONES[g] : '' }}</td><td>{{ AS.NOMS[g] }}</td><td style="text-align:right">×{{ AS.ARMEES.complet[g] || 0 }} · ×{{ AS.ARMEES.rapide[g] || 0 }}</td></tr>
+            <tr><td></td><td class="sys-msg">nombre : complète · rapide</td><td></td></tr>
+          </table>
+        </section>
+
+      </template>
+    </fiche-jeu>
 
     <!-- COMBAT : les deux pièces face à face, puis le perdant tombe -->
     <div v-if="scene" class="combat-fond" @click="passerScene">
@@ -414,6 +399,7 @@
     </div>
   </div>
 
+  <script src="fiche-jeu.js"></script>
   <script src="commun.js"></script>
   <script src="etoiles.js"></script>
   <script src="assaut-regles.js"></script>
