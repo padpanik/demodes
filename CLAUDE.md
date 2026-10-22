@@ -29,7 +29,7 @@ Lien vers un jeu : `yams/` (pas `yams.html`). `404.html` renvoie les anciennes a
 | Fichier | Rôle |
 |---|---|
 | `index.html` | Code d'accès, puis choix du jeu. Reprend tout seul une partie en salon en cours (sauf avec `?choix`). Bouton « Inviter » en haut à droite : fenêtre avec le QR code de l'adresse du site, « Partager le lien… » (menu de partage du téléphone, `navigator.share`, seulement s'il existe) et « Copier le lien » ; rappel que le code d'accès n'est pas dans le lien. |
-| `commun.js` / `commun.css` | Base partagée : `VERSION`, stockage local, `clientId`, `ACCES`, `Sons` (Web Audio), `Voix` (synthèse vocale), `vibrer`, enregistrement du service worker. |
+| `commun.js` / `commun.css` | Base partagée : `VERSION`, stockage local, `Sauvegarde` (fichier de sauvegarde, voir « Stockage local »), `clientId`, `ACCES`, `Sons` (Web Audio), `Voix` (synthèse vocale), `vibrer`, enregistrement du service worker. |
 | `fiche-jeu.js` | **Composant commun des pages de jeu** (Vue 2, chargé par tous les jeux, Brilliant compris, avant le code de la page) : `<fiche-jeu>` (en-tête logo / nom / résumé, « ⇦ Jeux » en haut à droite, 4 onglets à logo, bouton 🔊 et point de connexion pendant le jeu) et `<reglages-base>` (sons, vibrations, voix, écran allumé). Ses styles sont injectés par le fichier. |
 | `icones-jeux.js` | **Icônes des jeux** (`IconesJeux.svg(jeu, taille)`) : même canevas épuré pour tous (version « claire » choisie par l'utilisateur : tuile arrondie à plat, teinte pâle de la couleur du jeu, dessin du jeu dans sa couleur ; ni dégradé, ni reflet, ni ombre), avec la marque de chaque jeu. Accueil (68 px) et en-tête de `<fiche-jeu>` (propriété `jeu`, 64 px ; le slot `logo` n'est plus qu'un secours). Anciennes icônes retirées de l'accueil. |
 | `qr.js` | **QR code fait maison** (`QR.svg(texte, taille)`, `QR.matrice`) : octets UTF-8, correction M, versions 1 à 10, masque choisi par pénalité ; testable avec Node (vérifié en relisant les codes avec OpenCV). Sert au bouton « Inviter » de l'accueil. |
@@ -150,6 +150,13 @@ Pas d'étape de construction, pas de dépendance à ajouter.
   panneau en haut de l'écran (ajusté au clavier), carte « En ligne » sur l'accueil (`#sg-ici`). Pas de notification appli fermée.
 
 ## Stockage local (préfixe historique `brillant-` conservé volontairement)
+
+**Sauvegarde** (demandée par l'utilisateur, pour tout retrouver sur un autre téléphone ou navigateur) : lien « 💾 Sauvegarder ou récupérer mes données »
+en bas de l'accueil. `Sauvegarde.creer()` (commun.js) met dans un fichier JSON `desdale-sauvegarde-AAAA-MM-JJ.json` toutes nos clés
+(préfixes listés dans `NOTRES` : l'origine GitHub Pages est partagée avec d'autres sites), **sauf** `brillant-acces` (il faut retaper le code),
+`brillant-client-id` (propre au téléphone), `desdale-admin`, les parties en salon (`*-sauvegarde`, `*-prive`). « 📤 Envoyer le fichier… »
+(`navigator.share` avec fichier, si possible) ou « ⬇️ Télécharger » ; « 📥 Récupérer une sauvegarde… » : résumé (date, pseudo, compagnon, ⭐),
+confirmation, puis remplacement des données de ce téléphone (`Sauvegarde.restaurer`) et retour à l'accueil. Nouvelle clé = l'ajouter à `NOTRES` si son préfixe est nouveau.
 
 Communs : `brillant-acces`, `brillant-client-id`, `brillant-son`, `brillant-vibration`, `brillant-voix`,
 `brillant-garder-ecran`, `brillant-entree-auto` (plus utilisé), `brillant-salons` (liste des salons, partagée), `desdale-dernier-jeu`, `desdale-ordre-jeux` (ordre des fiches de l'accueil, trié par appui long), `desdale-favoris` (jeux marqués d'une étoile sur leur fiche, affichés en tête de liste).

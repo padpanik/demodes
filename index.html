@@ -68,6 +68,9 @@
     .qr-partage { margin: 12px auto 6px; width: 220px; height: 220px; }
     .qr-partage svg { display: block; width: 100%; height: 100%; }
     .lien-partage { font-size: 0.8em; color: #3b5568; word-break: break-all; margin-bottom: 12px; }
+    .lien-sauvegarde { display: block; margin: 18px auto 0; border: none; background: none; color: #1c6fc4; font: inherit; font-weight: 700; font-size: 0.88em; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
+    .separateur-sv { margin: 14px 0 8px; font-size: 0.8em; font-weight: 800; color: #8a97a1; text-transform: uppercase; letter-spacing: 0.5px; }
+    .erreur-sv { margin-top: 10px; color: #c0392b; font-weight: 700; font-size: 0.88em; }
     .titre-section { font-weight: 700; color: #5b6b78; margin: 4px 4px 10px; }
   </style>
 </head>
@@ -157,7 +160,35 @@
         <div v-else class="aide">Sur iPhone : touche <strong>Partager</strong> puis <strong>« Sur l'écran d'accueil »</strong>.</div>
       </section>
 
-      <p class="version" style="margin-top:18px">Désdale · version {{ version }}</p>
+      <button class="lien-sauvegarde" @click="ouvrirSauvegarde">💾 Sauvegarder ou récupérer mes données</button>
+      <p class="version" style="margin-top:6px">Désdale · version {{ version }}</p>
+
+      <!-- Sauvegarde : un fichier à garder (Drive, mail à soi-même…) pour tout retrouver sur un autre téléphone ou navigateur -->
+      <div v-if="sauvegarde" class="voile-partage" @click.self="sauvegarde = null">
+        <div class="fenetre-partage" role="dialog" aria-label="Sauvegarde">
+          <template v-if="!sauvegarde.lue">
+            <div class="titre-partage">💾 Ma sauvegarde</div>
+            <div class="aide-partage">Un fichier avec tout ce qui est sur ce téléphone : {{ sauvegarde.ici.compagnon ? 'ton compagnon ' + sauvegarde.ici.compagnon + ', ' : '' }}tes {{ sauvegarde.ici.etoiles }} ⭐, ta maison, tes records et tes réglages.
+              Garde-le (Drive, mail à toi-même…), puis ouvre-le sur l'autre téléphone ou navigateur.</div>
+            <button v-if="peutEnvoyerFichier" class="btn principal" style="width:100%;margin-top:12px" @click="envoyerSauvegarde">📤 Envoyer le fichier…</button>
+            <button class="btn" :class="{ principal: !peutEnvoyerFichier }" style="width:100%;margin-top:6px" @click="telechargerSauvegarde">⬇️ Télécharger le fichier</button>
+            <div class="separateur-sv">Sur le nouveau téléphone</div>
+            <label class="btn" style="width:100%;display:block;box-sizing:border-box">📥 Récupérer une sauvegarde…
+              <input type="file" accept=".json,application/json" style="display:none" @change="choisirFichier">
+            </label>
+            <div class="aide-partage" style="margin-top:10px">🔒 Le code d'accès n'est pas dans le fichier. Les parties en salon en cours ne sont pas sauvegardées.</div>
+            <div class="erreur-sv" v-if="sauvegarde.erreur">{{ sauvegarde.erreur }}</div>
+          </template>
+          <template v-else>
+            <div class="titre-partage">📥 Récupérer cette sauvegarde ?</div>
+            <div class="aide-partage">Sauvegarde du {{ dateSv(sauvegarde.lue.date) }}<span v-if="sauvegarde.lue.pseudo"> · {{ sauvegarde.lue.pseudo }}</span><br>
+              {{ sauvegarde.lue.compagnon ? 'Compagnon : ' + sauvegarde.lue.compagnon + ' · ' : '' }}{{ sauvegarde.lue.etoiles }} ⭐</div>
+            <div class="erreur-sv">⚠️ Les données actuelles de ce téléphone seront remplacées<span v-if="sauvegarde.ici.compagnon"> (dont {{ sauvegarde.ici.compagnon }} et ses {{ sauvegarde.ici.etoiles }} ⭐)</span>.</div>
+            <button class="btn principal" style="width:100%;margin-top:12px" @click="restaurerSauvegarde">✓ Remplacer par la sauvegarde</button>
+          </template>
+          <button class="btn" style="width:100%;margin-top:8px" @click="sauvegarde = null">{{ sauvegarde.lue ? 'Annuler' : 'Fermer' }}</button>
+        </div>
+      </div>
     </template>
   </div>
 
@@ -192,6 +223,8 @@
         decalY: 0,
         maj: 0,
         partage: false,    // fenêtre « Inviter un ami »
+        sauvegarde: null,  // fenêtre « Ma sauvegarde » : { ici, lue (sauvegarde choisie, à confirmer), erreur }
+        peutEnvoyerFichier: false,
         copie: false,
         logo: [B, J, R, V],
         installPossible: false,
@@ -256,6 +289,40 @@
         if (ACCES.memorise()) { this.accesOk = true; this.reprendre(); }
       },
       methods: {
+        // ---------- Sauvegarde (fichier) ----------
+        ouvrirSauvegarde: function() {
+          var s = Sauvegarde.creer();
+          try { this.peutEnvoyerFichier = !!(navigator.canShare && navigator.canShare({ files: [this.fichierSv(s)] })); } catch (e) { this.peutEnvoyerFichier = false; }
+          this.sauvegarde = { ici: Sauvegarde.resume(s), lue: null, brute: null, erreur: '' };
+        },
+        fichierSv: function(s) {
+          return new File([JSON.stringify(s)], 'desdale-sauvegarde-' + s.date.slice(0, 10) + '.json', { type: 'application/json' });
+        },
+        envoyerSauvegarde: function() {
+          var f = this.fichierSv(Sauvegarde.creer());
+          navigator.share({ files: [f], title: 'Sauvegarde Désdale' }).catch(() => {});
+        },
+        telechargerSauvegarde: function() {
+          var f = this.fichierSv(Sauvegarde.creer()), url = URL.createObjectURL(f), a = document.createElement('a');
+          a.href = url; a.download = f.name; document.body.appendChild(a); a.click(); a.remove();
+          setTimeout(() => URL.revokeObjectURL(url), 5000);
+        },
+        choisirFichier: function(ev) {
+          var f = ev.target.files && ev.target.files[0];
+          ev.target.value = '';
+          if (!f) return;
+          f.text().then(texte => {
+            var s = Sauvegarde.lireFichier(texte);
+            this.sauvegarde.brute = s; this.sauvegarde.lue = Sauvegarde.resume(s); this.sauvegarde.erreur = '';
+          }).catch(e => { this.sauvegarde.erreur = e && e.message && /Désdale/.test(e.message) ? e.message : 'Ce fichier ne peut pas être lu.'; });
+        },
+        restaurerSauvegarde: function() {
+          Sauvegarde.restaurer(this.sauvegarde.brute);
+          location.replace('index.html?choix');
+        },
+        dateSv: function(iso) {
+          try { return new Date(iso).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' }); } catch (e) { return iso; }
+        },
         icone: function(id) { return IconesJeux.svg(id, 68); },
         // Partage du lien du site : menu de partage du téléphone (Android, iPhone), sinon copie
         partagerLien: function() {

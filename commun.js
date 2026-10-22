@@ -3,7 +3,7 @@
 // Les clés de stockage gardent l'ancien préfixe "brillant-" : les réglages déjà faits sont conservés.
 
 // Numéro de version affiché (à augmenter à chaque mise en ligne, avec brilliant/index.html et sw.js)
-const VERSION = '2.33';
+const VERSION = '2.34';
 
 // ---------- Stockage local ----------
 function lireStockage(cle) {
@@ -34,6 +34,41 @@ function oublierSalonDuJeu(jeu) {
   ecrireStockage(cle, sv);
   return true;
 }
+// ================== SAUVEGARDE (pour retrouver ses données sur un autre téléphone ou navigateur) ==================
+// Un fichier JSON avec les données de Désdale de ce téléphone : compagnon, étoiles, maison, records, réglages, profil…
+// Jamais dedans : la clé d'accès (il faut retaper le code sur le nouveau téléphone), l'identifiant propre à ce téléphone,
+// le déverrouillage admin, et les parties en salon en cours (elles appartiennent à ce téléphone-ci).
+var Sauvegarde = (function () {
+  var NOTRES = /^(brillant|desdale|compagnon|expedition|yams2?|bg|assaut|bataille|gribouille|petitbac|agents|quatre|domino|lettres)-/;
+  var EXCLUES = ['brillant-acces', 'brillant-client-id', 'desdale-admin'];
+  function gardee(k) { return NOTRES.test(k) && EXCLUES.indexOf(k) === -1 && !/-sauvegarde(-v1)?$/.test(k) && !/-prive$/.test(k); }
+  function cles() { var l = []; try { for (var i = 0; i < localStorage.length; i++) { var k = localStorage.key(i); if (gardee(k)) l.push(k); } } catch (e) {} return l.sort(); }
+  function creer() {
+    var d = {};
+    cles().forEach(function (k) { d[k] = localStorage.getItem(k); });
+    return { app: 'desdale', format: 1, version: VERSION, date: new Date().toISOString(), donnees: d };
+  }
+  // Ce que contient une sauvegarde, en clair (pour la fenêtre de confirmation)
+  function resume(s) {
+    var d = s.donnees || {}, lire = function (k) { try { return JSON.parse(d[k]); } catch (e) { return null; } };
+    var a = lire('compagnon-animal'), p = lire('desdale-profil');
+    return { date: s.date, compagnon: a && a.nom ? a.nom : '', etoiles: lire('compagnon-etoiles') || 0, pseudo: p && p.pseudo ? p.pseudo : '', nb: Object.keys(d).length };
+  }
+  function lireFichier(texte) {
+    var s = JSON.parse(texte);
+    if (!s || s.app !== 'desdale' || typeof s.donnees !== 'object') throw new Error('Ce fichier n\'est pas une sauvegarde de Désdale.');
+    return s;
+  }
+  // Remplace les données de ce téléphone par celles de la sauvegarde
+  function restaurer(s) {
+    cles().forEach(function (k) { localStorage.removeItem(k); });
+    var n = 0;
+    Object.keys(s.donnees).forEach(function (k) { if (gardee(k) && typeof s.donnees[k] === 'string') { localStorage.setItem(k, s.donnees[k]); n++; } });
+    return n;
+  }
+  return { creer: creer, resume: resume, lireFichier: lireFichier, restaurer: restaurer, gardee: gardee };
+})();
+
 // Garde-fou réseau : si le serveur de mise en relation (PeerJS) ne répond pas, l'événement « open » n'arrive jamais
 // et aucune erreur non plus : la page resterait sur « connexion… ». Passé le délai, on déclenche une erreur ;
 // chaque page la traite comme les autres (nouvel essai, reprise du salon, ou message).
