@@ -830,7 +830,79 @@ var CP = (function () {
       (eteint ? '' : '<path d="M17 11 Q18 28 25 37" stroke="#fff" stroke-width="2.2" fill="none" opacity="0.55" stroke-linecap="round"/>');
   }
 
-  return { ESPECES: ESPECES, demarrerVeille: demarrerVeille, regler: regler, surveiller: surveiller, jaugesVides: jaugesVides, verifierVeille: verifierVeille, reglagesMessages: reglagesMessages, BESOINS: BESOINS, RECOMPENSE_JOUR: RECOMPENSE_JOUR, RECOMPENSE_SEMAINE: RECOMPENSE_SEMAINE, RAYONS: RAYONS, ARTICLES: ARTICLES,
+
+  // ---------- Une langue pour le compagnon (petit jeu entre lui et son maître, réglé sur chaque téléphone) ----------
+  // Il dit une phrase de sa réserve dans sa langue ; on devine ce qu'elle veut dire parmi trois phrases en français.
+  var LANGUES = {
+    en: { nom: 'Anglais', ico: '🇬🇧', voix: 'en-GB', adj: 'anglais' },
+    es: { nom: 'Espagnol', ico: '🇪🇸', voix: 'es-ES', adj: 'espagnol' },
+    de: { nom: 'Allemand', ico: '🇩🇪', voix: 'de-DE', adj: 'allemand' },
+    it: { nom: 'Italien', ico: '🇮🇹', voix: 'it-IT', adj: 'italien' }
+  };
+  var PHRASES = [
+    { fr: "J'ai faim.", en: "I'm hungry.", es: "Tengo hambre.", de: "Ich habe Hunger.", it: "Ho fame." },
+    { fr: "J'ai soif.", en: "I'm thirsty.", es: "Tengo sed.", de: "Ich habe Durst.", it: "Ho sete." },
+    { fr: "Bonjour !", en: "Good morning!", es: "¡Buenos días!", de: "Guten Morgen!", it: "Buongiorno!" },
+    { fr: "Bonne nuit.", en: "Good night.", es: "Buenas noches.", de: "Gute Nacht.", it: "Buonanotte." },
+    { fr: "Je t'aime.", en: "I love you.", es: "Te quiero.", de: "Ich hab dich lieb.", it: "Ti voglio bene." },
+    { fr: "Merci beaucoup !", en: "Thank you very much!", es: "¡Muchas gracias!", de: "Vielen Dank!", it: "Grazie mille!" },
+    { fr: "On va jouer ?", en: "Shall we play?", es: "¿Vamos a jugar?", de: "Spielen wir?", it: "Giochiamo?" },
+    { fr: "Je suis fatigué.", en: "I'm tired.", es: "Estoy cansado.", de: "Ich bin müde.", it: "Sono stanco." },
+    { fr: "Il fait beau aujourd'hui.", en: "The weather is nice today.", es: "Hoy hace buen tiempo.", de: "Heute ist schönes Wetter.", it: "Oggi fa bel tempo." },
+    { fr: "Il pleut.", en: "It's raining.", es: "Está lloviendo.", de: "Es regnet.", it: "Piove." },
+    { fr: "Je suis content.", en: "I'm happy.", es: "Estoy contento.", de: "Ich bin froh.", it: "Sono contento." },
+    { fr: "Tu m'as manqué !", en: "I missed you!", es: "¡Te he echado de menos!", de: "Ich habe dich vermisst!", it: "Mi sei mancato!" },
+    { fr: "Où est ma balle ?", en: "Where is my ball?", es: "¿Dónde está mi pelota?", de: "Wo ist mein Ball?", it: "Dov'è la mia palla?" },
+    { fr: "Je voudrais un bain.", en: "I would like a bath.", es: "Quisiera un baño.", de: "Ich möchte ein Bad.", it: "Vorrei un bagno." },
+    { fr: "C'est délicieux !", en: "It's delicious!", es: "¡Está delicioso!", de: "Das ist lecker!", it: "È delizioso!" },
+    { fr: "Allons nous promener.", en: "Let's go for a walk.", es: "Vamos a pasear.", de: "Lass uns spazieren gehen.", it: "Andiamo a fare una passeggiata." },
+    { fr: "Comment ça va ?", en: "How are you?", es: "¿Cómo estás?", de: "Wie geht's?", it: "Come stai?" },
+    { fr: "Je vais bien, merci.", en: "I'm fine, thank you.", es: "Estoy bien, gracias.", de: "Mir geht's gut, danke.", it: "Sto bene, grazie." },
+    { fr: "J'ai froid.", en: "I'm cold.", es: "Tengo frío.", de: "Mir ist kalt.", it: "Ho freddo." },
+    { fr: "J'ai chaud.", en: "I'm hot.", es: "Tengo calor.", de: "Mir ist heiß.", it: "Ho caldo." },
+    { fr: "À demain !", en: "See you tomorrow!", es: "¡Hasta mañana!", de: "Bis morgen!", it: "A domani!" },
+    { fr: "Tu es mon meilleur ami.", en: "You are my best friend.", es: "Eres mi mejor amigo.", de: "Du bist mein bester Freund.", it: "Sei il mio migliore amico." },
+    { fr: "J'aime les étoiles.", en: "I love the stars.", es: "Me encantan las estrellas.", de: "Ich liebe die Sterne.", it: "Amo le stelle." },
+    { fr: "Regarde par la fenêtre !", en: "Look out the window!", es: "¡Mira por la ventana!", de: "Schau aus dem Fenster!", it: "Guarda fuori dalla finestra!" },
+    { fr: "Bon appétit !", en: "Enjoy your meal!", es: "¡Buen provecho!", de: "Guten Appetit!", it: "Buon appetito!" },
+    { fr: "Joyeux anniversaire !", en: "Happy birthday!", es: "¡Feliz cumpleaños!", de: "Alles Gute zum Geburtstag!", it: "Buon compleanno!" },
+    { fr: "Gagnons la partie !", en: "Let's win the game!", es: "¡Ganemos la partida!", de: "Lass uns das Spiel gewinnen!", it: "Vinciamo la partita!" },
+    { fr: "Fais-moi un câlin.", en: "Give me a hug.", es: "Dame un abrazo.", de: "Umarme mich.", it: "Abbracciami." },
+    { fr: "Quelle heure est-il ?", en: "What time is it?", es: "¿Qué hora es?", de: "Wie spät ist es?", it: "Che ore sono?" },
+    { fr: "J'ai une surprise pour toi.", en: "I have a surprise for you.", es: "Tengo una sorpresa para ti.", de: "Ich habe eine Überraschung für dich.", it: "Ho una sorpresa per te." },
+    { fr: "Ma maison est jolie.", en: "My house is pretty.", es: "Mi casa es bonita.", de: "Mein Haus ist schön.", it: "La mia casa è bella." },
+    { fr: "Je n'ai pas peur !", en: "I'm not afraid!", es: "¡No tengo miedo!", de: "Ich habe keine Angst!", it: "Non ho paura!" },
+    { fr: "S'il te plaît.", en: "Please.", es: "Por favor.", de: "Bitte.", it: "Per favore." },
+    { fr: "J'adore le chocolat.", en: "I love chocolate.", es: "Me encanta el chocolate.", de: "Ich liebe Schokolade.", it: "Adoro il cioccolato." },
+    { fr: "Il neige !", en: "It's snowing!", es: "¡Está nevando!", de: "Es schneit!", it: "Nevica!" },
+    { fr: "Je suis prêt.", en: "I'm ready.", es: "Estoy listo.", de: "Ich bin bereit.", it: "Sono pronto." }
+  ];
+  // Une question : une phrase pas vue récemment, la bonne traduction et deux autres, mélangées
+  function questionLangue(langue, vues, h) {
+    h = h || Math.random;
+    var libres = PHRASES.map(function (p, i) { return i; }).filter(function (i) { return (vues || []).indexOf(i) === -1; });
+    if (!libres.length) libres = PHRASES.map(function (p, i) { return i; });
+    var i = libres[Math.floor(h() * libres.length)], autres = [];
+    while (autres.length < 2) { var j = Math.floor(h() * PHRASES.length); if (j !== i && autres.indexOf(j) === -1) autres.push(j); }
+    var choix = [i].concat(autres);
+    for (var k = choix.length - 1; k > 0; k--) { var r = Math.floor(h() * (k + 1)), x = choix[k]; choix[k] = choix[r]; choix[r] = x; }
+    return { i: i, texte: PHRASES[i][langue], choix: choix.map(function (c) { return PHRASES[c].fr; }), bonne: choix.indexOf(i) };
+  }
+  // Dire la phrase avec la voix du téléphone dans la bonne langue (si elle existe)
+  function direEnLangue(texte, langue) {
+    try {
+      if (!('speechSynthesis' in window)) return false;
+      speechSynthesis.cancel();
+      var u = new SpeechSynthesisUtterance(texte), code = LANGUES[langue].voix;
+      u.lang = code; u.rate = 0.9;
+      var v = speechSynthesis.getVoices().find(function (x) { return x.lang && x.lang.replace('_', '-').toLowerCase().indexOf(langue) === 0; });
+      if (v) u.voice = v;
+      speechSynthesis.speak(u);
+      return true;
+    } catch (e) { return false; }
+  }
+
+  return { ESPECES: ESPECES, LANGUES: LANGUES, PHRASES: PHRASES, questionLangue: questionLangue, direEnLangue: direEnLangue, demarrerVeille: demarrerVeille, regler: regler, surveiller: surveiller, jaugesVides: jaugesVides, verifierVeille: verifierVeille, reglagesMessages: reglagesMessages, BESOINS: BESOINS, RECOMPENSE_JOUR: RECOMPENSE_JOUR, RECOMPENSE_SEMAINE: RECOMPENSE_SEMAINE, RAYONS: RAYONS, ARTICLES: ARTICLES,
            FETES: FETES, guirlande: guirlande, feteDu: feteDu, prochaineFete: prochaineFete, coeur: coeur,
            niveaux: niveaux, humeur: humeur, signes: signes, age: age, estNuit: estNuit, dessin: dessin, art: art,
            NIVEAUX_DEFI: NIVEAUX_DEFI, DEFIS: DEFIS, BLOCS: BLOCS, ETAGERE_MAX: ETAGERE_MAX, etatDefis: etatDefis, verifierDefis: verifierDefis,

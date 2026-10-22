@@ -151,7 +151,7 @@ Pas d'étape de construction, pas de dépendance à ajouter.
 
 ## Stockage local (préfixe historique `brillant-` conservé volontairement)
 
-**Sauvegarde** (demandée par l'utilisateur, pour tout retrouver sur un autre téléphone ou navigateur) : lien « 💾 Sauvegarder ou récupérer mes données »
+**Sauvegarde** (demandée par l'utilisateur, pour tout retrouver sur un autre téléphone ou navigateur) : carte « Ma sauvegarde » (icône de téléchargement, cadre en pointillés)
 en bas de l'accueil. `Sauvegarde.creer()` (commun.js) met dans un fichier JSON `desdale-sauvegarde-AAAA-MM-JJ.json` toutes nos clés
 (préfixes listés dans `NOTRES` : l'origine GitHub Pages est partagée avec d'autres sites), **sauf** `brillant-acces` (il faut retaper le code),
 `brillant-client-id` (propre au téléphone), `desdale-admin`, les parties en salon (`*-sauvegarde`, `*-prive`). « 📤 Envoyer le fichier… »
@@ -486,6 +486,12 @@ Bataille navale : `bataille-boss` (partie contre un boss d'expédition), `batail
   quelques émojis par pièce (`ambiance`, animés doucement : flotte, balance, scintille…), un passage à la fenêtre (chauve-souris, feu
   d'artifice la nuit du Nouvel an), jardin enneigé avec bonhomme de neige à Noël. Petits mots de saison plus fréquents, vœux le jour J
   (2 févr., 14 févr., 17 mars, dimanche de Pâques, 21 juin, 31 oct., 25 déc., 1er janv., anniversaire) au premier message du jour.
+- **Une langue pour le compagnon** (demandée par l'utilisateur : un jeu entre le compagnon et son maître, pas une traduction de ses messages) :
+  choix dans l'onglet ⚙️ Réglages (Anglais, Espagnol, Allemand, Italien, ou aucune), **propre à chaque téléphone** (`compagnon-langue` :
+  langue, phrases vues, bonnes réponses, compteur, étoiles du jour). Onglet Soins : carte « 🗣️ X parle anglais » : il dit une phrase de sa réserve
+  (`CP.PHRASES`, 36 phrases de sa vie en fr / en / es / de / it ; `CP.questionLangue`), dans sa bulle et à voix haute (`CP.direEnLangue`, voix du
+  téléphone dans la langue), et on choisit parmi 3 phrases en français. Bonne réponse : +8 % de câlins ; toutes les 5 bonnes réponses +1 ⭐
+  (3 ⭐ par jour au plus, `Etoiles.ajouter`).
 - Accueil : carte « Mon compagnon » (son dessin, son humeur, les étoiles) fixée en haut avec « En ligne », au-dessus de la liste des jeux qui défile.
 - Boutique : tête, cou (dont laisse et laisse de grande marque), habits (manteau d'hiver…), couchage (coussin → château), déco, friandises.
 

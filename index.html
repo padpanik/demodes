@@ -68,7 +68,12 @@
     .qr-partage { margin: 12px auto 6px; width: 220px; height: 220px; }
     .qr-partage svg { display: block; width: 100%; height: 100%; }
     .lien-partage { font-size: 0.8em; color: #3b5568; word-break: break-all; margin-bottom: 12px; }
-    .lien-sauvegarde { display: block; margin: 18px auto 0; border: none; background: none; color: #1c6fc4; font: inherit; font-weight: 700; font-size: 0.88em; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
+    .lien-sauvegarde { display: flex; align-items: center; gap: 10px; width: 100%; margin: 16px 0 0; border: 1.5px dashed #c9d6e0; background: #f7fafc; color: #2c3e50;
+                       font: inherit; text-align: left; border-radius: 16px; padding: 10px 12px; cursor: pointer; }
+    .lien-sauvegarde .ico-sv { width: 40px; height: 40px; border-radius: 12px; background: #e7f1fc; color: #1c6fc4; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .lien-sauvegarde b { display: block; font-size: 0.95em; }
+    .lien-sauvegarde small { display: block; color: #6b7a86; font-size: 0.8em; margin-top: 1px; }
+    .lien-sauvegarde .fl { margin-left: auto; color: #9aa7b2; font-size: 1.3em; }
     .separateur-sv { margin: 14px 0 8px; font-size: 0.8em; font-weight: 800; color: #8a97a1; text-transform: uppercase; letter-spacing: 0.5px; }
     .erreur-sv { margin-top: 10px; color: #c0392b; font-weight: 700; font-size: 0.88em; }
     .titre-section { font-weight: 700; color: #5b6b78; margin: 4px 4px 10px; }
@@ -160,7 +165,11 @@
         <div v-else class="aide">Sur iPhone : touche <strong>Partager</strong> puis <strong>« Sur l'écran d'accueil »</strong>.</div>
       </section>
 
-      <button class="lien-sauvegarde" @click="ouvrirSauvegarde">💾 Sauvegarder ou récupérer mes données</button>
+      <button class="lien-sauvegarde" @click="ouvrirSauvegarde">
+        <span class="ico-sv"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v11"/><path d="M7.5 9.5L12 14l4.5-4.5"/><path d="M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></svg></span>
+        <span><b>Ma sauvegarde</b><small>Garder mes données ou les retrouver sur un autre téléphone</small></span>
+        <span class="fl">›</span>
+      </button>
       <p class="version" style="margin-top:6px">Désdale · version {{ version }}</p>
 
       <!-- Sauvegarde : un fichier à garder (Drive, mail à soi-même…) pour tout retrouver sur un autre téléphone ou navigateur -->
