@@ -290,6 +290,9 @@
     .ico-achat { font-size: 56px; height: 76px; display: flex; align-items: center; justify-content: center; }
     .ico-achat svg { width: 86px; height: 76px; }
     .titre-achat { font-weight: 900; font-size: 1.25em; margin: 4px 0 10px; }
+    .phrase-retour { font-weight: 700; color: #5b4a2a; background: #fff8e7; border-radius: 12px; padding: 8px 10px; margin-bottom: 10px; font-size: 0.92em; line-height: 1.35; }
+    .souvenirs-retour { font-weight: 700; margin-bottom: 12px; font-size: 0.92em; }
+    .souvenirs-retour small { font-weight: 600; color: #8a97a1; }
     .compte-achat { width: 100%; border-collapse: collapse; margin-bottom: 14px; font-size: 1.05em; }
     .compte-achat td { padding: 5px 4px; text-align: left; }
     .compte-achat td:last-child { text-align: right; font-weight: 800; }
@@ -670,6 +673,23 @@
         </template>
       </div>
     </div>
+    <!-- Retour d'expédition : il raconte l'aventure (expedition-retour, écrit par expedition/) -->
+    <div v-if="retourExp && animal" class="voile-achat">
+      <div class="fenetre-achat" role="dialog" aria-label="Retour d'expédition">
+        <svg viewBox="0 -6 200 216" width="110" height="116" v-html="dessin(animal, 'content')"></svg>
+        <div class="titre-achat">{{ retourExp.ico }} Retour d'expédition</div>
+        <div class="phrase-retour">« {{ retourExp.gagne ? 'On a battu ' + retourExp.boss + ' ! Quelle aventure !' : 'C\'était une belle balade, même sans battre ' + retourExp.boss + '.' }} J'ai un peu faim et soif maintenant 😋 »</div>
+        <table class="compte-achat">
+          <tr><td>Lieu</td><td>{{ retourExp.lieu }}</td></tr>
+          <tr><td>Bonnes réponses</td><td>{{ retourExp.bonnes }} / {{ retourExp.questions }}</td></tr>
+          <tr v-if="retourExp.poussiere"><td>Poussières d'étoile</td><td>✨ {{ retourExp.poussiere }}</td></tr>
+          <tr class="reste"><td>Étoiles gagnées</td><td>⭐ {{ retourExp.donne }}<small v-if="retourExp.donne < retourExp.gain" style="display:block;font-weight:600;font-size:0.7em">plafond du jour</small></td></tr>
+        </table>
+        <div v-if="retourExp.souvenirs && retourExp.souvenirs.length" class="souvenirs-retour">Souvenir{{ retourExp.souvenirs.length > 1 ? 's' : '' }} rapporté{{ retourExp.souvenirs.length > 1 ? 's' : '' }} : <span v-for="s in retourExp.souvenirs" :key="s.id">{{ s.ico }} {{ s.nom }} </span><br><small>installé{{ retourExp.souvenirs.length > 1 ? 's' : '' }} dans le salon</small></div>
+        <button class="btn principal" style="width:100%" @click="finRetourExp">OK</button>
+      </div>
+    </div>
+
     <!-- Confirmation d'achat -->
     <div v-if="enAchat" class="voile-achat" @click.self="enAchat = null">
       <div class="fenetre-achat" role="dialog" aria-label="Confirmer l'achat">
@@ -766,6 +786,7 @@
         decoChoisi: null,      // emplacement (slot) de l'objet choisi
         vie: { x: 50, dir: 1, marche: false, posture: 'assis', geste: '', duree: 0, objet: '', sieste: false },
         feteEssai: lireStockage('compagnon-fete-essai') || '',
+        retourExp: null,
         listeFetes: CP.FETES.concat([{ id: 'anniversaire', nom: 'Anniversaire', ico: '🎂' }]),
         admin: { ouvert: false, actif: ADMIN.actif(), mdp: '', erreur: '', calcul: false }
       },
@@ -863,6 +884,13 @@
           // Une partie jouée aujourd'hui avec des amis (gagnée ou perdue) compte pour les tâches du jour
           this.verifierPartieAmis();
           if (this.animal) { this.accueil(); this.$nextTick(() => this.cadeauAnniversaire()); setTimeout(() => { CP.surveiller(); this.etoiles = Etoiles.solde(); this.majJournal(); }, 1500); }
+          // Il rentre d'expédition : on le retrouve au salon, il raconte
+          var retour = lireStockage('expedition-retour');
+          if (this.animal && retour) {
+            this.retourExp = retour; this.message = '';
+            this.$set(this.maison, 'piece', 'salon'); this.ecrireMaison();
+            setTimeout(() => this.allerA(this.pieces.findIndex(p => p.id === 'salon'), true), 200);
+          }
           this.majDefis();
         }
         // Un ami a fait un câlin à mon compagnon pendant sa visite
@@ -993,6 +1021,12 @@
         },
 
         // ---------- Boutique ----------
+        finRetourExp: function() {
+          ecrireStockage('expedition-retour', null);
+          this.retourExp = null;
+          this.etoiles = Etoiles.solde(); this.majJournal();
+          this.message = 'Merci pour la balade ! 🧭';
+        },
         dateFr: function(d) { return d ? (d.getDate() === 1 ? '1er' : d.getDate()) + ' ' + d.toLocaleDateString('fr-FR', { month: 'long' }) : ''; },
         deFete: function(f) {
           if (f.id === 'anniversaire') return 'd\'anniversaire de ' + this.animal.nom;

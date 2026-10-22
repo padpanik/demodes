@@ -34,6 +34,10 @@ var EX = (function () {
     aventure: { nom: 'Aventure', desc: 'Questions plus dures, boss coriace', moyennes: 0.6, boss: 'normal', gainQuestion: 2 }
   };
   var COEURS = 3, GAIN_BOSS = 5;
+  // Coffres : des poussières d'étoile (5 poussières = 1 étoile, le reste est gardé pour la prochaine fois)
+  var POUSSIERES_PAR_ETOILE = 5;
+  // Le compagnon a besoin de se reposer : une expédition par heure
+  var REPOS = 3600000;
 
   // ---------- Questions (maison) : q, r = [bonne réponse, 3 mauvaises], n = niveau (1 facile, 2 moyen), x = petite explication ----------
   var QUESTIONS = {
@@ -103,6 +107,9 @@ var EX = (function () {
   }
   function melanger(l, h) { l = l.slice(); for (var i = l.length - 1; i > 0; i--) { var j = Math.floor(h() * (i + 1)); var x = l[i]; l[i] = l[j]; l[j] = x; } return l; }
 
+  // Poussières : celles en réserve + celles de l'expédition → étoiles entières et reste
+  function convertirPoussiere(reserve, gagnees) { var tout = (reserve || 0) + (gagnees || 0); return { etoiles: Math.floor(tout / POUSSIERES_PAR_ETOILE), reste: tout % POUSSIERES_PAR_ETOILE }; }
+
   // ---------- Carte : 7 rangs, départ en bas, boss en haut, fourches entre les deux ----------
   // Un nœud : { id, rang, voie (position latérale : -2 … 2), type: depart | gardien | coffre | repos | boss }
   var LARGEURS = [1, 2, 3, 2, 3, 2, 1];
@@ -161,7 +168,7 @@ var EX = (function () {
   function nouvelle(lieuId, difficulte, graine) {
     graine = graine || Math.floor(Math.random() * 1e9);
     return { lieu: lieuId, difficulte: difficulte, graine: graine, carte: genererCarte(graine), pos: 0, visites: [0], trajet: [0],
-             coeurs: COEURS, sac: 0, souvenirs: [], aide: false, rencontre: null, fin: null, debut: Date.now(), tirage: 0, bonnes: 0, questions: 0 };
+             coeurs: COEURS, sac: 0, poussiere: 0, souvenirs: [], tentative: 0, aide: false, rencontre: null, fin: null, debut: Date.now(), tirage: 0, bonnes: 0, questions: 0 };
   }
   // Un nombre au hasard propre à l'étape (reproductible pour une même expédition)
   function hasardEtape(e, extra) { return hasard((e.graine ^ (e.pos * 7919) ^ ((extra || 0) * 104729)) >>> 0); }
@@ -169,8 +176,8 @@ var EX = (function () {
   // Fin : étoiles gardées (tout si le boss est vaincu, la moitié sinon)
   function gainFinal(e, gagne) { return gagne ? e.sac : Math.floor(e.sac / 2); }
 
-  return { LIEUX: LIEUX, lieu: lieu, DIFFICULTES: DIFFICULTES, COEURS: COEURS, GAIN_BOSS: GAIN_BOSS, QUESTIONS: QUESTIONS, LARGEURS: LARGEURS,
-           hasard: hasard, melanger: melanger, genererCarte: genererCarte, suivants: suivants, tirerQuestion: tirerQuestion,
+  return { POUSSIERES_PAR_ETOILE: POUSSIERES_PAR_ETOILE, REPOS: REPOS, LIEUX: LIEUX, lieu: lieu, DIFFICULTES: DIFFICULTES, COEURS: COEURS, GAIN_BOSS: GAIN_BOSS, QUESTIONS: QUESTIONS, LARGEURS: LARGEURS,
+           hasard: hasard, melanger: melanger, convertirPoussiere: convertirPoussiere, genererCarte: genererCarte, suivants: suivants, tirerQuestion: tirerQuestion,
            nouvelle: nouvelle, hasardEtape: hasardEtape, gainFinal: gainFinal };
 })();
 

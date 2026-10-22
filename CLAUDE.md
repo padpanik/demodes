@@ -157,14 +157,15 @@ Backgammon : `bg-sauvegarde`, `bg-dernier-salon`.
 Gribouille : `gribouille-sauvegarde`, `gribouille-dernier-salon`, `gribouille-duree`, `gribouille-manches`.
 Petit bac : `petitbac-sauvegarde`, `petitbac-dernier-salon`, `petitbac-reglages` (catégories, durée, manches, lettres de l'hôte).
 Agents secrets : `agents-sauvegarde` (dont `maCle`, la carte secrète si on est chef), `agents-dernier-salon`.
-Quatre en ligne : `quatre-sauvegarde` (salon), `quatre-solo` (partie contre l'ordinateur), `quatre-niveau`, `quatre-stats`, `quatre-dernier-salon`.
+Quatre en ligne : `quatre-sauvegarde` (salon), `quatre-solo` (partie contre l'ordinateur), `quatre-boss` (partie contre un boss d'expédition), `quatre-niveau`, `quatre-stats`, `quatre-dernier-salon`.
 Dominos : `domino-sauvegarde` (salon ; chez l'hôte, l'état complet avec toutes les mains), `domino-solo` (partie contre l'ordinateur), `domino-jeu`, `domino-ordis`, `domino-buts`, `domino-dernier-salon`.
 Lettres croisées : `lettres-sauvegarde` (salon ; chez l'hôte, l'état complet avec chevalets et sac), `lettres-solo` (partie contre l'ordinateur), `lettres-niveau`, `lettres-ordis`, `lettres-dernier-salon`.
 Mon compagnon : `compagnon-animal` (espèce, nom, couleur, besoins, objets possédés et portés, série de jours), `compagnon-etoiles` (solde),
 `compagnon-journal` (dernières étoiles gagnées ou dépensées), `compagnon-parties` (parties déjà récompensées), `compagnon-jour` (tâches du jour),
 `compagnon-cadeau` (bonus de bienvenue donné), `compagnon-ancien`, `compagnon-gains-jeux` (étoiles gagnées en jouant aujourd'hui),
 `compagnon-reglages`, `compagnon-veille`, `compagnon-series` (séries de victoires solo), `compagnon-evenements` (parties terminées), `compagnon-defis`, `compagnon-trophees`, `compagnon-maison`, `compagnon-anniv` (année du dernier cadeau d'anniversaire), `compagnon-penalite` (jauge vide), `compagnon-fete-essai` (admin).
-Expédition : `expedition-partie` (expédition en cours), `expedition-vues` (40 dernières questions posées), `expedition-stats`, `expedition-lieu`, `expedition-difficulte`.
+Expédition : `expedition-partie` (expédition en cours), `expedition-depart` (heure du dernier départ), `expedition-poussiere` (réserve),
+`expedition-boss` / `expedition-boss-resultat` (défi envoyé au jeu du boss et son issue), `expedition-retour` (résumé pour le compagnon), `expedition-vues` (40 dernières questions posées), `expedition-stats`, `expedition-lieu`, `expedition-difficulte`.
 Bataille navale : `bataille-sauvegarde`, `bataille-prive` (ma flotte en salon), `bataille-dernier-salon`, `bataille-stats`, `bataille-colles`, `bataille-rejouer`, `bataille-niveau`, `bataille-style`.
 
 ## Règles des jeux (choix de l'utilisateur, à ne pas changer sans lui)
@@ -340,22 +341,32 @@ Bataille navale : `bataille-sauvegarde`, `bataille-prive` (ma flotte en salon), 
 - **Lieux** (`EX.LIEUX`) : un lieu = un thème, ses couleurs, son décor, ses gardiens, sa buvette et son boss. Prêt : **Studio de cinéma**
   (boss : le Fantôme du studio, au Quatre en ligne). Annoncés « Bientôt » : Laboratoire (sciences), Château fort (histoire),
   Île aux trésors (géographie), Conservatoire (musique), Forêt enchantée (nature) — chacun prévu avec un boss d'un autre jeu.
+- **Une expédition par heure** (le compagnon est fatigué : `EX.REPOS`, départ noté dans `expedition-depart`) : carte « 😴 … trop fatigué » en haut
+  de l'onglet Partie et bouton « Encore N min de repos ».
 - **Carte** (`EX.genererCarte(graine)`, reproductible) : 7 rangs (1, 2, 3, 2, 3, 2, 1 étapes), départ en bas, boss en haut ; chaque étape
   mène à la ou aux plus proches du rang suivant (fourches), aucune impasse. Étapes : gardien (~58 %), coffre (~26 %), buvette (pas au 1er rang).
-- **Vue isométrique** (`carteSvg`) : dallage en damier, tapis entre les étapes (vif = déjà pris ou possible, terne = autres), étapes en pavés
+- **Vue isométrique** (`carteSvg`), **chemin caché** (demandé par l'utilisateur) : on ne voit que les étapes déjà faites, l'étape actuelle et le
+  prochain choix (tapis compris) ; tout le reste est caché, boss compris. Dallage en damier, tapis entre les étapes, étapes en pavés
   avec leur icône (❓ gardien, coffre dessiné, buvette, boss sur pavé violet), anneau doré qui clignote sur les étapes possibles, décor du lieu
   sur les bords (jamais contre une étape). Le compagnon (`CP.dessin`) est posé sur l'étape et marche jusqu'à la suivante (sinon 🐾).
 - **Gardien** : une question (4 réponses mélangées), bonne = +1 ⭐ au sac (+2 pour une question moyenne en Aventure), mauvaise = −1 cœur ;
   l'explication s'affiche ensuite. **Aide du compagnon** une fois par expédition (retire deux mauvaises réponses). Questions maison
   (`EX.QUESTIONS`, 55 pour le cinéma : 30 faciles, 25 moyennes, avec une petite explication) ; pas de répétition des 40 dernières.
-- **Coffre** : 1 à 3 ⭐, ou (40 %, si on a un compagnon) un **souvenir** du lieu pas encore trouvé, installé tout de suite au salon
+- **Coffre** : 1 à 3 **poussières d'étoile** ✨ (trop d'étoiles sinon, d'après l'utilisateur) : 5 poussières = 1 ⭐, converties à la fin
+  de l'expédition, le reste gardé (`expedition-poussiere`) ; ou (40 %, si on a un compagnon) un **souvenir** du lieu pas encore trouvé, installé tout de suite au salon
   (articles `souvenir` de `compagnon-commun.js` : clap, pop-corn, bobine, projecteur ; emplacements `exp-…`, invendables, visibles en boutique
   seulement une fois trouvés, déplaçables avec « Arranger la déco »). **Buvette** : +1 cœur (3 au plus).
-- **Boss** : Quatre en ligne contre l'ordinateur (`QL`, Balade : facile, Aventure : normal), le joueur rouge commence. Gagné : +5 ⭐ et fin ;
-  perdu : −1 cœur et revanche ; nul : revanche gratuite.
-- **Fin** : boss vaincu = tout le sac ; plus de cœurs ou « Rentrer » = la moitié. Étoiles par `Etoiles.recompenseJeu` (plafond du jour),
+- **Boss** : la partie se joue **sur la vraie page du jeu** (pas de copie) : l'expédition écrit `expedition-boss` (id, nom, icône, défi, niveau)
+  et ouvre `quatre/?boss` ; Quatre en ligne passe en « mode boss » (bandeau du boss, le joueur commence, pas d'étoiles ni de stats du jeu,
+  sauvegarde à part `quatre-boss`, boutons « Retour à l'expédition » / « Plus tard ») et rend l'issue dans `expedition-boss-resultat`
+  (lue au retour, `lireResultatBoss`). Balade : ordinateur facile, Aventure : normal. Gagné : +5 ⭐ et fin ; perdu : −1 cœur et revanche ;
+  nul : revanche gratuite. Un futur boss sur un autre jeu demande le même « mode boss » dans ce jeu.
+- **Fin** : boss vaincu = tout le sac ; plus de cœurs ou « Rentrer » = la moitié. Bouton « 🏠 Rentrer à la maison » : on revient sur
+  `compagnon/`, au salon, où il raconte l'aventure (fenêtre « Retour d'expédition » : lieu, bonnes réponses, poussières, étoiles, souvenirs ;
+  `expedition-retour`), avec un bouton OK. Étoiles par `Etoiles.recompenseJeu` (plafond du jour),
   `Etoiles.evenement('Expédition', …)` pour les défis ; la balade fait baisser Repas et Eau de 15. Difficultés : Balade / Aventure.
-- Accueil : badge « Expédition en cours » (sans bouton Quitter, et la page ne se rouvre pas toute seule : `solo: true`).
+- Accueil : l'Expédition est **tout en haut de la liste, même devant les favoris**, avec un badge « Nouveau » (`tete`, `nouveau` dans `jeux`) ;
+  badge « Expédition en cours » (sans bouton Quitter, et la page ne se rouvre pas toute seule : `solo: true`).
 
 ### Mon compagnon (prototype : piste d'un futur Désdale « centre de loisirs pour personnes âgées »)
 - But : petites obligations quotidiennes douces et envie de jouer **ensemble** pour gâter son animal. Grand texte, gros boutons.

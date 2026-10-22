@@ -30,6 +30,9 @@
     .panneau-vide .grand { font-size: 2.5em; margin-bottom: 8px; }
 
     /* Joueurs */
+    .bandeau-boss { display: flex; align-items: center; gap: 10px; background: #3b2a6b; color: #fff; border-radius: 14px; padding: 8px 12px; margin: 4px 0 8px; }
+    .bandeau-boss .ico { font-size: 2em; line-height: 1; }
+    .bandeau-boss small { display: block; font-size: 0.8em; opacity: 0.85; line-height: 1.3; }
     .duel { display: flex; align-items: center; gap: 8px; margin: 4px 0 8px; }
     .duel .camp { flex: 1; min-width: 0; display: flex; align-items: center; gap: 7px; background: #fff; border-radius: 14px; padding: 7px 10px; box-shadow: 0 1px 2px rgba(0,0,0,0.06); }
     .duel .camp.joue { box-shadow: 0 0 0 2.5px #1d2b36; }
@@ -128,6 +131,8 @@
               <span class="score">{{ p ? p.score : '' }}</span>
             </div>
           </div>
+          <!-- Défi d'un boss d'expédition : on joue ici, puis on retourne à l'expédition -->
+          <div v-if="boss" class="bandeau-boss"><span class="ico">{{ boss.ico }}</span><span><b>{{ boss.nom }}</b><small>« {{ boss.defi }} »</small></span></div>
           <div class="statut-ql" :class="classeStatut">{{ statut }}</div>
           <div class="plateau-ql" :class="survol >= 0 ? 'colonne-' + survol : ''">
             <div v-for="(v, i) in pub.grille" :key="i" class="trou" :class="'c' + (i % 7)" @click="jouerColonne(i % 7)"
@@ -137,10 +142,12 @@
             </div>
           </div>
           <div class="actions-ql">
-            <button v-if="pub.phase === 'fin' && (solo || estJoueur)" class="btn principal" @click="nouvellePartie">Nouvelle partie</button>
+            <button v-if="boss && pub.phase === 'fin'" class="btn principal" @click="retourExpedition">🧭 Retour à l'expédition</button>
+            <button v-if="pub.phase === 'fin' && (solo || estJoueur) && !boss" class="btn principal" @click="nouvellePartie">Nouvelle partie</button>
             <button v-if="!solo && pub.phase === 'jeu' && estJoueur && adversaireAbsent" class="btn" @click="nouvellePartie">L'autre est parti : nouvelle partie</button>
-            <button v-if="solo && pub.phase === 'jeu' && pub.coups.length >= 2 && pub.tour === 1" class="btn" @click="annulerSolo">↶ Annuler mon coup</button>
-            <button v-if="solo" class="btn" @click="quitterSolo">Arrêter</button>
+            <button v-if="solo && !boss && pub.phase === 'jeu' && pub.coups.length >= 2 && pub.tour === 1" class="btn" @click="annulerSolo">↶ Annuler mon coup</button>
+            <button v-if="solo && !boss" class="btn" @click="quitterSolo">Arrêter</button>
+            <button v-if="boss && pub.phase === 'jeu'" class="btn" @click="retourExpedition">↩ Plus tard</button>
           </div>
           <div class="journal-ql" v-if="!solo && spectateurs.length">👀 {{ spectateurs.join(', ') }} regarde{{ spectateurs.length > 1 ? 'nt' : '' }}</div>
         </template>
@@ -236,6 +243,7 @@
         pub: null,
         joueurs: [],
         solo: false,
+        boss: null,        // défi d'un boss d'expédition (lu dans expedition-boss quand on arrive avec ?boss)
         niveau: lireStockage('quatre-niveau') || 'normal',
         statsSolo: lireStockage('quatre-stats') || { parties: 0, gagnees: 0 },
         survol: -1,
@@ -268,7 +276,7 @@
           return [0, 1].map(k => {
             var n = p.joueurs[k];
             if (!n) return null;
-            return { nom: n === this.moi && !this.solo ? n + ' (moi)' : n, score: p.scores[n] || 0, connecte: n === ORDI || this.estConnecteVue[n] !== false };
+            return { nom: this.boss && n === ORDI ? this.boss.ico + ' ' + this.boss.nom : n === this.moi && !this.solo ? n + ' (moi)' : n, score: p.scores[n] || 0, connecte: n === ORDI || this.estConnecteVue[n] !== false };
           });
         },
         monNumero: function() { return this.pub ? this.pub.joueurs.indexOf(this.solo ? this.moiSolo : this.moi) + 1 : 0; },
@@ -290,11 +298,12 @@
             var g = p.resultat.gagnant;
             if (!g) return 'Match nul : la grille est pleine.';
             if (g === this.monNumero) return '🎉 Tu as gagné !';
+            if (this.boss) return '😱 ' + this.boss.nom + ' gagne…';
             return (this.estJoueur ? '😕 ' : '🏆 ') + p.joueurs[g - 1] + ' gagne.';
           }
           if (this.peutJouer) return 'À toi : touche une colonne.';
           var autre = p.joueurs[p.tour - 1];
-          return autre === ORDI ? 'L\'ordinateur réfléchit…' : 'Au tour de ' + autre + '…';
+          return autre === ORDI ? (this.boss ? this.boss.nom : 'L\'ordinateur') + ' réfléchit…' : 'Au tour de ' + autre + '…';
         },
         classeStatut: function() {
           var p = this.pub;
@@ -312,6 +321,7 @@
         // Le pseudo se choisit sur le portail (profil du salon global) ; on le suit tant qu'on n'est pas dans un salon
         window.addEventListener('desdale-profil', () => { if (!this.role) this.pseudoInput = pseudoPortail(); });
         if (!ACCES.cleSalon) return;
+        if (/[?&]boss\b/.test(location.search) && lireStockage('expedition-boss')) { this.demarrerBoss(lireStockage('expedition-boss')); return; }
         this.restaurer();
         setInterval(() => this.battement(), 4000);
         document.addEventListener('visibilitychange', () => this.auRetourPremierPlan());
@@ -344,7 +354,22 @@
           this.onglet = 'play';
           this.tourOrdi();
         },
-        sauverSolo: function() { ecrireStockage('quatre-solo', this.pub); },
+        sauverSolo: function() { ecrireStockage(this.boss ? 'quatre-boss' : 'quatre-solo', this.pub); },
+        // ================== BOSS D'EXPÉDITION ==================
+        // L'expédition envoie ici le défi (expedition-boss : id, nom, ico, défi, niveau) ; le résultat repart dans expedition-boss-resultat
+        demarrerBoss: function(b) {
+          this.boss = b;
+          var s = lireStockage('quatre-boss'), e = s && s.boss === b.id && s.phase === 'jeu' ? s : null;
+          if (!e) {
+            e = nouvelEtatSalon([this.moi, ORDI]);
+            e.joueurs = [this.moi, ORDI]; e.niveau = b.niveau; e.premier = 2; e.boss = b.id;
+            debuterPartie(e);   // le joueur commence
+          }
+          this.solo = true; this.pub = e; this.onglet = 'play';
+          this.sauverSolo();
+          this.tourOrdi();
+        },
+        retourExpedition: function() { location.href = 'expedition/'; },
         quitterSolo: function() { this.sauverSolo(); this.solo = false; this.pub = null; this.onglet = 'config'; },
         tourOrdi: function() {
           var e = this.pub;
@@ -362,7 +387,10 @@
           var avant = this.pub;
           this.pub = e;
           this.reagir(avant, e);
-          if (e.phase === 'fin') {
+          if (e.phase === 'fin' && this.boss) {
+            var g = e.resultat.gagnant;
+            ecrireStockage('expedition-boss-resultat', { id: this.boss.id, issue: g === 1 ? 'gagne' : g ? 'perdu' : 'nul' });
+          } else if (e.phase === 'fin') {
             this.statsSolo = { parties: this.statsSolo.parties + 1, gagnees: this.statsSolo.gagnees + (e.resultat.gagnant === 1 ? 1 : 0) };
             ecrireStockage('quatre-stats', this.statsSolo);
             var niv = e.niveau || this.niveau;
@@ -444,7 +472,7 @@
           if (p.partieId === a.partieId && p.coups.length > a.coups.length) { this.son('toc'); this.vibre(15); }
           if (p.phase === 'jeu' && p.tour === this.monNumero && (a.tour !== p.tour || a.partieId !== p.partieId) && p.joueurs[2 - p.tour] !== ORDI) this.vibre([30, 40, 30]);
           if (p.phase === 'fin' && a.phase !== 'fin') {
-            if (this.monNumero) Etoiles.finDePartie('Quatre en ligne', p.resultat.gagnant === this.monNumero, !this.solo, p.partieId, this.solo ? { niveau: p.niveau } : {});
+            if (this.monNumero && !this.boss) Etoiles.finDePartie('Quatre en ligne', p.resultat.gagnant === this.monNumero, !this.solo, p.partieId, this.solo ? { niveau: p.niveau } : {});
             if (p.resultat.gagnant && p.resultat.gagnant === this.monNumero) { setTimeout(() => this.son('victoire'), 350); this.vibre([100, 60, 100, 60, 250]); }
             else if (p.resultat.gagnant) this.vibre(200);
           }

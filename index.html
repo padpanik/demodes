@@ -38,6 +38,7 @@
     .jeu.dernier { border-color: #2c3e50; }
     .jeu .nom { font-size: 1.25em; font-weight: 800; }
     .jeu .desc { color: #6b7a86; font-size: 0.9em; margin-top: 2px; }
+    .jeu .nouveau { display: inline-block; vertical-align: 3px; margin-left: 8px; font-size: 0.6em; font-weight: 900; letter-spacing: 0.3px; text-transform: uppercase; color: #fff; background: linear-gradient(90deg, #e64980, #9c36b5); border-radius: 8px; padding: 2px 7px; }
     .jeu .badge { display: inline-block; margin-top: 6px; font-size: 0.78em; font-weight: 700; color: #8a5a00; background: #fff3d6; border-radius: 8px; padding: 2px 8px; }
     .badge-quitter { margin-left: 8px; border: none; border-radius: 6px; background: #f3d9a8; color: #6b4500; font: inherit; font-weight: 700; padding: 1px 6px; cursor: pointer; }
     /* Favori : étoile au bout de la fiche (les favoris passent en tête de liste) */
@@ -139,7 +140,7 @@
           <!-- Icône du jeu (icones-jeux.js) -->
           <span class="ico-neuve" v-html="icone(j.id)"></span>
           <div>
-            <div class="nom">{{ j.nom }}</div>
+            <div class="nom">{{ j.nom }}<span v-if="j.nouveau" class="nouveau">Nouveau</span></div>
             <div class="desc">{{ j.desc }}</div>
             <span class="badge" v-if="j.enCours">{{ j.enCours }}<button v-if="!j.solo" class="badge-quitter" @click.prevent.stop="quitter(j)" aria-label="Quitter ce salon">✕ Quitter</button></span>
           </div>
@@ -201,7 +202,9 @@
         // Jeux dans l'ordre choisi sur ce téléphone, favoris d'abord (les jeux inconnus de l'ordre gardent leur place par défaut, à la fin)
         jeuxTries: function() {
           var o = this.ordre, f = this.favoris, rang = (j) => { var i = o.indexOf(j.id); return i < 0 ? 100 : i; }, fav = (j) => f.includes(j.id) ? 0 : 1;
-          return this.jeux.map((j, k) => ({ j: j, k: k })).sort((a, b) => (fav(a.j) - fav(b.j)) || (rang(a.j) - rang(b.j)) || (a.k - b.k)).map(x => x.j);
+          // Les nouveautés (tete) passent devant tout, même les favoris
+          var tete = (j) => j.tete ? 0 : 1;
+          return this.jeux.map((j, k) => ({ j: j, k: k })).sort((a, b) => (tete(a.j) - tete(b.j)) || (fav(a.j) - fav(b.j)) || (rang(a.j) - rang(b.j)) || (a.k - b.k)).map(x => x.j);
         },
         etoiles: function() { this.maj; return Etoiles.solde(); },
         // Adresse de l'accueil du site (sans « index.html » ni paramètres)
@@ -234,7 +237,7 @@
             { id: 'quatre', nom: 'Quatre en ligne', page: 'quatre/', desc: 'Aligne 4 jetons : seul contre l\'ordinateur ou à deux.', enCours: ql && ql.texte },
             { id: 'domino', nom: 'Dominos', page: 'domino/', desc: 'Dominos ou triominos, seul ou de 2 à 4.', enCours: dm && dm.texte },
             { id: 'lettres', nom: 'Lettres croisées', page: 'lettres/', desc: 'Des mots sur la grille, seul ou de 2 à 4.', enCours: lc && lc.texte },
-            { id: 'expedition', nom: 'Expédition', page: 'expedition/', desc: 'Balade avec ton compagnon : questions, coffres et boss.', enCours: ex && !ex.fin ? '● Expédition en cours' : '', solo: true }
+            { id: 'expedition', nom: 'Expédition', page: 'expedition/', desc: 'Balade avec ton compagnon : questions, coffres et boss.', enCours: ex && !ex.fin ? '● Expédition en cours' : '', solo: true, nouveau: true, tete: true }
           ];
         }
       },

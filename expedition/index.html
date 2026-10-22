@@ -37,6 +37,8 @@
     .compagnon-depart { display: flex; align-items: center; gap: 10px; }
     .compagnon-depart svg { width: 64px; height: 68px; flex-shrink: 0; }
 
+    .repos-exp { display: flex; align-items: center; gap: 10px; background: #f3f0ff; }
+    .repos-exp .grand { font-size: 2.2em; }
     /* Écran de jeu */
     .jeu-exp { position: relative; }
     .barre-exp { display: flex; align-items: center; gap: 8px; background: #fff; border-radius: 14px; padding: 6px 10px; margin-bottom: 6px; box-shadow: 0 1px 2px rgba(0,0,0,0.06); }
@@ -83,14 +85,6 @@
     @keyframes ouvre { 0% { transform: scale(0.6) rotate(-10deg); } 60% { transform: scale(1.2) rotate(6deg); } 100% { transform: scale(1); } }
     .gain-coffre { text-align: center; font-weight: 900; font-size: 1.15em; margin-top: 6px; }
 
-    /* Le boss : une partie de Quatre en ligne */
-    .plateau-boss { background: #3b2a6b; border-radius: 12px; padding: 5px; display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin: 6px 0; }
-    .plateau-boss .trou { aspect-ratio: 1 / 1; border-radius: 50%; background: #e9e4f7; box-shadow: inset 0 3px 4px rgba(0,0,0,0.3); cursor: pointer; }
-    .plateau-boss .trou.j1 { background: #e53935; box-shadow: inset 0 -3px 0 rgba(0,0,0,0.2); }
-    .plateau-boss .trou.j2 { background: #b197fc; box-shadow: inset 0 -3px 0 rgba(0,0,0,0.2); }
-    .plateau-boss .trou.gagne { outline: 3px solid #ffd43b; outline-offset: -2px; }
-    .tour-boss { text-align: center; font-weight: 800; font-size: 0.92em; color: #495057; }
-
     /* Fin */
     .fin-exp { text-align: center; }
     .fin-exp .grand { font-size: 3em; line-height: 1.1; }
@@ -117,11 +111,16 @@
         </section>
 
         <template v-else>
+          <section class="carte repos-exp" v-if="fatigue">
+            <span class="grand">😴</span>
+            <div><b>{{ animal ? animal.nom + ' est trop fatigué' : 'Tu es trop fatigué' }} pour repartir tout de suite.</b>
+              <div class="aide" style="margin-top:2px">Une expédition par heure : prochaine balade dans {{ fatigue }} min.</div></div>
+          </section>
           <section class="carte">
             <div class="titre-carte">Ton compagnon de route</div>
             <div class="compagnon-depart" v-if="animal">
               <svg viewBox="0 -6 200 216" v-html="dessinAnimal"></svg>
-              <div><b>{{ animal.nom }}</b> est prêt à partir à l'aventure avec toi !<div class="aide" style="margin-top:2px">La balade lui donne un peu faim et soif.</div></div>
+              <div><b>{{ animal.nom }}</b> {{ fatigue ? 'se repose de sa dernière balade.' : 'est prêt à partir à l\'aventure avec toi !' }}<div class="aide" style="margin-top:2px">La balade lui donne un peu faim et soif.</div></div>
             </div>
             <div v-else class="aide" style="margin-top:0">Tu n'as pas encore de compagnon : tu pars seul (son aide ne sera pas là). <a href="compagnon/">Adopter un compagnon</a></div>
           </section>
@@ -142,7 +141,7 @@
             <div class="segment">
               <button v-for="(d, id) in DIFFICULTES" :key="id" :class="{ actif: difficulte === id }" @click="difficulte = id">{{ d.nom }}<small>{{ d.desc }}</small></button>
             </div>
-            <button class="btn principal" style="width:100%" @click="partir">🧭 Partir en expédition</button>
+            <button class="btn principal" style="width:100%" :disabled="!!fatigue" @click="partir">{{ fatigue ? '😴 Encore ' + fatigue + ' min de repos' : '🧭 Partir en expédition' }}</button>
             <div class="aide" v-if="stats.parties">Expéditions : {{ stats.reussies }} réussie{{ stats.reussies > 1 ? 's' : '' }} sur {{ stats.parties }} · {{ stats.bonnes }} bonne{{ stats.bonnes > 1 ? 's' : '' }} réponse{{ stats.bonnes > 1 ? 's' : '' }} en tout.</div>
           </section>
         </template>
@@ -158,7 +157,7 @@
         <div v-else class="jeu-exp">
           <div class="barre-exp">
             <span class="coeurs" :aria-label="e.coeurs + ' cœurs'">{{ coeursTexte }}</span>
-            <span class="sac">🎒 {{ e.sac }} ⭐</span>
+            <span class="sac">🎒 {{ e.sac }} ⭐ · ✨ {{ e.poussiere || 0 }}</span>
             <span class="ou">{{ lieuEnCours.ico }} {{ lieuEnCours.nom }} · {{ DIFFICULTES[e.difficulte].nom }}</span>
           </div>
           <div class="carte-exp" :style="{ background: lieuEnCours.couleurs.fond }" @click="toucherCarte">
@@ -196,8 +195,9 @@
                     <div class="actions-exp"><button class="btn principal" @click="ouvrirCoffre">🔓 Ouvrir le coffre</button></div>
                   </template>
                   <template v-else>
-                    <div class="coffre-ico ouvre">{{ r.gain.souvenir ? r.gain.ico : '⭐' }}</div>
-                    <div class="gain-coffre">{{ r.gain.souvenir ? 'Un souvenir : ' + r.gain.nom + ' !' : '+' + r.gain.etoiles + ' ⭐ dans le sac' }}</div>
+                    <div class="coffre-ico ouvre">{{ r.gain.souvenir ? r.gain.ico : '✨' }}</div>
+                    <div class="gain-coffre">{{ r.gain.souvenir ? 'Un souvenir : ' + r.gain.nom + ' !' : '+' + r.gain.poussiere + ' poussière' + (r.gain.poussiere > 1 ? 's' : '') + ' d\'étoile' }}</div>
+                    <div class="explication" style="text-align:center" v-if="!r.gain.souvenir">5 poussières font une étoile ⭐</div>
                     <div class="explication" style="text-align:center" v-if="r.gain.souvenir">Il t'attend dans la maison de {{ animal ? animal.nom : 'ton compagnon' }} (salon).</div>
                     <div class="actions-exp"><button class="btn principal" @click="continuer">Continuer</button></div>
                   </template>
@@ -211,22 +211,18 @@
                   <div class="actions-exp"><button class="btn principal" @click="continuer">Continuer</button></div>
                 </template>
 
-                <!-- Boss -->
+                <!-- Boss : on joue sur la vraie page du jeu (Quatre en ligne), puis on revient ici -->
                 <template v-else-if="r && r.type === 'boss'">
                   <div class="qui"><span class="grand">{{ lieuEnCours.boss.ico }}</span><div><div class="nom">{{ lieuEnCours.boss.nom }}</div><div class="role">Boss · {{ lieuEnCours.boss.nomJeu }}</div></div></div>
                   <template v-if="r.phase === 'intro'">
                     <div class="explication">« {{ lieuEnCours.boss.defi }} »</div>
-                    <div class="aide">Tu as les jetons rouges et tu commences. Aligne 4 jetons avant lui !</div>
-                    <div class="actions-exp"><button class="btn principal" @click="debutBoss">⚔️ Relever le défi</button></div>
+                    <div class="aide">La partie se joue dans {{ lieuEnCours.boss.nomJeu }} : tu as les jetons rouges et tu commences. Ensuite, retour ici.</div>
+                    <div class="actions-exp"><button class="btn principal" @click="lancerBoss">⚔️ Relever le défi</button></div>
                   </template>
                   <template v-else>
-                    <div class="tour-boss">{{ texteBoss }}</div>
-                    <div class="plateau-boss">
-                      <div v-for="(v, i) in r.grille" :key="i" class="trou" :class="[v ? 'j' + v : '', { gagne: r.ligne && r.ligne.includes(i) }]" @click="jouerBoss(i % 7)"></div>
-                    </div>
-                    <div class="actions-exp" v-if="r.phase === 'perdu' || r.phase === 'nul'">
-                      <button class="btn principal" @click="revanche">🔁 Revanche</button>
-                    </div>
+                    <div class="verdict" :class="r.phase === 'nul' ? 'oui' : 'non'">{{ r.phase === 'nul' ? '🤝 Match nul ! Une revanche, sans perdre de cœur.' : '😱 « ' + lieuEnCours.boss.defaite + ' » Tu perds un cœur.' }}</div>
+                    <div class="explication">Il te reste {{ e.coeurs }} cœur{{ e.coeurs > 1 ? 's' : '' }}.</div>
+                    <div class="actions-exp"><button class="btn principal" @click="lancerBoss">🔁 Revanche</button></div>
                   </template>
                 </template>
 
@@ -240,11 +236,11 @@
                   <ul class="bilan">
                     <li>✅ {{ e.bonnes }} bonne{{ e.bonnes > 1 ? 's' : '' }} réponse{{ e.bonnes > 1 ? 's' : '' }} sur {{ e.questions }}</li>
                     <li>⭐ {{ e.fin.gain }} étoile{{ e.fin.gain > 1 ? 's' : '' }} gagnée{{ e.fin.gain > 1 ? 's' : '' }}<span v-if="e.fin.donne < e.fin.gain"> ({{ e.fin.donne }} reçue{{ e.fin.donne > 1 ? 's' : '' }} : plafond du jour)</span></li>
+                    <li v-if="e.fin.poussiere">✨ {{ e.fin.poussiere }} poussière{{ e.fin.poussiere > 1 ? 's' : '' }} d'étoile<span v-if="e.fin.etoilesPoussiere"> → +{{ e.fin.etoilesPoussiere }} ⭐</span> (en réserve : {{ e.fin.reste }} / 5)</li>
                     <li v-for="s in e.souvenirs" :key="s.id">{{ s.ico }} Souvenir : {{ s.nom }}</li>
                   </ul>
                   <div class="actions-exp">
-                    <button class="btn" @click="terminer">Fermer</button>
-                    <button class="btn principal" @click="terminer(true)">🧭 Repartir</button>
+                    <button class="btn principal" @click="terminer">{{ animal ? '🏠 Rentrer à la maison' : 'OK' }}</button>
                   </div>
                 </template>
               </div>
@@ -266,12 +262,13 @@
         <section class="carte regles">
           <div class="titre-carte">Règles</div>
           <ul>
-            <li>Tu pars en balade avec ton compagnon dans un lieu à thème. Le chemin monte vers le <strong>boss</strong>, avec des fourches : à chaque étape, choisis la suivante (elles clignotent).</li>
+            <li>Tu pars en balade avec ton compagnon dans un lieu à thème. Le chemin monte vers le <strong>boss</strong>, avec des fourches. Il est caché : tu ne vois que les prochaines étapes possibles (elles clignotent), à toi de choisir.</li>
             <li><strong>Gardien</strong> : il pose une question (4 réponses). Bonne réponse : des étoiles dans le sac. Mauvaise : tu perds un <strong>cœur</strong>.</li>
-            <li><strong>Coffre</strong> : des étoiles, ou un <strong>souvenir</strong> pour la maison de ton compagnon.</li>
+            <li><strong>Coffre</strong> : des <strong>poussières d'étoile</strong> ✨ (5 poussières font une étoile, le reste est gardé pour la prochaine fois), ou un <strong>souvenir</strong> pour la maison de ton compagnon.</li>
             <li><strong>Buvette</strong> : tu récupères un cœur (3 au plus).</li>
             <li><strong>Aide du compagnon</strong>, une fois par expédition : il retire deux mauvaises réponses.</li>
-            <li><strong>Boss</strong> : il te défie sur un jeu de la collection, contre l'ordinateur. Perdu : un cœur en moins et une revanche.</li>
+            <li><strong>Boss</strong> : il te défie sur un jeu de la collection, contre l'ordinateur : la partie se joue dans le vrai jeu, puis on revient. Perdu : un cœur en moins et une revanche.</li>
+            <li>Une expédition fatigue : il faut attendre <strong>une heure</strong> avant de repartir.</li>
             <li>Boss vaincu : tu gardes tout le sac (+{{ GAIN_BOSS }} ⭐). Plus de cœurs, ou retour avant la fin : la moitié du sac. Les étoiles comptent dans le plafond du jour.</li>
             <li>Bientôt : d'autres lieux (sciences, histoire, géographie…) et des sorties en groupe.</li>
           </ul>
@@ -285,7 +282,6 @@
   <script src="commun.js"></script>
   <script src="etoiles.js"></script>
   <script src="compagnon/compagnon-commun.js"></script>
-  <script src="quatre/quatre-regles.js"></script>
   <script src="expedition/expedition-regles.js"></script>
   <script>
     if (!ACCES.memorise()) location.replace('index.html');
@@ -329,11 +325,14 @@
         stats: lireStockage('expedition-stats') || { parties: 0, reussies: 0, bonnes: 0 },
         animal: lireStockage('compagnon-animal'),
         enMarche: false,
+        maintenant: Date.now(),
         sonActif: lireStockage('brillant-son') !== false,
         vibrationActive: lireStockage('brillant-vibration') !== null ? lireStockage('brillant-vibration') !== false : lireStockage('brillant-son') !== false
       },
       computed: {
         r: function() { return this.e && this.e.rencontre; },
+        // Minutes de repos qu'il reste avant de pouvoir repartir (une expédition par heure)
+        fatigue: function() { var d = lireStockage('expedition-depart'); this.maintenant; return d ? Math.max(0, Math.ceil((EX.REPOS - (this.maintenant - d)) / 60000)) : 0; },
         lieuSelection: function() { return EX.lieu(this.lieuChoisi) || EX.LIEUX[0]; },
         lieuEnCours: function() { return this.e ? EX.lieu(this.e.lieu) : EX.LIEUX[0]; },
         coeursTexte: function() { return this.e ? '❤️'.repeat(this.e.coeurs) + '🤍'.repeat(EX.COEURS - this.e.coeurs) : ''; },
@@ -346,13 +345,6 @@
           var p = posNoeud(this.noeudIci);
           return { left: ((p.x - VB.x) / VB.l * 100) + '%', top: ((p.y - HB - 2 - VB.y) / VB.h * 100) + '%' };
         },
-        texteBoss: function() {
-          var r = this.r;
-          if (r.phase === 'gagne') return '🏆 Tu as gagné !';
-          if (r.phase === 'perdu') return '😱 Le boss a gagné… ' + (this.e.coeurs > 0 ? 'Il te reste ' + this.e.coeurs + ' cœur' + (this.e.coeurs > 1 ? 's' : '') + '.' : '');
-          if (r.phase === 'nul') return '🤝 Match nul ! Une revanche, sans perdre de cœur.';
-          return r.tour === 1 ? 'À toi : touche une colonne' : this.lieuEnCours.boss.nom + ' réfléchit…';
-        },
         // ---------- La carte en 3D isométrique (SVG) ----------
         carteSvg: function() {
           var e = this.e, L = this.lieuEnCours, c = L.couleurs, carte = e.carte, s = '';
@@ -363,6 +355,7 @@
           carte.liens.forEach(l => {
             var a = carte.noeuds[l[0]], b = carte.noeuds[l[1]], ka = KB - 4 * a.rang, da = 2 * a.voie, db = 2 * b.voie;
             var etat = faits[l[0] + '-' + l[1]] ? 'fait' : (l[0] === e.pos && possibles.includes(l[1])) ? 'possible' : 'autre';
+            if (etat === 'autre') return;   // chemin caché
             for (var u = 1; u < 4; u++) {
               var k = ka - u, d = caseVoisine(k, da + (db - da) * u / 4, db - da);
               var cle = k + ',' + d, ancien = chemin[cle];
@@ -385,6 +378,7 @@
           // Objets (décor et étapes), de l'arrière vers l'avant
           var objets = decos.map(o => ({ k: o.k, svg: '<text x="' + o.x + '" y="' + (o.y + 4) + '" font-size="20" text-anchor="middle" opacity="0.9">' + o.ico + '</text>' }));
           carte.noeuds.forEach(nd => {
+            if (!e.visites.includes(nd.id) && !possibles.includes(nd.id)) return;   // étape cachée tant qu'elle n'est pas le prochain choix
             var p = posNoeud(nd), x = p.x, y = p.y - EP, ici = nd.id === e.pos, fait = e.visites.includes(nd.id) && !ici, possible = possibles.includes(nd.id);
             var g = '<g data-n="' + nd.id + '" class="' + (possible ? 'n-possible' : '') + '"' + (!possible && !fait && !ici && nd.rang > this.noeudIci.rang ? ' opacity="0.8"' : '') + '>';
             if (possible) g += '<ellipse class="anneau" cx="' + x + '" cy="' + y + '" rx="' + (TW / 2 + 4) + '" ry="' + (TH / 2 + 3) + '" fill="none" stroke="#ffd43b" stroke-width="3"/>';
@@ -415,7 +409,10 @@
         if (this.e && this.e.fin) { this.e = null; ecrireStockage(CLE, null); }
         if (this.e) this.onglet = 'play';
         // Le compagnon peut changer ailleurs (soins, accessoires) : on relit au retour sur la page
-        window.addEventListener('pageshow', () => { this.animal = lireStockage('compagnon-animal'); });
+        window.addEventListener('pageshow', () => { this.animal = lireStockage('compagnon-animal'); this.lireResultatBoss(); });
+        document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') this.lireResultatBoss(); });
+        setInterval(() => { this.maintenant = Date.now(); }, 30000);
+        this.lireResultatBoss();
       },
       methods: {
         son: function(nom) { if (this.sonActif) try { Sons.jouer(nom); } catch (x) {} },
@@ -423,7 +420,8 @@
         sauver: function() { ecrireStockage(CLE, this.e); },
         partir: function() {
           var l = EX.lieu(this.lieuChoisi);
-          if (!l || !l.pret) return;
+          if (!l || !l.pret || this.fatigue) return;
+          ecrireStockage('expedition-depart', Date.now()); this.maintenant = Date.now();
           var e = EX.nouvelle(l.id, this.difficulte);
           this.e = e; this.sauver();
           this.animal = lireStockage('compagnon-animal');
@@ -457,7 +455,7 @@
             e.rencontre = { type: 'gardien', perso: L.gardiens[Math.floor(h() * L.gardiens.length)], question: q, repondu: null, retirees: [], gain: gain };
           } else if (nd.type === 'coffre') e.rencontre = { type: 'coffre', ouvert: false, gain: null };
           else if (nd.type === 'repos') { var soigne = e.coeurs < EX.COEURS; if (soigne) e.coeurs++; e.rencontre = { type: 'repos', soigne: soigne }; }
-          else if (nd.type === 'boss') e.rencontre = { type: 'boss', phase: 'intro', grille: QL.nouvelle(), tour: 1, ligne: null };
+          else if (nd.type === 'boss') e.rencontre = { type: 'boss', phase: 'intro', attente: null };
           this.sauver();
         },
         repondre: function(i) {
@@ -491,7 +489,7 @@
             r.gain = { souvenir: true, nom: art.nom, ico: art.ico };
           } else {
             var n = 1 + Math.floor(h() * 3);
-            e.sac += n; r.gain = { etoiles: n };
+            e.poussiere = (e.poussiere || 0) + n; r.gain = { poussiere: n };
           }
           r.ouvert = true;
           this.sauver(); this.son('toc'); this.vibre([20, 40, 20]);
@@ -502,39 +500,31 @@
           this.sauver();
           if (e.coeurs <= 0) this.finir(false);
         },
-        // ---------- Le boss : Quatre en ligne contre l'ordinateur ----------
-        debutBoss: function() { var r = this.e.rencontre; r.phase = 'jeu'; r.grille = QL.nouvelle(); r.tour = 1; r.ligne = null; this.sauver(); },
-        jouerBoss: function(col) {
-          var r = this.e.rencontre;
-          if (r.phase !== 'jeu' || r.tour !== 1) return;
-          if (QL.jouer(r.grille, col, 1) < 0) return this.vibre(60);
-          this.son('toc');
-          if (this.finCoupBoss()) return;
-          r.tour = 2; this.sauver();
-          setTimeout(() => {
-            if (!this.e || !this.e.rencontre || this.e.rencontre !== r || r.phase !== 'jeu') return;
-            QL.jouer(r.grille, QL.choisirCoup(r.grille, 2, EX.DIFFICULTES[this.e.difficulte].boss), 2);
-            r.grille = r.grille.slice();
-            if (!this.finCoupBoss()) { r.tour = 1; this.sauver(); }
-          }, 650);
-          r.grille = r.grille.slice();
+        // ---------- Le boss : sur la vraie page du jeu ----------
+        // On lui laisse le défi (expedition-boss), il nous rend l'issue (expedition-boss-resultat) au retour
+        lancerBoss: function() {
+          var e = this.e, L = this.lieuEnCours;
+          e.tentative = (e.tentative || 0) + 1;
+          var id = e.graine + '-' + e.tentative;
+          e.rencontre.attente = id;
+          this.sauver();
+          ecrireStockage('expedition-boss-resultat', null);
+          ecrireStockage('expedition-boss', { id: id, nom: L.boss.nom, ico: L.boss.ico, defi: L.boss.defi, niveau: EX.DIFFICULTES[e.difficulte].boss });
+          location.href = L.boss.jeu + '/?boss';
         },
-        finCoupBoss: function() {
-          var e = this.e, r = e.rencontre, res = QL.resultat(r.grille);
-          if (!res) return false;
-          r.ligne = res.ligne;
-          if (res.gagnant === 1) {
-            r.phase = 'gagne'; e.sac += EX.GAIN_BOSS; this.son('victoire'); this.vibre([40, 40, 120]);
-            this.sauver();
-            setTimeout(() => { e.rencontre = null; this.finir(true); }, 1600);
-          } else if (res.gagnant === 2) {
-            r.phase = 'perdu'; e.coeurs--; this.son('choc'); this.vibre([80, 60, 80]);
-            this.sauver();
-            if (e.coeurs <= 0) setTimeout(() => { e.rencontre = null; this.finir(false); }, 1800);
+        lireResultatBoss: function() {
+          var e = this.e, res = lireStockage('expedition-boss-resultat');
+          if (!e || !e.rencontre || e.rencontre.type !== 'boss' || !res || res.id !== e.rencontre.attente) return;
+          ecrireStockage('expedition-boss-resultat', null); ecrireStockage('expedition-boss', null);
+          var r = e.rencontre; r.attente = null;
+          if (res.issue === 'gagne') {
+            e.sac += EX.GAIN_BOSS; e.rencontre = null; this.son('victoire'); this.vibre([40, 40, 120]);
+            this.finir(true);
+          } else if (res.issue === 'perdu') {
+            e.coeurs--; r.phase = 'perdu'; this.son('choc'); this.vibre([80, 60, 80]);
+            if (e.coeurs <= 0) { e.rencontre = null; this.finir(false); } else this.sauver();
           } else { r.phase = 'nul'; this.sauver(); }
-          return true;
         },
-        revanche: function() { this.debutBoss(); },
         // ---------- Fin de l'expédition ----------
         abandonner: function() {
           if (!confirm('Rentrer à la maison ? Tu gardes la moitié des étoiles du sac.')) return;
@@ -543,7 +533,11 @@
           this.onglet = 'play';
         },
         finir: function(gagne, abandon) {
-          var e = this.e, L = this.lieuEnCours, gain = EX.gainFinal(e, gagne);
+          var e = this.e, L = this.lieuEnCours, sac = EX.gainFinal(e, gagne);
+          // Les poussières d'étoile s'ajoutent à la réserve : chaque fois 5 → 1 étoile
+          var conv = EX.convertirPoussiere(lireStockage('expedition-poussiere'), e.poussiere || 0);
+          ecrireStockage('expedition-poussiere', conv.reste);
+          var gain = sac + conv.etoiles;
           var avant = Etoiles.gagneesAujourdhui();
           Etoiles.recompenseJeu(gain, 'Expédition · ' + L.nom + (gagne ? ' (boss vaincu)' : ''));
           var donne = Etoiles.gagneesAujourdhui() - avant;
@@ -557,12 +551,16 @@
           }
           var st = this.stats; st.parties++; if (gagne) st.reussies++;
           ecrireStockage('expedition-stats', st);
-          e.fin = { gagne: !!gagne, abandon: !!abandon, gain: gain, donne: donne };
+          e.fin = { gagne: !!gagne, abandon: !!abandon, gain: gain, donne: donne, poussiere: e.poussiere || 0, etoilesPoussiere: conv.etoiles, reste: conv.reste };
           this.sauver();
         },
-        terminer: function(repartir) {
+        // OK : on rentre chez le compagnon, qui raconte l'aventure (expedition-retour, lu par compagnon/)
+        terminer: function() {
+          var e = this.e, L = this.lieuEnCours;
+          if (this.animal) ecrireStockage('expedition-retour', { lieu: L.nom, ico: L.ico, gagne: e.fin.gagne, abandon: e.fin.abandon, bonnes: e.bonnes, questions: e.questions,
+            gain: e.fin.gain, donne: e.fin.donne, poussiere: e.fin.poussiere, souvenirs: e.souvenirs, boss: L.boss.nom, h: Date.now() });
           this.e = null; ecrireStockage(CLE, null);
-          if (repartir === true) this.partir(); else this.onglet = 'config';
+          if (this.animal) location.href = 'compagnon/'; else this.onglet = 'config';
         }
       }
     });
