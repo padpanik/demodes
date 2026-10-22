@@ -13,26 +13,31 @@ var CompagnonsJeu = (function () {
   ];
   var ATTENTE = 1500;   // pas plus d'une émotion toutes les 1,5 s
 
+  // --t : taille d'un compagnon (calculée selon la place libre : largeur partagée entre les joueurs, hauteur jusqu'au bas de l'écran)
   var css = [
-    '.cpj{display:flex;gap:6px;justify-content:center;align-items:flex-end;margin-top:6px;min-height:64px;position:relative}',
-    '.cpj-ami{position:relative;display:flex;flex-direction:column;align-items:center;width:64px}',
+    '.cpj{display:flex;gap:8px;justify-content:center;align-items:flex-end;margin-top:4px;position:relative;--t:56px}',
+    '.cpj-ami{position:relative;display:flex;flex-direction:column;align-items:center;width:calc(var(--t) + 8px)}',
+    '.cpj-ami .cpj-des{position:relative;border:none;padding:0;font:inherit;cursor:default;width:var(--t);height:var(--t);background:none;display:flex;align-items:flex-end;justify-content:center}',
+    '.cpj-ami .cpj-des:before{content:"";position:absolute;left:12%;right:12%;bottom:2%;height:16%;border-radius:50%;background:rgba(29,43,54,.12)}',
     '.cpj-ami.moi .cpj-des{cursor:pointer}',
-    '.cpj-ami .cpj-des{border:none;padding:0;font:inherit;cursor:default;width:48px;height:48px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.12);display:flex;align-items:center;justify-content:center;overflow:hidden}',
-    '.cpj-ami.moi .cpj-des{box-shadow:0 0 0 2px #7048e8,0 1px 3px rgba(0,0,0,.12)}',
-    '.cpj-ami .cpj-des svg{width:46px;height:46px;margin-top:4px}',
-    '.cpj-ami .cpj-ini{font-weight:900;font-size:1.2em;color:#5b6b78}',
-    '.cpj-ami .cpj-nom{font-size:.7em;font-weight:800;color:#5b6b78;max-width:64px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px}',
-    '.cpj-ami .cpj-plus{position:absolute;right:6px;top:-2px;width:18px;height:18px;border-radius:50%;background:#7048e8;color:#fff;font-size:12px;line-height:18px;font-weight:900}',
-    '.cpj-bulle{position:absolute;bottom:100%;left:50%;transform:translateX(-50%);margin-bottom:4px;background:#fff;border-radius:12px;padding:4px 9px;',
-    'font-size:.8em;font-weight:800;color:#2c3e50;white-space:nowrap;box-shadow:0 2px 8px rgba(0,0,0,.18);animation:cpj-bulle 2.6s ease forwards;pointer-events:none;z-index:30}',
+    '.cpj-ami.moi .cpj-des:before{background:rgba(112,72,232,.22);box-shadow:0 0 0 2px rgba(112,72,232,.35)}',
+    '.cpj-ami .cpj-des svg{position:relative;width:100%;height:100%;filter:drop-shadow(0 2px 2px rgba(0,0,0,.18))}',
+    '.cpj-ami .cpj-ini{position:relative;width:70%;height:70%;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.15);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:calc(var(--t) * .35);color:#5b6b78;margin-bottom:8%}',
+    '.cpj-ami .cpj-nom{position:absolute;left:50%;bottom:-4px;transform:translateX(-50%);font-size:max(11px, calc(var(--t) * .14));font-weight:800;color:#3b4b57;background:rgba(255,255,255,.88);',
+    'border-radius:8px;padding:0 6px;max-width:calc(var(--t) + 8px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;box-sizing:border-box}',
+    '.cpj-ami.moi .cpj-nom{color:#5f3dc4}',
+    '.cpj-ami .cpj-plus{position:absolute;right:2px;top:2px;width:20px;height:20px;border-radius:50%;background:#7048e8;color:#fff;font-size:14px;line-height:20px;font-weight:900;text-align:center;pointer-events:none}',
+    '.cpj-bulle{position:absolute;bottom:100%;left:50%;transform:translateX(-50%);margin-bottom:2px;background:#fff;border-radius:12px;padding:4px 10px;',
+    'font-size:.9em;font-weight:800;color:#2c3e50;white-space:nowrap;box-shadow:0 2px 8px rgba(0,0,0,.18);animation:cpj-bulle 2.8s ease forwards;pointer-events:none;z-index:30}',
     '.cpj-bulle:after{content:"";position:absolute;left:50%;top:100%;margin-left:-5px;border:5px solid transparent;border-top-color:#fff}',
     '@keyframes cpj-bulle{0%{opacity:0;transform:translate(-50%,6px) scale(.8)}10%{opacity:1;transform:translate(-50%,0) scale(1)}85%{opacity:1}100%{opacity:0}}',
-    '.cpj-vol{position:absolute;left:50%;bottom:30px;font-size:30px;pointer-events:none;animation:cpj-vol 2.2s ease-out forwards;z-index:31}',
-    '@keyframes cpj-vol{0%{opacity:0;transform:translate(-50%,0) scale(.6)}15%{opacity:1;transform:translate(-50%,-20px) scale(1.15)}100%{opacity:0;transform:translate(calc(-50% + var(--dx)),-170px) scale(1)}}',
+    // L'émoji grossit en montant, jusqu'à mi-hauteur de l'écran
+    '.cpj-vol{position:absolute;left:50%;bottom:40%;font-size:46px;line-height:1;pointer-events:none;animation:cpj-vol 2.8s cubic-bezier(.2,.7,.3,1) forwards;z-index:31}',
+    '@keyframes cpj-vol{0%{opacity:0;transform:translate(-50%,0) scale(.5)}12%{opacity:1;transform:translate(-50%,-30px) scale(1.2)}70%{opacity:1}100%{opacity:0;transform:translate(calc(-50% + var(--dx)),-42vh) scale(2.2)}}',
     '.cpj-choix{position:absolute;bottom:100%;left:50%;transform:translateX(-50%);margin-bottom:6px;background:#fff;border-radius:16px;padding:8px;',
     'box-shadow:0 8px 26px rgba(0,0,0,.25);display:grid;grid-template-columns:repeat(5,1fr);gap:4px;width:300px;max-width:calc(100vw - 24px);z-index:40}',
     '.cpj-choix button{border:none;background:#f3f0ff;border-radius:10px;padding:5px 2px;font:inherit;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px}',
-    '.cpj-choix button span{font-size:22px;line-height:1.1}',
+    '.cpj-choix button span{font-size:24px;line-height:1.1}',
     '.cpj-choix button small{font-size:.62em;font-weight:800;color:#5f3dc4;white-space:nowrap}',
     '.cpj-fond{position:fixed;inset:0;z-index:35}',
     '@media (prefers-reduced-motion: reduce){.cpj-vol{animation-duration:.01s}}'
@@ -40,18 +45,22 @@ var CompagnonsJeu = (function () {
   if (typeof document !== 'undefined') { var s = document.createElement('style'); s.textContent = css; document.head.appendChild(s); }
 
   if (typeof Vue !== 'undefined') Vue.component('compagnons-jeu', {
-    data: function () { return { amis: [], choix: false, bulles: {}, vols: [], cpPret: typeof CP !== 'undefined', dernier: 0, EMOTES: EMOTES }; },
+    data: function () { return { taille: 56, amis: [], choix: false, bulles: {}, vols: [], cpPret: typeof CP !== 'undefined', dernier: 0, EMOTES: EMOTES }; },
     created: function () {
       this._maj = () => this.majAmis();
       this._emote = (ev) => this.montrer(ev.detail.id, ev.detail.e);
       window.addEventListener('desdale-membres', this._maj);
       window.addEventListener('desdale-emote', this._emote);
-      this._timer = setInterval(this._maj, 3000);   // au cas où (salon global pas encore prêt, compagnon-commun.js chargé après)
+      this._ajuster = () => this.ajuster();
+      window.addEventListener('resize', this._ajuster);
+      this._timer = setInterval(() => { this.majAmis(); this.ajuster(); }, 3000);   // au cas où (salon global pas encore prêt, compagnon-commun.js chargé après)
       this.majAmis();
     },
+    mounted: function () { this.$nextTick(() => this.ajuster()); },
     beforeDestroy: function () {
       window.removeEventListener('desdale-membres', this._maj);
       window.removeEventListener('desdale-emote', this._emote);
+      window.removeEventListener('resize', this._ajuster);
       clearInterval(this._timer);
     },
     methods: {
@@ -60,7 +69,18 @@ var CompagnonsJeu = (function () {
         var l = (typeof SalonGlobal !== 'undefined' && SalonGlobal.membresDuSalon) ? SalonGlobal.membresDuSalon() : [];
         l.sort((a, b) => (b.moi ? 1 : 0) - (a.moi ? 1 : 0));   // moi d'abord
         var cle = JSON.stringify(l.map(m => [m.id, m.pseudo, m.cp])) + this.cpPret;
-        if (cle !== this._cle) { this._cle = cle; this.amis = l.slice(0, 5); }
+        if (cle !== this._cle) { this._cle = cle; this.amis = l.slice(0, 5); this.$nextTick(() => this.ajuster()); }
+      },
+      // Plus il y a de place, plus les compagnons sont grands : la largeur est partagée entre les joueurs,
+      // et ils ne descendent pas sous le bas de l'écran (l'écran de jeu ne doit pas défiler)
+      ajuster: function () {
+        var el = this.$el;
+        if (!el || !el.getBoundingClientRect || !this.amis.length) return;
+        var n = this.amis.length, largeur = (el.parentNode && el.parentNode.clientWidth) || el.clientWidth || 340;
+        var parLargeur = (largeur - 8 * (n - 1)) / n - 8;
+        var bas = window.innerHeight - el.getBoundingClientRect().top - 10;
+        var t = Math.floor(Math.max(44, Math.min(120, parLargeur, bas)));
+        if (Math.abs(t - this.taille) >= 2) this.taille = t;
       },
       dessin: function (m) {
         if (!m.cp || !this.cpPret || typeof SalonGlobal === 'undefined') return '';
@@ -92,7 +112,7 @@ var CompagnonsJeu = (function () {
       }
     },
     template:
-      '<div class="cpj" v-if="amis.length">' +
+      '<div class="cpj" :style="{ \'--t\': taille + \'px\' }">' +
         '<div v-if="choix" class="cpj-fond" @click="choix = false"></div>' +
         '<div v-if="choix" class="cpj-choix">' +
           '<button v-for="(e, k) in EMOTES" :key="k" @click="envoyer(k)"><span>{{ e.ico }}</span><small>{{ e.txt }}</small></button>' +
