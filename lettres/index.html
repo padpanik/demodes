@@ -310,6 +310,8 @@
               <button v-if="estJoueur || role === 'hote'" class="btn principal" @click="envoyerJeu({ type: 'NOUVELLE' })">Nouvelle partie</button>
             </div>
           </div>
+          <!-- Les compagnons des joueurs du salon : toucher le mien pour lui faire dire une émotion (compagnons-jeu.js) -->
+          <compagnons-jeu v-if="role"></compagnons-jeu>
         </template>
 
       </template>
@@ -356,6 +358,7 @@
 
   <script src="icones-jeux.js"></script>
   <script src="fiche-jeu.js"></script>
+  <script src="compagnons-jeu.js"></script>
   <script src="commun.js"></script>
   <script src="etoiles.js"></script>
   <script src="lettres/lettres-regles.js"></script>

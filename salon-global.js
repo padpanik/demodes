@@ -303,6 +303,7 @@ var SalonGlobal = (function () {
   }
   function recevoirRelais(de, m) {
     var qui = (membres[de] && membres[de].pseudo) || 'Un ami';
+    if (m.type === 'EMOTE') { signalerEmote(de, m.e); return; }
     if (m.type === 'MAISON?') {
       envoyerA(de, { type: 'MAISON', r: m.q, donnees: instantaneMaison() });
       if (lire('compagnon-animal')) toast('👀 ' + esc(qui) + ' visite ta maison');
@@ -552,7 +553,26 @@ var SalonGlobal = (function () {
   function changerOnglet(o) { onglet = o; rendre(true); }
 
   // Redessine ce qui est visible (bulle, carte de l'accueil, panneau)
+  // ================== COMPAGNONS EN JEU (compagnons-jeu.js) ==================
+  // Les membres qui sont dans le même salon de jeu que moi (moi compris), avec leur compagnon
+  function membresDuSalon() {
+    var o = ou();
+    if (!o.salon) return [];
+    var c = canalSalon(o), moi = monId();
+    var l = listeMembres().filter(m => m.ou && m.ou.jeu === o.jeu && canalSalon(m.ou) === c)
+      .map(m => ({ id: m.id, pseudo: m.pseudo, cp: m.cp, moi: m.id === moi }));
+    if (!l.some(m => m.moi)) { var p = publicProfil(); l.unshift({ id: moi, pseudo: p.pseudo, cp: p.cp, moi: true }); }
+    return l;
+  }
+  // Une émotion : envoyée à chacun du salon (par l'hôte du salon global), et montrée ici aussi
+  function emote(e) {
+    membresDuSalon().forEach(m => { if (!m.moi) envoyerA(m.id, { type: 'EMOTE', e: e }); });
+    signalerEmote(monId(), e);
+  }
+  function signalerEmote(id, e) { try { window.dispatchEvent(new CustomEvent('desdale-emote', { detail: { id: id, e: +e || 0 } })); } catch (x) {} }
+
   function rendre(defiler) {
+    try { window.dispatchEvent(new CustomEvent('desdale-membres')); } catch (x) {}
     if (!el.bulle) return;
     var nb = listeMembres().length, nl = nonLus(), inv = suisInvisible();
     el.bulle.className = (role ? '' : 'hors') + (inv ? ' invisible' : '');
@@ -685,5 +705,6 @@ var SalonGlobal = (function () {
   var script = document.currentScript;
   if (script && script.dataset.jeu) demarrer(script.dataset.jeu);
 
-  return { demarrer: demarrer, ouvrir: ouvrir_panneau, pret: () => !!role, membre: id => membres[id] || null, demander: demander, envoyerA: envoyerA, _etat: () => ({ role: role, membres: membres, messages: messages, ou: ou() }) };
+  return { demarrer: demarrer, ouvrir: ouvrir_panneau, pret: () => !!role, membre: id => membres[id] || null, demander: demander, envoyerA: envoyerA,
+           membresDuSalon: membresDuSalon, emote: emote, dessinCompagnon: dessinCompagnon, _etat: () => ({ role: role, membres: membres, messages: messages, ou: ou() }) };
 })();
