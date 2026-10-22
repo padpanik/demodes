@@ -42,11 +42,20 @@
     /* Écran de jeu */
     .jeu-exp { position: relative; }
     .barre-exp { display: flex; align-items: center; gap: 8px; background: #fff; border-radius: 14px; padding: 6px 10px; margin-bottom: 6px; box-shadow: 0 1px 2px rgba(0,0,0,0.06); }
-    .barre-exp .coeurs { font-size: 1.15em; letter-spacing: 1px; white-space: nowrap; }
+    .barre-exp .coeurs { display: flex; gap: 1px; white-space: nowrap; }
+    .coeur-exp { display: inline-block; width: 24px; height: 22px; }
+    .coeur-exp svg { display: block; width: 100%; height: 100%; }
+    .coeur-exp.perdu { animation: coeur-perdu 0.9s ease-out; }
+    @keyframes coeur-perdu { 0% { transform: scale(1); } 20% { transform: scale(1.5) rotate(-12deg); } 45% { transform: scale(0.8) rotate(10deg); } 70% { transform: translateX(-3px); } 85% { transform: translateX(3px); } 100% { transform: none; } }
+    .coeurs-depart { display: flex; align-items: center; gap: 8px; margin-top: 8px; font-weight: 800; color: #c2255c; }
+    .coeurs-depart .coeur-exp { width: 26px; height: 24px; }
+    .coeurs-depart .rangee { display: inline-flex; gap: 2px; flex: none; }
     .barre-exp .sac { font-weight: 900; color: #7a5600; background: #fff5d6; border-radius: 10px; padding: 3px 8px; white-space: nowrap; }
     .barre-exp .ou { flex: 1; min-width: 0; text-align: right; font-size: 0.8em; color: #6b7a86; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .carte-exp { position: relative; border-radius: 18px; overflow: hidden; box-shadow: 0 4px 16px rgba(29,43,54,0.18); }
-    .carte-exp > svg { display: block; width: 100%; height: auto; }
+    /* La carte est plus haute que la fenêtre : elle défile pour garder le compagnon dans le bas de l'écran */
+    .carte-exp { position: relative; border-radius: 18px; overflow: hidden; box-shadow: 0 4px 16px rgba(29,43,54,0.18); aspect-ratio: 340 / 590; }
+    .carte-exp .monde { position: absolute; left: 0; top: 0; width: 100%; transition: transform 0.7s ease-in-out; }
+    .carte-exp .monde svg { display: block; width: 100%; height: auto; }
     .carte-exp .n-possible { cursor: pointer; }
     .carte-exp .anneau { animation: anneau 1.4s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
     @keyframes anneau { 0%, 100% { opacity: 0.95; transform: scale(1); } 50% { opacity: 0.35; transform: scale(1.12); } }
@@ -82,6 +91,9 @@
     .aide-cp { border: none; background: #fff5d6; color: #7a5600; font: inherit; font-weight: 800; font-size: 0.88em; border-radius: 10px; padding: 7px 10px; margin-top: 8px; cursor: pointer; }
     .coffre-ico { font-size: 3.2em; text-align: center; line-height: 1.1; }
     .coffre-ico.ouvre { animation: ouvre 0.6s ease-out; }
+    .coffre-ico.bestiole { animation: bestiole 0.8s ease-out; }
+    @keyframes bestiole { 0% { transform: translateY(20px) scale(0.3); } 40% { transform: translateY(-14px) scale(1.25) rotate(-10deg); } 60% { transform: rotate(10deg); } 80% { transform: rotate(-6deg); } 100% { transform: none; } }
+    .risque { text-align: center; font-size: 0.85em; color: #8a5a00; background: #fff4d6; border-radius: 10px; padding: 6px 8px; margin: 6px 0 2px; font-weight: 700; }
     @keyframes ouvre { 0% { transform: scale(0.6) rotate(-10deg); } 60% { transform: scale(1.2) rotate(6deg); } 100% { transform: scale(1); } }
     .gain-coffre { text-align: center; font-weight: 900; font-size: 1.15em; margin-top: 6px; }
 
@@ -141,7 +153,8 @@
             <div class="segment">
               <button v-for="(d, id) in DIFFICULTES" :key="id" :class="{ actif: difficulte === id }" @click="difficulte = id">{{ d.nom }}<small>{{ d.desc }}</small></button>
             </div>
-            <button class="btn principal" style="width:100%" :disabled="!!fatigue" @click="partir">{{ fatigue ? '😴 Encore ' + fatigue + ' min de repos' : '🧭 Partir en expédition' }}</button>
+            <div class="coeurs-depart"><span class="rangee"><span v-for="i in COEURS" :key="i" class="coeur-exp" v-html="dessinCoeur(true)"></span></span><span>Tu pars avec 3 cœurs : ne les perds pas en route !</span></div>
+            <button class="btn principal" style="width:100%; margin-top:8px" :disabled="!!fatigue" @click="partir">{{ fatigue ? '😴 Encore ' + fatigue + ' min de repos' : '🧭 Partir en expédition' }}</button>
             <div class="aide" v-if="stats.parties">Expéditions : {{ stats.reussies }} réussie{{ stats.reussies > 1 ? 's' : '' }} sur {{ stats.parties }} · {{ stats.bonnes }} bonne{{ stats.bonnes > 1 ? 's' : '' }} réponse{{ stats.bonnes > 1 ? 's' : '' }} en tout.</div>
           </section>
         </template>
@@ -156,15 +169,17 @@
         </div>
         <div v-else class="jeu-exp">
           <div class="barre-exp">
-            <span class="coeurs" :aria-label="e.coeurs + ' cœurs'">{{ coeursTexte }}</span>
+            <span class="coeurs" :aria-label="e.coeurs + ' cœurs'"><span v-for="i in COEURS" :key="i" class="coeur-exp" :class="{ perdu: coeurPerdu === i }" v-html="dessinCoeur(i <= e.coeurs)"></span></span>
             <span class="sac">🎒 {{ e.sac }} ⭐ · ✨ {{ e.poussiere || 0 }}</span>
             <span class="ou">{{ lieuEnCours.ico }} {{ lieuEnCours.nom }} · {{ DIFFICULTES[e.difficulte].nom }}</span>
           </div>
           <div class="carte-exp" :style="{ background: lieuEnCours.couleurs.fond }" @click="toucherCarte">
-            <div v-html="carteSvg"></div>
-            <div class="pion" :class="{ marche: enMarche }" :style="pionStyle">
-              <svg v-if="animal" viewBox="0 -6 200 216" v-html="dessinAnimal"></svg>
-              <div v-else class="patte">🐾</div>
+            <div class="monde" :style="{ transform: 'translateY(' + camera + '%)' }">
+              <div v-html="carteSvg"></div>
+              <div class="pion" :class="{ marche: enMarche }" :style="pionStyle">
+                <svg v-if="animal" viewBox="0 -6 200 216" v-html="dessinAnimal"></svg>
+                <div v-else class="patte">🐾</div>
+              </div>
             </div>
             <div class="consigne-exp" v-if="!e.rencontre && !e.fin && !enMarche">{{ consigne }}</div>
 
@@ -192,11 +207,25 @@
                 <template v-else-if="r && r.type === 'coffre'">
                   <div class="qui"><span class="grand">🧰</span><div><div class="nom">Un coffre !</div><div class="role">Qu'y a-t-il dedans ?</div></div></div>
                   <template v-if="!r.ouvert">
-                    <div class="actions-exp"><button class="btn principal" @click="ouvrirCoffre">🔓 Ouvrir le coffre</button></div>
+                    <div class="risque">⚠️ Une bestiole s'y cache parfois (1 fois sur 5) et te vole un cœur…</div>
+                    <div class="actions-exp">
+                      <button class="btn principal" @click="ouvrirCoffre">🔓 Ouvrir</button>
+                      <button class="btn" @click="laisserCoffre">🚶 Passer mon chemin</button>
+                    </div>
+                  </template>
+                  <template v-else-if="r.gain.laisse">
+                    <div class="explication" style="text-align:center">Tu laisses le coffre fermé. Prudence !</div>
+                    <div class="actions-exp"><button class="btn principal" @click="continuer">Continuer</button></div>
+                  </template>
+                  <template v-else-if="r.gain.bestiole">
+                    <div class="coffre-ico bestiole">{{ r.gain.bestiole.ico }}</div>
+                    <div class="verdict non">{{ r.gain.bestiole.texte }}</div>
+                    <div class="explication" style="text-align:center">{{ e.coeurs > 0 ? 'Il te reste ' + e.coeurs + ' cœur' + (e.coeurs > 1 ? 's' : '') + '.' : 'Plus de cœur : il faut rentrer…' }}</div>
+                    <div class="actions-exp"><button class="btn principal" @click="continuer">Continuer</button></div>
                   </template>
                   <template v-else>
-                    <div class="coffre-ico ouvre">{{ r.gain.souvenir ? r.gain.ico : '✨' }}</div>
-                    <div class="gain-coffre">{{ r.gain.souvenir ? 'Un souvenir : ' + r.gain.nom + ' !' : '+' + r.gain.poussiere + ' poussière' + (r.gain.poussiere > 1 ? 's' : '') + ' d\'étoile' }}</div>
+                    <div class="coffre-ico ouvre">{{ r.gain.souvenir ? r.gain.ico : r.gain.gros ? '💎' : '✨' }}</div>
+                    <div class="gain-coffre">{{ r.gain.souvenir ? 'Un souvenir : ' + r.gain.nom + ' !' : (r.gain.gros ? 'Le gros lot ! ' : '') + '+' + r.gain.poussiere + ' poussière' + (r.gain.poussiere > 1 ? 's' : '') + ' d\'étoile' }}</div>
                     <div class="explication" style="text-align:center" v-if="!r.gain.souvenir">5 poussières font une étoile ⭐</div>
                     <div class="explication" style="text-align:center" v-if="r.gain.souvenir">Il t'attend dans la maison de {{ animal ? animal.nom : 'ton compagnon' }} (salon).</div>
                     <div class="actions-exp"><button class="btn principal" @click="continuer">Continuer</button></div>
@@ -262,9 +291,10 @@
         <section class="carte regles">
           <div class="titre-carte">Règles</div>
           <ul>
-            <li>Tu pars en balade avec ton compagnon dans un lieu à thème. Le chemin monte vers le <strong>boss</strong>, avec des fourches. Il est caché : tu ne vois que les prochaines étapes possibles (elles clignotent), à toi de choisir.</li>
+            <li>Tu pars en balade avec ton compagnon dans un lieu à thème. Le chemin monte vers le <strong>boss</strong>, avec des fourches ; il est tracé au hasard, différent à chaque expédition. Il est caché : tu ne vois que les prochaines étapes possibles (elles clignotent), à toi de choisir.</li>
             <li><strong>Gardien</strong> : il pose une question (4 réponses). Bonne réponse : des étoiles dans le sac. Mauvaise : tu perds un <strong>cœur</strong>.</li>
-            <li><strong>Coffre</strong> : des <strong>poussières d'étoile</strong> ✨ (5 poussières font une étoile, le reste est gardé pour la prochaine fois), ou un <strong>souvenir</strong> pour la maison de ton compagnon.</li>
+            <li>Tu pars avec <strong>3 cœurs</strong> ❤️❤️❤️. Plus de cœur : l'expédition s'arrête.</li>
+            <li><strong>Coffre</strong> : on hésite ! <strong>1 fois sur 5</strong>, une bestiole s'y cache et te vole un cœur. Sinon des <strong>poussières d'étoile</strong> ✨ (2 à 4, parfois le gros lot de 6 ; 5 poussières font une étoile, le reste est gardé pour la prochaine fois), ou un <strong>souvenir</strong> pour la maison de ton compagnon. Tu peux aussi passer ton chemin sans l'ouvrir.</li>
             <li><strong>Buvette</strong> : tu récupères un cœur (3 au plus).</li>
             <li><strong>Aide du compagnon</strong>, une fois par expédition : il retire deux mauvaises réponses.</li>
             <li><strong>Boss</strong> : il te défie sur un jeu de la collection, contre l'ordinateur : la partie se joue dans le vrai jeu, puis on revient. Perdu : un cœur en moins et une revanche.</li>
@@ -288,22 +318,22 @@
 
     const CLE = 'expedition-partie';
     // Géométrie de la vue isométrique : losanges de 56 × 28, blocs de 12 de haut, 7 rangs espacés de 4 demi-cases
-    const TW = 56, TH = 28, HB = 12, EP = 6, KB = 26, DMAX = 5;
-    const VB = { x: -170, y: -46, l: 340, h: 500 };
+    // La carte (procédurale) est plus ou moins haute : la fenêtre en montre 590 de haut et suit le compagnon
+    const TW = 56, TH = 28, HB = 12, EP = 6, DMAX = 5, FENETRE = 590;
     function posIso(k, d) { return { x: d * TW / 2, y: k * TH / 2 }; }
-    function posNoeud(nd) { return posIso(KB - 4 * nd.rang, 2 * nd.voie); }
+    function posNoeud(nd) { return posIso(nd.k, nd.d); }
+    function cadre(carte) { var y = carte.kHaut * TH / 2 - 74; return { x: -170, y: y, l: 340, h: Math.max(FENETRE, carte.kBas * TH / 2 + 90 - y) }; }
+    // Cœur dessiné (plein ou vide)
+    function coeurSvg(plein) {
+      return '<svg viewBox="0 0 24 22"><path d="M12 20.5 C5 15 1.5 11.5 1.5 7.2 C1.5 4 4 1.5 7 1.5 C9.2 1.5 11 2.8 12 4.6 C13 2.8 14.8 1.5 17 1.5 C20 1.5 22.5 4 22.5 7.2 C22.5 11.5 19 15 12 20.5 Z" fill="' +
+             (plein ? '#f03e5e' : '#e9ecef') + '" stroke="' + (plein ? '#a51d3a' : '#adb5bd') + '" stroke-width="1.6"/>' + (plein ? '<path d="M6 5.5 Q4.5 6.5 4.6 8.6" stroke="#fff" stroke-width="1.8" fill="none" stroke-linecap="round" opacity="0.7"/>' : '') + '</svg>';
+    }
     function losange(x, y) { return (x) + ',' + (y - TH / 2) + ' ' + (x + TW / 2) + ',' + y + ' ' + x + ',' + (y + TH / 2) + ' ' + (x - TW / 2) + ',' + y; }
     // Un pavé isométrique (dessus + deux côtés) posé sur la case (x, y), de hauteur h
     function pave(x, y, h, c, extra) {
       return '<g' + (extra || '') + '><polygon points="' + (x - TW / 2) + ',' + (y - h) + ' ' + x + ',' + (y + TH / 2 - h) + ' ' + x + ',' + (y + TH / 2) + ' ' + (x - TW / 2) + ',' + y + '" fill="' + c.gauche + '"/>' +
              '<polygon points="' + (x + TW / 2) + ',' + (y - h) + ' ' + x + ',' + (y + TH / 2 - h) + ' ' + x + ',' + (y + TH / 2) + ' ' + (x + TW / 2) + ',' + y + '" fill="' + c.droite + '"/>' +
              '<polygon points="' + losange(x, y - h) + '" fill="' + c.dessus + '"/></g>';
-    }
-    // Case du tapis la plus proche de la position idéale d (les cases n'existent que si k + d est pair)
-    function caseVoisine(k, d, sens) {
-      var a = Math.floor(d), b = a + 1;
-      if (a === d) return (a + k) % 2 === 0 ? a : a + (sens < 0 ? -1 : 1);
-      return Math.abs((a + k) % 2) === 0 ? a : b;
     }
     // Coffre dessiné (fermé, ou ouvert avec son couvercle relevé)
     function coffre(x, y, ouvert) {
@@ -317,7 +347,7 @@
       el: '#app',
       data: {
         version: VERSION,
-        LIEUX: EX.LIEUX, DIFFICULTES: EX.DIFFICULTES, GAIN_BOSS: EX.GAIN_BOSS,
+        LIEUX: EX.LIEUX, DIFFICULTES: EX.DIFFICULTES, GAIN_BOSS: EX.GAIN_BOSS, COEURS: EX.COEURS, coeurPerdu: 0,
         onglet: 'config',
         e: lireStockage(CLE),
         lieuChoisi: lireStockage('expedition-lieu') || 'cinema',
@@ -342,38 +372,44 @@
         consigne: function() { return this.possibles.length > 1 ? '👆 Choisis ton chemin' : this.possibles.length ? '👆 Touche l\'étape suivante' : ''; },
         // Position du compagnon au-dessus de l'étape où il est (en % de la carte)
         pionStyle: function() {
-          var p = posNoeud(this.noeudIci);
+          var p = posNoeud(this.noeudIci), VB = cadre(this.e.carte);
           return { left: ((p.x - VB.x) / VB.l * 100) + '%', top: ((p.y - HB - 2 - VB.y) / VB.h * 100) + '%' };
+        },
+        // Caméra : décalage (en % de la hauteur de la carte) pour garder le compagnon vers le bas de la fenêtre
+        camera: function() {
+          var VB = cadre(this.e.carte), p = posNoeud(this.noeudIci);
+          var haut = Math.min(Math.max(p.y - FENETRE * 0.7, VB.y), VB.y + VB.h - FENETRE);
+          return -((haut - VB.y) / VB.h * 100);
         },
         // ---------- La carte en 3D isométrique (SVG) ----------
         carteSvg: function() {
-          var e = this.e, L = this.lieuEnCours, c = L.couleurs, carte = e.carte, s = '';
+          var e = this.e, L = this.lieuEnCours, c = L.couleurs, carte = e.carte, s = '', VB = cadre(carte), tous = {};
           var chemin = {}, faits = {}, trajet = e.trajet || [0];
           for (var t = 1; t < trajet.length; t++) faits[trajet[t - 1] + '-' + trajet[t]] = true;
           var possibles = this.possibles;
           // Cases du tapis entre deux étapes reliées
           carte.liens.forEach(l => {
-            var a = carte.noeuds[l[0]], b = carte.noeuds[l[1]], ka = KB - 4 * a.rang, da = 2 * a.voie, db = 2 * b.voie;
+            var cases = carte.chemins[l[0] + '-' + l[1]] || [];
+            cases.forEach(cs => { tous[cs[0] + ',' + cs[1]] = true; });
             var etat = faits[l[0] + '-' + l[1]] ? 'fait' : (l[0] === e.pos && possibles.includes(l[1])) ? 'possible' : 'autre';
             if (etat === 'autre') return;   // chemin caché
-            for (var u = 1; u < 4; u++) {
-              var k = ka - u, d = caseVoisine(k, da + (db - da) * u / 4, db - da);
-              var cle = k + ',' + d, ancien = chemin[cle];
-              if (!ancien || etat === 'fait' || (etat === 'possible' && ancien === 'autre')) chemin[cle] = etat;
-            }
+            cases.forEach(cs => {
+              var cle = cs[0] + ',' + cs[1], ancien = chemin[cle];
+              if (!ancien || etat === 'fait') chemin[cle] = etat;
+            });
           });
-          // Pas de décor contre une étape (il la cacherait)
-          var presDUneEtape = (k, d) => carte.noeuds.some(nd => Math.abs(KB - 4 * nd.rang - k) <= 2 && Math.abs(2 * nd.voie - d) <= 2);
+          // Pas de décor contre une étape (il la cacherait) ni sur un chemin, même encore caché
+          var presDUneEtape = (k, d) => tous[k + ',' + d] || carte.noeuds.some(nd => Math.abs(nd.k - k) <= 2 && Math.abs(nd.d - d) <= 2);
           // Sol : un dallage en damier, dessiné de l'arrière vers l'avant
           var hDeco = EX.hasard(e.graine ^ 0x5eed), decos = [];
-          for (var k = -1; k <= KB + 3; k++) for (var d = -DMAX; d <= DMAX; d++) {
-            if ((k + d) % 2 !== 0) continue;
+          for (var k = carte.kHaut - 3, kFin = Math.ceil((VB.y + VB.h) * 2 / TH) + 2; k <= kFin; k++) for (var d = -DMAX; d <= DMAX; d++) {
+            if (Math.abs(k + d) % 2 !== 0) continue;
             var p = posIso(k, d), cle = k + ',' + d, ch = chemin[cle];
             var dessus = ch ? (ch === 'autre' ? '#7a2a3a' : c.chemin) : ((k + d) % 4 === 0 ? c.sol1 : c.sol2);
             s += pave(p.x, p.y, EP, { dessus: dessus, gauche: c.bord, droite: '#1a1428' });
             if (ch && ch !== 'autre') s += '<polygon points="' + losange(p.x, p.y - EP) + '" fill="none" stroke="' + c.cheminBord + '" stroke-width="' + (ch === 'possible' ? 2 : 1) + '" opacity="' + (ch === 'possible' ? 0.95 : 0.5) + '"/>';
             // Décor du lieu, sur les bords, loin du chemin
-            if (!ch && !presDUneEtape(k, d) && Math.abs(d) >= 3 && k > 0 && k < KB + 2 && hDeco() < 0.16) decos.push({ k: k, x: p.x, y: p.y - EP, ico: L.decor[Math.floor(hDeco() * L.decor.length)] });
+            if (!ch && !presDUneEtape(k, d) && Math.abs(d) >= 2 && k > carte.kHaut - 2 && k < carte.kBas + 2 && hDeco() < 0.16) decos.push({ k: k, x: p.x, y: p.y - EP, ico: L.decor[Math.floor(hDeco() * L.decor.length)] });
           }
           // Objets (décor et étapes), de l'arrière vers l'avant
           var objets = decos.map(o => ({ k: o.k, svg: '<text x="' + o.x + '" y="' + (o.y + 4) + '" font-size="20" text-anchor="middle" opacity="0.9">' + o.ico + '</text>' }));
@@ -393,7 +429,7 @@
             }
             // Grande zone de toucher (plus facile au doigt)
             if (possible) g += '<rect x="' + (x - TW / 2) + '" y="' + (yt - 34) + '" width="' + TW + '" height="' + (TH + HB + 36) + '" fill="transparent"/>';
-            objets.push({ k: KB - 4 * nd.rang + 0.5, svg: g + '</g>' });
+            objets.push({ k: nd.k + 0.5, svg: g + '</g>' });
           });
           objets.sort((a, b) => a.k - b.k).forEach(o => { s += o.svg; });
           return '<svg viewBox="' + VB.x + ' ' + VB.y + ' ' + VB.l + ' ' + VB.h + '" xmlns="http://www.w3.org/2000/svg">' + s + '</svg>';
@@ -403,11 +439,17 @@
         sonActif: function(v) { ecrireStockage('brillant-son', v); },
         vibrationActive: function(v) { ecrireStockage('brillant-vibration', v); if (v) vibrer(40); },
         lieuChoisi: function(v) { ecrireStockage('expedition-lieu', v); },
-        difficulte: function(v) { ecrireStockage('expedition-difficulte', v); }
+        difficulte: function(v) { ecrireStockage('expedition-difficulte', v); },
+        // Un cœur perdu tremble un moment
+        'e.coeurs': function(v, ancien) {
+          if (v == null || ancien == null || v >= ancien) return;
+          this.coeurPerdu = v + 1;
+          clearTimeout(this._coeur); this._coeur = setTimeout(() => { this.coeurPerdu = 0; }, 950);
+        }
       },
       created: function() {
         if (this.e && this.e.fin) { this.e = null; ecrireStockage(CLE, null); }
-        if (this.e) this.onglet = 'play';
+        if (this.e) { EX.completerCarte(this.e.carte, this.e.graine); this.onglet = 'play'; }
         // Le compagnon peut changer ailleurs (soins, accessoires) : on relit au retour sur la page
         window.addEventListener('pageshow', () => { this.animal = lireStockage('compagnon-animal'); this.lireResultatBoss(); });
         document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') this.lireResultatBoss(); });
@@ -415,6 +457,7 @@
         this.lireResultatBoss();
       },
       methods: {
+        dessinCoeur: coeurSvg,
         son: function(nom) { if (this.sonActif) try { Sons.jouer(nom); } catch (x) {} },
         vibre: function(m) { if (this.vibrationActive) vibrer(m); },
         sauver: function() { ecrireStockage(CLE, this.e); },
@@ -479,7 +522,13 @@
           var e = this.e, r = e.rencontre, h = EX.hasardEtape(e, 3), L = this.lieuEnCours;
           var animal = lireStockage('compagnon-animal'), possede = (animal && animal.possede) || {};
           var restants = (L.souvenirs || []).filter(id => !possede[id] && !e.souvenirs.some(s => s.id === id));
-          if (animal && restants.length && h() < 0.4) {
+          var tirage = EX.tirerCoffre(h, !!(animal && restants.length));
+          if (tirage.type === 'bestiole') {
+            e.coeurs--; r.gain = { bestiole: tirage.bestiole }; r.ouvert = true;
+            this.sauver(); this.son('choc'); this.vibre([80, 60, 80]);
+            return;
+          }
+          if (tirage.type === 'souvenir') {
             var art = CP.art(restants[Math.floor(h() * restants.length)]);
             // Le souvenir va tout de suite dans la maison du compagnon (installé au salon)
             animal.possede = animal.possede || {}; animal.porte = animal.porte || {};
@@ -488,12 +537,13 @@
             e.souvenirs.push({ id: art.id, nom: art.nom, ico: art.ico });
             r.gain = { souvenir: true, nom: art.nom, ico: art.ico };
           } else {
-            var n = 1 + Math.floor(h() * 3);
-            e.poussiere = (e.poussiere || 0) + n; r.gain = { poussiere: n };
+            var n = tirage.n;
+            e.poussiere = (e.poussiere || 0) + n; r.gain = { poussiere: n, gros: !!tirage.gros };
           }
           r.ouvert = true;
           this.sauver(); this.son('toc'); this.vibre([20, 40, 20]);
         },
+        laisserCoffre: function() { var r = this.e.rencontre; r.ouvert = true; r.gain = { laisse: true }; this.sauver(); },
         continuer: function() {
           var e = this.e;
           e.rencontre = null;

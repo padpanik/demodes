@@ -343,16 +343,23 @@ Bataille navale : `bataille-sauvegarde`, `bataille-prive` (ma flotte en salon), 
   Île aux trésors (géographie), Conservatoire (musique), Forêt enchantée (nature) — chacun prévu avec un boss d'un autre jeu.
 - **Une expédition par heure** (le compagnon est fatigué : `EX.REPOS`, départ noté dans `expedition-depart`) : carte « 😴 … trop fatigué » en haut
   de l'onglet Partie et bouton « Encore N min de repos ».
-- **Carte** (`EX.genererCarte(graine)`, reproductible) : 7 rangs (1, 2, 3, 2, 3, 2, 1 étapes), départ en bas, boss en haut ; chaque étape
-  mène à la ou aux plus proches du rang suivant (fourches), aucune impasse. Étapes : gardien (~58 %), coffre (~26 %), buvette (pas au 1er rang).
+- **Carte procédurale** (`EX.genererCarte(graine)`, reproductible, demandée par l'utilisateur) : 7 rangs, départ en bas, boss en haut ;
+  2 ou 3 étapes par rang intermédiaire, placées au hasard (cases `k, d` de la grille iso, `k + d` pair, `|d| ≤ 5`), rangs espacés de 4 ou 6 cases ;
+  chaque étape mène à la ou aux plus proches du rang suivant (fourches), aucune impasse. Tapis tracé case par case par une marche au hasard
+  (`carte.chemins['a-b']`, `tracerChemins`) qui serpente mais arrive toujours. Étapes : gardien (~55 %, au moins un par rang), coffre (~29 %),
+  buvette (pas au 1er rang). Ancienne carte (expédition commencée avant 2.26) : complétée par `EX.completerCarte`.
+  La carte est plus haute que l'écran : fenêtre de 590 (`FENETRE`, `cadre`) qui défile (`camera`) pour garder le compagnon vers le bas.
 - **Vue isométrique** (`carteSvg`), **chemin caché** (demandé par l'utilisateur) : on ne voit que les étapes déjà faites, l'étape actuelle et le
   prochain choix (tapis compris) ; tout le reste est caché, boss compris. Dallage en damier, tapis entre les étapes, étapes en pavés
   avec leur icône (❓ gardien, coffre dessiné, buvette, boss sur pavé violet), anneau doré qui clignote sur les étapes possibles, décor du lieu
   sur les bords (jamais contre une étape). Le compagnon (`CP.dessin`) est posé sur l'étape et marche jusqu'à la suivante (sinon 🐾).
+- **Cœurs** : 3 dessinés en SVG dans la barre dès le départ (et « Tu pars avec 3 cœurs » dans l'onglet Partie) ; celui qu'on perd tremble (`coeurPerdu`). Plus de cœur = fin.
 - **Gardien** : une question (4 réponses mélangées), bonne = +1 ⭐ au sac (+2 pour une question moyenne en Aventure), mauvaise = −1 cœur ;
   l'explication s'affiche ensuite. **Aide du compagnon** une fois par expédition (retire deux mauvaises réponses). Questions maison
   (`EX.QUESTIONS`, 55 pour le cinéma : 30 faciles, 25 moyennes, avec une petite explication) ; pas de répétition des 40 dernières.
-- **Coffre** : 1 à 3 **poussières d'étoile** ✨ (trop d'étoiles sinon, d'après l'utilisateur) : 5 poussières = 1 ⭐, converties à la fin
+- **Coffre risqué** (« qu'on hésite à y aller ») : **1 fois sur 5** une bestiole (rat, chauve-souris, araignée, serpent ; `EX.BESTIOLES`,
+  `EX.tirerCoffre`) vole un cœur ; l'avertissement est affiché et on peut « Passer mon chemin » sans ouvrir. Sinon : souvenir (30 %), ou 2 à 4
+  **poussières d'étoile** ✨, parfois le gros lot de 6 (12 %). Ancien texte, pour mémoire : 1 à 3 **poussières d'étoile** ✨ (trop d'étoiles sinon, d'après l'utilisateur) : 5 poussières = 1 ⭐, converties à la fin
   de l'expédition, le reste gardé (`expedition-poussiere`) ; ou (40 %, si on a un compagnon) un **souvenir** du lieu pas encore trouvé, installé tout de suite au salon
   (articles `souvenir` de `compagnon-commun.js` : clap, pop-corn, bobine, projecteur ; emplacements `exp-…`, invendables, visibles en boutique
   seulement une fois trouvés, déplaçables avec « Arranger la déco »). **Buvette** : +1 cœur (3 au plus).

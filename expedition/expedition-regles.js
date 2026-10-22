@@ -110,44 +110,79 @@ var EX = (function () {
   // Poussières : celles en réserve + celles de l'expédition → étoiles entières et reste
   function convertirPoussiere(reserve, gagnees) { var tout = (reserve || 0) + (gagnees || 0); return { etoiles: Math.floor(tout / POUSSIERES_PAR_ETOILE), reste: tout % POUSSIERES_PAR_ETOILE }; }
 
-  // ---------- Carte : 7 rangs, départ en bas, boss en haut, fourches entre les deux ----------
-  // Un nœud : { id, rang, voie (position latérale : -2 … 2), type: depart | gardien | coffre | repos | boss }
-  var LARGEURS = [1, 2, 3, 2, 3, 2, 1];
-  var VOIES = { 1: [0], 2: [-1, 1], 3: [-2, 0, 2] };
+  // ---------- Carte procédurale : 7 rangs, départ en bas, boss en haut, fourches entre les deux ----------
+  // Grille isométrique en losanges : une case (k, d) existe si k + d est pair ; k grandit vers le bas, d va de -DMAX à DMAX.
+  // Chaque carte est différente : nombre d'étapes par rang, place des étapes, écart entre les rangs et tracé des chemins
+  // (une marche au hasard case par case, qui serpente mais arrive toujours à l'étape suivante).
+  // Un nœud : { id, rang, k, d, type: depart | gardien | coffre | repos | boss } ; chemins['a-b'] = cases du tapis entre a et b.
+  var RANGS = 7, DMAX = 5;
+  var PAIRES = [[-4, 0], [-4, 2], [-2, 2], [0, 4], [-2, 4], [-4, 4]];
   function genererCarte(graine) {
-    var h = hasard(graine), noeuds = [], liens = [], rangs = [];
-    LARGEURS.forEach((n, r) => {
-      var rang = [];
-      VOIES[n].forEach(v => {
-        var type = r === 0 ? 'depart' : r === LARGEURS.length - 1 ? 'boss' : null;
-        var nd = { id: noeuds.length, rang: r, voie: v, type: type };
-        noeuds.push(nd); rang.push(nd);
+    var h = hasard(graine), noeuds = [], liens = [], rangs = [], choix = l => l[Math.floor(h() * l.length)];
+    for (var r = 0; r < RANGS; r++) {
+      var largeur = r === 0 || r === RANGS - 1 ? 1 : (h() < 0.55 ? 2 : 3);
+      var ds = largeur === 1 ? [choix([-2, 0, 2])] : largeur === 2 ? choix(PAIRES).slice() : [-4, 0, 4];
+      var rang = ds.map(d => {
+        var nd = { id: noeuds.length, rang: r, k: 0, d: d, type: r === 0 ? 'depart' : r === RANGS - 1 ? 'boss' : null };
+        noeuds.push(nd); return nd;
       });
       rangs.push(rang);
-    });
+    }
     // Types des étapes intermédiaires : surtout des gardiens, des coffres, une buvette de temps en temps
-    for (var r = 1; r < LARGEURS.length - 1; r++) {
-      var types = rangs[r].map(() => { var x = h(); return x < 0.58 ? 'gardien' : x < 0.84 ? 'coffre' : 'repos'; });
+    for (var r = 1; r < RANGS - 1; r++) {
+      var types = rangs[r].map(() => { var x = h(); return x < 0.55 ? 'gardien' : x < 0.84 ? 'coffre' : 'repos'; });
       if (r === 1) types = types.map(t => t === 'repos' ? 'gardien' : t);   // pas de buvette dès le début
       if (!types.includes('gardien')) types[Math.floor(h() * types.length)] = 'gardien';
       rangs[r].forEach((nd, i) => { nd.type = types[i]; });
     }
     // Chemins : chaque étape mène à la (ou les) plus proche(s) du rang suivant ; tout le monde est relié
-    for (var r = 0; r < LARGEURS.length - 1; r++) {
-      var a = rangs[r], b = rangs[r + 1];
+    for (var r = 0; r < RANGS - 1; r++) {
+      var a = rangs[r], b = rangs[r + 1], ecart = (x, y) => Math.abs(x.d - y.d);
       a.forEach(nd => {
-        var proches = b.slice().sort((x, y) => Math.abs(x.voie - nd.voie) - Math.abs(y.voie - nd.voie));
+        var proches = b.slice().sort((x, y) => ecart(x, nd) - ecart(y, nd));
         liens.push([nd.id, proches[0].id]);
-        if (proches[1] && Math.abs(proches[1].voie - nd.voie) <= 2 && (a.length === 1 || h() < 0.55)) liens.push([nd.id, proches[1].id]);
+        if (proches[1] && ecart(proches[1], nd) <= 4 && (a.length === 1 || h() < 0.55)) liens.push([nd.id, proches[1].id]);
       });
       b.forEach(nd => {
-        if (!liens.some(l => l[1] === nd.id)) {
-          var proche = a.slice().sort((x, y) => Math.abs(x.voie - nd.voie) - Math.abs(y.voie - nd.voie))[0];
-          liens.push([proche.id, nd.id]);
-        }
+        if (!liens.some(l => l[1] === nd.id)) liens.push([a.slice().sort((x, y) => ecart(x, nd) - ecart(y, nd))[0].id, nd.id]);
       });
     }
-    return { noeuds: noeuds, liens: liens };
+    // Hauteur de chaque rang : 4 ou 6 cases (paires), et assez pour que les chemins puissent aller d'une étape à l'autre
+    var k = 2;
+    for (var r = RANGS - 1; r >= 0; r--) {
+      rangs[r].forEach(nd => { nd.k = k; });
+      if (r > 0) {
+        var besoin = Math.max.apply(null, liens.filter(l => noeuds[l[1]].rang === r).map(l => Math.abs(noeuds[l[0]].d - noeuds[l[1]].d)));
+        var pas = Math.max(h() < 0.5 ? 4 : 6, besoin + (besoin % 2));
+        k += pas;
+      }
+    }
+    var carte = { noeuds: noeuds, liens: liens, chemins: {}, kHaut: 2, kBas: k - 0 };
+    carte.kBas = rangs[0][0].k;
+    tracerChemins(carte, h);
+    return carte;
+  }
+  // Tapis entre deux étapes : on monte d'une case à chaque pas (k - 1) en allant à gauche ou à droite (d ± 1), au hasard,
+  // sans jamais s'écarter au point de ne plus pouvoir rejoindre l'arrivée
+  function tracerChemins(carte, h) {
+    carte.chemins = {};
+    carte.liens.forEach(l => {
+      var a = carte.noeuds[l[0]], b = carte.noeuds[l[1]], n = a.k - b.k, d = a.d, cases = [];
+      for (var t = 1; t < n; t++) {
+        var reste = n - t, options = [-1, 1].filter(s => Math.abs(b.d - (d + s)) <= reste && Math.abs(d + s) <= DMAX);
+        var s = options.length > 1 ? (h() < 0.5 ? -1 : 1) : options[0];
+        d += s; cases.push([a.k - t, d]);
+      }
+      carte.chemins[l[0] + '-' + l[1]] = cases;
+    });
+  }
+  // Ancienne carte (avant les chemins procéduraux) : on la complète pour pouvoir finir l'expédition en cours
+  function completerCarte(carte, graine) {
+    if (carte.chemins) return carte;
+    carte.noeuds.forEach(nd => { nd.k = 26 - 4 * nd.rang; nd.d = 2 * nd.voie; });
+    carte.kHaut = 2; carte.kBas = 26;
+    tracerChemins(carte, hasard(graine || 1));
+    return carte;
   }
   function suivants(carte, id) { return carte.liens.filter(l => l[0] === id).map(l => l[1]); }
 
@@ -165,6 +200,23 @@ var EX = (function () {
   }
 
   // ---------- Nouvelle expédition ----------
+  // ---------- Coffres : on hésite à les ouvrir ----------
+  // 1 fois sur 5, une bestiole s'y cache et vole un cœur ; sinon un souvenir (s'il en reste à trouver) ou des poussières,
+  // parfois un gros lot
+  var RISQUE_COFFRE = 0.2;
+  var BESTIOLES = [
+    { ico: '🐀', nom: 'Un rat', texte: 'Un rat bondit du coffre et file avec un de tes cœurs !' },
+    { ico: '🦇', nom: 'Une chauve-souris', texte: 'Une chauve-souris s\'envole du coffre en emportant un cœur !' },
+    { ico: '🕷️', nom: 'Une araignée', texte: 'Une grosse araignée t\'attendait… elle te pique un cœur !' },
+    { ico: '🐍', nom: 'Un serpent', texte: 'Un serpent dormait dans le coffre. Il siffle et te vole un cœur !' }
+  ];
+  function tirerCoffre(h, souvenirPossible) {
+    var x = h();
+    if (x < RISQUE_COFFRE) return { type: 'bestiole', bestiole: BESTIOLES[Math.floor(h() * BESTIOLES.length)] };
+    if (souvenirPossible && x < RISQUE_COFFRE + 0.3) return { type: 'souvenir' };
+    if (h() < 0.12) return { type: 'poussiere', n: 6, gros: true };
+    return { type: 'poussiere', n: 2 + Math.floor(h() * 3) };
+  }
   function nouvelle(lieuId, difficulte, graine) {
     graine = graine || Math.floor(Math.random() * 1e9);
     return { lieu: lieuId, difficulte: difficulte, graine: graine, carte: genererCarte(graine), pos: 0, visites: [0], trajet: [0],
@@ -176,7 +228,7 @@ var EX = (function () {
   // Fin : étoiles gardées (tout si le boss est vaincu, la moitié sinon)
   function gainFinal(e, gagne) { return gagne ? e.sac : Math.floor(e.sac / 2); }
 
-  return { POUSSIERES_PAR_ETOILE: POUSSIERES_PAR_ETOILE, REPOS: REPOS, LIEUX: LIEUX, lieu: lieu, DIFFICULTES: DIFFICULTES, COEURS: COEURS, GAIN_BOSS: GAIN_BOSS, QUESTIONS: QUESTIONS, LARGEURS: LARGEURS,
+  return { POUSSIERES_PAR_ETOILE: POUSSIERES_PAR_ETOILE, REPOS: REPOS, LIEUX: LIEUX, lieu: lieu, DIFFICULTES: DIFFICULTES, COEURS: COEURS, GAIN_BOSS: GAIN_BOSS, RISQUE_COFFRE: RISQUE_COFFRE, BESTIOLES: BESTIOLES, tirerCoffre: tirerCoffre, QUESTIONS: QUESTIONS, RANGS: RANGS, DMAX: DMAX, completerCarte: completerCarte,
            hasard: hasard, melanger: melanger, convertirPoussiere: convertirPoussiere, genererCarte: genererCarte, suivants: suivants, tirerQuestion: tirerQuestion,
            nouvelle: nouvelle, hasardEtape: hasardEtape, gainFinal: gainFinal };
 })();
