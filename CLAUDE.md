@@ -359,8 +359,8 @@ Bataille navale : `bataille-sauvegarde`, `bataille-prive` (ma flotte en salon), 
   (`EX.QUESTIONS`, 55 pour le cinéma : 30 faciles, 25 moyennes, avec une petite explication) ; pas de répétition des 40 dernières.
 - **Coffre risqué** (« qu'on hésite à y aller ») : **1 fois sur 5** une bestiole (rat, chauve-souris, araignée, serpent ; `EX.BESTIOLES`,
   `EX.tirerCoffre`) vole un cœur ; l'avertissement est affiché et on peut « Passer mon chemin » sans ouvrir. Sinon : souvenir (30 %), ou 2 à 4
-  **poussières d'étoile** ✨, parfois le gros lot de 6 (12 %). Ancien texte, pour mémoire : 1 à 3 **poussières d'étoile** ✨ (trop d'étoiles sinon, d'après l'utilisateur) : 5 poussières = 1 ⭐, converties à la fin
-  de l'expédition, le reste gardé (`expedition-poussiere`) ; ou (40 %, si on a un compagnon) un **souvenir** du lieu pas encore trouvé, installé tout de suite au salon
+  **poussières d'étoile** ✨, parfois le gros lot de 6 (12 %). Poussières plutôt qu'étoiles (trop d'étoiles sinon, d'après l'utilisateur) : 5 poussières = 1 ⭐, converties à la fin
+  de l'expédition, le reste gardé (`expedition-poussiere`) ; le **souvenir** (si on a un compagnon) est un objet du lieu pas encore trouvé, installé tout de suite au salon
   (articles `souvenir` de `compagnon-commun.js` : clap, pop-corn, bobine, projecteur ; emplacements `exp-…`, invendables, visibles en boutique
   seulement une fois trouvés, déplaçables avec « Arranger la déco »). **Buvette** : +1 cœur (3 au plus).
 - **Boss** : la partie se joue **sur la vraie page du jeu** (pas de copie) : l'expédition écrit `expedition-boss` (id, nom, icône, défi, niveau)
