@@ -263,18 +263,8 @@
     .jauge span { display: block; height: 100%; border-radius: 6px; transition: width 0.5s; }
     .besoin.bas { box-shadow: 0 0 0 2.5px #e67e22; }
     .besoin .vide-alerte { font-size: 0.75em; font-weight: 800; color: #c92a2a; text-align: center; align-self: stretch; }
-    /* Une langue pour le compagnon : il dit une phrase, on devine ce qu'elle veut dire */
-    .langue-cp { background: #fff; border-radius: 16px; padding: 10px 12px; margin-top: 10px; box-shadow: 0 1px 2px rgba(0,0,0,0.06); }
-    .langue-cp .titre { font-weight: 900; margin-bottom: 6px; display: flex; align-items: center; gap: 6px; }
-    .langue-cp .phrase { display: flex; align-items: center; gap: 8px; background: #f3f0ff; border-radius: 14px; padding: 10px 12px; font-size: 1.25em; font-weight: 900; color: #3b2a6b; }
-    .langue-cp .phrase span { flex: 1; }
-    .langue-cp .ecouter { border: none; background: #fff; border-radius: 50%; width: 40px; height: 40px; font-size: 1.2em; cursor: pointer; flex-shrink: 0; box-shadow: 0 1px 3px rgba(0,0,0,0.12); }
-    .langue-cp .choix { display: grid; gap: 6px; margin-top: 8px; }
-    .langue-cp .choix button { border: 2px solid #e1e6ea; background: #fff; border-radius: 12px; padding: 10px; font: inherit; font-weight: 800; font-size: 1.05em; text-align: left; cursor: pointer; color: #1d2b36; }
-    .langue-cp .choix button.bonne { border-color: #2f9e44; background: #ebfbee; }
-    .langue-cp .choix button.fausse { border-color: #e03131; background: #fff5f5; }
-    .langue-cp .verdict { font-weight: 900; margin-top: 8px; }
-    .langue-cp .compte { font-size: 0.85em; color: #6b7a86; margin-top: 6px; }
+    /* Bulle dans sa langue, avec la traduction en petit dessous */
+    .bulle-cp .vf { display: block; font-size: 0.85em; font-weight: 600; color: #8a97a1; margin-top: 2px; }
     .langues { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
     .langues button { border: 2px solid #e1e6ea; background: #fff; border-radius: 12px; padding: 9px 6px; font: inherit; font-weight: 800; cursor: pointer; color: #1d2b36; }
     .langues button.actif { border-color: #7048e8; background: #f3f0ff; color: #5f3dc4; }
@@ -461,7 +451,7 @@
 
           <!-- L'animal est dans cette pièce, ou on peut l'appeler -->
           <template v-if="p.id === ouEst">
-            <div class="bulle-cp" v-if="message">{{ message }}</div>
+            <div class="bulle-cp" v-if="message"><template v-if="messageLangue">{{ messageLangue }}<span class="vf">{{ message }}</span></template><template v-else>{{ message }}</template></div>
             <div class="animal" :class="[humeurClasse, classesVie]" :style="{ left: vie.x + '%', transitionDuration: vie.duree + 'ms' }" @click="caresser">
               <div class="sens" :class="{ gauche: vie.dir < 0 }"><svg viewBox="0 0 200 210" v-html="dessin(animal, humeurClasse)"></svg></div>
             </div>
@@ -537,24 +527,6 @@
           </ul>
           <div class="serie">{{ jour.recompense ? '⭐ Journée complète : +' + RECOMPENSE_JOUR + ' étoiles gagnées.' : 'Tout fait aujourd\'hui : +' + RECOMPENSE_JOUR + ' ⭐' }}
             <span v-if="animal.serie > 1"> · {{ animal.serie }} jours de suite 🔥</span></div>
-        </div>
-        <!-- Sa langue : il dit une phrase, à toi de deviner ce qu'elle veut dire -->
-        <div class="langue-cp" v-if="langueInfo">
-          <div class="titre">🗣️ {{ animal.nom }} parle {{ langueInfo.adj }} {{ langueInfo.ico }}</div>
-          <button v-if="!question" class="btn principal" style="width:100%" @click="nouvelleQuestion">💬 Dis-moi quelque chose en {{ langueInfo.adj }}</button>
-          <template v-else>
-            <div class="phrase"><span>« {{ question.texte }} »</span><button class="ecouter" @click="ecouterPhrase" aria-label="Écouter">🔊</button></div>
-            <div class="aide" style="margin:6px 0 0" v-if="reponse === null">Qu'est-ce que {{ animal.nom }} veut dire ?</div>
-            <div class="choix">
-              <button v-for="(c, k) in question.choix" :key="k" :disabled="reponse !== null" @click="repondreLangue(k)"
-                      :class="{ bonne: reponse !== null && k === question.bonne, fausse: reponse === k && k !== question.bonne }">{{ c }}</button>
-            </div>
-            <template v-if="reponse !== null">
-              <div class="verdict" :style="{ color: reponse === question.bonne ? '#2f9e44' : '#e03131' }">{{ reponse === question.bonne ? '✅ Bravo, tu m\'as compris ! 💛' : '❌ Presque… je disais « ' + question.choix[question.bonne] + ' »' }}</div>
-              <button class="btn principal" style="width:100%;margin-top:8px" @click="nouvelleQuestion">💬 Une autre phrase</button>
-            </template>
-          </template>
-          <div class="compte">{{ langue.bonnes }} phrase{{ langue.bonnes > 1 ? 's' : '' }} comprise{{ langue.bonnes > 1 ? 's' : '' }}<span v-if="langue.etoilesJour < LANGUE_ETOILES_JOUR"> · encore {{ LANGUE_POUR_ETOILE - langue.compte }} pour gagner 1 ⭐</span><span v-else> · {{ LANGUE_ETOILES_JOUR }} ⭐ gagnées aujourd'hui, bravo !</span></div>
         </div>
       </template>
 
@@ -640,12 +612,11 @@
         </section>
         <section class="carte">
           <div class="titre-carte">🌍 Une langue pour {{ animal.nom }}</div>
-          <div class="aide" style="margin:-4px 0 8px">{{ animal.nom }} te dit des phrases dans cette langue, à toi de deviner ce qu'elles veulent dire (onglet Soins). Réglé sur ce téléphone seulement.</div>
+          <div class="aide" style="margin:-4px 0 8px">{{ animal.nom }} te parle dans cette langue, avec la traduction en petit dessous. Pour l'instant il connaît ses phrases de tous les jours ; il en apprendra d'autres petit à petit. Réglé sur ce téléphone seulement.</div>
           <div class="langues">
             <button v-for="(l, id) in CP.LANGUES" :key="id" :class="{ actif: langue.langue === id }" @click="choisirLangue(id)">{{ l.ico }} {{ l.nom }}</button>
             <button class="aucune" :class="{ actif: !langue.langue }" @click="choisirLangue(null)">Aucune, il parle français</button>
           </div>
-          <div class="serie">Chaque phrase comprise lui fait plaisir (+ câlins). Toutes les {{ LANGUE_POUR_ETOILE }} bonnes réponses : +1 ⭐ ({{ LANGUE_ETOILES_JOUR }} ⭐ par jour au plus).</div>
         </section>
         <section class="carte">
           <div class="titre-carte">Comment gagner des étoiles ⭐</div>
@@ -830,10 +801,7 @@
         vie: { x: 50, dir: 1, marche: false, posture: 'assis', geste: '', duree: 0, objet: '', sieste: false },
         feteEssai: lireStockage('compagnon-fete-essai') || '',
         retourExp: null,
-        langue: Object.assign({ langue: null, vues: [], bonnes: 0, total: 0, compte: 0, jour: '', etoilesJour: 0 }, lireStockage('compagnon-langue') || {}),
-        question: null,    // phrase en cours dans sa langue : { i, texte, choix, bonne }
-        reponse: null,
-        LANGUE_POUR_ETOILE: 5, LANGUE_ETOILES_JOUR: 3,
+        langue: Object.assign({ langue: null }, lireStockage('compagnon-langue') || {}),   // sa langue, sur ce téléphone
         listeFetes: CP.FETES.concat([{ id: 'anniversaire', nom: 'Anniversaire', ico: '🎂' }]),
         admin: { ouvert: false, actif: ADMIN.actif(), mdp: '', erreur: '', calcul: false }
       },
@@ -842,7 +810,8 @@
         especeChoisie: function() { return ESPECES.find(e => e.id === this.adoption.espece) || ESPECES[0]; },
         // Les besoins, recalculés avec le temps passé depuis le dernier soin
         // Les besoins, recalculés avec le temps passé depuis le dernier soin
-        langueInfo: function() { return this.langue.langue ? CP.LANGUES[this.langue.langue] : null; },
+        // Sa phrase dans sa langue (null s'il ne la connaît pas encore, ou s'il parle français)
+        messageLangue: function() { return this.visite ? null : CP.traduire(this.message, this.langue.langue); },
         niveaux: function() { return this.animal ? CP.niveaux(this.animal, this.maintenant) : {}; },
         humeurClasse: function() { return CP.humeur(this.niveaux); },
         texteHumeur: function() {
@@ -998,45 +967,12 @@
 
         // ---------- Soins ----------
         // ---------- Sa langue ----------
-        direUnMoment: function(txt) { this.message = txt; setTimeout(() => { if (this.message === txt) this.message = ''; }, 6000); },
-        sauverLangue: function() { ecrireStockage('compagnon-langue', this.langue); },
         choisirLangue: function(id) {
-          this.langue.langue = id; this.question = null; this.reponse = null;
-          this.sauverLangue();
-          if (id) { this.message = { en: 'Hello! 👋', es: '¡Hola! 👋', de: 'Hallo! 👋', it: 'Ciao! 👋' }[id] + ' Je parle ' + CP.LANGUES[id].adj + ' maintenant !'; vibrer(20); }
-        },
-        nouvelleQuestion: function() {
-          var l = this.langue;
-          if (!l.langue || this.dort) { if (this.dort) this.message = 'Chut… je dors 😴'; return; }
-          var q = CP.questionLangue(l.langue, l.vues);
-          this.question = q; this.reponse = null;
-          l.vues = l.vues.concat(q.i).slice(-15); this.sauverLangue();
-          this.direUnMoment(q.texte);
-          this.ecouterPhrase();
-        },
-        ecouterPhrase: function() { if (this.question) CP.direEnLangue(this.question.texte, this.langue.langue); },
-        repondreLangue: function(k) {
-          var l = this.langue, q = this.question;
-          if (!q || this.reponse !== null) return;
-          this.reponse = k; l.total++;
-          var aujourdhui = new Date().toDateString();
-          if (l.jour !== aujourdhui) { l.jour = aujourdhui; l.etoilesJour = 0; }
-          if (k === q.bonne) {
-            l.bonnes++;
-            this.changerBesoin('calin', 8); this.animer('💛', 2);
-            this.direUnMoment({ en: 'Well done! 🎉', es: '¡Muy bien! 🎉', de: 'Super! 🎉', it: 'Bravissimo! 🎉' }[l.langue]);
-            if (l.etoilesJour < this.LANGUE_ETOILES_JOUR && ++l.compte >= this.LANGUE_POUR_ETOILE) {
-              l.compte = 0; l.etoilesJour++;
-              Etoiles.ajouter(1, this.animal.nom + ' t\'apprend l\'' + CP.LANGUES[l.langue].adj);
-              this.etoiles = Etoiles.solde(); this.majJournal();
-              this.animer('⭐', 1);
-            }
-            vibrer(30);
-          } else {
-            this.direUnMoment('Non… je disais « ' + q.choix[q.bonne] + ' » 😉');
-            vibrer([40, 40, 40]);
-          }
-          this.sauverLangue();
+          this.langue = { langue: id };
+          ecrireStockage('compagnon-langue', this.langue);
+          this.message = 'Coucou ! 👋';
+          if (id) CP.direEnLangue(CP.traduire(this.message, id), id);
+          vibrer(20);
         },
         couleurJauge: function(v) { return v < 25 ? '#e5533d' : v < 55 ? '#f0a500' : '#3cb371'; },
         soigner: function(b) {

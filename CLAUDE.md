@@ -486,12 +486,11 @@ Bataille navale : `bataille-boss` (partie contre un boss d'expédition), `batail
   quelques émojis par pièce (`ambiance`, animés doucement : flotte, balance, scintille…), un passage à la fenêtre (chauve-souris, feu
   d'artifice la nuit du Nouvel an), jardin enneigé avec bonhomme de neige à Noël. Petits mots de saison plus fréquents, vœux le jour J
   (2 févr., 14 févr., 17 mars, dimanche de Pâques, 21 juin, 31 oct., 25 déc., 1er janv., anniversaire) au premier message du jour.
-- **Une langue pour le compagnon** (demandée par l'utilisateur : un jeu entre le compagnon et son maître, pas une traduction de ses messages) :
-  choix dans l'onglet ⚙️ Réglages (Anglais, Espagnol, Allemand, Italien, ou aucune), **propre à chaque téléphone** (`compagnon-langue` :
-  langue, phrases vues, bonnes réponses, compteur, étoiles du jour). Onglet Soins : carte « 🗣️ X parle anglais » : il dit une phrase de sa réserve
-  (`CP.PHRASES`, 36 phrases de sa vie en fr / en / es / de / it ; `CP.questionLangue`), dans sa bulle et à voix haute (`CP.direEnLangue`, voix du
-  téléphone dans la langue), et on choisit parmi 3 phrases en français. Bonne réponse : +8 % de câlins ; toutes les 5 bonnes réponses +1 ⭐
-  (3 ⭐ par jour au plus, `Etoiles.ajouter`).
+- **Une langue pour le compagnon** (demandée par l'utilisateur : il parle dans cette langue ; idée pour plus tard : **la lui apprendre pas à pas**) :
+  choix dans l'onglet ⚙️ Réglages (Anglais, Espagnol, Allemand, Italien, ou aucune), **propre à chaque téléphone** (`compagnon-langue` : `{ langue }`).
+  Ses phrases de la maison (soins, pièces, objets, bonjour…) s'affichent dans sa bulle dans sa langue, la phrase française en petit dessous
+  (`messageLangue`, `CP.traduire` : table `CP.TRADUCTIONS` fr / en / es / de / it, `{n}` pour un nom). Une phrase absente de la table reste en français.
+  Au choix d'une langue, il dit « Coucou » à voix haute dans cette langue (`CP.direEnLangue`). Le petit jeu de devinettes essayé en 2.35 a été retiré.
 - Accueil : carte « Mon compagnon » (son dessin, son humeur, les étoiles) fixée en haut avec « En ligne », au-dessus de la liste des jeux qui défile.
 - Boutique : tête, cou (dont laisse et laisse de grande marque), habits (manteau d'hiver…), couchage (coussin → château), déco, friandises.
 

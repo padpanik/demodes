@@ -831,62 +831,77 @@ var CP = (function () {
   }
 
 
-  // ---------- Une langue pour le compagnon (petit jeu entre lui et son maître, réglé sur chaque téléphone) ----------
-  // Il dit une phrase de sa réserve dans sa langue ; on devine ce qu'elle veut dire parmi trois phrases en français.
+  // ---------- Une langue pour le compagnon (réglée sur chaque téléphone) ----------
+  // Il dit ses phrases de tous les jours dans sa langue (la traduction française reste écrite en petit dessous).
+  // Les phrases qu'il ne connaît pas encore restent en français : il pourra en apprendre d'autres petit à petit.
   var LANGUES = {
     en: { nom: 'Anglais', ico: '🇬🇧', voix: 'en-GB', adj: 'anglais' },
     es: { nom: 'Espagnol', ico: '🇪🇸', voix: 'es-ES', adj: 'espagnol' },
     de: { nom: 'Allemand', ico: '🇩🇪', voix: 'de-DE', adj: 'allemand' },
     it: { nom: 'Italien', ico: '🇮🇹', voix: 'it-IT', adj: 'italien' }
   };
-  var PHRASES = [
-    { fr: "J'ai faim.", en: "I'm hungry.", es: "Tengo hambre.", de: "Ich habe Hunger.", it: "Ho fame." },
-    { fr: "J'ai soif.", en: "I'm thirsty.", es: "Tengo sed.", de: "Ich habe Durst.", it: "Ho sete." },
-    { fr: "Bonjour !", en: "Good morning!", es: "¡Buenos días!", de: "Guten Morgen!", it: "Buongiorno!" },
-    { fr: "Bonne nuit.", en: "Good night.", es: "Buenas noches.", de: "Gute Nacht.", it: "Buonanotte." },
-    { fr: "Je t'aime.", en: "I love you.", es: "Te quiero.", de: "Ich hab dich lieb.", it: "Ti voglio bene." },
-    { fr: "Merci beaucoup !", en: "Thank you very much!", es: "¡Muchas gracias!", de: "Vielen Dank!", it: "Grazie mille!" },
-    { fr: "On va jouer ?", en: "Shall we play?", es: "¿Vamos a jugar?", de: "Spielen wir?", it: "Giochiamo?" },
-    { fr: "Je suis fatigué.", en: "I'm tired.", es: "Estoy cansado.", de: "Ich bin müde.", it: "Sono stanco." },
-    { fr: "Il fait beau aujourd'hui.", en: "The weather is nice today.", es: "Hoy hace buen tiempo.", de: "Heute ist schönes Wetter.", it: "Oggi fa bel tempo." },
-    { fr: "Il pleut.", en: "It's raining.", es: "Está lloviendo.", de: "Es regnet.", it: "Piove." },
-    { fr: "Je suis content.", en: "I'm happy.", es: "Estoy contento.", de: "Ich bin froh.", it: "Sono contento." },
+  // {n} : un nom (le sien, celui d'un ami)
+  var TRADUCTIONS = [
+    { fr: "Un ami m'a fait un câlin ! 🥰", en: "A friend gave me a hug! 🥰", es: "¡Un amigo me ha dado un abrazo! 🥰", de: "Ein Freund hat mich umarmt! 🥰", it: "Un amico mi ha abbracciato! 🥰" },
+    { fr: "Bonjour ! Je m'appelle {n} 🥰", en: "Hello! My name is {n} 🥰", es: "¡Hola! Me llamo {n} 🥰", de: "Hallo! Ich heiße {n} 🥰", it: "Ciao! Mi chiamo {n} 🥰" },
+    { fr: "Chut… je dors 😴", en: "Shh… I'm sleeping 😴", es: "Shh… estoy durmiendo 😴", de: "Pst… ich schlafe 😴", it: "Shh… sto dormendo 😴" },
+    { fr: "Encore un câlin ? Avec plaisir !", en: "Another hug? With pleasure!", es: "¿Otro abrazo? ¡Con mucho gusto!", de: "Noch eine Umarmung? Sehr gern!", it: "Un altro abbraccio? Con piacere!" },
+    { fr: "Merci, ça va très bien pour l'instant 😊", en: "Thanks, I'm doing fine for now 😊", es: "Gracias, por ahora estoy muy bien 😊", de: "Danke, mir geht's gerade sehr gut 😊", it: "Grazie, per ora sto benissimo 😊" },
+    { fr: "Miam, merci ! 😋", en: "Yum, thank you! 😋", es: "¡Ñam, gracias! 😋", de: "Mmh, danke! 😋", it: "Gnam, grazie! 😋" },
+    { fr: "Glou glou… 💧", en: "Gulp gulp… 💧", es: "Glu glu… 💧", de: "Gluck gluck… 💧", it: "Glu glu… 💧" },
+    { fr: "Tout propre ! ✨", en: "All clean! ✨", es: "¡Bien limpio! ✨", de: "Ganz sauber! ✨", it: "Tutto pulito! ✨" },
+    { fr: "Je t'aime 💛", en: "I love you 💛", es: "Te quiero 💛", de: "Ich hab dich lieb 💛", it: "Ti voglio bene 💛" },
+    { fr: "J'ai un petit creux…", en: "I'm a little hungry…", es: "Tengo un poco de hambre…", de: "Ich habe ein bisschen Hunger…", it: "Ho un certo languorino…" },
+    { fr: "J'ai soif !", en: "I'm thirsty!", es: "¡Tengo sed!", de: "Ich habe Durst!", it: "Ho sete!" },
+    { fr: "Un petit bain ?", en: "A little bath?", es: "¿Un bañito?", de: "Ein kleines Bad?", it: "Un bagnetto?" },
     { fr: "Tu m'as manqué !", en: "I missed you!", es: "¡Te he echado de menos!", de: "Ich habe dich vermisst!", it: "Mi sei mancato!" },
-    { fr: "Où est ma balle ?", en: "Where is my ball?", es: "¿Dónde está mi pelota?", de: "Wo ist mein Ball?", it: "Dov'è la mia palla?" },
-    { fr: "Je voudrais un bain.", en: "I would like a bath.", es: "Quisiera un baño.", de: "Ich möchte ein Bad.", it: "Vorrei un bagno." },
-    { fr: "C'est délicieux !", en: "It's delicious!", es: "¡Está delicioso!", de: "Das ist lecker!", it: "È delizioso!" },
-    { fr: "Allons nous promener.", en: "Let's go for a walk.", es: "Vamos a pasear.", de: "Lass uns spazieren gehen.", it: "Andiamo a fare una passeggiata." },
-    { fr: "Comment ça va ?", en: "How are you?", es: "¿Cómo estás?", de: "Wie geht's?", it: "Come stai?" },
-    { fr: "Je vais bien, merci.", en: "I'm fine, thank you.", es: "Estoy bien, gracias.", de: "Mir geht's gut, danke.", it: "Sto bene, grazie." },
-    { fr: "J'ai froid.", en: "I'm cold.", es: "Tengo frío.", de: "Mir ist kalt.", it: "Ho freddo." },
-    { fr: "J'ai chaud.", en: "I'm hot.", es: "Tengo calor.", de: "Mir ist heiß.", it: "Ho caldo." },
-    { fr: "À demain !", en: "See you tomorrow!", es: "¡Hasta mañana!", de: "Bis morgen!", it: "A domani!" },
-    { fr: "Tu es mon meilleur ami.", en: "You are my best friend.", es: "Eres mi mejor amigo.", de: "Du bist mein bester Freund.", it: "Sei il mio migliore amico." },
-    { fr: "J'aime les étoiles.", en: "I love the stars.", es: "Me encantan las estrellas.", de: "Ich liebe die Sterne.", it: "Amo le stelle." },
-    { fr: "Regarde par la fenêtre !", en: "Look out the window!", es: "¡Mira por la ventana!", de: "Schau aus dem Fenster!", it: "Guarda fuori dalla finestra!" },
-    { fr: "Bon appétit !", en: "Enjoy your meal!", es: "¡Buen provecho!", de: "Guten Appetit!", it: "Buon appetito!" },
-    { fr: "Joyeux anniversaire !", en: "Happy birthday!", es: "¡Feliz cumpleaños!", de: "Alles Gute zum Geburtstag!", it: "Buon compleanno!" },
-    { fr: "Gagnons la partie !", en: "Let's win the game!", es: "¡Ganemos la partida!", de: "Lass uns das Spiel gewinnen!", it: "Vinciamo la partita!" },
-    { fr: "Fais-moi un câlin.", en: "Give me a hug.", es: "Dame un abrazo.", de: "Umarme mich.", it: "Abbracciami." },
-    { fr: "Quelle heure est-il ?", en: "What time is it?", es: "¿Qué hora es?", de: "Wie spät ist es?", it: "Che ore sono?" },
-    { fr: "J'ai une surprise pour toi.", en: "I have a surprise for you.", es: "Tengo una sorpresa para ti.", de: "Ich habe eine Überraschung für dich.", it: "Ho una sorpresa per te." },
-    { fr: "Ma maison est jolie.", en: "My house is pretty.", es: "Mi casa es bonita.", de: "Mein Haus ist schön.", it: "La mia casa è bella." },
-    { fr: "Je n'ai pas peur !", en: "I'm not afraid!", es: "¡No tengo miedo!", de: "Ich habe keine Angst!", it: "Non ho paura!" },
-    { fr: "S'il te plaît.", en: "Please.", es: "Por favor.", de: "Bitte.", it: "Per favore." },
-    { fr: "J'adore le chocolat.", en: "I love chocolate.", es: "Me encanta el chocolate.", de: "Ich liebe Schokolade.", it: "Adoro il cioccolato." },
-    { fr: "Il neige !", en: "It's snowing!", es: "¡Está nevando!", de: "Es schneit!", it: "Nevica!" },
-    { fr: "Je suis prêt.", en: "I'm ready.", es: "Estoy listo.", de: "Ich bin bereit.", it: "Sono pronto." }
+    { fr: "Bonne nuit 🌙", en: "Good night 🌙", es: "Buenas noches 🌙", de: "Gute Nacht 🌙", it: "Buonanotte 🌙" },
+    { fr: "Coucou ! 👋", en: "Hi! 👋", es: "¡Hola! 👋", de: "Hallo! 👋", it: "Ciao! 👋" },
+    { fr: "Merci pour la balade ! 🧭", en: "Thanks for the walk! 🧭", es: "¡Gracias por el paseo! 🧭", de: "Danke für den Ausflug! 🧭", it: "Grazie per la passeggiata! 🧭" },
+    { fr: "Merci pour ce cadeau ! 🥰", en: "Thank you for this present! 🥰", es: "¡Gracias por este regalo! 🥰", de: "Danke für das Geschenk! 🥰", it: "Grazie per questo regalo! 🥰" },
+    { fr: "Merci pour ce bel accessoire ! 🥰", en: "Thank you for this lovely accessory! 🥰", es: "¡Gracias por este accesorio tan bonito! 🥰", de: "Danke für das schöne Accessoire! 🥰", it: "Grazie per questo bell'accessorio! 🥰" },
+    { fr: "Un régal ! 😋", en: "A real treat! 😋", es: "¡Una delicia! 😋", de: "Ein Genuss! 😋", it: "Una delizia! 😋" },
+    { fr: "Je vais voir ma gamelle 🥣", en: "I'm going to check my bowl 🥣", es: "Voy a mirar mi cuenco 🥣", de: "Ich schaue nach meinem Napf 🥣", it: "Vado a vedere la mia ciotola 🥣" },
+    { fr: "Bienvenue chez {n} ! 👋", en: "Welcome to {n}'s home! 👋", es: "¡Bienvenido a casa de {n}! 👋", de: "Willkommen bei {n}! 👋", it: "Benvenuto a casa di {n}! 👋" },
+    { fr: "Merci, encore un petit moment 😊", en: "Thanks, just a moment more 😊", es: "Gracias, un momentito más 😊", de: "Danke, noch einen kleinen Moment 😊", it: "Grazie, ancora un momentino 😊" },
+    { fr: "Merci pour le câlin ! 🥰", en: "Thanks for the hug! 🥰", es: "¡Gracias por el abrazo! 🥰", de: "Danke für die Umarmung! 🥰", it: "Grazie per l'abbraccio! 🥰" },
+    { fr: "Me voilà ! 🐾", en: "Here I am! 🐾", es: "¡Aquí estoy! 🐾", de: "Da bin ich! 🐾", it: "Eccomi! 🐾" },
+    { fr: "Elles brillent, nos coupes ! ✨", en: "Our cups are shining! ✨", es: "¡Cómo brillan nuestras copas! ✨", de: "Unsere Pokale glänzen! ✨", it: "Come brillano le nostre coppe! ✨" },
+    { fr: "Youpi, dehors ! 🌼", en: "Yippee, outside! 🌼", es: "¡Yupi, afuera! 🌼", de: "Juhu, nach draußen! 🌼", it: "Evviva, fuori! 🌼" },
+    { fr: "Une petite sieste ? 😌", en: "A little nap? 😌", es: "¿Una siestecita? 😌", de: "Ein kleines Nickerchen? 😌", it: "Un pisolino? 😌" },
+    { fr: "Ça sent bon par ici ! 😋", en: "It smells good in here! 😋", es: "¡Qué bien huele aquí! 😋", de: "Hier riecht es lecker! 😋", it: "Che buon profumo qui! 😋" },
+    { fr: "On fait une partie ? 🎲", en: "Shall we play a game? 🎲", es: "¿Jugamos una partida? 🎲", de: "Spielen wir eine Runde? 🎲", it: "Facciamo una partita? 🎲" },
+    { fr: "Oh ! Une nouvelle pièce ! 🤩", en: "Oh! A new room! 🤩", es: "¡Oh! ¡Una habitación nueva! 🤩", de: "Oh! Ein neues Zimmer! 🤩", it: "Oh! Una stanza nuova! 🤩" },
+    { fr: "Bravo ! Une nouvelle coupe 🏆", en: "Well done! A new cup 🏆", es: "¡Bravo! Una copa nueva 🏆", de: "Bravo! Ein neuer Pokal 🏆", it: "Bravo! Una nuova coppa 🏆" },
+    { fr: "Je suis aux anges ! 🥰", en: "I'm over the moon! 🥰", es: "¡Estoy en las nubes! 🥰", de: "Ich bin im siebten Himmel! 🥰", it: "Sono al settimo cielo! 🥰" },
+    { fr: "Une petite sieste à l'ombre… 😌", en: "A little nap in the shade… 😌", es: "Una siestecita a la sombra… 😌", de: "Ein Nickerchen im Schatten… 😌", it: "Un pisolino all'ombra… 😌" },
+    { fr: "Une petite sieste… 😴", en: "A little nap… 😴", es: "Una siestecita… 😴", de: "Ein kleines Nickerchen… 😴", it: "Un pisolino… 😴" },
+    { fr: "À moi la balle ! ⚽", en: "My ball! ⚽", es: "¡La pelota es mía! ⚽", de: "Der Ball gehört mir! ⚽", it: "La palla è mia! ⚽" },
+    { fr: "Mon doudou 🥰", en: "My cuddly toy 🥰", es: "Mi peluche 🥰", de: "Mein Kuscheltier 🥰", it: "Il mio pupazzo 🥰" },
+    { fr: "Hmm, ça sent bon !", en: "Mmm, that smells nice!", es: "¡Mmm, qué bien huele!", de: "Mmh, das riecht gut!", it: "Mmm, che buon profumo!" },
+    { fr: "Que d'étoiles ce soir ✨", en: "So many stars tonight ✨", es: "Cuántas estrellas esta noche ✨", de: "So viele Sterne heute Abend ✨", it: "Quante stelle stasera ✨" },
+    { fr: "Oh, il neige ! ❄️", en: "Oh, it's snowing! ❄️", es: "¡Oh, está nevando! ❄️", de: "Oh, es schneit! ❄️", it: "Oh, nevica! ❄️" },
+    { fr: "Il fait beau dehors ☀️", en: "It's sunny outside ☀️", es: "Hace sol afuera ☀️", de: "Draußen ist schönes Wetter ☀️", it: "Fuori c'è il sole ☀️" },
+    { fr: "C'est la fête ! 🎉", en: "It's party time! 🎉", es: "¡Es una fiesta! 🎉", de: "Es wird gefeiert! 🎉", it: "È festa! 🎉" },
+    { fr: "Nos belles coupes ! 🏆", en: "Our beautiful cups! 🏆", es: "¡Nuestras bonitas copas! 🏆", de: "Unsere schönen Pokale! 🏆", it: "Le nostre belle coppe! 🏆" },
+    { fr: "Ma gamelle est vide… 🥺", en: "My bowl is empty… 🥺", es: "Mi cuenco está vacío… 🥺", de: "Mein Napf ist leer… 🥺", it: "La mia ciotola è vuota… 🥺" },
+    { fr: "Un peu d'eau fraîche ? 💧", en: "A little fresh water? 💧", es: "¿Un poco de agua fresca? 💧", de: "Ein bisschen frisches Wasser? 💧", it: "Un po' d'acqua fresca? 💧" },
+    { fr: "Il reste des miettes !", en: "There are crumbs left!", es: "¡Quedan migas!", de: "Da sind noch Krümel!", it: "Ci sono ancora briciole!" },
+    { fr: "Il y a du bon là-dedans ? 🧀", en: "Anything tasty in there? 🧀", es: "¿Hay algo rico ahí dentro? 🧀", de: "Ist da was Leckeres drin? 🧀", it: "C'è qualcosa di buono lì dentro? 🧀" },
+    { fr: "Un papillon ! 🦋", en: "A butterfly! 🦋", es: "¡Una mariposa! 🦋", de: "Ein Schmetterling! 🦋", it: "Una farfalla! 🦋" }
   ];
-  // Une question : une phrase pas vue récemment, la bonne traduction et deux autres, mélangées
-  function questionLangue(langue, vues, h) {
-    h = h || Math.random;
-    var libres = PHRASES.map(function (p, i) { return i; }).filter(function (i) { return (vues || []).indexOf(i) === -1; });
-    if (!libres.length) libres = PHRASES.map(function (p, i) { return i; });
-    var i = libres[Math.floor(h() * libres.length)], autres = [];
-    while (autres.length < 2) { var j = Math.floor(h() * PHRASES.length); if (j !== i && autres.indexOf(j) === -1) autres.push(j); }
-    var choix = [i].concat(autres);
-    for (var k = choix.length - 1; k > 0; k--) { var r = Math.floor(h() * (k + 1)), x = choix[k]; choix[k] = choix[r]; choix[r] = x; }
-    return { i: i, texte: PHRASES[i][langue], choix: choix.map(function (c) { return PHRASES[c].fr; }), bonne: choix.indexOf(i) };
+  var MODELES = TRADUCTIONS.map(function (p) {
+    var morceaux = p.fr.split('{n}').map(function (m) { return m.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); });
+    return { re: new RegExp('^' + morceaux.join('(.+?)') + '$'), p: p };
+  });
+  // Sa phrase dans sa langue, ou null s'il ne la connaît pas encore
+  function traduire(texte, langue) {
+    if (!texte || !langue || !LANGUES[langue]) return null;
+    for (var k = 0; k < MODELES.length; k++) {
+      var m = MODELES[k].re.exec(texte);
+      if (m) return MODELES[k].p[langue].replace('{n}', m[1] || '');
+    }
+    return null;
   }
   // Dire la phrase avec la voix du téléphone dans la bonne langue (si elle existe)
   function direEnLangue(texte, langue) {
@@ -902,7 +917,7 @@ var CP = (function () {
     } catch (e) { return false; }
   }
 
-  return { ESPECES: ESPECES, LANGUES: LANGUES, PHRASES: PHRASES, questionLangue: questionLangue, direEnLangue: direEnLangue, demarrerVeille: demarrerVeille, regler: regler, surveiller: surveiller, jaugesVides: jaugesVides, verifierVeille: verifierVeille, reglagesMessages: reglagesMessages, BESOINS: BESOINS, RECOMPENSE_JOUR: RECOMPENSE_JOUR, RECOMPENSE_SEMAINE: RECOMPENSE_SEMAINE, RAYONS: RAYONS, ARTICLES: ARTICLES,
+  return { ESPECES: ESPECES, LANGUES: LANGUES, TRADUCTIONS: TRADUCTIONS, traduire: traduire, direEnLangue: direEnLangue, demarrerVeille: demarrerVeille, regler: regler, surveiller: surveiller, jaugesVides: jaugesVides, verifierVeille: verifierVeille, reglagesMessages: reglagesMessages, BESOINS: BESOINS, RECOMPENSE_JOUR: RECOMPENSE_JOUR, RECOMPENSE_SEMAINE: RECOMPENSE_SEMAINE, RAYONS: RAYONS, ARTICLES: ARTICLES,
            FETES: FETES, guirlande: guirlande, feteDu: feteDu, prochaineFete: prochaineFete, coeur: coeur,
            niveaux: niveaux, humeur: humeur, signes: signes, age: age, estNuit: estNuit, dessin: dessin, art: art,
            NIVEAUX_DEFI: NIVEAUX_DEFI, DEFIS: DEFIS, BLOCS: BLOCS, ETAGERE_MAX: ETAGERE_MAX, etatDefis: etatDefis, verifierDefis: verifierDefis,
