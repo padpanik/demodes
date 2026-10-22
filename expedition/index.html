@@ -147,6 +147,9 @@
             <div class="segment">
               <button v-for="(d, id) in DIFFICULTES" :key="id" :class="{ actif: difficulte === id }" @click="difficulte = id">{{ d.nom }}<small>{{ d.desc }}</small></button>
             </div>
+            <div class="coeurs-depart"><span class="rangee"><span v-for="i in COEURS" :key="i" class="coeur-exp" v-html="dessinCoeur(true)"></span></span><span>Tu pars avec 3 cœurs : ne les perds pas en route !</span></div>
+            <button class="btn principal" style="width:100%; margin-top:8px" :disabled="!!fatigue" @click="partir">{{ fatigue ? '😴 Encore ' + fatigue + ' min de repos' : '🧭 Partir en expédition' }}</button>
+            <div class="aide" v-if="stats.parties">Expéditions : {{ stats.reussies }} réussie{{ stats.reussies > 1 ? 's' : '' }} sur {{ stats.parties }} · {{ stats.bonnes }} bonne{{ stats.bonnes > 1 ? 's' : '' }} réponse{{ stats.bonnes > 1 ? 's' : '' }} en tout.</div>
           </section>
           <section class="carte">
             <div class="titre-carte">Où aller ?</div>
@@ -157,9 +160,6 @@
               </button>
             </div>
             <div class="aide">{{ lieuSelection.desc }}</div>
-            <div class="coeurs-depart"><span class="rangee"><span v-for="i in COEURS" :key="i" class="coeur-exp" v-html="dessinCoeur(true)"></span></span><span>Tu pars avec 3 cœurs : ne les perds pas en route !</span></div>
-            <button class="btn principal" style="width:100%; margin-top:8px" :disabled="!!fatigue" @click="partir">{{ fatigue ? '😴 Encore ' + fatigue + ' min de repos' : '🧭 Partir en expédition' }}</button>
-            <div class="aide" v-if="stats.parties">Expéditions : {{ stats.reussies }} réussie{{ stats.reussies > 1 ? 's' : '' }} sur {{ stats.parties }} · {{ stats.bonnes }} bonne{{ stats.bonnes > 1 ? 's' : '' }} réponse{{ stats.bonnes > 1 ? 's' : '' }} en tout.</div>
           </section>
 
         </template>
