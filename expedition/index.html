@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <!-- La page est rangée dans son dossier : les adresses relatives partent de la racine du site (fichiers communs) -->
+  <base href="../">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Expédition · Désdale</title>
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="theme-color" content="#f3f5f7">
+  <link rel="icon" type="image/png" href="favicon.png">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Désdale">
+  <script src="https://cdn.jsdelivr.net/npm/vue@2.7.16/dist/vue.min.js"></script>
+  <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+  <link rel="stylesheet" href="commun.css">
+  <style>
+    .segment { display: flex; background: #e3e8ec; border-radius: 10px; padding: 3px; gap: 3px; margin-bottom: 8px; }
+    .segment button { flex: 1; border: none; background: transparent; border-radius: 8px; padding: 8px 4px; font: inherit; font-weight: 700; color: #5b6b78; cursor: pointer; line-height: 1.2; }
+    .segment button small { display: block; font-weight: 500; font-size: 0.75em; color: #8a97a1; }
+    .segment button.actif { background: #fff; color: #1d2b36; box-shadow: 0 1px 3px rgba(0,0,0,0.12); }
+    .panneau-vide { text-align: center; padding: 36px 16px; color: #5b6b78; }
+    .panneau-vide .grand { font-size: 2.5em; margin-bottom: 8px; }
+
+    /* Choix du lieu */
+    .lieux { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 4px; }
+    .lieu { border: 2px solid #e3e8ec; background: #fff; border-radius: 14px; padding: 10px 8px; text-align: center; font: inherit; cursor: pointer; color: #1d2b36; }
+    .lieu .ico { font-size: 1.8em; line-height: 1.1; }
+    .lieu .nom { font-weight: 800; font-size: 0.92em; margin-top: 2px; }
+    .lieu .theme { font-size: 0.75em; color: #8a97a1; }
+    .lieu.actif { border-color: #2c3e50; box-shadow: 0 2px 8px rgba(29,43,54,0.12); }
+    .lieu:disabled { opacity: 0.45; cursor: default; }
+    .lieu .bientot { display: inline-block; margin-top: 3px; font-size: 0.7em; font-weight: 800; color: #9c36b5; background: #f8f0fc; border-radius: 6px; padding: 1px 6px; }
+    .compagnon-depart { display: flex; align-items: center; gap: 10px; }
+    .compagnon-depart svg { width: 64px; height: 68px; flex-shrink: 0; }
+
+    /* Écran de jeu */
+    .jeu-exp { position: relative; }
+    .barre-exp { display: flex; align-items: center; gap: 8px; background: #fff; border-radius: 14px; padding: 6px 10px; margin-bottom: 6px; box-shadow: 0 1px 2px rgba(0,0,0,0.06); }
+    .barre-exp .coeurs { font-size: 1.15em; letter-spacing: 1px; white-space: nowrap; }
+    .barre-exp .sac { font-weight: 900; color: #7a5600; background: #fff5d6; border-radius: 10px; padding: 3px 8px; white-space: nowrap; }
+    .barre-exp .ou { flex: 1; min-width: 0; text-align: right; font-size: 0.8em; color: #6b7a86; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .carte-exp { position: relative; border-radius: 18px; overflow: hidden; box-shadow: 0 4px 16px rgba(29,43,54,0.18); }
+    .carte-exp > svg { display: block; width: 100%; height: auto; }
+    .carte-exp .n-possible { cursor: pointer; }
+    .carte-exp .anneau { animation: anneau 1.4s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+    @keyframes anneau { 0%, 100% { opacity: 0.95; transform: scale(1); } 50% { opacity: 0.35; transform: scale(1.12); } }
+    .carte-exp .flotte { animation: flotte-exp 2.4s ease-in-out infinite; }
+    @keyframes flotte-exp { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+    .pion { position: absolute; width: 15%; transform: translate(-50%, -100%); transition: left 0.7s ease-in-out, top 0.7s ease-in-out; pointer-events: none; }
+    .pion svg { display: block; width: 100%; height: auto; filter: drop-shadow(0 3px 3px rgba(0,0,0,0.35)); }
+    .pion .patte { font-size: 30px; text-align: center; }
+    .pion.marche svg { animation: sautille 0.35s ease-in-out infinite; }
+    @keyframes sautille { 50% { transform: translateY(-4px); } }
+    .consigne-exp { position: absolute; left: 50%; bottom: 10px; transform: translateX(-50%); background: rgba(255,255,255,0.92); color: #2c3e50; font-weight: 800;
+                    font-size: 0.85em; border-radius: 12px; padding: 6px 12px; white-space: nowrap; pointer-events: none; }
+
+    /* Rencontres : une fiche qui monte du bas de l'écran de jeu */
+    .voile-exp { position: absolute; inset: 0; z-index: 5; background: rgba(15,10,30,0.45); display: flex; align-items: flex-end; border-radius: 18px; }
+    .fiche-exp { width: 100%; background: #fff; border-radius: 20px; padding: 14px 14px 12px; box-shadow: 0 -6px 24px rgba(0,0,0,0.25); animation: monte-exp 0.3s ease-out; max-height: 100%; overflow-y: auto; }
+    @keyframes monte-exp { from { transform: translateY(40px); opacity: 0; } }
+    .qui { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+    .qui .grand { font-size: 2.4em; line-height: 1; }
+    .qui .nom { font-weight: 900; font-size: 1.05em; }
+    .qui .role { font-size: 0.8em; color: #8a97a1; font-weight: 700; }
+    .question { font-weight: 800; font-size: 1.05em; line-height: 1.35; margin: 4px 0 10px; color: #1d2b36; }
+    .reponses { display: grid; gap: 7px; }
+    .reponses button { border: 2px solid #dfe5ea; background: #f8fafb; border-radius: 12px; padding: 11px 10px; font: inherit; font-weight: 700; font-size: 0.98em; text-align: left; color: #1d2b36; cursor: pointer; }
+    .reponses button.bonne { background: #d3f9d8; border-color: #37b24d; }
+    .reponses button.fausse { background: #ffe3e3; border-color: #f03e3e; }
+    .reponses button.retiree { opacity: 0.3; text-decoration: line-through; }
+    .reponses button:disabled { cursor: default; }
+    .verdict { margin-top: 10px; font-weight: 800; }
+    .verdict.oui { color: #2b8a3e; } .verdict.non { color: #c92a2a; }
+    .explication { font-size: 0.9em; color: #495057; line-height: 1.4; margin-top: 4px; }
+    .actions-exp { display: flex; gap: 8px; margin-top: 12px; }
+    .aide-cp { border: none; background: #fff5d6; color: #7a5600; font: inherit; font-weight: 800; font-size: 0.88em; border-radius: 10px; padding: 7px 10px; margin-top: 8px; cursor: pointer; }
+    .coffre-ico { font-size: 3.2em; text-align: center; line-height: 1.1; }
+    .coffre-ico.ouvre { animation: ouvre 0.6s ease-out; }
+    @keyframes ouvre { 0% { transform: scale(0.6) rotate(-10deg); } 60% { transform: scale(1.2) rotate(6deg); } 100% { transform: scale(1); } }
+    .gain-coffre { text-align: center; font-weight: 900; font-size: 1.15em; margin-top: 6px; }
+
+    /* Le boss : une partie de Quatre en ligne */
+    .plateau-boss { background: #3b2a6b; border-radius: 12px; padding: 5px; display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin: 6px 0; }
+    .plateau-boss .trou { aspect-ratio: 1 / 1; border-radius: 50%; background: #e9e4f7; box-shadow: inset 0 3px 4px rgba(0,0,0,0.3); cursor: pointer; }
+    .plateau-boss .trou.j1 { background: #e53935; box-shadow: inset 0 -3px 0 rgba(0,0,0,0.2); }
+    .plateau-boss .trou.j2 { background: #b197fc; box-shadow: inset 0 -3px 0 rgba(0,0,0,0.2); }
+    .plateau-boss .trou.gagne { outline: 3px solid #ffd43b; outline-offset: -2px; }
+    .tour-boss { text-align: center; font-weight: 800; font-size: 0.92em; color: #495057; }
+
+    /* Fin */
+    .fin-exp { text-align: center; }
+    .fin-exp .grand { font-size: 3em; line-height: 1.1; }
+    .fin-exp .titre { font-weight: 900; font-size: 1.25em; margin: 4px 0; }
+    .bilan { list-style: none; padding: 0; margin: 10px 0 0; text-align: left; font-size: 0.92em; color: #3b4b57; }
+    .bilan li { padding: 4px 0; border-bottom: 1px solid #f1f3f5; }
+  </style>
+</head>
+<body>
+  <div id="app" v-cloak class="app">
+    <fiche-jeu jeu="expedition" nom="Expédition" resume="Désdale · balade avec ton compagnon, questions et trésors" :onglet.sync="onglet" :son.sync="sonActif">
+      <template v-slot:logo><span style="font-size:40px">🧭</span></template>
+
+      <!-- PARTIE : compagnon, lieu, difficulté -->
+      <template v-slot:partie>
+        <section class="carte" v-if="e && !e.fin">
+          <div class="titre-carte">Expédition en cours</div>
+          <div>{{ lieuEnCours.ico }} {{ lieuEnCours.nom }} · {{ DIFFICULTES[e.difficulte].nom }} · {{ coeursTexte }} · 🎒 {{ e.sac }} ⭐</div>
+          <div class="actions-exp">
+            <button class="btn principal" @click="onglet = 'play'">▶️ Reprendre</button>
+            <button class="btn" @click="abandonner">Rentrer</button>
+          </div>
+          <div class="aide">Rentrer avant le boss : tu gardes la moitié des étoiles du sac.</div>
+        </section>
+
+        <template v-else>
+          <section class="carte">
+            <div class="titre-carte">Ton compagnon de route</div>
+            <div class="compagnon-depart" v-if="animal">
+              <svg viewBox="0 -6 200 216" v-html="dessinAnimal"></svg>
+              <div><b>{{ animal.nom }}</b> est prêt à partir à l'aventure avec toi !<div class="aide" style="margin-top:2px">La balade lui donne un peu faim et soif.</div></div>
+            </div>
+            <div v-else class="aide" style="margin-top:0">Tu n'as pas encore de compagnon : tu pars seul (son aide ne sera pas là). <a href="compagnon/">Adopter un compagnon</a></div>
+          </section>
+
+          <section class="carte">
+            <div class="titre-carte">Où aller ?</div>
+            <div class="lieux">
+              <button v-for="l in LIEUX" :key="l.id" class="lieu" :class="{ actif: lieuChoisi === l.id }" :disabled="!l.pret" @click="lieuChoisi = l.id">
+                <div class="ico">{{ l.ico }}</div><div class="nom">{{ l.nom }}</div><div class="theme">{{ l.theme }}</div>
+                <span v-if="!l.pret" class="bientot">Bientôt</span>
+              </button>
+            </div>
+            <div class="aide">{{ lieuSelection.desc }}</div>
+          </section>
+
+          <section class="carte">
+            <div class="titre-carte">Difficulté</div>
+            <div class="segment">
+              <button v-for="(d, id) in DIFFICULTES" :key="id" :class="{ actif: difficulte === id }" @click="difficulte = id">{{ d.nom }}<small>{{ d.desc }}</small></button>
+            </div>
+            <button class="btn principal" style="width:100%" @click="partir">🧭 Partir en expédition</button>
+            <div class="aide" v-if="stats.parties">Expéditions : {{ stats.reussies }} réussie{{ stats.reussies > 1 ? 's' : '' }} sur {{ stats.parties }} · {{ stats.bonnes }} bonne{{ stats.bonnes > 1 ? 's' : '' }} réponse{{ stats.bonnes > 1 ? 's' : '' }} en tout.</div>
+          </section>
+        </template>
+        <p class="version">Désdale · Expédition · version {{ version }}</p>
+      </template>
+
+      <!-- JOUER : la carte en 3D isométrique et les rencontres -->
+      <template v-slot:jouer>
+        <div v-if="!e" class="carte panneau-vide">
+          <div class="grand">🧭</div>
+          Choisis un lieu dans l'onglet <b>Partie</b>, puis pars en expédition.
+        </div>
+        <div v-else class="jeu-exp">
+          <div class="barre-exp">
+            <span class="coeurs" :aria-label="e.coeurs + ' cœurs'">{{ coeursTexte }}</span>
+            <span class="sac">🎒 {{ e.sac }} ⭐</span>
+            <span class="ou">{{ lieuEnCours.ico }} {{ lieuEnCours.nom }} · {{ DIFFICULTES[e.difficulte].nom }}</span>
+          </div>
+          <div class="carte-exp" :style="{ background: lieuEnCours.couleurs.fond }" @click="toucherCarte">
+            <div v-html="carteSvg"></div>
+            <div class="pion" :class="{ marche: enMarche }" :style="pionStyle">
+              <svg v-if="animal" viewBox="0 -6 200 216" v-html="dessinAnimal"></svg>
+              <div v-else class="patte">🐾</div>
+            </div>
+            <div class="consigne-exp" v-if="!e.rencontre && !e.fin && !enMarche">{{ consigne }}</div>
+
+            <!-- Rencontre en cours -->
+            <div class="voile-exp" v-if="e.rencontre || e.fin" @click.stop>
+              <div class="fiche-exp">
+                <!-- Gardien : une question -->
+                <template v-if="r && r.type === 'gardien'">
+                  <div class="qui"><span class="grand">{{ r.perso.ico }}</span><div><div class="nom">{{ r.perso.nom }}</div><div class="role">Gardien · question {{ r.question.niveau === 2 ? 'moyenne' : 'facile' }}</div></div></div>
+                  <div class="question">{{ r.question.texte }}</div>
+                  <div class="reponses">
+                    <button v-for="(c, i) in r.question.choix" :key="i" :disabled="r.repondu !== null || r.retirees.includes(i)"
+                            :class="{ bonne: r.repondu !== null && i === r.question.bonne, fausse: r.repondu === i && i !== r.question.bonne, retiree: r.retirees.includes(i) }"
+                            @click="repondre(i)">{{ c }}</button>
+                  </div>
+                  <button v-if="r.repondu === null && !e.aide && animal" class="aide-cp" @click="aideCompagnon">🐾 Aide de {{ animal.nom }} (une fois)</button>
+                  <template v-if="r.repondu !== null">
+                    <div class="verdict" :class="r.repondu === r.question.bonne ? 'oui' : 'non'">{{ r.repondu === r.question.bonne ? '✅ Bravo ! +' + r.gain + ' ⭐ dans le sac' : '❌ Raté… tu perds un cœur' }}</div>
+                    <div class="explication">{{ r.question.explication }}</div>
+                    <div class="actions-exp"><button class="btn principal" @click="continuer">Continuer</button></div>
+                  </template>
+                </template>
+
+                <!-- Coffre -->
+                <template v-else-if="r && r.type === 'coffre'">
+                  <div class="qui"><span class="grand">🧰</span><div><div class="nom">Un coffre !</div><div class="role">Qu'y a-t-il dedans ?</div></div></div>
+                  <template v-if="!r.ouvert">
+                    <div class="actions-exp"><button class="btn principal" @click="ouvrirCoffre">🔓 Ouvrir le coffre</button></div>
+                  </template>
+                  <template v-else>
+                    <div class="coffre-ico ouvre">{{ r.gain.souvenir ? r.gain.ico : '⭐' }}</div>
+                    <div class="gain-coffre">{{ r.gain.souvenir ? 'Un souvenir : ' + r.gain.nom + ' !' : '+' + r.gain.etoiles + ' ⭐ dans le sac' }}</div>
+                    <div class="explication" style="text-align:center" v-if="r.gain.souvenir">Il t'attend dans la maison de {{ animal ? animal.nom : 'ton compagnon' }} (salon).</div>
+                    <div class="actions-exp"><button class="btn principal" @click="continuer">Continuer</button></div>
+                  </template>
+                </template>
+
+                <!-- Buvette -->
+                <template v-else-if="r && r.type === 'repos'">
+                  <div class="qui"><span class="grand">{{ lieuEnCours.repos.ico }}</span><div><div class="nom">{{ lieuEnCours.repos.nom }}</div><div class="role">Une petite pause</div></div></div>
+                  <div class="explication">{{ lieuEnCours.repos.texte }}</div>
+                  <div class="verdict oui">{{ r.soigne ? '❤️ +1 cœur' : '❤️ Tu étais déjà en pleine forme' }}</div>
+                  <div class="actions-exp"><button class="btn principal" @click="continuer">Continuer</button></div>
+                </template>
+
+                <!-- Boss -->
+                <template v-else-if="r && r.type === 'boss'">
+                  <div class="qui"><span class="grand">{{ lieuEnCours.boss.ico }}</span><div><div class="nom">{{ lieuEnCours.boss.nom }}</div><div class="role">Boss · {{ lieuEnCours.boss.nomJeu }}</div></div></div>
+                  <template v-if="r.phase === 'intro'">
+                    <div class="explication">« {{ lieuEnCours.boss.defi }} »</div>
+                    <div class="aide">Tu as les jetons rouges et tu commences. Aligne 4 jetons avant lui !</div>
+                    <div class="actions-exp"><button class="btn principal" @click="debutBoss">⚔️ Relever le défi</button></div>
+                  </template>
+                  <template v-else>
+                    <div class="tour-boss">{{ texteBoss }}</div>
+                    <div class="plateau-boss">
+                      <div v-for="(v, i) in r.grille" :key="i" class="trou" :class="[v ? 'j' + v : '', { gagne: r.ligne && r.ligne.includes(i) }]" @click="jouerBoss(i % 7)"></div>
+                    </div>
+                    <div class="actions-exp" v-if="r.phase === 'perdu' || r.phase === 'nul'">
+                      <button class="btn principal" @click="revanche">🔁 Revanche</button>
+                    </div>
+                  </template>
+                </template>
+
+                <!-- Fin de l'expédition -->
+                <template v-else-if="e.fin">
+                  <div class="fin-exp">
+                    <div class="grand">{{ e.fin.gagne ? '🏆' : '🏠' }}</div>
+                    <div class="titre">{{ e.fin.gagne ? 'Expédition réussie !' : (e.fin.abandon ? 'Retour à la maison' : 'Plus de cœurs…') }}</div>
+                    <div class="explication">{{ e.fin.gagne ? lieuEnCours.boss.victoire : 'On rentre se reposer : la moitié du sac est gardée.' }}</div>
+                  </div>
+                  <ul class="bilan">
+                    <li>✅ {{ e.bonnes }} bonne{{ e.bonnes > 1 ? 's' : '' }} réponse{{ e.bonnes > 1 ? 's' : '' }} sur {{ e.questions }}</li>
+                    <li>⭐ {{ e.fin.gain }} étoile{{ e.fin.gain > 1 ? 's' : '' }} gagnée{{ e.fin.gain > 1 ? 's' : '' }}<span v-if="e.fin.donne < e.fin.gain"> ({{ e.fin.donne }} reçue{{ e.fin.donne > 1 ? 's' : '' }} : plafond du jour)</span></li>
+                    <li v-for="s in e.souvenirs" :key="s.id">{{ s.ico }} Souvenir : {{ s.nom }}</li>
+                  </ul>
+                  <div class="actions-exp">
+                    <button class="btn" @click="terminer">Fermer</button>
+                    <button class="btn principal" @click="terminer(true)">🧭 Repartir</button>
+                  </div>
+                </template>
+              </div>
+            </div>
+          </div>
+        </div>
+      </template>
+
+      <!-- RÉGLAGES -->
+      <template v-slot:reglages>
+        <section class="carte reglages">
+          <div class="titre-carte">Réglages</div>
+          <reglages-base :son.sync="sonActif" :vibration.sync="vibrationActive"></reglages-base>
+        </section>
+      </template>
+
+      <!-- RÈGLES -->
+      <template v-slot:regles>
+        <section class="carte regles">
+          <div class="titre-carte">Règles</div>
+          <ul>
+            <li>Tu pars en balade avec ton compagnon dans un lieu à thème. Le chemin monte vers le <strong>boss</strong>, avec des fourches : à chaque étape, choisis la suivante (elles clignotent).</li>
+            <li><strong>Gardien</strong> : il pose une question (4 réponses). Bonne réponse : des étoiles dans le sac. Mauvaise : tu perds un <strong>cœur</strong>.</li>
+            <li><strong>Coffre</strong> : des étoiles, ou un <strong>souvenir</strong> pour la maison de ton compagnon.</li>
+            <li><strong>Buvette</strong> : tu récupères un cœur (3 au plus).</li>
+            <li><strong>Aide du compagnon</strong>, une fois par expédition : il retire deux mauvaises réponses.</li>
+            <li><strong>Boss</strong> : il te défie sur un jeu de la collection, contre l'ordinateur. Perdu : un cœur en moins et une revanche.</li>
+            <li>Boss vaincu : tu gardes tout le sac (+{{ GAIN_BOSS }} ⭐). Plus de cœurs, ou retour avant la fin : la moitié du sac. Les étoiles comptent dans le plafond du jour.</li>
+            <li>Bientôt : d'autres lieux (sciences, histoire, géographie…) et des sorties en groupe.</li>
+          </ul>
+        </section>
+      </template>
+    </fiche-jeu>
+  </div>
+
+  <script src="icones-jeux.js"></script>
+  <script src="fiche-jeu.js"></script>
+  <script src="commun.js"></script>
+  <script src="etoiles.js"></script>
+  <script src="compagnon/compagnon-commun.js"></script>
+  <script src="quatre/quatre-regles.js"></script>
+  <script src="expedition/expedition-regles.js"></script>
+  <script>
+    if (!ACCES.memorise()) location.replace('index.html');
+
+    const CLE = 'expedition-partie';
+    // Géométrie de la vue isométrique : losanges de 56 × 28, blocs de 12 de haut, 7 rangs espacés de 4 demi-cases
+    const TW = 56, TH = 28, HB = 12, EP = 6, KB = 26, DMAX = 5;
+    const VB = { x: -170, y: -46, l: 340, h: 500 };
+    function posIso(k, d) { return { x: d * TW / 2, y: k * TH / 2 }; }
+    function posNoeud(nd) { return posIso(KB - 4 * nd.rang, 2 * nd.voie); }
+    function losange(x, y) { return (x) + ',' + (y - TH / 2) + ' ' + (x + TW / 2) + ',' + y + ' ' + x + ',' + (y + TH / 2) + ' ' + (x - TW / 2) + ',' + y; }
+    // Un pavé isométrique (dessus + deux côtés) posé sur la case (x, y), de hauteur h
+    function pave(x, y, h, c, extra) {
+      return '<g' + (extra || '') + '><polygon points="' + (x - TW / 2) + ',' + (y - h) + ' ' + x + ',' + (y + TH / 2 - h) + ' ' + x + ',' + (y + TH / 2) + ' ' + (x - TW / 2) + ',' + y + '" fill="' + c.gauche + '"/>' +
+             '<polygon points="' + (x + TW / 2) + ',' + (y - h) + ' ' + x + ',' + (y + TH / 2 - h) + ' ' + x + ',' + (y + TH / 2) + ' ' + (x + TW / 2) + ',' + y + '" fill="' + c.droite + '"/>' +
+             '<polygon points="' + losange(x, y - h) + '" fill="' + c.dessus + '"/></g>';
+    }
+    // Case du tapis la plus proche de la position idéale d (les cases n'existent que si k + d est pair)
+    function caseVoisine(k, d, sens) {
+      var a = Math.floor(d), b = a + 1;
+      if (a === d) return (a + k) % 2 === 0 ? a : a + (sens < 0 ? -1 : 1);
+      return Math.abs((a + k) % 2) === 0 ? a : b;
+    }
+    // Coffre dessiné (fermé, ou ouvert avec son couvercle relevé)
+    function coffre(x, y, ouvert) {
+      var b = '<rect x="' + (x - 12) + '" y="' + (y - 14) + '" width="24" height="14" rx="2" fill="#a0612b" stroke="#5c3412" stroke-width="1.5"/>' +
+              '<rect x="' + (x - 12) + '" y="' + (y - 9) + '" width="24" height="3" fill="#f4c430"/>';
+      return ouvert ? b + '<path d="M' + (x - 12) + ' ' + (y - 14) + ' l2 -9 h20 l2 9 z" fill="#7a4520" stroke="#5c3412" stroke-width="1.5"/><text x="' + x + '" y="' + (y - 16) + '" font-size="12" text-anchor="middle">✨</text>'
+                    : b + '<path d="M' + (x - 12) + ' ' + (y - 14) + ' q12 -10 24 0 z" fill="#b5703a" stroke="#5c3412" stroke-width="1.5"/><rect x="' + (x - 3) + '" y="' + (y - 12) + '" width="6" height="6" rx="1" fill="#f4c430" stroke="#8a6200" stroke-width="1"/>';
+    }
+
+    new Vue({
+      el: '#app',
+      data: {
+        version: VERSION,
+        LIEUX: EX.LIEUX, DIFFICULTES: EX.DIFFICULTES, GAIN_BOSS: EX.GAIN_BOSS,
+        onglet: 'config',
+        e: lireStockage(CLE),
+        lieuChoisi: lireStockage('expedition-lieu') || 'cinema',
+        difficulte: lireStockage('expedition-difficulte') || 'balade',
+        stats: lireStockage('expedition-stats') || { parties: 0, reussies: 0, bonnes: 0 },
+        animal: lireStockage('compagnon-animal'),
+        enMarche: false,
+        sonActif: lireStockage('brillant-son') !== false,
+        vibrationActive: lireStockage('brillant-vibration') !== null ? lireStockage('brillant-vibration') !== false : lireStockage('brillant-son') !== false
+      },
+      computed: {
+        r: function() { return this.e && this.e.rencontre; },
+        lieuSelection: function() { return EX.lieu(this.lieuChoisi) || EX.LIEUX[0]; },
+        lieuEnCours: function() { return this.e ? EX.lieu(this.e.lieu) : EX.LIEUX[0]; },
+        coeursTexte: function() { return this.e ? '❤️'.repeat(this.e.coeurs) + '🤍'.repeat(EX.COEURS - this.e.coeurs) : ''; },
+        dessinAnimal: function() { return this.animal ? CP.dessin(this.animal, 'content') : ''; },
+        noeudIci: function() { return this.e.carte.noeuds[this.e.pos]; },
+        possibles: function() { return this.e && !this.e.rencontre && !this.e.fin ? EX.suivants(this.e.carte, this.e.pos) : []; },
+        consigne: function() { return this.possibles.length > 1 ? '👆 Choisis ton chemin' : this.possibles.length ? '👆 Touche l\'étape suivante' : ''; },
+        // Position du compagnon au-dessus de l'étape où il est (en % de la carte)
+        pionStyle: function() {
+          var p = posNoeud(this.noeudIci);
+          return { left: ((p.x - VB.x) / VB.l * 100) + '%', top: ((p.y - HB - 2 - VB.y) / VB.h * 100) + '%' };
+        },
+        texteBoss: function() {
+          var r = this.r;
+          if (r.phase === 'gagne') return '🏆 Tu as gagné !';
+          if (r.phase === 'perdu') return '😱 Le boss a gagné… ' + (this.e.coeurs > 0 ? 'Il te reste ' + this.e.coeurs + ' cœur' + (this.e.coeurs > 1 ? 's' : '') + '.' : '');
+          if (r.phase === 'nul') return '🤝 Match nul ! Une revanche, sans perdre de cœur.';
+          return r.tour === 1 ? 'À toi : touche une colonne' : this.lieuEnCours.boss.nom + ' réfléchit…';
+        },
+        // ---------- La carte en 3D isométrique (SVG) ----------
+        carteSvg: function() {
+          var e = this.e, L = this.lieuEnCours, c = L.couleurs, carte = e.carte, s = '';
+          var chemin = {}, faits = {}, trajet = e.trajet || [0];
+          for (var t = 1; t < trajet.length; t++) faits[trajet[t - 1] + '-' + trajet[t]] = true;
+          var possibles = this.possibles;
+          // Cases du tapis entre deux étapes reliées
+          carte.liens.forEach(l => {
+            var a = carte.noeuds[l[0]], b = carte.noeuds[l[1]], ka = KB - 4 * a.rang, da = 2 * a.voie, db = 2 * b.voie;
+            var etat = faits[l[0] + '-' + l[1]] ? 'fait' : (l[0] === e.pos && possibles.includes(l[1])) ? 'possible' : 'autre';
+            for (var u = 1; u < 4; u++) {
+              var k = ka - u, d = caseVoisine(k, da + (db - da) * u / 4, db - da);
+              var cle = k + ',' + d, ancien = chemin[cle];
+              if (!ancien || etat === 'fait' || (etat === 'possible' && ancien === 'autre')) chemin[cle] = etat;
+            }
+          });
+          // Pas de décor contre une étape (il la cacherait)
+          var presDUneEtape = (k, d) => carte.noeuds.some(nd => Math.abs(KB - 4 * nd.rang - k) <= 2 && Math.abs(2 * nd.voie - d) <= 2);
+          // Sol : un dallage en damier, dessiné de l'arrière vers l'avant
+          var hDeco = EX.hasard(e.graine ^ 0x5eed), decos = [];
+          for (var k = -1; k <= KB + 3; k++) for (var d = -DMAX; d <= DMAX; d++) {
+            if ((k + d) % 2 !== 0) continue;
+            var p = posIso(k, d), cle = k + ',' + d, ch = chemin[cle];
+            var dessus = ch ? (ch === 'autre' ? '#7a2a3a' : c.chemin) : ((k + d) % 4 === 0 ? c.sol1 : c.sol2);
+            s += pave(p.x, p.y, EP, { dessus: dessus, gauche: c.bord, droite: '#1a1428' });
+            if (ch && ch !== 'autre') s += '<polygon points="' + losange(p.x, p.y - EP) + '" fill="none" stroke="' + c.cheminBord + '" stroke-width="' + (ch === 'possible' ? 2 : 1) + '" opacity="' + (ch === 'possible' ? 0.95 : 0.5) + '"/>';
+            // Décor du lieu, sur les bords, loin du chemin
+            if (!ch && !presDUneEtape(k, d) && Math.abs(d) >= 3 && k > 0 && k < KB + 2 && hDeco() < 0.16) decos.push({ k: k, x: p.x, y: p.y - EP, ico: L.decor[Math.floor(hDeco() * L.decor.length)] });
+          }
+          // Objets (décor et étapes), de l'arrière vers l'avant
+          var objets = decos.map(o => ({ k: o.k, svg: '<text x="' + o.x + '" y="' + (o.y + 4) + '" font-size="20" text-anchor="middle" opacity="0.9">' + o.ico + '</text>' }));
+          carte.noeuds.forEach(nd => {
+            var p = posNoeud(nd), x = p.x, y = p.y - EP, ici = nd.id === e.pos, fait = e.visites.includes(nd.id) && !ici, possible = possibles.includes(nd.id);
+            var g = '<g data-n="' + nd.id + '" class="' + (possible ? 'n-possible' : '') + '"' + (!possible && !fait && !ici && nd.rang > this.noeudIci.rang ? ' opacity="0.8"' : '') + '>';
+            if (possible) g += '<ellipse class="anneau" cx="' + x + '" cy="' + y + '" rx="' + (TW / 2 + 4) + '" ry="' + (TH / 2 + 3) + '" fill="none" stroke="#ffd43b" stroke-width="3"/>';
+            var couleurs = nd.type === 'boss' ? { dessus: '#9775fa', gauche: '#6741d9', droite: '#5135b0' } : fait ? { dessus: '#cfc3a6', gauche: '#9c8a68', droite: '#85744f' } : c;
+            g += pave(x, y, HB, couleurs);
+            var yt = y - HB, ico = '';
+            if (nd.type === 'coffre') g += coffre(x, yt + 4, fait);
+            else {
+              ico = nd.type === 'depart' ? '🎟️' : nd.type === 'repos' ? L.repos.ico : nd.type === 'boss' ? L.boss.ico : '❓';
+              if (nd.type === 'gardien' && fait) ico = '✔️';
+              if (!ici) g += '<text x="' + x + '" y="' + (yt + 2) + '" font-size="' + (nd.type === 'boss' ? 30 : 22) + '" text-anchor="middle"' + (fait ? ' opacity="0.55"' : ' class="flotte"') + '>' + ico + '</text>';
+            }
+            // Grande zone de toucher (plus facile au doigt)
+            if (possible) g += '<rect x="' + (x - TW / 2) + '" y="' + (yt - 34) + '" width="' + TW + '" height="' + (TH + HB + 36) + '" fill="transparent"/>';
+            objets.push({ k: KB - 4 * nd.rang + 0.5, svg: g + '</g>' });
+          });
+          objets.sort((a, b) => a.k - b.k).forEach(o => { s += o.svg; });
+          return '<svg viewBox="' + VB.x + ' ' + VB.y + ' ' + VB.l + ' ' + VB.h + '" xmlns="http://www.w3.org/2000/svg">' + s + '</svg>';
+        }
+      },
+      watch: {
+        sonActif: function(v) { ecrireStockage('brillant-son', v); },
+        vibrationActive: function(v) { ecrireStockage('brillant-vibration', v); if (v) vibrer(40); },
+        lieuChoisi: function(v) { ecrireStockage('expedition-lieu', v); },
+        difficulte: function(v) { ecrireStockage('expedition-difficulte', v); }
+      },
+      created: function() {
+        if (this.e && this.e.fin) { this.e = null; ecrireStockage(CLE, null); }
+        if (this.e) this.onglet = 'play';
+        // Le compagnon peut changer ailleurs (soins, accessoires) : on relit au retour sur la page
+        window.addEventListener('pageshow', () => { this.animal = lireStockage('compagnon-animal'); });
+      },
+      methods: {
+        son: function(nom) { if (this.sonActif) try { Sons.jouer(nom); } catch (x) {} },
+        vibre: function(m) { if (this.vibrationActive) vibrer(m); },
+        sauver: function() { ecrireStockage(CLE, this.e); },
+        partir: function() {
+          var l = EX.lieu(this.lieuChoisi);
+          if (!l || !l.pret) return;
+          var e = EX.nouvelle(l.id, this.difficulte);
+          this.e = e; this.sauver();
+          this.animal = lireStockage('compagnon-animal');
+          this.onglet = 'play';
+          this.son('toc');
+        },
+        // Toucher la carte : on cherche l'étape touchée parmi celles qu'on peut atteindre
+        toucherCarte: function(ev) {
+          var g = ev.target.closest && ev.target.closest('[data-n]');
+          if (!g) return;
+          var id = +g.getAttribute('data-n');
+          if (this.possibles.includes(id)) this.allerA(id);
+        },
+        allerA: function(id) {
+          var e = this.e;
+          if (this.enMarche) return;
+          this.enMarche = true;
+          e.pos = id; e.visites.push(id); (e.trajet = e.trajet || [0]).push(id);
+          this.sauver();
+          this.son('toc'); this.vibre(15);
+          setTimeout(() => { this.enMarche = false; this.rencontrer(); }, 750);
+        },
+        // Ce qu'on trouve à l'étape
+        rencontrer: function() {
+          var e = this.e, nd = e.carte.noeuds[e.pos], L = this.lieuEnCours, h = EX.hasardEtape(e, 1);
+          if (nd.type === 'gardien') {
+            var vues = lireStockage('expedition-vues') || [];
+            var q = EX.tirerQuestion(e.lieu, e.difficulte, vues, h);
+            ecrireStockage('expedition-vues', vues.concat(q.id).slice(-40));
+            var gain = EX.DIFFICULTES[e.difficulte].gainQuestion === 2 && q.niveau === 2 ? 2 : 1;
+            e.rencontre = { type: 'gardien', perso: L.gardiens[Math.floor(h() * L.gardiens.length)], question: q, repondu: null, retirees: [], gain: gain };
+          } else if (nd.type === 'coffre') e.rencontre = { type: 'coffre', ouvert: false, gain: null };
+          else if (nd.type === 'repos') { var soigne = e.coeurs < EX.COEURS; if (soigne) e.coeurs++; e.rencontre = { type: 'repos', soigne: soigne }; }
+          else if (nd.type === 'boss') e.rencontre = { type: 'boss', phase: 'intro', grille: QL.nouvelle(), tour: 1, ligne: null };
+          this.sauver();
+        },
+        repondre: function(i) {
+          var e = this.e, r = e.rencontre;
+          if (r.repondu !== null) return;
+          r.repondu = i; e.questions++;
+          var stats = this.stats;
+          if (i === r.question.bonne) { e.sac += r.gain; e.bonnes++; stats.bonnes++; this.son('toc'); this.vibre(30); }
+          else { e.coeurs--; this.son('choc'); this.vibre([60, 60, 60]); }
+          ecrireStockage('expedition-stats', stats);
+          this.sauver();
+        },
+        // L'aide du compagnon : deux mauvaises réponses disparaissent (une fois par expédition)
+        aideCompagnon: function() {
+          var e = this.e, r = e.rencontre, h = EX.hasardEtape(e, 7);
+          var fausses = EX.melanger([0, 1, 2, 3].filter(i => i !== r.question.bonne), h).slice(0, 2);
+          r.retirees = fausses; e.aide = true;
+          this.sauver(); this.vibre(20);
+        },
+        ouvrirCoffre: function() {
+          var e = this.e, r = e.rencontre, h = EX.hasardEtape(e, 3), L = this.lieuEnCours;
+          var animal = lireStockage('compagnon-animal'), possede = (animal && animal.possede) || {};
+          var restants = (L.souvenirs || []).filter(id => !possede[id] && !e.souvenirs.some(s => s.id === id));
+          if (animal && restants.length && h() < 0.4) {
+            var art = CP.art(restants[Math.floor(h() * restants.length)]);
+            // Le souvenir va tout de suite dans la maison du compagnon (installé au salon)
+            animal.possede = animal.possede || {}; animal.porte = animal.porte || {};
+            animal.possede[art.id] = 1; animal.porte[art.slot] = art.id;
+            ecrireStockage('compagnon-animal', animal); this.animal = animal;
+            e.souvenirs.push({ id: art.id, nom: art.nom, ico: art.ico });
+            r.gain = { souvenir: true, nom: art.nom, ico: art.ico };
+          } else {
+            var n = 1 + Math.floor(h() * 3);
+            e.sac += n; r.gain = { etoiles: n };
+          }
+          r.ouvert = true;
+          this.sauver(); this.son('toc'); this.vibre([20, 40, 20]);
+        },
+        continuer: function() {
+          var e = this.e;
+          e.rencontre = null;
+          this.sauver();
+          if (e.coeurs <= 0) this.finir(false);
+        },
+        // ---------- Le boss : Quatre en ligne contre l'ordinateur ----------
+        debutBoss: function() { var r = this.e.rencontre; r.phase = 'jeu'; r.grille = QL.nouvelle(); r.tour = 1; r.ligne = null; this.sauver(); },
+        jouerBoss: function(col) {
+          var r = this.e.rencontre;
+          if (r.phase !== 'jeu' || r.tour !== 1) return;
+          if (QL.jouer(r.grille, col, 1) < 0) return this.vibre(60);
+          this.son('toc');
+          if (this.finCoupBoss()) return;
+          r.tour = 2; this.sauver();
+          setTimeout(() => {
+            if (!this.e || !this.e.rencontre || this.e.rencontre !== r || r.phase !== 'jeu') return;
+            QL.jouer(r.grille, QL.choisirCoup(r.grille, 2, EX.DIFFICULTES[this.e.difficulte].boss), 2);
+            r.grille = r.grille.slice();
+            if (!this.finCoupBoss()) { r.tour = 1; this.sauver(); }
+          }, 650);
+          r.grille = r.grille.slice();
+        },
+        finCoupBoss: function() {
+          var e = this.e, r = e.rencontre, res = QL.resultat(r.grille);
+          if (!res) return false;
+          r.ligne = res.ligne;
+          if (res.gagnant === 1) {
+            r.phase = 'gagne'; e.sac += EX.GAIN_BOSS; this.son('victoire'); this.vibre([40, 40, 120]);
+            this.sauver();
+            setTimeout(() => { e.rencontre = null; this.finir(true); }, 1600);
+          } else if (res.gagnant === 2) {
+            r.phase = 'perdu'; e.coeurs--; this.son('choc'); this.vibre([80, 60, 80]);
+            this.sauver();
+            if (e.coeurs <= 0) setTimeout(() => { e.rencontre = null; this.finir(false); }, 1800);
+          } else { r.phase = 'nul'; this.sauver(); }
+          return true;
+        },
+        revanche: function() { this.debutBoss(); },
+        // ---------- Fin de l'expédition ----------
+        abandonner: function() {
+          if (!confirm('Rentrer à la maison ? Tu gardes la moitié des étoiles du sac.')) return;
+          this.e.rencontre = null;
+          this.finir(false, true);
+          this.onglet = 'play';
+        },
+        finir: function(gagne, abandon) {
+          var e = this.e, L = this.lieuEnCours, gain = EX.gainFinal(e, gagne);
+          var avant = Etoiles.gagneesAujourdhui();
+          Etoiles.recompenseJeu(gain, 'Expédition · ' + L.nom + (gagne ? ' (boss vaincu)' : ''));
+          var donne = Etoiles.gagneesAujourdhui() - avant;
+          Etoiles.evenement('Expédition', gagne, false, { lieu: e.lieu, difficulte: e.difficulte });
+          // La balade donne faim et soif au compagnon
+          var a = lireStockage('compagnon-animal');
+          if (a && a.besoins && typeof CP !== 'undefined') {
+            var n = CP.niveaux(a), t = Date.now();
+            ['repas', 'eau'].forEach(id => { a.besoins[id] = { v: Math.max(0, n[id] - 15), t: t }; });
+            ecrireStockage('compagnon-animal', a); this.animal = a;
+          }
+          var st = this.stats; st.parties++; if (gagne) st.reussies++;
+          ecrireStockage('expedition-stats', st);
+          e.fin = { gagne: !!gagne, abandon: !!abandon, gain: gain, donne: donne };
+          this.sauver();
+        },
+        terminer: function(repartir) {
+          this.e = null; ecrireStockage(CLE, null);
+          if (repartir === true) this.partir(); else this.onglet = 'config';
+        }
+      }
+    });
+  </script>
+  <script src="salon-global.js" data-jeu="expedition"></script>
+</body>
+</html>

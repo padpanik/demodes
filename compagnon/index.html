@@ -706,7 +706,7 @@
     const TAILLES = { couchage: 76, plante: 52, mur: 46, mur2: 34, lampe: 30, jouet: 30 };
     const X_DEFAUT = { couchage: 15, plante: 88, mur: 15, mur2: 45, lampe: 60, jouet: 72 };
     // Déco de fête (emplacements « fete-… ») : sa place par défaut est donnée par l'article (x en %, taille en px)
-    function artFete(slot) { return slot.indexOf('fete-') === 0 ? ARTICLES.find(a => a.slot === slot) : null; }
+    function artFete(slot) { return /^(fete|exp)-/.test(slot) ? ARTICLES.find(a => a.slot === slot) : null; }   // déco de fête ou souvenir d'expédition
     function placeDe(slot) { var a = artFete(slot); return PLACES[slot] || (a ? a.pos + ';font-size:' + a.taille + 'px' : ''); }
     function tailleDe(slot) { var a = artFete(slot); return TAILLES[slot] || (a ? a.taille : 40); }
     function xDefaut(slot) { var a = artFete(slot); return X_DEFAUT[slot] || (a ? a.x : 50); }
@@ -830,7 +830,7 @@
         // Articles de saison : tous dans le rayon de la fête en cours ; ensuite, seulement ceux qu'on possède, dans leur rayon habituel
         articlesDuRayon: function() {
           if (this.rayon === 'saison') return this.fete ? ARTICLES.filter(a => a.fete === this.fete.id) : [];
-          return ARTICLES.filter(a => a.rayon === this.rayon && (!a.fete || this.possede(a)));
+          return ARTICLES.filter(a => a.rayon === this.rayon && ((!a.fete && !a.souvenir) || this.possede(a)));
         },
         fete: function() { this.feteEssai; return CP.feteDu(this.maintenant, this.animal && this.animal.ne); },
         prochaine: function() { return CP.prochaineFete(this.maintenant, this.animal && this.animal.ne); },
@@ -1131,7 +1131,7 @@
             if (d.id === 'balle') l.push({ id: 'jouet', x: x, dir: dir, action: 'balle' });
             if (d.id === 'peluche') l.push({ id: 'jouet', x: x, dir: dir, action: 'calin-objet' });
             if (d.slot === 'plante') l.push({ id: 'plante', x: x, dir: dir, action: 'renifle', ico: '🌿' });
-            if (d.slot.indexOf('fete-') === 0) l.push({ id: d.slot, x: x, dir: dir, action: 'fete', ico: d.ico, phrase: (CP.art(d.id) || {}).phrase });
+            if (/^(fete|exp)-/.test(d.slot)) l.push({ id: d.slot, x: x, dir: dir, action: 'fete', ico: d.ico, phrase: (CP.art(d.id) || {}).phrase });
           });
           return l;
         },

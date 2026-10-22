@@ -20,6 +20,7 @@ var SalonGlobal = (function () {
     quatre: { nom: 'Quatre en ligne', page: 'quatre/', cle: 'quatre-sauvegarde' },
     domino: { nom: 'Dominos', page: 'domino/', cle: 'domino-sauvegarde' },
     lettres: { nom: 'Lettres croisées', page: 'lettres/', cle: 'lettres-sauvegarde' },
+    expedition: { nom: 'Expédition', page: 'expedition/' },
     compagnon: { nom: 'Mon compagnon', page: 'compagnon/' }
   };
   var COULEURS = ['#e74c3c', '#e67e22', '#f1c40f', '#2ecc71', '#16a085', '#3498db', '#2c3e50', '#9b59b6', '#e84393', '#8d6e63'];

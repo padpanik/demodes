@@ -88,6 +88,11 @@ var CP = (function () {
     { id: 'chapeau-anniv', fete: 'anniversaire', rayon: 'tete', slot: 'tete', nom: 'Chapeau d\'anniversaire', desc: 'C\'est sa fête !', prix: 10, couleur: '#4dabf7' },
     { id: 'ballons', fete: 'anniversaire', rayon: 'deco', slot: 'fete-anniversaire', nom: 'Bouquet de ballons', desc: 'Pour faire la fête', prix: 12, ico: '🎈', place: true, pos: 'left:6%;top:24%', x: 12, taille: 40, phrase: 'Des ballons pour moi ! 🎈' },
     { id: 'gateau-anniv', fete: 'anniversaire', rayon: 'gourmand', nom: 'Gâteau d\'anniversaire', desc: 'Avec des bougies à souffler', prix: 6, ico: '🧁', conso: true, effets: { repas: 100, calin: 60 } },
+    // ----- Souvenirs d'expédition (souvenir) : pas à vendre, on les trouve dans les coffres ; un emplacement « exp-… » chacun -----
+    { id: 'clap', souvenir: 'cinema', rayon: 'deco', slot: 'exp-clap', nom: 'Clap de tournage', desc: 'Trouvé au Studio de cinéma', prix: 0, ico: '🎬', place: true, pos: 'left:6%;top:30%', x: 12, taille: 34, phrase: 'Silence… moteur… action ! 🎬' },
+    { id: 'popcorn', souvenir: 'cinema', rayon: 'deco', slot: 'exp-popcorn', nom: 'Seau de pop-corn', desc: 'Trouvé au Studio de cinéma', prix: 0, ico: '🍿', place: true, pos: 'left:44%;bottom:8px', x: 50, taille: 30, phrase: 'Du pop-corn ! 🍿' },
+    { id: 'bobine', souvenir: 'cinema', rayon: 'deco', slot: 'exp-bobine', nom: 'Bobine de film', desc: 'Trouvée au Studio de cinéma', prix: 0, ico: '🎞️', place: true, pos: 'left:66%;top:22%', x: 72, taille: 32, phrase: 'Une vieille bobine de film… 🎞️' },
+    { id: 'projecteur', souvenir: 'cinema', rayon: 'deco', slot: 'exp-projecteur', nom: 'Projecteur', desc: 'Trouvé au Studio de cinéma', prix: 0, ico: '📽️', place: true, pos: 'left:24%;bottom:54px', x: 30, taille: 36, phrase: 'On se fait une séance ? 📽️' },
     { id: 'bonnet-noel', fete: 'noel', rayon: 'tete', slot: 'tete', nom: 'Bonnet de Père Noël', desc: 'Ho, ho, ho !', prix: 14, couleur: '#e03131' },
     { id: 'pull-noel', fete: 'noel', rayon: 'corps', slot: 'corps', nom: 'Pull de Noël', desc: 'Avec des flocons', prix: 22, couleur: '#c92a2a' },
     { id: 'sapin', fete: 'noel', rayon: 'deco', slot: 'fete-noel', nom: 'Sapin de Noël', desc: 'Avec ses boules et son étoile', prix: 20, ico: '🎄', place: true, pos: 'left:78%;bottom:58px', x: 86, taille: 56, phrase: 'Il est beau notre sapin ! 🎄' },

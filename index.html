@@ -141,7 +141,7 @@
           <div>
             <div class="nom">{{ j.nom }}</div>
             <div class="desc">{{ j.desc }}</div>
-            <span class="badge" v-if="j.enCours">{{ j.enCours }}<button class="badge-quitter" @click.prevent.stop="quitter(j)" aria-label="Quitter ce salon">✕ Quitter</button></span>
+            <span class="badge" v-if="j.enCours">{{ j.enCours }}<button v-if="!j.solo" class="badge-quitter" @click.prevent.stop="quitter(j)" aria-label="Quitter ce salon">✕ Quitter</button></span>
           </div>
           <button class="favori" :class="{ oui: favoris.includes(j.id) }" @click.prevent.stop="basculerFavori(j.id)"
                   @touchstart.stop @mousedown.stop :aria-label="favoris.includes(j.id) ? 'Retirer des favoris' : 'Ajouter aux favoris'">
@@ -221,7 +221,7 @@
         },
         jeux: function() {
           this.maj;   // recalcul après « Quitter »
-          var b = etatJeu('brillant-sauvegarde-v1'), y = etatJeu('yams-sauvegarde'), g = etatJeu('bg-sauvegarde'), a = etatJeu('assaut-sauvegarde'), n = etatJeu('bataille-sauvegarde'), d = etatJeu('gribouille-sauvegarde'), pb = etatJeu('petitbac-sauvegarde'), ag = etatJeu('agents-sauvegarde'), ql = etatJeu('quatre-sauvegarde'), dm = etatJeu('domino-sauvegarde'), lc = etatJeu('lettres-sauvegarde');
+          var b = etatJeu('brillant-sauvegarde-v1'), y = etatJeu('yams-sauvegarde'), g = etatJeu('bg-sauvegarde'), a = etatJeu('assaut-sauvegarde'), n = etatJeu('bataille-sauvegarde'), d = etatJeu('gribouille-sauvegarde'), pb = etatJeu('petitbac-sauvegarde'), ag = etatJeu('agents-sauvegarde'), ql = etatJeu('quatre-sauvegarde'), dm = etatJeu('domino-sauvegarde'), lc = etatJeu('lettres-sauvegarde'); var ex = lireStockage('expedition-partie');
           return [
             { id: 'brilliant', nom: 'Brilliant', page: 'brilliant/', desc: 'Roll & write : remplis les zones de ta grille.', enCours: b && b.texte },
             { id: 'yams', nom: 'Yams', page: 'yams/', desc: '5 dés, 3 lancers, seul ou à plusieurs.', enCours: y && y.texte },
@@ -233,7 +233,8 @@
             { id: 'agents', nom: 'Agents secrets', page: 'agents/', desc: 'Deux équipes, un mot et un nombre pour tout dire.', enCours: ag && ag.texte },
             { id: 'quatre', nom: 'Quatre en ligne', page: 'quatre/', desc: 'Aligne 4 jetons : seul contre l\'ordinateur ou à deux.', enCours: ql && ql.texte },
             { id: 'domino', nom: 'Dominos', page: 'domino/', desc: 'Dominos ou triominos, seul ou de 2 à 4.', enCours: dm && dm.texte },
-            { id: 'lettres', nom: 'Lettres croisées', page: 'lettres/', desc: 'Des mots sur la grille, seul ou de 2 à 4.', enCours: lc && lc.texte }
+            { id: 'lettres', nom: 'Lettres croisées', page: 'lettres/', desc: 'Des mots sur la grille, seul ou de 2 à 4.', enCours: lc && lc.texte },
+            { id: 'expedition', nom: 'Expédition', page: 'expedition/', desc: 'Balade avec ton compagnon : questions, coffres et boss.', enCours: ex && !ex.fin ? '● Expédition en cours' : '', solo: true }
           ];
         }
       },
@@ -270,7 +271,7 @@
         // Au lancement de l'appli, une partie en salon reprend directement (sauf si on vient choisir un jeu)
         reprendre: function() {
           if (/[?&]choix\b/.test(location.search)) return;
-          var enSalon = this.jeux.find(j => j.enCours);
+          var enSalon = this.jeux.find(j => j.enCours && !j.solo);   // une expédition en cours ne rouvre pas sa page toute seule
           if (enSalon) location.replace(enSalon.page);
         },
         retenir: function(id) { ecrireStockage('desdale-dernier-jeu', id); },

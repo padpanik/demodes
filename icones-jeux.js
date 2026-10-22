@@ -12,7 +12,7 @@ var IconesJeux = (function () {
     brilliant: ['#9775fa', '#6741d9'], yams: ['#ff6b6b', '#e03131'], backgammon: ['#e8a061', '#a8591f'],
     assaut: ['#94b04a', '#55701c'], bataille: ['#4dabf7', '#1864ab'], gribouille: ['#f783ac', '#d6336c'],
     petitbac: ['#3bc9db', '#0c8599'], agents: ['#68727c', '#25292e'], quatre: ['#748ffc', '#3b5bdb'],
-    domino: ['#51cf66', '#2b8a3e'], lettres: ['#ffa94d', '#e8590c']
+    domino: ['#51cf66', '#2b8a3e'], lettres: ['#ffa94d', '#e8590c'], expedition: ['#da77f2', '#9c36b5']
   };
   var B = '#fff';   // couleur du dessin (blanc sur fond plein, couleur du jeu sur fond clair) ; c[1] = touche d'accent
   function pips(cx, cy, s, n, c) {   // points d'un dé de côté s centré en cx, cy
@@ -83,6 +83,13 @@ var IconesJeux = (function () {
     domino: function (c) {
       return '<g transform="rotate(-24 28 28)"><rect x="19" y="8" width="18" height="40" rx="4.5" fill="' + B + '"/><path d="M21.5 28 H34.5" stroke="' + c[1] + '" stroke-width="1.8" opacity="0.5"/>' +
              pips(28, 18, 16, 3, c[1]) + pips(28, 38, 16, 4, c[1]) + '</g>';
+    },
+    // Expédition : la carte au trésor, son chemin en pointillés et la croix
+    expedition: function (c) {
+      return '<path d="M10 16 L21 12 L33 16 L45 12 V40 L33 44 L21 40 L10 44 Z" fill="' + B + '"/>' +
+             '<path d="M21 12 V40 M33 16 V44" stroke="' + c[1] + '" stroke-width="1.2" opacity="0.35"/>' +
+             '<path d="M14 37 Q19 27 26 31 T37 21" fill="none" stroke="' + c[1] + '" stroke-width="2.2" stroke-dasharray="2.5 2.5" stroke-linecap="round"/>' +
+             '<path d="M36 17 l5 5 M41 17 l-5 5" stroke="#f03e3e" stroke-width="2.6" stroke-linecap="round"/>';
     },
     // Lettres croisées : trois lettres posées
     lettres: function (c) {

@@ -45,6 +45,7 @@ Lien vers un jeu : `yams/` (pas `yams.html`). `404.html` renvoie les anciennes a
 | `quatre/` : `index.html` + `quatre-regles.js` | Quatre en ligne (version maison du classique « aligner 4 jetons », sans le nom de la marque). Solo contre l'ordinateur (3 niveaux) ou à deux en salon. Moteur + ordinateur (minimax) dans `quatre-regles.js` (testable avec Node). |
 | `domino/` : `index.html` + `domino-regles.js` | Dominos (double-six) avec l'option **Triominos**. Solo contre 1 à 3 ordinateurs, ou salon de 2 à 4 (mains gardées par l'hôte, chacun ne reçoit que la sienne). Moteur + ordinateur + géométrie triangulaire dans `domino-regles.js` (testable avec Node). |
 | `lettres/` : `index.html` + `lettres-regles.js` + `lettres-mots.txt` | **Lettres croisées** (version maison du jeu de lettres sur grille, sans le nom ni les visuels de la marque). Solo contre 1 à 3 ordinateurs (3 niveaux), ou salon de 2 à 4 (chevalets et sac gardés par l'hôte). Plateau, bonus, points, arbre de mots et ordinateur dans `lettres-regles.js` (testable avec Node). Dictionnaire libre `lettres-mots.txt` (~311 000 mots, licence MIT, voir `lettres-mots-licence.txt`), une ligne par mot codée « préfixe commun » (1er caractère = longueur reprise du mot précédent, en hexadécimal), suivie d'un chiffre de fréquence (3 très courant, 2 courant, 1 connu, rien = rare ; d'après wordfreq, CC BY-SA 4.0). Abréviations retirées (CF, KM…). Pas d'ODS (liste officielle sous droits). |
+| `expedition/` : `index.html` + `expedition-regles.js` | **Expédition** (balade du compagnon, culture générale) : chemin à embranchements en **vue 3D isométrique** (SVG dessiné par le code), gardiens qui posent une question, coffres, buvette, boss sur un jeu de la collection contre l'ordinateur. Solo pour l'instant (sorties en groupe prévues). Lieux, questions maison, génération de la carte et récompenses dans `expedition-regles.js` (testable avec Node). |
 | `compagnon/` : `index.html` + `compagnon-commun.js` | **Mon compagnon** (prototype, façon « animal virtuel ») : on adopte un animal dessiné en SVG, on en prend soin chaque jour, et les ⭐ gagnées en jouant (`Etoiles` dans `commun.js`) achètent accessoires et déco. Espèces, besoins, boutique et dessin SVG dans `compagnon-commun.js` (aussi utilisé par l'accueil). Pas de réseau propre. |
 | `compagnon/compagnon-3d.html` | Maquette « niveau 2 » : le chien en vraie 3D (Three.js **r128** par CDN, uniquement sur cette page). **Mise de côté** par l'utilisateur (plus de lien dans le jeu, page gardée pour plus tard). |
 | `bataille/sons/` | Sons enregistrés de la Bataille navale (MP3 libres de droits) et leurs sources (`LICENCES.txt`). |
@@ -163,6 +164,7 @@ Mon compagnon : `compagnon-animal` (espèce, nom, couleur, besoins, objets poss�
 `compagnon-journal` (dernières étoiles gagnées ou dépensées), `compagnon-parties` (parties déjà récompensées), `compagnon-jour` (tâches du jour),
 `compagnon-cadeau` (bonus de bienvenue donné), `compagnon-ancien`, `compagnon-gains-jeux` (étoiles gagnées en jouant aujourd'hui),
 `compagnon-reglages`, `compagnon-veille`, `compagnon-series` (séries de victoires solo), `compagnon-evenements` (parties terminées), `compagnon-defis`, `compagnon-trophees`, `compagnon-maison`, `compagnon-anniv` (année du dernier cadeau d'anniversaire), `compagnon-penalite` (jauge vide), `compagnon-fete-essai` (admin).
+Expédition : `expedition-partie` (expédition en cours), `expedition-vues` (40 dernières questions posées), `expedition-stats`, `expedition-lieu`, `expedition-difficulte`.
 Bataille navale : `bataille-sauvegarde`, `bataille-prive` (ma flotte en salon), `bataille-dernier-salon`, `bataille-stats`, `bataille-colles`, `bataille-rejouer`, `bataille-niveau`, `bataille-style`.
 
 ## Règles des jeux (choix de l'utilisateur, à ne pas changer sans lui)
@@ -333,6 +335,27 @@ Bataille navale : `bataille-sauvegarde`, `bataille-prive` (ma flotte en salon), 
   retirées, et le vote affiche un lien vers le vérificateur ODS de la Fédération (https://www.ffscrabble.fr/verificateur-de-mots/).
   Sans coup : il échange ses lettres sauf jokers, E et S (sac ≥ 7), sinon passe. Seul, pas de vote : un mot hors dictionnaire
   demande une confirmation au joueur. Série de victoires par niveau (`Etoiles.serie('lettres-<niveau>')`).
+
+### Expédition (demandée par l'utilisateur : emmener le compagnon en balade, thèmes de culture générale)
+- **Lieux** (`EX.LIEUX`) : un lieu = un thème, ses couleurs, son décor, ses gardiens, sa buvette et son boss. Prêt : **Studio de cinéma**
+  (boss : le Fantôme du studio, au Quatre en ligne). Annoncés « Bientôt » : Laboratoire (sciences), Château fort (histoire),
+  Île aux trésors (géographie), Conservatoire (musique), Forêt enchantée (nature) — chacun prévu avec un boss d'un autre jeu.
+- **Carte** (`EX.genererCarte(graine)`, reproductible) : 7 rangs (1, 2, 3, 2, 3, 2, 1 étapes), départ en bas, boss en haut ; chaque étape
+  mène à la ou aux plus proches du rang suivant (fourches), aucune impasse. Étapes : gardien (~58 %), coffre (~26 %), buvette (pas au 1er rang).
+- **Vue isométrique** (`carteSvg`) : dallage en damier, tapis entre les étapes (vif = déjà pris ou possible, terne = autres), étapes en pavés
+  avec leur icône (❓ gardien, coffre dessiné, buvette, boss sur pavé violet), anneau doré qui clignote sur les étapes possibles, décor du lieu
+  sur les bords (jamais contre une étape). Le compagnon (`CP.dessin`) est posé sur l'étape et marche jusqu'à la suivante (sinon 🐾).
+- **Gardien** : une question (4 réponses mélangées), bonne = +1 ⭐ au sac (+2 pour une question moyenne en Aventure), mauvaise = −1 cœur ;
+  l'explication s'affiche ensuite. **Aide du compagnon** une fois par expédition (retire deux mauvaises réponses). Questions maison
+  (`EX.QUESTIONS`, 55 pour le cinéma : 30 faciles, 25 moyennes, avec une petite explication) ; pas de répétition des 40 dernières.
+- **Coffre** : 1 à 3 ⭐, ou (40 %, si on a un compagnon) un **souvenir** du lieu pas encore trouvé, installé tout de suite au salon
+  (articles `souvenir` de `compagnon-commun.js` : clap, pop-corn, bobine, projecteur ; emplacements `exp-…`, invendables, visibles en boutique
+  seulement une fois trouvés, déplaçables avec « Arranger la déco »). **Buvette** : +1 cœur (3 au plus).
+- **Boss** : Quatre en ligne contre l'ordinateur (`QL`, Balade : facile, Aventure : normal), le joueur rouge commence. Gagné : +5 ⭐ et fin ;
+  perdu : −1 cœur et revanche ; nul : revanche gratuite.
+- **Fin** : boss vaincu = tout le sac ; plus de cœurs ou « Rentrer » = la moitié. Étoiles par `Etoiles.recompenseJeu` (plafond du jour),
+  `Etoiles.evenement('Expédition', …)` pour les défis ; la balade fait baisser Repas et Eau de 15. Difficultés : Balade / Aventure.
+- Accueil : badge « Expédition en cours » (sans bouton Quitter, et la page ne se rouvre pas toute seule : `solo: true`).
 
 ### Mon compagnon (prototype : piste d'un futur Désdale « centre de loisirs pour personnes âgées »)
 - But : petites obligations quotidiennes douces et envie de jouer **ensemble** pour gâter son animal. Grand texte, gros boutons.
