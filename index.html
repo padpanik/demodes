@@ -57,6 +57,16 @@
     .ico-cp { width: 51px; height: 51px; border-radius: 14px; background: #fff3c4; display: flex; align-items: center; justify-content: center; font-size: 30px; flex-shrink: 0; }
     .jeu > .ico-cp { height: 56px; }
     .ico-neuve { flex-shrink: 0; width: 68px; height: 68px; display: flex; align-items: center; justify-content: center; line-height: 0; }
+    /* Inviter un ami (bouton en haut à droite, fenêtre avec QR code) */
+    .hero .btn-inviter { margin-left: auto; align-self: flex-start; display: inline-flex; align-items: center; gap: 5px; border: none; background: #e7f1fc; color: #1c6fc4;
+                         font: inherit; font-weight: 800; font-size: 0.85em; border-radius: 11px; padding: 7px 10px; cursor: pointer; }
+    .voile-partage { position: fixed; inset: 0; z-index: 5000; background: rgba(20,30,40,0.55); display: flex; align-items: center; justify-content: center; padding: 16px; }
+    .fenetre-partage { background: #fff; border-radius: 22px; padding: 18px; width: 100%; max-width: 330px; text-align: center; box-shadow: 0 12px 40px rgba(0,0,0,0.3); }
+    .titre-partage { font-weight: 900; font-size: 1.25em; margin-bottom: 4px; }
+    .aide-partage { color: #6b7a86; font-size: 0.88em; line-height: 1.35; }
+    .qr-partage { margin: 12px auto 6px; width: 220px; height: 220px; }
+    .qr-partage svg { display: block; width: 100%; height: 100%; }
+    .lien-partage { font-size: 0.8em; color: #3b5568; word-break: break-all; margin-bottom: 12px; }
     .titre-section { font-weight: 700; color: #5b6b78; margin: 4px 4px 10px; }
   </style>
 </head>
@@ -83,7 +93,25 @@
           <h1>Désdale</h1>
           <p>Les jeux de dés à jouer ensemble</p>
         </div>
+        <button class="btn-inviter" @click="partage = true" aria-label="Inviter un ami">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="2.6"/><circle cx="6" cy="12" r="2.6"/><circle cx="18" cy="19" r="2.6"/><path d="M8.3 10.8l7.4-4.3M8.3 13.2l7.4 4.3"/></svg>
+          Inviter
+        </button>
       </header>
+
+      <!-- Inviter un ami : QR code à scanner, ou partage du lien (menu de partage du téléphone, sinon copie) -->
+      <div v-if="partage" class="voile-partage" @click.self="partage = false">
+        <div class="fenetre-partage" role="dialog" aria-label="Inviter un ami">
+          <div class="titre-partage">Inviter un ami</div>
+          <div class="aide-partage">Fais-lui scanner ce code avec l'appareil photo de son téléphone, ou envoie-lui le lien.</div>
+          <div class="qr-partage" v-html="qrPartage"></div>
+          <div class="lien-partage">{{ lienSite }}</div>
+          <button v-if="peutPartager" class="btn principal" style="width:100%" @click="partagerLien">📤 Partager le lien…</button>
+          <button class="btn" style="width:100%;margin-top:6px" @click="copierLien">{{ copie ? '✓ Lien copié' : '📋 Copier le lien' }}</button>
+          <div class="aide-partage" style="margin-top:10px">🔒 Le code d'accès n'est pas dans le lien : donne-le-lui toi-même.</div>
+          <button class="btn" style="width:100%;margin-top:8px" @click="partage = false">Fermer</button>
+        </div>
+      </div>
 
       <!-- En haut, fixes pendant que la liste des jeux défile : qui est en ligne, et mon compagnon -->
       <div class="haut-fixe">
@@ -136,6 +164,7 @@
   <script src="etoiles.js"></script>
   <script src="compagnon/compagnon-commun.js"></script>
   <script src="icones-jeux.js"></script>
+  <script src="qr.js"></script>
   <script>
     const B = '#5dc1ec', V = '#7fcc8f', J = '#f7d24a', R = '#ee7163', M = '#b39ddb', O = '#f9a15a';
 
@@ -161,6 +190,8 @@
         glisse: null,      // jeu soulevé par un appui long
         decalY: 0,
         maj: 0,
+        partage: false,    // fenêtre « Inviter un ami »
+        copie: false,
         logo: [B, J, R, V],
         installPossible: false,
         estInstallee: window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true,
@@ -173,6 +204,10 @@
           return this.jeux.map((j, k) => ({ j: j, k: k })).sort((a, b) => (fav(a.j) - fav(b.j)) || (rang(a.j) - rang(b.j)) || (a.k - b.k)).map(x => x.j);
         },
         etoiles: function() { this.maj; return Etoiles.solde(); },
+        // Adresse de l'accueil du site (sans « index.html » ni paramètres)
+        lienSite: function() { return location.origin + location.pathname.replace(/[^/]*$/, ''); },
+        qrPartage: function() { return this.partage ? QR.svg(this.lienSite, 220) : ''; },
+        peutPartager: function() { return !!navigator.share; },
         // Mon compagnon, dessiné sur sa carte avec son humeur du moment
         compagnon: function() {
           this.maj;
@@ -218,6 +253,20 @@
       },
       methods: {
         icone: function(id) { return IconesJeux.svg(id, 68); },
+        // Partage du lien du site : menu de partage du téléphone (Android, iPhone), sinon copie
+        partagerLien: function() {
+          navigator.share({ title: 'Désdale', text: 'Viens jouer avec moi sur Désdale !', url: this.lienSite }).catch(() => {});
+        },
+        copierLien: function() {
+          var fini = () => { this.copie = true; setTimeout(() => { this.copie = false; }, 2000); };
+          if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(this.lienSite).then(fini, () => this.copierAncien(fini));
+          else this.copierAncien(fini);
+        },
+        copierAncien: function(fini) {
+          var z = document.createElement('textarea'); z.value = this.lienSite; document.body.appendChild(z); z.select();
+          try { document.execCommand('copy'); fini(); } catch (e) {}
+          z.remove();
+        },
         // Au lancement de l'appli, une partie en salon reprend directement (sauf si on vient choisir un jeu)
         reprendre: function() {
           if (/[?&]choix\b/.test(location.search)) return;

@@ -20,7 +20,7 @@ Tout est en français : interface, commentaires du code, messages de commit, ré
 ## Fichiers
 
 **Un dossier par jeu** (demandé par l'utilisateur, pour qu'un humain s'y retrouve) : `yams/index.html`, `lettres/index.html` + `lettres/lettres-regles.js`…
-(adresse en ligne : `…/demodes/yams/`). **À la racine, seulement le commun ou l'unique** : `index.html` (accueil), `404.html`, `commun.js`, `commun.css`,
+(adresse en ligne : `…/demodes/yams/`). **À la racine, seulement le commun ou l'unique** : `index.html` (accueil), `404.html`, `commun.js`, `qr.js`, `commun.css`,
 `fiche-jeu.js`, `icones-jeux.js`, `etoiles.js`, `salon-global.js`, `sw.js`, manifest et icônes. Chaque page rangée dans un dossier commence par
 `<base href="../">` : toutes ses adresses relatives (scripts communs, `index.html?choix`, `compagnon/`, `fetch`, liens) partent de la racine ;
 ses propres fichiers s'écrivent donc avec le dossier (`src="lettres/lettres-regles.js"`, `fetch('lettres/lettres-mots.txt')`, `bataille/sons/…`).
@@ -28,10 +28,11 @@ Lien vers un jeu : `yams/` (pas `yams.html`). `404.html` renvoie les anciennes a
 
 | Fichier | Rôle |
 |---|---|
-| `index.html` | Code d'accès, puis choix du jeu. Reprend tout seul une partie en salon en cours (sauf avec `?choix`). |
+| `index.html` | Code d'accès, puis choix du jeu. Reprend tout seul une partie en salon en cours (sauf avec `?choix`). Bouton « Inviter » en haut à droite : fenêtre avec le QR code de l'adresse du site, « Partager le lien… » (menu de partage du téléphone, `navigator.share`, seulement s'il existe) et « Copier le lien » ; rappel que le code d'accès n'est pas dans le lien. |
 | `commun.js` / `commun.css` | Base partagée : `VERSION`, stockage local, `clientId`, `ACCES`, `Sons` (Web Audio), `Voix` (synthèse vocale), `vibrer`, enregistrement du service worker. |
 | `fiche-jeu.js` | **Composant commun des pages de jeu** (Vue 2, chargé par tous les jeux, Brilliant compris, avant le code de la page) : `<fiche-jeu>` (en-tête logo / nom / résumé, « ⇦ Jeux » en haut à droite, 4 onglets à logo, bouton 🔊 et point de connexion pendant le jeu) et `<reglages-base>` (sons, vibrations, voix, écran allumé). Ses styles sont injectés par le fichier. |
 | `icones-jeux.js` | **Icônes des jeux** (`IconesJeux.svg(jeu, taille)`) : même canevas épuré pour tous (version « claire » choisie par l'utilisateur : tuile arrondie à plat, teinte pâle de la couleur du jeu, dessin du jeu dans sa couleur ; ni dégradé, ni reflet, ni ombre), avec la marque de chaque jeu. Accueil (68 px) et en-tête de `<fiche-jeu>` (propriété `jeu`, 64 px ; le slot `logo` n'est plus qu'un secours). Anciennes icônes retirées de l'accueil. |
+| `qr.js` | **QR code fait maison** (`QR.svg(texte, taille)`, `QR.matrice`) : octets UTF-8, correction M, versions 1 à 10, masque choisi par pénalité ; testable avec Node (vérifié en relisant les codes avec OpenCV). Sert au bouton « Inviter » de l'accueil. |
 | `etoiles.js` | `Etoiles` (monnaie de « Mon compagnon ») : chargé juste après `commun.js` par toutes les pages, **et par `brilliant/index.html`** (il n'a besoin que de `lireStockage` / `ecrireStockage`). |
 | `brilliant/index.html` | Brilliant (roll & write). Page autonome historique : elle a **sa propre copie** de `ACCES`, `Sons`, `Voix`, `VERSION` (n'utilise pas `commun.js`). |
 | `yams/index.html` | Yams, solo et à plusieurs (chacun son tour). Utilise `commun.js`. |
