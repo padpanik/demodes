@@ -620,7 +620,7 @@
               </span>
             </div>
             <div class="aide">Donnez-vous tous le même nom de salon : le premier arrivé l'ouvre, les suivants le rejoignent.</div>
-            <button class="btn principal" style="width:100%;margin-top:8px" @click="entrerSalon()" :disabled="entreeEnCours">{{ entreeEnCours ? 'Connexion au salon…' : 'Entrer dans le salon' }}</button>
+            <button class="btn principal" style="width:100%;margin-top:8px" @click="entrerSalon()" :disabled="entreeEnCours">{{ entreeEnCours ? 'Connexion au salon…' + (entreeEnCours > 1 ? ' essai ' + entreeEnCours + '/4' : '') : 'Entrer dans le salon' }}</button>
           </section>
           <section class="carte">
             <div class="titre-carte">Seul</div>
@@ -1044,7 +1044,7 @@
     function lireLigne(ligne) { return ligne.trim().split(/\s+/); }
 
     // Numéro de version affiché sur l'accueil (à augmenter à chaque mise en ligne)
-    const VERSION = '2.32';
+    const VERSION = '2.33';
 
     // ================== ACCÈS PRIVÉ ==================
     // Application réservée à un cercle d'amis : un code est demandé au premier lancement.
@@ -1211,6 +1211,15 @@
     const CLE_SAUVEGARDE = 'brillant-sauvegarde-v1';
     // Un seul salon à la fois sur ce téléphone (copie de commun.js) : entrer ici oublie les salons des autres jeux
     const SALONS_JEUX = { yams: 'yams-sauvegarde', backgammon: 'bg-sauvegarde', assaut: 'assaut-sauvegarde', bataille: 'bataille-sauvegarde', gribouille: 'gribouille-sauvegarde', petitbac: 'petitbac-sauvegarde', agents: 'agents-sauvegarde', quatre: 'quatre-sauvegarde', domino: 'domino-sauvegarde', lettres: 'lettres-sauvegarde' };
+    // Garde-fou réseau : si le serveur de mise en relation (PeerJS) ne répond pas, l'événement « open » n'arrive jamais
+    // et aucune erreur non plus : la page resterait sur « connexion… ». Passé le délai, on déclenche une erreur ;
+    // chaque page la traite comme les autres (nouvel essai, reprise du salon, ou message).
+    function veillerOuverture(p, delai) {
+      setTimeout(function () {
+        if (p && !p.destroyed && !p.open) { try { p.emit('error', { type: 'server-error', message: 'Le serveur de connexion ne répond pas.' }); } catch (e) {} }
+      }, delai || 12000);
+    }
+
     function fermerAutresSalons() {
       Object.keys(SALONS_JEUX).forEach(j => {
         var cle = SALONS_JEUX[j], sv = lireStockage(cle);
@@ -2232,6 +2241,7 @@
           this.status = 'Statut : Non connecté';
           this.reinitialiserPeer(false);
           if (++e.essais >= 4) return this.finEntree(false, 'Impossible d\'entrer dans le salon pour le moment.\n\nSi vous êtes sur le même Wi-Fi (location, hôtel, Wi-Fi invité…), il empêche souvent les téléphones de se parler : passe l\'un des deux en 4G/5G (Wi-Fi coupé), puis réessaie.');
+          this.entreeEnCours = e.essais + 1;   // « essai 2/4 » sur le bouton
           setTimeout(() => { if (this._entree === e && !this.role) this.creerPartie(false); }, 1200);
         },
         sortirDuSalon: function() {
@@ -2269,6 +2279,7 @@
           this.connexion = reprise ? 'perdue' : 'connexion';
           this.status = reprise ? 'Statut : Reconnexion…' : 'Statut : Connexion...';
           var monPeer = peer = new Peer();
+          veillerOuverture(monPeer);
 
           monPeer.on('open', () => {
             if (peer !== monPeer) return;
@@ -2467,6 +2478,7 @@
           this.connexion = reprise ? 'perdue' : 'connexion';
           this.status = reprise ? 'Statut : Récupération du salon…' : 'Statut : Création du salon...';
           var monPeer = peer = new Peer(ACCES.idSalon(customChannel));
+          veillerOuverture(monPeer);
 
           monPeer.on('open', (id) => {
             if (peer !== monPeer) return;

@@ -3,7 +3,7 @@
 // Les clés de stockage gardent l'ancien préfixe "brillant-" : les réglages déjà faits sont conservés.
 
 // Numéro de version affiché (à augmenter à chaque mise en ligne, avec brilliant/index.html et sw.js)
-const VERSION = '2.32';
+const VERSION = '2.33';
 
 // ---------- Stockage local ----------
 function lireStockage(cle) {
@@ -34,6 +34,15 @@ function oublierSalonDuJeu(jeu) {
   ecrireStockage(cle, sv);
   return true;
 }
+// Garde-fou réseau : si le serveur de mise en relation (PeerJS) ne répond pas, l'événement « open » n'arrive jamais
+// et aucune erreur non plus : la page resterait sur « connexion… ». Passé le délai, on déclenche une erreur ;
+// chaque page la traite comme les autres (nouvel essai, reprise du salon, ou message).
+function veillerOuverture(p, delai) {
+  setTimeout(function () {
+    if (p && !p.destroyed && !p.open) { try { p.emit('error', { type: 'server-error', message: 'Le serveur de connexion ne répond pas.' }); } catch (e) {} }
+  }, delai || 12000);
+}
+
 function fermerAutresSalons(jeuCourant) {
   Object.keys(SALONS_JEUX).forEach(j => { if (j !== jeuCourant) oublierSalonDuJeu(j); });
 }

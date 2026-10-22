@@ -123,6 +123,7 @@ var SalonGlobal = (function () {
   function ouvrir() {
     arreter();
     var p = peer = new Peer(idSalon());
+    if (typeof veillerOuverture === 'function') veillerOuverture(p);
     p.on('open', () => {
       if (peer !== p) return;
       role = 'hote'; echecs = 0;
@@ -141,6 +142,7 @@ var SalonGlobal = (function () {
   function rejoindre() {
     arreter();
     var p = peer = new Peer();
+    if (typeof veillerOuverture === 'function') veillerOuverture(p);
     p.on('open', () => {
       if (peer !== p) return;
       var c = hostConn = p.connect(idSalon(), { reliable: true });

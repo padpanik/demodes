@@ -268,7 +268,7 @@
               </span>
             </div>
             <div class="aide">Ta flotte ne quitte jamais ton téléphone. Le premier ouvre le salon et choisit les règles.</div>
-            <button class="btn principal" style="width:100%;margin-top:8px" @click="entrerSalon()" :disabled="entreeEnCours">{{ entreeEnCours ? 'Connexion au salon…' : 'Entrer dans le salon' }}</button>
+            <button class="btn principal" style="width:100%;margin-top:8px" @click="entrerSalon()" :disabled="entreeEnCours">{{ entreeEnCours ? 'Connexion au salon…' + (entreeEnCours > 1 ? ' essai ' + entreeEnCours + '/4' : '') : 'Entrer dans le salon' }}</button>
           </section>
           <section class="carte">
             <div class="titre-carte">Seul contre l'ordinateur</div>
@@ -1499,6 +1499,7 @@
           if (!e) return;
           this.reinitialiserPeer(false);
           if (++e.essais >= 4) return this.finEntree(false, 'Impossible d\'entrer dans le salon pour le moment.\n\nSi vous êtes sur le même Wi-Fi (location, hôtel, Wi-Fi invité…), il empêche souvent les téléphones de se parler : passe l\'un des deux en 4G/5G (Wi-Fi coupé), puis réessaie.');
+          this.entreeEnCours = e.essais + 1;   // « essai 2/4 » sur le bouton
           setTimeout(() => { if (this._entree === e && !this.role) this.creerPartie(false); }, 1200);
         },
         quitterSalon: function() {
@@ -1562,6 +1563,7 @@
           this.reinitialiserPeer(!!reprise);
           this.connexion = reprise ? 'perdue' : 'connexion';
           var monPeer = peer = new Peer(ACCES.idSalon(nom, JEU_RESEAU));
+          veillerOuverture(monPeer);
           monPeer.on('open', () => {
             if (peer !== monPeer) return;
             this.role = 'hote';
@@ -1699,6 +1701,7 @@
           this.reinitialiserPeer(!!reprise);
           this.connexion = reprise ? 'perdue' : 'connexion';
           var monPeer = peer = new Peer();
+          veillerOuverture(monPeer);
           monPeer.on('open', () => {
             if (peer !== monPeer) return;
             var conn = hostConn = monPeer.connect(ACCES.idSalon(nom, JEU_RESEAU), { reliable: true });

@@ -92,6 +92,10 @@ Pas d'étape de construction, pas de dépendance à ajouter.
 - Connexion impossible sur un **même Wi-Fi** (location, hôtel, Wi-Fi invité : isolation des appareils) : constaté par
   l'utilisateur, ça marche dès qu'un téléphone passe en 4G/5G. Le message d'échec d'entrée le conseille. PeerJS utilise
   déjà ses relais TURN par défaut (UDP 3478) ; un relais TURN plus robuste demanderait un compte (Metered, Cloudflare…).
+- **Garde-fou « connexion… » bloquée** (`veillerOuverture(peer)` dans `commun.js`, copie dans `brilliant/index.html`, appelé après chaque
+  `new Peer` des jeux et du salon global) : si le serveur de mise en relation ne répond pas en 12 s (ni « open » ni erreur), on déclenche
+  une erreur `server-error` que chaque page traite comme les autres (nouvel essai, reprise, message). À l'entrée, le bouton affiche
+  « Connexion au salon… essai 2/4 » (`entreeEnCours` = numéro d'essai), puis le message d'échec après le 4e essai (~50 s).
 - **Pas d'entrée automatique** dans le salon au lancement (option retirée) : le nom du dernier salon est prérempli, on touche « Entrer ».
   Une partie en cours après un rechargement se reconnecte toujours toute seule.
 - Jeux à deux (Backgammon, Assaut, Bataille navale) : si le salon est complet mais que l'autre joueur est **absent**
