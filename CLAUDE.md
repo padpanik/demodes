@@ -341,6 +341,8 @@ Bataille navale : `bataille-sauvegarde`, `bataille-prive` (ma flotte en salon), 
 - **Lieux** (`EX.LIEUX`) : un lieu = un thème, ses couleurs, son décor, ses gardiens, sa buvette et son boss. Prêt : **Studio de cinéma**
   (boss : le Fantôme du studio, au Quatre en ligne). Annoncés « Bientôt » : Laboratoire (sciences), Château fort (histoire),
   Île aux trésors (géographie), Conservatoire (musique), Forêt enchantée (nature) — chacun prévu avec un boss d'un autre jeu.
+- **Onglet Partie** (ordre voulu par l'utilisateur) : compagnon, Difficulté avec le rappel des 3 cœurs et « Partir en expédition », puis « Où aller ? ».
+  **Prévu quand d'autres lieux seront prêts** : aucun lieu choisi par défaut et bouton de départ grisé tant qu'aucun lieu n'est choisi.
 - **Une expédition par heure** (le compagnon est fatigué : `EX.REPOS`, départ noté dans `expedition-depart`) : carte « 😴 … trop fatigué » en haut
   de l'onglet Partie et bouton « Encore N min de repos ».
 - **Carte procédurale** (`EX.genererCarte(graine)`, reproductible, demandée par l'utilisateur) : 7 rangs, départ en bas, boss en haut ;
