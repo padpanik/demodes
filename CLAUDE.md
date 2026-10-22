@@ -166,7 +166,7 @@ Mon compagnon : `compagnon-animal` (espèce, nom, couleur, besoins, objets poss�
 `compagnon-reglages`, `compagnon-veille`, `compagnon-series` (séries de victoires solo), `compagnon-evenements` (parties terminées), `compagnon-defis`, `compagnon-trophees`, `compagnon-maison`, `compagnon-anniv` (année du dernier cadeau d'anniversaire), `compagnon-penalite` (jauge vide), `compagnon-fete-essai` (admin).
 Expédition : `expedition-partie` (expédition en cours), `expedition-depart` (heure du dernier départ), `expedition-poussiere` (réserve),
 `expedition-boss` / `expedition-boss-resultat` (défi envoyé au jeu du boss et son issue), `expedition-retour` (résumé pour le compagnon), `expedition-vues` (40 dernières questions posées), `expedition-stats`, `expedition-lieu`, `expedition-difficulte`.
-Bataille navale : `bataille-sauvegarde`, `bataille-prive` (ma flotte en salon), `bataille-dernier-salon`, `bataille-stats`, `bataille-colles`, `bataille-rejouer`, `bataille-niveau`, `bataille-style`.
+Bataille navale : `bataille-boss` (partie contre un boss d'expédition), `bataille-sauvegarde`, `bataille-prive` (ma flotte en salon), `bataille-dernier-salon`, `bataille-stats`, `bataille-colles`, `bataille-rejouer`, `bataille-niveau`, `bataille-style`.
 
 ## Règles des jeux (choix de l'utilisateur, à ne pas changer sans lui)
 
@@ -338,11 +338,13 @@ Bataille navale : `bataille-sauvegarde`, `bataille-prive` (ma flotte en salon), 
   demande une confirmation au joueur. Série de victoires par niveau (`Etoiles.serie('lettres-<niveau>')`).
 
 ### Expédition (demandée par l'utilisateur : emmener le compagnon en balade, thèmes de culture générale)
-- **Lieux** (`EX.LIEUX`) : un lieu = un thème, ses couleurs, son décor, ses gardiens, sa buvette et son boss. Prêt : **Studio de cinéma**
-  (boss : le Fantôme du studio, au Quatre en ligne). Annoncés « Bientôt » : Laboratoire (sciences), Château fort (histoire),
+- **Lieux** (`EX.LIEUX`) : un lieu = un thème, ses couleurs, son décor, ses gardiens, sa buvette, son boss (avec `consigne` affichée avant le défi)
+  et ses souvenirs. Prêts : **Studio de cinéma** (boss : le Fantôme du studio, au Quatre en ligne) et **Laboratoire** (sciences, ouvert en 2.30 ;
+  boss : le Savant fou, à la Bataille navale ; 56 questions : 30 faciles, 26 moyennes ; souvenirs microscope, éprouvettes, télescope, aimant).
+  Annoncés « Bientôt » : Château fort (histoire),
   Île aux trésors (géographie), Conservatoire (musique), Forêt enchantée (nature) — chacun prévu avec un boss d'un autre jeu.
 - **Onglet Partie** (ordre voulu par l'utilisateur) : compagnon, Difficulté avec le rappel des 3 cœurs et « Partir en expédition », puis « Où aller ? ».
-  **Prévu quand d'autres lieux seront prêts** : aucun lieu choisi par défaut et bouton de départ grisé tant qu'aucun lieu n'est choisi.
+  Aucun lieu choisi d'office (`lieuChoisi: null`) : bouton grisé « 👇 Choisis d'abord où aller » tant qu'on n'a pas touché un lieu, puis « 🧭 Partir : <lieu> ».
 - **Une expédition par heure** (le compagnon est fatigué : `EX.REPOS`, départ noté dans `expedition-depart`) : carte « 😴 … trop fatigué » en haut
   de l'onglet Partie et bouton « Encore N min de repos ».
 - **Carte procédurale** (`EX.genererCarte(graine)`, reproductible, demandée par l'utilisateur) : 7 rangs, départ en bas, boss en haut ;
@@ -370,6 +372,9 @@ Bataille navale : `bataille-sauvegarde`, `bataille-prive` (ma flotte en salon), 
   sauvegarde à part `quatre-boss`, boutons « Retour à l'expédition » / « Plus tard ») et rend l'issue dans `expedition-boss-resultat`
   (lue au retour, `lireResultatBoss`). Balade : ordinateur facile, Aventure : normal. Gagné : +5 ⭐ et fin ; perdu : −1 cœur et revanche ;
   nul : revanche gratuite. Un futur boss sur un autre jeu demande le même « mode boss » dans ce jeu.
+  **Mode boss de la Bataille navale** (`bataille/?boss`, `demarrerBoss`) : partie solo contre l'ordinateur au niveau du boss (`niveauOrdi`),
+  bandeau du boss pendant le placement, « Mer ennemie » / « Flotte ennemie », sauvegarde à part `bataille-boss`, ni étoiles ni stats ni records,
+  boutons « ↩ Plus tard » / « 🧭 Retour à l'expédition » (`retourExpedition`), issue `gagne` / `perdu` dans `expedition-boss-resultat`.
 - **Abandon à tout moment** (demandé par l'utilisateur) : bouton « 🏳️ Quitter » dans la barre de l'écran de jeu, même pendant une rencontre ;
   fenêtre de confirmation (moitié du sac), puis `quitter` : bilan compté (`finir(false, true)`), résumé laissé au compagnon, retour à `index.html?choix`.
 - **Fin** : boss vaincu = tout le sac ; plus de cœurs ou « Rentrer » = la moitié. Bouton « 🏠 Rentrer à la maison » : on revient sur

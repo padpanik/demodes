@@ -148,7 +148,7 @@
               <button v-for="(d, id) in DIFFICULTES" :key="id" :class="{ actif: difficulte === id }" @click="difficulte = id">{{ d.nom }}<small>{{ d.desc }}</small></button>
             </div>
             <div class="coeurs-depart"><span class="rangee"><span v-for="i in COEURS" :key="i" class="coeur-exp" v-html="dessinCoeur(true)"></span></span><span>Tu pars avec 3 cœurs : ne les perds pas en route !</span></div>
-            <button class="btn principal" style="width:100%; margin-top:8px" :disabled="!!fatigue" @click="partir">{{ fatigue ? '😴 Encore ' + fatigue + ' min de repos' : '🧭 Partir en expédition' }}</button>
+            <button class="btn principal" style="width:100%; margin-top:8px" :disabled="!!fatigue || !lieuSelection" @click="partir">{{ fatigue ? '😴 Encore ' + fatigue + ' min de repos' : lieuSelection ? '🧭 Partir : ' + lieuSelection.nom : '👇 Choisis d\'abord où aller' }}</button>
             <div class="aide" v-if="stats.parties">Expéditions : {{ stats.reussies }} réussie{{ stats.reussies > 1 ? 's' : '' }} sur {{ stats.parties }} · {{ stats.bonnes }} bonne{{ stats.bonnes > 1 ? 's' : '' }} réponse{{ stats.bonnes > 1 ? 's' : '' }} en tout.</div>
           </section>
           <section class="carte">
@@ -159,7 +159,7 @@
                 <span v-if="!l.pret" class="bientot">Bientôt</span>
               </button>
             </div>
-            <div class="aide">{{ lieuSelection.desc }}</div>
+            <div class="aide">{{ lieuSelection ? lieuSelection.desc : 'Touche un lieu pour le choisir.' }}</div>
           </section>
 
         </template>
@@ -261,7 +261,7 @@
                   <div class="qui"><span class="grand">{{ lieuEnCours.boss.ico }}</span><div><div class="nom">{{ lieuEnCours.boss.nom }}</div><div class="role">Boss · {{ lieuEnCours.boss.nomJeu }}</div></div></div>
                   <template v-if="r.phase === 'intro'">
                     <div class="explication">« {{ lieuEnCours.boss.defi }} »</div>
-                    <div class="aide">La partie se joue dans {{ lieuEnCours.boss.nomJeu }} : tu as les jetons rouges et tu commences. Ensuite, retour ici.</div>
+                    <div class="aide">La partie se joue dans {{ lieuEnCours.boss.nomJeu }} : {{ lieuEnCours.boss.consigne }} Ensuite, retour ici.</div>
                     <div class="actions-exp"><button class="btn principal" @click="lancerBoss">⚔️ Relever le défi</button></div>
                   </template>
                   <template v-else>
@@ -367,7 +367,7 @@
         LIEUX: EX.LIEUX, DIFFICULTES: EX.DIFFICULTES, GAIN_BOSS: EX.GAIN_BOSS, COEURS: EX.COEURS, coeurPerdu: 0, demandeQuitter: false,
         onglet: 'config',
         e: lireStockage(CLE),
-        lieuChoisi: lireStockage('expedition-lieu') || 'cinema',
+        lieuChoisi: null,   // pas de lieu choisi d'office : on choisit à chaque départ
         difficulte: lireStockage('expedition-difficulte') || 'balade',
         stats: lireStockage('expedition-stats') || { parties: 0, reussies: 0, bonnes: 0 },
         animal: lireStockage('compagnon-animal'),
@@ -380,7 +380,7 @@
         r: function() { return this.e && this.e.rencontre; },
         // Minutes de repos qu'il reste avant de pouvoir repartir (une expédition par heure)
         fatigue: function() { var d = lireStockage('expedition-depart'); this.maintenant; return d ? Math.max(0, Math.ceil((EX.REPOS - (this.maintenant - d)) / 60000)) : 0; },
-        lieuSelection: function() { return EX.lieu(this.lieuChoisi) || EX.LIEUX[0]; },
+        lieuSelection: function() { return EX.lieu(this.lieuChoisi); },
         lieuEnCours: function() { return this.e ? EX.lieu(this.e.lieu) : EX.LIEUX[0]; },
         coeursTexte: function() { return this.e ? '❤️'.repeat(this.e.coeurs) + '🤍'.repeat(EX.COEURS - this.e.coeurs) : ''; },
         dessinAnimal: function() { return this.animal ? CP.dessin(this.animal, 'content') : ''; },
