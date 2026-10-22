@@ -233,7 +233,7 @@
               Dernier coup :<template v-for="(m, k) in e.dernier.mots">{{ k ? ',' : '' }} <a :key="k" :href="lienDef(m)" target="_blank" rel="noopener">{{ m }}</a></template>
               ({{ e.dernier.j === moiJ ? 'moi' : e.dernier.j }}, +{{ e.dernier.points }})</div>
             <div v-else class="apercu-lc" :class="apercuClasse">{{ apercuTexte }}</div>
-            <button v-if="analyse && !analyse.erreur" class="zoom-btn ods-btn" @click="verifierODS(analyse.mots.map(m => m.mot))" title="Vérifier mes mots dans l'ODS">{{ copieODS ? '📋 copié' : '🔎 ODS' }}</button>
+            <button v-if="analyse && !analyse.erreur" class="zoom-btn ods-btn" @click="verifierODS(analyse.mots.map(m => m.mot))" title="Vérifier mes mots dans l'ODS">{{ copieODS ? '📋 copié' : '🔎 Vérifier' }}</button>
             <button class="zoom-btn" @click="zoom = !zoom">{{ zoom ? '🔍 −' : '🔍 +' }}</button>
           </div>
 
@@ -336,7 +336,7 @@
             <li>Toucher deux fois rapidement le plateau le grossit (ou le remet en entier) : pratique pour viser une case.</li>
             <li>On peut aussi <strong>échanger</strong> des lettres (s'il en reste au moins 7 dans le sac) ou <strong>passer</strong>.</li>
             <li>Mot absent du dictionnaire : les autres joueurs <strong>votent</strong>. S'il est refusé, les lettres reviennent et on rejoue. Seul contre l'ordinateur, c'est toi qui décides, après avoir vérifié dans l'ODS si tu veux.</li>
-            <li><strong>🔎 ODS</strong> (à côté de la loupe, quand ton mot est prêt) : ouvre le vérificateur de la Fédération et copie tes mots, tu n'as plus qu'à les coller.</li>
+            <li><strong>🔎 Vérifier</strong> (à côté de la loupe, quand ton mot est prêt) : ouvre le vérificateur de la Fédération et copie tes mots, tu n'as plus qu'à les coller.</li>
             <li>Fin : quand un joueur a posé toutes ses lettres et que le sac est vide (il gagne les points restant chez les autres, qui les perdent), ou quand tout le monde passe deux fois de suite.</li>
           </ul>
         </section>

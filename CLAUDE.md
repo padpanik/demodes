@@ -336,7 +336,7 @@ Bataille navale : `bataille-boss` (partie contre un boss d'expédition), `batail
   retirées, et le vote affiche un lien vers le vérificateur ODS de la Fédération (https://www.ffscrabble.fr/verificateur-de-mots/).
   Sans coup : il échange ses lettres sauf jokers, E et S (sac ≥ 7), sinon passe. Seul, pas de vote : un mot hors dictionnaire
   ouvre une fenêtre (`doute`) avec le lien vers le vérificateur ODS, « ↺ Changer mon mot » ou « ✓ Il est valable » (`jouerQuandMeme`).
-  Bouton **« 🔎 ODS »** (demandé par l'utilisateur, pour progresser en solo) dans la ligne d'aperçu dès qu'un mot est prêt, en solo comme en salon :
+  Bouton **« 🔎 Vérifier »** (demandé par l'utilisateur, pour progresser en solo) dans la ligne d'aperçu dès qu'un mot est prêt, en solo comme en salon :
   ouvre le vérificateur de la Fédération et copie les mots formés (`verifierODS` / `copierMots` ; le site ne se remplit pas par un lien). Série de victoires par niveau (`Etoiles.serie('lettres-<niveau>')`).
 
 ### Expédition (demandée par l'utilisateur : emmener le compagnon en balade, thèmes de culture générale)
