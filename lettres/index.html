@@ -91,6 +91,10 @@
     .vote-lc { background: #fff; border-radius: 14px; padding: 10px; margin-top: 6px; box-shadow: 0 0 0 2px #d2a8e8; text-align: center; }
     .vote-lc .mots { font-weight: 900; font-size: 1.15em; letter-spacing: 1px; margin: 4px 0; }
     .vote-lc .lien-ffsc { display: inline-block; margin-top: 4px; font-size: 0.82em; color: #1c7ed6; }
+    .ods-btn { background: #e7f1fc; color: #1c63b7; font-weight: 800; }
+    .doute-lc { background: #fff; border-radius: 16px; padding: 16px 14px; max-width: 330px; width: 100%; text-align: center; }
+    .doute-lc .mots { font-weight: 900; font-size: 1.3em; letter-spacing: 1px; margin: 6px 0; color: #c0392b; }
+    .doute-lc .lien-ffsc { display: block; margin: 8px 0 4px; font-weight: 800; color: #1c7ed6; }
     .vote-lc .btn.moi { box-shadow: 0 0 0 3px #1d2b36; }
 
     /* Choix de la lettre d'un joker */
@@ -229,6 +233,7 @@
               Dernier coup :<template v-for="(m, k) in e.dernier.mots">{{ k ? ',' : '' }} <a :key="k" :href="lienDef(m)" target="_blank" rel="noopener">{{ m }}</a></template>
               ({{ e.dernier.j === moiJ ? 'moi' : e.dernier.j }}, +{{ e.dernier.points }})</div>
             <div v-else class="apercu-lc" :class="apercuClasse">{{ apercuTexte }}</div>
+            <button v-if="analyse && !analyse.erreur" class="zoom-btn ods-btn" @click="verifierODS(analyse.mots.map(m => m.mot))" title="Vérifier mes mots dans l'ODS">{{ copieODS ? '📋 copié' : '🔎 ODS' }}</button>
             <button class="zoom-btn" @click="zoom = !zoom">{{ zoom ? '🔍 −' : '🔍 +' }}</button>
           </div>
 
@@ -244,6 +249,20 @@
             </div>
             <div class="actions-lc" v-if="e.verif.j === moiJ">
               <button class="btn" @click="envoyerJeu({ type: 'ANNULER', partieId: pub.partieId })">↺ Reprendre mes lettres</button>
+            </div>
+          </div>
+
+          <!-- Seul : mot hors dictionnaire, on vérifie soi-même avant de décider -->
+          <div class="voile" v-if="doute" @click.self="changerMot">
+            <div class="doute-lc">
+              <div style="font-size:2em;line-height:1">🤔</div>
+              <div class="mots">{{ doute.inconnus.join(', ') }}</div>
+              <div class="aide" style="margin:0">{{ doute.inconnus.length > 1 ? 'Ces mots ne sont pas' : 'Ce mot n\'est pas' }} dans le dictionnaire de Désdale (il lui manque quelques petits mots). À toi de vérifier, et de décider honnêtement !</div>
+              <a class="lien-ffsc" href="https://www.ffscrabble.fr/verificateur-de-mots/" target="_blank" rel="noopener" @click="copierMots(doute.inconnus)">🔎 Vérifier dans l'ODS (site de la Fédération){{ copieODS ? ' · 📋 mot copié' : '' }}</a>
+              <div class="actions-lc">
+                <button class="btn" @click="changerMot">↺ Changer mon mot</button>
+                <button class="btn principal" @click="jouerQuandMeme">✓ Il est valable</button>
+              </div>
             </div>
           </div>
 
@@ -316,7 +335,8 @@
             <li>🔀 : range tes lettres à la main (fais-les glisser, ou touche-en deux pour les échanger), puis « Retour à la partie ».</li>
             <li>Toucher deux fois rapidement le plateau le grossit (ou le remet en entier) : pratique pour viser une case.</li>
             <li>On peut aussi <strong>échanger</strong> des lettres (s'il en reste au moins 7 dans le sac) ou <strong>passer</strong>.</li>
-            <li>Mot absent du dictionnaire : les autres joueurs <strong>votent</strong>. S'il est refusé, les lettres reviennent et on rejoue. Seul contre l'ordinateur, c'est toi qui décides.</li>
+            <li>Mot absent du dictionnaire : les autres joueurs <strong>votent</strong>. S'il est refusé, les lettres reviennent et on rejoue. Seul contre l'ordinateur, c'est toi qui décides, après avoir vérifié dans l'ODS si tu veux.</li>
+            <li><strong>🔎 ODS</strong> (à côté de la loupe, quand ton mot est prêt) : ouvre le vérificateur de la Fédération et copie tes mots, tu n'as plus qu'à les coller.</li>
             <li>Fin : quand un joueur a posé toutes ses lettres et que le sac est vide (il gagne les points restant chez les autres, qui les perdent), ou quand tout le monde passe deux fois de suite.</li>
           </ul>
         </section>
@@ -415,6 +435,8 @@
         aEchanger: {},
         jokerPour: null,       // { i, c } : joker en attente de sa lettre
         zoom: false,
+        doute: null,      // seul : mot hors dictionnaire en attente de décision ({ poses, inconnus })
+        copieODS: false,  // mot copié pour le coller dans le vérificateur de la Fédération
         dicoPret: false,
         historique: [],
         pseudoInput: pseudoPour('lettres-sauvegarde'),
@@ -630,8 +652,8 @@
             var a = LC.analyser(e, j, m.poses);
             if (a.erreur) { this.poses = m.poses; return; }
             var inconnus = a.mots.map(x => x.mot).filter((w, k, t) => !(DICO && DICO.has(w)) && t.indexOf(w) === k);
-            // Seul, pas de vote : on décide soi-même (la liste n'a pas tous les petits mots)
-            if (inconnus.length && !confirm(inconnus.join(', ') + (inconnus.length > 1 ? ' ne sont' : ' n\'est') + ' pas dans le dictionnaire.\n\nLe compter quand même ?')) { this.poses = m.poses; return; }
+            // Seul, pas de vote : on vérifie soi-même dans l'ODS et on décide (la liste n'a pas tous les petits mots)
+            if (inconnus.length && !m.force) { this.poses = m.poses; this.doute = { poses: copie(m.poses), inconnus: inconnus }; return; }
             LC.poser(e, j, m.poses);
           } else if (m.type === 'PASSER') { if (LC.passer(e, j).erreur) return; }
           else if (m.type === 'ECHANGER') { if (LC.echanger(e, j, m.rangs).erreur) return; }
@@ -742,6 +764,25 @@
           var o = this.ordre.slice();
           for (var k = o.length - 1; k > 0; k--) { var r = Math.floor(Math.random() * (k + 1)), x = o[k]; o[k] = o[r]; o[r] = x; }
           this.ordre = o; this.choisi = -1;
+        },
+        // ---------- Vérifier ses mots dans l'ODS (site de la Fédération) ----------
+        // Le site ne se remplit pas depuis un lien : on copie le mot pour n'avoir qu'à le coller
+        copierMots: function(mots) {
+          var texte = mots.join(' ');
+          try { navigator.clipboard.writeText(texte).then(() => {
+            this.copieODS = true; clearTimeout(this._timerODS); this._timerODS = setTimeout(() => { this.copieODS = false; }, 4000);
+          }, () => {}); } catch (x) {}
+        },
+        verifierODS: function(mots) {
+          this.copierMots(mots);
+          window.open('https://www.ffscrabble.fr/verificateur-de-mots/', '_blank', 'noopener');
+        },
+        changerMot: function() { this.doute = null; },
+        jouerQuandMeme: function() {
+          var d = this.doute;
+          if (!d) return;
+          this.doute = null; this.poses = []; this.choisi = -1;
+          this.traiterSolo({ type: 'POSER', poses: d.poses, force: true });
         },
         jouer: function() {
           if (!this.peutJouer) return this.vibre(60);
