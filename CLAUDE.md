@@ -368,6 +368,8 @@ Bataille navale : `bataille-sauvegarde`, `bataille-prive` (ma flotte en salon), 
   sauvegarde à part `quatre-boss`, boutons « Retour à l'expédition » / « Plus tard ») et rend l'issue dans `expedition-boss-resultat`
   (lue au retour, `lireResultatBoss`). Balade : ordinateur facile, Aventure : normal. Gagné : +5 ⭐ et fin ; perdu : −1 cœur et revanche ;
   nul : revanche gratuite. Un futur boss sur un autre jeu demande le même « mode boss » dans ce jeu.
+- **Abandon à tout moment** (demandé par l'utilisateur) : bouton « 🏳️ Quitter » dans la barre de l'écran de jeu, même pendant une rencontre ;
+  fenêtre de confirmation (moitié du sac), puis `quitter` : bilan compté (`finir(false, true)`), résumé laissé au compagnon, retour à `index.html?choix`.
 - **Fin** : boss vaincu = tout le sac ; plus de cœurs ou « Rentrer » = la moitié. Bouton « 🏠 Rentrer à la maison » : on revient sur
   `compagnon/`, au salon, où il raconte l'aventure (fenêtre « Retour d'expédition » : lieu, bonnes réponses, poussières, étoiles, souvenirs ;
   `expedition-retour`), avec un bouton OK. Étoiles par `Etoiles.recompenseJeu` (plafond du jour),

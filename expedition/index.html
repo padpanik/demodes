@@ -53,6 +53,11 @@
     .barre-exp .sac { font-weight: 900; color: #7a5600; background: #fff5d6; border-radius: 10px; padding: 3px 8px; white-space: nowrap; }
     .barre-exp .ou { flex: 1; min-width: 0; text-align: right; font-size: 0.8em; color: #6b7a86; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     /* La carte est plus haute que la fenêtre : elle défile pour garder le compagnon dans le bas de l'écran */
+    .quitter-exp { flex: none; border: 1.5px solid #e03131; background: #fff5f5; color: #c92a2a; font-weight: 800; font-size: 0.85em; border-radius: 10px; padding: 4px 8px; cursor: pointer; }
+    .fond-quitter { position: fixed; inset: 0; z-index: 50; background: rgba(15,10,30,0.55); display: flex; align-items: center; justify-content: center; padding: 16px; }
+    .boite-quitter { background: #fff; border-radius: 18px; padding: 18px 16px; max-width: 340px; width: 100%; text-align: center; display: flex; flex-direction: column; gap: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+    .boite-quitter .grand { font-size: 2.6em; line-height: 1; }
+    .boite-quitter .titre { font-weight: 900; font-size: 1.2em; }
     .carte-exp { position: relative; border-radius: 18px; overflow: hidden; box-shadow: 0 4px 16px rgba(29,43,54,0.18); aspect-ratio: 340 / 590; }
     .carte-exp .monde { position: absolute; left: 0; top: 0; width: 100%; transition: transform 0.7s ease-in-out; }
     .carte-exp .monde svg { display: block; width: 100%; height: auto; }
@@ -171,7 +176,18 @@
           <div class="barre-exp">
             <span class="coeurs" :aria-label="e.coeurs + ' cœurs'"><span v-for="i in COEURS" :key="i" class="coeur-exp" :class="{ perdu: coeurPerdu === i }" v-html="dessinCoeur(i <= e.coeurs)"></span></span>
             <span class="sac">🎒 {{ e.sac }} ⭐ · ✨ {{ e.poussiere || 0 }}</span>
-            <span class="ou">{{ lieuEnCours.ico }} {{ lieuEnCours.nom }} · {{ DIFFICULTES[e.difficulte].nom }}</span>
+            <span class="ou"></span>
+            <button v-if="!e.fin" class="quitter-exp" @click="demandeQuitter = true" aria-label="Abandonner l'expédition">🏳️ Quitter</button>
+          </div>
+          <!-- Abandon à tout moment : on garde la moitié du sac et on revient à l'accueil -->
+          <div class="fond-quitter" v-if="demandeQuitter" @click.self="demandeQuitter = false">
+            <div class="boite-quitter">
+              <div class="grand">🏳️</div>
+              <div class="titre">Abandonner l'expédition ?</div>
+              <div class="explication">Tu gardes la moitié du sac ({{ moitieSac }} ⭐) et tes poussières d'étoile, puis tu reviens à l'accueil.</div>
+              <button class="btn principal" @click="quitter">Abandonner et revenir à l'accueil</button>
+              <button class="btn" @click="demandeQuitter = false">Continuer l'aventure</button>
+            </div>
           </div>
           <div class="carte-exp" :style="{ background: lieuEnCours.couleurs.fond }" @click="toucherCarte">
             <div class="monde" :style="{ transform: 'translateY(' + camera + '%)' }">
@@ -298,6 +314,7 @@
             <li><strong>Buvette</strong> : tu récupères un cœur (3 au plus).</li>
             <li><strong>Aide du compagnon</strong>, une fois par expédition : il retire deux mauvaises réponses.</li>
             <li><strong>Boss</strong> : il te défie sur un jeu de la collection, contre l'ordinateur : la partie se joue dans le vrai jeu, puis on revient. Perdu : un cœur en moins et une revanche.</li>
+            <li><strong>🏳️ Quitter</strong>, à tout moment (même face à un gardien ou au boss) : tu gardes la moitié du sac et tes poussières, et tu reviens à l'accueil.</li>
             <li>Une expédition fatigue : il faut attendre <strong>une heure</strong> avant de repartir.</li>
             <li>Boss vaincu : tu gardes tout le sac (+{{ GAIN_BOSS }} ⭐). Plus de cœurs, ou retour avant la fin : la moitié du sac. Les étoiles comptent dans le plafond du jour.</li>
             <li>Bientôt : d'autres lieux (sciences, histoire, géographie…) et des sorties en groupe.</li>
@@ -347,7 +364,7 @@
       el: '#app',
       data: {
         version: VERSION,
-        LIEUX: EX.LIEUX, DIFFICULTES: EX.DIFFICULTES, GAIN_BOSS: EX.GAIN_BOSS, COEURS: EX.COEURS, coeurPerdu: 0,
+        LIEUX: EX.LIEUX, DIFFICULTES: EX.DIFFICULTES, GAIN_BOSS: EX.GAIN_BOSS, COEURS: EX.COEURS, coeurPerdu: 0, demandeQuitter: false,
         onglet: 'config',
         e: lireStockage(CLE),
         lieuChoisi: lireStockage('expedition-lieu') || 'cinema',
@@ -367,6 +384,7 @@
         lieuEnCours: function() { return this.e ? EX.lieu(this.e.lieu) : EX.LIEUX[0]; },
         coeursTexte: function() { return this.e ? '❤️'.repeat(this.e.coeurs) + '🤍'.repeat(EX.COEURS - this.e.coeurs) : ''; },
         dessinAnimal: function() { return this.animal ? CP.dessin(this.animal, 'content') : ''; },
+        moitieSac: function() { return this.e ? EX.gainFinal(this.e, false) : 0; },
         noeudIci: function() { return this.e.carte.noeuds[this.e.pos]; },
         possibles: function() { return this.e && !this.e.rencontre && !this.e.fin ? EX.suivants(this.e.carte, this.e.pos) : []; },
         consigne: function() { return this.possibles.length > 1 ? '👆 Choisis ton chemin' : this.possibles.length ? '👆 Touche l\'étape suivante' : ''; },
@@ -581,6 +599,19 @@
           this.e.rencontre = null;
           this.finir(false, true);
           this.onglet = 'play';
+        },
+        // Abandon depuis l'écran de jeu, à tout moment (même pendant une rencontre) : bilan, puis retour à l'accueil
+        quitter: function() {
+          var e = this.e;
+          this.demandeQuitter = false;
+          if (!e) return;
+          if (!e.fin) { e.rencontre = null; this.finir(false, true); }
+          var L = this.lieuEnCours;
+          if (this.animal) ecrireStockage('expedition-retour', { lieu: L.nom, ico: L.ico, gagne: false, abandon: true, bonnes: e.bonnes, questions: e.questions,
+            gain: e.fin.gain, donne: e.fin.donne, poussiere: e.fin.poussiere, souvenirs: e.souvenirs, boss: L.boss.nom, h: Date.now() });
+          ecrireStockage('expedition-boss', null); ecrireStockage('expedition-boss-resultat', null);
+          this.e = null; ecrireStockage(CLE, null);
+          location.href = 'index.html?choix';
         },
         finir: function(gagne, abandon) {
           var e = this.e, L = this.lieuEnCours, sac = EX.gainFinal(e, gagne);
