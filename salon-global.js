@@ -122,7 +122,7 @@ var SalonGlobal = (function () {
   // On tente de tenir le salon ; s'il est déjà tenu, on le rejoint
   function ouvrir() {
     arreter();
-    var p = peer = new Peer(idSalon());
+    var p = peer = typeof creerPeer === 'function' ? creerPeer(idSalon()) : new Peer(idSalon());
     if (typeof veillerOuverture === 'function') veillerOuverture(p);
     p.on('open', () => {
       if (peer !== p) return;
@@ -141,7 +141,7 @@ var SalonGlobal = (function () {
   }
   function rejoindre() {
     arreter();
-    var p = peer = new Peer();
+    var p = peer = typeof creerPeer === 'function' ? creerPeer() : new Peer();
     if (typeof veillerOuverture === 'function') veillerOuverture(p);
     p.on('open', () => {
       if (peer !== p) return;

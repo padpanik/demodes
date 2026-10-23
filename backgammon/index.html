@@ -16,6 +16,7 @@
   <meta name="apple-mobile-web-app-title" content="Désdale">
   <script src="https://cdn.jsdelivr.net/npm/vue@2.7.16/dist/vue.min.js"></script>
   <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+  <script src="reseau.js"></script>
   <link rel="stylesheet" href="commun.css">
   <style>
     .logo-bg { display: flex; gap: 2px; align-items: flex-end; height: 48px; }
@@ -861,7 +862,7 @@
           var nom = reprise ? this.roomCode : this.channelInput.trim();
           this.reinitialiserPeer(!!reprise);
           this.connexion = reprise ? 'perdue' : 'connexion';
-          var monPeer = peer = new Peer(ACCES.idSalon(nom, JEU_RESEAU));
+          var monPeer = peer = creerPeer(ACCES.idSalon(nom, JEU_RESEAU));
           veillerOuverture(monPeer);
           monPeer.on('open', () => {
             if (peer !== monPeer) return;
@@ -1014,7 +1015,7 @@
           var nom = reprise ? this.roomCode : this.channelInput.trim();
           this.reinitialiserPeer(!!reprise);
           this.connexion = reprise ? 'perdue' : 'connexion';
-          var monPeer = peer = new Peer();
+          var monPeer = peer = creerPeer();
           veillerOuverture(monPeer);
           monPeer.on('open', () => {
             if (peer !== monPeer) return;

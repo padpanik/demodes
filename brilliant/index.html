@@ -23,6 +23,7 @@
   <!-- Version figée de Vue (la même que celle gardée en cache par sw.js) -->
   <script src="https://cdn.jsdelivr.net/npm/vue@2.7.16/dist/vue.min.js"></script>
   <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+  <script src="reseau.js"></script>
   <style>
     /* Rien n'est affiché tant que Vue n'a pas fini le rendu */
     [v-cloak] { display: none !important; }
@@ -1044,7 +1045,7 @@
     function lireLigne(ligne) { return ligne.trim().split(/\s+/); }
 
     // Numéro de version affiché sur l'accueil (à augmenter à chaque mise en ligne)
-    const VERSION = '2.38';
+    const VERSION = '2.39';
 
     // ================== ACCÈS PRIVÉ ==================
     // Application réservée à un cercle d'amis : un code est demandé au premier lancement.
@@ -2045,7 +2046,7 @@
             peerSynchro = null;
           }
           this.topInfo = 'Recherche du salon…';
-          var p = peerSynchro = new Peer();
+          var p = peerSynchro = creerPeer();
           p.salon = salon;
           var fini = (texte) => {
             if (peerSynchro !== p) return;
@@ -2278,7 +2279,7 @@
           this.reinitialiserPeer(!!reprise);
           this.connexion = reprise ? 'perdue' : 'connexion';
           this.status = reprise ? 'Statut : Reconnexion…' : 'Statut : Connexion...';
-          var monPeer = peer = new Peer();
+          var monPeer = peer = creerPeer();
           veillerOuverture(monPeer);
 
           monPeer.on('open', () => {
@@ -2477,7 +2478,7 @@
           this.reinitialiserPeer(!!reprise);
           this.connexion = reprise ? 'perdue' : 'connexion';
           this.status = reprise ? 'Statut : Récupération du salon…' : 'Statut : Création du salon...';
-          var monPeer = peer = new Peer(ACCES.idSalon(customChannel));
+          var monPeer = peer = creerPeer(ACCES.idSalon(customChannel));
           veillerOuverture(monPeer);
 
           monPeer.on('open', (id) => {

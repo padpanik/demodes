@@ -1,0 +1,17 @@
+# Serveur de mise en relation de Désdale (voir LISEZMOI.md). Aucun secret ici : ils se donnent avec « wrangler secret put ».
+name = "desdale-reseau"
+main = "worker.js"
+compatibility_date = "2025-06-01"
+
+[[durable_objects.bindings]]
+name = "SALON"
+class_name = "Salon"
+
+# Offre gratuite : Durable Objects avec stockage SQLite
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["Salon"]
+
+[vars]
+# Sites autorisés à appeler le serveur depuis un navigateur (séparés par des virgules)
+ORIGINES = "https://padpanik.github.io"
