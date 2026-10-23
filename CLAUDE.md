@@ -420,12 +420,24 @@ Bataille navale : `bataille-boss` (partie contre un boss d'expédition), `batail
   (vérifié sur 3 000 donjons par un solveur Node). Sans compagnon : pas de pouvoir.
 - Obstacles sur les passages (côté de la pièce d'où l'on vient) : pouvoirs, porte 🔒 (petite clé dans un coffre avant elle), porte du boss (grande clé au plus loin),
   à plusieurs une grille ⛓️ ouverte en se tenant à deux sur les deux dalles. Coffres : clé, grande clé, 3 poussières, soin de la pièce. Clés et poussières au groupe.
-- Commandes : croix au doigt (on glisse, `padDebut` / `padBouger`), un pas toutes les 0,2 s (un toucher bref fait un pas), ⚔️ frappe la case devant ;
-  flèches + espace au clavier. **Commandes inversables** (demandé par l'utilisateur) : croix à droite et ⚔️ à gauche, par le petit bouton ⇄
-  sous le pouvoir ou dans Réglages (`inverse`, `donjon-inverse`, propre au téléphone). **Passages bien visibles** (demandé) : sol clair, montants dorés
-  et flèche jaune qui palpite vers la pièce voisine ; montants dorés aussi autour d'un passage encore bloqué (ronces, rocher, trou, portes, grille). Monstres lents : gluant, chauve-souris (vole au-dessus des trous), squelette (2 PV, poursuit) ; ils ne bougent que dans les pièces occupées.
-  3 cœurs, 1,5 s d'invincibilité ; KO = fantôme 👻, ranimé (1 cœur) par un ami vivant juste à côté pendant 2 s ; tout le groupe KO = fin. Butin : ❤️ ou ✨.
-  Boss : le **Roi Gluant** (6 PV + 2 par joueur en plus), fait naître un gluant toutes les 6 s ; vaincu = +5 poussières et fin.
+- Commandes : croix au doigt (on glisse, `padDebut` / `padBouger`), un pas toutes les 0,2 s (un toucher bref fait un pas) ; flèches au clavier.
+  Plus de bouton ⚔️ (tout passe en tour par tour, choix de l'utilisateur). **Croix déplaçable** : bouton ⇄ ou Réglages (`inverse`, `donjon-inverse`, par téléphone).
+  **Passages bien visibles** (demandé) : sol clair, montants dorés et flèche jaune qui palpite vers la pièce voisine ; montants dorés aussi autour d'un passage bloqué.
+  Monstres lents (gluant 2 PV, chauve-souris 2 PV qui vole au-dessus des trous, squelette 3 PV qui poursuit) ; ils ne bougent que dans les pièces occupées et hors combat.
+- **Combat aux cartes, tour par tour** (demandé par l'utilisateur, « on attend tout le monde ») : au contact d'un monstre (même case ou une des 8 autour),
+  tous les joueurs vivants de la pièce affrontent tous ses monstres (`e.combats[salle]`, `demarrerCombat`, `nouveauTour`, `resoudre`). L'écran de la pièce
+  laisse place au combat (monstres en haut avec PV et **intention annoncée** : ⚔️ 1 → qui, 🛡️ garde, 💤, 😤 « 💥 dans 2 tours », 💥, 📣 ; journal du dernier tour ;
+  le groupe ; ma main). Chacun **pioche 3 cartes** dans son paquet (`p.pioche` / `p.defausse` / `p.main`, gardé tout le donjon, remélangé quand il est vide)
+  et en joue une (`DJ.jouerCarte`, cible monstre / ami / joueur ; on peut changer d'avis). Quand tous les vivants ont choisi (un joueur déconnecté joue
+  Bouclier s'il l'a), le tour se joue 0,6 s plus tard : 1. défenses, soins, point faible ; 2. attaques au dé (`degats` : 1-3 → 1, 4-5 → 2, 6 → 3) ; 3. les monstres.
+  Cartes (`DJ.CARTES`, identifiants prévus pour une future collection / un « deck donjon » sur le compagnon) : paquet de base 🐾 Coup de griffe ×3, 🛡️ Bouclier ×2,
+  🍀 Trèfle ×1 (+1 cœur ou ranime un KO), 🤝 Protéger ×1 (à plusieurs) ; + 2 cartes du pouvoir (`CARTE_POUVOIR`) : 🔥 Souffle de feu (1 à tous, 2 sur un 6),
+  💥 Grand coup (2 à 4), 💨 Bond (esquive + 1 à 3), 🎯 Point faible (+1 à chaque coup sur ce monstre) ; sans pouvoir, une griffe de plus.
+  Chauve-souris : esquive les dés 1-2 (pas le feu) ; squelette : en garde un tour sur deux (−1 à chaque coup) ; gluant : se tortille 1 fois sur 4.
+  **Roi Gluant** : 10 PV + 4 par joueur en plus, appelle un gluant tous les 3 tours, et à la moitié puis au quart de sa vie prépare un écrasement annoncé
+  2 tours à l'avance (1 dégât à chacun, bouclier ou bond pour l'éviter). Un monstre fait 1 dégât. Monstre vaincu : 60 % une poussière.
+  Fin : victoire (pièce libre, annonce + encadré « dernier tour ») ou tout le monde KO dans la pièce (les monstres restent). KO = fantôme : Trèfle en combat,
+  ou un ami vivant à côté 2 s hors combat. Tout le groupe KO dans le donjon = fin. Testé : 300 combats contre le boss au hasard (~45 % gagnés en jouant au hasard).
 - Réseau : l'hôte simule (`DJ.tick` toutes les 0,1 s) et envoie l'état mobile à chaque pas (~2 Ko), les pièces seulement quand elles changent (`carteV`).
   Les clients n'envoient que `DIR` (direction tenue ou null) et `ATT`. Arrivée en cours : il apparaît dans la première pièce. Hôte disparu : reprise avec la copie (rien de secret).
   Salle d'attente : le groupe, ses compagnons et pouvoirs ; l'hôte lance (« 🗝️ Entrer dans le donjon »), puis « 🔁 Nouveau donjon » à la fin.

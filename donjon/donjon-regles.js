@@ -10,7 +10,7 @@ var DJ = (function () {
   var W = 11, H = 9;                       // une pièce : 11 × 9 cases (bords compris)
   var GX = 4, GY = 4;                      // le plan du donjon : 4 × 4 pièces au plus
   var PAS = 200;                           // un pas toutes les 0,2 s quand on garde le doigt sur la croix
-  var INVINCIBLE = 1500, REANIMATION = 2000, ATTAQUE = 350;
+  var REANIMATION = 2000;
   var DX = { h: [0, -1], b: [0, 1], g: [-1, 0], d: [1, 0] };
   var OPP = { h: 'b', b: 'h', g: 'd', d: 'g' };
   var PORTE = { h: [5, 0], b: [5, 8], g: [0, 4], d: [10, 4] };   // l'ouverture de chaque côté d'une pièce
@@ -46,11 +46,34 @@ var DJ = (function () {
 
   // ---------- Monstres ----------
   var MONSTRES = {
-    slime: { nom: 'Gluant', pv: 1, vitesse: 850 },
-    chauve: { nom: 'Chauve-souris', pv: 1, vitesse: 480, vole: true },
-    squelette: { nom: 'Squelette', pv: 2, vitesse: 720, chasse: true },
-    boss: { nom: 'Le Roi Gluant', pv: 6, vitesse: 650, chasse: true }
+    slime: { nom: 'Gluant', pv: 2, vitesse: 850 },
+    chauve: { nom: 'Chauve-souris', pv: 2, vitesse: 520, vole: true, esquive: true },
+    squelette: { nom: 'Squelette', pv: 3, vitesse: 760, chasse: true },
+    boss: { nom: 'Le Roi Gluant', pv: 10, vitesse: 700, chasse: true }
   };
+
+  // ---------- Cartes de combat (un jour à collectionner : chaque carte a son identifiant) ----------
+  // cible : 'monstre' (un monstre du combat), 'ami' (un autre joueur du combat), 'joueur' (soi ou un ami, même KO), null (aucune)
+  var CARTES = {
+    griffe: { nom: 'Coup de griffe', ico: '🐾', type: 'attaque', cible: 'monstre', texte: '1 à 3 dégâts selon le dé' },
+    bouclier: { nom: 'Bouclier', ico: '🛡️', type: 'defense', cible: null, texte: 'Aucun dégât pour toi ce tour' },
+    proteger: { nom: 'Protéger', ico: '🤝', type: 'defense', cible: 'ami', texte: 'Tu prends les coups d\'un ami à sa place' },
+    trefle: { nom: 'Trèfle', ico: '🍀', type: 'soin', cible: 'joueur', texte: '+1 cœur, ou ranime un ami KO' },
+    feu: { nom: 'Souffle de feu', ico: '🔥', type: 'pouvoir', cible: null, texte: '1 dégât à tous les monstres (2 sur un 6)' },
+    grandcoup: { nom: 'Grand coup', ico: '💥', type: 'pouvoir', cible: 'monstre', texte: '2 à 4 dégâts selon le dé' },
+    bond: { nom: 'Bond', ico: '💨', type: 'pouvoir', cible: 'monstre', texte: 'Tu esquives tout et tu frappes (1 à 3)' },
+    pointfaible: { nom: 'Point faible', ico: '🎯', type: 'pouvoir', cible: 'monstre', texte: 'Ce monstre prend +1 à chaque coup du tour' }
+  };
+  var CARTE_POUVOIR = { ronces: 'feu', force: 'grandcoup', bond: 'bond', flair: 'pointfaible' };
+  var MAIN = 3;   // cartes piochées à chaque tour
+  function paquetDe(p, aPlusieurs) {
+    var l = ['griffe', 'griffe', 'griffe', 'bouclier', 'bouclier', 'trefle'];
+    if (aPlusieurs) l.push('proteger');
+    var pw = CARTE_POUVOIR[p.pouvoir];
+    if (pw) l.push(pw, pw); else l.push('griffe');
+    return l;
+  }
+  function degats(d) { return d === 6 ? 3 : d >= 4 ? 2 : 1; }
 
   // ---------- Hasard reproductible ----------
   function hasard(graine) {
@@ -144,7 +167,7 @@ var DJ = (function () {
       });
       (coffres[id] || []).forEach((c, i) => { var co = COINS[i]; poser(s, co[0], co[1], 'C'); s.coffres[idx(co[0], co[1])] = c; });
       // Monstres : plus nombreux et plus coriaces au fond du donjon ; jamais près des portes
-      if (id === boss) { ennemis.push({ id: ++num, type: 'boss', salle: id, x: 5, y: 3, pv: MONSTRES.boss.pv + 2 * (humains - 1), pvMax: MONSTRES.boss.pv + 2 * (humains - 1), pas: 0, dir: 'b' }); return; }
+      if (id === boss) { ennemis.push({ id: ++num, type: 'boss', salle: id, x: 5, y: 3, pv: MONSTRES.boss.pv + 4 * (humains - 1), pvMax: MONSTRES.boss.pv + 4 * (humains - 1), pas: 0, dir: 'b' }); return; }
       if (id === p.depart) return;
       var nb = 1 + (s.prof >= 2 ? 1 : 0) + (h() < 0.4 ? 1 : 0) + (humains >= 3 ? 1 : 0);
       var types = s.prof >= 2 ? ['slime', 'chauve', 'squelette'] : ['slime', 'chauve'];
@@ -170,7 +193,7 @@ var DJ = (function () {
     var c = generer(graine, pouvoirs, noms.length);
     var e = { id: id || String(graine), graine: graine, phase: 'jeu', salles: c.salles, depart: c.depart, bossSalle: c.boss, carteV: 1,
               ennemis: c.ennemis, seq: c.num, joueurs: {}, cles: 0, grandeCle: false, poussiere: 0, objets: [], effets: [], annonces: [],
-              vues: {}, fin: null, debut: 0, maintenant: 0, pouvoirs: pouvoirs, bossPonte: 0 };
+              vues: {}, fin: null, debut: 0, maintenant: 0, pouvoirs: pouvoirs, combats: {} };
     e.vues[c.depart] = 1;
     noms.forEach(n => ajouterJoueur(e, n, joueurs[n]));
     return e;
@@ -180,7 +203,7 @@ var DJ = (function () {
     if (e.joueurs[nom]) { if (cp) { e.joueurs[nom].cp = cp; } return e.joueurs[nom]; }
     var n = Object.keys(e.joueurs).length, d = DEPARTS[n % DEPARTS.length];
     return (e.joueurs[nom] = { nom: nom, ordre: n, salle: e.depart, x: d[0], y: d[1], dir: 'h', coeurs: 3, max: 3, fantome: false, reanim: 0,
-                                cp: cp || null, pouvoir: pouvoirDe(cp), inv: 0, pas: 0, d: null, unPas: null, att: false, attProchaine: 0, aideT: 0 });
+                                cp: cp || null, pouvoir: pouvoirDe(cp), inv: 0, pas: 0, d: null, unPas: null, aideT: 0, pioche: null, defausse: [], main: [] });
   }
   // Commandes reçues : direction tenue (ou null au lâcher), coup
   function entree(e, nom, d) {
@@ -188,7 +211,6 @@ var DJ = (function () {
     if (!p) return;
     if (d && DX[d]) { p.d = d; p.unPas = d; } else p.d = null;   // un toucher bref fait quand même un pas
   }
-  function attaquer(e, nom) { var p = e.joueurs[nom]; if (p) p.att = true; }
 
   function annonce(e, txt, pour) {
     e.annonces.push({ id: ++e.seq, txt: txt, t: e.maintenant, pour: pour || null });
@@ -202,13 +224,13 @@ var DJ = (function () {
     p.aideT = e.maintenant + 3000;
     annonce(e, txt, p.nom);
   }
-  function blesser(e, p) {
-    if (p.fantome || e.maintenant < p.inv) return;
-    p.coeurs--; p.inv = e.maintenant + INVINCIBLE;
+  function blesser(e, p, n) {
+    if (p.fantome) return;
+    p.coeurs -= n || 1;
     effet(e, p.salle, p.x, p.y, 'aie');
     if (p.coeurs <= 0) {
       p.coeurs = 0; p.fantome = true; p.reanim = 0; p.d = null;
-      annonce(e, '👻 ' + nomCp(p) + ' est KO' + (Object.keys(e.joueurs).length > 1 ? ' : restez à côté de lui pour le ranimer !' : '…'));
+      annonce(e, '👻 ' + nomCp(p) + ' est KO' + (Object.keys(e.joueurs).length > 1 ? ' : un Trèfle ou un ami à côté de lui le ranime !' : '…'));
     }
   }
   function ramasser(e, p) {
@@ -234,6 +256,8 @@ var DJ = (function () {
   function bougerJoueur(e, p) {
     var now = e.maintenant, d = p.d || p.unPas;
     if (!d || now < p.pas) return;
+    var c = e.combats[p.salle];
+    if (c && c.joueurs.indexOf(p.nom) >= 0) { p.unPas = null; return; }   // en plein combat : on ne bouge pas
     p.unPas = null; p.dir = d; p.pas = now + PAS;
     var v = DX[d], nx = p.x + v[0], ny = p.y + v[1], S = e.salles[p.salle];
     // On sort par une ouverture : pièce voisine
@@ -251,7 +275,7 @@ var DJ = (function () {
     }
     var t = tuile(S, nx, ny);
     if (MARCHABLE[t]) {
-      if (!p.fantome && ennemiEn(e, p.salle, nx, ny)) { blesser(e, p); return; }
+      if (!p.fantome && ennemiEn(e, p.salle, nx, ny)) { demarrerCombat(e, p.salle); return; }
       p.x = nx; p.y = ny;
       if (!p.fantome) ramasser(e, p);
       return;
@@ -303,29 +327,168 @@ var DJ = (function () {
     }
     return dirs[Math.floor(h() * 4)];
   }
-  function toucher(e, m, v, h) {
-    m.pv--; m.touche = e.maintenant;
-    if (m.pv <= 0) {
-      e.ennemis = e.ennemis.filter(o => o !== m);
-      effet(e, m.salle, m.x, m.y, 'pouf');
-      if (m.type === 'boss') {
-        e.poussiere += 5;
-        e.phase = 'fin'; e.fin = { gagne: true, t: e.maintenant };
-        annonce(e, '🎉 Le Roi Gluant est vaincu ! Le trésor est à vous !');
-        return;
-      }
-      var r = h();
-      if (r < 0.25) e.objets.push({ id: ++e.seq, salle: m.salle, x: m.x, y: m.y, type: 'coeur' });
-      else if (r < 0.6) e.objets.push({ id: ++e.seq, salle: m.salle, x: m.x, y: m.y, type: 'poussiere' });
-      return;
+
+  // ================== COMBAT AUX CARTES (tour par tour) ==================
+  // Tous les joueurs vivants de la pièce contre tous les monstres de la pièce. Chaque tour : les monstres annoncent ce qu'ils vont
+  // faire (intentions), chacun pioche 3 cartes et en choisit une (on attend tout le monde ; un joueur déconnecté se protège tout seul),
+  // puis tout se résout : défenses et soins, attaques des joueurs (au dé), puis les monstres.
+  function piocher(e, p, h) {
+    if (!p.pioche) { p.pioche = melanger(paquetDe(p, Object.keys(e.joueurs).length > 1), h); p.defausse = []; }
+    while (p.main.length < MAIN) {
+      if (!p.pioche.length) { if (!p.defausse.length) break; p.pioche = melanger(p.defausse, h); p.defausse = []; }
+      p.main.push(p.pioche.pop());
     }
-    // Recul d'une case (pas le boss)
-    if (m.type !== 'boss' && marchableEnnemi(e, m, m.x + v[0], m.y + v[1])) { m.x += v[0]; m.y += v[1]; }
-    m.pas = e.maintenant + 400;
+  }
+  function defausser(p) { p.defausse = (p.defausse || []).concat(p.main); p.main = []; }
+  function vivantsDe(e, c) { return c.joueurs.map(n => e.joueurs[n]).filter(p => p && !p.fantome && p.salle === c.salle); }
+  function monstresDe(e, c) { return e.ennemis.filter(m => m.salle === c.salle); }
+  function demarrerCombat(e, salle, h) {
+    if (e.combats[salle] || !e.ennemis.some(m => m.salle === salle)) return;
+    var c = e.combats[salle] = { id: ++e.seq, salle: salle, tour: 0, joueurs: [], choix: {}, intentions: {}, journal: [], coups: [], pret: 0 };
+    var noms = monstresDe(e, c).map(m => MONSTRES[m.type].nom);
+    annonce(e, '⚔️ Combat ! ' + noms.filter((n, i) => noms.indexOf(n) === i).join(', ') + ' !');
+    nouveauTour(e, c, h || Math.random);
+  }
+  function nouveauTour(e, c, h) {
+    c.tour++; c.choix = {}; c.pret = 0; c.intentions = {};
+    // Les joueurs vivants arrivés dans la pièce rejoignent le combat
+    Object.values(e.joueurs).forEach(p => { if (p.salle === c.salle && !p.fantome && c.joueurs.indexOf(p.nom) < 0) { c.joueurs.push(p.nom); p.d = null; p.unPas = null; } });
+    c.joueurs = c.joueurs.filter(n => e.joueurs[n] && e.joueurs[n].salle === c.salle);
+    vivantsDe(e, c).forEach(p => piocher(e, p, h));
+    var cibles = vivantsDe(e, c), nbMonstres = monstresDe(e, c).length;
+    monstresDe(e, c).forEach(m => {
+      var cible = cibles.length ? cibles[Math.floor(h() * cibles.length)].nom : null, i;
+      if (m.type === 'slime') i = h() < 0.75 ? { t: 'attaque', cible: cible } : { t: 'rien' };
+      else if (m.type === 'chauve') i = { t: 'attaque', cible: cible };
+      else if (m.type === 'squelette') i = (m.garde = !m.garde) ? { t: 'attaque', cible: cible } : { t: 'garde' };
+      else {
+        m.preps = m.preps || 0;
+        if (m.prep === 1) { m.prep = 0; i = { t: 'ecrase' }; }
+        else if (m.prep === 2) { m.prep = 1; i = { t: 'prepare', n: 1 }; }
+        else if ((m.pv * 2 <= m.pvMax && m.preps < 1) || (m.pv * 4 <= m.pvMax && m.preps < 2)) { m.preps++; m.prep = 2; i = { t: 'prepare', n: 2 }; }
+        else if (c.tour % 3 === 0 && nbMonstres < 4) i = { t: 'appel' };
+        else i = { t: 'attaque', cible: cible };
+      }
+      c.intentions[m.id] = i;
+    });
+  }
+  // Un joueur choisit une carte de sa main (il peut changer d'avis tant que le tour n'est pas joué)
+  function jouerCarte(e, nom, i, cible) {
+    var p = e.joueurs[nom], c = p && e.combats[p.salle];
+    if (!c || p.fantome || c.joueurs.indexOf(nom) < 0) return 'Pas de combat';
+    var id = p.main[i], k = CARTES[id];
+    if (!k) return 'Carte inconnue';
+    var monstres = monstresDe(e, c), amis = vivantsDe(e, c).filter(q => q.nom !== nom);
+    if (k.cible === 'monstre') {
+      if (!monstres.some(m => m.id === cible)) { if (monstres.length === 1) cible = monstres[0].id; else return 'Choisis un monstre'; }
+    } else if (k.cible === 'ami') {
+      if (!amis.some(q => q.nom === cible)) { if (amis.length === 1) cible = amis[0].nom; else return amis.length ? 'Choisis un ami' : 'Personne à protéger'; }
+    } else if (k.cible === 'joueur') {
+      if (!(c.joueurs.indexOf(cible) >= 0 && e.joueurs[cible])) cible = nom;
+    } else cible = null;
+    c.choix[nom] = { i: i, carte: id, cible: cible };
+    c.pret = 0;
+    return null;
+  }
+  function annulerCarte(e, nom) { var p = e.joueurs[nom], c = p && e.combats[p.salle]; if (c) { delete c.choix[nom]; c.pret = 0; } }
+  // On attend tout le monde : quand tous les vivants ont choisi (les absents se protègent tout seuls), le tour se joue 0,6 s plus tard
+  function avancerCombat(e, c, h, absents) {
+    if (!monstresDe(e, c).length) { delete e.combats[c.salle]; return; }
+    var vivants = vivantsDe(e, c);
+    if (!vivants.length) { finCombat(e, c, false); return; }
+    var prets = vivants.every(p => c.choix[p.nom] || absents[p.nom]);
+    if (!prets) { c.pret = 0; return; }
+    if (!c.pret) { c.pret = e.maintenant; return; }
+    if (e.maintenant - c.pret < 600) return;
+    vivants.forEach(p => {
+      if (c.choix[p.nom] || !absents[p.nom]) return;
+      var b = p.main.indexOf('bouclier');
+      c.choix[p.nom] = b >= 0 ? { i: b, carte: 'bouclier', cible: null } : null;
+    });
+    resoudre(e, c, h);
+  }
+  function nomMonstre(m) { return MONSTRES[m.type].nom; }
+  function resoudre(e, c, h) {
+    var J = vivantsDe(e, c), journal = [], coups = [], bouclier = {}, protege = {}, esquive = {}, faible = {};
+    var tous = c.joueurs.map(n => e.joueurs[n]).filter(Boolean);
+    // 1. Défenses, soins, point faible
+    J.forEach(p => {
+      var ch = c.choix[p.nom];
+      if (!ch) return;
+      if (ch.carte === 'bouclier') { bouclier[p.nom] = 1; journal.push('🛡️ ' + nomCp(p) + ' se protège.'); }
+      else if (ch.carte === 'proteger') { var a = e.joueurs[ch.cible]; if (a && !a.fantome) { protege[a.nom] = p.nom; journal.push('🤝 ' + nomCp(p) + ' protège ' + nomCp(a) + '.'); } }
+      else if (ch.carte === 'bond') esquive[p.nom] = 1;
+      else if (ch.carte === 'pointfaible') { var m = e.ennemis.find(x => x.id === ch.cible); if (m) { faible[m.id] = 1; journal.push('🎯 ' + nomCp(p) + ' trouve le point faible de ' + nomMonstre(m) + ' !'); } }
+      else if (ch.carte === 'trefle') {
+        var q = e.joueurs[ch.cible] || p;
+        if (q.fantome) { q.fantome = false; q.coeurs = 1; journal.push('🍀 ' + nomCp(p) + ' ranime ' + nomCp(q) + ' !'); if (c.joueurs.indexOf(q.nom) < 0) c.joueurs.push(q.nom); }
+        else if (q.coeurs < q.max) { q.coeurs++; journal.push('🍀 ' + nomCp(p) + ' soigne ' + (q === p ? '' : nomCp(q) + ' ') + '(+1 ❤️).'); }
+        else journal.push('🍀 ' + nomCp(q) + ' a déjà tous ses cœurs.');
+        coups.push({ qui: q.nom, v: '+1' });
+      }
+    });
+    // 2. Attaques des joueurs, au dé
+    function frapper(p, m, base, d, sansEsquive) {
+      if (!m || m.pv <= 0) { var autres = monstresDe(e, c).filter(x => x.pv > 0); m = autres[Math.floor(h() * autres.length)]; if (!m) return; }
+      if (MONSTRES[m.type].esquive && !sansEsquive && d <= 2) { journal.push('🎲' + d + ' ' + nomMonstre(m) + ' esquive ' + nomCp(p) + ' !'); coups.push({ qui: m.id, v: 'raté', de: d }); return; }
+      var n = Math.max(0, base + (faible[m.id] ? 1 : 0) - (c.intentions[m.id] && c.intentions[m.id].t === 'garde' ? 1 : 0));
+      m.pv -= n;
+      journal.push('🎲' + d + ' ' + nomCp(p) + ' → ' + nomMonstre(m) + ' : −' + n);
+      coups.push({ qui: m.id, v: -n, de: d });
+    }
+    J.forEach(p => {
+      var ch = c.choix[p.nom];
+      if (!ch) return;
+      var m = e.ennemis.find(x => x.id === ch.cible), d = 1 + Math.floor(h() * 6);
+      if (ch.carte === 'griffe' || ch.carte === 'bond') frapper(p, m, degats(d), d);
+      else if (ch.carte === 'grandcoup') frapper(p, m, 1 + degats(d), d);
+      else if (ch.carte === 'feu') { journal.push('🔥 ' + nomCp(p) + ' crache du feu !'); monstresDe(e, c).forEach(x => frapper(p, x, d === 6 ? 2 : 1, d, true)); }
+    });
+    // Monstres vaincus
+    monstresDe(e, c).forEach(m => {
+      if (m.pv > 0) return;
+      e.ennemis = e.ennemis.filter(x => x !== m);
+      effet(e, m.salle, m.x, m.y, 'pouf');
+      journal.push('💨 ' + nomMonstre(m) + ' est vaincu !');
+      if (m.type === 'boss') { e.poussiere += 5; e.phase = 'fin'; e.fin = { gagne: true, t: e.maintenant }; annonce(e, '🎉 Le Roi Gluant est vaincu ! Le trésor est à vous !'); }
+      else if (h() < 0.6) e.poussiere++;
+    });
+    // 3. Les monstres encore debout
+    function coup(m, cibleNom) {
+      var q = e.joueurs[cibleNom];
+      if (!q || q.fantome || q.salle !== c.salle) { var l = vivantsDe(e, c); q = l[Math.floor(h() * l.length)]; if (!q) return; }
+      if (protege[q.nom] && e.joueurs[protege[q.nom]] && !e.joueurs[protege[q.nom]].fantome) q = e.joueurs[protege[q.nom]];
+      if (bouclier[q.nom] || esquive[q.nom]) { journal.push((esquive[q.nom] ? '💨 ' : '🛡️ ') + nomCp(q) + ' évite le coup de ' + nomMonstre(m) + '.'); coups.push({ qui: q.nom, v: 'paré' }); return; }
+      blesser(e, q, 1);
+      journal.push('💢 ' + nomMonstre(m) + ' frappe ' + nomCp(q) + ' : −1 ❤️');
+      coups.push({ qui: q.nom, v: -1 });
+    }
+    if (e.phase === 'jeu') monstresDe(e, c).forEach(m => {
+      var i = c.intentions[m.id] || { t: 'rien' };
+      if (i.t === 'attaque') coup(m, i.cible);
+      else if (i.t === 'ecrase') { journal.push('💥 Le Roi Gluant écrase tout le monde !'); vivantsDe(e, c).forEach(q => coup(m, q.nom)); }
+      else if (i.t === 'appel') {
+        var place = [[3, 3], [7, 3], [3, 5], [7, 5], [5, 2], [5, 6]].find(p => !e.ennemis.some(x => x.salle === c.salle && x.x === p[0] && x.y === p[1]));
+        if (place) { e.ennemis.push({ id: ++e.seq, type: 'slime', salle: c.salle, x: place[0], y: place[1], pv: 2, pvMax: 2, pas: 0, dir: 'b' }); journal.push('🟢 Le Roi Gluant appelle un gluant !'); }
+      }
+      else if (i.t === 'prepare') journal.push('😤 Le Roi Gluant prend son élan…');
+    });
+    tous.forEach(p => defausser(p));
+    c.journal = journal.slice(-8); c.coups = coups; c.resolu = ++e.seq;
+    if (e.phase !== 'jeu') { delete e.combats[c.salle]; return; }
+    if (!monstresDe(e, c).length) return finCombat(e, c, true);
+    if (!vivantsDe(e, c).length) return finCombat(e, c, false);
+    nouveauTour(e, c, h);
+  }
+  function finCombat(e, c, gagne) {
+    c.joueurs.forEach(n => { var p = e.joueurs[n]; if (p) defausser(p); });
+    delete e.combats[c.salle];
+    annonce(e, gagne ? '🎉 Victoire ! La pièce est libre.' : '👻 Le groupe est KO dans cette pièce… les monstres restent là.');
+    e.dernierCombat = { salle: c.salle, gagne: gagne, journal: c.journal, t: e.maintenant, id: c.id };
   }
 
   // ---------- Un pas de simulation (dix fois par seconde) ----------
-  function tick(e, maintenant, h) {
+  function tick(e, maintenant, h, absents) {
     if (e.phase !== 'jeu') return;
     h = h || Math.random;
     var dt = e.maintenant ? Math.min(500, maintenant - e.maintenant) : 0;
@@ -333,40 +496,24 @@ var DJ = (function () {
     if (!e.debut) e.debut = maintenant;
     var joueurs = Object.values(e.joueurs);
     joueurs.forEach(p => bougerJoueur(e, p));
-    // Coups : la case devant soi
-    joueurs.forEach(p => {
-      if (!p.att) return;
-      p.att = false;
-      if (p.fantome || maintenant < p.attProchaine) return;
-      p.attProchaine = maintenant + ATTAQUE;
-      var v = DX[p.dir || 'b'], fx = p.x + v[0], fy = p.y + v[1];
-      effet(e, p.salle, fx, fy, 'coup');
-      var m = ennemiEn(e, p.salle, fx, fy) || ennemiEn(e, p.salle, p.x, p.y);
-      if (m) toucher(e, m, v, h);
-    });
-    if (e.phase !== 'jeu') return;
     // Monstres : ils ne bougent que dans les pièces où quelqu'un est en vie
     var occupees = {};
     joueurs.forEach(p => { if (!p.fantome) occupees[p.salle] = true; });
     e.ennemis.slice().forEach(m => {
-      if (!occupees[m.salle] || maintenant < m.pas) return;
+      if (!occupees[m.salle] || e.combats[m.salle] || maintenant < m.pas) return;
       m.pas = maintenant + MONSTRES[m.type].vitesse * (0.85 + h() * 0.3);
       var d = choisirDir(e, m, h);
       if (!d) return;
       var v = DX[d];
       if (marchableEnnemi(e, m, m.x + v[0], m.y + v[1])) { m.x += v[0]; m.y += v[1]; m.dir = d; }
     });
-    // Le Roi Gluant fait naître des petits gluants
-    var roi = e.ennemis.find(m => m.type === 'boss');
-    if (roi && occupees[roi.salle] && maintenant >= e.bossPonte) {
-      if (e.bossPonte && e.ennemis.filter(m => m.salle === roi.salle).length < 4) {
-        var place = ['b', 'g', 'd', 'h'].map(d => [roi.x + DX[d][0], roi.y + DX[d][1]]).find(c => marchableEnnemi(e, { salle: roi.salle, type: 'slime' }, c[0], c[1]));
-        if (place) { e.ennemis.push({ id: ++e.seq, type: 'slime', salle: roi.salle, x: place[0], y: place[1], pv: 1, pvMax: 1, pas: maintenant + 600, dir: 'b' }); effet(e, roi.salle, place[0], place[1], 'pouf'); }
-      }
-      e.bossPonte = maintenant + 6000;
-    }
-    // Contacts
-    joueurs.forEach(p => { if (!p.fantome && ennemiEn(e, p.salle, p.x, p.y)) blesser(e, p); });
+    // Au contact (même case ou une des 8 cases autour) d'un monstre : combat au tour par tour dans la pièce
+    joueurs.forEach(p => {
+      if (p.fantome || e.combats[p.salle]) return;
+      if (e.ennemis.some(m => m.salle === p.salle && Math.abs(m.x - p.x) <= 1 && Math.abs(m.y - p.y) <= 1)) demarrerCombat(e, p.salle, h);
+    });
+    Object.keys(e.combats).forEach(id => avancerCombat(e, e.combats[id], h, absents || {}));
+    if (e.phase !== 'jeu') return;
     // Grilles : toutes les dalles de la pièce occupées en même temps
     Object.values(e.salles).forEach(S => {
       if (!S.dalles.length || S.t.indexOf('G') < 0) return;
@@ -377,10 +524,10 @@ var DJ = (function () {
     // Réanimation : un ami vivant juste à côté pendant 2 s
     joueurs.forEach(f => {
       if (!f.fantome) return;
-      var ami = joueurs.some(p => !p.fantome && p.salle === f.salle && Math.abs(p.x - f.x) <= 1 && Math.abs(p.y - f.y) <= 1);
+      var ami = !e.combats[f.salle] && joueurs.some(p => !p.fantome && p.salle === f.salle && Math.abs(p.x - f.x) <= 1 && Math.abs(p.y - f.y) <= 1);
       f.reanim = ami ? f.reanim + dt : 0;
       if (f.reanim >= REANIMATION) {
-        f.fantome = false; f.coeurs = 1; f.reanim = 0; f.inv = maintenant + INVINCIBLE;
+        f.fantome = false; f.coeurs = 1; f.reanim = 0;
         annonce(e, '✨ ' + nomCp(f) + ' est ranimé !');
       }
     });
@@ -399,7 +546,8 @@ var DJ = (function () {
   function pieces(e) { return e.salles; }
 
   return { W: W, H: H, GX: GX, GY: GY, PAS: PAS, DX: DX, PORTE: PORTE, MARCHABLE: MARCHABLE, POUVOIRS: POUVOIRS, ESPECES: ESPECES, MONSTRES: MONSTRES,
-           pouvoirDe: pouvoirDe, hasard: hasard, generer: generer, nouvelle: nouvelle, ajouterJoueur: ajouterJoueur, entree: entree, attaquer: attaquer,
+           pouvoirDe: pouvoirDe, hasard: hasard, generer: generer, nouvelle: nouvelle, ajouterJoueur: ajouterJoueur, entree: entree,
+           CARTES: CARTES, CARTE_POUVOIR: CARTE_POUVOIR, jouerCarte: jouerCarte, annulerCarte: annulerCarte, demarrerCombat: demarrerCombat,
            tick: tick, tuile: tuile, idx: idx, etatMobile: etatMobile, pieces: pieces };
 })();
 if (typeof module !== 'undefined') module.exports = DJ;

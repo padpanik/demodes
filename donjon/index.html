@@ -101,8 +101,50 @@
     .pad .h { left: 47px; top: 4px; } .pad .b { left: 47px; bottom: 4px; } .pad .g { left: 4px; top: 47px; } .pad .d { right: 4px; top: 47px; }
     .milieu-dj { flex: 1; min-width: 0; text-align: center; font-size: 0.75em; color: #6b7a86; line-height: 1.3; }
     .milieu-dj .pouvoir { font-size: 1em; padding: 2px 6px; white-space: normal; display: inline-block; }
-    .bouton-coup { width: 84px; height: 84px; border-radius: 50%; border: none; background: #e8590c; color: #fff; font-size: 34px; box-shadow: 0 4px 0 #a8410a; cursor: pointer; flex-shrink: 0; touch-action: none; }
-    .bouton-coup:active, .bouton-coup.actif { transform: translateY(3px); box-shadow: 0 1px 0 #a8410a; }
+    .dernier-combat { background: #fff; border-radius: 12px; padding: 6px 10px; margin-top: 6px; font-size: 0.78em; color: #3b4b57; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+    .dernier-combat span { display: block; }
+    /* Combat aux cartes */
+    .combat-dj { background: #2a211b; border-radius: 14px; padding: 8px; color: #fff; }
+    .tete-combat { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-weight: 900; font-size: 0.95em; margin-bottom: 6px; }
+    .aide-combat { font-weight: 700; font-size: 0.78em; color: #ffd43b; text-align: right; }
+    .monstres-c { display: flex; justify-content: center; gap: 6px; flex-wrap: wrap; }
+    .mc { position: relative; flex: 1; min-width: 74px; max-width: 150px; border: 2px solid transparent; background: #3a2e26; border-radius: 12px; padding: 4px 4px 6px; color: #fff; font: inherit; display: flex; flex-direction: column; align-items: center; cursor: default; }
+    .mc.boss { max-width: 160px; }
+    .mc.ciblable { border-color: #ffd43b; cursor: pointer; animation: appel-c 0.8s ease-in-out infinite alternate; }
+    @keyframes appel-c { to { box-shadow: 0 0 12px rgba(255,212,59,0.7); } }
+    .mc.vise { border-color: #ff922b; }
+    .intention { font-size: 0.68em; font-weight: 800; background: #fff; color: #c92a2a; border-radius: 8px; padding: 1px 6px; white-space: nowrap; max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
+    .mc-des { position: relative; width: 58px; height: 58px; display: flex; align-items: center; justify-content: center; }
+    .mc.boss .mc-des { width: 84px; height: 84px; }
+    .mc-des .emo { font-size: 40px; }
+    .mc-des .gl { width: 100%; height: 100%; }
+    .mc-des .gl svg { width: 100%; height: 100%; }
+    .mc-nom { font-size: 0.72em; font-weight: 800; white-space: nowrap; }
+    .mc-pv { width: 90%; height: 6px; border-radius: 3px; background: rgba(255,255,255,0.2); overflow: hidden; margin-top: 2px; }
+    .mc-pv i { display: block; height: 100%; background: #e64980; transition: width 0.4s; }
+    .mc-pvt { font-size: 0.65em; opacity: 0.8; }
+    .coup-flottant { position: absolute; left: 50%; top: 10%; transform: translateX(-50%); font-weight: 900; font-size: 1.3em; text-shadow: 0 2px 3px rgba(0,0,0,0.6); animation: flotte-c 1.6s ease-out forwards; pointer-events: none; white-space: nowrap; }
+    .coup-flottant.mal { color: #ff6b6b; } .coup-flottant.soin { color: #8ce99a; } .coup-flottant.neutre { color: #e9ecef; font-size: 0.95em; }
+    @keyframes flotte-c { from { opacity: 1; transform: translate(-50%, 0) scale(1.3); } to { opacity: 0; transform: translate(-50%, -28px) scale(1); } }
+    .journal-c { background: rgba(255,255,255,0.08); border-radius: 10px; padding: 4px 8px; margin: 6px 0; font-size: 0.72em; line-height: 1.35; max-height: 92px; overflow-y: auto; }
+    .equipe-c { display: flex; justify-content: center; gap: 6px; flex-wrap: wrap; margin: 4px 0 6px; }
+    .membre-c { position: relative; border: 2px solid transparent; background: #3a2e26; border-radius: 12px; padding: 3px 6px; color: #fff; font: inherit; display: flex; flex-direction: column; align-items: center; min-width: 64px; cursor: default; }
+    .membre-c.moi { background: #4a3a22; }
+    .membre-c.fantome { opacity: 0.55; }
+    .membre-c.ciblable { border-color: #8ce99a; cursor: pointer; animation: appel-c 0.8s ease-in-out infinite alternate; }
+    .mc-cp { position: relative; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; font-size: 26px; }
+    .mc-cp > span:first-child, .mc-cp svg { width: 100%; height: 100%; }
+    .mc-c { font-size: 0.7em; letter-spacing: -1px; }
+    .mc-etat { font-size: 0.62em; opacity: 0.85; }
+    .main-c { display: flex; gap: 6px; justify-content: center; }
+    .carte-c { flex: 1; max-width: 112px; min-height: 132px; border: none; border-radius: 12px; background: #fff; color: #1d2b36; font: inherit; padding: 6px 5px; display: flex; flex-direction: column; align-items: center; gap: 2px; cursor: pointer;
+               box-shadow: 0 3px 0 rgba(0,0,0,0.35); border-top: 8px solid #868e96; transition: transform 0.15s; }
+    .carte-c.t-attaque { border-top-color: #e8590c; } .carte-c.t-defense { border-top-color: #1c7ed6; } .carte-c.t-soin { border-top-color: #2f9e44; } .carte-c.t-pouvoir { border-top-color: #9c36b5; background: #fbf4ff; }
+    .carte-c.enCours { transform: translateY(-10px); box-shadow: 0 0 0 3px #ffd43b, 0 6px 10px rgba(0,0,0,0.4); }
+    .carte-c.choisie { transform: translateY(-6px); box-shadow: 0 0 0 3px #51cf66, 0 6px 10px rgba(0,0,0,0.4); }
+    .cc-ico { font-size: 30px; line-height: 1.1; }
+    .cc-nom { font-weight: 900; font-size: 0.78em; text-align: center; line-height: 1.1; }
+    .cc-txt { font-size: 0.66em; color: #5b6b78; text-align: center; line-height: 1.2; }
 
     .voile-dj { position: fixed; inset: 0; background: rgba(20,14,10,0.6); display: flex; align-items: center; justify-content: center; z-index: 50; padding: 16px; }
     .boite-dj { background: #fff; border-radius: 18px; padding: 18px; width: 100%; max-width: 360px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
@@ -204,6 +246,41 @@
             <button class="quitter-dj" @click="demandeQuitter = true">🏳️</button>
           </div>
 
+          <!-- COMBAT AUX CARTES (tour par tour), à la place de la pièce -->
+          <div v-if="combat" class="combat-dj">
+            <div class="tete-combat"><span>⚔️ Combat · tour {{ combat.tour }}</span><span class="aide-combat">{{ aideCombat }}</span></div>
+            <div class="monstres-c">
+              <button v-for="m in monstresCombat" :key="'mc' + m.id" class="mc" :class="{ ciblable: cibleAttendue === 'monstre', vise: monChoix && monChoix.cible === m.id, boss: m.type === 'boss' }" @click="choisirMonstre(m.id)">
+                <span class="intention">{{ intentionTexte(m) }}</span>
+                <span class="mc-des">
+                  <span v-if="m.type === 'chauve'" class="emo">🦇</span><span v-else-if="m.type === 'squelette'" class="emo">💀</span>
+                  <span v-else class="gl" v-html="dessinGluant(m.type === 'boss')"></span>
+                  <span v-for="(k, j) in coupsSur(m.id)" :key="combat.resolu + '-' + m.id + '-' + j" class="coup-flottant" :class="k.cl">{{ k.txt }}</span>
+                </span>
+                <span class="mc-nom">{{ MONSTRES[m.type].nom }}</span>
+                <span class="mc-pv"><i :style="{ width: (100 * Math.max(0, m.pv) / m.pvMax) + '%' }"></i></span>
+                <span class="mc-pvt">{{ Math.max(0, m.pv) }} / {{ m.pvMax }}</span>
+              </button>
+            </div>
+            <div class="journal-c" v-if="combat.journal.length"><div v-for="(l, k) in combat.journal" :key="combat.resolu + 'j' + k">{{ l }}</div></div>
+            <div class="equipe-c">
+              <button v-for="p in equipeCombat" :key="'ec' + p.nom" class="membre-c" :class="{ ciblable: cibleAttendue === 'ami' && p.nom !== moi && !p.fantome || cibleAttendue === 'joueur', fantome: p.fantome, moi: p.nom === moi }" @click="choisirMembre(p.nom)">
+                <span class="mc-cp"><span v-if="p.cp" v-html="dessinSvg(p.cp)"></span><span v-else>🧭</span>
+                  <span v-for="(k, j) in coupsSur(p.nom)" :key="combat.resolu + '-' + p.nom + '-' + j" class="coup-flottant" :class="k.cl">{{ k.txt }}</span></span>
+                <span class="mc-nom">{{ p.nom === moi ? 'Moi' : p.nom }}</span>
+                <span class="mc-c">{{ p.fantome ? '👻' : '❤️'.repeat(p.coeurs) }}</span>
+                <span class="mc-etat">{{ p.fantome ? 'KO' : combat.choix[p.nom] ? '✓ prêt' : 'choisit…' }}</span>
+              </button>
+            </div>
+            <div class="main-c" v-if="jeJoue">
+              <button v-for="(id, i) in monJ.main" :key="combat.tour + '-' + i + id" class="carte-c" :class="['t-' + CARTES[id].type, { choisie: monChoix && monChoix.i === i, enCours: carteEnCours === i }]" @click="toucherCarte(i)">
+                <span class="cc-ico">{{ CARTES[id].ico }}</span><span class="cc-nom">{{ CARTES[id].nom }}</span><span class="cc-txt">{{ CARTES[id].texte }}</span>
+              </button>
+            </div>
+            <div v-else class="aide" style="text-align:center">{{ monJ && monJ.fantome ? '👻 Tu es KO : un ami peut te ranimer avec un Trèfle.' : 'Tu regardes le combat.' }}</div>
+          </div>
+
+          <template v-else>
           <div class="salle-dj" ref="salle">
             <svg class="fond" viewBox="0 0 352 288" preserveAspectRatio="none" v-html="salleSvg"></svg>
             <div v-for="o in objetsIci" :key="'o' + o.id" class="ent objet" :style="pos(o)"><span class="emo">{{ o.type === 'coeur' ? '❤️' : '✨' }}</span></div>
@@ -228,6 +305,7 @@
             <span v-for="p in equipe" :key="p.nom" :class="{ loin: p.salle !== monJ.salle }">{{ p.nom === moi ? 'Moi' : p.nom }} {{ p.fantome ? '👻' : '❤️'.repeat(p.coeurs) }}<template v-if="p.salle !== monJ.salle"> · ailleurs</template></span>
           </div>
 
+          <div class="dernier-combat" v-if="dernierCombatVu" @click="vuCombat = partie.dernierCombat.id"><b>{{ partie.dernierCombat.gagne ? '🎉 Victoire !' : '👻 Défaite…' }}</b> <span v-for="(l, k) in partie.dernierCombat.journal.slice(-3)" :key="k">{{ l }}</span></div>
           <div class="commandes-dj" :class="{ inverse: inverse }">
             <div class="pad" @pointerdown="padDebut" @pointermove="padBouger" @pointerup="padFin" @pointercancel="padFin" @lostpointercapture="padFin">
               <span class="h" :class="{ actif: dirCourante === 'h' }">▲</span><span class="b" :class="{ actif: dirCourante === 'b' }">▼</span>
@@ -236,11 +314,12 @@
             <div class="milieu-dj">
               <template v-if="monJ && monJ.fantome">👻 Tu es KO.<br>{{ nbJoueurs > 1 ? 'Va près d\'un ami : il te ranime en restant à côté de toi.' : '' }}</template>
               <template v-else-if="monPouvoir"><span class="pouvoir">{{ POUVOIRS[monPouvoir].ico }} {{ POUVOIRS[monPouvoir].nom }}</span><br>fonce dans {{ POUVOIRS[monPouvoir].quoi }}</template>
-              <template v-else>Touche ⚔️ pour frapper devant toi.</template>
-              <button class="inverser-dj" @click="inverse = !inverse" aria-label="Inverser la croix et le bouton">⇄</button>
+              <template v-else>Sans pouvoir : explore et trouve les coffres.</template>
+              <div class="aide" style="margin-top:4px">Touche un monstre pour le combattre aux cartes.</div>
+              <button class="inverser-dj" @click="inverse = !inverse" aria-label="Mettre la croix de l'autre côté">⇄</button>
             </div>
-            <button class="bouton-coup" :class="{ actif: coupActif }" @pointerdown.prevent="coup" aria-label="Frapper">⚔️</button>
           </div>
+          </template>
         </div>
 
         <!-- Abandon -->
@@ -287,7 +366,13 @@
           <div class="titre-carte">Règles</div>
           <ul>
             <li>Explorez le donjon pièce par pièce : on passe d'une pièce à l'autre par les ouvertures des murs. La petite carte en haut à droite montre les pièces vues (👑 en violet : l'antre du boss).</li>
-            <li>La croix fait avancer ton compagnon (garde le doigt pour marcher), ⚔️ frappe la case devant lui.</li>
+            <li>La croix fait avancer ton compagnon (garde le doigt pour marcher). Le bouton ⇄ la met de l'autre côté.</li>
+            <li><strong>Combat aux cartes</strong> : au contact d'un monstre, tous les joueurs vivants de la pièce affrontent tous ses monstres, tour par tour.
+              Chaque monstre annonce ce qu'il va faire (⚔️ qui il vise, 🛡️ garde, 💥 grosse attaque…). Chacun pioche <strong>3 cartes</strong> et en joue une ;
+              on attend que tout le monde ait choisi, puis tout se joue : défenses et soins, vos attaques (au dé 🎲), puis les monstres.
+              Cartes : 🐾 Coup de griffe (1 à 3 dégâts), 🛡️ Bouclier, 🤝 Protéger un ami, 🍀 Trèfle (+1 cœur ou ranime), et la carte du pouvoir de ton compagnon :
+              🔥 Souffle de feu (tous les monstres), 💥 Grand coup, 💨 Bond (esquive + coup), 🎯 Point faible (+1 à chaque coup sur ce monstre).
+              La chauve-souris esquive les petits dés (1 ou 2), le squelette se met en garde un tour sur deux.</li>
             <li><strong>Chaque compagnon a un pouvoir</strong> : fonce dans l'obstacle pour t'en servir.
               🔥 <strong>Débroussailler</strong> (dragon, chat, oie) : les ronces ·
               💪 <strong>Force</strong> (panda, tortue, chèvre) : les rochers ·
@@ -296,8 +381,8 @@
             <li>Le donjon est tiré au hasard d'après les pouvoirs du groupe : il y a toujours de quoi passer.</li>
             <li>Les coffres cachent une petite clé (pour la porte 🔒), la grande clé du boss 🔑, des poussières d'étoile ✨ ou de quoi se soigner ❤️. Clés et poussières sont à tout le groupe.</li>
             <li>À plusieurs : une grille ⛓️ s'ouvre quand deux joueurs se tiennent en même temps sur les deux dalles de la pièce.</li>
-            <li>3 cœurs chacun. Sans cœur, on devient un petit fantôme 👻 : un ami vivant le ranime en restant 2 secondes juste à côté de lui. Tout le groupe KO : fin de l'exploration.</li>
-            <li>Au fond, le <strong>Roi Gluant</strong> 👑 fait naître des petits gluants : frappez-le jusqu'au bout !</li>
+            <li>3 cœurs chacun. Sans cœur, on devient un petit fantôme 👻 : un Trèfle le ranime en combat, ou un ami vivant en restant 2 secondes juste à côté de lui. Tout le groupe KO : fin de l'exploration.</li>
+            <li>Au fond, le <strong>Roi Gluant</strong> 👑 appelle des gluants et, quand il faiblit, prépare un écrasement annoncé 2 tours à l'avance : sortez les boucliers !</li>
             <li>À la fin, chacun garde les poussières d'étoile (5 poussières = 1 ⭐, comme en expédition). Boss vaincu : un souvenir du donjon pour la maison de ton compagnon.</li>
           </ul>
         </section>
@@ -367,6 +452,9 @@
         monCp: nettoyerCp(monCompagnon()),
         stats: lireStockage('donjon-stats') || { parties: 0, gagnes: 0 },
         dirCourante: null,
+        carteEnCours: null,   // carte touchée qui attend sa cible (monstre ou ami)
+        vuCombat: null,
+        CARTES: DJ.CARTES, MONSTRES: DJ.MONSTRES,
         inverse: lireStockage('donjon-inverse') === true,   // croix à droite (sur ce téléphone)
         coupActif: false,
         demandeQuitter: false,
@@ -400,6 +488,23 @@
         effetsIci: function() { var s = this.monJ && this.monJ.salle; return this.partie.effets.filter(f => f.salle === s); },
         annoncesVues: function() { var t = this.partie.maintenant; return this.partie.annonces.filter(a => (!a.pour || a.pour === this.moi) && t - a.t < 4500).slice(-2); },
         equipe: function() { return Object.values(this.partie.joueurs).sort((a, b) => a.ordre - b.ordre); },
+        combat: function() { return this.partie && this.monJ && this.partie.combats ? this.partie.combats[this.monJ.salle] || null : null; },
+        jeJoue: function() { return !!(this.combat && this.monJ && !this.monJ.fantome && this.combat.joueurs.indexOf(this.moi) >= 0); },
+        monstresCombat: function() { var c = this.combat; return c ? this.partie.ennemis.filter(m => m.salle === c.salle) : []; },
+        equipeCombat: function() { var c = this.combat; return c ? Object.values(this.partie.joueurs).filter(p => p.salle === c.salle && (c.joueurs.indexOf(p.nom) >= 0 || p.fantome)).sort((a, b) => a.ordre - b.ordre) : []; },
+        monChoix: function() { return this.combat ? this.combat.choix[this.moi] || null : null; },
+        cibleAttendue: function() { var id = this.carteEnCours !== null && this.monJ && this.monJ.main[this.carteEnCours]; return id ? DJ.CARTES[id].cible : null; },
+        aideCombat: function() {
+          var c = this.combat;
+          if (!this.jeJoue) return '';
+          if (this.cibleAttendue === 'monstre') return '👆 Touche le monstre à viser';
+          if (this.cibleAttendue === 'ami') return '👆 Touche l\'ami à protéger';
+          if (this.cibleAttendue === 'joueur') return '👆 Touche qui soigner';
+          if (!this.monChoix) return 'Choisis une carte';
+          var attente = c.joueurs.filter(n => { var p = this.partie.joueurs[n]; return p && !p.fantome && !c.choix[n]; });
+          return attente.length ? '✓ En attente de ' + attente.join(', ') : '✓ C\'est parti !';
+        },
+        dernierCombatVu: function() { var d = this.partie && this.partie.dernierCombat; return !!(d && !this.combat && this.monJ && d.salle === this.monJ.salle && this.partie.maintenant - d.t < 6000 && this.vuCombat !== d.id); },
         flairIci: function() { return this.joueursIci.some(p => p.pouvoir === 'flair' && !p.fantome); },
         salleSvg: function() { return this.salleIci ? dessinerSalle(this.salleIci, this.flairIci, this.joueursIci) : ''; },
         carteMini: function() {
@@ -468,16 +573,37 @@
           this.direction(Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 'd' : 'g') : (dy > 0 ? 'b' : 'h'));
         },
         padFin: function() { this._pad = null; this.direction(null); },
-        coup: function() {
-          this.coupActif = true; setTimeout(() => { this.coupActif = false; }, 150);
-          this.envoyerJeu({ type: 'ATT' });
-          this.vibre(12);
+        // ---------- Combat aux cartes ----------
+        intentionTexte: function(m) {
+          var i = this.combat.intentions[m.id] || { t: 'rien' }, nom = n => { var p = this.partie.joueurs[n]; return n === this.moi ? 'toi' : p && p.cp && p.cp.n ? p.cp.n : n; };
+          return { attaque: '⚔️ 1 → ' + nom(i.cible), garde: '🛡️ en garde (−1)', rien: '💤 se tortille', prepare: '😤 💥 dans ' + i.n + ' tour' + (i.n > 1 ? 's' : ''), ecrase: '💥 frappe tout le monde !', appel: '📣 appelle un gluant' }[i.t] || '';
+        },
+        coupsSur: function(qui) {
+          return (this.combat.coups || []).filter(k => k.qui === qui).map(k => ({ txt: typeof k.v === 'number' ? (k.v < 0 ? String(k.v) : '+' + k.v) : k.v === '+1' ? '+1 ❤️' : k.v, cl: k.v === 'raté' || k.v === 'paré' ? 'neutre' : k.v === '+1' ? 'soin' : 'mal' }));
+        },
+        toucherCarte: function(i) {
+          var id = this.monJ.main[i], k = DJ.CARTES[id];
+          if (this.carteEnCours === i) { this.carteEnCours = null; return; }
+          var amis = this.equipeCombat.filter(p => p.nom !== this.moi && !p.fantome);
+          var choixUnique = k.cible === null || (k.cible === 'monstre' && this.monstresCombat.length === 1) || (k.cible === 'ami' && amis.length === 1) || (k.cible === 'joueur' && this.equipeCombat.length === 1);
+          if (k.cible === 'ami' && !amis.length) { this.vibre(60); return; }
+          if (choixUnique) { this.carteEnCours = null; this.envoyerJeu({ type: 'CARTE', i: i, cible: null }); this.vibre(15); this.son('toc'); }
+          else this.carteEnCours = i;
+        },
+        choisirMonstre: function(id) {
+          if (this.cibleAttendue !== 'monstre') return;
+          this.envoyerJeu({ type: 'CARTE', i: this.carteEnCours, cible: id }); this.carteEnCours = null; this.vibre(15); this.son('toc');
+        },
+        choisirMembre: function(nom) {
+          var c = this.cibleAttendue;
+          if (c !== 'ami' && c !== 'joueur') return;
+          if (c === 'ami' && nom === this.moi) return;
+          this.envoyerJeu({ type: 'CARTE', i: this.carteEnCours, cible: nom }); this.carteEnCours = null; this.vibre(15); this.son('toc');
         },
         clavier: function(ev, bas) {
           if (!this.partie || this.onglet !== 'play' || /INPUT|TEXTAREA/.test((ev.target && ev.target.tagName) || '')) return;
           var t = { ArrowUp: 'h', ArrowDown: 'b', ArrowLeft: 'g', ArrowRight: 'd', z: 'h', s: 'b', q: 'g', d: 'd', w: 'h', a: 'g' }[ev.key];
           if (t) { ev.preventDefault(); if (bas) this.direction(t); else if (this.dirCourante === t) this.direction(null); return; }
-          if ((ev.key === ' ' || ev.key === 'Enter') && bas && !ev.repeat) { ev.preventDefault(); this.coup(); }
         },
 
         // ================== SOLO ==================
@@ -500,7 +626,9 @@
           var e = partieHote;
           if (!e || !(this.solo || this.role === 'hote')) return;
           if (e.phase === 'jeu') {
-            DJ.tick(e, Date.now());
+            var absents = {};
+            if (!this.solo) Object.keys(salle.infos).forEach(n => { if (!salle.infos[n].connecte) absents[n] = 1; });
+            DJ.tick(e, Date.now(), null, absents);
             if (e.phase === 'fin' && pubHote && !this.solo) { pubHote.phase = 'fin'; this.sauvegarder(); }
           }
           if (e.phase !== 'jeu' && this._dernierFin === e.id) return;   // fin : un dernier envoi suffit
@@ -526,6 +654,10 @@
             var der = p.annonces[p.annonces.length - 1];
             if (!der.pour || der.pour === this.moi) this.son('toc');
           }
+          var cA = a && moi && a.combats && a.combats[moi.salle], cP = moi && p.combats && p.combats[moi.salle];
+          if (cP && !cA) { this.son('choc'); this.vibre([40, 40, 40]); this.direction(null); }
+          if (cP && cA && cP.resolu !== cA.resolu) { this.son('des', 3); this.carteEnCours = null; }
+          if (!cP) this.carteEnCours = null;
           if (p.phase === 'fin' && (!a || a.phase !== 'fin' || a.id !== p.id)) this.finir(p);
           if (p.phase !== 'fin') this.gains = null;
         },
@@ -589,7 +721,7 @@
         estConnecte: function(p) { return p === monPseudo || !!(salle.infos[p] && salle.infos[p].connecte); },
         traiterJeu: function(p, m) {
           if (m.type === 'DIR') { if (partieHote && partieHote.phase === 'jeu') DJ.entree(partieHote, p, m.d); return; }
-          if (m.type === 'ATT') { if (partieHote && partieHote.phase === 'jeu') DJ.attaquer(partieHote, p); return; }
+          if (m.type === 'CARTE') { if (partieHote && partieHote.phase === 'jeu') DJ.jouerCarte(partieHote, p, +m.i, m.cible); return; }
           if (this.solo || p !== monPseudo || !pubHote) return;
           if (m.type === 'COMMENCER' && pubHote.phase === 'attente') {
             var presents = {};
