@@ -656,6 +656,15 @@ var SalonGlobal = (function () {
     return '<div class="sg-msg' + (moi ? ' moi' : '') + '">' + avatar(mb, 28) + '<div class="sg-bloc"><div class="sg-entete"><b>' + esc(m.pseudo) + '</b> · ' + heure(m.h) + '</div>' +
            '<div class="sg-texte' + (seulEmoji ? ' gros' : '') + '">' + esc(m.texte) + '</div></div></div>';
   }
+  // Quel serveur de mise en relation sert ce téléphone (reseau.js), avec un interrupteur de secours
+  function vueReseau() {
+    if (typeof Reseau === 'undefined' || !Reseau.configure()) return '';
+    var e = Reseau.etat(), f = Reseau.forcePublic();
+    var txt = e === 'desdale' ? '🟢 Serveur de Désdale (Cloudflare)' : f ? '⚪ Serveur public (choisi sur ce téléphone)' : '🟠 Serveur public (secours pour quelques minutes)';
+    return '<div style="margin-top:14px;padding-top:10px;border-top:1px solid #e3e8ec;font-size:12px;color:#6b7a86"><b>Réseau</b> : ' + txt +
+      '<div style="margin-top:6px"><button class="sg-btn" data-reseau>' + (f ? 'Revenir au serveur de Désdale' : 'Utiliser le serveur public') + '</button></div>' +
+      '<div style="margin-top:4px">En cas de souci de connexion. La page se recharge.</div></div>';
+  }
   function vueProfil(corps) {
     var p = profil();
     corps.innerHTML = '<div class="sg-profil">' +
@@ -666,8 +675,11 @@ var SalonGlobal = (function () {
       EMOJIS.map(e => '<button data-em="' + e + '" class="' + (p.emoji === e && !p.image ? 'actif' : '') + '">' + e + '</button>').join('') + '</div>' +
       '<div style="margin-top:10px;display:flex;gap:8px"><button class="sg-btn" data-photo>📷 Ma photo</button>' + (p.image ? '<button class="sg-btn" data-oter>Retirer la photo</button>' : '') + '</div>' +
       '<input type="file" accept="image/*" style="display:none">' +
-      '<div style="font-size:12px;color:#8a97a1;margin-top:10px">Ta photo est réduite et partagée seulement avec les joueurs connectés au salon global.</div></div>';
+      '<div style="font-size:12px;color:#8a97a1;margin-top:10px">Ta photo est réduite et partagée seulement avec les joueurs connectés au salon global.</div>' +
+      vueReseau() + '</div>';
     corps.querySelector('[data-invisible]').onclick = basculerInvisible;
+    var bReseau = corps.querySelector('[data-reseau]');
+    if (bReseau) bReseau.onclick = () => { Reseau.forcerPublic(!Reseau.forcePublic()); location.reload(); };
     var champ = corps.querySelector('input[type=text]');
     champ.onchange = () => { var q = profil(); q.pseudo = champ.value.trim().slice(0, 20); enregistrerProfil(q); };
     corps.querySelectorAll('[data-c]').forEach(x => { x.onclick = () => { var q = profil(); q.couleur = x.dataset.c; enregistrerProfil(q); }; });

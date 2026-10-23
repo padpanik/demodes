@@ -1,5 +1,8 @@
 # Serveur de mise en relation de Désdale (Cloudflare)
 
+**En service** : `https://desdale-reseau.desdale.workers.dev` (branché dans `reseau.js` depuis la version 2.40).
+Chaque téléphone peut repasser sur le serveur public depuis l'onglet « Moi » du salon global (bouton « Utiliser le serveur public »).
+
 Remplace le serveur public de PeerJS : les téléphones s'y retrouvent pour ouvrir ou rejoindre un salon, puis jouent
 directement entre eux. Il distribue aussi les identifiants du relais Cloudflare (TURN), qui fait passer les parties
 quand un réseau bloque la connexion directe (Wi-Fi d'hôtel, certaines 4G). Offre gratuite de Cloudflare.

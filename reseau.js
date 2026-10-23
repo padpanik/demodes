@@ -4,9 +4,10 @@
 // (serveur-cloudflare/), avec les identifiants du relais Cloudflare pour les réseaux difficiles, et retombe tout seul
 // sur le serveur public de PeerJS si celui de Désdale ne répond pas (deux échecs d'ouverture de suite → 5 min en secours).
 // Sans adresse dans RESEAU_DESDALE, tout passe par le serveur public, comme avant.
-// Essai sur un seul téléphone : localStorage 'desdale-serveur' = { hote, port, secure, chemin } prend le pas sur RESEAU_DESDALE.
+// Essai sur un seul téléphone : localStorage 'desdale-serveur' = { hote, port, secure, chemin } prend le pas sur RESEAU_DESDALE ;
+// { public: true } force le serveur public sur ce téléphone (interrupteur dans l'onglet « Moi » du salon global).
 
-var RESEAU_DESDALE = { hote: '', port: 443, secure: true, chemin: '/' };
+var RESEAU_DESDALE = { hote: 'desdale-reseau.desdale.workers.dev', port: 443, secure: true, chemin: '/' };
 
 var Reseau = (function () {
   var SECOURS = 5 * 60000, echecs = 0, secoursJusqua = 0;
@@ -15,6 +16,7 @@ var Reseau = (function () {
   function cle() { return (typeof ACCES !== 'undefined' && ACCES.cleSalon) || ''; }
   function config() {
     var o = lire('desdale-serveur');
+    if (o && o.public) return null;
     if (o && o.hote) return o;
     return RESEAU_DESDALE.hote ? RESEAU_DESDALE : null;
   }
@@ -60,8 +62,13 @@ var Reseau = (function () {
   }
 
   function etat() { return maison() ? 'desdale' : config() ? 'secours' : 'public'; }
+  function forcePublic() { var o = lire('desdale-serveur'); return !!(o && o.public); }
+  // Forcer (ou non) le serveur public sur ce téléphone ; il faut recharger la page pour changer de serveur
+  function forcerPublic(oui) {
+    try { if (oui) ecrire('desdale-serveur', { public: true }); else if (forcePublic()) localStorage.removeItem('desdale-serveur'); } catch (e) {}
+  }
   setTimeout(chargerRelais, 1500);
-  return { creer: creer, etat: etat, chargerRelais: chargerRelais };
+  return { creer: creer, etat: etat, chargerRelais: chargerRelais, forcePublic: forcePublic, forcerPublic: forcerPublic, configure: function () { return !!RESEAU_DESDALE.hote; } };
 })();
 
 function creerPeer(id) { return Reseau.creer(id); }

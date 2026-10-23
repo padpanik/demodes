@@ -11,8 +11,9 @@ Tout est en français : interface, commentaires du code, messages de commit, ré
   officiels, pas de lien public, pas d'information personnelle dans le dépôt (il est public).
 - **Code d'accès** : il n'apparaît JAMAIS dans le dépôt, ni dans un commit, ni dans un fichier de test.
   Seule son empreinte est publiée (voir « Accès privé »). Ne jamais le demander ni l'écrire en clair.
-- **Pas de serveur** : hébergement statique sur GitHub Pages (`padpanik/demodes`, branche `main`).
-  Les téléphones se parlent directement (WebRTC via PeerJS et son serveur public de mise en relation).
+- **Pas de serveur de jeu** : hébergement statique sur GitHub Pages (`padpanik/demodes`, branche `main`).
+  Les téléphones se parlent directement (WebRTC via PeerJS), mis en relation par le petit serveur de Désdale sur Cloudflare
+  (`serveur-cloudflare/`, repli automatique sur le serveur public de PeerJS).
 - L'utilisateur teste sur téléphone (référence d'écran : Samsung S21, 360 × 800 CSS px).
   Tout doit tenir en portrait sans défilement sur l'onglet de jeu.
 - Mise en ligne : commit et push **directement sur `main`** (accord de l'utilisateur).
@@ -96,8 +97,12 @@ Pas d'étape de construction, pas de dépendance à ajouter.
   l'utilisateur, ça marche dès qu'un téléphone passe en 4G/5G. Le message d'échec d'entrée le conseille. PeerJS utilise
   déjà ses relais TURN par défaut (UDP 3478) ; un relais TURN plus robuste demanderait un compte (Metered, Cloudflare…).
 - **Serveur de mise en relation de Désdale** (choisi par l'utilisateur après l'étude « fiabiliser les échanges » : tout chez Cloudflare,
-  gratuit, aucun port ouvert chez lui) : voir `reseau.js` et `serveur-cloudflare/`. En attente du déploiement par l'utilisateur
-  (tant que `RESEAU_DESDALE.hote` est vide, tout passe par le serveur public). Étude détaillée dans ses documents (option auto-hébergement Proxmox écartée pour l'instant).
+  gratuit, aucun port ouvert chez lui) : voir `reseau.js` et `serveur-cloudflare/`. **En service depuis 2.40** :
+  `https://desdale-reseau.desdale.workers.dev` (compte Cloudflare de l'utilisateur, sous-domaine `desdale`, Worker `desdale-reseau`,
+  clé TURN « desdale » dans Realtime ; déployé par le connecteur « Cloudflare API » : envoi multipart avec `body: FormData, rawBody: true`).
+  Onglet « Moi » du salon global : serveur utilisé (🟢 Désdale / 🟠 secours / ⚪ public choisi) et bouton « Utiliser le serveur public »
+  (`Reseau.forcerPublic`, `desdale-serveur = { public: true }`, la page se recharge) en cas de souci.
+  Étude détaillée dans ses documents (option auto-hébergement Proxmox écartée pour l'instant).
 - **Garde-fou « connexion… » bloquée** (`veillerOuverture(peer)` dans `commun.js`, copie dans `brilliant/index.html`, appelé après chaque
   `new Peer` des jeux et du salon global) : si le serveur de mise en relation ne répond pas en 12 s (ni « open » ni erreur), on déclenche
   une erreur `server-error` que chaque page traite comme les autres (nouvel essai, reprise, message). À l'entrée, le bouton affiche
