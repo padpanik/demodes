@@ -1,6 +1,7 @@
 # Désdale : notes pour Claude
 
-Application web de jeux de dés entre amis, jouée chacun sur son téléphone.
+Application web de jeux entre amis (jeux de dés, de plateau, de lettres, compagnon virtuel, expéditions), jouée chacun sur son téléphone.
+Sous-titre de l'accueil : « Jeux et aventures à partager entre amis » (plus seulement des jeux de dés, demandé par l'utilisateur).
 Tout est en français : interface, commentaires du code, messages de commit, réponses à l'utilisateur.
 
 ## Contexte à respecter
@@ -469,7 +470,8 @@ Bataille navale : `bataille-boss` (partie contre un boss d'expédition), `batail
   la grille. Trophées : admire. S'il a faim et qu'il y a une cuisine, il y part tout seul attendre près de sa gamelle.
 - **Arranger la déco** (lien « ✏️ Arranger la déco » sous la maison) : on fait glisser chaque objet de déco acheté (couchage, plante,
   tableau, horloge, lampe, jouet) où l'on veut, et on le change de pièce (puces des pièces construites) ou on le range (désinstallé).
-  Gardé dans `animal.deco[slot] = { piece, x, y }` (centre en % de la pièce) ; sans entrée : au salon, à sa place d'origine (`PLACES`).
+  Gardé dans `animal.deco[slot] = { piece, x, y, r, m }` (centre en % de la pièce ; `r` angle en degrés par pas de 15°, `m` miroir :
+  boutons ↺ ↻ « ↔ Retourner » « Droit » quand l'objet est choisi, demandés par l'utilisateur, `tournerDeco` / `retournerDeco` / `figerDeco`) ; sans entrée : au salon, à sa place d'origine (`PLACES`).
   Le compagnon se sert des objets là où ils sont (sieste, balle qui roule du bon côté, peluche, plante). Les rideaux restent à la fenêtre.
   En visite, la déco de l'ami est montrée à ses places.
 - **Visite chez un ami connecté** : bouton « 🏠 Visiter » dans la liste des présents du salon global (si l'ami a un compagnon) →

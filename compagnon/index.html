@@ -98,6 +98,9 @@
     @keyframes roule-d { 0%, 100% { transform: translate(0, 0) rotate(0); } 40% { transform: translate(70px, 4px) rotate(320deg); } 70% { transform: translate(50px, 4px) rotate(250deg); } }
     .deco.devant { z-index: 3; }
     .deco-i { display: inline-block; }
+    .deco-r { display: inline-block; transition: transform 0.2s; }   /* objet tourné ou retourné (Arranger la déco) */
+    .tourner-deco { display: flex; gap: 6px; margin-top: 6px; }
+    .tourner-deco button { flex: 1; white-space: nowrap; padding-left: 4px; padding-right: 4px; }
     .deco.libre { transform: translate(-50%, -50%); }
     .maison.arrange { overflow-x: hidden; scroll-snap-type: none; }
     .arrange .deco.bougeable { z-index: 6; cursor: grab; touch-action: none; outline: 2px dashed rgba(255,255,255,0.95); outline-offset: 3px; border-radius: 10px; }
@@ -448,7 +451,7 @@
 
           <!-- Déco achetée en boutique : dans la pièce choisie, à l'endroit choisi (mode « Arranger ») -->
           <div v-for="d in (decorsParPiece[p.id] || [])" :key="d.slot" class="deco bougeable" :class="{ libre: d.libre, choisi: arrange && decoChoisi === d.slot, devant: vie.objet === d.slot }"
-               :style="d.style" @pointerdown="debutDeco($event, d, p.id)"><span class="deco-i" :class="vie.objet === d.slot ? ['o-' + d.id, d.x >= 50 ? 'vers-droite' : ''] : ''">{{ d.ico }}</span></div>
+               :style="d.style" :data-slot="d.slot" @pointerdown="debutDeco($event, d, p.id)"><span class="deco-r" :style="d.tourne"><span class="deco-i" :class="vie.objet === d.slot ? ['o-' + d.id, d.x >= 50 ? 'vers-droite' : ''] : ''">{{ d.ico }}</span></span></div>
 
           <!-- L'animal est dans cette pièce, ou on peut l'appeler -->
           <template v-if="p.id === ouEst">
@@ -476,12 +479,19 @@
       <button v-if="!visite && !arrange && aDeLaDeco" class="lien-arranger" @click="arrange = true; decoChoisi = null">✏️ Arranger la déco</button>
       <section v-if="arrange" class="carte barre-deco">
         <div class="titre-carte" style="margin-bottom:4px">✏️ Arranger la déco</div>
-        <div class="aide" v-if="!decoChoisi">Fais glisser un objet pour le déplacer. Touche-le pour le changer de pièce.</div>
+        <div class="aide" v-if="!decoChoisi">Fais glisser un objet pour le déplacer. Touche-le pour le tourner ou le changer de pièce.</div>
         <template v-else>
           <div class="nom-deco">{{ objetChoisi.ico }} {{ objetChoisi.nom }}</div>
           <div class="petit-titre-deco">Dans quelle pièce ?</div>
           <div class="pieces-deco">
             <button v-for="b in pieces" :key="b.id" :class="{ actif: pieceDe(decoChoisi) === b.id }" @click="changerPieceDeco(b.id)">{{ b.ico }} {{ b.nom }}</button>
+          </div>
+          <div class="petit-titre-deco">Le tourner</div>
+          <div class="tourner-deco">
+            <button class="btn" @click="tournerDeco(-15)" aria-label="Tourner vers la gauche">↺</button>
+            <button class="btn" @click="tournerDeco(15)" aria-label="Tourner vers la droite">↻</button>
+            <button class="btn" @click="retournerDeco" aria-label="Retourner (miroir)">↔ Retourner</button>
+            <button class="btn" v-if="objetChoisi.r || objetChoisi.m" @click="redresserDeco" aria-label="Remettre droit">Droit</button>
           </div>
           <button class="btn" style="width:100%;margin-top:6px" @click="rangerDeco">📦 Ranger dans le placard</button>
         </template>
@@ -832,7 +842,9 @@
             var d = deco[slot], piece = d && this.aBloc(d.piece) ? d.piece : 'salon';
             var lueur = (art.id === 'lampe' || art.id === 'citrouille') && this.estNuit ? ';filter:drop-shadow(0 0 14px ' + (art.id === 'lampe' ? '#ffd54f' : '#ff922b') + ')' : '';
             var style = d ? 'left:' + d.x + '%;top:' + d.y + '%;font-size:' + tailleDe(slot) + 'px' : placeDe(slot);
-            (r[piece] = r[piece] || []).push({ slot: slot, id: art.id, nom: art.nom, ico: art.ico, libre: !!d, x: d ? d.x : xDefaut(slot), style: style + lueur });
+            var rot = d && +d.r || 0, mir = !!(d && d.m);
+            (r[piece] = r[piece] || []).push({ slot: slot, id: art.id, nom: art.nom, ico: art.ico, libre: !!d, x: d ? d.x : xDefaut(slot), style: style + lueur,
+                                               r: rot, m: mir, tourne: rot || mir ? 'transform:rotate(' + rot + 'deg)' + (mir ? ' scaleX(-1)' : '') : '' });
           });
           return r;
         },
@@ -1256,7 +1268,35 @@
         pieceDe: function(slot) { var d = this.animal.deco && this.animal.deco[slot]; return d && this.aBloc(d.piece) ? d.piece : 'salon'; },
         placerDeco: function(slot, piece, x, y) {
           if (!this.animal.deco) this.$set(this.animal, 'deco', {});
-          this.$set(this.animal.deco, slot, { piece: piece, x: Math.round(x * 10) / 10, y: Math.round(y * 10) / 10 });
+          var avant = this.animal.deco[slot] || {}, d = { piece: piece, x: Math.round(x * 10) / 10, y: Math.round(y * 10) / 10 };
+          if (avant.r) d.r = avant.r;
+          if (avant.m) d.m = true;
+          this.$set(this.animal.deco, slot, d);
+        },
+        // Tourner ou retourner l'objet choisi (angle en degrés, miroir gauche-droite) ; un objet encore à sa place d'origine y reste
+        figerDeco: function(slot) {
+          if (this.animal.deco && this.animal.deco[slot]) return this.animal.deco[slot];
+          var el = this.$el.querySelector('.deco[data-slot="' + slot + '"]'), scene = el && el.closest('.scene');
+          if (!el || !scene) return null;
+          var r = scene.getBoundingClientRect(), er = el.getBoundingClientRect();
+          this.placerDeco(slot, this.pieceDe(slot), (er.left + er.width / 2 - r.left) / r.width * 100, (er.top + er.height / 2 - r.top) / r.height * 100);
+          return this.animal.deco[slot];
+        },
+        tournerDeco: function(pas) {
+          var d = this.figerDeco(this.decoChoisi); if (!d) return;
+          var a = ((+d.r || 0) + pas + 540) % 360 - 180;
+          if (a) this.$set(d, 'r', a); else this.$delete(d, 'r');
+          this.sauver();
+        },
+        retournerDeco: function() {
+          var d = this.figerDeco(this.decoChoisi); if (!d) return;
+          if (d.m) this.$delete(d, 'm'); else this.$set(d, 'm', true);
+          this.sauver();
+        },
+        redresserDeco: function() {
+          var d = this.animal.deco && this.animal.deco[this.decoChoisi]; if (!d) return;
+          this.$delete(d, 'r'); this.$delete(d, 'm');
+          this.sauver();
         },
         // Glisser un objet au doigt (ou à la souris) ; un simple toucher le choisit
         debutDeco: function(ev, d, piece) {
@@ -1304,7 +1344,7 @@
             var porte = {};
             Object.keys(a.porte || {}).forEach(k => { if (CP.art(a.porte[k]).id) porte[k] = a.porte[k]; });
             var deco = {};
-            Object.keys(a.deco || {}).forEach(k => { var x = a.deco[k]; if (porte[k] && x) deco[k] = { piece: String(x.piece || 'salon'), x: Math.max(0, Math.min(100, +x.x || 50)), y: Math.max(0, Math.min(100, +x.y || 50)) }; });
+            Object.keys(a.deco || {}).forEach(k => { var x = a.deco[k]; if (porte[k] && x) deco[k] = { piece: String(x.piece || 'salon'), x: Math.max(0, Math.min(100, +x.x || 50)), y: Math.max(0, Math.min(100, +x.y || 50)), r: Math.max(-180, Math.min(180, +x.r || 0)), m: !!x.m }; });
             this.animal = { espece: a.espece, couleur: /^#[0-9a-f]{6}$/i.test(a.couleur) ? a.couleur : '#c8915a', nom: String(a.nom || '').slice(0, 16),
                             ne: +a.ne || 0, besoins: propre, possede: {}, porte: porte, deco: deco, serie: 0 };
             var mm = d.maison || {};
