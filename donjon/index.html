@@ -91,6 +91,10 @@
     .equipe-dj span.loin { opacity: 0.55; }
 
     .commandes-dj { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 8px; }
+    .commandes-dj.inverse { flex-direction: row-reverse; }
+    .inverser-dj { display: block; margin: 6px auto 0; border: none; background: #e3e8ec; color: #3b4b57; font: inherit; font-weight: 800; font-size: 0.95em; border-radius: 10px; padding: 4px 10px; cursor: pointer; }
+    .option-dj { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 12px; font-weight: 600; color: #3b4b57; }
+    .option-dj input { width: 22px; height: 22px; }
     .pad { position: relative; width: 140px; height: 140px; border-radius: 50%; background: #dfe5ea; box-shadow: inset 0 3px 8px rgba(0,0,0,0.12); touch-action: none; flex-shrink: 0; }
     .pad span { position: absolute; width: 46px; height: 46px; border-radius: 12px; background: #fff; box-shadow: 0 2px 0 #b9c3cb; display: flex; align-items: center; justify-content: center; font-size: 20px; color: #5b6b78; }
     .pad span.actif { background: #ffe8cc; color: #e8590c; box-shadow: none; transform: translateY(2px); }
@@ -224,7 +228,7 @@
             <span v-for="p in equipe" :key="p.nom" :class="{ loin: p.salle !== monJ.salle }">{{ p.nom === moi ? 'Moi' : p.nom }} {{ p.fantome ? '👻' : '❤️'.repeat(p.coeurs) }}<template v-if="p.salle !== monJ.salle"> · ailleurs</template></span>
           </div>
 
-          <div class="commandes-dj">
+          <div class="commandes-dj" :class="{ inverse: inverse }">
             <div class="pad" @pointerdown="padDebut" @pointermove="padBouger" @pointerup="padFin" @pointercancel="padFin" @lostpointercapture="padFin">
               <span class="h" :class="{ actif: dirCourante === 'h' }">▲</span><span class="b" :class="{ actif: dirCourante === 'b' }">▼</span>
               <span class="g" :class="{ actif: dirCourante === 'g' }">◀</span><span class="d" :class="{ actif: dirCourante === 'd' }">▶</span>
@@ -233,6 +237,7 @@
               <template v-if="monJ && monJ.fantome">👻 Tu es KO.<br>{{ nbJoueurs > 1 ? 'Va près d\'un ami : il te ranime en restant à côté de toi.' : '' }}</template>
               <template v-else-if="monPouvoir"><span class="pouvoir">{{ POUVOIRS[monPouvoir].ico }} {{ POUVOIRS[monPouvoir].nom }}</span><br>fonce dans {{ POUVOIRS[monPouvoir].quoi }}</template>
               <template v-else>Touche ⚔️ pour frapper devant toi.</template>
+              <button class="inverser-dj" @click="inverse = !inverse" aria-label="Inverser la croix et le bouton">⇄</button>
             </div>
             <button class="bouton-coup" :class="{ actif: coupActif }" @pointerdown.prevent="coup" aria-label="Frapper">⚔️</button>
           </div>
@@ -272,6 +277,7 @@
         <section class="carte reglages">
           <div class="titre-carte">Réglages</div>
           <reglages-base :son.sync="sonActif" :vibration.sync="vibrationActive"></reglages-base>
+          <label class="option-dj">Croix à droite, ⚔️ à gauche (gaucher)<input type="checkbox" v-model="inverse"></label>
         </section>
       </template>
 
@@ -361,6 +367,7 @@
         monCp: nettoyerCp(monCompagnon()),
         stats: lireStockage('donjon-stats') || { parties: 0, gagnes: 0 },
         dirCourante: null,
+        inverse: lireStockage('donjon-inverse') === true,   // croix à droite (sur ce téléphone)
         coupActif: false,
         demandeQuitter: false,
         gains: null,
@@ -407,6 +414,7 @@
       },
       watch: {
         sonActif: function(v) { ecrireStockage('brillant-son', v); },
+        inverse: function(v) { ecrireStockage('donjon-inverse', v); },
         vibrationActive: function(v) { ecrireStockage('brillant-vibration', v); if (v) vibrer(40); },
         pseudoInput: function() { this.sauvegarder(); }
       },
@@ -1005,12 +1013,22 @@
           s += '<rect x="' + (X + 4) + '" y="' + (Y + 12) + '" width="24" height="16" rx="3" fill="#a0612b" stroke="#5d3a18" stroke-width="2"/>' +
                (ouvert ? '<path d="M' + (X + 4) + ' ' + (Y + 12) + ' L' + (X + 8) + ' ' + (Y + 3) + ' H' + (X + 24) + ' L' + (X + 28) + ' ' + (Y + 12) + '" fill="#7a4a1f" stroke="#5d3a18" stroke-width="2"/><rect x="' + (X + 7) + '" y="' + (Y + 13) + '" width="18" height="4" fill="#2a1a0c"/>'
                        : '<path d="M' + (X + 4) + ' ' + (Y + 13) + ' Q' + (X + 16) + ' ' + (Y + 3) + ' ' + (X + 28) + ' ' + (Y + 13) + '" fill="#b5702f" stroke="#5d3a18" stroke-width="2"/><rect x="' + (X + 14) + '" y="' + (Y + 13) + '" width="4" height="6" fill="#ffd43b"/>');
-        } else if ((x === 0 || y === 0 || x === W - 1 || y === H - 1) && c === '.') {
-          s += '<rect x="' + X + '" y="' + Y + '" width="32" height="32" fill="#2a211b" opacity="0.55"/>';
+        }
+        // Passages vers les pièces voisines : sol plus clair, montants dorés et flèche qui palpite (ouverts), montants seuls (encore bloqués)
+        var bord = x === 0 || y === 0 || x === W - 1 || y === H - 1;
+        if (bord && '.rRvLBG'.indexOf(c) >= 0) {
+          var vert = y === 0 || y === H - 1;
+          if (c === '.') s += '<rect x="' + X + '" y="' + Y + '" width="32" height="32" fill="#9a7f5f"/><rect x="' + (X + 4) + '" y="' + (Y + 4) + '" width="24" height="24" rx="3" fill="#b8996f" opacity="0.7"/>';
+          s += vert ? '<rect x="' + (X - 3) + '" y="' + Y + '" width="6" height="32" rx="2" fill="#e0b25c"/><rect x="' + (X + 29) + '" y="' + Y + '" width="6" height="32" rx="2" fill="#e0b25c"/>'
+                    : '<rect x="' + X + '" y="' + (Y - 3) + '" width="32" height="6" rx="2" fill="#e0b25c"/><rect x="' + X + '" y="' + (Y + 29) + '" width="32" height="6" rx="2" fill="#e0b25c"/>';
+          if (c === '.') {
+            var cx = X + 16, cy = Y + 16, f = y === 0 ? [[-8, 4], [0, -5], [8, 4]] : y === H - 1 ? [[-8, -4], [0, 5], [8, -4]] : x === 0 ? [[4, -8], [-5, 0], [4, 8]] : [[-4, -8], [5, 0], [-4, 8]];
+            s += '<path class="fleche-dj" d="M' + f.map(p => (cx + p[0]) + ' ' + (cy + p[1])).join(' L') + '" fill="none" stroke="#ffe066" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>';
+          }
         }
       }
       if (S.boss) s += '<circle cx="176" cy="144" r="70" fill="#9c36b5" opacity="0.12"/>';
-      return s + '<style>.scintille{animation:sc 1s ease-in-out infinite alternate}@keyframes sc{from{opacity:.35}to{opacity:1}}</style>';
+      return s + '<style>.scintille{animation:sc 1s ease-in-out infinite alternate}.fleche-dj{animation:sc .8s ease-in-out infinite alternate}@keyframes sc{from{opacity:.35}to{opacity:1}}</style>';
     }
     // Les gluants (et leur roi) : dessinés par le code
     function gluantSvg(roi) {

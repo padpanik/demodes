@@ -190,7 +190,7 @@ Mon compagnon : `compagnon-animal` (espèce, nom, couleur, besoins, objets poss�
 `compagnon-reglages`, `compagnon-veille`, `compagnon-series` (séries de victoires solo), `compagnon-evenements` (parties terminées), `compagnon-defis`, `compagnon-trophees`, `compagnon-maison`, `compagnon-anniv` (année du dernier cadeau d'anniversaire), `compagnon-penalite` (jauge vide), `compagnon-fete-essai` (admin).
 Expédition : `expedition-partie` (expédition en cours), `expedition-depart` (heure du dernier départ), `expedition-poussiere` (réserve),
 `expedition-boss` / `expedition-boss-resultat` (défi envoyé au jeu du boss et son issue), `expedition-retour` (résumé pour le compagnon), `expedition-vues` (40 dernières questions posées), `expedition-stats`, `expedition-lieu`, `expedition-difficulte`.
-Donjon : `donjon-sauvegarde` (salon ; chez l'hôte, le donjon en cours), `donjon-solo`, `donjon-dernier-salon`, `donjon-stats`, `donjon-recompense` (dernier donjon récompensé, pour ne pas compter deux fois).
+Donjon : `donjon-inverse` (croix à droite), `donjon-sauvegarde` (salon ; chez l'hôte, le donjon en cours), `donjon-solo`, `donjon-dernier-salon`, `donjon-stats`, `donjon-recompense` (dernier donjon récompensé, pour ne pas compter deux fois).
 Bataille navale : `bataille-boss` (partie contre un boss d'expédition), `bataille-sauvegarde`, `bataille-prive` (ma flotte en salon), `bataille-dernier-salon`, `bataille-stats`, `bataille-colles`, `bataille-rejouer`, `bataille-niveau`, `bataille-style`.
 
 ## Règles des jeux (choix de l'utilisateur, à ne pas changer sans lui)
@@ -421,7 +421,9 @@ Bataille navale : `bataille-boss` (partie contre un boss d'expédition), `batail
 - Obstacles sur les passages (côté de la pièce d'où l'on vient) : pouvoirs, porte 🔒 (petite clé dans un coffre avant elle), porte du boss (grande clé au plus loin),
   à plusieurs une grille ⛓️ ouverte en se tenant à deux sur les deux dalles. Coffres : clé, grande clé, 3 poussières, soin de la pièce. Clés et poussières au groupe.
 - Commandes : croix au doigt (on glisse, `padDebut` / `padBouger`), un pas toutes les 0,2 s (un toucher bref fait un pas), ⚔️ frappe la case devant ;
-  flèches + espace au clavier. Monstres lents : gluant, chauve-souris (vole au-dessus des trous), squelette (2 PV, poursuit) ; ils ne bougent que dans les pièces occupées.
+  flèches + espace au clavier. **Commandes inversables** (demandé par l'utilisateur) : croix à droite et ⚔️ à gauche, par le petit bouton ⇄
+  sous le pouvoir ou dans Réglages (`inverse`, `donjon-inverse`, propre au téléphone). **Passages bien visibles** (demandé) : sol clair, montants dorés
+  et flèche jaune qui palpite vers la pièce voisine ; montants dorés aussi autour d'un passage encore bloqué (ronces, rocher, trou, portes, grille). Monstres lents : gluant, chauve-souris (vole au-dessus des trous), squelette (2 PV, poursuit) ; ils ne bougent que dans les pièces occupées.
   3 cœurs, 1,5 s d'invincibilité ; KO = fantôme 👻, ranimé (1 cœur) par un ami vivant juste à côté pendant 2 s ; tout le groupe KO = fin. Butin : ❤️ ou ✨.
   Boss : le **Roi Gluant** (6 PV + 2 par joueur en plus), fait naître un gluant toutes les 6 s ; vaincu = +5 poussières et fin.
 - Réseau : l'hôte simule (`DJ.tick` toutes les 0,1 s) et envoie l'état mobile à chaque pas (~2 Ko), les pièces seulement quand elles changent (`carteV`).
