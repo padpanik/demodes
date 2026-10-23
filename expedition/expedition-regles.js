@@ -32,6 +32,9 @@ var EX = (function () {
               defi: 'Ha ha ha ! Ma flotte expérimentale est invincible ! Ose donc m\'affronter à la Bataille navale !',
               victoire: 'Impossible… Mes calculs étaient parfaits ! Le laboratoire est à toi.', defaite: 'Ha ha ! La science triomphe ! Une revanche ?' },
       souvenirs: ['microscope', 'eprouvettes', 'telescope', 'aimant'] },
+    // Le donjon : un jeu à part (donjon/), seul ou à plusieurs, où chaque compagnon a un pouvoir ; pas de questions ni de repos obligatoire
+    { id: 'donjon', nom: 'Donjon des compagnons', ico: '🗝️', theme: 'Seul ou à plusieurs', pret: true, donjon: true,
+      desc: 'Explore un donjon avec tes amis : chaque compagnon a son pouvoir (ronces, rochers, trous, passages secrets).' },
     { id: 'histoire', nom: 'Château fort', ico: '🏰', theme: 'Histoire', pret: false, desc: 'Chevaliers, rois et grandes dates.', bossJeu: 'Assaut' },
     { id: 'geo', nom: 'Île aux trésors', ico: '🏝️', theme: 'Géographie', pret: false, desc: 'Pays, capitales, fleuves et montagnes.', bossJeu: 'Dominos' },
     { id: 'musique', nom: 'Conservatoire', ico: '🎼', theme: 'Musique', pret: false, desc: 'Instruments, chansons et compositeurs.', bossJeu: 'Yams' },

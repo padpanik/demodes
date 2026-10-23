@@ -1,0 +1,1028 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <!-- La page est rangée dans son dossier : les adresses relatives partent de la racine du site (fichiers communs) -->
+  <base href="../">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Donjon des compagnons · Désdale</title>
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="theme-color" content="#f3f5f7">
+  <link rel="icon" type="image/png" href="favicon.png">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Désdale">
+  <script src="https://cdn.jsdelivr.net/npm/vue@2.7.16/dist/vue.min.js"></script>
+  <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+  <script src="reseau.js"></script>
+  <link rel="stylesheet" href="commun.css">
+  <style>
+    .regles ul { padding-left: 18px; margin: 8px 0 0; font-size: 0.88em; line-height: 1.45; color: #3b4b57; }
+    .regles li { margin-bottom: 4px; }
+    .panneau-vide { text-align: center; padding: 36px 16px; color: #5b6b78; }
+    .panneau-vide .grand { font-size: 2.5em; margin-bottom: 8px; }
+    .lien-exp { display: block; text-align: center; color: #5b6b78; font-weight: 700; text-decoration: none; padding: 8px; font-size: 0.9em; }
+
+    /* Mon compagnon et son pouvoir */
+    .moi-cp { display: flex; align-items: center; gap: 12px; }
+    .moi-cp svg { width: 74px; height: 74px; flex-shrink: 0; }
+    .pouvoir { display: inline-flex; align-items: center; gap: 4px; background: #fff4e6; color: #a8590f; border-radius: 999px; padding: 2px 10px; font-weight: 800; font-size: 0.85em; margin: 3px 0; }
+    .groupe { display: flex; flex-direction: column; gap: 8px; }
+    .membre { display: flex; align-items: center; gap: 10px; background: #f6f8fa; border-radius: 12px; padding: 6px 10px; }
+    .membre svg { width: 46px; height: 46px; flex-shrink: 0; }
+    .membre .sans { width: 46px; height: 46px; border-radius: 50%; background: #e3e8ec; display: flex; align-items: center; justify-content: center; font-size: 1.4em; flex-shrink: 0; }
+    .membre b { display: block; }
+    .membre.absent { opacity: 0.5; }
+
+    /* ---------- Écran de jeu ---------- */
+    .jeu-dj { user-select: none; -webkit-user-select: none; }
+    .barre-dj { display: flex; align-items: center; gap: 8px; margin: 2px 0 6px; font-weight: 800; }
+    .barre-dj .coeurs { font-size: 1.15em; letter-spacing: -2px; white-space: nowrap; }
+    .barre-dj .inv { font-size: 0.92em; white-space: nowrap; }
+    .barre-dj .espace { flex: 1; }
+    .quitter-dj { border: none; background: #e3e8ec; color: #3b4b57; font: inherit; font-weight: 800; font-size: 0.8em; border-radius: 10px; padding: 6px 9px; cursor: pointer; }
+    .carte-mini { display: grid; gap: 2px; }
+    .carte-mini span { width: 11px; height: 9px; border-radius: 2px; background: transparent; position: relative; }
+    .carte-mini span.vue { background: #c9b8a6; }
+    .carte-mini span.ici { background: #ff9800; }
+    .carte-mini span.boss.vue { background: #9c36b5; }
+    .carte-mini span i { position: absolute; left: 3px; top: 2px; width: 5px; height: 5px; border-radius: 50%; }
+
+    .salle-dj { position: relative; width: 100%; aspect-ratio: 11 / 9; border-radius: 12px; overflow: hidden; background: #2a211b; touch-action: none; }
+    .salle-dj > svg.fond { position: absolute; inset: 0; width: 100%; height: 100%; }
+    .ent { position: absolute; width: calc(100% / 11); height: calc(100% / 9); transition: left 0.2s linear, top 0.2s linear; pointer-events: none; }
+    .ent.saut { transition: none; }
+    .ent .sp { position: absolute; left: -35%; bottom: 0; width: 170%; height: 170%; }
+    .ent .sp svg { width: 100%; height: 100%; display: block; }
+    .ent.gauche .sp svg { transform: scaleX(-1); }
+    .ent.joueur:before { content: ''; position: absolute; left: 12%; right: 12%; bottom: 4%; height: 22%; border-radius: 50%; background: rgba(0,0,0,0.28); }
+    .ent.joueur.moi:before { background: rgba(255,152,0,0.5); }
+    .ent.fantome { opacity: 0.45; }
+    .ent.fantome .sp { filter: grayscale(1) brightness(1.4); }
+    .ent .fant { position: absolute; left: 50%; top: -40%; transform: translateX(-50%); font-size: 15px; }
+    .ent.blesse .sp { animation: clignote-dj 0.2s steps(2) infinite; }
+    @keyframes clignote-dj { 50% { opacity: 0.25; } }
+    .ent .nom-j { position: absolute; left: 50%; top: -62%; transform: translateX(-50%); font-size: 9px; font-weight: 800; color: #fff; background: rgba(0,0,0,0.45); border-radius: 6px; padding: 0 4px; white-space: nowrap; }
+    .ent .anneau { position: absolute; inset: -10%; border-radius: 50%; border: 2px dashed #ffd43b; animation: tourne 2s linear infinite; }
+    @keyframes tourne { to { transform: rotate(360deg); } }
+    .ent.monstre .emo { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 22px; line-height: 1; }
+    .ent.monstre.touche .sp, .ent.monstre.touche .emo { filter: brightness(2.2) saturate(0.2); }
+    .ent.monstre.chauve .emo { animation: battre 0.35s ease-in-out infinite alternate; }
+    @keyframes battre { to { transform: translateY(-3px) scale(1.08); } }
+    .ent.monstre.slime .sp, .ent.monstre.boss .sp { animation: gluer 0.8s ease-in-out infinite alternate; transform-origin: 50% 100%; }
+    @keyframes gluer { to { transform: scale(1.08, 0.92); } }
+    .ent.monstre.boss .sp { left: -60%; width: 220%; height: 220%; }
+    .ent.monstre.boss .pv { top: -150%; }
+    .ent .pv { position: absolute; left: -40%; right: -40%; top: -55%; height: 5px; border-radius: 3px; background: rgba(0,0,0,0.5); overflow: hidden; }
+    .ent .pv i { display: block; height: 100%; background: #e64980; }
+    .ent.objet .emo { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 17px; animation: flotter 0.9s ease-in-out infinite alternate; }
+    @keyframes flotter { to { transform: translateY(-3px); } }
+    .ent.effet .emo { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 22px; animation: effet-dj 0.55s ease-out forwards; }
+    @keyframes effet-dj { from { transform: scale(0.6); opacity: 1; } to { transform: scale(1.5) translateY(-6px); opacity: 0; } }
+    .annonces-dj { position: absolute; left: 6px; right: 6px; top: 6px; display: flex; flex-direction: column; gap: 4px; pointer-events: none; z-index: 5; }
+    .annonces-dj div { background: rgba(255,255,255,0.93); color: #2c3e50; border-radius: 10px; padding: 5px 9px; font-size: 0.8em; font-weight: 700; box-shadow: 0 2px 8px rgba(0,0,0,0.25); animation: arrive-dj 0.25s ease-out; }
+    .annonces-dj div.perso { background: #fff4e6; }
+    @keyframes arrive-dj { from { transform: translateY(-6px); opacity: 0; } }
+
+    .equipe-dj { display: flex; gap: 6px; flex-wrap: wrap; margin: 6px 0 2px; font-size: 0.78em; }
+    .equipe-dj span { background: #fff; border-radius: 999px; padding: 2px 8px; font-weight: 700; color: #3b4b57; box-shadow: 0 1px 2px rgba(0,0,0,0.08); white-space: nowrap; }
+    .equipe-dj span.loin { opacity: 0.55; }
+
+    .commandes-dj { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 8px; }
+    .pad { position: relative; width: 140px; height: 140px; border-radius: 50%; background: #dfe5ea; box-shadow: inset 0 3px 8px rgba(0,0,0,0.12); touch-action: none; flex-shrink: 0; }
+    .pad span { position: absolute; width: 46px; height: 46px; border-radius: 12px; background: #fff; box-shadow: 0 2px 0 #b9c3cb; display: flex; align-items: center; justify-content: center; font-size: 20px; color: #5b6b78; }
+    .pad span.actif { background: #ffe8cc; color: #e8590c; box-shadow: none; transform: translateY(2px); }
+    .pad .h { left: 47px; top: 4px; } .pad .b { left: 47px; bottom: 4px; } .pad .g { left: 4px; top: 47px; } .pad .d { right: 4px; top: 47px; }
+    .milieu-dj { flex: 1; min-width: 0; text-align: center; font-size: 0.75em; color: #6b7a86; line-height: 1.3; }
+    .milieu-dj .pouvoir { font-size: 1em; padding: 2px 6px; white-space: normal; display: inline-block; }
+    .bouton-coup { width: 84px; height: 84px; border-radius: 50%; border: none; background: #e8590c; color: #fff; font-size: 34px; box-shadow: 0 4px 0 #a8410a; cursor: pointer; flex-shrink: 0; touch-action: none; }
+    .bouton-coup:active, .bouton-coup.actif { transform: translateY(3px); box-shadow: 0 1px 0 #a8410a; }
+
+    .voile-dj { position: fixed; inset: 0; background: rgba(20,14,10,0.6); display: flex; align-items: center; justify-content: center; z-index: 50; padding: 16px; }
+    .boite-dj { background: #fff; border-radius: 18px; padding: 18px; width: 100%; max-width: 360px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+    .boite-dj .grand { font-size: 3em; line-height: 1.1; }
+    .boite-dj .titre { font-weight: 900; font-size: 1.25em; margin: 6px 0; }
+    .boite-dj ul { text-align: left; font-size: 0.9em; padding-left: 20px; line-height: 1.5; color: #3b4b57; }
+    .boite-dj .btn { width: 100%; margin-top: 8px; }
+  </style>
+</head>
+<body>
+  <div id="app" v-cloak class="app">
+
+    <fiche-jeu jeu="donjon" nom="Donjon des compagnons" resume="Désdale · chaque compagnon a son pouvoir" :onglet.sync="onglet" :son.sync="sonActif" :connexion="role ? connexion : ''">
+      <template v-slot:logo><div style="font-size:44px;line-height:1">🗝️</div></template>
+
+      <!-- PARTIE : mon compagnon, le salon, explorer seul -->
+      <template v-slot:partie>
+        <section class="carte">
+          <div class="titre-carte">Ton compagnon d'aventure</div>
+          <div class="moi-cp" v-if="monCp">
+            <svg viewBox="0 -6 200 216" v-html="dessin(monCp, 'moi')"></svg>
+            <div><b>{{ monCp.n }}</b><br><span class="pouvoir">{{ POUVOIRS[monPouvoir].ico }} {{ POUVOIRS[monPouvoir].nom }}</span>
+              <div class="aide" style="margin-top:2px">{{ monCp.n }} {{ ESPECES[monCp.e].action }} : fonce dedans pour t'en servir.</div></div>
+          </div>
+          <div v-else class="aide" style="margin-top:0">Sans compagnon, tu explores sans pouvoir. <a href="compagnon/">Adopter un compagnon</a></div>
+        </section>
+
+        <section class="carte salon-actif" v-if="role">
+          <div class="salon-tete">
+            <span class="pastille" :class="{ attente: connexion !== 'ok' }"></span>
+            <div>
+              <div class="salon-nom">Salon « {{ roomCode }} »</div>
+              <div class="salon-role">Tu explores en tant que {{ moi }} · {{ connexionTexte }}</div>
+            </div>
+          </div>
+          <div class="actions-accueil">
+            <button class="btn principal" @click="onglet = 'play'">Jouer →</button>
+            <button class="btn" @click="quitterSalon">Quitter</button>
+          </div>
+        </section>
+
+        <template v-if="!role">
+          <section class="carte">
+            <div class="titre-carte">À plusieurs, chacun sur son téléphone</div>
+            <div class="pseudo-portail">Ton pseudo : <b>{{ pseudoInput || '(à choisir)' }}</b><button class="lien-profil" @click="ouvrirProfil">✏️ {{ pseudoInput ? 'Changer' : 'Choisir' }}</button></div>
+            <label class="champ">Nom du salon
+              <input type="text" v-model="channelInput" placeholder="ex : donjon-du-dimanche" autocomplete="off">
+            </label>
+            <div class="salons-connus" v-if="salonsConnus.length">
+              <span v-for="nom in salonsConnus" :key="nom" class="salon-puce" :class="{ actif: estSalonSaisi(nom) }">
+                <button class="nom" @click="channelInput = nom">{{ nom }}</button>
+                <button class="oter" @click="oublierSalon(nom)" aria-label="Retirer de la liste">✕</button>
+              </span>
+            </div>
+            <button class="btn principal" style="width:100%;margin-top:8px" @click="entrerSalon()" :disabled="entreeEnCours">{{ entreeEnCours ? 'Connexion au salon…' + (entreeEnCours > 1 ? ' essai ' + entreeEnCours + '/4' : '') : 'Entrer dans le salon' }}</button>
+            <div class="aide">Plus on est de compagnons, plus il y a de pouvoirs… et de passages à ouvrir ensemble.</div>
+          </section>
+          <section class="carte">
+            <div class="titre-carte">Seul</div>
+            <button class="btn principal" style="width:100%" @click="demarrerSolo">🗝️ {{ soloEnCours ? 'Reprendre mon exploration' : 'Explorer seul' }}</button>
+            <div class="aide" v-if="stats.parties">Donjons : {{ stats.gagnes }} vaincu{{ stats.gagnes > 1 ? 's' : '' }} sur {{ stats.parties }}.</div>
+          </section>
+        </template>
+        <a class="lien-exp" href="expedition/">🧭 Retour à l'expédition</a>
+        <p class="version">Désdale · Donjon des compagnons · version {{ version }}</p>
+      </template>
+
+      <!-- JOUER -->
+      <template v-slot:jouer>
+        <div v-if="!solo && !role" class="panneau-vide">
+          <div class="grand">🗝️</div>
+          <p>Explore seul ou entre dans un salon depuis l'onglet « Partie ».</p>
+          <button class="btn principal" @click="onglet = 'config'">Aller à l'onglet « Partie »</button>
+        </div>
+
+        <!-- Salle d'attente : le groupe et ses pouvoirs -->
+        <section v-else-if="!partie" class="carte">
+          <div class="titre-carte">Le groupe <small>salon « {{ roomCode }} »</small></div>
+          <div class="groupe">
+            <div v-for="(m, k) in groupe" :key="m.nom" class="membre" :class="{ absent: !m.connecte }">
+              <svg v-if="m.cp" viewBox="0 -6 200 216" v-html="dessin(m.cp, 'g' + k)"></svg><span v-else class="sans">🧭</span>
+              <div><b>{{ m.nom }}{{ m.nom === moi ? ' (moi)' : '' }}</b>
+                <span v-if="m.pouvoir" class="pouvoir">{{ POUVOIRS[m.pouvoir].ico }} {{ POUVOIRS[m.pouvoir].nom }}</span><span v-else class="aide">sans pouvoir</span></div>
+            </div>
+          </div>
+          <button v-if="role === 'hote'" class="btn principal" style="width:100%;margin-top:12px" @click="envoyerJeu({ type: 'COMMENCER' })">🗝️ Entrer dans le donjon ({{ groupe.length }} joueur{{ groupe.length > 1 ? 's' : '' }})</button>
+          <div v-else class="aide">L'hôte lance l'exploration quand tout le monde est là.</div>
+          <div class="aide">Le donjon est tiré au hasard selon les pouvoirs du groupe : il y aura toujours de quoi passer.</div>
+        </section>
+
+        <div v-else class="jeu-dj" @contextmenu.prevent>
+          <div class="barre-dj">
+            <span class="coeurs" v-if="monJ">{{ monJ.fantome ? '👻' : '' }}<template v-for="i in monJ.max">{{ i <= monJ.coeurs ? '❤️' : '🤍' }}</template></span>
+            <span class="inv">🗝️{{ partie.cles }}<span v-if="partie.grandeCle"> 🔑</span> ✨{{ partie.poussiere }}</span>
+            <span class="espace"></span>
+            <div class="carte-mini" :style="{ gridTemplateColumns: 'repeat(' + DJ.GX + ', 11px)' }">
+              <span v-for="c in carteMini" :key="c.id" :class="c.cl"><i v-for="(p, k) in c.amis" :key="k" :style="{ background: p, left: (2 + k * 3) + 'px' }"></i></span>
+            </div>
+            <button class="quitter-dj" @click="demandeQuitter = true">🏳️</button>
+          </div>
+
+          <div class="salle-dj" ref="salle">
+            <svg class="fond" viewBox="0 0 352 288" preserveAspectRatio="none" v-html="salleSvg"></svg>
+            <div v-for="o in objetsIci" :key="'o' + o.id" class="ent objet" :style="pos(o)"><span class="emo">{{ o.type === 'coeur' ? '❤️' : '✨' }}</span></div>
+            <div v-for="m in monstresIci" :key="'m' + m.id" class="ent monstre" :class="[m.type, { touche: partie.maintenant - (m.touche || 0) < 250, gauche: m.dir === 'g' }]" :style="pos(m)">
+              <span v-if="m.type === 'chauve'" class="emo">🦇</span>
+              <span v-else-if="m.type === 'squelette'" class="emo">💀</span>
+              <span v-else class="sp" v-html="dessinGluant(m.type === 'boss')"></span>
+              <span v-if="m.type === 'boss' || m.pvMax > 1" class="pv"><i :style="{ width: (100 * m.pv / m.pvMax) + '%' }"></i></span>
+            </div>
+            <div v-for="p in joueursIci" :key="'j' + p.nom + p.salle" class="ent joueur" :class="{ moi: p.nom === moi, fantome: p.fantome, blesse: !p.fantome && p.inv > partie.maintenant, gauche: p.dir === 'g' }" :style="pos(p)">
+              <span class="sp" v-if="p.cp" v-html="dessinSvg(p.cp)"></span>
+              <span class="sp" v-else style="display:flex;align-items:flex-end;justify-content:center;font-size:20px">🧭</span>
+              <span v-if="p.fantome" class="fant">👻</span>
+              <span v-if="p.fantome && p.reanim > 0" class="anneau"></span>
+              <span v-if="nbJoueurs > 1" class="nom-j">{{ p.nom }}</span>
+            </div>
+            <div v-for="f in effetsIci" :key="'f' + f.id" class="ent effet" :style="pos(f)"><span class="emo">{{ EFFETS[f.k] || '✨' }}</span></div>
+            <div class="annonces-dj"><div v-for="a in annoncesVues" :key="a.id" :class="{ perso: a.pour }">{{ a.txt }}</div></div>
+          </div>
+
+          <div class="equipe-dj" v-if="nbJoueurs > 1">
+            <span v-for="p in equipe" :key="p.nom" :class="{ loin: p.salle !== monJ.salle }">{{ p.nom === moi ? 'Moi' : p.nom }} {{ p.fantome ? '👻' : '❤️'.repeat(p.coeurs) }}<template v-if="p.salle !== monJ.salle"> · ailleurs</template></span>
+          </div>
+
+          <div class="commandes-dj">
+            <div class="pad" @pointerdown="padDebut" @pointermove="padBouger" @pointerup="padFin" @pointercancel="padFin" @lostpointercapture="padFin">
+              <span class="h" :class="{ actif: dirCourante === 'h' }">▲</span><span class="b" :class="{ actif: dirCourante === 'b' }">▼</span>
+              <span class="g" :class="{ actif: dirCourante === 'g' }">◀</span><span class="d" :class="{ actif: dirCourante === 'd' }">▶</span>
+            </div>
+            <div class="milieu-dj">
+              <template v-if="monJ && monJ.fantome">👻 Tu es KO.<br>{{ nbJoueurs > 1 ? 'Va près d\'un ami : il te ranime en restant à côté de toi.' : '' }}</template>
+              <template v-else-if="monPouvoir"><span class="pouvoir">{{ POUVOIRS[monPouvoir].ico }} {{ POUVOIRS[monPouvoir].nom }}</span><br>fonce dans {{ POUVOIRS[monPouvoir].quoi }}</template>
+              <template v-else>Touche ⚔️ pour frapper devant toi.</template>
+            </div>
+            <button class="bouton-coup" :class="{ actif: coupActif }" @pointerdown.prevent="coup" aria-label="Frapper">⚔️</button>
+          </div>
+        </div>
+
+        <!-- Abandon -->
+        <div class="voile-dj" v-if="demandeQuitter" @click.self="demandeQuitter = false">
+          <div class="boite-dj">
+            <div class="grand">🏳️</div>
+            <div class="titre">Quitter le donjon ?</div>
+            <div class="aide" style="font-size:0.9em">{{ solo ? 'Ton exploration est gardée : tu pourras la reprendre.' : 'Tu quittes le salon ; les autres continuent sans toi.' }}</div>
+            <button class="btn principal" @click="quitterDonjon">Quitter et revenir à l'expédition</button>
+            <button class="btn" @click="demandeQuitter = false">Continuer l'exploration</button>
+          </div>
+        </div>
+
+        <!-- Fin -->
+        <div class="voile-dj" v-if="partie && partie.phase === 'fin' && gains">
+          <div class="boite-dj">
+            <div class="grand">{{ partie.fin.gagne ? '🏆' : '👻' }}</div>
+            <div class="titre">{{ partie.fin.gagne ? 'Le Roi Gluant est vaincu !' : 'Tout le groupe est KO…' }}</div>
+            <ul>
+              <li>✨ {{ partie.poussiere }} poussière{{ partie.poussiere > 1 ? 's' : '' }} d'étoile<span v-if="gains.etoiles"> → +{{ gains.etoilesDonnees }} ⭐</span> (en réserve : {{ gains.reste }} / 5)</li>
+              <li v-if="gains.partie">⭐ {{ gains.partie }}</li>
+              <li v-if="gains.souvenir">{{ gains.souvenir.ico }} Souvenir : {{ gains.souvenir.nom }} (dans la maison de {{ monCp.n }})</li>
+            </ul>
+            <button v-if="!solo && role === 'hote'" class="btn principal" @click="envoyerJeu({ type: 'NOUVELLE' })">🔁 Nouveau donjon</button>
+            <button v-if="solo" class="btn principal" @click="nouveauSolo">🔁 Nouveau donjon</button>
+            <div v-if="!solo && role !== 'hote'" class="aide">L'hôte peut relancer un nouveau donjon.</div>
+            <button class="btn" @click="rentrer">{{ monCp ? '🏠 Rentrer à la maison' : '🧭 Retour à l\'expédition' }}</button>
+          </div>
+        </div>
+      </template>
+
+      <!-- RÉGLAGES -->
+      <template v-slot:reglages>
+        <section class="carte reglages">
+          <div class="titre-carte">Réglages</div>
+          <reglages-base :son.sync="sonActif" :vibration.sync="vibrationActive"></reglages-base>
+        </section>
+      </template>
+
+      <!-- RÈGLES -->
+      <template v-slot:regles>
+        <section class="carte regles">
+          <div class="titre-carte">Règles</div>
+          <ul>
+            <li>Explorez le donjon pièce par pièce : on passe d'une pièce à l'autre par les ouvertures des murs. La petite carte en haut à droite montre les pièces vues (👑 en violet : l'antre du boss).</li>
+            <li>La croix fait avancer ton compagnon (garde le doigt pour marcher), ⚔️ frappe la case devant lui.</li>
+            <li><strong>Chaque compagnon a un pouvoir</strong> : fonce dans l'obstacle pour t'en servir.
+              🔥 <strong>Débroussailler</strong> (dragon, chat, oie) : les ronces ·
+              💪 <strong>Force</strong> (panda, tortue, chèvre) : les rochers ·
+              🦘 <strong>Bond</strong> (lapin, écureuil, singe) : les trous (il pose une planche pour les autres) ·
+              👃 <strong>Flair</strong> (chien, renard, raton laveur) : les passages secrets, qui brillent quand il est dans la pièce.</li>
+            <li>Le donjon est tiré au hasard d'après les pouvoirs du groupe : il y a toujours de quoi passer.</li>
+            <li>Les coffres cachent une petite clé (pour la porte 🔒), la grande clé du boss 🔑, des poussières d'étoile ✨ ou de quoi se soigner ❤️. Clés et poussières sont à tout le groupe.</li>
+            <li>À plusieurs : une grille ⛓️ s'ouvre quand deux joueurs se tiennent en même temps sur les deux dalles de la pièce.</li>
+            <li>3 cœurs chacun. Sans cœur, on devient un petit fantôme 👻 : un ami vivant le ranime en restant 2 secondes juste à côté de lui. Tout le groupe KO : fin de l'exploration.</li>
+            <li>Au fond, le <strong>Roi Gluant</strong> 👑 fait naître des petits gluants : frappez-le jusqu'au bout !</li>
+            <li>À la fin, chacun garde les poussières d'étoile (5 poussières = 1 ⭐, comme en expédition). Boss vaincu : un souvenir du donjon pour la maison de ton compagnon.</li>
+          </ul>
+        </section>
+      </template>
+    </fiche-jeu>
+  </div>
+
+  <script src="icones-jeux.js"></script>
+  <script src="fiche-jeu.js"></script>
+  <script src="commun.js"></script>
+  <script src="etoiles.js"></script>
+  <script src="compagnon/compagnon-commun.js"></script>
+  <script src="expedition/expedition-regles.js"></script>
+  <script src="donjon/donjon-regles.js"></script>
+  <script>
+    if (!ACCES.memorise()) location.replace('index.html');
+
+    const CLE_SAUVEGARDE = 'donjon-sauvegarde';
+    const CLE_SOLO = 'donjon-solo';
+    const JEU_RESEAU = 'dj';
+    const DELAI_SILENCE = 15000;
+    const MAX_SALONS = 8;
+    const COULEURS_J = ['#ff9800', '#339af0', '#51cf66', '#cc5de8', '#f06595', '#20c997'];
+    const EFFETS = { coup: '💫', aie: '💢', pouf: '💨', ronces: '🔥', force: '💥', bond: '🪵', flair: '✨', coffre: '✨', porte: '🔓', coeur: '❤️', poussiere: '✨' };
+    const SOUVENIRS = ['cle-donjon', 'coffre-tresor', 'bouclier', 'couronne-gluant'];
+    function copie(o) { return JSON.parse(JSON.stringify(o)); }
+
+    // Résumé de mon compagnon (le même que celui du salon global), envoyé à l'hôte
+    function monCompagnon() {
+      var a = lireStockage('compagnon-animal');
+      if (!a || !a.espece) return null;
+      var p = {};
+      Object.keys(a.porte || {}).forEach(k => { if (!/^(exp|fete|mur|lampe|plante|jouet|couchage|tableau|horloge)/.test(k)) p[k] = a.porte[k]; });
+      return { e: a.espece, c: a.couleur, n: a.nom, p: p };
+    }
+    function nettoyerCp(c) {
+      if (!c || typeof c !== 'object' || !DJ.ESPECES[c.e]) return null;
+      var p = {};
+      Object.keys(c.p || {}).slice(0, 12).forEach(k => { if (/^[a-z0-9-]{1,12}$/.test(k) && /^[a-z0-9-]{1,20}$/.test(c.p[k])) p[k] = c.p[k]; });
+      return { e: c.e, c: /^#[0-9a-f]{6}$/i.test(c.c) ? c.c : '#c8915a', n: String(c.n || '').slice(0, 16) || 'Compagnon', p: p };
+    }
+
+    // ================== RÉSEAU ==================
+    let peer = null;
+    let connections = [];
+    let connParPseudo = {};
+    let hostConn = null;
+    let dernierMsgHote = 0;
+    let monPseudo = '';
+    let pubHote = null;       // salle d'attente : { ordre, cps, phase, partieId }
+    let partieHote = null;    // le donjon en cours (DJ), chez l'hôte ou en solo
+    let salle = { infos: {} };
+    var cacheDessins = {};
+
+    new Vue({
+      el: '#app',
+      data: {
+        version: VERSION,
+        DJ: DJ, POUVOIRS: DJ.POUVOIRS, ESPECES: DJ.ESPECES, EFFETS: EFFETS,
+        onglet: 'config',
+        pub: null,            // salle d'attente reçue
+        partie: null,         // ce qu'on affiche du donjon (copie figée)
+        salles: null,         // les pièces (envoyées seulement quand elles changent)
+        carteV: 0,
+        joueurs: [],
+        solo: false,
+        monCp: nettoyerCp(monCompagnon()),
+        stats: lireStockage('donjon-stats') || { parties: 0, gagnes: 0 },
+        dirCourante: null,
+        coupActif: false,
+        demandeQuitter: false,
+        gains: null,
+        pseudoInput: pseudoPour('donjon-sauvegarde'),
+        channelInput: lireStockage('donjon-dernier-salon') || lireStockage('brillant-dernier-salon') || '',
+        salonsConnus: lireStockage('brillant-salons') || [],
+        role: null,
+        connexion: 'aucune',
+        roomCode: '',
+        entreeEnCours: false,
+        sonActif: lireStockage('brillant-son') !== false,
+        vibrationActive: lireStockage('brillant-vibration') !== null ? lireStockage('brillant-vibration') !== false : lireStockage('brillant-son') !== false
+      },
+      computed: {
+        moi: function() { return this.solo ? 'Moi' : (this.pseudoInput.trim() || 'Moi'); },
+        monPouvoir: function() { return DJ.pouvoirDe(this.monCp); },
+        connexionTexte: function() { return { ok: 'en ligne', connexion: 'connexion…', perdue: 'reconnexion…', aucune: 'hors ligne' }[this.connexion]; },
+        soloEnCours: function() { var s = lireStockage(CLE_SOLO); return !!(s && s.phase === 'jeu'); },
+        groupe: function() {
+          var p = this.pub;
+          if (!p) return [];
+          return p.ordre.map(n => { var j = this.joueurs.find(x => x.pseudo === n); var cp = p.cps[n] || null; return { nom: n, cp: cp, pouvoir: DJ.pouvoirDe(cp), connecte: n === this.moi || !j || j.connecte !== false }; });
+        },
+        monJ: function() { return this.partie && this.partie.joueurs[this.moi]; },
+        nbJoueurs: function() { return this.partie ? Object.keys(this.partie.joueurs).length : 0; },
+        salleIci: function() { return this.monJ && this.salles ? this.salles[this.monJ.salle] : null; },
+        joueursIci: function() { var s = this.monJ && this.monJ.salle; return Object.values(this.partie.joueurs).filter(p => p.salle === s).sort((a, b) => (a.nom === this.moi) - (b.nom === this.moi)); },
+        monstresIci: function() { var s = this.monJ && this.monJ.salle; return this.partie.ennemis.filter(m => m.salle === s); },
+        objetsIci: function() { var s = this.monJ && this.monJ.salle; return this.partie.objets.filter(o => o.salle === s); },
+        effetsIci: function() { var s = this.monJ && this.monJ.salle; return this.partie.effets.filter(f => f.salle === s); },
+        annoncesVues: function() { var t = this.partie.maintenant; return this.partie.annonces.filter(a => (!a.pour || a.pour === this.moi) && t - a.t < 4500).slice(-2); },
+        equipe: function() { return Object.values(this.partie.joueurs).sort((a, b) => a.ordre - b.ordre); },
+        flairIci: function() { return this.joueursIci.some(p => p.pouvoir === 'flair' && !p.fantome); },
+        salleSvg: function() { return this.salleIci ? dessinerSalle(this.salleIci, this.flairIci, this.joueursIci) : ''; },
+        carteMini: function() {
+          var l = [], p = this.partie, S = this.salles || {};
+          for (var y = 0; y < DJ.GY; y++) for (var x = 0; x < DJ.GX; x++) {
+            var id = x + ',' + y, s = S[id], vue = s && p.vues[id];
+            var amis = vue ? Object.values(p.joueurs).filter(j => j.salle === id && j.nom !== this.moi).map(j => COULEURS_J[j.ordre % COULEURS_J.length]).slice(0, 3) : [];
+            l.push({ id: id, cl: { vue: !!vue, ici: this.monJ && this.monJ.salle === id, boss: !!(s && s.boss) }, amis: amis });
+          }
+          return l;
+        }
+      },
+      watch: {
+        sonActif: function(v) { ecrireStockage('brillant-son', v); },
+        vibrationActive: function(v) { ecrireStockage('brillant-vibration', v); if (v) vibrer(40); },
+        pseudoInput: function() { this.sauvegarder(); }
+      },
+      created: function() {
+        window.addEventListener('desdale-profil', () => { if (!this.role) this.pseudoInput = pseudoPortail(); });
+        if (!ACCES.cleSalon) return;
+        this.restaurer();
+        setInterval(() => this.battement(), 4000);
+        setInterval(() => this.boucle(), 100);
+        setInterval(() => this.sauvegarderPartie(), 2000);
+        document.addEventListener('visibilitychange', () => this.auRetourPremierPlan());
+        window.addEventListener('online', () => this.auRetourPremierPlan());
+        window.addEventListener('pageshow', () => this.auRetourPremierPlan());
+        window.addEventListener('keydown', ev => this.clavier(ev, true));
+        window.addEventListener('keyup', ev => this.clavier(ev, false));
+      },
+      methods: {
+        ouvrirProfil: function() { ouvrirProfilPortail(false); },
+        vibre: function(motif) { if (this.vibrationActive) vibrer(motif); },
+        son: function(nom, arg) { if (this.sonActif) try { Sons.jouer(nom, arg); } catch (e) {} },
+        // Chaque dessin a ses propres identifiants de dégradés : sinon un dessin caché (autre onglet) les « prend » et l'autre devient transparent
+        dessin: function(cp, ou) {
+          if (!cp || typeof CP === 'undefined') return '';
+          var pref = 'v' + (ou || 'p') + Object.keys(cacheDessins).length + '-';
+          return CP.dessin({ espece: cp.e, couleur: cp.c, porte: cp.p }, 'content', false).replace(/(id="|url\(#)v-/g, '$1' + pref);
+        },
+        dessinSvg: function(cp) {
+          var k = JSON.stringify(cp);
+          if (!cacheDessins[k]) cacheDessins[k] = '<svg viewBox="0 -6 200 216">' + this.dessin(cp, 's') + '</svg>';
+          return cacheDessins[k];
+        },
+        dessinGluant: function(roi) { return gluantSvg(roi); },
+        pos: function(o) { return { left: (o.x * 100 / DJ.W) + '%', top: (o.y * 100 / DJ.H) + '%' }; },
+
+        // ================== COMMANDES ==================
+        direction: function(d) {
+          if (d === this.dirCourante) return;
+          this.dirCourante = d;
+          this.envoyerJeu({ type: 'DIR', d: d });
+        },
+        padDebut: function(ev) {
+          ev.preventDefault();
+          this._pad = ev.currentTarget;
+          try { this._pad.setPointerCapture(ev.pointerId); } catch (e) {}
+          this.padBouger(ev, true);
+        },
+        padBouger: function(ev, debut) {
+          if (!this._pad || (!debut && !ev.buttons && ev.pointerType === 'mouse')) return;
+          var r = this._pad.getBoundingClientRect(), dx = ev.clientX - (r.left + r.width / 2), dy = ev.clientY - (r.top + r.height / 2);
+          if (Math.hypot(dx, dy) < 14) return;
+          this.direction(Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 'd' : 'g') : (dy > 0 ? 'b' : 'h'));
+        },
+        padFin: function() { this._pad = null; this.direction(null); },
+        coup: function() {
+          this.coupActif = true; setTimeout(() => { this.coupActif = false; }, 150);
+          this.envoyerJeu({ type: 'ATT' });
+          this.vibre(12);
+        },
+        clavier: function(ev, bas) {
+          if (!this.partie || this.onglet !== 'play' || /INPUT|TEXTAREA/.test((ev.target && ev.target.tagName) || '')) return;
+          var t = { ArrowUp: 'h', ArrowDown: 'b', ArrowLeft: 'g', ArrowRight: 'd', z: 'h', s: 'b', q: 'g', d: 'd', w: 'h', a: 'g' }[ev.key];
+          if (t) { ev.preventDefault(); if (bas) this.direction(t); else if (this.dirCourante === t) this.direction(null); return; }
+          if ((ev.key === ' ' || ev.key === 'Enter') && bas && !ev.repeat) { ev.preventDefault(); this.coup(); }
+        },
+
+        // ================== SOLO ==================
+        demarrerSolo: function() {
+          var s = lireStockage(CLE_SOLO);
+          this.solo = true; this.gains = null;
+          partieHote = s && s.phase === 'jeu' ? s : DJ.nouvelle(Math.floor(Math.random() * 1e9), { Moi: this.monCp }, nouvelId());
+          if (partieHote.joueurs.Moi) { partieHote.joueurs.Moi.cp = this.monCp; partieHote.joueurs.Moi.pouvoir = DJ.pouvoirDe(this.monCp); partieHote.joueurs.Moi.surnom = 'L\'explorateur'; }
+          partieHote.maintenant = 0;   // l'horloge repart (l'exploration a pu être reprise plus tard)
+          Object.values(partieHote.joueurs).forEach(p => { p.pas = 0; p.inv = 0; p.attProchaine = 0; p.d = null; });
+          partieHote.ennemis.forEach(m => { m.pas = 0; });
+          this.montrerPartie(true);
+          this.onglet = 'play';
+          this.sauvegarderPartie();
+        },
+        nouveauSolo: function() { ecrireStockage(CLE_SOLO, null); partieHote = null; this.demarrerSolo(); },
+
+        // ================== BOUCLE (chez l'hôte et en solo) ==================
+        boucle: function() {
+          var e = partieHote;
+          if (!e || !(this.solo || this.role === 'hote')) return;
+          if (e.phase === 'jeu') {
+            DJ.tick(e, Date.now());
+            if (e.phase === 'fin' && pubHote && !this.solo) { pubHote.phase = 'fin'; this.sauvegarder(); }
+          }
+          if (e.phase !== 'jeu' && this._dernierFin === e.id) return;   // fin : un dernier envoi suffit
+          if (e.phase !== 'jeu') this._dernierFin = e.id;
+          this.montrerPartie(false);
+          if (this.role === 'hote' && !this.solo) this.diffuser();
+        },
+        // Copie figée pour l'affichage (Vue ne surveille pas le détail : légère même à 10 images par seconde)
+        montrerPartie: function(tout) {
+          var e = partieHote;
+          if (!e) { this.partie = null; return; }
+          if (tout || e.carteV !== this.carteV) { this.salles = Object.freeze(copie(e.salles)); this.carteV = e.carteV; }
+          this.recevoirPartie(Object.freeze(copie(DJ.etatMobile(e))));
+        },
+        // Nouvel état : sons, vibrations, fin
+        recevoirPartie: function(p) {
+          var a = this.partie;
+          this.partie = p;
+          if (!p) return;
+          var moi = p.joueurs[this.moi], avant = a && a.joueurs[this.moi];
+          if (moi && avant && moi.coeurs < avant.coeurs) { this.son('choc'); this.vibre([60, 40, 60]); }
+          if (a && p.annonces.length && (!a.annonces.length || p.annonces[p.annonces.length - 1].id !== a.annonces[a.annonces.length - 1].id)) {
+            var der = p.annonces[p.annonces.length - 1];
+            if (!der.pour || der.pour === this.moi) this.son('toc');
+          }
+          if (p.phase === 'fin' && (!a || a.phase !== 'fin' || a.id !== p.id)) this.finir(p);
+          if (p.phase !== 'fin') this.gains = null;
+        },
+
+        // ================== FIN : récompenses (une fois par donjon, sur chaque téléphone) ==================
+        finir: function(p) {
+          var gagne = !!(p.fin && p.fin.gagne), multi = !this.solo && Object.keys(p.joueurs).length > 1;
+          var deja = lireStockage('donjon-recompense');
+          if (deja && deja.id === p.id) { this.gains = deja.gains; return; }
+          var conv = EX.convertirPoussiere(lireStockage('expedition-poussiere'), p.poussiere || 0);
+          ecrireStockage('expedition-poussiere', conv.reste);
+          var avant = Etoiles.gagneesAujourdhui();
+          Etoiles.recompenseJeu(conv.etoiles, 'Donjon des compagnons · poussières d\'étoile');
+          var donnees = Etoiles.gagneesAujourdhui() - avant;
+          Etoiles.finDePartie('Donjon', gagne, multi, p.id, { lieu: 'donjon' });
+          var g = { etoiles: conv.etoiles, etoilesDonnees: donnees, reste: conv.reste, partie: multi ? (gagne ? 'Victoire entre amis' : 'Partie entre amis') : (gagne ? 'Victoire en solo' : ''), souvenir: null };
+          // Souvenir du donjon (boss vaincu) et un peu de faim et de soif pour le compagnon
+          var animal = lireStockage('compagnon-animal');
+          if (animal && animal.espece && typeof CP !== 'undefined') {
+            if (gagne) {
+              var possede = animal.possede || {}, restants = SOUVENIRS.filter(id => CP.art(id).id && !possede[id]);
+              if (restants.length) {
+                var art = CP.art(restants[Math.floor(Math.random() * restants.length)]);
+                animal.possede = possede; animal.porte = animal.porte || {};
+                animal.possede[art.id] = 1; animal.porte[art.slot] = art.id;
+                g.souvenir = { id: art.id, nom: art.nom, ico: art.ico };
+              }
+            }
+            var n = CP.niveaux(animal), t = Date.now();
+            ['repas', 'eau'].forEach(id => { animal.besoins[id] = { v: Math.max(0, n[id] - 15), t: t }; });
+            ecrireStockage('compagnon-animal', animal);
+            ecrireStockage('expedition-retour', { lieu: 'Donjon des compagnons', ico: '🗝️', gagne: gagne, abandon: false, bonnes: 0, questions: 0,
+              gain: conv.etoiles, donne: donnees, poussiere: p.poussiere || 0, souvenirs: g.souvenir ? [g.souvenir] : [], boss: 'Le Roi Gluant', h: Date.now() });
+          }
+          this.stats = { parties: this.stats.parties + 1, gagnes: this.stats.gagnes + (gagne ? 1 : 0) };
+          ecrireStockage('donjon-stats', this.stats);
+          ecrireStockage('donjon-recompense', { id: p.id, gains: g });
+          this.gains = g;
+          if (gagne) { setTimeout(() => this.son('victoire'), 300); this.vibre([100, 60, 100, 60, 250]); } else this.vibre(200);
+          if (this.solo) this.sauvegarderPartie();
+        },
+        rentrer: function() {
+          if (this.solo) { ecrireStockage(CLE_SOLO, null); partieHote = null; }
+          location.href = this.monCp ? 'compagnon/' : 'expedition/';
+        },
+        quitterDonjon: function() {
+          this.demandeQuitter = false;
+          if (this.solo) { this.sauvegarderPartie(); location.href = 'expedition/'; return; }
+          this.sortirDuSalon();
+          location.href = 'expedition/';
+        },
+
+        envoyerJeu: function(m) {
+          if (this.solo) return this.traiterJeu('Moi', m);
+          if (this.role === 'hote') return this.traiterJeu(monPseudo, m);
+          if (this.connexion !== 'ok') return;
+          this.envoyerHote({ action: 'JEU', m: m });
+        },
+
+        // ================== HÔTE ==================
+        estConnecte: function(p) { return p === monPseudo || !!(salle.infos[p] && salle.infos[p].connecte); },
+        traiterJeu: function(p, m) {
+          if (m.type === 'DIR') { if (partieHote && partieHote.phase === 'jeu') DJ.entree(partieHote, p, m.d); return; }
+          if (m.type === 'ATT') { if (partieHote && partieHote.phase === 'jeu') DJ.attaquer(partieHote, p); return; }
+          if (this.solo || p !== monPseudo || !pubHote) return;
+          if (m.type === 'COMMENCER' && pubHote.phase === 'attente') {
+            var presents = {};
+            pubHote.ordre.filter(n => this.estConnecte(n)).forEach(n => { presents[n] = pubHote.cps[n] || null; });
+            pubHote.partieId = nouvelId();
+            partieHote = DJ.nouvelle(Math.floor(Math.random() * 1e9), presents, pubHote.partieId);
+            pubHote.phase = 'jeu';
+            this.carteV = 0;
+            this.publier();
+          } else if (m.type === 'NOUVELLE' && pubHote.phase === 'fin') {
+            pubHote.phase = 'attente'; partieHote = null;
+            this.publier();
+          }
+        },
+        publier: function() {
+          this.diffuser(true);
+          this.pub = copie(pubHote);
+          this.montrerPartie(true);
+          this.sauvegarder();
+        },
+        // Envoi à chacun : la salle d'attente, le donjon (sans les pièces) et les pièces quand elles ont changé
+        diffuser: function(meta) {
+          this.majJoueurs();
+          var e = partieHote, mobile = e ? DJ.etatMobile(e) : null;
+          connections.forEach(c => {
+            if (!c.open || !c.joueurPseudo) return;
+            var data = { action: 'ETAT', m: mobile };
+            if (meta) { data.pub = pubHote; data.joueurs = this.joueurs; }
+            if (e && c.carteV !== e.carteV) { data.s = e.salles; data.v = e.carteV; c.carteV = e.carteV; }
+            if (!e) c.carteV = 0;
+            try { c.send(data); } catch (x) {}
+          });
+        },
+        majJoueurs: function() {
+          if (this.role !== 'hote' || !pubHote) return;
+          this.joueurs = pubHote.ordre.map(p => ({ pseudo: p, hote: p === monPseudo, connecte: this.estConnecte(p) }));
+        },
+
+        // ---------- Liste des salons ----------
+        estSalonSaisi: function(nom) { return ACCES.simplifier(nom) === ACCES.simplifier(this.channelInput); },
+        retenirSalon: function(nom) {
+          var cle = ACCES.simplifier(nom);
+          this.salonsConnus = [nom].concat((lireStockage('brillant-salons') || this.salonsConnus).filter(n => ACCES.simplifier(n) !== cle)).slice(0, MAX_SALONS);
+          ecrireStockage('brillant-salons', this.salonsConnus);
+          ecrireStockage('donjon-dernier-salon', nom);
+        },
+        oublierSalon: function(nom) {
+          var cle = ACCES.simplifier(nom);
+          this.salonsConnus = this.salonsConnus.filter(n => ACCES.simplifier(n) !== cle);
+          ecrireStockage('brillant-salons', this.salonsConnus);
+          if (ACCES.simplifier(this.channelInput) === cle) this.channelInput = this.salonsConnus[0] || '';
+        },
+
+        // ---------- Sauvegarde ----------
+        sauvegarder: function() {
+          if (this._restauration) return;
+          ecrireStockage(CLE_SAUVEGARDE, {
+            pseudo: this.pseudoInput, role: this.role, salon: this.roomCode, pub: this.role ? this.pub : null,
+            pubHote: this.role === 'hote' ? pubHote : null, salle: this.role === 'hote' ? salle : null,
+            partie: this.role === 'hote' ? partieHote : null
+          });
+        },
+        // Le donjon lui-même : toutes les 2 s (pas à chaque image)
+        sauvegarderPartie: function() {
+          if (this.solo && partieHote) ecrireStockage(CLE_SOLO, partieHote);
+          else if (this.role === 'hote') this.sauvegarder();
+        },
+        restaurer: function() {
+          var sv = lireStockage(CLE_SAUVEGARDE);
+          monPseudo = this.moi;
+          if (!sv) return;
+          if (sv.role && sv.salon && sv.pub) {
+            this.role = sv.role;
+            this.roomCode = sv.salon;
+            this.onglet = 'play';
+            this.connexion = 'perdue';
+            this._restauration = true;
+            this.pub = sv.pub;
+            this._restauration = false;
+            if (sv.role === 'hote') {
+              pubHote = sv.pubHote || copie(sv.pub);
+              salle = sv.salle || { infos: {} };
+              partieHote = sv.partie || null;
+              if (partieHote) { partieHote.maintenant = 0; Object.values(partieHote.joueurs).forEach(p => { p.pas = 0; p.inv = 0; p.attProchaine = 0; p.d = null; }); partieHote.ennemis.forEach(m => { m.pas = 0; }); }
+              Object.values(salle.infos).forEach(i => { i.connecte = false; });
+              this.montrerPartie(true);
+              this.creerPartie(true);
+            } else this.rejoindrePartie(true);
+          }
+        },
+
+        // ---------- Entrée dans un salon ----------
+        validerPseudo: function() {
+          monPseudo = this.pseudoInput.trim();
+          if (!monPseudo) { ouvrirProfilPortail(true); return false; }
+          return true;
+        },
+        entrerSalon: function() {
+          if (this.role || this._entree) return;
+          if (this.solo) { this.sauvegarderPartie(); this.solo = false; partieHote = null; this.partie = null; }
+          if (!this.validerPseudo()) return;
+          if (!this.channelInput.trim()) { alert('Saisis un nom de salon.'); return; }
+          fermerAutresSalons('donjon');
+          this._entree = { essais: 0 };
+          this.entreeEnCours = true;
+          this.creerPartie(false);
+        },
+        finEntree: function(reussie, message) {
+          var e = this._entree;
+          this._entree = null;
+          this.entreeEnCours = false;
+          if (reussie) this.retenirSalon(this.roomCode);
+          else if (e && message) alert(message);
+        },
+        suiteEntree: function() {
+          var e = this._entree;
+          if (!e) return;
+          this.reinitialiserPeer(false);
+          if (++e.essais >= 4) return this.finEntree(false, 'Impossible d\'entrer dans le salon pour le moment.\n\nSi vous êtes sur le même Wi-Fi (location, hôtel, Wi-Fi invité…), il empêche souvent les téléphones de se parler : passe l\'un des deux en 4G/5G (Wi-Fi coupé), puis réessaie.');
+          this.entreeEnCours = e.essais + 1;
+          setTimeout(() => { if (this._entree === e && !this.role) this.creerPartie(false); }, 1200);
+        },
+        quitterSalon: function() {
+          if (!confirm('Quitter le salon ?')) return;
+          this.sortirDuSalon();
+        },
+        sortirDuSalon: function() {
+          if (this.role === 'client' && peer) {
+            this.envoyerHote({ action: 'DEPART' });
+            var ancienPeer = peer;
+            peer = null;
+            setTimeout(() => { try { ancienPeer.destroy(); } catch (e) {} }, 400);
+          }
+          this.reinitialiserPeer(false);
+          pubHote = null; partieHote = null;
+          salle = { infos: {} };
+          this.pub = null; this.partie = null; this.salles = null;
+          this.sauvegarder();
+        },
+        reinitialiserPeer: function(garder) {
+          clearTimeout(this._timerReco);
+          var ancien = peer;
+          peer = null;
+          connections = [];
+          connParPseudo = {};
+          hostConn = null;
+          if (ancien) { try { ancien.destroy(); } catch (e) {} }
+          if (!garder) { this.role = null; this.joueurs = []; this.roomCode = ''; this.connexion = 'aucune'; }
+        },
+        planifierReconnexion: function(delai) {
+          clearTimeout(this._timerReco);
+          this._timerReco = setTimeout(() => {
+            if (!this.role || this.connexion === 'ok') return;
+            if (this.role === 'hote') return this.creerPartie(true);
+            this._echecsClient = (this._echecsClient || 0) + 1;
+            if (this._echecsClient >= 4 && this.pub) { this._echecsClient = 0; return this.reprendreLeSalon(); }
+            this.rejoindrePartie(true);
+          }, delai || 3000);
+        },
+        // L'hôte ne répond plus : on rouvre le salon avec notre copie du donjon (rien de secret ici)
+        reprendreLeSalon: function() {
+          pubHote = copie(this.pub);
+          partieHote = this.partie && this.salles ? Object.assign(copie(this.partie), { salles: copie(this.salles) }) : null;
+          if (partieHote) { partieHote.maintenant = 0; Object.values(partieHote.joueurs).forEach(p => { p.pas = 0; p.inv = 0; p.attProchaine = 0; p.d = null; }); partieHote.ennemis.forEach(m => { m.pas = 0; }); }
+          salle = { infos: {} };
+          pubHote.ordre.forEach(p => { if (p !== monPseudo) salle.infos[p] = { connecte: false, clientId: null }; });
+          this._repriseParClient = true;
+          this.role = 'hote';
+          this.creerPartie(true);
+        },
+
+        // ---------- Hôte ----------
+        creerPartie: function(reprise) {
+          var nom = reprise ? this.roomCode : this.channelInput.trim();
+          this.reinitialiserPeer(!!reprise);
+          this.connexion = reprise ? 'perdue' : 'connexion';
+          var monPeer = peer = creerPeer(ACCES.idSalon(nom, JEU_RESEAU));
+          veillerOuverture(monPeer);
+          monPeer.on('open', () => {
+            if (peer !== monPeer) return;
+            this.role = 'hote';
+            this.connexion = 'ok';
+            this.roomCode = nom;
+            this._echecsReprise = 0;
+            if (reprise) this._repriseParClient = false;
+            else {
+              this.onglet = 'play';
+              this.finEntree(true);
+              salle = { infos: {} };
+              pubHote = { ordre: [monPseudo], cps: {}, phase: 'attente', partieId: null };
+              partieHote = null;
+            }
+            pubHote.cps[monPseudo] = this.monCp;
+            if (partieHote && partieHote.joueurs[monPseudo]) { partieHote.joueurs[monPseudo].cp = this.monCp; partieHote.joueurs[monPseudo].pouvoir = DJ.pouvoirDe(this.monCp); }
+            this.publier();
+          });
+          monPeer.on('connection', (conn) => this.brancherClient(conn));
+          monPeer.on('disconnected', () => {
+            if (peer === monPeer && !monPeer.destroyed) setTimeout(() => { try { if (monPeer.disconnected && !monPeer.destroyed) monPeer.reconnect(); } catch (e) {} }, 1000);
+          });
+          monPeer.on('error', (err) => {
+            if (peer !== monPeer) return;
+            if (reprise || this.role === 'hote') {
+              if (err.type === 'peer-unavailable') return;
+              this.connexion = 'perdue';
+              var seuil = this._repriseParClient ? 1 : 5;
+              if (err.type === 'unavailable-id' && (this._echecsReprise = (this._echecsReprise || 0) + 1) >= seuil) {
+                this._echecsReprise = 0;
+                this._repriseParClient = false;
+                this.role = 'client';
+                pubHote = null; partieHote = null;
+                salle = { infos: {} };
+                return this.rejoindrePartie(true);
+              }
+              this.planifierReconnexion(3000);
+              return;
+            }
+            if (this._entree && err.type === 'unavailable-id') return this.rejoindrePartie(false);
+            if (this._entree) return this.suiteEntree();
+            this.reinitialiserPeer(false);
+            alert('Erreur : ' + err.message);
+          });
+        },
+        brancherClient: function(conn) {
+          connections.push(conn);
+          conn.dernierMsg = Date.now();
+          conn.on('data', (data) => { conn.dernierMsg = Date.now(); this.recevoirDeClient(conn, data); });
+          conn.on('close', () => this.perteClient(conn));
+          conn.on('error', () => this.perteClient(conn));
+        },
+        recevoirDeClient: function(conn, data) {
+          var p = conn.joueurPseudo;
+          switch (data.action) {
+            case 'PING': break;
+            case 'REJOINDRE': {
+              var pseudo = String(data.pseudo || '').trim().slice(0, 20);
+              var existant = salle.infos[pseudo];
+              if (!pseudo || pseudo === monPseudo || (existant && existant.connecte && existant.clientId !== data.clientId && connParPseudo[pseudo] && connParPseudo[pseudo] !== conn)) {
+                try { conn.send({ action: 'REFUS', fatal: true, message: 'Ce pseudo est déjà utilisé dans ce salon.' }); } catch (e) {}
+                setTimeout(() => { try { conn.close(); } catch (e) {} }, 500);
+                return;
+              }
+              var ancienne = connParPseudo[pseudo];
+              if (ancienne && ancienne !== conn) { ancienne._remplacee = true; connections = connections.filter(c => c !== ancienne); try { ancienne.close(); } catch (e) {} }
+              conn.joueurPseudo = pseudo;
+              conn.carteV = 0;
+              connParPseudo[pseudo] = conn;
+              salle.infos[pseudo] = { connecte: true, clientId: data.clientId };
+              var cp = nettoyerCp(data.cp);
+              pubHote.cps[pseudo] = cp;
+              if (pubHote.ordre.indexOf(pseudo) === -1) pubHote.ordre.push(pseudo);
+              // Arrivée en cours d'exploration : il entre dans la première pièce
+              if (partieHote && partieHote.phase === 'jeu') { var j = DJ.ajouterJoueur(partieHote, pseudo, cp); j.cp = cp; j.pouvoir = DJ.pouvoirDe(cp); }
+              this.publier();
+              break;
+            }
+            case 'DEPART':
+              if (!p) return;
+              delete connParPseudo[p];
+              delete salle.infos[p];
+              pubHote.ordre = pubHote.ordre.filter(x => x !== p);
+              if (partieHote && partieHote.joueurs[p]) DJ.entree(partieHote, p, null);
+              this.publier();
+              break;
+            case 'JEU':
+              if (!p) return;
+              this.traiterJeu(p, data.m || {});
+              break;
+          }
+        },
+        perteClient: function(conn) {
+          if (conn._perdue) return;
+          conn._perdue = true;
+          connections = connections.filter(c => c !== conn);
+          var p = conn.joueurPseudo;
+          if (!p || conn._remplacee || connParPseudo[p] !== conn) return;
+          delete connParPseudo[p];
+          if (salle.infos[p]) salle.infos[p].connecte = false;
+          if (partieHote) DJ.entree(partieHote, p, null);   // il s'arrête là où il est
+          this.publier();
+        },
+
+        // ---------- Client ----------
+        rejoindrePartie: function(reprise) {
+          var nom = reprise ? this.roomCode : this.channelInput.trim();
+          this.reinitialiserPeer(!!reprise);
+          this.connexion = reprise ? 'perdue' : 'connexion';
+          var monPeer = peer = creerPeer();
+          veillerOuverture(monPeer);
+          monPeer.on('open', () => {
+            if (peer !== monPeer) return;
+            var conn = hostConn = monPeer.connect(ACCES.idSalon(nom, JEU_RESEAU), { reliable: true });
+            var delai = setTimeout(() => {
+              if (hostConn !== conn || this.connexion === 'ok') return;
+              if (this.role) this.planifierReconnexion();
+              else if (this._entree) this.suiteEntree();
+              else this.reinitialiserPeer(false);
+            }, 10000);
+            conn.on('open', () => {
+              if (hostConn !== conn) return;
+              clearTimeout(delai);
+              dernierMsgHote = Date.now();
+              this.connexion = 'ok';
+              this.role = 'client';
+              this.roomCode = nom;
+              this._echecsClient = 0;
+              if (!reprise) { this.onglet = 'play'; this.finEntree(true); }
+              conn.send({ action: 'REJOINDRE', pseudo: monPseudo, clientId: clientId, cp: this.monCp });
+              this.dirCourante = null;
+            });
+            conn.on('data', (data) => { if (hostConn !== conn) return; dernierMsgHote = Date.now(); this.recevoirDeHote(data); });
+            conn.on('close', () => { if (hostConn === conn) this.perteHote(); });
+            conn.on('error', () => { if (hostConn === conn) this.perteHote(); });
+          });
+          monPeer.on('disconnected', () => { if (peer === monPeer && !monPeer.destroyed) { try { monPeer.reconnect(); } catch (e) {} } });
+          monPeer.on('error', () => {
+            if (peer !== monPeer) return;
+            if (this.role) { this.connexion = 'perdue'; this.planifierReconnexion(); }
+            else if (this._entree) this.suiteEntree();
+            else { this.reinitialiserPeer(false); alert('Impossible de joindre ce salon.\n\nSur un même Wi-Fi (location, hôtel, Wi-Fi invité…), passe l\'un des téléphones en 4G/5G puis réessaie.'); }
+          });
+        },
+        perteHote: function() {
+          if (this.connexion === 'perdue' && this._timerReco) return;
+          var c = hostConn;
+          hostConn = null;
+          if (c) { try { c.close(); } catch (e) {} }
+          this.connexion = 'perdue';
+          this.planifierReconnexion(1500);
+        },
+        envoyerHote: function(data) { if (hostConn && hostConn.open && this.connexion === 'ok') { try { hostConn.send(data); } catch (e) {} } },
+        recevoirDeHote: function(data) {
+          switch (data.action) {
+            case 'PING': break;
+            case 'ETAT':
+              if (data.pub) { this.joueurs = data.joueurs || []; this.pub = data.pub; this.sauvegarder(); }
+              if (data.s) { this.salles = Object.freeze(data.s); this.carteV = data.v; }
+              if (data.m && this.salles) this.recevoirPartie(Object.freeze(data.m));
+              else if (!data.m) this.partie = null;
+              break;
+            case 'REFUS':
+              if (data.fatal) { alert(data.message); this.reinitialiserPeer(false); this.pub = null; this.partie = null; this.sauvegarder(); }
+              break;
+          }
+        },
+
+        // ---------- Surveillance de la connexion ----------
+        battement: function() {
+          var maintenant = Date.now();
+          if (this.role === 'hote' && peer) {
+            connections.slice().forEach(c => {
+              if (!partieHote || partieHote.phase !== 'jeu') { try { if (c.open) c.send({ action: 'PING' }); } catch (e) {} }
+              if (maintenant - (c.dernierMsg || maintenant) > DELAI_SILENCE) { try { c.close(); } catch (e) {} this.perteClient(c); }
+            });
+            if (peer.destroyed) this.planifierReconnexion(500);
+            else if (peer.disconnected) { try { peer.reconnect(); } catch (e) {} }
+          } else if (this.role === 'client' && this.connexion === 'ok') {
+            this.envoyerHote({ action: 'PING' });
+            if (maintenant - dernierMsgHote > DELAI_SILENCE) this.perteHote();
+          }
+        },
+        auRetourPremierPlan: function() {
+          if (document.visibilityState === 'hidden') { this.direction(null); return; }
+          if (!this.role) return;
+          if (this.role === 'hote') {
+            if (!peer || peer.destroyed) this.creerPartie(true);
+            else if (peer.disconnected) { try { peer.reconnect(); } catch (e) {} }
+          } else if (this.connexion !== 'ok' || Date.now() - dernierMsgHote > 8000) {
+            this.connexion = 'perdue';
+            this.rejoindrePartie(true);
+          }
+        }
+      }
+    });
+
+    // ================== DESSIN D'UNE PIÈCE (SVG, cases de 32) ==================
+    function dessinerSalle(S, flair, joueurs) {
+      var T = 32, s = '', W = DJ.W, H = DJ.H;
+      var sur = {};
+      joueurs.forEach(p => { if (!p.fantome) sur[p.x + ',' + p.y] = 1; });
+      s += '<defs><pattern id="dj-sol" width="64" height="64" patternUnits="userSpaceOnUse"><rect width="64" height="64" fill="#5d4c3e"/>' +
+           '<rect width="32" height="32" fill="#65533f"/><rect x="32" y="32" width="32" height="32" fill="#65533f"/>' +
+           '<path d="M0 0 H64 M0 32 H64 M0 0 V64 M32 0 V64" stroke="#4e3f33" stroke-width="1.5"/></pattern></defs>';
+      s += '<rect x="0" y="0" width="352" height="288" fill="url(#dj-sol)"/>';
+      for (var y = 0; y < H; y++) for (var x = 0; x < W; x++) {
+        var c = S.t[y * W + x], X = x * T, Y = y * T;
+        if (c === '#' || c === 's') {
+          s += '<rect x="' + X + '" y="' + Y + '" width="32" height="32" fill="#3a2e26"/><rect x="' + X + '" y="' + Y + '" width="32" height="8" fill="#4b3c31"/>' +
+               '<path d="M' + X + ' ' + (Y + 20) + ' H' + (X + 32) + ' M' + (X + 16) + ' ' + (Y + 8) + ' V' + (Y + 20) + '" stroke="#2c231d" stroke-width="1.5"/>';
+          if (c === 's' && flair) s += '<text x="' + (X + 16) + '" y="' + (Y + 23) + '" text-anchor="middle" font-size="18" class="scintille">✨</text>' +
+                                        '<path d="M' + (X + 10) + ' ' + (Y + 6) + ' l6 10 l-4 6 l8 8" stroke="#ffd43b" stroke-width="2" fill="none"/>';
+        } else if (c === 'O') {
+          s += '<rect x="' + (X + 3) + '" y="' + (Y + 5) + '" width="26" height="25" rx="5" fill="#2e251f" opacity="0.5"/><rect x="' + (X + 3) + '" y="' + (Y + 1) + '" width="26" height="26" rx="5" fill="#8d7b68"/>' +
+               '<rect x="' + (X + 6) + '" y="' + (Y + 3) + '" width="20" height="8" rx="3" fill="#a8957f"/>';
+        } else if (c === 'r') {
+          s += '<circle cx="' + (X + 10) + '" cy="' + (Y + 19) + '" r="9" fill="#2b6a2e"/><circle cx="' + (X + 22) + '" cy="' + (Y + 18) + '" r="9" fill="#2f7d32"/><circle cx="' + (X + 16) + '" cy="' + (Y + 11) + '" r="9" fill="#388e3c"/>' +
+               '<path d="M' + (X + 4) + ' ' + (Y + 12) + ' l-3 -3 M' + (X + 28) + ' ' + (Y + 12) + ' l3 -3 M' + (X + 16) + ' ' + (Y + 2) + ' v-3 M' + (X + 8) + ' ' + (Y + 28) + ' l-3 3 M' + (X + 25) + ' ' + (Y + 28) + ' l3 3" stroke="#1b4d1e" stroke-width="2"/>' +
+               '<circle cx="' + (X + 12) + '" cy="' + (Y + 14) + '" r="2" fill="#e03131"/><circle cx="' + (X + 21) + '" cy="' + (Y + 20) + '" r="2" fill="#e03131"/>';
+        } else if (c === 'R') {
+          s += '<path d="M' + (X + 3) + ' ' + (Y + 28) + ' L' + (X + 6) + ' ' + (Y + 10) + ' L' + (X + 15) + ' ' + (Y + 4) + ' L' + (X + 26) + ' ' + (Y + 8) + ' L' + (X + 30) + ' ' + (Y + 27) + ' Z" fill="#9e9e9e" stroke="#616161" stroke-width="1.5"/>' +
+               '<path d="M' + (X + 15) + ' ' + (Y + 5) + ' l-2 9 l5 5 l-3 8" stroke="#555" stroke-width="1.6" fill="none"/><path d="M' + (X + 8) + ' ' + (Y + 12) + ' L' + (X + 15) + ' ' + (Y + 7) + '" stroke="#cfcfcf" stroke-width="2"/>';
+        } else if (c === 'v') {
+          s += '<rect x="' + X + '" y="' + Y + '" width="32" height="32" fill="#120d0a"/><ellipse cx="' + (X + 16) + '" cy="' + (Y + 18) + '" rx="13" ry="10" fill="#000"/>';
+        } else if (c === '=') {
+          s += '<rect x="' + X + '" y="' + Y + '" width="32" height="32" fill="#120d0a"/>' + [2, 12, 22].map(k => '<rect x="' + (X + 1) + '" y="' + (Y + k) + '" width="30" height="8" rx="2" fill="#a0703f" stroke="#6d4a26"/>').join('');
+        } else if (c === 'L') {
+          s += '<rect x="' + X + '" y="' + Y + '" width="32" height="32" fill="#3a2e26"/><rect x="' + (X + 3) + '" y="' + (Y + 2) + '" width="26" height="28" rx="4" fill="#8d5a2b" stroke="#5d3a18" stroke-width="2"/>' +
+               '<circle cx="' + (X + 16) + '" cy="' + (Y + 14) + '" r="3.5" fill="#222"/><rect x="' + (X + 14.5) + '" y="' + (Y + 15) + '" width="3" height="7" fill="#222"/>';
+        } else if (c === 'B') {
+          s += '<rect x="' + X + '" y="' + Y + '" width="32" height="32" fill="#3a2e26"/><rect x="' + (X + 2) + '" y="' + (Y + 2) + '" width="28" height="28" rx="5" fill="#5f3dc4" stroke="#ffd43b" stroke-width="2"/>' +
+               '<text x="' + (X + 16) + '" y="' + (Y + 22) + '" text-anchor="middle" font-size="16">👑</text>';
+        } else if (c === 'G') {
+          s += '<rect x="' + X + '" y="' + Y + '" width="32" height="32" fill="#1c1612"/>' + [5, 12, 19, 26].map(k => '<rect x="' + (X + k) + '" y="' + Y + '" width="3" height="32" fill="#9aa5ae"/>').join('') +
+               '<rect x="' + X + '" y="' + (Y + 14) + '" width="32" height="3" fill="#9aa5ae"/>';
+        } else if (c === '_') {
+          var on = sur[x + ',' + y];
+          s += '<rect x="' + (X + 3) + '" y="' + (Y + 3) + '" width="26" height="26" rx="4" fill="' + (on ? '#fab005' : '#b08d57') + '" stroke="#6d5432" stroke-width="2"/>' +
+               '<rect x="' + (X + 9) + '" y="' + (Y + 9) + '" width="14" height="14" rx="2" fill="' + (on ? '#ffe066' : '#c9a66b') + '"/>';
+        } else if (c === 'C' || c === 'c') {
+          var ouvert = c === 'c';
+          s += '<rect x="' + (X + 4) + '" y="' + (Y + 12) + '" width="24" height="16" rx="3" fill="#a0612b" stroke="#5d3a18" stroke-width="2"/>' +
+               (ouvert ? '<path d="M' + (X + 4) + ' ' + (Y + 12) + ' L' + (X + 8) + ' ' + (Y + 3) + ' H' + (X + 24) + ' L' + (X + 28) + ' ' + (Y + 12) + '" fill="#7a4a1f" stroke="#5d3a18" stroke-width="2"/><rect x="' + (X + 7) + '" y="' + (Y + 13) + '" width="18" height="4" fill="#2a1a0c"/>'
+                       : '<path d="M' + (X + 4) + ' ' + (Y + 13) + ' Q' + (X + 16) + ' ' + (Y + 3) + ' ' + (X + 28) + ' ' + (Y + 13) + '" fill="#b5702f" stroke="#5d3a18" stroke-width="2"/><rect x="' + (X + 14) + '" y="' + (Y + 13) + '" width="4" height="6" fill="#ffd43b"/>');
+        } else if ((x === 0 || y === 0 || x === W - 1 || y === H - 1) && c === '.') {
+          s += '<rect x="' + X + '" y="' + Y + '" width="32" height="32" fill="#2a211b" opacity="0.55"/>';
+        }
+      }
+      if (S.boss) s += '<circle cx="176" cy="144" r="70" fill="#9c36b5" opacity="0.12"/>';
+      return s + '<style>.scintille{animation:sc 1s ease-in-out infinite alternate}@keyframes sc{from{opacity:.35}to{opacity:1}}</style>';
+    }
+    // Les gluants (et leur roi) : dessinés par le code
+    function gluantSvg(roi) {
+      var c = roi ? '#9c36b5' : '#69db7c', f = roi ? '#6b2380' : '#2f9e44';
+      return '<svg viewBox="0 0 40 40"><ellipse cx="20" cy="36" rx="15" ry="3" fill="rgba(0,0,0,.3)"/>' +
+             '<path d="M5 34 Q4 14 20 10 Q36 14 35 34 Z" fill="' + c + '" stroke="' + f + '" stroke-width="2"/>' +
+             '<ellipse cx="14" cy="18" rx="4" ry="3" fill="#fff" opacity="0.5"/>' +
+             '<circle cx="15" cy="25" r="3" fill="#fff"/><circle cx="25" cy="25" r="3" fill="#fff"/><circle cx="15.5" cy="25.5" r="1.6" fill="#222"/><circle cx="25.5" cy="25.5" r="1.6" fill="#222"/>' +
+             (roi ? '<path d="M10 11 L13 3 L17 9 L20 2 L23 9 L27 3 L30 11 Z" fill="#ffd43b" stroke="#c99a00" stroke-width="1.5"/><path d="M15 30 Q20 33 25 30" stroke="#222" stroke-width="1.6" fill="none"/>' : '') +
+             '</svg>';
+    }
+  </script>
+  <script src="salon-global.js" data-jeu="donjon"></script>
+</body>
+</html>

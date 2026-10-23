@@ -149,7 +149,7 @@
               <button v-for="(d, id) in DIFFICULTES" :key="id" :class="{ actif: difficulte === id }" @click="difficulte = id">{{ d.nom }}<small>{{ d.desc }}</small></button>
             </div>
             <div class="coeurs-depart"><span class="rangee"><span v-for="i in COEURS" :key="i" class="coeur-exp" v-html="dessinCoeur(true)"></span></span><span>Tu pars avec 3 cœurs : ne les perds pas en route !</span></div>
-            <button class="btn principal" style="width:100%; margin-top:8px" :disabled="!!fatigue || !lieuSelection" @click="partir">{{ fatigue ? '😴 Encore ' + fatigue + ' min de repos' : lieuSelection ? '🧭 Partir : ' + lieuSelection.nom : '👇 Choisis d\'abord où aller' }}</button>
+            <button class="btn principal" style="width:100%; margin-top:8px" :disabled="(!!fatigue && !(lieuSelection && lieuSelection.donjon)) || !lieuSelection" @click="partir">{{ lieuSelection && lieuSelection.donjon ? '🗝️ Aller au donjon' : fatigue ? '😴 Encore ' + fatigue + ' min de repos' : lieuSelection ? '🧭 Partir : ' + lieuSelection.nom : '👇 Choisis d\'abord où aller' }}</button>
             <div class="aide" v-if="stats.parties">Expéditions : {{ stats.reussies }} réussie{{ stats.reussies > 1 ? 's' : '' }} sur {{ stats.parties }} · {{ stats.bonnes }} bonne{{ stats.bonnes > 1 ? 's' : '' }} réponse{{ stats.bonnes > 1 ? 's' : '' }} en tout.</div>
           </section>
           <section class="carte">
@@ -318,7 +318,7 @@
             <li><strong>🏳️ Quitter</strong>, à tout moment (même face à un gardien ou au boss) : tu gardes la moitié du sac et tes poussières, et tu reviens à l'accueil.</li>
             <li>Une expédition fatigue : il faut attendre <strong>une heure</strong> avant de repartir.</li>
             <li>Boss vaincu : tu gardes tout le sac (+{{ GAIN_BOSS }} ⭐). Plus de cœurs, ou retour avant la fin : la moitié du sac. Les étoiles comptent dans le plafond du jour.</li>
-            <li>Bientôt : d'autres lieux (sciences, histoire, géographie…) et des sorties en groupe.</li>
+            <li>Le <strong>Donjon des compagnons</strong> se joue seul ou à plusieurs, sur sa propre page : chaque compagnon y a un pouvoir.</li><li>Bientôt : d'autres lieux (histoire, géographie…).</li>
           </ul>
         </section>
       </template>
@@ -482,6 +482,7 @@
         sauver: function() { ecrireStockage(CLE, this.e); },
         partir: function() {
           var l = EX.lieu(this.lieuChoisi);
+          if (l && l.donjon) { location.href = 'donjon/'; return; }   // le donjon a sa page (seul ou à plusieurs)
           if (!l || !l.pret || this.fatigue) return;
           ecrireStockage('expedition-depart', Date.now()); this.maintenant = Date.now();
           var e = EX.nouvelle(l.id, this.difficulte);

@@ -51,6 +51,7 @@ Lien vers un jeu : `yams/` (pas `yams.html`). `404.html` renvoie les anciennes a
 | `domino/` : `index.html` + `domino-regles.js` | Dominos (double-six) avec l'option **Triominos**. Solo contre 1 à 3 ordinateurs, ou salon de 2 à 4 (mains gardées par l'hôte, chacun ne reçoit que la sienne). Moteur + ordinateur + géométrie triangulaire dans `domino-regles.js` (testable avec Node). |
 | `lettres/` : `index.html` + `lettres-regles.js` + `lettres-mots.txt` | **Lettres croisées** (version maison du jeu de lettres sur grille, sans le nom ni les visuels de la marque). Solo contre 1 à 3 ordinateurs (3 niveaux), ou salon de 2 à 4 (chevalets et sac gardés par l'hôte). Plateau, bonus, points, arbre de mots et ordinateur dans `lettres-regles.js` (testable avec Node). Dictionnaire libre `lettres-mots.txt` (~311 000 mots, licence MIT, voir `lettres-mots-licence.txt`), une ligne par mot codée « préfixe commun » (1er caractère = longueur reprise du mot précédent, en hexadécimal), suivie d'un chiffre de fréquence (3 très courant, 2 courant, 1 connu, rien = rare ; d'après wordfreq, CC BY-SA 4.0). Abréviations retirées (CF, KM…). Pas d'ODS (liste officielle sous droits). |
 | `expedition/` : `index.html` + `expedition-regles.js` | **Expédition** (balade du compagnon, culture générale) : chemin à embranchements en **vue 3D isométrique** (SVG dessiné par le code), gardiens qui posent une question, coffres, buvette, boss sur un jeu de la collection contre l'ordinateur. Solo pour l'instant (sorties en groupe prévues). Lieux, questions maison, génération de la carte et récompenses dans `expedition-regles.js` (testable avec Node). |
+| `donjon/` : `index.html` + `donjon-regles.js` | **Donjon des compagnons** (demandé par l'utilisateur : exploration à plusieurs façon jeu d'aventure NES, « temps réel doux »). Pas de fiche sur l'accueil : on y va par l'Expédition (lieu « Donjon », `donjon: true`, bouton « 🗝️ Aller au donjon », sans la fatigue d'une heure) ou par « Rejoindre » du salon global. Seul ou salon (préfixe réseau `dj`, pas de limite). Moteur, génération et pouvoirs dans `donjon-regles.js` (testable avec Node). |
 | `compagnon/` : `index.html` + `compagnon-commun.js` | **Mon compagnon** (prototype, façon « animal virtuel ») : on adopte un animal dessiné en SVG, on en prend soin chaque jour, et les ⭐ gagnées en jouant (`Etoiles` dans `commun.js`) achètent accessoires et déco. Espèces, besoins, boutique et dessin SVG dans `compagnon-commun.js` (aussi utilisé par l'accueil). Pas de réseau propre. |
 | `compagnon/compagnon-3d.html` | Maquette « niveau 2 » : le chien en vraie 3D (Three.js **r128** par CDN, uniquement sur cette page). **Mise de côté** par l'utilisateur (plus de lien dans le jeu, page gardée pour plus tard). |
 | `bataille/sons/` | Sons enregistrés de la Bataille navale (MP3 libres de droits) et leurs sources (`LICENCES.txt`). |
@@ -77,7 +78,7 @@ Pas d'étape de construction, pas de dépendance à ajouter.
   150 000 itérations, 48 octets. Octets 0–31 : `EMPREINTE` publiée ; octets 32–39 : « clé de salon »,
   jamais publiée, gardée dans `localStorage['brillant-acces']`.
 - La clé de salon entre dans l'identifiant réseau : `'dm-' + cléSalon + '-' + [jeu + '-'] + nomSimplifié`.
-  Préfixes de jeu : aucun pour Brilliant, `yams`, `bg`, `as`, `bn`, `gb`, `pb`, `ag`, `ql`, `dm`, `lc`. Sans le bon code, impossible de joindre un salon.
+  Préfixes de jeu : aucun pour Brilliant, `yams`, `bg`, `as`, `bn`, `gb`, `pb`, `ag`, `ql`, `dm`, `lc`, `dj`. Sans le bon code, impossible de joindre un salon.
 - Changer le code = recalculer l'empreinte dans les deux fichiers ; tous les salons changent d'identifiant.
 
 ## Réseau (identique dans les trois jeux)
@@ -189,6 +190,7 @@ Mon compagnon : `compagnon-animal` (espèce, nom, couleur, besoins, objets poss�
 `compagnon-reglages`, `compagnon-veille`, `compagnon-series` (séries de victoires solo), `compagnon-evenements` (parties terminées), `compagnon-defis`, `compagnon-trophees`, `compagnon-maison`, `compagnon-anniv` (année du dernier cadeau d'anniversaire), `compagnon-penalite` (jauge vide), `compagnon-fete-essai` (admin).
 Expédition : `expedition-partie` (expédition en cours), `expedition-depart` (heure du dernier départ), `expedition-poussiere` (réserve),
 `expedition-boss` / `expedition-boss-resultat` (défi envoyé au jeu du boss et son issue), `expedition-retour` (résumé pour le compagnon), `expedition-vues` (40 dernières questions posées), `expedition-stats`, `expedition-lieu`, `expedition-difficulte`.
+Donjon : `donjon-sauvegarde` (salon ; chez l'hôte, le donjon en cours), `donjon-solo`, `donjon-dernier-salon`, `donjon-stats`, `donjon-recompense` (dernier donjon récompensé, pour ne pas compter deux fois).
 Bataille navale : `bataille-boss` (partie contre un boss d'expédition), `bataille-sauvegarde`, `bataille-prive` (ma flotte en salon), `bataille-dernier-salon`, `bataille-stats`, `bataille-colles`, `bataille-rejouer`, `bataille-niveau`, `bataille-style`.
 
 ## Règles des jeux (choix de l'utilisateur, à ne pas changer sans lui)
@@ -408,6 +410,27 @@ Bataille navale : `bataille-boss` (partie contre un boss d'expédition), `batail
   `Etoiles.evenement('Expédition', …)` pour les défis ; la balade fait baisser Repas et Eau de 15. Difficultés : Balade / Aventure.
 - Accueil : l'Expédition est **tout en haut de la liste, même devant les favoris**, avec un badge « Nouveau » (`tete`, `nouveau` dans `jeux`) ;
   badge « Expédition en cours » (sans bouton Quitter, et la page ne se rouvre pas toute seule : `solo: true`).
+
+### Donjon des compagnons (première version)
+- Vue de dessus, pièce par pièce (11 × 9 cases, cases de 32 dans un SVG dessiné par le code), plan de 7 pièces (8 à partir de 3 joueurs) en arbre
+  sur une grille 4 × 4 (`DJ.generer(graine, pouvoirs, humains)`), départ en bas, boss au plus profond. Petite carte des pièces vues en haut à droite.
+- **Pouvoirs par espèce** (`DJ.ESPECES`, `DJ.POUVOIRS`) : 🔥 Débroussailler (dragon, chat, oie : ronces), 💪 Force (panda, tortue, chèvre : rochers),
+  🦘 Bond (lapin, écureuil, singe : trous, il pose une planche), 👃 Flair (chien, renard, raton laveur : passages secrets, qui scintillent quand il est dans la pièce).
+  On s'en sert en fonçant dans l'obstacle. Le donjon ne met **que des obstacles des pouvoirs du groupe** (chacun au moins une fois) : toujours faisable
+  (vérifié sur 3 000 donjons par un solveur Node). Sans compagnon : pas de pouvoir.
+- Obstacles sur les passages (côté de la pièce d'où l'on vient) : pouvoirs, porte 🔒 (petite clé dans un coffre avant elle), porte du boss (grande clé au plus loin),
+  à plusieurs une grille ⛓️ ouverte en se tenant à deux sur les deux dalles. Coffres : clé, grande clé, 3 poussières, soin de la pièce. Clés et poussières au groupe.
+- Commandes : croix au doigt (on glisse, `padDebut` / `padBouger`), un pas toutes les 0,2 s (un toucher bref fait un pas), ⚔️ frappe la case devant ;
+  flèches + espace au clavier. Monstres lents : gluant, chauve-souris (vole au-dessus des trous), squelette (2 PV, poursuit) ; ils ne bougent que dans les pièces occupées.
+  3 cœurs, 1,5 s d'invincibilité ; KO = fantôme 👻, ranimé (1 cœur) par un ami vivant juste à côté pendant 2 s ; tout le groupe KO = fin. Butin : ❤️ ou ✨.
+  Boss : le **Roi Gluant** (6 PV + 2 par joueur en plus), fait naître un gluant toutes les 6 s ; vaincu = +5 poussières et fin.
+- Réseau : l'hôte simule (`DJ.tick` toutes les 0,1 s) et envoie l'état mobile à chaque pas (~2 Ko), les pièces seulement quand elles changent (`carteV`).
+  Les clients n'envoient que `DIR` (direction tenue ou null) et `ATT`. Arrivée en cours : il apparaît dans la première pièce. Hôte disparu : reprise avec la copie (rien de secret).
+  Salle d'attente : le groupe, ses compagnons et pouvoirs ; l'hôte lance (« 🗝️ Entrer dans le donjon »), puis « 🔁 Nouveau donjon » à la fin.
+- Fin (sur chaque téléphone, une fois par donjon) : poussières converties comme en expédition (`expedition-poussiere`, 5 = 1 ⭐), `Etoiles.finDePartie('Donjon', …)`
+  (compte « entre amis » à deux et plus), boss vaincu = un souvenir du donjon pour la maison (`cle-donjon`, `coffre-tresor`, `bouclier`, `couronne-gluant`),
+  Repas et Eau −15, récit `expedition-retour` lu par la maison du compagnon. Les annonces nomment les compagnons (« Flammèche crache du feu sur les ronces ! »).
+- Dessins des compagnons : identifiants de dégradés rendus uniques à chaque dessin (sinon un dessin caché dans un autre onglet les « prend » et l'autre devient transparent).
 
 ### Mon compagnon (prototype : piste d'un futur Désdale « centre de loisirs pour personnes âgées »)
 - But : petites obligations quotidiennes douces et envie de jouer **ensemble** pour gâter son animal. Grand texte, gros boutons.
