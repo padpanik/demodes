@@ -441,6 +441,9 @@ Bataille navale : `bataille-boss` (partie contre un boss d'expédition), `batail
 - Réseau : l'hôte simule (`DJ.tick` toutes les 0,1 s) et envoie l'état mobile à chaque pas (~2 Ko), les pièces seulement quand elles changent (`carteV`).
   Les clients n'envoient que `DIR` (direction tenue ou null) et `ATT`. Arrivée en cours : il apparaît dans la première pièce. Hôte disparu : reprise avec la copie (rien de secret).
   Salle d'attente : le groupe, ses compagnons et pouvoirs ; l'hôte lance (« 🗝️ Entrer dans le donjon »), puis « 🔁 Nouveau donjon » à la fin.
+  **Donjon fini = on quitte le salon** (demandé par l'utilisateur) : « 🏠 Rentrer à la maison » / « 🧭 Retour à l'expédition » fait sortir du salon
+  (`rentrer` → `sortirDuSalon`) ; au retour sur la page, un salon dont le donjon est fini (`fini` dans la sauvegarde, ou `pub.phase === 'fin'`)
+  ou laissé depuis plus de 6 h (`t`) n'est pas repris : on retrouve le choix « À plusieurs » / « Seul ».
 - Fin (sur chaque téléphone, une fois par donjon) : poussières converties comme en expédition (`expedition-poussiere`, 5 = 1 ⭐), `Etoiles.finDePartie('Donjon', …)`
   (compte « entre amis » à deux et plus), boss vaincu = un souvenir du donjon pour la maison (`cle-donjon`, `coffre-tresor`, `bouclier`, `couronne-gluant`),
   Repas et Eau −15, récit `expedition-retour` lu par la maison du compagnon. Les annonces nomment les compagnons (« Flammèche crache du feu sur les ronces ! »).

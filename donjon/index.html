@@ -629,7 +629,7 @@
             var absents = {};
             if (!this.solo) Object.keys(salle.infos).forEach(n => { if (!salle.infos[n].connecte) absents[n] = 1; });
             DJ.tick(e, Date.now(), null, absents);
-            if (e.phase === 'fin' && pubHote && !this.solo) { pubHote.phase = 'fin'; this.sauvegarder(); }
+            if (e.phase === 'fin' && pubHote && !this.solo) { pubHote.phase = 'fin'; this.publier(); }
           }
           if (e.phase !== 'jeu' && this._dernierFin === e.id) return;   // fin : un dernier envoi suffit
           if (e.phase !== 'jeu') this._dernierFin = e.id;
@@ -697,11 +697,13 @@
           ecrireStockage('donjon-recompense', { id: p.id, gains: g });
           this.gains = g;
           if (gagne) { setTimeout(() => this.son('victoire'), 300); this.vibre([100, 60, 100, 60, 250]); } else this.vibre(200);
-          if (this.solo) this.sauvegarderPartie();
+          if (this.solo) this.sauvegarderPartie(); else this.sauvegarder();
         },
+        // Donjon fini : on quitte le salon (au retour, on retrouve le choix seul / à plusieurs)
         rentrer: function() {
           if (this.solo) { ecrireStockage(CLE_SOLO, null); partieHote = null; }
-          location.href = this.monCp ? 'compagnon/' : 'expedition/';
+          else if (this.role) this.sortirDuSalon();
+          setTimeout(() => { location.href = this.monCp ? 'compagnon/' : 'expedition/'; }, this.role === null ? 450 : 0);
         },
         quitterDonjon: function() {
           this.demandeQuitter = false;
@@ -781,7 +783,8 @@
           ecrireStockage(CLE_SAUVEGARDE, {
             pseudo: this.pseudoInput, role: this.role, salon: this.roomCode, pub: this.role ? this.pub : null,
             pubHote: this.role === 'hote' ? pubHote : null, salle: this.role === 'hote' ? salle : null,
-            partie: this.role === 'hote' ? partieHote : null
+            partie: this.role === 'hote' ? partieHote : null, t: Date.now(),
+            fini: !!(this.partie && this.partie.phase === 'fin')
           });
         },
         // Le donjon lui-même : toutes les 2 s (pas à chaque image)
@@ -793,6 +796,9 @@
           var sv = lireStockage(CLE_SAUVEGARDE);
           monPseudo = this.moi;
           if (!sv) return;
+          // Donjon terminé, ou salon laissé depuis plus de 6 h : on ne s'y reconnecte pas, on repart du choix seul / à plusieurs
+          var fini = sv.fini || (sv.pub && sv.pub.phase === 'fin'), vieux = !sv.t || Date.now() - sv.t > 6 * 3600000;
+          if (sv.role && (fini || vieux)) { ecrireStockage(CLE_SAUVEGARDE, { pseudo: sv.pseudo }); return; }
           if (sv.role && sv.salon && sv.pub) {
             this.role = sv.role;
             this.roomCode = sv.salon;
