@@ -731,6 +731,7 @@
         sauvegarder: function() {
           if (this._restauration) return;
           ecrireStockage(CLE_SAUVEGARDE, {
+            t: Date.now(), fini: !!(this.etat && this.etat.fin),   // salon oublié au retour s'il est fini (30 min) ou laissé 6 h (salonPerime)
             pseudo: this.pseudoInput, salon: this.roomCode, role: this.role, etat: this.etat,
             jeuHote: this.role === 'hote' ? jeuHote : null, salle: this.role === 'hote' ? salle : null,
             historique: this.historique.slice(-60)

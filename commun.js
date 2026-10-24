@@ -3,7 +3,7 @@
 // Les clés de stockage gardent l'ancien préfixe "brillant-" : les réglages déjà faits sont conservés.
 
 // Numéro de version affiché (à augmenter à chaque mise en ligne, avec brilliant/index.html et sw.js)
-const VERSION = '2.45';
+const VERSION = '2.46';
 
 // ---------- Stockage local ----------
 function lireStockage(cle) {
@@ -34,6 +34,18 @@ function oublierSalonDuJeu(jeu) {
   ecrireStockage(cle, sv);
   return true;
 }
+// Salon abandonné (demandé par l'utilisateur) : laissé plus de 6 h, ou partie finie sans rien depuis 30 min, il n'est plus repris
+// au retour : on retrouve le choix « À plusieurs » / « Seul ». Chaque jeu note dans sa sauvegarde t (dernière écriture) et fini.
+const SALON_OUBLI = 6 * 3600000, SALON_FINI_OUBLI = 30 * 60000;
+function salonPerime(sv) {
+  if (!sv || !sv.role) return false;
+  var age = Date.now() - (sv.t || 0);
+  return age > SALON_OUBLI || (!!sv.fini && age > SALON_FINI_OUBLI);
+}
+function oublierSalonsPerimes() {
+  Object.keys(SALONS_JEUX).forEach(j => { if (salonPerime(lireStockage(SALONS_JEUX[j]))) oublierSalonDuJeu(j); });
+}
+oublierSalonsPerimes();   // au chargement de chaque page, avant que l'accueil ou le jeu ne reprenne un salon
 // ================== SAUVEGARDE (pour retrouver ses données sur un autre téléphone ou navigateur) ==================
 // Un fichier JSON avec les données de Désdale de ce téléphone : compagnon, étoiles, maison, records, réglages, profil…
 // Jamais dedans : la clé d'accès (il faut retaper le code sur le nouveau téléphone), l'identifiant propre à ce téléphone,

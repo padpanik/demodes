@@ -1045,7 +1045,7 @@
     function lireLigne(ligne) { return ligne.trim().split(/\s+/); }
 
     // Numéro de version affiché sur l'accueil (à augmenter à chaque mise en ligne)
-    const VERSION = '2.45';
+    const VERSION = '2.46';
 
     // ================== ACCÈS PRIVÉ ==================
     // Application réservée à un cercle d'amis : un code est demandé au premier lancement.
@@ -1211,7 +1211,7 @@
     // Au rechargement, la page restaure la grille et se reconnecte toute seule au salon.
     const CLE_SAUVEGARDE = 'brillant-sauvegarde-v1';
     // Un seul salon à la fois sur ce téléphone (copie de commun.js) : entrer ici oublie les salons des autres jeux
-    const SALONS_JEUX = { yams: 'yams-sauvegarde', backgammon: 'bg-sauvegarde', assaut: 'assaut-sauvegarde', bataille: 'bataille-sauvegarde', gribouille: 'gribouille-sauvegarde', petitbac: 'petitbac-sauvegarde', agents: 'agents-sauvegarde', quatre: 'quatre-sauvegarde', domino: 'domino-sauvegarde', lettres: 'lettres-sauvegarde' };
+    const SALONS_JEUX = { yams: 'yams-sauvegarde', backgammon: 'bg-sauvegarde', assaut: 'assaut-sauvegarde', bataille: 'bataille-sauvegarde', gribouille: 'gribouille-sauvegarde', petitbac: 'petitbac-sauvegarde', agents: 'agents-sauvegarde', quatre: 'quatre-sauvegarde', domino: 'domino-sauvegarde', lettres: 'lettres-sauvegarde', donjon: 'donjon-sauvegarde' };
     // Garde-fou réseau : si le serveur de mise en relation (PeerJS) ne répond pas, l'événement « open » n'arrive jamais
     // et aucune erreur non plus : la page resterait sur « connexion… ». Passé le délai, on déclenche une erreur ;
     // chaque page la traite comme les autres (nouvel essai, reprise du salon, ou message).
@@ -1588,6 +1588,7 @@
             scores: this.scores, prisIndex: this.prisIndex, lancerResolu: this.lancerResolu,
             prochainLanceur: this.prochainLanceur, finPartie: this.finPartie, finMasquee: this.finMasquee,
             enAttentePartie: this.enAttentePartie, infoAttente: this.infoAttente,
+            t: Date.now(), fini: !!(this.role && this.finPartie),   // salon oublié au retour s'il est fini (30 min) ou laissé 6 h
             soloTraits: this.soloTraits, soloPenalite: this.soloPenalite,
             joueurs: this.joueurs, historique: this.historique.slice(-80),
             // "salle" n'est pas réactive, mais elle change toujours en même temps que "joueurs"
@@ -2717,6 +2718,8 @@
         restaurer: function() {
           var sv = lireStockage(CLE_SAUVEGARDE);
           if (!sv) return;
+          // Salon abandonné (copie de salonPerime, commun.js) : laissé 6 h, ou partie finie depuis 30 min → on ne le reprend pas
+          if (sv.role) { var age = Date.now() - (sv.t || 0); if (age > 6 * 3600000 || (sv.fini && age > 30 * 60000)) { sv = { pseudo: sv.pseudo }; ecrireStockage(CLE_SAUVEGARDE, sv); } }
           this.pseudoInput = pseudoPour(CLE_SAUVEGARDE);
           if (sv.salon) this.channelInput = sv.salon;
           monPseudo = this.pseudoInput.trim();

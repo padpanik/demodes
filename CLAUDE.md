@@ -109,6 +109,11 @@ Pas d'étape de construction, pas de dépendance à ajouter.
   `new Peer` des jeux et du salon global) : si le serveur de mise en relation ne répond pas en 12 s (ni « open » ni erreur), on déclenche
   une erreur `server-error` que chaque page traite comme les autres (nouvel essai, reprise, message). À l'entrée, le bouton affiche
   « Connexion au salon… essai 2/4 » (`entreeEnCours` = numéro d'essai), puis le message d'échec après le 4e essai (~50 s).
+- **Salon abandonné = oublié** (demandé par l'utilisateur, harmonisé dans tous les jeux) : chaque sauvegarde de salon note `t` (dernière écriture)
+  et `fini` (partie terminée) ; `salonPerime(sv)` / `oublierSalonsPerimes()` dans `commun.js` (lancé au chargement de chaque page, avant que
+  l'accueil ou le jeu ne reprenne un salon ; copie dans `restaurer` de Brilliant) oublient un salon laissé **plus de 6 h**, ou dont la partie est
+  **finie depuis 30 min** (sauvegarde sans `t` = ancienne, oubliée aussi). On retrouve alors le choix « À plusieurs » / « Seul ». Le Donjon, lui,
+  quitte le salon dès qu'on « rentre » après un donjon fini. Une partie en cours se reconnecte toujours après un rechargement.
 - **Pas d'entrée automatique** dans le salon au lancement (option retirée) : le nom du dernier salon est prérempli, on touche « Entrer ».
   Une partie en cours après un rechargement se reconnecte toujours toute seule.
 - Jeux à deux (Backgammon, Assaut, Bataille navale) : si le salon est complet mais que l'autre joueur est **absent**
