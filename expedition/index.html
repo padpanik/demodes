@@ -123,9 +123,9 @@
           <div>{{ lieuEnCours.ico }} {{ lieuEnCours.nom }} · {{ DIFFICULTES[e.difficulte].nom }} · {{ coeursTexte }} · 🎒 {{ e.sac }} ⭐</div>
           <div class="actions-exp">
             <button class="btn principal" @click="onglet = 'play'">▶️ Reprendre</button>
-            <button class="btn" @click="abandonner">Rentrer</button>
+            <button class="btn" @click="onglet = 'play'; demandeQuitter = true">🏳️ Arrêter</button>
           </div>
-          <div class="aide">Rentrer avant le boss : tu gardes la moitié des étoiles du sac.</div>
+          <div class="aide">Arrêter : rentrer avec la moitié du sac, ou tout laisser et repartir de zéro tout de suite.</div>
         </section>
 
         <template v-else>
@@ -184,10 +184,12 @@
           <div class="fond-quitter" v-if="demandeQuitter" @click.self="demandeQuitter = false">
             <div class="boite-quitter">
               <div class="grand">🏳️</div>
-              <div class="titre">Abandonner l'expédition ?</div>
-              <div class="explication">Tu gardes la moitié du sac ({{ moitieSac }} ⭐) et tes poussières d'étoile, puis tu reviens à l'accueil.</div>
-              <button class="btn principal" @click="quitter">Abandonner et revenir à l'accueil</button>
-              <button class="btn" @click="demandeQuitter = false">Continuer l'aventure</button>
+              <div class="titre">Arrêter l'expédition ?</div>
+              <button class="btn principal" @click="quitter">🏠 Rentrer avec la moitié du sac</button>
+              <div class="explication">Tu gardes {{ moitieSac }} ⭐ et tes poussières d'étoile. {{ animal ? animal.nom + ' se reposera' : 'Repos' }} une heure avant la prochaine balade.</div>
+              <button class="btn" @click="recommencer">🔄 Repartir de zéro</button>
+              <div class="explication">Tu laisses le sac et les poussières de cette balade, et tu peux choisir une nouvelle expédition tout de suite.</div>
+              <button class="btn" @click="demandeQuitter = false">↩ Continuer l'aventure</button>
             </div>
           </div>
           <div class="carte-exp" :style="{ background: lieuEnCours.couleurs.fond }" @click="toucherCarte">
@@ -596,12 +598,6 @@
           } else { r.phase = 'nul'; this.sauver(); }
         },
         // ---------- Fin de l'expédition ----------
-        abandonner: function() {
-          if (!confirm('Rentrer à la maison ? Tu gardes la moitié des étoiles du sac.')) return;
-          this.e.rencontre = null;
-          this.finir(false, true);
-          this.onglet = 'play';
-        },
         // Abandon depuis l'écran de jeu, à tout moment (même pendant une rencontre) : bilan, puis retour à l'accueil
         quitter: function() {
           var e = this.e;
@@ -614,6 +610,15 @@
           ecrireStockage('expedition-boss', null); ecrireStockage('expedition-boss-resultat', null);
           this.e = null; ecrireStockage(CLE, null);
           location.href = 'index.html?choix';
+        },
+        // Tout laisser tomber : ni gain ni repos, on revient au choix du lieu pour une nouvelle expédition
+        recommencer: function() {
+          this.demandeQuitter = false;
+          ecrireStockage('expedition-boss', null); ecrireStockage('expedition-boss-resultat', null);
+          ecrireStockage('expedition-depart', null);
+          this.e = null; ecrireStockage(CLE, null);
+          this.maintenant = Date.now();
+          this.onglet = 'config';
         },
         finir: function(gagne, abandon) {
           var e = this.e, L = this.lieuEnCours, sac = EX.gainFinal(e, gagne);

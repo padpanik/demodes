@@ -164,6 +164,9 @@ Pas d'étape de construction, pas de dépendance à ajouter.
 - **Chat** : onglet « Tous », et « Ce salon » (messages étiquetés `jeu:<jeu>:<salon>`, vus seulement par ce salon de jeu).
   Texte simple (300 caractères) + émotions rapides ; les 60 derniers messages gardés sur chaque téléphone
   (rien n'est récupéré de ce qui s'est dit pendant l'absence, sauf ce que l'hôte du salon global a gardé).
+- **État de la connexion sur la bulle** (demandé par l'utilisateur, `etatConnexion`) : petit point vert en haut à gauche = connecté ; après 8 s sans
+  connexion (pas de rôle, téléphone hors ligne, ou hôte coupé du serveur), pastille orange « ! » qui palpite et anneau orange ; le panneau dit pourquoi
+  (« plus Internet », ou « nouvel essai tout seul… essaie la 4G »). Vérifié chaque seconde, événements `online` / `offline`.
 - Interface injectée par le module : bulle 💬 (déplaçable le long du bord droit, pastille rouge = non lus, verte = connectés),
   panneau en haut de l'écran (ajusté au clavier), carte « En ligne » sur l'accueil (`#sg-ici`). Pas de notification appli fermée.
 
@@ -407,8 +410,10 @@ Bataille navale : `bataille-boss` (partie contre un boss d'expédition), `batail
   **Mode boss de la Bataille navale** (`bataille/?boss`, `demarrerBoss`) : partie solo contre l'ordinateur au niveau du boss (`niveauOrdi`),
   bandeau du boss pendant le placement, « Mer ennemie » / « Flotte ennemie », sauvegarde à part `bataille-boss`, ni étoiles ni stats ni records,
   boutons « ↩ Plus tard » / « 🧭 Retour à l'expédition » (`retourExpedition`), issue `gagne` / `perdu` dans `expedition-boss-resultat`.
-- **Abandon à tout moment** (demandé par l'utilisateur) : bouton « 🏳️ Quitter » dans la barre de l'écran de jeu, même pendant une rencontre ;
-  fenêtre de confirmation (moitié du sac), puis `quitter` : bilan compté (`finir(false, true)`), résumé laissé au compagnon, retour à `index.html?choix`.
+- **Abandon à tout moment** (demandé par l'utilisateur) : bouton « 🏳️ Quitter » dans la barre de l'écran de jeu, même pendant une rencontre,
+  et « 🏳️ Arrêter » sur la carte « Expédition en cours » de l'onglet Partie (ouvre la même fenêtre). Deux choix : « 🏠 Rentrer avec la moitié du sac »
+  (`quitter` : bilan compté `finir(false, true)`, résumé laissé au compagnon, repos d'une heure, retour à `index.html?choix`) ou **« 🔄 Repartir de zéro »**
+  (`recommencer`, demandé par l'utilisateur : sac et poussières perdus, pas de repos — `expedition-depart` effacé —, retour au choix du lieu).
 - **Fin** : boss vaincu = tout le sac ; plus de cœurs ou « Rentrer » = la moitié. Bouton « 🏠 Rentrer à la maison » : on revient sur
   `compagnon/`, au salon, où il raconte l'aventure (fenêtre « Retour d'expédition » : lieu, bonnes réponses, poussières, étoiles, souvenirs ;
   `expedition-retour`), avec un bouton OK. Étoiles par `Etoiles.recompenseJeu` (plafond du jour),

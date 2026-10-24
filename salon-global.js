@@ -32,6 +32,14 @@ var SalonGlobal = (function () {
 
   var jeu = 'accueil';
   var peer = null, role = null, hostConn = null, conns = {}, dernierHote = 0, timerReco = null, echecs = 0;
+  // État de la connexion, montré sur la bulle : 'ok' (point vert), 'attente' (on cherche, moins de 8 s), 'ko' (alerte rouge)
+  var horsDepuis = Date.now(), etatCnx = '';
+  function etatConnexion() {
+    var ok = !!role && navigator.onLine !== false && !(role === 'hote' && peer && peer.disconnected);
+    if (ok) { horsDepuis = 0; return 'ok'; }
+    if (!horsDepuis) horsDepuis = Date.now();
+    return Date.now() - horsDepuis > 8000 ? 'ko' : 'attente';
+  }
   var membres = {};         // id -> { id, pseudo, couleur, emoji, image, ou: { jeu, salon }, depuis }
   var messages = lire(CLE_MESSAGES) || [];
   var dejaVus = {};
@@ -114,6 +122,8 @@ var SalonGlobal = (function () {
     setInterval(verifierOu, 2500);
     document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') auRetour(); });
     window.addEventListener('online', auRetour);
+    window.addEventListener('offline', () => rendre());
+    setInterval(() => { if (etatConnexion() !== etatCnx) rendre(); }, 1000);
   }
   function arreter() {
     clearTimeout(timerReco);
@@ -447,6 +457,11 @@ var SalonGlobal = (function () {
       '#sg-bulle .sg-pastille{position:absolute;top:-3px;right:-3px;min-width:18px;height:18px;border-radius:9px;background:#e74c3c;color:#fff;font:700 11px/18px system-ui,sans-serif;padding:0 4px;box-sizing:border-box}',
       '#sg-bulle .sg-nb{position:absolute;bottom:-3px;left:-3px;min-width:18px;height:18px;border-radius:9px;background:#2ecc71;color:#fff;font:700 11px/18px system-ui,sans-serif;padding:0 4px;box-sizing:border-box}',
       '#sg-bulle.hors{background:#7d8a94}',
+      '#sg-bulle .sg-cnx{position:absolute;top:1px;left:1px;width:11px;height:11px;border-radius:50%;background:#2ecc71;border:2px solid #fff;box-sizing:border-box}',
+      '#sg-bulle .sg-cnx.ko{top:-4px;left:-4px;width:20px;height:20px;background:#e8590c;color:#fff;font:900 13px/16px system-ui,sans-serif;text-align:center;animation:sg-alerte 1.2s ease-in-out infinite}',
+      '#sg-bulle.alerte{background:#7d8a94;box-shadow:0 0 0 3px #ffa94d,0 3px 10px rgba(0,0,0,.3)}',
+      '@keyframes sg-alerte{50%{transform:scale(1.2)}}',
+      '.sg-etat.ko{color:#c2410c;font-weight:700}',
       '#sg-bulle.invisible{background:#8e7cc3;opacity:.75}',
       '.sg-invisible{display:flex;align-items:center;gap:10px;background:#f4f1fb;border-radius:12px;padding:8px 10px;margin-bottom:6px;font-size:12px;color:#6b7a86}',
       '.sg-invisible>div{flex:1}.sg-invisible b{font-size:14px;color:#1d2b36}.sg-invisible.actif{background:#e6defa}',
@@ -576,8 +591,10 @@ var SalonGlobal = (function () {
     try { window.dispatchEvent(new CustomEvent('desdale-membres')); } catch (x) {}
     if (!el.bulle) return;
     var nb = listeMembres().length, nl = nonLus(), inv = suisInvisible();
-    el.bulle.className = (role ? '' : 'hors') + (inv ? ' invisible' : '');
-    el.bulle.innerHTML = (inv ? '👻' : '💬') + (nl ? '<span class="sg-pastille">' + (nl > 9 ? '9+' : nl) + '</span>' : '') + (nb > 1 ? '<span class="sg-nb">' + nb + '</span>' : '');
+    etatCnx = etatConnexion();
+    el.bulle.className = (role ? '' : 'hors') + (inv ? ' invisible' : '') + (etatCnx === 'ko' ? ' alerte' : '');
+    el.bulle.title = etatCnx === 'ok' ? 'Connecté' : etatCnx === 'ko' ? 'Pas de connexion' : 'Connexion…';
+    el.bulle.innerHTML = (inv ? '👻' : '💬') + (etatCnx === 'ok' ? '<span class="sg-cnx"></span>' : etatCnx === 'ko' ? '<span class="sg-cnx ko">!</span>' : '') + (nl ? '<span class="sg-pastille">' + (nl > 9 ? '9+' : nl) + '</span>' : '') + (nb > 1 ? '<span class="sg-nb">' + nb + '</span>' : '');
     var ici = document.getElementById('sg-ici');
     if (ici) {
       var autres = listeMembres().filter(m => m.id !== monId());
@@ -599,7 +616,12 @@ var SalonGlobal = (function () {
     var bar = el.panneau.querySelector('.sg-onglets');
     bar.innerHTML = tabs.map(t => '<button data-o="' + t[0] + '" class="' + (onglet === t[0] ? 'actif' : '') + '">' + t[1] + '</button>').join('');
     bar.querySelectorAll('button').forEach(x => { x.onclick = () => changerOnglet(x.dataset.o); });
-    el.panneau.querySelector('.sg-etat').textContent = role ? (role === 'hote' ? 'Salon global · en ligne (tu le tiens)' : 'Salon global · en ligne') : 'Salon global · connexion…';
+    var et = el.panneau.querySelector('.sg-etat');
+    et.className = 'sg-etat' + (etatCnx === 'ko' ? ' ko' : '');
+    et.textContent = navigator.onLine === false ? '⚠️ Ton téléphone n\'a plus Internet (Wi-Fi ou 4G coupés ?)'
+      : etatCnx === 'ok' ? '🟢 Connecté · salon global en ligne' + (role === 'hote' ? ' (tu le tiens)' : '')
+      : etatCnx === 'ko' ? '⚠️ Pas de connexion pour l\'instant : nouvel essai tout seul… (essaie la 4G si le Wi-Fi bloque)'
+      : 'Salon global · connexion…';
     var corps = el.panneau.querySelector('#sg-corps'), pied = el.panneau.querySelector('.sg-pied');
     if (onglet === 'presents') { corps.innerHTML = vueInvisible() + vuePresents(); pied.innerHTML = ''; pied.style.display = 'none';
       corps.querySelector('[data-invisible]').onclick = basculerInvisible;
