@@ -193,10 +193,16 @@ var DJ = (function () {
     var c = generer(graine, pouvoirs, noms.length);
     var e = { id: id || String(graine), graine: graine, phase: 'jeu', salles: c.salles, depart: c.depart, bossSalle: c.boss, carteV: 1,
               ennemis: c.ennemis, seq: c.num, joueurs: {}, cles: 0, grandeCle: false, poussiere: 0, objets: [], effets: [], annonces: [],
-              vues: {}, fin: null, debut: 0, maintenant: 0, pouvoirs: pouvoirs, combats: {} };
+              vues: {}, fin: null, debut: 0, maintenant: 0, pouvoirs: pouvoirs, combats: {}, format: FORMAT };
     e.vues[c.depart] = 1;
     noms.forEach(n => ajouterJoueur(e, n, joueurs[n]));
     return e;
+  }
+  // Format d'une partie enregistrée : une sauvegarde d'une version plus ancienne (avant le combat aux cartes, 2.44) ne peut pas être reprise
+  var FORMAT = 2;
+  function compatible(e) {
+    return !!(e && e.salles && e.joueurs && e.combats && Array.isArray(e.ennemis) && (e.format || 0) <= FORMAT &&
+      Object.values(e.joueurs).every(p => p && Array.isArray(p.main) && Array.isArray(p.defausse || [])));
   }
   var DEPARTS = [[5, 6], [4, 6], [6, 6], [5, 5], [4, 5], [6, 5], [3, 6], [7, 6]];
   function ajouterJoueur(e, nom, cp) {
@@ -548,6 +554,6 @@ var DJ = (function () {
   return { W: W, H: H, GX: GX, GY: GY, PAS: PAS, DX: DX, PORTE: PORTE, MARCHABLE: MARCHABLE, POUVOIRS: POUVOIRS, ESPECES: ESPECES, MONSTRES: MONSTRES,
            pouvoirDe: pouvoirDe, hasard: hasard, generer: generer, nouvelle: nouvelle, ajouterJoueur: ajouterJoueur, entree: entree,
            CARTES: CARTES, CARTE_POUVOIR: CARTE_POUVOIR, jouerCarte: jouerCarte, annulerCarte: annulerCarte, demarrerCombat: demarrerCombat,
-           tick: tick, tuile: tuile, idx: idx, etatMobile: etatMobile, pieces: pieces };
+           tick: tick, tuile: tuile, compatible: compatible, FORMAT: FORMAT, idx: idx, etatMobile: etatMobile, pieces: pieces };
 })();
 if (typeof module !== 'undefined') module.exports = DJ;

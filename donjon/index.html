@@ -42,7 +42,7 @@
     .barre-dj .coeurs { font-size: 1.15em; letter-spacing: -2px; white-space: nowrap; }
     .barre-dj .inv { font-size: 0.92em; white-space: nowrap; }
     .barre-dj .espace { flex: 1; }
-    .quitter-dj { border: none; background: #e3e8ec; color: #3b4b57; font: inherit; font-weight: 800; font-size: 0.8em; border-radius: 10px; padding: 6px 9px; cursor: pointer; }
+    .quitter-dj { flex: none; border: 1.5px solid #e03131; background: #fff5f5; color: #c92a2a; font: inherit; font-weight: 800; font-size: 0.8em; border-radius: 10px; padding: 4px 7px; cursor: pointer; }
     .carte-mini { display: grid; gap: 2px; }
     .carte-mini span { width: 11px; height: 9px; border-radius: 2px; background: transparent; position: relative; }
     .carte-mini span.vue { background: #c9b8a6; }
@@ -205,6 +205,7 @@
           <section class="carte">
             <div class="titre-carte">Seul</div>
             <button class="btn principal" style="width:100%" @click="demarrerSolo">🗝️ {{ soloEnCours ? 'Reprendre mon exploration' : 'Explorer seul' }}</button>
+            <button v-if="soloEnCours" class="btn" style="width:100%;margin-top:8px" @click="demandeAbandon = true">🔄 Abandonner et recommencer à zéro</button>
             <div class="aide" v-if="stats.parties">Donjons : {{ stats.gagnes }} vaincu{{ stats.gagnes > 1 ? 's' : '' }} sur {{ stats.parties }}.</div>
           </section>
         </template>
@@ -243,7 +244,7 @@
             <div class="carte-mini" :style="{ gridTemplateColumns: 'repeat(' + DJ.GX + ', 11px)' }">
               <span v-for="c in carteMini" :key="c.id" :class="c.cl"><i v-for="(p, k) in c.amis" :key="k" :style="{ background: p, left: (2 + k * 3) + 'px' }"></i></span>
             </div>
-            <button class="quitter-dj" @click="demandeQuitter = true">🏳️</button>
+            <button class="quitter-dj" @click="demandeQuitter = true" aria-label="Quitter le donjon">🏳️ Quitter</button>
           </div>
 
           <!-- COMBAT AUX CARTES (tour par tour), à la place de la pièce -->
@@ -322,14 +323,42 @@
           </template>
         </div>
 
+        <!-- Abandon depuis l'onglet Partie -->
+        <div class="voile-dj" v-if="demandeAbandon" @click.self="demandeAbandon = false">
+          <div class="boite-dj">
+            <div class="grand">🔄</div>
+            <div class="titre">Abandonner ton exploration ?</div>
+            <div class="aide" style="font-size:0.9em">Tu perds la progression de ce donjon (clés, poussières) et tu peux en commencer un nouveau.</div>
+            <button class="btn principal" @click="abandonnerSolo">Abandonner ce donjon</button>
+            <button class="btn" @click="demandeAbandon = false">↩ Garder mon exploration</button>
+          </div>
+        </div>
+        <!-- Donjon qui ne tourne plus (sauvegarde abîmée) : on propose d'en sortir -->
+        <div class="voile-dj" v-if="panne && solo">
+          <div class="boite-dj">
+            <div class="grand">🧱</div>
+            <div class="titre">Ce donjon s'est bloqué</div>
+            <div class="aide" style="font-size:0.9em">Désolé ! Ton exploration ne peut pas continuer. Tu peux en commencer une nouvelle.</div>
+            <button class="btn principal" @click="abandonnerSolo">🔄 Commencer un nouveau donjon</button>
+            <button class="btn" @click="abandonnerSolo(true)">🧭 Retour à l'expédition</button>
+          </div>
+        </div>
         <!-- Abandon -->
         <div class="voile-dj" v-if="demandeQuitter" @click.self="demandeQuitter = false">
           <div class="boite-dj">
             <div class="grand">🏳️</div>
             <div class="titre">Quitter le donjon ?</div>
-            <div class="aide" style="font-size:0.9em">{{ solo ? 'Ton exploration est gardée : tu pourras la reprendre.' : 'Tu quittes le salon ; les autres continuent sans toi.' }}</div>
-            <button class="btn principal" @click="quitterDonjon">Quitter et revenir à l'expédition</button>
-            <button class="btn" @click="demandeQuitter = false">Continuer l'exploration</button>
+            <template v-if="solo">
+              <button class="btn principal" @click="quitterDonjon">⏸️ Quitter, je reprendrai plus tard</button>
+              <div class="aide" style="font-size:0.9em">Ton exploration est gardée.</div>
+              <button class="btn" @click="abandonnerSolo">🔄 Abandonner ce donjon</button>
+              <div class="aide" style="font-size:0.9em">Tu perds la progression de ce donjon (clés, poussières) et tu peux en commencer un nouveau.</div>
+            </template>
+            <template v-else>
+              <div class="aide" style="font-size:0.9em">Tu quittes le salon ; les autres continuent sans toi.</div>
+              <button class="btn principal" @click="quitterDonjon">Quitter et revenir à l'expédition</button>
+            </template>
+            <button class="btn" @click="demandeQuitter = false">↩ Continuer l'exploration</button>
           </div>
         </div>
 
@@ -458,6 +487,9 @@
         inverse: lireStockage('donjon-inverse') === true,   // croix à droite (sur ce téléphone)
         coupActif: false,
         demandeQuitter: false,
+        demandeAbandon: false,
+        panne: false,
+        soloV: 0,
         gains: null,
         pseudoInput: pseudoPour('donjon-sauvegarde'),
         channelInput: lireStockage('donjon-dernier-salon') || lireStockage('brillant-dernier-salon') || '',
@@ -473,7 +505,7 @@
         moi: function() { return this.solo ? 'Moi' : (this.pseudoInput.trim() || 'Moi'); },
         monPouvoir: function() { return DJ.pouvoirDe(this.monCp); },
         connexionTexte: function() { return { ok: 'en ligne', connexion: 'connexion…', perdue: 'reconnexion…', aucune: 'hors ligne' }[this.connexion]; },
-        soloEnCours: function() { var s = lireStockage(CLE_SOLO); return !!(s && s.phase === 'jeu'); },
+        soloEnCours: function() { this.soloV; var s = lireStockage(CLE_SOLO); return !!(s && s.phase === 'jeu'); },
         groupe: function() {
           var p = this.pub;
           if (!p) return [];
@@ -610,6 +642,8 @@
         demarrerSolo: function() {
           var s = lireStockage(CLE_SOLO);
           this.solo = true; this.gains = null;
+          this.panne = false; this._erreurs = 0;
+          if (s && !DJ.compatible(s)) { ecrireStockage(CLE_SOLO, null); s = null; }   // exploration d'une ancienne version : on repart de zéro
           partieHote = s && s.phase === 'jeu' ? s : DJ.nouvelle(Math.floor(Math.random() * 1e9), { Moi: this.monCp }, nouvelId());
           if (partieHote.joueurs.Moi) { partieHote.joueurs.Moi.cp = this.monCp; partieHote.joueurs.Moi.pouvoir = DJ.pouvoirDe(this.monCp); partieHote.joueurs.Moi.surnom = 'L\'explorateur'; }
           partieHote.maintenant = 0;   // l'horloge repart (l'exploration a pu être reprise plus tard)
@@ -618,6 +652,15 @@
           this.montrerPartie(true);
           this.onglet = 'play';
           this.sauvegarderPartie();
+        },
+        // Abandon de l'exploration en solo : rien n'est gagné, on peut repartir de zéro
+        abandonnerSolo: function(versExpedition) {
+          this.demandeQuitter = false; this.demandeAbandon = false; this.panne = false;
+          ecrireStockage(CLE_SOLO, null); partieHote = null;
+          this.solo = false; this.partie = null; this.gains = null; this.direction(null);
+          this.soloV++;
+          if (versExpedition === true) { location.href = 'expedition/'; return; }
+          this.onglet = 'config';
         },
         nouveauSolo: function() { ecrireStockage(CLE_SOLO, null); partieHote = null; this.demarrerSolo(); },
 
@@ -628,7 +671,12 @@
           if (e.phase === 'jeu') {
             var absents = {};
             if (!this.solo) Object.keys(salle.infos).forEach(n => { if (!salle.infos[n].connecte) absents[n] = 1; });
-            DJ.tick(e, Date.now(), null, absents);
+            try { DJ.tick(e, Date.now(), null, absents); this._erreurs = 0; }
+            catch (err) {
+              // Une erreur à chaque image figerait le donjon : au bout de quelques-unes, on propose d'en sortir
+              if (++this._erreurs === 20) { console.error(err); if (this.solo) this.panne = true; }
+              return;
+            }
             if (e.phase === 'fin' && pubHote && !this.solo) { pubHote.phase = 'fin'; this.publier(); }
           }
           if (e.phase !== 'jeu' && this._dernierFin === e.id) return;   // fin : un dernier envoi suffit
@@ -658,6 +706,10 @@
           if (cP && !cA) { this.son('choc'); this.vibre([40, 40, 40]); this.direction(null); }
           if (cP && cA && cP.resolu !== cA.resolu) { this.son('des', 3); this.carteEnCours = null; }
           if (!cP) this.carteEnCours = null;
+          // Doigt toujours sur la croix mais direction oubliée par le donjon (après un combat, une reprise) : on la redonne
+          if (this.dirCourante && moi && !moi.d && !cP && !moi.fantome && p.phase === 'jeu' && Date.now() - (this._redir || 0) > 500) {
+            this._redir = Date.now(); this.envoyerJeu({ type: 'DIR', d: this.dirCourante });
+          }
           if (p.phase === 'fin' && (!a || a.phase !== 'fin' || a.id !== p.id)) this.finir(p);
           if (p.phase !== 'fin') this.gains = null;
         },
@@ -810,7 +862,7 @@
             if (sv.role === 'hote') {
               pubHote = sv.pubHote || copie(sv.pub);
               salle = sv.salle || { infos: {} };
-              partieHote = sv.partie || null;
+              partieHote = sv.partie && DJ.compatible(sv.partie) ? sv.partie : null;
               if (partieHote) { partieHote.maintenant = 0; Object.values(partieHote.joueurs).forEach(p => { p.pas = 0; p.inv = 0; p.attProchaine = 0; p.d = null; }); partieHote.ennemis.forEach(m => { m.pas = 0; }); }
               Object.values(salle.infos).forEach(i => { i.connecte = false; });
               this.montrerPartie(true);

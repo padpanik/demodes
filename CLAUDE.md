@@ -457,6 +457,12 @@ Bataille navale : `bataille-boss` (partie contre un boss d'expédition), `batail
 - Fin (sur chaque téléphone, une fois par donjon) : poussières converties comme en expédition (`expedition-poussiere`, 5 = 1 ⭐), `Etoiles.finDePartie('Donjon', …)`
   (compte « entre amis » à deux et plus), boss vaincu = un souvenir du donjon pour la maison (`cle-donjon`, `coffre-tresor`, `bouclier`, `couronne-gluant`),
   Repas et Eau −15, récit `expedition-retour` lu par la maison du compagnon. Les annonces nomment les compagnons (« Flammèche crache du feu sur les ronces ! »).
+- **Sortir du donjon** (demandé par l'utilisateur, bloqué dans une exploration solo) : bouton « 🏳️ Quitter » bien visible (bordure rouge) dans la barre.
+  En solo, deux choix : « ⏸️ Quitter, je reprendrai plus tard » (gardé dans `donjon-solo`) ou « 🔄 Abandonner ce donjon » (`abandonnerSolo` : progression perdue,
+  retour à l'onglet Partie) ; l'onglet Partie propose aussi « 🔄 Abandonner et recommencer à zéro » sous « Reprendre mon exploration ».
+  **Sauvegardes anciennes** : `DJ.compatible(e)` / `DJ.FORMAT` (une exploration d'avant 2.44, sans `combats`, faisait planter chaque `tick` : personnage figé) ;
+  une sauvegarde incompatible est oubliée et un nouveau donjon commence. Garde-fou : 20 erreurs de suite dans `boucle` → fenêtre « Ce donjon s'est bloqué »
+  (`panne`) avec « Commencer un nouveau donjon » / « Retour à l'expédition ». Doigt resté sur la croix après un combat : la direction est renvoyée au moteur.
 - Dessins des compagnons : identifiants de dégradés rendus uniques à chaque dessin (sinon un dessin caché dans un autre onglet les « prend » et l'autre devient transparent).
 
 ### Mon compagnon (prototype : piste d'un futur Désdale « centre de loisirs pour personnes âgées »)
