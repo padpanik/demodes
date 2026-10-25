@@ -615,6 +615,9 @@
           veillerOuverture(monPeer);
           monPeer.on('open', () => {
             if (peer !== monPeer) return;
+            // PeerJS redit « open » après une coupure du serveur (reconnect) : le salon continue tel quel (avant : une nouvelle partie repartait de zéro)
+            if (monPeer._ouvert) { if (this.role === 'hote') this.connexion = 'ok'; return; }
+            monPeer._ouvert = true;
             this.role = 'hote';
             this.connexion = 'ok';
             this.roomCode = nom;
@@ -740,6 +743,9 @@
           veillerOuverture(monPeer);
           monPeer.on('open', () => {
             if (peer !== monPeer) return;
+            // PeerJS redit « open » après une coupure du serveur (reconnect) : le salon continue tel quel (avant : une nouvelle partie repartait de zéro)
+            if (monPeer._ouvert) { if (this.role === 'hote') this.connexion = 'ok'; return; }
+            monPeer._ouvert = true;
             var conn = hostConn = monPeer.connect(ACCES.idSalon(nom, JEU_RESEAU), { reliable: true });
             var delai = setTimeout(() => {
               if (hostConn !== conn || this.connexion === 'ok') return;

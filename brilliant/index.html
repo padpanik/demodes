@@ -1045,7 +1045,7 @@
     function lireLigne(ligne) { return ligne.trim().split(/\s+/); }
 
     // Numéro de version affiché sur l'accueil (à augmenter à chaque mise en ligne)
-    const VERSION = '2.48';
+    const VERSION = '2.49';
 
     // ================== ACCÈS PRIVÉ ==================
     // Application réservée à un cercle d'amis : un code est demandé au premier lancement.
@@ -2285,6 +2285,9 @@
 
           monPeer.on('open', () => {
             if (peer !== monPeer) return;
+            // PeerJS redit « open » après une coupure du serveur (reconnect) : le salon continue tel quel (avant : une nouvelle partie repartait de zéro)
+            if (monPeer._ouvert) { if (this.role === 'hote') this.connexion = 'ok'; return; }
+            monPeer._ouvert = true;
             var conn = hostConn = monPeer.connect(ACCES.idSalon(target), { reliable: true });
 
             // Si l'hôte ne répond pas, on réessaie (ou on abandonne pour une 1re connexion)
@@ -2484,6 +2487,9 @@
 
           monPeer.on('open', (id) => {
             if (peer !== monPeer) return;
+            // PeerJS redit « open » après une coupure du serveur (reconnect) : le salon continue tel quel (avant : une nouvelle partie repartait de zéro)
+            if (monPeer._ouvert) { if (this.role === 'hote') this.connexion = 'ok'; return; }
+            monPeer._ouvert = true;
             isHost = true;
             this.role = 'hote';
             this.connexion = 'ok';

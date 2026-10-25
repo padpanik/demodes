@@ -137,6 +137,8 @@ var SalonGlobal = (function () {
     if (typeof veillerOuverture === 'function') veillerOuverture(p);
     p.on('open', () => {
       if (peer !== p) return;
+      if (p._ouvert) { rendre(); return; }   // reconnexion au serveur après une coupure : on garde les présents
+      p._ouvert = true;
       role = 'hote'; echecs = 0;
       membres = {}; majMoi();
       diffuserMembres(); rendre();
@@ -156,6 +158,8 @@ var SalonGlobal = (function () {
     if (typeof veillerOuverture === 'function') veillerOuverture(p);
     p.on('open', () => {
       if (peer !== p) return;
+      if (p._ouvert) return;   // reconnexion au serveur : la liaison avec l'hôte continue (ou sa perte relance tout)
+      p._ouvert = true;
       var c = hostConn = p.connect(idSalon(), { reliable: true });
       var delai = setTimeout(() => { if (hostConn === c && role !== 'client') planifier(3000); }, 10000);
       c.on('open', () => {

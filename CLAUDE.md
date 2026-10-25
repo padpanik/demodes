@@ -114,6 +114,10 @@ Pas d'étape de construction, pas de dépendance à ajouter.
   l'accueil ou le jeu ne reprenne un salon ; copie dans `restaurer` de Brilliant) oublient un salon laissé **plus de 6 h**, ou dont la partie est
   **finie depuis 30 min** (sauvegarde sans `t` = ancienne, oubliée aussi). On retrouve alors le choix « À plusieurs » / « Seul ». Le Donjon, lui,
   quitte le salon dès qu'on « rentre » après un donjon fini. Une partie en cours se reconnecte toujours après un rechargement.
+- **Coupure du serveur de mise en relation** (bug signalé sur le Yams en 2.48, corrigé partout en 2.49) : après `disconnected`, `peer.reconnect()`
+  fait redire « open » au même peer ; l'hôte qui venait d'**ouvrir** le salon relançait alors une partie neuve (grille vide). Chaque gestionnaire
+  `monPeer.on('open')` des jeux (hôte et client, Brilliant compris) et du salon global note `_ouvert` et ignore le second « open »
+  (l'hôte repasse juste `connexion = 'ok'`). Vérifié : salon tenu seul, coupé 20 s, la partie continue ; salon à deux, hôte coupé, rien ne change.
 - **Pas d'entrée automatique** dans le salon au lancement (option retirée) : le nom du dernier salon est prérempli, on touche « Entrer ».
   Une partie en cours après un rechargement se reconnecte toujours toute seule.
 - Jeux à deux (Backgammon, Assaut, Bataille navale) : si le salon est complet mais que l'autre joueur est **absent**
