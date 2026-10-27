@@ -1,0 +1,33 @@
+{
+  "id": "./",
+  "name": "Désdale",
+  "short_name": "Désdale",
+  "description": "Jeux et aventures à partager entre amis, chacun sur son téléphone.",
+  "lang": "fr",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#fff4de",
+  "theme_color": "#f3f5f7",
+  "icons": [
+    {
+      "src": "icon-cf-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-cf-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-cf-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

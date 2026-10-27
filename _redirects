@@ -3,3 +3,9 @@
 /netlify.toml             /  302
 /serveur-cloudflare/*     /  302
 /_headers                 /  302
+
+# Chez Cloudflare seulement (GitHub Pages ignore ce fichier) : icônes à fond crème et manifeste propre à la nouvelle adresse,
+# pour distinguer les deux applis sur l'écran d'accueil le temps du déménagement
+/manifest.webmanifest     /manifest-cf.webmanifest   200
+/apple-touch-icon.png     /apple-touch-icon-cf.png   200
+/favicon.png              /favicon-cf.png            200

@@ -5,7 +5,7 @@
 //   version mise en ligne est donc visible dès le prochain lancement.
 // Pensez à changer VERSION à chaque mise en ligne (même numéro que dans commun.js et brilliant/index.html).
 
-const VERSION = '2.57';
+const VERSION = '2.58';
 const CACHE = 'desdale-' + VERSION;
 
 const FICHIERS = [
@@ -60,6 +60,7 @@ const FICHIERS = [
   './icon-maskable-512.png',
   './apple-touch-icon.png',
   './favicon.png',
+  './manifest-cf.webmanifest', './icon-cf-192.png', './icon-cf-512.png', './icon-cf-maskable-512.png', './apple-touch-icon-cf.png', './favicon-cf.png',
   'https://cdn.jsdelivr.net/npm/vue@2.7.16/dist/vue.min.js',
   'https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js'
 ];

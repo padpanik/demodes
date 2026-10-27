@@ -27,6 +27,9 @@ Tout est en français : interface, commentaires du code, messages de commit, ré
   l'ancienne adresse (`padpanik.github.io`) la carte « 🚚 Désdale déménage » (`demenager` : `Sauvegarde.creer()` en base64 dans `#demenagement=…`,
   jamais envoyé au serveur) ; la nouvelle adresse la lit (`lireDemenagement`) et propose « ✓ Récupérer mes données » après le code d'accès.
   Le serveur de mise en relation accepte les deux origines (`ORIGINES`). Ensuite : dépôt passé en privé par l'utilisateur (l'ancien site s'éteint).
+  **Deux applis à distinguer** (demandé par l'utilisateur, 2.58) : chez Cloudflare, `_redirects` réécrit (200) `manifest.webmanifest`, `apple-touch-icon.png`
+  et `favicon.png` vers `manifest-cf.webmanifest` / `*-cf.png` : même logo sur **fond crème** ; `manifest.webmanifest` (servi seulement par GitHub Pages)
+  s'appelle « Ancien Désdale ». Après la fin du déménagement, on pourra rendre ces icônes définitives.
   Porte Cloudflare Access : pas tout de suite (plus tard).
 - L'utilisateur teste sur téléphone (référence d'écran : Samsung S21, 360 × 800 CSS px).
   Tout doit tenir en portrait sans défilement sur l'onglet de jeu.
