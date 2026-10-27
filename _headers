@@ -1,0 +1,9 @@
+# Cloudflare Pages : en-têtes envoyés avec chaque fichier
+# Site privé : pas de référencement (en plus de la balise noindex de chaque page)
+/*
+  X-Robots-Tag: noindex, nofollow
+  Referrer-Policy: same-origin
+
+# Le service worker doit toujours être relu (nouvelle version visible au prochain lancement)
+/sw.js
+  Cache-Control: no-cache

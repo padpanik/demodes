@@ -15,6 +15,14 @@ Tout est en français : interface, commentaires du code, messages de commit, ré
 - **Pas de serveur de jeu** : hébergement statique sur GitHub Pages (`padpanik/demodes`, branche `main`).
   Les téléphones se parlent directement (WebRTC via PeerJS), mis en relation par le petit serveur de Désdale sur Cloudflare
   (`serveur-cloudflare/`, repli automatique sur le serveur public de PeerJS).
+- **Déménagement vers Cloudflare Pages** (décidé par l'utilisateur en 2.56, pour pouvoir passer le dépôt en privé : GitHub Pages gratuit
+  ne publie que les dépôts publics) : projet Pages `desdale` relié au dépôt (`https://desdale.pages.dev`, publié à chaque push sur `main`, sans
+  étape de construction, dossier de sortie = racine). `_headers` (noindex, `sw.js` toujours relu) et `_redirects` (CLAUDE.md, `serveur-cloudflare/`,
+  `netlify.toml` non servis). Pages renvoie `index.html` vers `/` : `sw.js` renvoie alors la redirection au lieu de la page redirigée (refusée en navigation).
+  Les données (localStorage) sont propres à chaque adresse : `DEMENAGEMENT` dans `commun.js` (`ouvert` à mettre à `true` quand la nouvelle adresse
+  est en ligne) affiche sur l'ancienne adresse la carte « 🚚 Désdale déménage » (`demenager` : `Sauvegarde.creer()` en base64 dans
+  `#demenagement=…`, jamais envoyé au serveur) ; la nouvelle adresse la lit (`lireDemenagement`) et propose « ✓ Récupérer mes données »
+  après le code d'accès. Le serveur de mise en relation accepte les deux origines (`ORIGINES`). Porte Cloudflare Access : pas tout de suite (plus tard).
 - L'utilisateur teste sur téléphone (référence d'écran : Samsung S21, 360 × 800 CSS px).
   Tout doit tenir en portrait sans défilement sur l'onglet de jeu.
 - Mise en ligne : commit et push **directement sur `main`** (accord de l'utilisateur).

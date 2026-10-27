@@ -3,7 +3,7 @@
 // Les clés de stockage gardent l'ancien préfixe "brillant-" : les réglages déjà faits sont conservés.
 
 // Numéro de version affiché (à augmenter à chaque mise en ligne, avec brilliant/index.html et sw.js)
-const VERSION = '2.55';
+const VERSION = '2.56';
 
 // ---------- Stockage local ----------
 function lireStockage(cle) {
@@ -50,6 +50,10 @@ oublierSalonsPerimes();   // au chargement de chaque page, avant que l'accueil o
 // Un fichier JSON avec les données de Désdale de ce téléphone : compagnon, étoiles, maison, records, réglages, profil…
 // Jamais dedans : la clé d'accès (il faut retaper le code sur le nouveau téléphone), l'identifiant propre à ce téléphone,
 // le déverrouillage admin, et les parties en salon en cours (elles appartiennent à ce téléphone-ci).
+// Déménagement de GitHub Pages vers Cloudflare Pages : sur l'ancienne adresse, l'accueil propose d'emporter ses données
+// (« ouvert » passe à true quand la nouvelle adresse est en ligne)
+var DEMENAGEMENT = { ouvert: false, ancienHote: 'padpanik.github.io', nouvelle: 'https://desdale.pages.dev/' };
+
 var Sauvegarde = (function () {
   var NOTRES = /^(brillant|desdale|compagnon|expedition|yams2?|bg|assaut|bataille|gribouille|petitbac|agents|quatre|domino|lettres|donjon|joyaux)-/;
   var EXCLUES = ['brillant-acces', 'brillant-client-id', 'desdale-admin'];

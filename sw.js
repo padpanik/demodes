@@ -2,10 +2,10 @@
 // - garde en cache les pages, les icônes et les bibliothèques (Vue, PeerJS)
 //   pour que l'application démarre vite, même avec un réseau faible ;
 // - nos propres pages, scripts et styles sont toujours pris sur le réseau d'abord : une nouvelle
-//   version mise en ligne sur GitHub est donc visible dès le prochain lancement.
+//   version mise en ligne est donc visible dès le prochain lancement.
 // Pensez à changer VERSION à chaque mise en ligne (même numéro que dans commun.js et brilliant/index.html).
 
-const VERSION = '2.55';
+const VERSION = '2.56';
 const CACHE = 'desdale-' + VERSION;
 
 const FICHIERS = [
@@ -102,10 +102,13 @@ self.addEventListener('fetch', event => {
     event.respondWith(
       fetch(req.url, { cache: 'no-cache', credentials: 'same-origin' })
         .then(rep => {
-          if (rep.ok) { const copie = rep.clone(); caches.open(CACHE).then(c => c.put(cle, copie)); }
+          // Cloudflare Pages renvoie « index.html » vers « / » : une page qui a été redirigée ne peut pas servir
+          // de réponse à la navigation (le navigateur la refuse). On renvoie donc la redirection elle-même.
+          if (rep.redirected && req.mode === 'navigate') return Response.redirect(rep.url, 302);
+          if (rep.ok && !rep.redirected) { const copie = rep.clone(); caches.open(CACHE).then(c => c.put(cle, copie)); }
           return rep;
         })
-        .catch(() => caches.match(cle).then(r => r || caches.match('./index.html')))
+        .catch(() => caches.match(cle).then(r => r || caches.match(url.origin + url.pathname.replace(/index\.html$/, ''))).then(r => r || caches.match('./')))
     );
     return;
   }
