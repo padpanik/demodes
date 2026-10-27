@@ -267,7 +267,7 @@
         },
         jeux: function() {
           this.maj;   // recalcul après « Quitter »
-          var b = etatJeu('brillant-sauvegarde-v1'), y = etatJeu('yams-sauvegarde'), g = etatJeu('bg-sauvegarde'), a = etatJeu('assaut-sauvegarde'), n = etatJeu('bataille-sauvegarde'), d = etatJeu('gribouille-sauvegarde'), pb = etatJeu('petitbac-sauvegarde'), ag = etatJeu('agents-sauvegarde'), ql = etatJeu('quatre-sauvegarde'), dm = etatJeu('domino-sauvegarde'), lc = etatJeu('lettres-sauvegarde'); var ex = lireStockage('expedition-partie');
+          var b = etatJeu('brillant-sauvegarde-v1'), y = etatJeu('yams-sauvegarde'), g = etatJeu('bg-sauvegarde'), a = etatJeu('assaut-sauvegarde'), n = etatJeu('bataille-sauvegarde'), d = etatJeu('gribouille-sauvegarde'), pb = etatJeu('petitbac-sauvegarde'), ag = etatJeu('agents-sauvegarde'), ql = etatJeu('quatre-sauvegarde'), dm = etatJeu('domino-sauvegarde'), lc = etatJeu('lettres-sauvegarde'), jx = etatJeu('joyaux-sauvegarde'); var ex = lireStockage('expedition-partie');
           return [
             { id: 'brilliant', nom: 'Brilliant', page: 'brilliant/', desc: 'Roll & write : remplis les zones de ta grille.', enCours: b && b.texte },
             { id: 'yams', nom: 'Yams', page: 'yams/', desc: '5 dés, 3 lancers, seul ou à plusieurs.', enCours: y && y.texte },
@@ -280,6 +280,7 @@
             { id: 'quatre', nom: 'Quatre en ligne', page: 'quatre/', desc: 'Aligne 4 jetons : seul contre l\'ordinateur ou à deux.', enCours: ql && ql.texte },
             { id: 'domino', nom: 'Dominos', page: 'domino/', desc: 'Dominos ou triominos, seul ou de 2 à 4.', enCours: dm && dm.texte },
             { id: 'lettres', nom: 'Lettres croisées', page: 'lettres/', desc: 'Des mots sur la grille, seul ou de 2 à 4.', enCours: lc && lc.texte },
+            { id: 'joyaux', nom: 'Les 7 joyaux', page: 'joyaux/', desc: 'Bâtis ta cité en trois âges, seul ou entre amis.', enCours: jx && jx.texte, nouveau: true },
             { id: 'expedition', nom: 'Expédition', page: 'expedition/', desc: 'Balade avec ton compagnon : questions, coffres et boss.', enCours: ex && !ex.fin ? '● Expédition en cours' : '', solo: true, nouveau: true, tete: true }
           ];
         }

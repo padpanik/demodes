@@ -12,7 +12,7 @@ var IconesJeux = (function () {
     brilliant: ['#9775fa', '#6741d9'], yams: ['#ff6b6b', '#e03131'], backgammon: ['#e8a061', '#a8591f'],
     assaut: ['#94b04a', '#55701c'], bataille: ['#4dabf7', '#1864ab'], gribouille: ['#f783ac', '#d6336c'],
     petitbac: ['#3bc9db', '#0c8599'], agents: ['#68727c', '#25292e'], quatre: ['#748ffc', '#3b5bdb'],
-    domino: ['#51cf66', '#2b8a3e'], lettres: ['#ffa94d', '#e8590c'], expedition: ['#da77f2', '#9c36b5'], donjon: ['#ffa94d', '#a8590f']
+    domino: ['#51cf66', '#2b8a3e'], lettres: ['#ffa94d', '#e8590c'], expedition: ['#da77f2', '#9c36b5'], donjon: ['#ffa94d', '#a8590f'], joyaux: ['#38d9a9', '#087f5b']
   };
   var B = '#fff';   // couleur du dessin (blanc sur fond plein, couleur du jeu sur fond clair) ; c[1] = touche d'accent
   function pips(cx, cy, s, n, c) {   // points d'un dé de côté s centré en cx, cy
@@ -96,6 +96,12 @@ var IconesJeux = (function () {
       return '<path d="M13 44 V24 Q13 11 28 11 Q43 11 43 24 V44 Z" fill="' + B + '"/>' +
              '<path d="M19 44 V26 Q19 17 28 17 Q37 17 37 26 V44 Z" fill="' + c[1] + '" opacity="0.35"/>' +
              '<circle cx="23" cy="33" r="4.2" fill="none" stroke="#fab005" stroke-width="2.6"/><path d="M27 33 H38 M34 33 V37 M37 33 V36" stroke="#fab005" stroke-width="2.6" stroke-linecap="round"/>';
+    },
+    // Les 7 joyaux : une pierre taillée
+    joyaux: function (c) {
+      return '<path d="M16 22 L22 13 H34 L40 22 L28 44 Z" fill="' + B + '"/>' +
+             '<path d="M16 22 H40 M22 13 L25 22 L28 44 L31 22 L34 13" fill="none" stroke="' + c[1] + '" stroke-width="1.6" stroke-linejoin="round" opacity="0.55"/>' +
+             '<path d="M10 14 l2 -4 l2 4 l-2 4 z M44 34 l1.6 -3.2 l1.6 3.2 l-1.6 3.2 z" fill="#fab005"/>';
     },
     // Lettres croisées : trois lettres posées
     lettres: function (c) {

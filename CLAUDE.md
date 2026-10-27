@@ -50,6 +50,7 @@ Lien vers un jeu : `yams/` (pas `yams.html`). `404.html` renvoie les anciennes a
 | `quatre/` : `index.html` + `quatre-regles.js` | Quatre en ligne (version maison du classique « aligner 4 jetons », sans le nom de la marque). Solo contre l'ordinateur (3 niveaux) ou à deux en salon. Moteur + ordinateur (minimax) dans `quatre-regles.js` (testable avec Node). |
 | `domino/` : `index.html` + `domino-regles.js` | Dominos (double-six) avec l'option **Triominos**. Solo contre 1 à 3 ordinateurs, ou salon de 2 à 4 (mains gardées par l'hôte, chacun ne reçoit que la sienne). Moteur + ordinateur + géométrie triangulaire dans `domino-regles.js` (testable avec Node). |
 | `lettres/` : `index.html` + `lettres-regles.js` + `lettres-mots.txt` | **Lettres croisées** (version maison du jeu de lettres sur grille, sans le nom ni les visuels de la marque). Solo contre 1 à 3 ordinateurs (3 niveaux), ou salon de 2 à 4 (chevalets et sac gardés par l'hôte). Plateau, bonus, points, arbre de mots et ordinateur dans `lettres-regles.js` (testable avec Node). Dictionnaire libre `lettres-mots.txt` (~311 000 mots, licence MIT, voir `lettres-mots-licence.txt`), une ligne par mot codée « préfixe commun » (1er caractère = longueur reprise du mot précédent, en hexadécimal), suivie d'un chiffre de fréquence (3 très courant, 2 courant, 1 connu, rien = rare ; d'après wordfreq, CC BY-SA 4.0). Abréviations retirées (CF, KM…). Pas d'ODS (liste officielle sous droits). |
+| `joyaux/` : `index.html` + `joyaux-regles.js` | **Les 7 joyaux** (demandé par l'utilisateur : version maison d'un jeu de draft de cartes et de cités, sans le nom, les cartes ni les visuels de la marque). Solo contre 2 à 6 ordinateurs, ou salon de 2 à 7 humains + ordinateurs ajoutés par l'hôte (3 cités au moins ; mains gardées par l'hôte, chacun ne reçoit que la sienne). Cartes, joyaux, paiement, conflits, décompte et ordinateur dans `joyaux-regles.js` (testable avec Node). |
 | `expedition/` : `index.html` + `expedition-regles.js` | **Expédition** (balade du compagnon, culture générale) : chemin à embranchements en **vue 3D isométrique** (SVG dessiné par le code), gardiens qui posent une question, coffres, buvette, boss sur un jeu de la collection contre l'ordinateur. Solo pour l'instant (sorties en groupe prévues). Lieux, questions maison, génération de la carte et récompenses dans `expedition-regles.js` (testable avec Node). |
 | `donjon/` : `index.html` + `donjon-regles.js` | **Donjon des compagnons** (demandé par l'utilisateur : exploration à plusieurs façon jeu d'aventure NES, « temps réel doux »). Pas de fiche sur l'accueil : on y va par l'Expédition (lieu « Donjon », `donjon: true`, bouton « 🗝️ Aller au donjon », sans la fatigue d'une heure) ou par « Rejoindre » du salon global. Seul ou salon (préfixe réseau `dj`, pas de limite). Moteur, génération et pouvoirs dans `donjon-regles.js` (testable avec Node). |
 | `compagnon/` : `index.html` + `compagnon-commun.js` | **Mon compagnon** (prototype, façon « animal virtuel ») : on adopte un animal dessiné en SVG, on en prend soin chaque jour, et les ⭐ gagnées en jouant (`Etoiles` dans `commun.js`) achètent accessoires et déco. Espèces, besoins, boutique et dessin SVG dans `compagnon-commun.js` (aussi utilisé par l'accueil). Pas de réseau propre. |
@@ -78,7 +79,7 @@ Pas d'étape de construction, pas de dépendance à ajouter.
   150 000 itérations, 48 octets. Octets 0–31 : `EMPREINTE` publiée ; octets 32–39 : « clé de salon »,
   jamais publiée, gardée dans `localStorage['brillant-acces']`.
 - La clé de salon entre dans l'identifiant réseau : `'dm-' + cléSalon + '-' + [jeu + '-'] + nomSimplifié`.
-  Préfixes de jeu : aucun pour Brilliant, `yams`, `bg`, `as`, `bn`, `gb`, `pb`, `ag`, `ql`, `dm`, `lc`, `dj`. Sans le bon code, impossible de joindre un salon.
+  Préfixes de jeu : aucun pour Brilliant, `yams`, `bg`, `as`, `bn`, `gb`, `pb`, `ag`, `ql`, `dm`, `lc`, `dj`, `jx`. Sans le bon code, impossible de joindre un salon.
 - Changer le code = recalculer l'empreinte dans les deux fichiers ; tous les salons changent d'identifiant.
 
 ## Réseau (identique dans les trois jeux)
@@ -196,6 +197,7 @@ Agents secrets : `agents-sauvegarde` (dont `maCle`, la carte secrète si on est 
 Quatre en ligne : `quatre-sauvegarde` (salon), `quatre-solo` (partie contre l'ordinateur), `quatre-boss` (partie contre un boss d'expédition), `quatre-niveau`, `quatre-stats`, `quatre-dernier-salon`.
 Dominos : `domino-sauvegarde` (salon ; chez l'hôte, l'état complet avec toutes les mains), `domino-solo` (partie contre l'ordinateur), `domino-jeu`, `domino-ordis`, `domino-buts`, `domino-dernier-salon`.
 Lettres croisées : `lettres-sauvegarde` (salon ; chez l'hôte, l'état complet avec chevalets et sac), `lettres-solo` (partie contre l'ordinateur), `lettres-niveau`, `lettres-ordis`, `lettres-dernier-salon`.
+Les 7 joyaux : `joyaux-sauvegarde` (salon ; chez l'hôte, l'état complet avec toutes les mains), `joyaux-solo` (partie contre les ordinateurs), `joyaux-ordis`, `joyaux-dernier-salon`, `joyaux-conflit-vu` (dernière fenêtre de conflits fermée).
 Mon compagnon : `compagnon-animal` (espèce, nom, couleur, besoins, objets possédés et portés, série de jours), `compagnon-etoiles` (solde),
 `compagnon-journal` (dernières étoiles gagnées ou dépensées), `compagnon-parties` (parties déjà récompensées), `compagnon-jour` (tâches du jour),
 `compagnon-cadeau` (bonus de bienvenue donné), `compagnon-ancien`, `compagnon-gains-jeux` (étoiles gagnées en jouant aujourd'hui),
@@ -375,6 +377,26 @@ Bataille navale : `bataille-boss` (partie contre un boss d'expédition), `batail
   ouvre une fenêtre (`doute`) avec le lien vers le vérificateur ODS, « ↺ Changer mon mot » ou « ✓ Il est valable » (`jouerQuandMeme`).
   Bouton **« 🔎 Vérifier »** (demandé par l'utilisateur, pour progresser en solo) dans la ligne d'aperçu dès qu'un mot est prêt, en solo comme en salon :
   ouvre le vérificateur de la Fédération et copie les mots formés (`verifierODS` / `copierMots` ; le site ne se remplit pas par un lien). Série de victoires par niveau (`Etoiles.serie('lettres-<niveau>')`).
+
+### Les 7 joyaux (version maison du draft de cartes et de cités, 2.51)
+- Nom choisi par l'utilisateur. Ils sont **souvent 2, parfois 4** : il faut 3 cités au moins, donc des 🤖 complètent la table
+  (salle d'attente : l'hôte règle le nombre d'ordinateurs, 2 par défaut, un de moins à chaque ami qui arrive tant qu'on reste à 3 ; solo : 2 à 6 ordinateurs).
+  Cités placées au hasard autour de la table. Ordinateurs : `ORDIS`, ils choisissent dès le début du tour (`jouerRobots`), sur le téléphone de l'hôte.
+- Règles (toutes maison, noms et valeurs inventés) : 3 âges, 7 cartes chacun, **tout le monde choisit en même temps** une carte (construire,
+  étape suivante de son **joyau**, ou vendre 3 🪙), puis passe sa main (à gauche aux âges I et III, à droite à l'âge II) ; 6 cartes jouées, la 7e défaussée.
+  3 🪙 au départ. Ressources 🪵🪨🧱⛏️ (marron) et 🔮🧵📜 (grises), le joyau en produit une dès le départ ; achat aux deux voisins 2 🪙 (1 avec comptoir / marché),
+  **le jeu choisit tout seul le paiement le moins cher** (`SJ.payer`, recherche exhaustive). Chaînes : carte gratuite si l'on a une carte précise (`chaine`).
+  Pas deux fois la même carte (même nom). Conflits en fin d'âge contre chaque voisin : +1/+3/+5 ou −1. Savoir : carrés + 7 par série. 1 pt pour 3 🪙.
+- Cartes (`LISTE`, `n` = à partir de combien de joueurs chaque exemplaire entre) : 7 × joueurs par âge (vérifié de 3 à 7), âge III = cartes + (joueurs + 2) guildes tirées
+  parmi 10. 7 joyaux maison (Saphir, Rubis, Émeraude, Ambre, Opale, Jade, Améthyste) à 3 étapes : 3 pts / pouvoir / 7 pts.
+- Ordinateur (`SJ.ordinateur`) : estime chaque coup (points, ressources utiles selon l'âge, boucliers s'il est à la traîne, savoir, pièces), un peu de hasard.
+  Testé en Node : 300 parties de 3 à 7 joueurs (~45 points en moyenne). Joueur absent en salon : l'hôte peut « jouer à sa place » (un coup de l'ordinateur).
+- Écran (360 px) : barre (âge, tour, sens, 🪙, 🛡️, points du moment), joueurs (✓ = a choisi, dernier coup, ◀ ▶ = mes voisins ; toucher = voir sa cité),
+  ma cité en une ligne, **ma main en lignes** (bande de couleur, coût, effet, « ✓ / gratuit / N🪙 aux voisins / ✗ ») ; toucher une carte ouvre ses actions.
+  Choix fait : bandeau « ✓ … · On attend … » avec « Changer » (jusqu'à la révélation, 0,7 s après le dernier choix). Fenêtre des conflits à chaque fin d'âge,
+  tableau du décompte à la fin. Hôte disparu : retour à la salle d'attente (les mains étaient chez lui). Étoiles : `finDePartie('Les 7 joyaux')` (« entre amis »
+  seulement à 2 humains et plus), série de victoires solo `Etoiles.serie('joyaux')`.
+- Plus tard (proposé à l'utilisateur) : guildes et joyaux à deux faces, mode à 2 sans ordinateur, boss d'expédition.
 
 ### Expédition (demandée par l'utilisateur : emmener le compagnon en balade, thèmes de culture générale)
 - **Lieux** (`EX.LIEUX`) : un lieu = un thème, ses couleurs, son décor, ses gardiens, sa buvette, son boss (avec `consigne` affichée avant le défi)
