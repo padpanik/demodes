@@ -87,6 +87,9 @@
     .voile-sj { position: fixed; inset: 0; z-index: 60; background: rgba(15,20,30,0.5); display: flex; align-items: flex-end; justify-content: center; }
     .boite-sj { background: #fff; border-radius: 18px 18px 0 0; padding: 14px 14px 18px; width: 100%; max-width: 480px; max-height: 86vh; overflow-y: auto; box-shadow: 0 -6px 24px rgba(0,0,0,0.25); }
     .boite-sj.centre { border-radius: 18px; margin: 16px; align-self: center; }
+    /* Panneau qu'on ferme en le tirant vers le bas : petite poignée en haut */
+    .voile-sj[data-fermable] > .boite-sj:not(.centre) { padding-top: 22px; position: relative; }
+    .voile-sj[data-fermable] > .boite-sj:not(.centre)::before { content: ''; position: absolute; top: 8px; left: 50%; width: 44px; height: 5px; margin-left: -22px; border-radius: 3px; background: #c9d2da; }
     .boite-sj .titre { font-weight: 900; font-size: 1.15em; margin-bottom: 4px; }
     .boite-sj .ligne { font-size: 0.9em; margin: 5px 0; color: #3b4b57; }
     .etapes { display: flex; flex-direction: column; gap: 4px; margin: 6px 0; }
@@ -306,7 +309,7 @@
           </section>
 
           <!-- La carte touchée : grande, avec ce qu'on peut en faire -->
-          <div class="voile-sj" v-if="carteDuel" @click.self="selDuel = null">
+          <div class="voile-sj" data-fermable v-if="carteDuel" @click.self="selDuel = null">
             <div class="boite-sj">
               <div class="feuille-carte">
                 <div v-html="DV.carte(carteDuel.id, 'grand')"></div>
@@ -380,7 +383,7 @@
           </div>
 
           <!-- La cité d'un joueur (duel) -->
-          <div class="voile-sj" v-if="citeDuel" @click.self="vueCite = null">
+          <div class="voile-sj" data-fermable v-if="citeDuel" @click.self="vueCite = null">
             <div class="boite-sj">
               <div class="titre">{{ citeDuel.nom === moiJ ? 'Ma cité' : 'Cité de ' + citeDuel.nom }}</div>
               <div class="ligne" v-html="citeDuel.ligne"></div>
@@ -470,7 +473,7 @@
         </template>
 
         <!-- La cité d'un joueur -->
-        <div class="voile-sj" v-if="citeAff && !(e && e.mode === 'duel')" @click.self="vueCite = null">
+        <div class="voile-sj" data-fermable v-if="citeAff && !(e && e.mode === 'duel')" @click.self="vueCite = null">
           <div class="boite-sj">
             <div class="titre">{{ citeAff.nom === moiJ ? 'Ma cité' : 'Cité de ' + citeAff.nom }}</div>
             <div class="ligne" v-if="!citeAff.jy">Pas encore de joyau.</div>
@@ -493,7 +496,7 @@
         </div>
 
         <!-- Fin d'un âge : les conflits avec mes voisins -->
-        <div class="voile-sj" v-if="conflitAff" @click.self="conflitVu = conflitAff.cle">
+        <div class="voile-sj" data-fermable v-if="conflitAff" @click.self="conflitVu = conflitAff.cle">
           <div class="boite-sj centre">
             <div class="titre">⚔️ Fin de l'âge {{ ['', 'I', 'II', 'III'][conflitAff.age] }}</div>
             <div class="ligne">Tes boucliers : 🛡️ {{ conflitAff.b }}</div>
@@ -664,6 +667,38 @@
     let pubHote = null;       // chez l'hôte : { ordre, phase, robots, partieId, etat (complet, avec toutes les mains) }
     let salle = { infos: {} };
     let etatSolo = null;      // en solo : l'état complet
+
+    // Fermer un panneau du bas en le tirant vers le bas (à une main) : seulement quand il est remonté tout en haut.
+    // Au-delà de 80 px (ou d'un geste vif), on touche le voile, ce qui le ferme comme un toucher à côté.
+    (function () {
+      var g = null;
+      document.addEventListener('touchstart', function (ev) {
+        var boite = ev.target.closest && ev.target.closest('.voile-sj[data-fermable] > .boite-sj');
+        g = boite && boite.scrollTop <= 0 ? { boite: boite, y0: ev.touches[0].clientY, t0: Date.now(), dy: 0 } : null;
+      }, { passive: true });
+      document.addEventListener('touchmove', function (ev) {
+        if (!g) return;
+        var dy = ev.touches[0].clientY - g.y0;
+        if (dy <= 0 || g.boite.scrollTop > 0) { if (g.dy) g.boite.style.transform = ''; g.dy = 0; if (dy < -6) g = null; return; }
+        g.dy = dy;
+        g.boite.style.transition = 'none';
+        g.boite.style.transform = 'translateY(' + dy + 'px)';
+        if (ev.cancelable) ev.preventDefault();
+      }, { passive: false });
+      document.addEventListener('touchend', function () {
+        if (!g) return;
+        var b = g.boite, vif = g.dy > 30 && g.dy / Math.max(1, Date.now() - g.t0) > 0.6;
+        if (g.dy > 80 || vif) {
+          b.style.transition = 'transform 0.15s ease-in';
+          b.style.transform = 'translateY(100%)';
+          setTimeout(function () { var v = b.parentNode; b.style.transform = ''; b.style.transition = ''; if (v) v.click(); }, 140);
+        } else if (g.dy) {
+          b.style.transition = 'transform 0.18s ease-out';
+          b.style.transform = '';
+        }
+        g = null;
+      });
+    })();
 
     new Vue({
       el: '#app',
