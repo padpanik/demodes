@@ -515,6 +515,9 @@ Bataille navale : `bataille-boss` (partie contre un boss d'expédition), `batail
   ajoutent le score / le niveau de l'ordinateur). Réussite : une **coupe** bronze / argent / or (non achetable, SVG `CP.coupe`) et
   +3 / +5 / +8 ⭐ hors plafond ; les trois de la semaine : une **clé** pour construire une pièce. `compagnon-defis` (semaine en cours),
   `compagnon-trophees` (coupes). Valider un défi ou recevoir une clé : menu admin.
+  **Pas de défi Agents secrets** (retirés en 2.50 à la demande de l'utilisateur : il faut au moins 4 joueurs) : remplacés **à la même place** dans `DEFIS`
+  (pour ne pas décaler les défis des autres semaines) par « Finir une partie de Lettres croisées » (`lc-1`, Moyen) et « Gagner une partie de Dominos
+  ou de Triominos » (`dm-gagne`, Difficile). Un défi doit pouvoir se faire à 2 ou seul.
 - **Maison qui s'agrandit** (`compagnon-maison` : pièces, clés, pièce où il est, coupes sur l'étagère) : les pièces défilent de gauche à droite
   (glisser ou flèches). Salon (étagère de 3 coupes sous la fenêtre), Salle des trophées (offerte à la 1re coupe, deux vitrines),
   puis au choix avec une clé : Jardin, Chambre (il y dort la nuit), Cuisine, Salle de jeux. « Appeler » le fait venir dans la pièce affichée.

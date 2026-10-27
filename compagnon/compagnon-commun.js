@@ -744,10 +744,10 @@ var CP = (function () {
     { id: 'pb-1', niv: 1, ico: '📝', but: 1, titre: 'Jouer une partie de Petit bac', compte: nb(e => e.jeu === 'Petit bac') },
     { id: 'jeux-3', niv: 1, ico: '🎪', but: 3, titre: 'Jouer à 3 jeux différents avec des amis', compte: evs => Object.keys(evs.filter(e => e.p).reduce((o, e) => { o[e.jeu] = 1; return o; }, {})).length },
     { id: 'yams-amis', niv: 1, ico: '🎲', but: 2, titre: 'Jouer 2 parties de Yams à plusieurs', compte: nb(e => e.jeu === 'Yams' && e.p) },
-    { id: 'ag-1', niv: 1, ico: '🕵️', but: 1, titre: 'Jouer une partie d\'Agents secrets', compte: nb(e => e.jeu === 'Agents secrets') },
+    { id: 'lc-1', niv: 1, ico: '🔤', but: 1, titre: 'Finir une partie de Lettres croisées', compte: nb(e => e.jeu === 'Lettres croisées') },
     { id: 'bg-gagne', niv: 2, ico: '🎯', but: 1, titre: 'Gagner une partie de Backgammon', compte: nb(e => e.jeu === 'Backgammon' && e.g) },
     { id: 'ql-fort', niv: 2, ico: '🧠', but: 1, titre: 'Battre l\'ordinateur « Fort » au Quatre en ligne', compte: nb(e => e.jeu === QL4 && !e.p && e.g && e.i && e.i.niveau === 'fort') },
-    { id: 'ag-gagne', niv: 2, ico: '🕵️', but: 1, titre: 'Gagner une partie d\'Agents secrets', compte: nb(e => e.jeu === 'Agents secrets' && e.g) },
+    { id: 'dm-gagne', niv: 2, ico: '🔲', but: 1, titre: 'Gagner une partie de Dominos ou de Triominos', compte: nb(e => (e.jeu === 'Dominos' || e.jeu === 'Triominos') && e.g) },
     { id: 'amis-gagne-3', niv: 2, ico: '👑', but: 3, titre: 'Gagner 3 parties contre des amis', compte: nb(e => e.p && e.g) },
     { id: 'pb-gagne', niv: 2, ico: '📝', but: 1, titre: 'Gagner une partie de Petit bac', compte: nb(e => e.jeu === 'Petit bac' && e.g) },
     { id: 'gb-gagne', niv: 2, ico: '🖍️', but: 1, titre: 'Gagner une partie de Gribouille', compte: nb(e => e.jeu === 'Gribouille' && e.g) }
