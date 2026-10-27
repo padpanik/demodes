@@ -104,43 +104,50 @@
     .logo-sj { font-size: 40px; }
 
     /* ===== DUEL ===== */
-    .duel-cites { display: flex; gap: 6px; margin-bottom: 6px; }
-    .duel-cites .dc { flex: 1; min-width: 0; background: #fff; border: none; font: inherit; text-align: left; border-radius: 12px; padding: 5px 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.06); cursor: pointer; font-size: 0.8em; }
-    .duel-cites .dc.actif { box-shadow: 0 0 0 2.5px #2ecc71; }
-    .duel-cites .dc .nom { font-weight: 900; font-size: 1.05em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .duel-cites .dc .l { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .piste { display: flex; align-items: center; gap: 2px; margin: 2px 0 4px; }
-    .piste .cap { font-size: 0.72em; font-weight: 800; width: 28px; text-align: center; white-space: nowrap; overflow: hidden; }
-    .piste .cases { flex: 1; display: flex; gap: 1px; position: relative; }
-    .piste .cs { flex: 1; height: 16px; background: #e3e8ec; border-radius: 3px; position: relative; }
-    .piste .cs.zone3 { background: #f6d9c5; } .piste .cs.zone6 { background: #f1b9a0; } .piste .cs.bout { background: #d64541; }
-    .piste .cs.centre { background: #b8c2cc; }
-    .piste .pion { position: absolute; top: -3px; left: 50%; transform: translateX(-50%); width: 18px; height: 22px; font-size: 15px; line-height: 22px; text-align: center; z-index: 2; }
-    .piste .butin { position: absolute; top: -12px; left: 50%; transform: translateX(-50%); font-size: 9px; font-weight: 900; color: #b7791f; white-space: nowrap; }
-    .jetons-plateau { display: flex; gap: 4px; justify-content: center; margin: 0 0 4px; flex-wrap: wrap; }
-    .jetons-plateau button { border: 2px solid #2e9e6b; background: #e9f8ef; border-radius: 50%; width: 34px; height: 34px; font-size: 17px; padding: 0; cursor: pointer; }
-    .jetons-plateau button.choix { animation: appel-jeton 0.9s ease-in-out infinite alternate; }
-    @keyframes appel-jeton { from { box-shadow: 0 0 0 0 rgba(46,158,107,0.6); } to { box-shadow: 0 0 0 5px rgba(46,158,107,0.15); } }
-    .info-jeton { font-size: 0.8em; text-align: center; color: #3b4b57; margin-bottom: 4px; }
-    .pyramide { position: relative; margin: 0 auto 6px; }
-    .pyr { position: absolute; border: none; padding: 0; border-radius: 7px; font: inherit; cursor: pointer; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.25); display: flex; flex-direction: column; text-align: center; }
-    .pyr .band { height: 7px; flex: none; }
-    .pyr .ef { font-size: 12px; line-height: 15px; padding: 1px 1px 0; white-space: nowrap; overflow: hidden; }
-    .pyr .co { font-size: 9px; line-height: 11px; white-space: nowrap; overflow: hidden; color: #3b4b57; }
-    .pyr.face { background: #fff; }
-    .pyr.dos { background: repeating-linear-gradient(45deg, #5b4a8b, #5b4a8b 5px, #6c5aa0 5px, #6c5aa0 10px); color: #fff; font-weight: 900; font-size: 12px; align-items: center; justify-content: center; }
-    .pyr.bloquee { filter: brightness(0.88) saturate(0.7); }
-    .pyr.libre { box-shadow: 0 0 0 1.5px #2ecc71, 0 2px 4px rgba(0,0,0,0.25); }
-    .pyr.choisie { box-shadow: 0 0 0 3px #ff9800, 0 2px 6px rgba(0,0,0,0.3); z-index: 5; }
-    .pyr.non-jouable .ef::after { content: ''; }
-    .detail-duel { background: #fff; border-radius: 12px; padding: 7px 9px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 6px; font-size: 0.88em; }
-    .detail-duel .t { font-weight: 900; font-size: 1.05em; }
-    .offre-joyaux { display: flex; flex-direction: column; gap: 6px; }
-    .offre-joyaux button { text-align: left; background: #fff; border: 2px solid #e3e8ec; border-radius: 12px; padding: 7px 10px; font: inherit; cursor: pointer; }
-    .offre-joyaux button:disabled { cursor: default; opacity: 0.7; }
-    .offre-joyaux .n { font-weight: 900; }
-    .offre-joyaux .et { font-size: 0.82em; color: #3b4b57; }
-  </style>
+    .zone-duel { display: block; width: 100%; text-align: left; background: #fff; border: none; font: inherit; border-radius: 12px; padding: 4px 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.08); cursor: pointer; margin-bottom: 4px; font-size: 13px; }
+    .zone-duel.actif { box-shadow: 0 0 0 2.5px #2ecc71; }
+    .zone-duel .zl1 { display: flex; align-items: center; gap: 6px; }
+    .zone-duel .zn { flex: none; max-width: 32%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .zone-duel .zm { margin-left: auto; display: flex; gap: 2px; }
+    .zone-duel .zl2 { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 6px; margin-top: 2px; min-height: 18px; font-size: 12px; }
+    .zone-duel .zl2 .grp { display: inline-flex; align-items: center; gap: 1px; }
+    .mvp { display: inline-block; width: 15px; height: 11px; border-radius: 2px; border: 1.5px solid #b7791f; box-sizing: border-box; }
+    .mvp.faite { background: #d9b25a; }
+    .plateau-mil { display: flex; align-items: center; gap: 2px; margin: 2px 0 2px; background: #efe3c2; border-radius: 10px; padding: 3px 4px; box-shadow: inset 0 0 0 1.5px #c9ad6a; }
+    .plateau-mil .capitale { font-size: 15px; width: 18px; text-align: center; }
+    .plateau-mil .cases { flex: 1; display: flex; gap: 1px; }
+    .plateau-mil .cs { flex: 1; height: 15px; background: #f7efd9; border-radius: 2px; position: relative; }
+    .plateau-mil .cs.zone3 { background: #f1d3b3; } .plateau-mil .cs.zone6 { background: #e9b48f; } .plateau-mil .cs.bout { background: #c53030; }
+    .plateau-mil .cs.centre { background: #c9ad6a; }
+    .plateau-mil .pion { position: absolute; left: 50%; top: -3px; transform: translateX(-50%); width: 10px; height: 20px; background: #c53030; border-radius: 5px 5px 2px 2px; box-shadow: 0 0 0 1.5px #fff, 0 1px 3px rgba(0,0,0,0.5); z-index: 2; }
+    .plateau-mil .butin { position: absolute; left: 50%; top: -1px; transform: translateX(-50%); font-size: 7px; z-index: 1; }
+    .jetons-duel { display: flex; align-items: center; gap: 3px; margin: 3px 0; }
+    .jetons-duel button { border: none; background: none; padding: 0; cursor: pointer; border-radius: 50%; }
+    .jetons-duel button.vu { box-shadow: 0 0 0 2px #2b6cb0; }
+    .aide-jetons { margin-left: auto; font-size: 11px; color: #6b7a86; text-align: right; }
+    .info-jeton { font-size: 0.8em; color: #3b4b57; margin-bottom: 3px; background: #e9f8ef; border-radius: 8px; padding: 3px 7px; }
+    .pyramide { position: relative; margin: 2px auto 6px; }
+    .pyr { position: absolute; border: none; padding: 0; background: none; cursor: pointer; border-radius: 6px; line-height: 0; }
+    .pyr .dv-carte { --t: 8.1px; }
+    .pyr.bloquee .dv-carte { filter: brightness(0.82) saturate(0.75); }
+    .pyr.libre { box-shadow: 0 0 0 2px #2ecc71, 0 2px 5px rgba(0,0,0,0.35); }
+    .pyr.choisie { box-shadow: 0 0 0 3px #ff9800; }
+    .feuille-carte { display: flex; gap: 10px; align-items: flex-start; margin-bottom: 8px; }
+    .feuille-carte .fc-texte { flex: 1; min-width: 0; }
+    .choix-merveilles { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+    .choix-merveilles button { background: #fff; border: 2px solid #e3e8ec; border-radius: 10px; padding: 4px; font: inherit; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 3px; text-align: center; }
+    .choix-merveilles button:disabled { opacity: 0.55; cursor: default; }
+    .choix-merveilles button small { font-size: 0.72em; color: #3b4b57; line-height: 1.25; }
+    .dv-merveille.dv-mchoix { --t: 10.5px; }
+    .dv-merveille.dv-mcite { --t: 8.5px; }
+    .liste-jetons { display: flex; flex-direction: column; gap: 6px; margin-top: 6px; }
+    .liste-jetons button { display: flex; align-items: center; gap: 10px; background: #fff; border: 2px solid #e3e8ec; border-radius: 12px; padding: 6px 8px; font: inherit; text-align: left; cursor: pointer; }
+    .cartes-choix { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+    .cartes-choix button { border: none; background: none; padding: 0; cursor: pointer; line-height: 0; }
+    .merveilles-cite { display: flex; flex-wrap: wrap; gap: 6px; }
+    .cartes-cite { display: flex; flex-wrap: wrap; gap: 3px; }
+    .cartes-cite .dv-carte { --t: 6px; }
+  </style>  </style>
 </head>
 <body>
   <div id="app" v-cloak class="app">
@@ -244,67 +251,40 @@
 
         <!-- ===== DUEL ===== -->
         <template v-else-if="e && e.mode === 'duel'">
-          <div class="barre-sj">
-            <span class="age">Âge {{ ['', 'I', 'II', 'III'][e.age] }}</span>
-            <span class="sens">{{ e.phase === 'fin' ? 'partie finie' : e.phase === 'joyaux' ? 'choix des joyaux' : (e.pyramide.filter(c => !c.pris).length + ' cartes') }}</span>
-            <span class="espace"></span>
-            <template v-if="duelMoi"><span class="val">🪙 {{ duelMoi.cite.pieces }}</span><span class="pts">{{ duelMoi.score }} pts</span></template>
-          </div>
-          <div class="duel-cites">
-            <button v-for="d in duelCites" :key="d.nom" class="dc" :class="{ actif: d.actif }" @click="vueCite = d.nom">
-              <div class="nom">{{ d.moi ? 'Moi' : d.nom }} <span v-if="d.actif">🎲</span></div>
-              <div class="l">🪙{{ d.cite.pieces }} · {{ d.score }} pts · {{ d.joyau }}</div>
-              <div class="l">{{ d.savoir || '—' }}<span v-if="d.jetons"> · {{ d.jetons }}</span></div>
-            </button>
-          </div>
-          <div class="piste" v-if="duelMoi || e.joueurs">
-            <span class="cap">{{ duelGaucheCourt }}</span>
+          <!-- Cité adverse -->
+          <button class="zone-duel" :class="{ actif: quiDuel === advDuel }" @click="vueCite = advDuel" v-if="zoneAdv">
+            <div class="zl1"><b class="zn">{{ zoneAdv.nom }}</b><span v-html="zoneAdv.pieces"></span><span v-html="zoneAdv.pv"></span><span class="zm" v-html="zoneAdv.merveilles"></span></div>
+            <div class="zl2" v-html="zoneAdv.detail"></div>
+          </button>
+          <!-- Plateau militaire : ma capitale à gauche -->
+          <div class="plateau-mil" v-if="e.phase !== 'merveilles'">
+            <span class="capitale">🏰</span>
             <div class="cases">
               <div v-for="c in pisteCases" :key="c.p" class="cs" :class="c.cl">
-                <span v-if="c.butin" class="butin">−{{ c.butin }}🪙</span>
-                <span v-if="c.pion" class="pion">⚔️</span>
+                <span v-if="c.butin" class="butin" v-html="c.butin"></span>
+                <span v-if="c.pion" class="pion"></span>
               </div>
             </div>
-            <span class="cap">{{ duelDroiteCourt }}</span>
+            <span class="capitale">🏰</span>
           </div>
-          <div class="jetons-plateau" v-if="e.phase !== 'joyaux'">
-            <button v-for="t in e.jetonsPlateau" :key="t" :class="{ choix: e.phase === 'jeton' && e.enAttente === moiJ }" @click="toucherJeton(t)">{{ JETONS[t].ico }}</button>
+          <!-- Jetons Progrès du plateau -->
+          <div class="jetons-duel" v-if="e.phase !== 'merveilles'">
+            <button v-for="t in e.jetonsPlateau" :key="t" @click="infoJeton = infoJeton === t ? null : t" :class="{ vu: infoJeton === t }" v-html="DV.jeton(t, 1.05)"></button>
+            <span class="aide-jetons">Âge {{ ['', 'I', 'II', 'III'][e.age] }} · {{ e.pyramide.filter(c => !c.pris).length }} cartes · {{ merveillesFaites }}/7 merveilles</span>
           </div>
-          <div class="info-jeton" v-if="infoJeton">{{ JETONS[infoJeton].ico }} <b>{{ JETONS[infoJeton].nom }}</b> : {{ JETONS[infoJeton].txt }}
-            <button v-if="e.phase === 'jeton' && e.enAttente === moiJ" class="btn principal" style="padding:4px 10px;margin-left:4px" @click="actionDuel({ type: 'jeton', id: infoJeton })">Prendre</button></div>
+          <div class="info-jeton" v-if="infoJeton && e.phase !== 'merveilles'"><b>{{ PROGRES[infoJeton].nom }}</b> : {{ PROGRES[infoJeton].txt }}</div>
           <div class="statut-sj" :class="{ moi: aMoiDuel }">{{ statutDuel }}</div>
 
-          <!-- Choix des joyaux -->
-          <div class="offre-joyaux" v-if="e.phase === 'joyaux'">
-            <button v-for="id in e.offre" :key="id" :disabled="!aMoiDuel" @click="actionDuel({ type: 'joyau-choix', id: id })">
-              <div class="n">{{ JOYAUX[id].ico }} {{ JOYAUX[id].nom }} <small style="font-weight:600;color:#5b6b78">· produit {{ ico(JOYAUX[id].base) }}</small></div>
-              <div class="et" v-for="(t, k) in JOYAUX[id].etapes" :key="k">{{ k + 1 }}. <span v-html="coutHtml(t.cout, 0)"></span> → <span v-html="etapeHtml(t)"></span></div>
-            </button>
-          </div>
-
           <!-- La pyramide de l'âge -->
-          <div v-if="e.phase !== 'joyaux'" class="pyramide" :style="{ width: pyramideAff.w + 'px', height: pyramideAff.h + 'px' }">
-            <button v-for="c in pyramideAff.cartes" :key="e.age + '-' + c.k" class="pyr" :class="c.cl" :style="c.style" @click="toucherPyramide(c)">
-              <template v-if="c.id"><span class="band" :style="{ background: c.coul }"></span><span class="ef" v-html="c.ef"></span><span class="co" v-html="c.co"></span></template>
-              <template v-else>{{ ['', 'I', 'II', 'III'][e.age] }}</template>
-            </button>
+          <div v-if="e.phase !== 'merveilles'" class="pyramide" :style="{ width: pyramideAff.w + 'px', height: pyramideAff.h + 'px' }">
+            <button v-for="c in pyramideAff.cartes" :key="e.age + '-' + c.k" class="pyr" :class="c.cl" :style="c.style" @click="toucherPyramide(c)" v-html="c.html"></button>
           </div>
 
-          <!-- La carte touchée : ce qu'elle fait, et quoi en faire -->
-          <div class="detail-duel" v-if="carteDuel">
-            <div class="t"><span :style="{ color: carteDuel.coul }">■</span> {{ carteDuel.c.nom }} <small style="font-weight:600;color:#5b6b78">· coût <span v-html="coutHtml(carteDuel.c.cout, carteDuel.c.pieces)"></span></small></div>
-            <div v-html="carteDuel.effet"></div>
-            <div v-if="!carteDuel.libre" class="aide" style="margin-top:2px">Encore recouverte : on ne peut pas la prendre.</div>
-            <div v-else-if="!aMoiDuel" class="aide" style="margin-top:2px">Attends ton tour.</div>
-            <div v-else-if="carteDuel.o" class="actions-carte">
-              <button class="btn principal" :disabled="!carteDuel.o.construire.ok" @click="actionDuel({ type: 'prendre', k: carteDuel.k, action: 'construire' })">🏗️ Construire<small>{{ carteDuel.o.construire.ok ? paiementDuel(carteDuel.o.construire) : carteDuel.o.construire.raison }}</small></button>
-              <button class="btn" :disabled="!carteDuel.o.joyau.ok" @click="actionDuel({ type: 'prendre', k: carteDuel.k, action: 'joyau' })">{{ duelMoi && duelMoi.jy ? duelMoi.jy.ico : '💎' }} Étape du joyau<small>{{ carteDuel.o.joyau.ok ? paiementDuel(carteDuel.o.joyau) : carteDuel.o.joyau.raison }}</small></button>
-              <button class="btn" @click="actionDuel({ type: 'prendre', k: carteDuel.k, action: 'vendre' })">🪙 Vendre<small>+{{ carteDuel.o.vendre.gain }} pièces</small></button>
-              <button class="btn" v-if="carteDuel.o.gratuit" @click="actionDuel({ type: 'prendre', k: carteDuel.k, action: 'gratuit' })">✨ Gratuitement<small>une fois par âge</small></button>
-            </div>
-          </div>
-          <div class="aide" v-else-if="e.dernier && e.phase !== 'fin'" style="text-align:center">{{ e.journal[e.journal.length - 1] }}</div>
-
+          <!-- Ma cité -->
+          <button class="zone-duel moi" :class="{ actif: quiDuel === moiDuel }" @click="vueCite = moiDuel" v-if="zoneMoi">
+            <div class="zl1"><b class="zn">{{ zoneMoi.nom }}</b><span v-html="zoneMoi.pieces"></span><span v-html="zoneMoi.pv"></span><span class="zm" v-html="zoneMoi.merveilles"></span></div>
+            <div class="zl2" v-html="zoneMoi.detail"></div>
+          </button>
           <div class="actions-sj" v-if="e.phase !== 'fin'">
             <button v-if="!solo && role === 'hote' && duelAbsent" class="btn" @click="envoyerJeu({ type: 'REMPLACER' })">🤖 Jouer à la place de {{ duelAbsent }}</button>
             <button v-if="solo" class="btn" @click="quitterSolo">Arrêter</button>
@@ -312,8 +292,8 @@
 
           <!-- Fin du duel -->
           <section class="carte" v-if="e.phase === 'fin'" style="margin-top:8px">
-            <div class="titre-carte">{{ e.vainqueur === moiJ ? '🏆 Tu remportes le duel !' : '🏆 ' + e.vainqueur + ' remporte le duel' }}</div>
-            <div class="aide" style="margin-top:0">{{ { militaire: '⚔️ Victoire militaire : la piste est allée jusqu\'au bout.', savoir: '📚 Victoire du savoir : les six symboles réunis.', points: 'Victoire aux points.' }[e.fin.type] }}</div>
+            <div class="titre-carte">{{ !e.vainqueur ? '🤝 Égalité parfaite' : e.vainqueur === moiJ ? '🏆 Tu remportes le duel !' : '🏆 ' + e.vainqueur + ' remporte le duel' }}</div>
+            <div class="aide" style="margin-top:0">{{ { militaire: '⚔️ Suprématie militaire : le pion a atteint la capitale.', science: '🔬 Suprématie scientifique : six symboles différents réunis.', civile: 'Victoire civile : aux points.' }[e.fin.type] }}</div>
             <table class="tableau-sj">
               <tr><th></th><th v-for="j in e.classement" :key="j">{{ j === moiJ ? 'Moi' : court(j) }}</th></tr>
               <tr v-for="l in LIGNES_DUEL" :key="l[0]"><td>{{ l[1] }}</td><td v-for="j in e.classement" :key="j">{{ e.scores[j][l[0]] }}</td></tr>
@@ -324,6 +304,98 @@
               <div v-else class="aide">L'hôte peut relancer une partie.</div>
             </div>
           </section>
+
+          <!-- La carte touchée : grande, avec ce qu'on peut en faire -->
+          <div class="voile-sj" v-if="carteDuel" @click.self="selDuel = null">
+            <div class="boite-sj">
+              <div class="feuille-carte">
+                <div v-html="DV.carte(carteDuel.id, 'grand')"></div>
+                <div class="fc-texte">
+                  <div class="titre">{{ carteDuel.c.nom }}</div>
+                  <div class="aide" style="margin:0 0 4px">{{ TYPES_DUEL[carteDuel.c.type] }} · âge {{ ['', 'I', 'II', 'III'][carteDuel.c.age] }}</div>
+                  <div style="font-size:0.88em">{{ DV.texte(carteDuel.c) }}</div>
+                  <div class="aide" v-if="carteDuel.c.chaine">🔗 Gratuite si tu as déjà « {{ CARTES_DUEL[carteDuel.c.chaine].nom }} ».</div>
+                </div>
+              </div>
+              <div v-if="!carteDuel.libre" class="aide">Encore recouverte : on ne peut pas encore la prendre.</div>
+              <div v-else-if="!aMoiDuel" class="aide">Attends ton tour.</div>
+              <template v-else>
+                <div class="actions-carte">
+                  <button class="btn principal" :disabled="!carteDuel.o.construire.ok" @click="actionDuel({ type: 'prendre', k: carteDuel.k, action: 'construire' })">🏗️ Construire<small>{{ texteCout(carteDuel.o.construire) }}</small></button>
+                  <button class="btn" @click="actionDuel({ type: 'prendre', k: carteDuel.k, action: 'vendre' })">🪙 Défausser<small>+{{ carteDuel.o.vendre }} pièces</small></button>
+                </div>
+                <div class="petit-titre" v-if="carteDuel.o.merveilles.length">… ou la glisser sous une de tes merveilles pour la construire :</div>
+                <div class="choix-merveilles">
+                  <button v-for="m in carteDuel.o.merveilles" :key="m.id" :disabled="!m.ok" @click="actionDuel({ type: 'prendre', k: carteDuel.k, action: 'merveille', merveille: m.id })">
+                    <span v-html="DV.merveille(m.id, { taille: 'choix' })"></span><small>{{ m.ok ? texteCout(m) : m.raison }}</small>
+                  </button>
+                </div>
+              </template>
+              <button class="btn" style="width:100%;margin-top:8px" @click="selDuel = null">Fermer</button>
+            </div>
+          </div>
+
+          <!-- Choix des merveilles (début de partie) -->
+          <div class="voile-sj" v-if="e.phase === 'merveilles'">
+            <div class="boite-sj">
+              <div class="titre">🏛️ Choix des merveilles</div>
+              <div class="aide" style="margin:0 0 6px">{{ aMoiDuel ? 'À toi : choisis une merveille.' : quiDuel + ' choisit…' }} Chacun en aura 4 ; seules 7 des 8 pourront être construites.</div>
+              <div class="choix-merveilles grand">
+                <button v-for="id in e.offre" :key="id" :disabled="!aMoiDuel" @click="actionDuel({ type: 'merveille-choix', id: id })">
+                  <span v-html="DV.merveille(id, { taille: 'choix' })"></span><small>{{ DV.texteMerveille(MERVEILLES[id]) }}</small>
+                </button>
+              </div>
+              <div class="petit-titre" v-for="j in e.joueurs" :key="j">{{ j === moiJ ? 'Mes merveilles' : 'Merveilles de ' + j }} : {{ e.cites[j].merveilles.map(m => MERVEILLES[m.id].nom).join(', ') || '—' }}</div>
+            </div>
+          </div>
+
+          <!-- Fenêtres de choix pendant la partie -->
+          <div class="voile-sj" v-if="attenteDuel && aMoiDuel">
+            <div class="boite-sj">
+              <template v-if="attenteDuel.phase === 'jeton' || attenteDuel.phase === 'bibliotheque'">
+                <div class="titre">{{ attenteDuel.phase === 'jeton' ? '🔬 Une paire de symboles : choisis un jeton Progrès' : '📚 La Grande Bibliothèque : garde un jeton' }}</div>
+                <div class="liste-jetons">
+                  <button v-for="t in (attenteDuel.phase === 'jeton' ? e.jetonsPlateau : attenteDuel.offre)" :key="t" @click="actionDuel({ type: 'jeton', id: t })">
+                    <span v-html="DV.jeton(t, 1.4)"></span><span><b>{{ PROGRES[t].nom }}</b><br><small>{{ PROGRES[t].txt }}</small></span>
+                  </button>
+                </div>
+              </template>
+              <template v-else-if="attenteDuel.phase === 'detruire'">
+                <div class="titre">✕ Fais défausser une carte {{ attenteDuel.couleur === 'gris' ? 'grise' : 'marron' }} à {{ advDuel }}</div>
+                <div class="cartes-choix"><button v-for="id in choixDetruire" :key="id" @click="actionDuel({ type: 'detruire', id: id })" v-html="DV.carte(id, 'pyr')"></button></div>
+              </template>
+              <template v-else-if="attenteDuel.phase === 'mausolee'">
+                <div class="titre">🏛️ Le Mausolée : construis gratuitement une carte de la défausse</div>
+                <div class="cartes-choix"><button v-for="(id, i) in e.defausse" :key="i + id" @click="actionDuel({ type: 'mausolee', id: id })" v-html="DV.carte(id, 'pyr')"></button></div>
+              </template>
+              <template v-else-if="attenteDuel.phase === 'debut'">
+                <div class="titre">Âge {{ ['', 'I', 'II', 'III'][e.age] }} : qui commence ?</div>
+                <div class="aide" style="margin:0 0 8px">{{ e.militaire ? 'Tu es moins fort militairement : tu choisis.' : 'Égalité militaire : celui qui a joué la dernière carte choisit.' }}</div>
+                <div class="actions-sj">
+                  <button class="btn principal" @click="actionDuel({ type: 'debut', j: moiJ })">Moi</button>
+                  <button class="btn" @click="actionDuel({ type: 'debut', j: advDuel })">{{ advDuel }}</button>
+                </div>
+              </template>
+            </div>
+          </div>
+
+          <!-- La cité d'un joueur (duel) -->
+          <div class="voile-sj" v-if="citeDuel" @click.self="vueCite = null">
+            <div class="boite-sj">
+              <div class="titre">{{ citeDuel.nom === moiJ ? 'Ma cité' : 'Cité de ' + citeDuel.nom }}</div>
+              <div class="ligne" v-html="citeDuel.ligne"></div>
+              <div class="petit-titre">Merveilles</div>
+              <div class="merveilles-cite"><span v-for="m in citeDuel.merveilles" :key="m.id" v-html="DV.merveille(m.id, { taille: 'cite', faite: m.faite })"></span><span v-if="!citeDuel.merveilles.length" class="aide">aucune</span></div>
+              <div v-for="g in citeDuel.groupes" :key="g.type">
+                <div class="petit-titre">{{ g.nom }} ({{ g.cartes.length }})</div>
+                <div class="cartes-cite"><span v-for="id in g.cartes" :key="id" v-html="DV.carte(id, 'mini')"></span></div>
+              </div>
+              <div class="ligne" v-if="citeDuel.jetons.length">Jetons Progrès : <span v-for="t in citeDuel.jetons" :key="t" style="margin-right:6px"><span v-html="DV.jeton(t, 0.9)"></span> {{ PROGRES[t].nom }}</span></div>
+              <div class="ligne"><b>Points si la partie s'arrêtait : {{ citeDuel.score.total }}</b></div>
+              <table class="tableau-sj"><tr v-for="l in LIGNES_DUEL" :key="l[0]"><td>{{ l[1] }}</td><td>{{ citeDuel.score[l[0]] }}</td></tr></table>
+              <button class="btn principal" style="width:100%;margin-top:10px" @click="vueCite = null">Fermer</button>
+            </div>
+          </div>
         </template>
 
         <template v-else-if="e">
@@ -398,7 +470,7 @@
         </template>
 
         <!-- La cité d'un joueur -->
-        <div class="voile-sj" v-if="citeAff" @click.self="vueCite = null">
+        <div class="voile-sj" v-if="citeAff && !(e && e.mode === 'duel')" @click.self="vueCite = null">
           <div class="boite-sj">
             <div class="titre">{{ citeAff.nom === moiJ ? 'Ma cité' : 'Cité de ' + citeAff.nom }}</div>
             <div class="ligne" v-if="!citeAff.jy">Pas encore de joyau.</div>
@@ -477,14 +549,14 @@
         <section class="carte regles">
           <div class="titre-carte">⚔️ La version Duel (à deux)</div>
           <ul>
-            <li>Chacun choisit d'abord un joyau parmi quatre. On commence avec 7 🪙, et on joue <strong>chacun son tour</strong>.</li>
-            <li>À chaque âge, 20 cartes sont posées <strong>en pyramide</strong>, une rangée sur deux face cachée. On ne peut prendre qu'une carte <strong>dégagée</strong> (plus aucune carte ne la recouvre) ; une carte cachée se retourne dès qu'elle est dégagée.</li>
-            <li>Avec la carte prise : la construire, bâtir l'étape suivante de son joyau, ou la vendre (2 🪙 + 1 par carte jaune de sa cité).</li>
-            <li><strong>Commerce avec la banque</strong> : une ressource qui manque coûte 2 🪙, <strong>+1 par exemplaire que ton adversaire produit</strong> (1 🪙 seulement avec un comptoir ou un marché).</li>
-            <li><strong>Militaire</strong> : chaque bouclier pousse le pion ⚔️ vers la cité adverse. Au 3e cran l'adversaire perd 2 🪙, au 6e il en perd 5. <strong>Au bout de la piste : victoire immédiate.</strong> Sinon, à la fin : 2, 5 ou 10 points selon l'avance.</li>
-            <li><strong>Savoir</strong> : six symboles (📐 ⚙️ 📖 ⚖️ ⏳ 🪶), deux cartes vertes par symbole. Une paire de symboles identiques = un <strong>jeton de savoir</strong> à choisir. <strong>Les six symboles différents : victoire immédiate.</strong> Chaque carte verte vaut son âge en points.</li>
-            <li>Les guildes comptent dans la cité qui a le plus de cartes du type demandé. À l'âge suivant, le moins fort militairement commence.</li>
-            <li>Fin de l'âge III : on compte les points comme en classique, plus les jetons. Égalité : plus de points de monuments.</li>
+            <li><strong>Merveilles</strong> : 8 merveilles tirées, montrées par 4. On choisit 1-2-1 (le premier en prend une, l'autre deux, le premier la dernière), puis l'inverse pour les 4 suivantes. Chacun en a 4, mais <strong>seules 7 pourront être construites</strong> : la dernière est retirée.</li>
+            <li>7 🪙 chacun au départ. On joue <strong>chacun son tour</strong>. À chaque âge, 20 cartes en <strong>pyramide</strong>, une rangée sur deux face cachée ; on ne prend qu'une carte <strong>dégagée</strong> (bordure verte). Une carte cachée se retourne dès qu'elle est dégagée.</li>
+            <li>Avec la carte prise : la <strong>construire</strong> (payer son coût, ou gratuitement par <strong>chaînage</strong> si l'on a la carte indiquée), la <strong>défausser</strong> (2 🪙 + 1 par carte jaune de sa cité), ou la glisser sous une de ses <strong>merveilles</strong> pour la construire. ↻ = rejouer tout de suite.</li>
+            <li><strong>Commerce avec la banque</strong> : une ressource qui manque coûte 2 🪙 <strong>+ 1 par exemplaire que ton adversaire produit</strong> avec ses cartes marron et grises. Les dépôts et les douanes fixent le prix à 1 🪙.</li>
+            <li><strong>Militaire</strong> : chaque bouclier pousse le pion vers la capitale adverse. Pillages : l'adversaire perd 2 🪙 puis 5 🪙. <strong>Le pion dans la capitale : suprématie militaire, victoire immédiate.</strong> Sinon, à la fin : 2, 5 ou 10 points.</li>
+            <li><strong>Science</strong> : 7 symboles (📐 ⚙️ 🪶 ⚗️ 🕰️ 🌐 et la Loi ⚖️). Deux symboles identiques = un <strong>jeton Progrès</strong> au choix. <strong>Six symboles différents : suprématie scientifique, victoire immédiate.</strong></li>
+            <li>Nouvel âge : le joueur le plus faible militairement choisit qui commence.</li>
+            <li>Fin de l'âge III : victoire civile aux points (bâtiments, merveilles, jetons, guildes, militaire, 1 point pour 3 🪙). Égalité : le plus de points de bâtiments civils (bleus).</li>
           </ul>
         </section>
       </template>
@@ -497,6 +569,7 @@
   <script src="etoiles.js"></script>
   <script src="joyaux/joyaux-regles.js"></script>
   <script src="joyaux/joyaux-duel.js"></script>
+  <script src="joyaux/joyaux-visuels.js"></script>
   <script>
     if (!ACCES.memorise()) location.replace('index.html');
 
@@ -507,7 +580,8 @@
     const MAX_SALONS = 8;
     const ORDIS = ['🤖 Ordi', '🤖 Ordi 2', '🤖 Ordi 3', '🤖 Ordi 4', '🤖 Ordi 5', '🤖 Ordi 6'];
     const LIGNES_SCORE = [['militaire', '⚔️ Conflits'], ['pieces', '🪙 Pièces'], ['joyau', '💎 Joyau'], ['monuments', '🏛️ Monuments'], ['commerce', '🏪 Commerce'], ['guildes', '🎭 Guildes'], ['savoir', '📚 Savoir']];
-    const LIGNES_DUEL = LIGNES_SCORE.concat([['jetons', '🧪 Jetons']]).map(l => l[0] === 'militaire' ? ['militaire', '⚔️ Militaire'] : l);
+    const LIGNES_DUEL = [['civils', '🏛️ Bâtiments civils'], ['science', '🔬 Bâtiments scientifiques'], ['commerce', '🏪 Bâtiments commerciaux'], ['guildes', '🎭 Guildes'],
+                         ['merveilles', '🏺 Merveilles'], ['progres', '🌿 Jetons Progrès'], ['pieces', '🪙 Pièces (1 pt / 3)'], ['militaire', '⚔️ Militaire']];
     const NOMS_TYPES = { brun: 'carte marron', gris: 'carte grise', bleu: 'carte bleue', jaune: 'carte jaune', rouge: 'carte rouge', vert: 'carte verte', violet: 'guilde', joyau: 'étape de joyau', defaite: 'défaite' };
     function copie(o) { return JSON.parse(JSON.stringify(o)); }
     function estOrdi(n) { return ORDIS.indexOf(n) !== -1; }
@@ -526,7 +600,7 @@
       if (f.choix) l.push(prodTexte(f.choix) + ' pour toi');
       if (f.pts) l.push('<span class="pts">' + f.pts + '</span>');
       if (f.boucliers) l.push('🛡️'.repeat(f.boucliers));
-      if (f.sci) l.push(f.sci === '*' ? 'un savoir au choix' : duel ? SD.SYMBOLES[SD.SCI[c.id]] + ' (vaut ' + c.age + ' pt' + (c.age > 1 ? 's' : '') + ')' : SJ.SCIENCES[f.sci]);
+      if (f.sci) l.push(f.sci === '*' ? 'un savoir au choix' : SJ.SCIENCES[f.sci]);
       if (f.pieces) l.push('+' + f.pieces + ' 🪙');
       if (f.comptoir) l.push(duel ? '🪵🪨🧱⛏️ à 1🪙 à la banque' : (f.comptoir === 'g' ? '◀ ' : '▶ ') + '🪵🪨🧱⛏️ à 1🪙');
       if (f.marche) l.push(duel ? '🔮🧵📜 à 1🪙 à la banque' : '◀▶ 🔮🧵📜 à 1🪙');
@@ -544,7 +618,7 @@
       if (f.prod) return prodTexte(f.prod);
       if (f.choix) return f.choix.length > 5 ? '🪵/🪨/…' : prodTexte(f.choix);
       if (f.boucliers) return '🛡️' + (f.boucliers > 1 ? f.boucliers : '');
-      if (f.sci) return f.sci === '*' ? '❓' : SD.SYMBOLES[SD.SCI[c.id]];
+      if (f.sci) return f.sci === '*' ? '❓' : SJ.SCIENCES[f.sci];
       if (f.pieces) return '+' + f.pieces + '🪙';
       if (f.comptoir || f.marche) return '🪙1';
       if (f.gain) return '🪙+';
@@ -595,7 +669,7 @@
       el: '#app',
       data: {
         version: VERSION,
-        LIGNES_SCORE: LIGNES_SCORE, LIGNES_DUEL: LIGNES_DUEL, JETONS: SD.JETONS, JOYAUX: SJ.JOYAUX,
+        LIGNES_SCORE: LIGNES_SCORE, LIGNES_DUEL: LIGNES_DUEL, PROGRES: SD.PROGRES, MERVEILLES: SD.MERVEILLES, CARTES_DUEL: SD.CARTES, TYPES_DUEL: SD.TYPES, JOYAUX: SJ.JOYAUX, DV: DV,
         modeChoisi: lireStockage('joyaux-mode') || 'classique',
         selDuel: null,
         infoJeton: null,
@@ -622,7 +696,8 @@
       computed: {
         moi: function() { return this.pseudoInput.trim() || 'Moi'; },
         serieRecord: function() { this.soloEnCours; return Etoiles.meilleureSerie('joyaux'); },
-        moiJ: function() { return this.solo && this.e ? this.e.joueurs[0] : this.moi; },
+        // En solo, je suis le seul joueur qui n'est pas un ordinateur (au duel, les places sont tirées au hasard)
+        moiJ: function() { return this.solo && this.e ? (this.e.joueurs.find(j => !estOrdi(j)) || this.e.joueurs[0]) : this.moi; },
         connexionTexte: function() { return { ok: 'en ligne', connexion: 'connexion…', perdue: 'reconnexion…', aucune: 'hors ligne' }[this.connexion]; },
         e: function() { return this.pub && this.pub.e; },
         presents: function() { return this.pub ? this.pub.ordre.filter(p => this.estPresent(p)) : []; },
@@ -672,79 +747,72 @@
           return this.selection < 0 ? 'Choisis une carte de ta main.' : 'Que fais-tu de cette carte ?';
         },
         // ---------- DUEL ----------
-        quiJoueDuel: function() { var e = this.e; return !e || e.mode !== 'duel' || e.phase === 'fin' ? null : e.phase === 'jeton' ? e.enAttente : e.joueurs[e.tour]; },
-        aMoiDuel: function() { return !!this.e && this.estJoueur && this.quiJoueDuel === this.moiJ && (this.solo || this.connexion === 'ok'); },
-        duelAbsent: function() { var j = this.quiJoueDuel; return j && !estOrdi(j) && !this.estPresent(j) ? j : ''; },
+        quiDuel: function() { var e = this.e; return e && e.mode === 'duel' ? SD.qui(e) : null; },
+        attenteDuel: function() { var e = this.e; return e && e.mode === 'duel' && e.attentes && e.attentes.length ? e.attentes[0] : null; },
+        aMoiDuel: function() { return !!this.e && this.estJoueur && this.quiDuel === this.moiJ && (this.solo || this.connexion === 'ok'); },
+        moiDuel: function() { return this.estJoueur ? this.moiJ : this.e.joueurs[0]; },
+        advDuel: function() { return SD.autre(this.e, this.moiDuel); },
+        duelAbsent: function() { var j = this.quiDuel; return j && !estOrdi(j) && !this.estPresent(j) ? j : ''; },
+        merveillesFaites: function() { return SD.merveillesFaites(this.e); },
         statutDuel: function() {
-          var e = this.e, j = this.quiJoueDuel;
+          var e = this.e, j = this.quiDuel, a = this.attenteDuel;
           if (!e || e.phase === 'fin') return 'Partie terminée';
           if (!this.solo && this.connexion !== 'ok' && this.estJoueur) return 'Reconnexion…';
-          if (e.phase === 'joyaux') return this.aMoiDuel ? 'Choisis ton joyau.' : j + ' choisit son joyau…';
-          if (e.phase === 'jeton') return this.aMoiDuel ? '🧪 Une paire ! Touche un jeton de savoir et prends-le.' : j + ' choisit un jeton de savoir…';
-          return this.aMoiDuel ? (this.selDuel === null ? 'À toi : touche une carte dégagée (bordure verte).' : 'Que fais-tu de cette carte ?') : (estOrdi(j) ? j + ' réfléchit…' : 'Au tour de ' + j + '…');
+          if (!this.aMoiDuel) {
+            var quoi = !a ? (e.phase === 'merveilles' ? ' choisit une merveille…' : (estOrdi(j) ? ' réfléchit…' : ' joue…'))
+              : { jeton: ' choisit un jeton Progrès…', bibliotheque: ' choisit un jeton Progrès…', detruire: ' choisit une carte à te faire défausser…', mausolee: ' choisit dans la défausse…', debut: ' choisit qui commence…' }[a.phase];
+            return (j === this.advDuel && this.estJoueur ? (estOrdi(j) ? '🤖 L\'ordinateur' : j) : j) + quoi;
+          }
+          if (e.phase === 'merveilles') return 'À toi : choisis une merveille.';
+          return this.selDuel === null ? 'À toi : touche une carte dégagée (bordure verte).' : 'Que fais-tu de cette carte ?';
         },
-        duelCites: function() {
-          var e = this.e, moi = this.moiJ, l = e.joueurs.slice();
-          if (l[1] === moi) l.reverse();
-          return l.map(j => {
-            var cite = e.cites[j], sy = SD.symboles(e, j), jy = cite.joyau && SJ.JOYAUX[cite.joyau];
-            var sav = Object.keys(SD.SYMBOLES).filter(k => sy.s[k]).map(k => SD.SYMBOLES[k] + (sy.s[k] > 1 ? sy.s[k] : '')).join(' ') + (sy.joker ? ' ❓' + sy.joker : '');
-            return { nom: j, moi: j === moi, cite: cite, score: SD.score(e, j).total, joyau: jy ? jy.ico + ' ' + this.pips(cite) : 'pas de joyau',
-                     savoir: sav, jetons: cite.jetons.map(t => SD.JETONS[t].ico).join(''), actif: this.quiJoueDuel === j };
-          });
-        },
-        duelMoi: function() {
-          var e = this.e;
-          if (!e || e.mode !== 'duel' || !this.estJoueur) return null;
-          var cite = e.cites[this.moiJ];
-          return { cite: cite, score: SD.score(e, this.moiJ).total, jy: cite.joyau && SJ.JOYAUX[cite.joyau] };
-        },
-        // Le côté de la piste : ma cité à gauche (les spectateurs voient le 1er joueur à gauche)
-        flipDuel: function() { return this.e.joueurs[1] === this.moiJ ? -1 : 1; },
-        duelGaucheCourt: function() { var e = this.e, g = this.flipDuel > 0 ? e.joueurs[0] : e.joueurs[1]; return g === this.moiJ ? 'Moi' : g.indexOf('🤖') === 0 ? '🤖' : g.slice(0, 4); },
-        duelDroiteCourt: function() { var e = this.e, d = this.flipDuel > 0 ? e.joueurs[1] : e.joueurs[0]; return d === this.moiJ ? 'Moi' : d.indexOf('🤖') === 0 ? '🤖' : d.slice(0, 4); },
+        zoneAdv: function() { return this.e && this.e.mode === 'duel' ? this.zone(this.advDuel) : null; },
+        zoneMoi: function() { return this.e && this.e.mode === 'duel' ? this.zone(this.moiDuel) : null; },
         pisteCases: function() {
-          var e = this.e, f = this.flipDuel, l = [];
+          var e = this.e, f = e.joueurs[1] === this.moiDuel ? -1 : 1, l = [];
           for (var d = -SD.BOUT; d <= SD.BOUT; d++) {
             var reel = f * d, a = Math.abs(d), cle = (reel > 0 ? 'p' : 'n') + a;
             l.push({ p: d, pion: f * e.militaire === d, cl: a === SD.BOUT ? 'bout' : a >= 6 ? 'zone6' : a >= 3 ? 'zone3' : a === 0 ? 'centre' : '',
-                     butin: (a === 3 || a === 6) && !e.pillage[cle] ? (a === 3 ? 2 : 5) : 0 });
+                     butin: (a === 3 || a === 6) && !e.pillage[cle] ? DV.piece(a === 3 ? 2 : 5, 1.15) : '' });
           }
           return l;
         },
         pyramideAff: function() {
-          var e = this.e, u = 27, H = 46, pas = 35, rangs = SD.FORMES[e.age].length;
-          var cartes = [];
+          var e = this.e, u = 27, H = 70, pas = 36, rangs = SD.FORMES[e.age].length, cartes = [];
           e.pyramide.forEach((c, k) => {
             if (c.pris) return;
-            var libre = SD.accessible(e, k), carte = c.id ? SJ.CARTES[c.id] : null;
-            cartes.push({ k: k, id: c.id, libre: libre, coul: carte ? SJ.TYPES[carte.type].coul : '', ef: carte ? effetCourt(carte) : '', co: carte ? coutCourt(carte) : '',
-                          cl: [c.id ? 'face' : 'dos', libre ? 'libre' : 'bloquee', this.selDuel === k ? 'choisie' : ''].join(' '),
-                          style: { left: ((c.x + 5) * u) + 'px', top: (c.r * pas) + 'px', width: (2 * u - 3) + 'px', height: H + 'px', zIndex: this.selDuel === k ? 20 : c.r + 1 } });
+            var libre = SD.accessible(e, k);
+            cartes.push({ k: k, id: c.id, html: c.id ? DV.carte(c.id, 'pyr') : DV.dos(e.age),
+                          cl: [libre ? 'libre' : 'bloquee', this.selDuel === k ? 'choisie' : ''].join(' '),
+                          style: { left: ((c.x + 5) * u) + 'px', top: (c.r * pas) + 'px', zIndex: c.r + 1 } });
           });
           return { cartes: cartes, w: 12 * u, h: (rangs - 1) * pas + H };
         },
         carteDuel: function() {
           var e = this.e, k = this.selDuel;
           if (!e || e.mode !== 'duel' || k === null || !e.pyramide[k] || e.pyramide[k].pris || !e.pyramide[k].id) return null;
-          var id = e.pyramide[k].id, c = SJ.CARTES[id];
-          return { k: k, id: id, c: c, coul: SJ.TYPES[c.type].coul, effet: effetHtml(c, true), libre: SD.accessible(e, k),
-                   o: this.estJoueur && e.cites[this.moiJ].joyau ? SD.options(e, this.moiJ, id) : null };
+          var id = e.pyramide[k].id;
+          return { k: k, id: id, c: SD.CARTES[id], libre: SD.accessible(e, k), o: this.estJoueur ? SD.options(e, this.moiJ, id) : null };
+        },
+        choixDetruire: function() {
+          var a = this.attenteDuel;
+          return a && a.phase === 'detruire' ? this.e.cites[this.advDuel].cartes.filter(id => SD.CARTES[id].type === a.couleur) : [];
+        },
+        citeDuel: function() {
+          var e = this.e, j = this.vueCite;
+          if (!e || e.mode !== 'duel' || !j || !e.cites[j]) return null;
+          var cite = e.cites[j], groupes = [];
+          ['brun', 'gris', 'jaune', 'rouge', 'vert', 'bleu', 'violet'].forEach(t => {
+            var l = cite.cartes.filter(id => SD.CARTES[id].type === t);
+            if (l.length) groupes.push({ type: t, nom: SD.TYPES[t], cartes: l });
+          });
+          return { nom: j, merveilles: cite.merveilles, groupes: groupes, jetons: cite.jetons, score: SD.score(e, j), ligne: this.zone(j).detail + ' ' + DV.piece(cite.pieces, 1.2) };
         },
         citeAff: function() {
           var e = this.e, j = this.vueCite;
           if (!e || !j || !e.cites[j]) return null;
           var cite = e.cites[j], groupes = [];
-          if (e.mode === 'duel') {
-            Object.keys(SJ.TYPES).forEach(t => {
-              var l = cite.cartes.filter(id => SJ.CARTES[id].type === t).map(id => SJ.CARTES[id]);
-              if (l.length) groupes.push({ type: t, nom: SJ.TYPES[t].nom, coul: SJ.TYPES[t].coul, cartes: l });
-            });
-            var sy = SD.symboles(e, j);
-            return { duel: true, nom: j, cite: cite, jy: cite.joyau ? SJ.JOYAUX[cite.joyau] : null, production: cite.joyau ? productionTexte(cite) : '',
-                     sciences: Object.keys(SD.SYMBOLES).filter(k => sy.s[k]).map(k => SD.SYMBOLES[k] + sy.s[k]).join(' ') + (sy.joker ? ' ❓' + sy.joker : '') + ' (' + sy.differents + '/6 différents)',
-                     groupes: groupes, score: SD.score(e, j) };
-          }
+          if (e.mode === 'duel') return null;
           Object.keys(SJ.TYPES).forEach(t => {
             var l = cite.cartes.filter(id => SJ.CARTES[id].type === t).map(id => SJ.CARTES[id]);
             if (l.length) groupes.push({ type: t, nom: SJ.TYPES[t].nom, coul: SJ.TYPES[t].coul, cartes: l });
@@ -767,7 +835,7 @@
         vibrationActive: function(v) { ecrireStockage('brillant-vibration', v); if (v) vibrer(40); },
         nbOrdis: function(v) { ecrireStockage('joyaux-ordis', v); },
         modeChoisi: function(v) { ecrireStockage('joyaux-mode', v); },
-        quiJoueDuel: function() { this.selDuel = null; },
+        quiDuel: function() { this.selDuel = null; },
         pseudoInput: function() { this.sauvegarder(); },
         conflitVu: function(v) { ecrireStockage('joyaux-conflit-vu', v); },
         'e.tour': function() { this.selection = -1; },
@@ -822,9 +890,10 @@
 
         // ================== SOLO ==================
         // soloEnCours : false, ou la version de la partie seule en cours ('classique' / 'duel')
-        majSoloEnCours: function() { var s = lireStockage('joyaux-solo'); this.soloEnCours = s && s.phase !== 'fin' ? (s.mode === 'duel' ? 'duel' : 'classique') : false; },
+        majSoloEnCours: function() { var s = lireStockage('joyaux-solo'); this.soloEnCours = s && s.phase !== 'fin' && (s.mode !== 'duel' || SD.compatible(s)) ? (s.mode === 'duel' ? 'duel' : 'classique') : false; },
         demarrerSolo: function() {
           var s = lireStockage('joyaux-solo');
+          if (s && s.mode === 'duel' && !SD.compatible(s)) s = null;   // duel d'avant les règles d'origine : on repart de zéro
           if (s && s.phase !== 'fin') { etatSolo = s; this.lancerSolo(); }
           else this.nouveauSolo();
         },
@@ -859,8 +928,26 @@
         },
 
         // ================== DUEL : actions et ordinateur ==================
+        // Résumé d'une cité : production, symboles, jetons, merveilles
+        zone: function(j) {
+          var e = this.e, cite = e.cites[j], prod = {}, choix = [];
+          SD.sources(cite).forEach(s => { if (s.length === 1) prod[s[0]] = (prod[s[0]] || 0) + 1; else choix.push(s); });
+          var d = 'BAPVR'.split('').filter(r => prod[r]).map(r => '<span class="grp">' + DV.res(r, 1.15) + (prod[r] > 1 ? '<b>' + prod[r] + '</b>' : '') + '</span>').join('');
+          d += choix.map(c => '<span class="grp">' + c.map(r => DV.res(r, 0.95)).join('/') + '</span>').join('');
+          var sy = SD.symboles(e, j);
+          d += Object.keys(sy).map(k => '<span class="grp">' + DV.sci(k, 1.1) + (sy[k] > 1 ? '<b>' + sy[k] + '</b>' : '') + '</span>').join('');
+          d += cite.jetons.map(t => DV.jeton(t, 0.75)).join('');
+          var rouges = cite.cartes.filter(id => SD.CARTES[id].type === 'rouge').length;
+          if (!d) d = '<span class="aide" style="margin:0">rien encore</span>';
+          return { nom: j === this.moiJ ? 'Moi' : j, pieces: DV.piece(cite.pieces, 1.25), pv: DV.pv(SD.score(e, j).total, 1.25),
+                   merveilles: cite.merveilles.map(m => '<span class="mvp' + (m.faite ? ' faite' : '') + '" title="' + SD.MERVEILLES[m.id].nom + '"></span>').join(''), detail: d };
+        },
+        texteCout: function(p) {
+          if (p.gratuit) return 'gratuit (chaînage)';
+          return p.total ? 'payer ' + p.total + ' 🪙' + (p.commerce ? ' (dont ' + p.commerce + ' à la banque)' : '') : 'tu as tout';
+        },
         actionDuel: function(a) {
-          this.selDuel = null; this.infoJeton = null;
+          this.selDuel = null;
           this.son('toc'); this.vibre(15);
           if (this.solo) {
             var err = SD.jouer(etatSolo, this.moiSolo(), a);
@@ -870,32 +957,26 @@
           }
           this.envoyerJeu({ type: 'DUEL', partieId: this.pub.partieId, a: a });
         },
-        // L'ordinateur joue son tour (en solo, et chez l'hôte dans un salon)
+        // L'ordinateur joue (en solo, et chez l'hôte dans un salon)
         planifierOrdiDuel: function() {
           clearTimeout(this._timerDuel);
           var e = this.solo ? etatSolo : pubHote && pubHote.etat;
           if (!e || e.mode !== 'duel' || e.phase === 'fin') return;
-          var j = e.phase === 'jeton' ? e.enAttente : e.joueurs[e.tour];
+          var j = SD.qui(e);
           if (!estOrdi(j)) return;
           this._timerDuel = setTimeout(() => {
             var e2 = this.solo ? etatSolo : pubHote && pubHote.etat;
-            if (e2 !== e || e.phase === 'fin') return;
+            if (e2 !== e || e.phase === 'fin' || SD.qui(e) !== j) return;
             SD.jouer(e, j, SD.ordinateur(e, j));
             if (this.solo) this.majSolo(); else this.publier();
             this.planifierOrdiDuel();
-          }, e.phase === 'joyaux' ? 1200 : 1100);
-        },
-        paiementDuel: function(p) {
-          if (p.chaine) return 'gratuit (chaîne)';
-          var t = (p.banque || 0) + (p.pieces || 0);
-          return t ? 'payer ' + t + ' 🪙' : 'tu as tout';
+          }, e.phase === 'merveilles' ? 1300 : 1200);
         },
         toucherPyramide: function(c) {
           this.infoJeton = null;
           if (!c.id) { this.vibre(30); return; }
           this.selDuel = this.selDuel === c.k ? null : c.k;
         },
-        toucherJeton: function(t) { this.selDuel = null; this.infoJeton = this.infoJeton === t ? null : t; },
 
         // ================== ACTIONS DU JOUEUR ==================
         toucherCarte: function(i) {
@@ -993,8 +1074,8 @@
             // Un joueur est absent : l'hôte fait choisir l'ordinateur à sa place (pour ce tour)
             if (!hote || !e || e.phase === 'fin') return;
             if (e.mode === 'duel') {
-              var qui = e.phase === 'jeton' ? e.enAttente : e.joueurs[e.tour];
-              if (!this.estConnecte(qui) && !estOrdi(qui)) SD.jouer(e, qui, SD.ordinateur(e, qui));
+              var qui = SD.qui(e);
+              if (qui && !this.estConnecte(qui) && !estOrdi(qui)) SD.jouer(e, qui, SD.ordinateur(e, qui));
             } else if (e.phase === 'jeu') e.joueurs.forEach(j => { if (!e.choix[j] && !this.estConnecte(j) && !estOrdi(j)) SJ.choisir(e, j, SJ.ordinateur(e, j)); });
           } else if (m.type === 'NOUVELLE') {
             if (!hote || !e || e.phase !== 'fin') return;
@@ -1025,8 +1106,7 @@
           if (e.mode === 'duel') {
             if (ea && e.journal.length && (ea.journal.length !== e.journal.length || ea.journal[ea.journal.length - 1] !== e.journal[e.journal.length - 1])) {
               this.son('toc');
-              var qui = e.phase === 'jeton' ? e.enAttente : e.joueurs[e.tour];
-              if (e.phase !== 'fin' && qui === moi) this.vibre([30, 40, 30]);
+              if (e.phase !== 'fin' && SD.qui(e) === moi) this.vibre([30, 40, 30]);
               if (ea.age !== e.age) setTimeout(() => this.son('choc', 0.8), 250);
             }
           }

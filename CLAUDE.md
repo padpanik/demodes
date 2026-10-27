@@ -50,7 +50,7 @@ Lien vers un jeu : `yams/` (pas `yams.html`). `404.html` renvoie les anciennes a
 | `quatre/` : `index.html` + `quatre-regles.js` | Quatre en ligne (version maison du classique « aligner 4 jetons », sans le nom de la marque). Solo contre l'ordinateur (3 niveaux) ou à deux en salon. Moteur + ordinateur (minimax) dans `quatre-regles.js` (testable avec Node). |
 | `domino/` : `index.html` + `domino-regles.js` | Dominos (double-six) avec l'option **Triominos**. Solo contre 1 à 3 ordinateurs, ou salon de 2 à 4 (mains gardées par l'hôte, chacun ne reçoit que la sienne). Moteur + ordinateur + géométrie triangulaire dans `domino-regles.js` (testable avec Node). |
 | `lettres/` : `index.html` + `lettres-regles.js` + `lettres-mots.txt` | **Lettres croisées** (version maison du jeu de lettres sur grille, sans le nom ni les visuels de la marque). Solo contre 1 à 3 ordinateurs (3 niveaux), ou salon de 2 à 4 (chevalets et sac gardés par l'hôte). Plateau, bonus, points, arbre de mots et ordinateur dans `lettres-regles.js` (testable avec Node). Dictionnaire libre `lettres-mots.txt` (~311 000 mots, licence MIT, voir `lettres-mots-licence.txt`), une ligne par mot codée « préfixe commun » (1er caractère = longueur reprise du mot précédent, en hexadécimal), suivie d'un chiffre de fréquence (3 très courant, 2 courant, 1 connu, rien = rare ; d'après wordfreq, CC BY-SA 4.0). Abréviations retirées (CF, KM…). Pas d'ODS (liste officielle sous droits). |
-| `joyaux/` : `index.html` + `joyaux-regles.js` + `joyaux-duel.js` | **Les 7 joyaux** (demandé par l'utilisateur : version maison d'un jeu de draft de cartes et de cités, sans le nom, les cartes ni les visuels de la marque). Solo contre 2 à 6 ordinateurs, ou salon de 2 à 7 humains + ordinateurs ajoutés par l'hôte (3 cités au moins ; mains gardées par l'hôte, chacun ne reçoit que la sienne). Cartes, joyaux, paiement, conflits, décompte et ordinateur dans `joyaux-regles.js` (testable avec Node). **Version Duel** (2.52) à deux, chacun son tour, dans `joyaux-duel.js` (`SD`, testable avec Node). |
+| `joyaux/` : `index.html` + `joyaux-regles.js` + `joyaux-duel.js` + `joyaux-visuels.js` | **Les 7 joyaux** (demandé par l'utilisateur : version maison d'un jeu de draft de cartes et de cités, sans le nom, les cartes ni les visuels de la marque). Solo contre 2 à 6 ordinateurs, ou salon de 2 à 7 humains + ordinateurs ajoutés par l'hôte (3 cités au moins ; mains gardées par l'hôte, chacun ne reçoit que la sienne). Cartes, joyaux, paiement, conflits, décompte et ordinateur dans `joyaux-regles.js` (testable avec Node). **Version Duel** (règles d'origine depuis 2.53) à deux, chacun son tour, dans `joyaux-duel.js` (`SD`, testable avec Node), visuels dans `joyaux-visuels.js` (`DV`). |
 | `expedition/` : `index.html` + `expedition-regles.js` | **Expédition** (balade du compagnon, culture générale) : chemin à embranchements en **vue 3D isométrique** (SVG dessiné par le code), gardiens qui posent une question, coffres, buvette, boss sur un jeu de la collection contre l'ordinateur. Solo pour l'instant (sorties en groupe prévues). Lieux, questions maison, génération de la carte et récompenses dans `expedition-regles.js` (testable avec Node). |
 | `donjon/` : `index.html` + `donjon-regles.js` | **Donjon des compagnons** (demandé par l'utilisateur : exploration à plusieurs façon jeu d'aventure NES, « temps réel doux »). Pas de fiche sur l'accueil : on y va par l'Expédition (lieu « Donjon », `donjon: true`, bouton « 🗝️ Aller au donjon », sans la fatigue d'une heure) ou par « Rejoindre » du salon global. Seul ou salon (préfixe réseau `dj`, pas de limite). Moteur, génération et pouvoirs dans `donjon-regles.js` (testable avec Node). |
 | `compagnon/` : `index.html` + `compagnon-commun.js` | **Mon compagnon** (prototype, façon « animal virtuel ») : on adopte un animal dessiné en SVG, on en prend soin chaque jour, et les ⭐ gagnées en jouant (`Etoiles` dans `commun.js`) achètent accessoires et déco. Espèces, besoins, boutique et dessin SVG dans `compagnon-commun.js` (aussi utilisé par l'accueil). Pas de réseau propre. |
@@ -396,27 +396,25 @@ Bataille navale : `bataille-boss` (partie contre un boss d'expédition), `batail
   Choix fait : bandeau « ✓ … · On attend … » avec « Changer » (jusqu'à la révélation, 0,7 s après le dernier choix). Fenêtre des conflits à chaque fin d'âge,
   tableau du décompte à la fin. Hôte disparu : retour à la salle d'attente (les mains étaient chez lui). Étoiles : `finDePartie('Les 7 joyaux')` (« entre amis »
   seulement à 2 humains et plus), série de victoires solo `Etoiles.serie('joyaux')`.
-- **Version Duel** (demandée par l'utilisateur : « les règles de la version duel, en option à choisir avant de lancer la partie » ; règles maison inspirées
-  du duel du commerce, noms et valeurs à nous) : choix **🏛️ Classique / ⚔️ Duel** dans l'onglet Partie pour jouer seul (`modeChoisi`, `joyaux-mode` ; duel = contre 1 🤖)
+- **Version Duel** (demandée par l'utilisateur, puis **refaite en 2.53 aux règles exactes du jeu d'origine** à sa demande : « reprendre les règles exactes et des visuels
+  qui rappellent l'original », appli privée entre amis) : choix **🏛️ Classique / ⚔️ Duel** dans l'onglet Partie pour jouer seul (`modeChoisi`, `joyaux-mode` ; duel = contre 1 🤖)
   et dans la salle d'attente du salon (l'hôte, `pubHote.mode`, message `MODE` ; les 2 premiers présents jouent, un 🤖 si l'on est seul, les autres regardent).
-  Moteur `SD` (`joyaux/joyaux-duel.js`) :
-  - Début : 4 joyaux tirés, le 1er joueur en prend un, l'autre un parmi les 3 restants (`phase: 'joyaux'`). 7 🪙 chacun. **Chacun son tour.**
-  - Chaque âge : 20 cartes (une par nom, tirées dans la liste de l'âge ; âge III = 17 + 3 guildes) en **pyramide** (`FORMES` : I = 2-3-4-5-6, II = 6-5-4-3-2,
-    III = 2-3-4-2-4-3-2), une rangée sur deux face cachée ; on ne prend qu'une carte **dégagée** (`accessible`), une carte cachée se retourne dès qu'elle est dégagée.
-    Les cartes cachées ne sont pas envoyées aux téléphones (`SD.vuePour` : `id: null`).
-  - Construire / étape du joyau / vendre (2 🪙 + 1 par carte jaune). **Commerce avec la banque** : 2 🪙 + 1 par exemplaire que l'adversaire produit
-    (cartes marron et grises à ressource fixe), 1 🪙 avec comptoir (matières) ou marché (objets) ; paiement le moins cher calculé (`SD.payer`).
-  - **Piste militaire** (`militaire`, −9…+9, positif = vers le 2e joueur) : chaque bouclier pousse le pion ; 3e cran : l'adversaire perd 2 🪙, 6e : 5 🪙 (une fois, `pillage`) ;
-    **au bout : victoire militaire immédiate** ; sinon 2 / 5 / 10 points selon l'avance.
-  - **Savoir** : 6 symboles (📐 ⚙️ 📖 ⚖️ ⏳ 🪶, `SD.SCI` : deux cartes vertes par symbole) ; une paire = un **jeton de savoir** à choisir parmi les 5 posés
-    (`phase: 'jeton'`, `enAttente`) ; **6 symboles différents (jokers compris) : victoire du savoir immédiate** ; une carte verte vaut son âge en points.
-  - 10 jetons maison (`SD.JETONS`) : Récolte, Architecture, Maçonnerie, Économie, Loi, Mathématiques, Philosophie, Stratégie, Urbanisme, Banque.
-  - Guildes : comptent dans la cité qui a le plus de cartes du type. Âge suivant : commence le moins fort militairement (égalité : celui qui n'a pas pris la dernière carte).
-  - Ordinateur `SD.ordinateur` (valeur de la carte + 35 % de ce qu'elle vaudrait pour l'adversaire, bloque une victoire immédiate). Testé : 400 parties
-    (~48 % aux points, 30 % savoir, 22 % militaire), duel solo et salon à deux en navigateur, rechargement d'un téléphone en pleine partie.
-  - Écran : barre, deux cartes de cité (toucher = détail), piste ⚔️ (ma cité à gauche, butins −2/−5 🪙 tant qu'ils ne sont pas pris), jetons du plateau
-    (toucher = explication, « Prendre » quand on a une paire), pyramide (cartes de 51 px : bande de couleur, effet en icônes, coût ; bordure verte = dégagée),
-    détail de la carte touchée avec ses actions. Étoiles comme en classique ; série solo `joyaux-duel`.
+  Moteur `SD` (`joyaux/joyaux-duel.js`, `VERSION_REGLES = 2`, `SD.compatible` : un duel solo de l'ancienne version est oublié) :
+  - Cartes d'origine sous des noms français génériques (`LISTE` : 23 / 23 / 20 cartes + 7 guildes, `[id, nom, âge, type, coût, effet, chaîne]`), chaînages, 12 merveilles
+    (`MERVEILLES` : Voie Appienne, Circus Maximus, Colosse, Grande Bibliothèque, Phare, Jardins suspendus, Mausolée, Pirée, Pyramides, Sphinx, Statue de Zeus, Temple d'Artémis),
+    10 jetons Progrès (`PROGRES`). Valeurs reconstruites de mémoire : à vérifier avec la boîte de l'utilisateur (liste donnée en 2.53).
+  - Choix des merveilles (`phase: 'merveilles'`) : 8 tirées, montrées par 4, ordre 1-2-1 puis inverse (`ORDRE_CHOIX`). 7 🪙 chacun. Chacun son tour.
+  - Pyramides (`FORMES`), une rangée sur deux face cachée, carte **dégagée** seulement ; cartes cachées non envoyées (`SD.vuePour`).
+  - Construire (ou gratuit par chaînage), défausser (2 🪙 + 1 par carte jaune), ou construire une merveille avec la carte ; **7 merveilles au plus** (la 8e est retirée).
+    Merveilles « Rejouer » (`e.rejoue`), Bibliothèque (3 jetons de la boîte, `phase: 'bibliotheque'`), Mausolée (carte de la défausse), destruction d'une carte marron / grise adverse.
+  - Commerce : 2 🪙 + 1 par exemplaire produit par l'adversaire (cartes marron et grises) ; dépôts à 1 🪙 ; paiement le moins cher (`SD.payer`).
+  - Piste militaire (pillages 2 et 5 🪙, suprématie militaire), 7 symboles (paire = jeton Progrès au choix, six différents = suprématie scientifique).
+    Âge suivant : le plus faible militairement choisit qui commence (`phase: 'debut'`). File d'attentes `e.attentes`, `SD.qui(e)`.
+  - Décompte civil (`LIGNES_DUEL` : civils, science, commerce, guildes, merveilles, Progrès, pièces, militaire ; égalité : bâtiments civils).
+  - Ordinateur `SD.ordinateur`. Testé en Node (500 parties : 88 % civiles, 8 % militaires, 5 % science), solo et salon à deux en navigateur, rechargement en pleine partie.
+  - **Visuels** (`joyaux/joyaux-visuels.js`, `DV`, dessinés par le code, aucune illustration officielle) : cartes à la couleur du type, bandeau d'effet en icônes, coût en colonne,
+    silhouette du bâtiment, nom ; dos d'âge (I, II, III) ; merveilles dorées avec la silhouette du monument ; jetons Progrès ronds verts ; piste militaire avec capitales
+    et butins. Écran : cité adverse en haut, piste, jetons, pyramide, ma cité en bas ; toucher une carte ouvre ses actions et la liste des merveilles ; toucher une cité ouvre le détail.
 - Plus tard (proposé à l'utilisateur) : guildes et joyaux à deux faces, boss d'expédition.
 
 ### Expédition (demandée par l'utilisateur : emmener le compagnon en balade, thèmes de culture générale)
