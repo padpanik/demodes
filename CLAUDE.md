@@ -414,7 +414,8 @@ Bataille navale : `bataille-boss` (partie contre un boss d'expédition), `batail
   - Ordinateur `SD.ordinateur`. Testé en Node (500 parties : 88 % civiles, 8 % militaires, 5 % science), solo et salon à deux en navigateur, rechargement en pleine partie.
   - **Visuels** (`joyaux/joyaux-visuels.js`, `DV`, dessinés par le code, aucune illustration officielle) : cartes à la couleur du type, bandeau d'effet en icônes, coût en colonne,
     silhouette du bâtiment, nom ; dos d'âge (I, II, III) ; merveilles dorées avec la silhouette du monument ; jetons Progrès ronds verts ; piste militaire avec capitales
-    et butins. Écran : cité adverse en haut, piste, jetons, pyramide, ma cité en bas ; toucher une carte ouvre ses actions et la liste des merveilles ; toucher une cité ouvre le détail.
+    et butins. **Coûts lisibles** (2.54, demandé par l'utilisateur) : chaque ressource sur une pastille claire, les identiques regroupées avec un « ×2 »,
+    sur deux colonnes dès 3 pastilles ; icônes à contour sombre ; icônes d'effet plus grandes quand il y en a peu. Écran : cité adverse en haut, piste, jetons, pyramide, ma cité en bas ; toucher une carte ouvre ses actions et la liste des merveilles ; toucher une cité ouvre le détail.
 - Plus tard (proposé à l'utilisateur) : guildes et joyaux à deux faces, boss d'expédition.
 
 ### Expédition (demandée par l'utilisateur : emmener le compagnon en balade, thèmes de culture générale)

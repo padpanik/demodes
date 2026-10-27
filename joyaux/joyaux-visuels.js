@@ -7,11 +7,11 @@ var DV = (function () {
 
   // ---------- Petites icônes (viewBox 10 × 10) ----------
   var R = {
-    B: '<rect x="1" y="3" width="8" height="4.4" rx="2.2" fill="#9c6b3c"/><ellipse cx="8" cy="5.2" rx="1.6" ry="2.2" fill="#e2b57c"/><ellipse cx="8" cy="5.2" rx="0.7" ry="1" fill="none" stroke="#9c6b3c" stroke-width="0.5"/><path d="M2 4.3 H6.5 M2.5 6.2 H6" stroke="#7a4f27" stroke-width="0.45"/>',
-    A: '<rect x="0.8" y="2.6" width="8.4" height="4.8" rx="0.8" fill="#d0663b"/><path d="M0.8 5 H9.2 M4 2.6 V5 M6.5 5 V7.4 M2.4 5 V7.4" stroke="#8f3b1c" stroke-width="0.5"/>',
-    P: '<path d="M1 8 L2.2 4.2 L4.8 3 L6.6 4.4 L8.8 4 L9.3 8 Z" fill="#9aa3ab"/><path d="M2.2 4.2 L4 6 L6.6 4.4 M4 6 L4.4 8" fill="none" stroke="#6b737b" stroke-width="0.5"/>',
-    V: '<path d="M3.6 1 H6.4 V2.6 L7.8 4.4 V8.6 Q7.8 9.4 7 9.4 H3 Q2.2 9.4 2.2 8.6 V4.4 L3.6 2.6 Z" fill="#7fd3e6" stroke="#2c8aa3" stroke-width="0.5"/><path d="M3.4 5 V8" stroke="#fff" stroke-width="0.6" opacity="0.8"/>',
-    R: '<rect x="2" y="1.4" width="6" height="7.2" fill="#efdfb2"/><rect x="1.2" y="1" width="7.6" height="1.6" rx="0.8" fill="#d8bf7c"/><rect x="1.2" y="7.6" width="7.6" height="1.6" rx="0.8" fill="#d8bf7c"/><path d="M3 4 H7 M3 5.3 H7 M3 6.6 H6" stroke="#a88d4a" stroke-width="0.45"/>'
+    B: '<rect x="0.6" y="2.4" width="8.2" height="5.4" rx="2.7" fill="#a8723f" stroke="#4a2c12" stroke-width="0.6"/><ellipse cx="7.7" cy="5.1" rx="1.7" ry="2.5" fill="#f0c88e" stroke="#4a2c12" stroke-width="0.6"/><ellipse cx="7.7" cy="5.1" rx="0.7" ry="1.1" fill="none" stroke="#a8723f" stroke-width="0.5"/><path d="M1.8 4 H5.6 M2.2 6.3 H5.4" stroke="#5e3a1a" stroke-width="0.55"/>',
+    A: '<rect x="0.6" y="2.2" width="8.8" height="5.6" rx="0.6" fill="#e0703f" stroke="#5a200a" stroke-width="0.6"/><path d="M0.6 5 H9.4 M4.2 2.2 V5 M6.8 5 V7.8 M2.4 5 V7.8" stroke="#5a200a" stroke-width="0.6"/>',
+    P: '<path d="M0.6 8.6 L1.8 3.8 L4.6 2.2 L6.8 3.6 L9 3.2 L9.5 8.6 Z" fill="#b3bcc4" stroke="#3c434a" stroke-width="0.6" stroke-linejoin="round"/><path d="M1.8 3.8 L4 6 L6.8 3.6 M4 6 L4.4 8.6" fill="none" stroke="#3c434a" stroke-width="0.55"/>',
+    V: '<path d="M3.5 0.6 H6.5 V2.4 L8.1 4.3 V8.7 Q8.1 9.5 7.2 9.5 H2.8 Q1.9 9.5 1.9 8.7 V4.3 L3.5 2.4 Z" fill="#8fe0f2" stroke="#145e72" stroke-width="0.6"/><path d="M3.3 4.8 V8.2" stroke="#fff" stroke-width="0.7"/>',
+    R: '<rect x="1.8" y="1.2" width="6.4" height="7.6" fill="#f5e6bb" stroke="#6b5520" stroke-width="0.5"/><rect x="0.9" y="0.6" width="8.2" height="1.8" rx="0.9" fill="#d9bd70" stroke="#6b5520" stroke-width="0.5"/><rect x="0.9" y="7.6" width="8.2" height="1.8" rx="0.9" fill="#d9bd70" stroke="#6b5520" stroke-width="0.5"/><path d="M3 4 H7 M3 5.3 H7 M3 6.6 H6" stroke="#8a6d2a" stroke-width="0.55"/>'
   };
   function svg(contenu, taille) { return '<svg class="dv-ico" viewBox="0 0 10 10" style="width:' + (taille || 1) + 'em;height:' + (taille || 1) + 'em">' + contenu + '</svg>'; }
   function res(r, t) { return svg(R[r], t); }
@@ -42,7 +42,10 @@ var DV = (function () {
   // ---------- Effet d'une carte, en icônes ----------
   function effet(c, t) {
     var f = c.effet, o = '';
-    t = t || 1.5;
+    if (!t) {
+      var nb = (f.prod || '').length + (f.choix ? 3 : 0) + (f.depot ? f.depot.length + 2 : 0) + (f.boucliers || 0) + (f.sci ? 1 : 0) + (f.pieces ? 1 : 0) + (f.par ? 3 : 0) + (f.guilde ? 4 : 0) + (f.pts ? 1 : 0);
+      t = nb <= 1 ? 1.9 : nb === 2 ? 1.75 : nb === 3 ? 1.5 : 1.25;
+    }
     if (f.prod) o += f.prod.split('').map(r => res(r, t)).join('');
     if (f.choix) o += f.choix.split('/').map(r => res(r, t * 0.9)).join('<b class="dv-ou">/</b>');
     if (f.depot) o += f.depot.split('').map(r => res(r, t * 0.9)).join('') + '<b class="dv-eg">=</b>' + piece(1, t * 0.9);
@@ -59,11 +62,21 @@ var DV = (function () {
     if (f.pts) o += pv(f.pts, t);
     return o;
   }
-  function cout(c, t) {
-    t = t || 1;
-    var o = c.pieces ? piece(c.pieces, t) : '';
-    o += (c.cout || '').split('').map(r => res(r, t)).join('');
-    return o;
+  // Coût lisible : chaque ressource sur une pastille claire, les identiques regroupées (« ×2 ») pour pouvoir dessiner plus grand
+  function pastilles(lettres) {
+    var n = {}, ordre = [];
+    (lettres || '').split('').forEach(function (r) { if (!n[r]) { n[r] = 0; ordre.push(r); } n[r]++; });
+    return ordre.map(function (r) {
+      return '<span class="dv-past">' + res(r, 1) + (n[r] > 1 ? '<b class="dv-nb">' + n[r] + '</b>' : '') + '</span>';
+    }).join('');
+  }
+  // Plus de 2 pastilles : sur deux colonnes, pour ne pas descendre sur le nom
+  function colonneCout(html) {
+    var n = (html.match(/class="dv-past/g) || []).length;
+    return '<div class="dv-cout' + (n > 2 ? ' dv-cout2' : '') + '">' + html + '</div>';
+  }
+  function cout(c) {
+    return (c.pieces ? '<span class="dv-past dv-past-p">' + piece(c.pieces, 1) + '</span>' : '') + pastilles(c.cout);
   }
   // ---------- Une carte ----------
   function carte(id, taille, opts) {
@@ -72,7 +85,7 @@ var DV = (function () {
     opts = opts || {};
     return '<div class="dv-carte dv-' + (taille || 'pyr') + '" style="--c:' + COUL[c.type] + '">' +
       '<div class="dv-bandeau">' + effet(c) + '</div>' +
-      '<div class="dv-cout">' + cout(c) + '</div>' +
+      colonneCout(cout(c)) +
       silhouette(c.type) +
       (c.chaine && taille === 'grand' ? '<div class="dv-chaine">🔗 gratuite avec ' + SD.CARTES[c.chaine].nom + '</div>' : '') +
       '<div class="dv-nom">' + c.nom + '</div></div>';
@@ -98,7 +111,7 @@ var DV = (function () {
     'm-voie': '<path d="M30 46 L38 6 H42 L50 46 Z"/><path d="M40 12 V18 M40 24 V32 M40 38 V44" stroke="#000" stroke-opacity="0.25" stroke-width="2"/><rect x="14" y="24" width="4" height="22"/><rect x="62" y="24" width="4" height="22"/><rect x="12" y="20" width="8" height="4"/><rect x="60" y="20" width="8" height="4"/>'
   };
   function effetMerveille(W, t) {
-    t = t || 1.2;
+    t = t || 1.35;
     var o = '';
     if (W.rejouer) o += '<span class="dv-rejouer" style="font-size:' + t + 'em">↻</span>';
     if (W.pieces) o += piece(W.pieces, t);
@@ -116,7 +129,7 @@ var DV = (function () {
     var W = SD.MERVEILLES[id], taille = opts.taille || 'grand';
     return '<div class="dv-merveille dv-m' + taille + (opts.faite ? ' dv-faite' : '') + (opts.retiree ? ' dv-retiree' : '') + '">' +
       '<div class="dv-bandeau">' + effetMerveille(W) + '</div>' +
-      '<div class="dv-cout">' + W.cout.split('').map(r => res(r, 1)).join('') + '</div>' +
+      colonneCout(pastilles(W.cout)) +
       '<svg class="dv-monu" viewBox="0 0 80 48" fill="#fff">' + MONU[id] + '</svg>' +
       '<div class="dv-nom">' + W.nom + '</div>' + (opts.faite ? '<div class="dv-tampon">✓</div>' : '') + '</div>';
   }
@@ -165,8 +178,14 @@ var DV = (function () {
     '.dv-ou,.dv-eg{font-size:0.8em;margin:0 0.05em;color:#3b4b57}',
     '.dv-carte{--t:8px;font-size:var(--t);width:6.3em;height:8.6em;border-radius:0.6em;background:var(--c);position:relative;overflow:hidden;box-sizing:border-box;border:0.12em solid rgba(0,0,0,0.25);color:#fff;font-family:system-ui,sans-serif}',
     '.dv-carte .dv-bandeau{position:absolute;top:0;left:0;right:0;height:2.3em;background:rgba(255,253,245,0.95);display:flex;align-items:center;justify-content:center;gap:0.1em;font-size:1em;color:#1d2b36;border-bottom:0.12em solid rgba(0,0,0,0.15);overflow:hidden;white-space:nowrap}',
-    '.dv-carte .dv-cout{position:absolute;top:2.55em;left:0.25em;display:flex;flex-direction:column;gap:0.1em;font-size:0.95em}',
-    '.dv-carte .dv-sil{position:absolute;left:1.6em;right:0.2em;top:2.6em;width:auto;height:3.6em;opacity:0.33}',
+    '.dv-past{position:relative;display:flex;align-items:center;justify-content:center;width:1.38em;height:1.38em;border-radius:0.32em;background:#fffaf0;box-shadow:0 0.06em 0.15em rgba(0,0,0,0.45)}',
+    '.dv-past .dv-ico{width:1.15em!important;height:1.15em!important}',
+    '.dv-past-p{background:none;box-shadow:none}',
+    '.dv-past-p .dv-piece{font-size:1.3em!important}',
+    '.dv-nb{position:absolute;right:-0.4em;bottom:-0.35em;min-width:1.05em;height:1.05em;border-radius:50%;background:#1d2b36;color:#fff;font-size:0.8em;line-height:1.05em;text-align:center;font-weight:900;border:0.08em solid #fff}',
+    '.dv-cout.dv-cout2{display:grid!important;grid-template-columns:1.38em 1.38em;gap:0.18em 0.22em!important}',
+    '.dv-carte .dv-cout{position:absolute;top:2.55em;left:0.2em;display:flex;flex-direction:column;gap:0.18em;font-size:1em}',
+    '.dv-carte .dv-sil{position:absolute;left:1.9em;right:0.2em;top:2.6em;width:auto;height:3.6em;opacity:0.33}',
     '.dv-carte .dv-nom{position:absolute;left:0.15em;right:0.15em;bottom:0.25em;text-align:center;font-weight:800;font-size:0.88em;line-height:1.05;overflow-wrap:anywhere;text-shadow:0 0.08em 0.15em rgba(0,0,0,0.5)}',
     '.dv-carte .dv-chaine{position:absolute;left:0.3em;right:0.3em;bottom:2.3em;font-size:0.62em;text-align:center;background:rgba(0,0,0,0.25);border-radius:0.4em;padding:0.1em}',
     '.dv-carte.dv-grand{--t:17px}',
@@ -175,8 +194,8 @@ var DV = (function () {
     '.dv-carte.dv-dos span{font-weight:900;font-size:1.8em;color:#fff;opacity:0.85;font-family:Georgia,serif}',
     '.dv-merveille{--t:8px;font-size:var(--t);width:13em;height:8.2em;border-radius:0.6em;position:relative;overflow:hidden;box-sizing:border-box;border:0.15em solid #a07a2c;color:#fff;font-family:system-ui,sans-serif;background:linear-gradient(180deg,#d9b25a,#9c6f1e)}',
     '.dv-merveille .dv-bandeau{position:absolute;top:0;left:0;right:0;height:2em;background:rgba(255,253,245,0.95);display:flex;align-items:center;justify-content:center;gap:0.15em;color:#1d2b36;white-space:nowrap;overflow:hidden}',
-    '.dv-merveille .dv-cout{position:absolute;top:2.3em;left:0.3em;display:flex;flex-direction:column;gap:0.05em;font-size:0.9em}',
-    '.dv-merveille .dv-monu{position:absolute;left:2.2em;right:0.4em;top:2.3em;height:4.4em;width:auto;opacity:0.55}',
+    '.dv-merveille .dv-cout{position:absolute;top:2.35em;left:0.3em;display:flex;flex-direction:column;gap:0.15em;font-size:0.95em}',
+    '.dv-merveille .dv-monu{position:absolute;left:2.4em;right:0.4em;top:2.3em;height:4.4em;width:auto;opacity:0.55}',
     '.dv-merveille .dv-nom{position:absolute;left:0.3em;right:0.3em;bottom:0.25em;text-align:center;font-weight:900;font-size:1em;text-shadow:0 0.08em 0.2em rgba(0,0,0,0.6)}',
     '.dv-merveille.dv-mgrand{--t:12px}',
     '.dv-merveille.dv-mmini{--t:4.4px}',
