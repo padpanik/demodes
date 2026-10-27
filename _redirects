@@ -1,4 +1,4 @@
-# Cloudflare Pages : fichiers du dépôt qui n'ont pas à être servis
+# Cloudflare : fichiers du dépôt qui n'ont pas à être servis
 /CLAUDE.md                /  302
 /netlify.toml             /  302
 /serveur-cloudflare/*     /  302

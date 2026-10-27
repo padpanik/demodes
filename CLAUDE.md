@@ -12,17 +12,22 @@ Tout est en français : interface, commentaires du code, messages de commit, ré
   officiels, pas de lien public, pas d'information personnelle dans le dépôt (il est public).
 - **Code d'accès** : il n'apparaît JAMAIS dans le dépôt, ni dans un commit, ni dans un fichier de test.
   Seule son empreinte est publiée (voir « Accès privé »). Ne jamais le demander ni l'écrire en clair.
-- **Pas de serveur de jeu** : hébergement statique sur GitHub Pages (`padpanik/demodes`, branche `main`).
+- **Pas de serveur de jeu** : hébergement statique (dépôt `padpanik/demodes`, branche `main`), d'abord GitHub Pages, maintenant Cloudflare (voir plus bas).
   Les téléphones se parlent directement (WebRTC via PeerJS), mis en relation par le petit serveur de Désdale sur Cloudflare
   (`serveur-cloudflare/`, repli automatique sur le serveur public de PeerJS).
-- **Déménagement vers Cloudflare Pages** (décidé par l'utilisateur en 2.56, pour pouvoir passer le dépôt en privé : GitHub Pages gratuit
-  ne publie que les dépôts publics) : projet Pages `desdale` relié au dépôt (`https://desdale.pages.dev`, publié à chaque push sur `main`, sans
-  étape de construction, dossier de sortie = racine). `_headers` (noindex, `sw.js` toujours relu) et `_redirects` (CLAUDE.md, `serveur-cloudflare/`,
-  `netlify.toml` non servis). Pages renvoie `index.html` vers `/` : `sw.js` renvoie alors la redirection au lieu de la page redirigée (refusée en navigation).
-  Les données (localStorage) sont propres à chaque adresse : `DEMENAGEMENT` dans `commun.js` (`ouvert` à mettre à `true` quand la nouvelle adresse
-  est en ligne) affiche sur l'ancienne adresse la carte « 🚚 Désdale déménage » (`demenager` : `Sauvegarde.creer()` en base64 dans
-  `#demenagement=…`, jamais envoyé au serveur) ; la nouvelle adresse la lit (`lireDemenagement`) et propose « ✓ Récupérer mes données »
-  après le code d'accès. Le serveur de mise en relation accepte les deux origines (`ORIGINES`). Porte Cloudflare Access : pas tout de suite (plus tard).
+- **Hébergement chez Cloudflare** (décidé par l'utilisateur en 2.56, pour pouvoir passer le dépôt en privé : GitHub Pages gratuit
+  ne publie que les dépôts publics) : **Worker « demodes » à fichiers statiques** (créé par l'utilisateur depuis son tableau de bord, relié au dépôt :
+  chaque push sur `main` est publié, `https://demodes.desdale.workers.dev`). Configuration : `wrangler.jsonc` à la racine (nom `demodes`, dossier `.`,
+  `not_found_handling: 404-page`) et **`.assetsignore`** (indispensable : sans lui, `.git` et tout le dépôt seraient publiés ; exclut aussi CLAUDE.md,
+  `serveur-cloudflare/`, `netlify.toml`, `wrangler.jsonc`). Vérifier après un changement : `wrangler deploy --dry-run` sur une copie, et compter les fichiers
+  gardés (~55). `_headers` (noindex, `sw.js` toujours relu) et `_redirects` lus aussi par Cloudflare. Cloudflare renvoie `index.html` vers `/` :
+  `sw.js` renvoie alors la redirection au lieu de la page redirigée (refusée en navigation). Vérifier un déploiement : API Cloudflare
+  (`workers/scripts/demodes/deployments`, `versions/<id>` montre les en-têtes et redirections lus) ; le site lui-même n'est pas joignable depuis l'environnement cloud.
+  **Déménagement des données** (localStorage propre à chaque adresse) : `DEMENAGEMENT` dans `commun.js` (`ouvert: true` depuis 2.57) affiche sur
+  l'ancienne adresse (`padpanik.github.io`) la carte « 🚚 Désdale déménage » (`demenager` : `Sauvegarde.creer()` en base64 dans `#demenagement=…`,
+  jamais envoyé au serveur) ; la nouvelle adresse la lit (`lireDemenagement`) et propose « ✓ Récupérer mes données » après le code d'accès.
+  Le serveur de mise en relation accepte les deux origines (`ORIGINES`). Ensuite : dépôt passé en privé par l'utilisateur (l'ancien site s'éteint).
+  Porte Cloudflare Access : pas tout de suite (plus tard).
 - L'utilisateur teste sur téléphone (référence d'écran : Samsung S21, 360 × 800 CSS px).
   Tout doit tenir en portrait sans défilement sur l'onglet de jeu.
 - Mise en ligne : commit et push **directement sur `main`** (accord de l'utilisateur).
@@ -79,7 +84,7 @@ Pas d'étape de construction, pas de dépendance à ajouter.
 2. Nouveau fichier servi ? L'ajouter à `FICHIERS` dans `sw.js` (avec son dossier : `'./yams/'`, `'./lettres/lettres-regles.js'`).
 3. Nouveau jeu ? Son dossier (`jeu/index.html` avec `<base href="../">`, copier `lettres/index.html`), puis l'ajouter à la liste `jeux` d'`index.html` (avec la clé de sa sauvegarde pour le badge « partie en cours »).
 4. Vérifier la syntaxe des scripts (`node --check`) et l'absence d'échappements doublés (`\\'`) après une modification par script.
-5. Tester (voir plus bas), puis commit + push sur `main`. GitHub Pages met 1 à 2 minutes à publier.
+5. Tester (voir plus bas), puis commit + push sur `main`. Cloudflare (et GitHub Pages tant que le dépôt est public) met 1 à 2 minutes à publier.
 
 ## Accès privé
 

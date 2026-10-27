@@ -1,0 +1,11 @@
+// Publication du site Désdale sur Cloudflare (Worker « demodes », fichiers statiques seulement, sans code serveur)
+// Relié au dépôt GitHub : chaque push sur main est publié automatiquement. Fichiers exclus : .assetsignore.
+{
+  "name": "demodes",
+  "compatibility_date": "2026-10-23",
+  "assets": {
+    "directory": ".",
+    // Page inconnue : 404.html (elle renvoie les anciennes adresses du type yams.html vers yams/)
+    "not_found_handling": "404-page"
+  }
+}

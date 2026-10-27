@@ -14,4 +14,4 @@ new_sqlite_classes = ["Salon"]
 
 [vars]
 # Sites autorisés à appeler le serveur depuis un navigateur (séparés par des virgules)
-ORIGINES = "https://padpanik.github.io,https://desdale.pages.dev"
+ORIGINES = "https://padpanik.github.io,https://demodes.desdale.workers.dev"

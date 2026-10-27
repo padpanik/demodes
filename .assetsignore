@@ -1,0 +1,12 @@
+# Fichiers du dépôt qui ne sont PAS publiés sur Cloudflare (le site est publié depuis la racine du dépôt)
+.git
+.github
+.gitignore
+.wrangler
+.dev.vars*
+.env*
+node_modules
+CLAUDE.md
+netlify.toml
+wrangler.jsonc
+serveur-cloudflare
