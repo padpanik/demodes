@@ -102,6 +102,44 @@
     .attente-sj .presents span { background: #eef4ff; border-radius: 12px; padding: 4px 10px; font-weight: 700; font-size: 0.9em; }
     .attente-sj .presents span.absent { opacity: 0.45; }
     .logo-sj { font-size: 40px; }
+
+    /* ===== DUEL ===== */
+    .duel-cites { display: flex; gap: 6px; margin-bottom: 6px; }
+    .duel-cites .dc { flex: 1; min-width: 0; background: #fff; border: none; font: inherit; text-align: left; border-radius: 12px; padding: 5px 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.06); cursor: pointer; font-size: 0.8em; }
+    .duel-cites .dc.actif { box-shadow: 0 0 0 2.5px #2ecc71; }
+    .duel-cites .dc .nom { font-weight: 900; font-size: 1.05em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .duel-cites .dc .l { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .piste { display: flex; align-items: center; gap: 2px; margin: 2px 0 4px; }
+    .piste .cap { font-size: 0.72em; font-weight: 800; width: 28px; text-align: center; white-space: nowrap; overflow: hidden; }
+    .piste .cases { flex: 1; display: flex; gap: 1px; position: relative; }
+    .piste .cs { flex: 1; height: 16px; background: #e3e8ec; border-radius: 3px; position: relative; }
+    .piste .cs.zone3 { background: #f6d9c5; } .piste .cs.zone6 { background: #f1b9a0; } .piste .cs.bout { background: #d64541; }
+    .piste .cs.centre { background: #b8c2cc; }
+    .piste .pion { position: absolute; top: -3px; left: 50%; transform: translateX(-50%); width: 18px; height: 22px; font-size: 15px; line-height: 22px; text-align: center; z-index: 2; }
+    .piste .butin { position: absolute; top: -12px; left: 50%; transform: translateX(-50%); font-size: 9px; font-weight: 900; color: #b7791f; white-space: nowrap; }
+    .jetons-plateau { display: flex; gap: 4px; justify-content: center; margin: 0 0 4px; flex-wrap: wrap; }
+    .jetons-plateau button { border: 2px solid #2e9e6b; background: #e9f8ef; border-radius: 50%; width: 34px; height: 34px; font-size: 17px; padding: 0; cursor: pointer; }
+    .jetons-plateau button.choix { animation: appel-jeton 0.9s ease-in-out infinite alternate; }
+    @keyframes appel-jeton { from { box-shadow: 0 0 0 0 rgba(46,158,107,0.6); } to { box-shadow: 0 0 0 5px rgba(46,158,107,0.15); } }
+    .info-jeton { font-size: 0.8em; text-align: center; color: #3b4b57; margin-bottom: 4px; }
+    .pyramide { position: relative; margin: 0 auto 6px; }
+    .pyr { position: absolute; border: none; padding: 0; border-radius: 7px; font: inherit; cursor: pointer; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.25); display: flex; flex-direction: column; text-align: center; }
+    .pyr .band { height: 7px; flex: none; }
+    .pyr .ef { font-size: 12px; line-height: 15px; padding: 1px 1px 0; white-space: nowrap; overflow: hidden; }
+    .pyr .co { font-size: 9px; line-height: 11px; white-space: nowrap; overflow: hidden; color: #3b4b57; }
+    .pyr.face { background: #fff; }
+    .pyr.dos { background: repeating-linear-gradient(45deg, #5b4a8b, #5b4a8b 5px, #6c5aa0 5px, #6c5aa0 10px); color: #fff; font-weight: 900; font-size: 12px; align-items: center; justify-content: center; }
+    .pyr.bloquee { filter: brightness(0.88) saturate(0.7); }
+    .pyr.libre { box-shadow: 0 0 0 1.5px #2ecc71, 0 2px 4px rgba(0,0,0,0.25); }
+    .pyr.choisie { box-shadow: 0 0 0 3px #ff9800, 0 2px 6px rgba(0,0,0,0.3); z-index: 5; }
+    .pyr.non-jouable .ef::after { content: ''; }
+    .detail-duel { background: #fff; border-radius: 12px; padding: 7px 9px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 6px; font-size: 0.88em; }
+    .detail-duel .t { font-weight: 900; font-size: 1.05em; }
+    .offre-joyaux { display: flex; flex-direction: column; gap: 6px; }
+    .offre-joyaux button { text-align: left; background: #fff; border: 2px solid #e3e8ec; border-radius: 12px; padding: 7px 10px; font: inherit; cursor: pointer; }
+    .offre-joyaux button:disabled { cursor: default; opacity: 0.7; }
+    .offre-joyaux .n { font-weight: 900; }
+    .offre-joyaux .et { font-size: 0.82em; color: #3b4b57; }
   </style>
 </head>
 <body>
@@ -140,16 +178,24 @@
               </span>
             </div>
             <button class="btn principal" style="width:100%;margin-top:8px" @click="entrerSalon()" :disabled="entreeEnCours">{{ entreeEnCours ? 'Connexion au salon…' + (entreeEnCours > 1 ? ' essai ' + entreeEnCours + '/4' : '') : 'Entrer dans le salon' }}</button>
-            <div class="aide">Il faut 3 cités au moins : à deux, l'hôte ajoute un ou deux ordinateurs autour de la table.</div>
+            <div class="aide">Dans le salon, l'hôte choisit la version : <b>Classique</b> (3 cités au moins, des ordinateurs complètent la table) ou <b>Duel</b> (à deux, chacun son tour).</div>
           </section>
           <section class="carte">
             <div class="titre-carte">Seul contre l'ordinateur</div>
-            <div class="petit-titre">Nombre d'ordinateurs autour de la table</div>
+            <div class="petit-titre">Version</div>
             <div class="segment">
-              <button v-for="n in [2, 3, 4, 5, 6]" :key="n" :class="{ actif: nbOrdis === n }" @click="nbOrdis = n">🤖 {{ n }}</button>
+              <button :class="{ actif: modeChoisi === 'classique' }" @click="modeChoisi = 'classique'">🏛️ Classique</button>
+              <button :class="{ actif: modeChoisi === 'duel' }" @click="modeChoisi = 'duel'">⚔️ Duel</button>
             </div>
-            <button class="btn principal" style="width:100%" @click="demarrerSolo">💎 {{ soloEnCours ? 'Reprendre la partie' : 'Jouer seul' }}</button>
-            <button v-if="soloEnCours" class="btn" style="width:100%;margin-top:6px" @click="nouveauSolo">Nouvelle partie</button>
+            <div class="aide" style="margin-top:0" v-if="modeChoisi === 'duel'">Duel à deux, chacun son tour : cartes en pyramide, tir à la corde militaire et jetons de savoir. Contre 1 ordinateur.</div>
+            <template v-else>
+              <div class="petit-titre">Nombre d'ordinateurs autour de la table</div>
+              <div class="segment">
+                <button v-for="n in [2, 3, 4, 5, 6]" :key="n" :class="{ actif: nbOrdis === n }" @click="nbOrdis = n">🤖 {{ n }}</button>
+              </div>
+            </template>
+            <button class="btn principal" style="width:100%" @click="demarrerSolo">💎 {{ soloEnCours ? 'Reprendre la partie (' + (soloEnCours === 'duel' ? 'duel' : 'classique') + ')' : 'Jouer seul' }}</button>
+            <button v-if="soloEnCours" class="btn" style="width:100%;margin-top:6px" @click="nouveauSolo">Nouvelle partie ({{ modeChoisi === 'duel' ? 'duel' : 'classique' }})</button>
             <div class="aide" v-if="serieRecord > 1">Record : {{ serieRecord }} parties gagnées d'affilée contre l'ordinateur.</div>
           </section>
         </template>
@@ -170,17 +216,115 @@
           <div class="titre-carte">Salle d'attente</div>
           <div class="petit-titre">Présents ({{ presents.length }})</div>
           <div class="presents"><span v-for="p in pub.ordre" :key="p" :class="{ absent: !estPresent(p) }">{{ p }}{{ p === moi ? ' (moi)' : '' }}</span></div>
-          <div class="petit-titre">Ordinateurs autour de la table {{ role === 'hote' ? '' : '(choisis par l\'hôte)' }}</div>
-          <div class="compteur">
-            <button v-if="role === 'hote'" @click="reglerRobots(-1)" :disabled="pub.robots <= 0">−</button>
-            <b>🤖 {{ pub.robots }}</b>
-            <button v-if="role === 'hote'" @click="reglerRobots(1)" :disabled="humainsTable + pub.robots >= 7">+</button>
+          <div class="petit-titre">Version {{ role === 'hote' ? '' : '(choisie par l\'hôte)' }}</div>
+          <div class="segment">
+            <button :disabled="role !== 'hote'" :class="{ actif: pub.mode !== 'duel' }" @click="envoyerJeu({ type: 'MODE', mode: 'classique' })">🏛️ Classique</button>
+            <button :disabled="role !== 'hote'" :class="{ actif: pub.mode === 'duel' }" @click="envoyerJeu({ type: 'MODE', mode: 'duel' })">⚔️ Duel</button>
           </div>
-          <button v-if="role === 'hote'" class="btn principal" style="width:100%" :disabled="humainsTable + pub.robots < 3" @click="envoyerJeu({ type: 'COMMENCER' })">
-            {{ humainsTable + pub.robots < 3 ? 'Il faut 3 cités : ajoute un ordinateur' : 'Commencer (' + (humainsTable + pub.robots) + ' cités)' }}</button>
-          <div v-else class="aide">L'hôte lance la partie quand tout le monde est là.</div>
-          <div class="aide" v-if="presents.length > 7">Au-delà de 7, les suivants regardent la partie.</div>
+          <template v-if="pub.mode === 'duel'">
+            <div class="aide" style="margin-top:0">À deux, chacun son tour : cartes en pyramide, tir à la corde militaire, jetons de savoir.{{ presents.length < 2 ? ' Seul dans le salon : tu joues contre un ordinateur.' : '' }}</div>
+            <button v-if="role === 'hote'" class="btn principal" style="width:100%;margin-top:8px" @click="envoyerJeu({ type: 'COMMENCER' })">
+              ⚔️ Commencer le duel ({{ presents.length >= 2 ? presents.slice(0, 2).join(' contre ') : moi + ' contre 🤖 Ordi' }})</button>
+            <div v-else class="aide">L'hôte lance la partie quand tout le monde est là.</div>
+            <div class="aide" v-if="presents.length > 2">Au-delà de 2, les suivants regardent le duel.</div>
+          </template>
+          <template v-else>
+            <div class="petit-titre">Ordinateurs autour de la table {{ role === 'hote' ? '' : '(choisis par l\'hôte)' }}</div>
+            <div class="compteur">
+              <button v-if="role === 'hote'" @click="reglerRobots(-1)" :disabled="pub.robots <= 0">−</button>
+              <b>🤖 {{ pub.robots }}</b>
+              <button v-if="role === 'hote'" @click="reglerRobots(1)" :disabled="humainsTable + pub.robots >= 7">+</button>
+            </div>
+            <button v-if="role === 'hote'" class="btn principal" style="width:100%" :disabled="humainsTable + pub.robots < 3" @click="envoyerJeu({ type: 'COMMENCER' })">
+              {{ humainsTable + pub.robots < 3 ? 'Il faut 3 cités : ajoute un ordinateur' : 'Commencer (' + (humainsTable + pub.robots) + ' cités)' }}</button>
+            <div v-else class="aide">L'hôte lance la partie quand tout le monde est là.</div>
+            <div class="aide" v-if="presents.length > 7">Au-delà de 7, les suivants regardent la partie.</div>
+          </template>
         </section>
+
+        <!-- ===== DUEL ===== -->
+        <template v-else-if="e && e.mode === 'duel'">
+          <div class="barre-sj">
+            <span class="age">Âge {{ ['', 'I', 'II', 'III'][e.age] }}</span>
+            <span class="sens">{{ e.phase === 'fin' ? 'partie finie' : e.phase === 'joyaux' ? 'choix des joyaux' : (e.pyramide.filter(c => !c.pris).length + ' cartes') }}</span>
+            <span class="espace"></span>
+            <template v-if="duelMoi"><span class="val">🪙 {{ duelMoi.cite.pieces }}</span><span class="pts">{{ duelMoi.score }} pts</span></template>
+          </div>
+          <div class="duel-cites">
+            <button v-for="d in duelCites" :key="d.nom" class="dc" :class="{ actif: d.actif }" @click="vueCite = d.nom">
+              <div class="nom">{{ d.moi ? 'Moi' : d.nom }} <span v-if="d.actif">🎲</span></div>
+              <div class="l">🪙{{ d.cite.pieces }} · {{ d.score }} pts · {{ d.joyau }}</div>
+              <div class="l">{{ d.savoir || '—' }}<span v-if="d.jetons"> · {{ d.jetons }}</span></div>
+            </button>
+          </div>
+          <div class="piste" v-if="duelMoi || e.joueurs">
+            <span class="cap">{{ duelGaucheCourt }}</span>
+            <div class="cases">
+              <div v-for="c in pisteCases" :key="c.p" class="cs" :class="c.cl">
+                <span v-if="c.butin" class="butin">−{{ c.butin }}🪙</span>
+                <span v-if="c.pion" class="pion">⚔️</span>
+              </div>
+            </div>
+            <span class="cap">{{ duelDroiteCourt }}</span>
+          </div>
+          <div class="jetons-plateau" v-if="e.phase !== 'joyaux'">
+            <button v-for="t in e.jetonsPlateau" :key="t" :class="{ choix: e.phase === 'jeton' && e.enAttente === moiJ }" @click="toucherJeton(t)">{{ JETONS[t].ico }}</button>
+          </div>
+          <div class="info-jeton" v-if="infoJeton">{{ JETONS[infoJeton].ico }} <b>{{ JETONS[infoJeton].nom }}</b> : {{ JETONS[infoJeton].txt }}
+            <button v-if="e.phase === 'jeton' && e.enAttente === moiJ" class="btn principal" style="padding:4px 10px;margin-left:4px" @click="actionDuel({ type: 'jeton', id: infoJeton })">Prendre</button></div>
+          <div class="statut-sj" :class="{ moi: aMoiDuel }">{{ statutDuel }}</div>
+
+          <!-- Choix des joyaux -->
+          <div class="offre-joyaux" v-if="e.phase === 'joyaux'">
+            <button v-for="id in e.offre" :key="id" :disabled="!aMoiDuel" @click="actionDuel({ type: 'joyau-choix', id: id })">
+              <div class="n">{{ JOYAUX[id].ico }} {{ JOYAUX[id].nom }} <small style="font-weight:600;color:#5b6b78">· produit {{ ico(JOYAUX[id].base) }}</small></div>
+              <div class="et" v-for="(t, k) in JOYAUX[id].etapes" :key="k">{{ k + 1 }}. <span v-html="coutHtml(t.cout, 0)"></span> → <span v-html="etapeHtml(t)"></span></div>
+            </button>
+          </div>
+
+          <!-- La pyramide de l'âge -->
+          <div v-if="e.phase !== 'joyaux'" class="pyramide" :style="{ width: pyramideAff.w + 'px', height: pyramideAff.h + 'px' }">
+            <button v-for="c in pyramideAff.cartes" :key="e.age + '-' + c.k" class="pyr" :class="c.cl" :style="c.style" @click="toucherPyramide(c)">
+              <template v-if="c.id"><span class="band" :style="{ background: c.coul }"></span><span class="ef" v-html="c.ef"></span><span class="co" v-html="c.co"></span></template>
+              <template v-else>{{ ['', 'I', 'II', 'III'][e.age] }}</template>
+            </button>
+          </div>
+
+          <!-- La carte touchée : ce qu'elle fait, et quoi en faire -->
+          <div class="detail-duel" v-if="carteDuel">
+            <div class="t"><span :style="{ color: carteDuel.coul }">■</span> {{ carteDuel.c.nom }} <small style="font-weight:600;color:#5b6b78">· coût <span v-html="coutHtml(carteDuel.c.cout, carteDuel.c.pieces)"></span></small></div>
+            <div v-html="carteDuel.effet"></div>
+            <div v-if="!carteDuel.libre" class="aide" style="margin-top:2px">Encore recouverte : on ne peut pas la prendre.</div>
+            <div v-else-if="!aMoiDuel" class="aide" style="margin-top:2px">Attends ton tour.</div>
+            <div v-else-if="carteDuel.o" class="actions-carte">
+              <button class="btn principal" :disabled="!carteDuel.o.construire.ok" @click="actionDuel({ type: 'prendre', k: carteDuel.k, action: 'construire' })">🏗️ Construire<small>{{ carteDuel.o.construire.ok ? paiementDuel(carteDuel.o.construire) : carteDuel.o.construire.raison }}</small></button>
+              <button class="btn" :disabled="!carteDuel.o.joyau.ok" @click="actionDuel({ type: 'prendre', k: carteDuel.k, action: 'joyau' })">{{ duelMoi && duelMoi.jy ? duelMoi.jy.ico : '💎' }} Étape du joyau<small>{{ carteDuel.o.joyau.ok ? paiementDuel(carteDuel.o.joyau) : carteDuel.o.joyau.raison }}</small></button>
+              <button class="btn" @click="actionDuel({ type: 'prendre', k: carteDuel.k, action: 'vendre' })">🪙 Vendre<small>+{{ carteDuel.o.vendre.gain }} pièces</small></button>
+              <button class="btn" v-if="carteDuel.o.gratuit" @click="actionDuel({ type: 'prendre', k: carteDuel.k, action: 'gratuit' })">✨ Gratuitement<small>une fois par âge</small></button>
+            </div>
+          </div>
+          <div class="aide" v-else-if="e.dernier && e.phase !== 'fin'" style="text-align:center">{{ e.journal[e.journal.length - 1] }}</div>
+
+          <div class="actions-sj" v-if="e.phase !== 'fin'">
+            <button v-if="!solo && role === 'hote' && duelAbsent" class="btn" @click="envoyerJeu({ type: 'REMPLACER' })">🤖 Jouer à la place de {{ duelAbsent }}</button>
+            <button v-if="solo" class="btn" @click="quitterSolo">Arrêter</button>
+          </div>
+
+          <!-- Fin du duel -->
+          <section class="carte" v-if="e.phase === 'fin'" style="margin-top:8px">
+            <div class="titre-carte">{{ e.vainqueur === moiJ ? '🏆 Tu remportes le duel !' : '🏆 ' + e.vainqueur + ' remporte le duel' }}</div>
+            <div class="aide" style="margin-top:0">{{ { militaire: '⚔️ Victoire militaire : la piste est allée jusqu\'au bout.', savoir: '📚 Victoire du savoir : les six symboles réunis.', points: 'Victoire aux points.' }[e.fin.type] }}</div>
+            <table class="tableau-sj">
+              <tr><th></th><th v-for="j in e.classement" :key="j">{{ j === moiJ ? 'Moi' : court(j) }}</th></tr>
+              <tr v-for="l in LIGNES_DUEL" :key="l[0]"><td>{{ l[1] }}</td><td v-for="j in e.classement" :key="j">{{ e.scores[j][l[0]] }}</td></tr>
+              <tr class="total"><td>Total</td><td v-for="j in e.classement" :key="j">{{ e.scores[j].total }}</td></tr>
+            </table>
+            <div class="actions-sj">
+              <button v-if="solo || role === 'hote'" class="btn principal" @click="nouvellePartie">Nouvelle partie</button>
+              <div v-else class="aide">L'hôte peut relancer une partie.</div>
+            </div>
+          </section>
+        </template>
 
         <template v-else-if="e">
           <div class="barre-sj">
@@ -257,11 +401,13 @@
         <div class="voile-sj" v-if="citeAff" @click.self="vueCite = null">
           <div class="boite-sj">
             <div class="titre">{{ citeAff.nom === moiJ ? 'Ma cité' : 'Cité de ' + citeAff.nom }}</div>
-            <div class="ligne"><b>{{ citeAff.jy.ico }} {{ citeAff.jy.nom }}</b> · ressource de départ {{ ico(citeAff.jy.base) }}</div>
-            <div class="etapes">
+            <div class="ligne" v-if="!citeAff.jy">Pas encore de joyau.</div>
+            <div class="ligne" v-if="citeAff.jy"><b>{{ citeAff.jy.ico }} {{ citeAff.jy.nom }}</b> · ressource de départ {{ ico(citeAff.jy.base) }}</div>
+            <div class="etapes" v-if="citeAff.jy">
               <div v-for="(t, k) in citeAff.jy.etapes" :key="k" :class="{ faite: k < citeAff.cite.etapes }">{{ k < citeAff.cite.etapes ? '✓' : (k + 1) + '.' }} <span v-html="coutHtml(t.cout, 0)"></span> → <span v-html="etapeHtml(t)"></span></div>
             </div>
-            <div class="ligne">🪙 {{ citeAff.cite.pieces }} · 🛡️ {{ citeAff.boucliers }} · conflits : {{ citeAff.cite.militaire.length ? citeAff.cite.militaire.map(x => x > 0 ? '+' + x : x).join(' ') : 'aucun' }}</div>
+            <div class="ligne" v-if="citeAff.duel">🪙 {{ citeAff.cite.pieces }} · jetons : {{ citeAff.cite.jetons.length ? citeAff.cite.jetons.map(t => JETONS[t].ico + ' ' + JETONS[t].nom).join(', ') : 'aucun' }}</div>
+            <div class="ligne" v-else>🪙 {{ citeAff.cite.pieces }} · 🛡️ {{ citeAff.boucliers }} · conflits : {{ citeAff.cite.militaire.length ? citeAff.cite.militaire.map(x => x > 0 ? '+' + x : x).join(' ') : 'aucun' }}</div>
             <div class="ligne">Produit : {{ citeAff.production || 'rien encore' }}</div>
             <div class="ligne" v-if="citeAff.sciences">Savoir : {{ citeAff.sciences }}</div>
             <div v-for="g in citeAff.groupes" :key="g.type">
@@ -269,7 +415,7 @@
               <div class="groupe-cartes"><span v-for="c in g.cartes" :key="c.id" :style="{ background: g.coul }">{{ c.nom }}</span></div>
             </div>
             <div class="ligne"><b>Points si la partie s'arrêtait : {{ citeAff.score.total }}</b></div>
-            <table class="tableau-sj"><tr v-for="l in LIGNES_SCORE" :key="l[0]"><td>{{ l[1] }}</td><td>{{ citeAff.score[l[0]] }}</td></tr></table>
+            <table class="tableau-sj"><tr v-for="l in (citeAff.duel ? LIGNES_DUEL : LIGNES_SCORE)" :key="l[0]"><td>{{ l[1] }}</td><td>{{ citeAff.score[l[0]] }}</td></tr></table>
             <button class="btn principal" style="width:100%;margin-top:10px" @click="vueCite = null">Fermer</button>
           </div>
         </div>
@@ -320,12 +466,25 @@
           </ul>
         </section>
         <section class="carte regles">
-          <div class="titre-carte">Les points</div>
+          <div class="titre-carte">Les points (version classique)</div>
           <ul>
             <li>🏛️ Monuments (bleues) : leurs points. 💎 Étapes du joyau : leurs points ou leur pouvoir.</li>
             <li>⚔️ Fin de chaque âge, chaque cité compare ses 🛡️ boucliers avec chacun de ses deux voisins : plus fort, +1 / +3 / +5 points (âge I / II / III) ; moins fort, −1.</li>
             <li>📚 Savoir (vertes) : pour chaque symbole 📐 ⚙️ 📖, son nombre au carré, et +7 par série des trois.</li>
             <li>🪙 1 point pour 3 pièces. Commerce (jaunes) et guildes (violettes) : comme écrit sur la carte.</li>
+          </ul>
+        </section>
+        <section class="carte regles">
+          <div class="titre-carte">⚔️ La version Duel (à deux)</div>
+          <ul>
+            <li>Chacun choisit d'abord un joyau parmi quatre. On commence avec 7 🪙, et on joue <strong>chacun son tour</strong>.</li>
+            <li>À chaque âge, 20 cartes sont posées <strong>en pyramide</strong>, une rangée sur deux face cachée. On ne peut prendre qu'une carte <strong>dégagée</strong> (plus aucune carte ne la recouvre) ; une carte cachée se retourne dès qu'elle est dégagée.</li>
+            <li>Avec la carte prise : la construire, bâtir l'étape suivante de son joyau, ou la vendre (2 🪙 + 1 par carte jaune de sa cité).</li>
+            <li><strong>Commerce avec la banque</strong> : une ressource qui manque coûte 2 🪙, <strong>+1 par exemplaire que ton adversaire produit</strong> (1 🪙 seulement avec un comptoir ou un marché).</li>
+            <li><strong>Militaire</strong> : chaque bouclier pousse le pion ⚔️ vers la cité adverse. Au 3e cran l'adversaire perd 2 🪙, au 6e il en perd 5. <strong>Au bout de la piste : victoire immédiate.</strong> Sinon, à la fin : 2, 5 ou 10 points selon l'avance.</li>
+            <li><strong>Savoir</strong> : six symboles (📐 ⚙️ 📖 ⚖️ ⏳ 🪶), deux cartes vertes par symbole. Une paire de symboles identiques = un <strong>jeton de savoir</strong> à choisir. <strong>Les six symboles différents : victoire immédiate.</strong> Chaque carte verte vaut son âge en points.</li>
+            <li>Les guildes comptent dans la cité qui a le plus de cartes du type demandé. À l'âge suivant, le moins fort militairement commence.</li>
+            <li>Fin de l'âge III : on compte les points comme en classique, plus les jetons. Égalité : plus de points de monuments.</li>
           </ul>
         </section>
       </template>
@@ -337,6 +496,7 @@
   <script src="commun.js"></script>
   <script src="etoiles.js"></script>
   <script src="joyaux/joyaux-regles.js"></script>
+  <script src="joyaux/joyaux-duel.js"></script>
   <script>
     if (!ACCES.memorise()) location.replace('index.html');
 
@@ -347,6 +507,7 @@
     const MAX_SALONS = 8;
     const ORDIS = ['🤖 Ordi', '🤖 Ordi 2', '🤖 Ordi 3', '🤖 Ordi 4', '🤖 Ordi 5', '🤖 Ordi 6'];
     const LIGNES_SCORE = [['militaire', '⚔️ Conflits'], ['pieces', '🪙 Pièces'], ['joyau', '💎 Joyau'], ['monuments', '🏛️ Monuments'], ['commerce', '🏪 Commerce'], ['guildes', '🎭 Guildes'], ['savoir', '📚 Savoir']];
+    const LIGNES_DUEL = LIGNES_SCORE.concat([['jetons', '🧪 Jetons']]).map(l => l[0] === 'militaire' ? ['militaire', '⚔️ Militaire'] : l);
     const NOMS_TYPES = { brun: 'carte marron', gris: 'carte grise', bleu: 'carte bleue', jaune: 'carte jaune', rouge: 'carte rouge', vert: 'carte verte', violet: 'guilde', joyau: 'étape de joyau', defaite: 'défaite' };
     function copie(o) { return JSON.parse(JSON.stringify(o)); }
     function estOrdi(n) { return ORDIS.indexOf(n) !== -1; }
@@ -359,22 +520,43 @@
       return s || '<span style="color:#2f8a5b;font-weight:700">gratuit</span>';
     }
     function prodTexte(p) { return p.indexOf('/') >= 0 ? p.split('/').map(ico).join('/') : p.split('').map(ico).join(''); }
-    function effetHtml(c) {
+    function effetHtml(c, duel) {
       var f = c.effet, l = [];
       if (f.prod) l.push(prodTexte(f.prod));
       if (f.choix) l.push(prodTexte(f.choix) + ' pour toi');
       if (f.pts) l.push('<span class="pts">' + f.pts + '</span>');
       if (f.boucliers) l.push('🛡️'.repeat(f.boucliers));
-      if (f.sci) l.push(f.sci === '*' ? 'un savoir au choix 📐/⚙️/📖' : SJ.SCIENCES[f.sci]);
+      if (f.sci) l.push(f.sci === '*' ? 'un savoir au choix' : duel ? SD.SYMBOLES[SD.SCI[c.id]] + ' (vaut ' + c.age + ' pt' + (c.age > 1 ? 's' : '') + ')' : SJ.SCIENCES[f.sci]);
       if (f.pieces) l.push('+' + f.pieces + ' 🪙');
-      if (f.comptoir) l.push((f.comptoir === 'g' ? '◀ ' : '▶ ') + '🪵🪨🧱⛏️ à 1🪙');
-      if (f.marche) l.push('◀▶ 🔮🧵📜 à 1🪙');
-      if (f.gain) l.push(f.gain.pieces + '🪙 par ' + NOMS_TYPES[f.gain.type] + ' (toi et voisins)');
+      if (f.comptoir) l.push(duel ? '🪵🪨🧱⛏️ à 1🪙 à la banque' : (f.comptoir === 'g' ? '◀ ' : '▶ ') + '🪵🪨🧱⛏️ à 1🪙');
+      if (f.marche) l.push(duel ? '🔮🧵📜 à 1🪙 à la banque' : '◀▶ 🔮🧵📜 à 1🪙');
+      if (f.gain) l.push(f.gain.pieces + '🪙 par ' + NOMS_TYPES[f.gain.type] + (duel ? ' (toi et l\'adversaire)' : ' (toi et voisins)'));
       if (f.fin) l.push(f.fin.pieces + '🪙 et ' + f.fin.pts + ' pt par ' + NOMS_TYPES[f.fin.type] + ' chez toi');
-      if (f.guilde) l.push(f.guilde.pts + ' pt par ' + f.guilde.types.map(t => NOMS_TYPES[t]).join(', ') + (f.guilde.qui === 's' ? ' chez toi' : f.guilde.qui === 'v' ? ' des voisins' : ' (toi et voisins)'));
+      if (f.guilde) l.push(f.guilde.pts + ' pt par ' + f.guilde.types.filter(t => !duel || t !== 'defaite').map(t => NOMS_TYPES[t]).join(', ') + (f.guilde.qui === 's' ? ' chez toi' : duel ? ' dans la cité qui en a le plus' : f.guilde.qui === 'v' ? ' des voisins' : ' (toi et voisins)'));
       var s = l.join(' ');
       if (c.chaine.length) s += ' <span style="color:#8a97a1">· gratuit si ' + c.chaine.map(x => SJ.CARTES[x].nom).join(' ou ') + '</span>';
       return s;
+    }
+    // Pyramide du duel : l'essentiel d'une carte en tout petit
+    function effetCourt(c) {
+      var f = c.effet;
+      if (f.pts) return '<b style="color:#2c7be5;font-size:14px">' + f.pts + '</b>';
+      if (f.prod) return prodTexte(f.prod);
+      if (f.choix) return f.choix.length > 5 ? '🪵/🪨/…' : prodTexte(f.choix);
+      if (f.boucliers) return '🛡️' + (f.boucliers > 1 ? f.boucliers : '');
+      if (f.sci) return f.sci === '*' ? '❓' : SD.SYMBOLES[SD.SCI[c.id]];
+      if (f.pieces) return '+' + f.pieces + '🪙';
+      if (f.comptoir || f.marche) return '🪙1';
+      if (f.gain) return '🪙+';
+      if (f.fin) return '🪙★';
+      if (f.guilde) return '🎭';
+      return '';
+    }
+    function coutCourt(c) {
+      var n = {}, s = c.pieces ? c.pieces + '🪙' : '';
+      (c.cout || '').split('').forEach(r => { n[r] = (n[r] || 0) + 1; });
+      Object.keys(n).forEach(r => { s += ico(r) + (n[r] > 1 ? n[r] : ''); });
+      return s || '·';
     }
     function etapeHtml(t) {
       if (t.pts) return '<span class="pts">' + t.pts + '</span>';
@@ -382,7 +564,7 @@
       if (t.pieces) return '+' + t.pieces + ' 🪙';
       if (t.prod) return prodTexte(t.prod) + ' chaque tour';
       if (t.sci) return 'un savoir au choix';
-      if (t.comptoir) return 'achats de 🪵🪨🧱⛏️ à 1🪙 des deux côtés';
+      if (t.comptoir) return 'achats de 🪵🪨🧱⛏️ à 1🪙';
       if (t.gratuit) return 'une carte gratuite par âge';
       return '';
     }
@@ -413,7 +595,10 @@
       el: '#app',
       data: {
         version: VERSION,
-        LIGNES_SCORE: LIGNES_SCORE,
+        LIGNES_SCORE: LIGNES_SCORE, LIGNES_DUEL: LIGNES_DUEL, JETONS: SD.JETONS, JOYAUX: SJ.JOYAUX,
+        modeChoisi: lireStockage('joyaux-mode') || 'classique',
+        selDuel: null,
+        infoJeton: null,
         onglet: 'config',
         pub: null,
         joueurs: [],
@@ -486,10 +671,80 @@
           if (!this.solo && this.connexion !== 'ok') return 'Reconnexion…';
           return this.selection < 0 ? 'Choisis une carte de ta main.' : 'Que fais-tu de cette carte ?';
         },
+        // ---------- DUEL ----------
+        quiJoueDuel: function() { var e = this.e; return !e || e.mode !== 'duel' || e.phase === 'fin' ? null : e.phase === 'jeton' ? e.enAttente : e.joueurs[e.tour]; },
+        aMoiDuel: function() { return !!this.e && this.estJoueur && this.quiJoueDuel === this.moiJ && (this.solo || this.connexion === 'ok'); },
+        duelAbsent: function() { var j = this.quiJoueDuel; return j && !estOrdi(j) && !this.estPresent(j) ? j : ''; },
+        statutDuel: function() {
+          var e = this.e, j = this.quiJoueDuel;
+          if (!e || e.phase === 'fin') return 'Partie terminée';
+          if (!this.solo && this.connexion !== 'ok' && this.estJoueur) return 'Reconnexion…';
+          if (e.phase === 'joyaux') return this.aMoiDuel ? 'Choisis ton joyau.' : j + ' choisit son joyau…';
+          if (e.phase === 'jeton') return this.aMoiDuel ? '🧪 Une paire ! Touche un jeton de savoir et prends-le.' : j + ' choisit un jeton de savoir…';
+          return this.aMoiDuel ? (this.selDuel === null ? 'À toi : touche une carte dégagée (bordure verte).' : 'Que fais-tu de cette carte ?') : (estOrdi(j) ? j + ' réfléchit…' : 'Au tour de ' + j + '…');
+        },
+        duelCites: function() {
+          var e = this.e, moi = this.moiJ, l = e.joueurs.slice();
+          if (l[1] === moi) l.reverse();
+          return l.map(j => {
+            var cite = e.cites[j], sy = SD.symboles(e, j), jy = cite.joyau && SJ.JOYAUX[cite.joyau];
+            var sav = Object.keys(SD.SYMBOLES).filter(k => sy.s[k]).map(k => SD.SYMBOLES[k] + (sy.s[k] > 1 ? sy.s[k] : '')).join(' ') + (sy.joker ? ' ❓' + sy.joker : '');
+            return { nom: j, moi: j === moi, cite: cite, score: SD.score(e, j).total, joyau: jy ? jy.ico + ' ' + this.pips(cite) : 'pas de joyau',
+                     savoir: sav, jetons: cite.jetons.map(t => SD.JETONS[t].ico).join(''), actif: this.quiJoueDuel === j };
+          });
+        },
+        duelMoi: function() {
+          var e = this.e;
+          if (!e || e.mode !== 'duel' || !this.estJoueur) return null;
+          var cite = e.cites[this.moiJ];
+          return { cite: cite, score: SD.score(e, this.moiJ).total, jy: cite.joyau && SJ.JOYAUX[cite.joyau] };
+        },
+        // Le côté de la piste : ma cité à gauche (les spectateurs voient le 1er joueur à gauche)
+        flipDuel: function() { return this.e.joueurs[1] === this.moiJ ? -1 : 1; },
+        duelGaucheCourt: function() { var e = this.e, g = this.flipDuel > 0 ? e.joueurs[0] : e.joueurs[1]; return g === this.moiJ ? 'Moi' : g.indexOf('🤖') === 0 ? '🤖' : g.slice(0, 4); },
+        duelDroiteCourt: function() { var e = this.e, d = this.flipDuel > 0 ? e.joueurs[1] : e.joueurs[0]; return d === this.moiJ ? 'Moi' : d.indexOf('🤖') === 0 ? '🤖' : d.slice(0, 4); },
+        pisteCases: function() {
+          var e = this.e, f = this.flipDuel, l = [];
+          for (var d = -SD.BOUT; d <= SD.BOUT; d++) {
+            var reel = f * d, a = Math.abs(d), cle = (reel > 0 ? 'p' : 'n') + a;
+            l.push({ p: d, pion: f * e.militaire === d, cl: a === SD.BOUT ? 'bout' : a >= 6 ? 'zone6' : a >= 3 ? 'zone3' : a === 0 ? 'centre' : '',
+                     butin: (a === 3 || a === 6) && !e.pillage[cle] ? (a === 3 ? 2 : 5) : 0 });
+          }
+          return l;
+        },
+        pyramideAff: function() {
+          var e = this.e, u = 27, H = 46, pas = 35, rangs = SD.FORMES[e.age].length;
+          var cartes = [];
+          e.pyramide.forEach((c, k) => {
+            if (c.pris) return;
+            var libre = SD.accessible(e, k), carte = c.id ? SJ.CARTES[c.id] : null;
+            cartes.push({ k: k, id: c.id, libre: libre, coul: carte ? SJ.TYPES[carte.type].coul : '', ef: carte ? effetCourt(carte) : '', co: carte ? coutCourt(carte) : '',
+                          cl: [c.id ? 'face' : 'dos', libre ? 'libre' : 'bloquee', this.selDuel === k ? 'choisie' : ''].join(' '),
+                          style: { left: ((c.x + 5) * u) + 'px', top: (c.r * pas) + 'px', width: (2 * u - 3) + 'px', height: H + 'px', zIndex: this.selDuel === k ? 20 : c.r + 1 } });
+          });
+          return { cartes: cartes, w: 12 * u, h: (rangs - 1) * pas + H };
+        },
+        carteDuel: function() {
+          var e = this.e, k = this.selDuel;
+          if (!e || e.mode !== 'duel' || k === null || !e.pyramide[k] || e.pyramide[k].pris || !e.pyramide[k].id) return null;
+          var id = e.pyramide[k].id, c = SJ.CARTES[id];
+          return { k: k, id: id, c: c, coul: SJ.TYPES[c.type].coul, effet: effetHtml(c, true), libre: SD.accessible(e, k),
+                   o: this.estJoueur && e.cites[this.moiJ].joyau ? SD.options(e, this.moiJ, id) : null };
+        },
         citeAff: function() {
           var e = this.e, j = this.vueCite;
           if (!e || !j || !e.cites[j]) return null;
           var cite = e.cites[j], groupes = [];
+          if (e.mode === 'duel') {
+            Object.keys(SJ.TYPES).forEach(t => {
+              var l = cite.cartes.filter(id => SJ.CARTES[id].type === t).map(id => SJ.CARTES[id]);
+              if (l.length) groupes.push({ type: t, nom: SJ.TYPES[t].nom, coul: SJ.TYPES[t].coul, cartes: l });
+            });
+            var sy = SD.symboles(e, j);
+            return { duel: true, nom: j, cite: cite, jy: cite.joyau ? SJ.JOYAUX[cite.joyau] : null, production: cite.joyau ? productionTexte(cite) : '',
+                     sciences: Object.keys(SD.SYMBOLES).filter(k => sy.s[k]).map(k => SD.SYMBOLES[k] + sy.s[k]).join(' ') + (sy.joker ? ' ❓' + sy.joker : '') + ' (' + sy.differents + '/6 différents)',
+                     groupes: groupes, score: SD.score(e, j) };
+          }
           Object.keys(SJ.TYPES).forEach(t => {
             var l = cite.cartes.filter(id => SJ.CARTES[id].type === t).map(id => SJ.CARTES[id]);
             if (l.length) groupes.push({ type: t, nom: SJ.TYPES[t].nom, coul: SJ.TYPES[t].coul, cartes: l });
@@ -511,6 +766,8 @@
         sonActif: function(v) { ecrireStockage('brillant-son', v); },
         vibrationActive: function(v) { ecrireStockage('brillant-vibration', v); if (v) vibrer(40); },
         nbOrdis: function(v) { ecrireStockage('joyaux-ordis', v); },
+        modeChoisi: function(v) { ecrireStockage('joyaux-mode', v); },
+        quiJoueDuel: function() { this.selDuel = null; },
         pseudoInput: function() { this.sauvegarder(); },
         conflitVu: function(v) { ecrireStockage('joyaux-conflit-vu', v); },
         'e.tour': function() { this.selection = -1; },
@@ -564,36 +821,81 @@
         },
 
         // ================== SOLO ==================
-        majSoloEnCours: function() { var s = lireStockage('joyaux-solo'); this.soloEnCours = !!(s && s.phase === 'jeu'); },
+        // soloEnCours : false, ou la version de la partie seule en cours ('classique' / 'duel')
+        majSoloEnCours: function() { var s = lireStockage('joyaux-solo'); this.soloEnCours = s && s.phase !== 'fin' ? (s.mode === 'duel' ? 'duel' : 'classique') : false; },
         demarrerSolo: function() {
           var s = lireStockage('joyaux-solo');
-          if (s && s.phase === 'jeu') { etatSolo = s; this.lancerSolo(); }
+          if (s && s.phase !== 'fin') { etatSolo = s; this.lancerSolo(); }
           else this.nouveauSolo();
         },
         nouveauSolo: function() {
-          etatSolo = SJ.nouvellePartie([this.moi].concat(ORDIS.slice(0, this.nbOrdis)));
+          if (this.modeChoisi === 'duel') etatSolo = SD.nouvellePartie(SJ.melanger([this.moi, ORDIS[0]]));
+          else etatSolo = SJ.nouvellePartie([this.moi].concat(ORDIS.slice(0, this.nbOrdis)));
           etatSolo.partieId = nouvelId();
           this.lancerSolo();
         },
+        moiSolo: function() { return etatSolo.joueurs.find(j => !estOrdi(j)); },
         lancerSolo: function() {
           this.solo = true;
+          this.selDuel = null; this.infoJeton = null;
           this.jouerRobots(etatSolo);
           this.majSolo(true);
           this.onglet = 'play';
+          this.planifierOrdiDuel();
         },
         majSolo: function(debut) {
-          var ancien = this.pub;
-          this.pub = { phase: 'jeu', ordre: etatSolo.joueurs, partieId: etatSolo.partieId, e: SJ.vuePour(etatSolo, etatSolo.joueurs[0]) };
+          var ancien = this.pub, duel = etatSolo.mode === 'duel';
+          this.pub = { phase: 'jeu', mode: duel ? 'duel' : 'classique', ordre: etatSolo.joueurs, partieId: etatSolo.partieId,
+                       e: duel ? SD.vuePour(etatSolo) : SJ.vuePour(etatSolo, etatSolo.joueurs[0]) };
           if (!debut && ancien) this.reagir(ancien, this.pub);
           ecrireStockage('joyaux-solo', etatSolo);
           this.majSoloEnCours();
         },
-        quitterSolo: function() { clearTimeout(this._timerRes); this.solo = false; this.pub = null; etatSolo = null; this.onglet = 'config'; this.majSoloEnCours(); },
+        quitterSolo: function() { clearTimeout(this._timerRes); clearTimeout(this._timerDuel); this.solo = false; this.pub = null; etatSolo = null; this.onglet = 'config'; this.majSoloEnCours(); },
         // Les ordinateurs choisissent dès que le tour commence
         jouerRobots: function(e) {
-          if (!e || e.phase !== 'jeu') return;
+          if (!e || e.mode === 'duel' || e.phase !== 'jeu') return;
           e.joueurs.forEach(j => { if (estOrdi(j) && !e.choix[j]) SJ.choisir(e, j, SJ.ordinateur(e, j)); });
         },
+
+        // ================== DUEL : actions et ordinateur ==================
+        actionDuel: function(a) {
+          this.selDuel = null; this.infoJeton = null;
+          this.son('toc'); this.vibre(15);
+          if (this.solo) {
+            var err = SD.jouer(etatSolo, this.moiSolo(), a);
+            if (err) { this.vibre(60); return alert(err); }
+            this.majSolo();
+            return this.planifierOrdiDuel();
+          }
+          this.envoyerJeu({ type: 'DUEL', partieId: this.pub.partieId, a: a });
+        },
+        // L'ordinateur joue son tour (en solo, et chez l'hôte dans un salon)
+        planifierOrdiDuel: function() {
+          clearTimeout(this._timerDuel);
+          var e = this.solo ? etatSolo : pubHote && pubHote.etat;
+          if (!e || e.mode !== 'duel' || e.phase === 'fin') return;
+          var j = e.phase === 'jeton' ? e.enAttente : e.joueurs[e.tour];
+          if (!estOrdi(j)) return;
+          this._timerDuel = setTimeout(() => {
+            var e2 = this.solo ? etatSolo : pubHote && pubHote.etat;
+            if (e2 !== e || e.phase === 'fin') return;
+            SD.jouer(e, j, SD.ordinateur(e, j));
+            if (this.solo) this.majSolo(); else this.publier();
+            this.planifierOrdiDuel();
+          }, e.phase === 'joyaux' ? 1200 : 1100);
+        },
+        paiementDuel: function(p) {
+          if (p.chaine) return 'gratuit (chaîne)';
+          var t = (p.banque || 0) + (p.pieces || 0);
+          return t ? 'payer ' + t + ' 🪙' : 'tu as tout';
+        },
+        toucherPyramide: function(c) {
+          this.infoJeton = null;
+          if (!c.id) { this.vibre(30); return; }
+          this.selDuel = this.selDuel === c.k ? null : c.k;
+        },
+        toucherJeton: function(t) { this.selDuel = null; this.infoJeton = this.infoJeton === t ? null : t; },
 
         // ================== ACTIONS DU JOUEUR ==================
         toucherCarte: function(i) {
@@ -620,7 +922,7 @@
         planifierResolution: function() {
           clearTimeout(this._timerRes);
           var e = this.solo ? etatSolo : pubHote && pubHote.etat;
-          if (!e || !SJ.tousOntChoisi(e)) return;
+          if (!e || e.mode === 'duel' || !SJ.tousOntChoisi(e)) return;
           this._timerRes = setTimeout(() => {
             var e2 = this.solo ? etatSolo : pubHote && pubHote.etat;
             if (e2 !== e || !SJ.tousOntChoisi(e)) return;
@@ -632,10 +934,11 @@
         },
         nouvellePartie: function() {
           if (this.solo) {
-            etatSolo = SJ.nouvellePartie(etatSolo.joueurs.slice());
+            etatSolo = etatSolo.mode === 'duel' ? SD.nouvellePartie(SJ.melanger(etatSolo.joueurs)) : SJ.nouvellePartie(etatSolo.joueurs.slice());
             etatSolo.partieId = nouvelId();
             this.jouerRobots(etatSolo);
-            return this.majSolo(true);
+            this.majSolo(true);
+            return this.planifierOrdiDuel();
           }
           this.envoyerJeu({ type: 'NOUVELLE' });
         },
@@ -651,10 +954,24 @@
         traiterJeu: function(p, m) {
           if (!pubHote) return;
           var e = pubHote.etat, hote = p === monPseudo;
-          if (m.type === 'ROBOTS') {
+          if (m.type === 'MODE') {
+            if (!hote || pubHote.phase !== 'attente' || (m.mode !== 'duel' && m.mode !== 'classique')) return;
+            pubHote.mode = m.mode;
+          } else if (m.type === 'ROBOTS') {
             if (!hote || pubHote.phase !== 'attente') return;
             var humains = Math.min(7, pubHote.ordre.filter(x => this.estConnecte(x)).length);
             pubHote.robots = Math.max(0, Math.min(7 - humains, Math.min(6, +m.n || 0)));
+          } else if (m.type === 'COMMENCER' && pubHote.mode === 'duel') {
+            // Duel : les deux premiers présents (ou un ordinateur si l'on est seul)
+            if (!hote || pubHote.phase !== 'attente') return;
+            var deux = pubHote.ordre.filter(x => this.estConnecte(x)).slice(0, 2);
+            if (deux.length < 2) deux.push(ORDIS[0]);
+            pubHote.etat = SD.nouvellePartie(SJ.melanger(deux));
+            pubHote.partieId = pubHote.etat.partieId = nouvelId();
+            pubHote.phase = 'jeu';
+          } else if (m.type === 'DUEL') {
+            if (!e || e.mode !== 'duel' || m.partieId !== pubHote.partieId || !m.a) return;
+            if (SD.jouer(e, p, m.a)) return;
           } else if (m.type === 'COMMENCER') {
             if (!hote || pubHote.phase !== 'attente') return;
             var joueurs = pubHote.ordre.filter(x => this.estConnecte(x)).slice(0, 7);
@@ -674,19 +991,24 @@
             clearTimeout(this._timerRes);
           } else if (m.type === 'REMPLACER') {
             // Un joueur est absent : l'hôte fait choisir l'ordinateur à sa place (pour ce tour)
-            if (!hote || !e || e.phase !== 'jeu') return;
-            e.joueurs.forEach(j => { if (!e.choix[j] && !this.estConnecte(j) && !estOrdi(j)) SJ.choisir(e, j, SJ.ordinateur(e, j)); });
+            if (!hote || !e || e.phase === 'fin') return;
+            if (e.mode === 'duel') {
+              var qui = e.phase === 'jeton' ? e.enAttente : e.joueurs[e.tour];
+              if (!this.estConnecte(qui) && !estOrdi(qui)) SD.jouer(e, qui, SD.ordinateur(e, qui));
+            } else if (e.phase === 'jeu') e.joueurs.forEach(j => { if (!e.choix[j] && !this.estConnecte(j) && !estOrdi(j)) SJ.choisir(e, j, SJ.ordinateur(e, j)); });
           } else if (m.type === 'NOUVELLE') {
             if (!hote || !e || e.phase !== 'fin') return;
             pubHote.phase = 'attente'; pubHote.etat = null; pubHote.partieId = null;
           } else return;
           this.publier();
           this.planifierResolution();
+          this.planifierOrdiDuel();
         },
         // Ce que voit chaque joueur : sa main seulement, et qui a choisi (pas quoi)
         etatPour: function(pseudo) {
-          return { ordre: pubHote.ordre.slice(), phase: pubHote.phase, robots: pubHote.robots || 0, partieId: pubHote.partieId,
-                   e: pubHote.etat ? SJ.vuePour(pubHote.etat, pseudo) : null };
+          var et = pubHote.etat;
+          return { ordre: pubHote.ordre.slice(), phase: pubHote.phase, robots: pubHote.robots || 0, mode: pubHote.mode || 'classique', partieId: pubHote.partieId,
+                   e: et ? (et.mode === 'duel' ? SD.vuePour(et) : SJ.vuePour(et, pseudo)) : null };
         },
 
         // ================== RÉCEPTION DE L'ÉTAT ==================
@@ -700,8 +1022,16 @@
           var ea = a && a.e, e = p.e;
           if (!e) return;
           var moi = this.moiJ;
+          if (e.mode === 'duel') {
+            if (ea && e.journal.length && (ea.journal.length !== e.journal.length || ea.journal[ea.journal.length - 1] !== e.journal[e.journal.length - 1])) {
+              this.son('toc');
+              var qui = e.phase === 'jeton' ? e.enAttente : e.joueurs[e.tour];
+              if (e.phase !== 'fin' && qui === moi) this.vibre([30, 40, 30]);
+              if (ea.age !== e.age) setTimeout(() => this.son('choc', 0.8), 250);
+            }
+          }
           // Nouveau tour : les cartes ont été révélées
-          if (ea && (ea.tour !== e.tour || ea.age !== e.age || ea.phase !== e.phase)) {
+          else if (ea && (ea.tour !== e.tour || ea.age !== e.age || ea.phase !== e.phase)) {
             this.son('toc'); this.vibre([30, 40, 30]);
             if (ea.age !== e.age || e.phase === 'fin') setTimeout(() => this.son('choc', 0.8), 250);
           }
@@ -709,7 +1039,7 @@
           if (e.phase === 'fin' && (!ea || ea.phase !== 'fin') && e.joueurs.indexOf(moi) !== -1) {
             var gagne = e.vainqueur === moi, humains = e.joueurs.filter(j => !estOrdi(j)).length;
             Etoiles.finDePartie(NOM_JEU, gagne, !this.solo && humains > 1, p.partieId, { joueurs: e.joueurs.length, score: e.scores[moi].total });
-            if (this.solo) Etoiles.serie('joyaux', gagne, NOM_JEU);
+            if (this.solo) Etoiles.serie(e.mode === 'duel' ? 'joyaux-duel' : 'joyaux', gagne, NOM_JEU);
             if (gagne) { setTimeout(() => this.son('victoire'), 600); this.vibre([100, 60, 100]); }
           }
         },
@@ -831,7 +1161,7 @@
         },
         // L'hôte ne répond plus : on rouvre le salon. Les mains étaient chez lui : la partie en cours s'arrête (retour à la salle d'attente).
         reprendreLeSalon: function() {
-          pubHote = { ordre: this.pub.ordre.slice(), phase: 'attente', robots: this.pub.robots || 0, partieId: null, etat: null };
+          pubHote = { ordre: this.pub.ordre.slice(), phase: 'attente', robots: this.pub.robots || 0, mode: this.pub.mode || 'classique', partieId: null, etat: null };
           salle = { infos: {} };
           pubHote.ordre.forEach(p => { if (p !== monPseudo) salle.infos[p] = { connecte: false, clientId: null }; });
           this._repriseParClient = true;
@@ -863,11 +1193,12 @@
               this.onglet = 'play';
               this.finEntree(true);
               salle = { infos: {} };
-              pubHote = { ordre: [monPseudo], phase: 'attente', robots: 2, partieId: null, etat: null };
+              pubHote = { ordre: [monPseudo], phase: 'attente', robots: 2, mode: this.modeChoisi, partieId: null, etat: null };
               this.ajouterLog(monPseudo + ' a ouvert le salon.', true);
             }
             this.publier();
             this.planifierResolution();
+            this.planifierOrdiDuel();
           });
           monPeer.on('connection', (conn) => this.brancherClient(conn));
           monPeer.on('disconnected', () => {
