@@ -172,7 +172,7 @@
   <div id="app" v-cloak class="app">
 
     <fiche-jeu jeu="joyaux" nom="7 piliers" resume="Désdale · bâtis ta cité et ses merveilles, en trois âges" :onglet.sync="onglet" :son.sync="sonActif" :connexion="role ? connexion : ''">
-      <template v-slot:logo><span class="logo-sj">💎</span></template>
+      <template v-slot:logo><span class="logo-sj">🗼</span></template>
 
       <!-- PARTIE : salon, jouer seul -->
       <template v-slot:partie>
@@ -224,7 +224,7 @@
                 <button v-for="n in [2, 3, 4, 5, 6]" :key="n" :class="{ actif: nbOrdis === n }" @click="nbOrdis = n">🤖 {{ n }}</button>
               </div>
             </template>
-            <button class="btn principal" style="width:100%" @click="demarrerSolo">💎 {{ soloEnCours ? 'Reprendre la partie (' + (soloEnCours === 'duel' ? 'duel' : 'classique') + ')' : 'Jouer seul' }}</button>
+            <button class="btn principal" style="width:100%" @click="demarrerSolo">{{ soloEnCours ? 'Reprendre la partie (' + (soloEnCours === 'duel' ? 'duel' : 'classique') + ')' : 'Jouer seul' }}</button>
             <button v-if="soloEnCours" class="btn" style="width:100%;margin-top:6px" @click="nouveauSolo">Nouvelle partie ({{ modeChoisi === 'duel' ? 'duel' : 'classique' }})</button>
             <div class="aide" v-if="serieRecord > 1">Record : {{ serieRecord }} parties gagnées d'affilée contre l'ordinateur.</div>
           </section>
@@ -236,7 +236,7 @@
       <!-- JOUER -->
       <template v-slot:jouer>
         <div v-if="!pub" class="panneau-vide">
-          <div class="grand">💎</div>
+          <div class="grand" v-html="iconeJeu"></div>
           <p>Joue seul ou entre dans un salon depuis l'onglet « Partie ».</p>
           <button class="btn principal" @click="onglet = 'config'">Aller à l'onglet « Partie »</button>
         </div>
@@ -471,7 +471,7 @@
               </button>
               <div v-if="selection === i && !monChoix" :key="'a' + i" class="actions-carte">
                 <button class="btn principal" :disabled="!m.o.construire.ok" @click="jouer(i, 'construire')">🏗️ Construire<small>{{ m.o.construire.ok ? paiementTexte(m.o.construire) : m.o.construire.raison }}</small></button>
-                <button class="btn" :disabled="!m.o.joyau.ok" @click="jouer(i, 'joyau')">{{ joyau(maCite).ico }} Étape {{ Math.min(3, maCite.etapes + 1) }} du joyau<small>{{ m.o.joyau.ok ? paiementTexte(m.o.joyau) : m.o.joyau.raison }}</small></button>
+                <button class="btn" :disabled="!m.o.joyau.ok" @click="jouer(i, 'joyau')">{{ joyau(maCite).ico }} Étape {{ Math.min(3, maCite.etapes + 1) }} de la merveille<small>{{ m.o.joyau.ok ? paiementTexte(m.o.joyau) : m.o.joyau.raison }}</small></button>
                 <button class="btn" @click="jouer(i, 'vendre')">🪙 Vendre<small>+3 pièces</small></button>
                 <button class="btn" v-if="m.o.gratuit" @click="jouer(i, 'gratuit')">✨ Construire gratuitement<small>une fois par âge</small></button>
               </div>
@@ -501,7 +501,7 @@
         <div class="voile-sj" data-fermable v-if="citeAff && !(e && e.mode === 'duel')" @click.self="vueCite = null">
           <div class="boite-sj">
             <div class="titre">{{ citeAff.nom === moiJ ? 'Ma cité' : 'Cité de ' + citeAff.nom }}</div>
-            <div class="ligne" v-if="!citeAff.jy">Pas encore de joyau.</div>
+            <div class="ligne" v-if="!citeAff.jy">Pas encore de merveille.</div>
             <div class="ligne" v-if="citeAff.jy"><b>{{ citeAff.jy.ico }} {{ citeAff.jy.nom }}</b> · ressource de départ {{ ico(citeAff.jy.base) }}</div>
             <div class="etapes" v-if="citeAff.jy">
               <div v-for="(t, k) in citeAff.jy.etapes" :key="k" :class="{ faite: k < citeAff.cite.etapes }">{{ k < citeAff.cite.etapes ? '✓' : (k + 1) + '.' }} <span v-html="coutHtml(t.cout, 0)"></span> → <span v-html="etapeHtml(t)"></span></div>
@@ -544,7 +544,7 @@
         <section class="carte regles">
           <div class="titre-carte">Le but</div>
           <ul>
-            <li>Chaque joueur bâtit sa cité pendant <strong>trois âges</strong> et polit son <strong>joyau</strong> (un monument en 3 étapes). À la fin, la cité qui a le plus de points gagne.</li>
+            <li>Chaque joueur bâtit sa cité pendant <strong>trois âges</strong> et bâtit sa <strong>merveille</strong> (un monument en 3 étapes, tiré au hasard parmi les sept merveilles de l'Antiquité). À la fin, la cité qui a le plus de points gagne.</li>
             <li>De 3 à 7 cités : à deux, on joue avec un ou deux ordinateurs autour de la table.</li>
           </ul>
         </section>
@@ -552,7 +552,7 @@
           <div class="titre-carte">Un tour</div>
           <ul>
             <li>Au début de chaque âge, chacun reçoit <strong>7 cartes</strong>. Tout le monde choisit <strong>en même temps</strong> une carte de sa main, puis passe le reste à son voisin (à gauche aux âges I et III, à droite à l'âge II).</li>
-            <li>Avec la carte choisie, on peut : la <strong>construire</strong> (en payant son coût), s'en servir pour bâtir <strong>l'étape suivante de son joyau</strong> (en payant le coût de l'étape), ou la <strong>vendre</strong> pour 3 pièces.</li>
+            <li>Avec la carte choisie, on peut : la <strong>construire</strong> (en payant son coût), s'en servir pour bâtir <strong>l'étape suivante de sa merveille</strong> (en payant le coût de l'étape), ou la <strong>vendre</strong> pour 3 pièces.</li>
             <li>On joue 6 cartes par âge ; la 7e est défaussée.</li>
             <li>On ne peut pas construire deux fois la même carte. Certaines cartes sont <strong>gratuites</strong> si l'on a déjà construit une carte précise (c'est écrit sur la carte).</li>
           </ul>
@@ -560,7 +560,7 @@
         <section class="carte regles">
           <div class="titre-carte">Ressources et commerce</div>
           <ul>
-            <li>Les cartes marron produisent 🪵 bois, 🪨 pierre, 🧱 argile, ⛏️ minerai ; les grises 🔮 verre, 🧵 tissu, 📜 parchemin. Ton joyau en produit une dès le départ.</li>
+            <li>Les cartes marron produisent 🪵 bois, 🪨 pierre, 🧱 argile, ⛏️ minerai ; les grises 🔮 verre, 🧵 tissu, 📜 parchemin. Ta merveille en produit une dès le départ.</li>
             <li>Une ressource qui te manque s'<strong>achète à tes deux voisins</strong> (s'ils la produisent) : <strong>2 pièces</strong> chacune, 1 avec un comptoir ou un marché. Les pièces vont au voisin. Le jeu calcule tout seul le moins cher.</li>
             <li>On n'utilise pas ses ressources : elles servent à chaque tour.</li>
           </ul>
@@ -568,7 +568,7 @@
         <section class="carte regles">
           <div class="titre-carte">Les points (version classique)</div>
           <ul>
-            <li>🏛️ Monuments (bleues) : leurs points. 💎 Étapes du joyau : leurs points ou leur pouvoir.</li>
+            <li>🏛️ Monuments (bleues) : leurs points. ✨ Étapes de la merveille : leurs points ou leur pouvoir.</li>
             <li>⚔️ Fin de chaque âge, chaque cité compare ses 🛡️ boucliers avec chacun de ses deux voisins : plus fort, +1 / +3 / +5 points (âge I / II / III) ; moins fort, −1.</li>
             <li>📚 Savoir (vertes) : pour chaque symbole 📐 ⚙️ 📖, son nombre au carré, et +7 par série des trois.</li>
             <li>🪙 1 point pour 3 pièces. Commerce (jaunes) et guildes (violettes) : comme écrit sur la carte.</li>
@@ -607,10 +607,10 @@
     const DELAI_SILENCE = 15000;
     const MAX_SALONS = 8;
     const ORDIS = ['🤖 Ordi', '🤖 Ordi 2', '🤖 Ordi 3', '🤖 Ordi 4', '🤖 Ordi 5', '🤖 Ordi 6'];
-    const LIGNES_SCORE = [['militaire', '⚔️ Conflits'], ['pieces', '🪙 Pièces'], ['joyau', '💎 Joyau'], ['monuments', '🏛️ Monuments'], ['commerce', '🏪 Commerce'], ['guildes', '🎭 Guildes'], ['savoir', '📚 Savoir']];
+    const LIGNES_SCORE = [['militaire', '⚔️ Conflits'], ['pieces', '🪙 Pièces'], ['joyau', '✨ Merveille'], ['monuments', '🏛️ Monuments'], ['commerce', '🏪 Commerce'], ['guildes', '🎭 Guildes'], ['savoir', '📚 Savoir']];
     const LIGNES_DUEL = [['civils', '🏛️ Bâtiments civils'], ['science', '🔬 Bâtiments scientifiques'], ['commerce', '🏪 Bâtiments commerciaux'], ['guildes', '🎭 Guildes'],
                          ['merveilles', '🏺 Merveilles'], ['progres', '🌿 Jetons Progrès'], ['pieces', '🪙 Pièces (1 pt / 3)'], ['militaire', '⚔️ Militaire']];
-    const NOMS_TYPES = { brun: 'carte marron', gris: 'carte grise', bleu: 'carte bleue', jaune: 'carte jaune', rouge: 'carte rouge', vert: 'carte verte', violet: 'guilde', joyau: 'étape de joyau', defaite: 'défaite' };
+    const NOMS_TYPES = { brun: 'carte marron', gris: 'carte grise', bleu: 'carte bleue', jaune: 'carte jaune', rouge: 'carte rouge', vert: 'carte verte', violet: 'guilde', joyau: 'étape de merveille', defaite: 'défaite' };
     function copie(o) { return JSON.parse(JSON.stringify(o)); }
     function estOrdi(n) { return ORDIS.indexOf(n) !== -1; }
     function ico(r) { return SJ.RES[r] ? SJ.RES[r].ico : r; }
@@ -729,6 +729,7 @@
       el: '#app',
       data: {
         version: VERSION,
+        iconeJeu: IconesJeux.svg('joyaux', 76),   // le phare dessiné (icones-jeux.js)
         LIGNES_SCORE: LIGNES_SCORE, LIGNES_DUEL: LIGNES_DUEL, PROGRES: SD.PROGRES, MERVEILLES: SD.MERVEILLES, CARTES_DUEL: SD.CARTES, TYPES_DUEL: SD.TYPES, JOYAUX: SJ.JOYAUX, DV: DV,
         modeChoisi: lireStockage('joyaux-version') || 'duel',   // Duel par défaut (demandé par l'utilisateur, 2.60)
         selDuel: null,
@@ -940,12 +941,12 @@
         },
         texteCoup: function(k) {
           if (k.type === 'vendre') return '🪙 a vendu';
-          if (k.type === 'joyau') return '💎 joyau';
+          if (k.type === 'joyau') return '✨ merveille';
           return '🏗️ ' + SJ.CARTES[k.id].nom;
         },
         texteChoix: function(ch) {
           var n = SJ.CARTES[ch.id].nom;
-          return { construire: 'Construire « ' + n + ' »', joyau: 'Étape du joyau (avec « ' + n + ' »)', vendre: 'Vendre « ' + n + ' » (+3 🪙)', gratuit: 'Construire « ' + n + ' » gratuitement' }[ch.type];
+          return { construire: 'Construire « ' + n + ' »', joyau: 'Étape de la merveille (avec « ' + n + ' »)', vendre: 'Vendre « ' + n + ' » (+3 🪙)', gratuit: 'Construire « ' + n + ' » gratuitement' }[ch.type];
         },
 
         // ================== SOLO ==================

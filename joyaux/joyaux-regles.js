@@ -1,6 +1,6 @@
-// ================== LES 7 JOYAUX : moteur de règles (version maison d'un jeu de draft de cartes et de cités) ==================
+// ================== 7 PILIERS (ex « Les 7 joyaux ») : moteur de règles (version maison d'un jeu de draft de cartes et de cités) ==================
 // Testable avec Node (module.exports). Chaque joueur bâtit sa cité en 3 âges : à chaque tour, tout le monde choisit EN MÊME TEMPS
-// une carte de sa main (la construire, s'en servir pour polir une étape de son joyau, ou la vendre 3 pièces), puis passe le reste
+// une carte de sa main (la construire, s'en servir pour bâtir une étape de sa merveille (ex « joyau » : nom interne gardé), ou la vendre 3 pièces), puis passe le reste
 // à son voisin. Ressources achetées aux deux voisins, conflits entre voisins à la fin de chaque âge, décompte final.
 // Noms, cartes et valeurs maison : rien n'est recopié d'un jeu du commerce.
 var SJ = (function () {
@@ -111,15 +111,16 @@ var SJ = (function () {
     CARTES[l[0]] = { id: l[0], nom: l[1], age: l[2], type: l[3], cout: cout.replace(/[0-9]/g, ''), pieces: pieces, n: l[5], effet: l[6], chaine: l[7] ? l[7].split('|') : [] };
   });
 
-  // ---------- Les joyaux : une ressource de départ, trois étapes ----------
+  // ---------- Les merveilles (nom interne historique : joyaux ; clés gardées pour les sauvegardes) : une ressource de départ, trois étapes ----------
+  // Noms affichés depuis 2.69 : les sept merveilles de l'Antiquité (le jeu s'appelle « 7 piliers »)
   var JOYAUX = {
-    saphir: { nom: 'La Tour de Saphir', ico: '💙', coul: '#2c6fd6', base: 'P', etapes: [{ cout: 'BB', pts: 3 }, { cout: 'AAA', prod: 'B/P/A/M' }, { cout: 'PPPP', pts: 7 }] },
-    rubis: { nom: 'Le Colosse de Rubis', ico: '❤️', coul: '#c0392b', base: 'M', etapes: [{ cout: 'PP', pts: 3 }, { cout: 'AAA', boucliers: 2 }, { cout: 'MMMM', pts: 7 }] },
-    emeraude: { nom: 'Le Temple d\'Émeraude', ico: '💚', coul: '#1e8e5a', base: 'R', etapes: [{ cout: 'AA', pts: 3 }, { cout: 'MMT', sci: '*' }, { cout: 'BBBB', pts: 7 }] },
-    ambre: { nom: 'La Pyramide d\'Ambre', ico: '🧡', coul: '#d68910', base: 'A', etapes: [{ cout: 'PP', pts: 3 }, { cout: 'BBB', pieces: 9 }, { cout: 'AAAA', pts: 7 }] },
-    opale: { nom: 'Le Palais d\'Opale', ico: '🤍', coul: '#8a9bb0', base: 'V', etapes: [{ cout: 'AA', pts: 3 }, { cout: 'BBB', prod: 'V/T/R' }, { cout: 'PPPP', pts: 7 }] },
-    jade: { nom: 'Le Jardin de Jade', ico: '🍀', coul: '#4f9a3a', base: 'B', etapes: [{ cout: 'AA', pts: 3 }, { cout: 'PPP', comptoir: 'gd' }, { cout: 'MMMM', pts: 7 }] },
-    amethyste: { nom: 'L\'Observatoire d\'Améthyste', ico: '💜', coul: '#7d3c98', base: 'T', etapes: [{ cout: 'BB', pts: 3 }, { cout: 'AAA', gratuit: true }, { cout: 'MMMM', pts: 7 }] }
+    saphir: { nom: 'Le Phare d\'Alexandrie', ico: '🗼', coul: '#2c6fd6', base: 'P', etapes: [{ cout: 'BB', pts: 3 }, { cout: 'AAA', prod: 'B/P/A/M' }, { cout: 'PPPP', pts: 7 }] },
+    rubis: { nom: 'Le Colosse de Rhodes', ico: '🗿', coul: '#c0392b', base: 'M', etapes: [{ cout: 'PP', pts: 3 }, { cout: 'AAA', boucliers: 2 }, { cout: 'MMMM', pts: 7 }] },
+    emeraude: { nom: 'Le Temple d\'Artémis', ico: '🏛️', coul: '#1e8e5a', base: 'R', etapes: [{ cout: 'AA', pts: 3 }, { cout: 'MMT', sci: '*' }, { cout: 'BBBB', pts: 7 }] },
+    ambre: { nom: 'La Grande Pyramide', ico: '🔺', coul: '#d68910', base: 'A', etapes: [{ cout: 'PP', pts: 3 }, { cout: 'BBB', pieces: 9 }, { cout: 'AAAA', pts: 7 }] },
+    opale: { nom: 'Le Mausolée d\'Halicarnasse', ico: '⚱️', coul: '#8a9bb0', base: 'V', etapes: [{ cout: 'AA', pts: 3 }, { cout: 'BBB', prod: 'V/T/R' }, { cout: 'PPPP', pts: 7 }] },
+    jade: { nom: 'Les Jardins de Babylone', ico: '🌿', coul: '#4f9a3a', base: 'B', etapes: [{ cout: 'AA', pts: 3 }, { cout: 'PPP', comptoir: 'gd' }, { cout: 'MMMM', pts: 7 }] },
+    amethyste: { nom: 'La Statue de Zeus', ico: '⚡', coul: '#7d3c98', base: 'T', etapes: [{ cout: 'BB', pts: 3 }, { cout: 'AAA', gratuit: true }, { cout: 'MMMM', pts: 7 }] }
   };
 
   // ---------- Hasard reproductible ou non ----------
@@ -211,7 +212,7 @@ var SJ = (function () {
       r.construire = p.ok ? { ok: true, g: p.g, d: p.d, pieces: c.pieces } : { ok: false, raison: p.cher ? 'Trop cher' : 'Ressources introuvables' };
     }
     var jy = JOYAUX[cite.joyau];
-    if (cite.etapes >= 3) r.joyau = { ok: false, raison: 'Joyau terminé' };
+    if (cite.etapes >= 3) r.joyau = { ok: false, raison: 'Merveille terminée' };
     else { var q = payer(e, j, jy.etapes[cite.etapes].cout); r.joyau = q.ok ? { ok: true, g: q.g, d: q.d, pieces: 0 } : { ok: false, raison: q.cher ? 'Trop cher' : 'Ressources introuvables' }; }
     r.gratuit = !aDeja(cite, id) && jy.etapes.slice(0, cite.etapes).some(t => t.gratuit) && cite.gratuitAge !== e.age;
     return r;
@@ -414,7 +415,7 @@ var SJ = (function () {
       var essais = [['vendre', true], ['construire', o.construire.ok], ['joyau', o.joyau.ok], ['gratuit', o.gratuit && !o.construire.ok]];
       essais.forEach(t => {
         if (!t[1]) return;
-        // Une étape de joyau se paie avec la carte la moins utile de la main
+        // Une étape de merveille se paie avec la carte la moins utile de la main
         var v = t[0] === 'joyau' ? valeur(e, j, id, 'joyau', o, h) - Math.max(0, valeur(e, j, id, 'construire', o, null)) * 0.35 : valeur(e, j, id, t[0], o, h);
         if (!best || v > best.v) best = { v: v, i: i, type: t[0] };
       });

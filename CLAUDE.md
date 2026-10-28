@@ -404,7 +404,7 @@ Bataille navale : `bataille-boss` (partie contre un boss d'expédition), `batail
   **le jeu choisit tout seul le paiement le moins cher** (`SJ.payer`, recherche exhaustive). Chaînes : carte gratuite si l'on a une carte précise (`chaine`).
   Pas deux fois la même carte (même nom). Conflits en fin d'âge contre chaque voisin : +1/+3/+5 ou −1. Savoir : carrés + 7 par série. 1 pt pour 3 🪙.
 - Cartes (`LISTE`, `n` = à partir de combien de joueurs chaque exemplaire entre) : 7 × joueurs par âge (vérifié de 3 à 7), âge III = cartes + (joueurs + 2) guildes tirées
-  parmi 10. 7 joyaux maison (Saphir, Rubis, Émeraude, Ambre, Opale, Jade, Améthyste) à 3 étapes : 3 pts / pouvoir / 7 pts.
+  parmi 10. 7 **merveilles** à 3 étapes : 3 pts / pouvoir / 7 pts (2.70, harmonisé avec « 7 piliers » : ex « joyaux » maison Saphir, Rubis… ; affichées sous les noms des sept merveilles de l'Antiquité : Phare d'Alexandrie, Colosse de Rhodes, Temple d'Artémis, Grande Pyramide, Mausolée d'Halicarnasse, Jardins de Babylone, Statue de Zeus ; **clés internes inchangées** : `JOYAUX`, `cite.joyau`, action `'joyau'`, `saphir`… pour les sauvegardes). Onglet Jouer vide : le phare dessiné (`iconeJeu`).
 - Ordinateur (`SJ.ordinateur`) : estime chaque coup (points, ressources utiles selon l'âge, boucliers s'il est à la traîne, savoir, pièces), un peu de hasard.
   Testé en Node : 300 parties de 3 à 7 joueurs (~45 points en moyenne). Joueur absent en salon : l'hôte peut « jouer à sa place » (un coup de l'ordinateur).
 - Écran (360 px) : barre (âge, tour, sens, 🪙, 🛡️, points du moment), joueurs (✓ = a choisi, dernier coup, ◀ ▶ = mes voisins ; toucher = voir sa cité),
