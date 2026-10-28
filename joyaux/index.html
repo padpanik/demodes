@@ -175,6 +175,16 @@
         </section>
 
         <template v-if="!role">
+          <!-- Version du jeu : commune au salon (l'hôte qui ouvre le salon l'emporte) et au jeu seul -->
+          <section class="carte">
+            <div class="titre-carte">Version</div>
+            <div class="segment">
+              <button :class="{ actif: modeChoisi === 'duel' }" @click="modeChoisi = 'duel'">⚔️ Duel</button>
+              <button :class="{ actif: modeChoisi === 'classique' }" @click="modeChoisi = 'classique'">🏛️ Classique</button>
+            </div>
+            <div class="aide" style="margin-top:0" v-if="modeChoisi === 'duel'">À deux, chacun son tour : cartes en pyramide, merveilles, piste militaire et jetons Progrès. Seul : contre 1 ordinateur.</div>
+            <div class="aide" style="margin-top:0" v-else>3 cités au moins, tout le monde choisit en même temps et passe sa main ; des ordinateurs complètent la table.</div>
+          </section>
           <section class="carte">
             <div class="titre-carte">À plusieurs, chacun sur son téléphone</div>
             <div class="pseudo-portail">Ton pseudo : <b>{{ pseudoInput || '(à choisir)' }}</b><button class="lien-profil" @click="ouvrirProfil">✏️ {{ pseudoInput ? 'Changer' : 'Choisir' }}</button></div>
@@ -188,17 +198,11 @@
               </span>
             </div>
             <button class="btn principal" style="width:100%;margin-top:8px" @click="entrerSalon()" :disabled="entreeEnCours">{{ entreeEnCours ? 'Connexion au salon…' + (entreeEnCours > 1 ? ' essai ' + entreeEnCours + '/4' : '') : 'Entrer dans le salon' }}</button>
-            <div class="aide">Dans le salon, l'hôte choisit la version : <b>Classique</b> (3 cités au moins, des ordinateurs complètent la table) ou <b>Duel</b> (à deux, chacun son tour).</div>
+            <div class="aide">Le salon s'ouvre dans la version choisie ci-dessus. Si tu rejoins le salon d'un ami, c'est sa version ; l'hôte peut encore la changer dans la salle d'attente.</div>
           </section>
           <section class="carte">
             <div class="titre-carte">Seul contre l'ordinateur</div>
-            <div class="petit-titre">Version</div>
-            <div class="segment">
-              <button :class="{ actif: modeChoisi === 'classique' }" @click="modeChoisi = 'classique'">🏛️ Classique</button>
-              <button :class="{ actif: modeChoisi === 'duel' }" @click="modeChoisi = 'duel'">⚔️ Duel</button>
-            </div>
-            <div class="aide" style="margin-top:0" v-if="modeChoisi === 'duel'">Duel à deux, chacun son tour : cartes en pyramide, tir à la corde militaire et jetons de savoir. Contre 1 ordinateur.</div>
-            <template v-else>
+            <template v-if="modeChoisi !== 'duel'">
               <div class="petit-titre">Nombre d'ordinateurs autour de la table</div>
               <div class="segment">
                 <button v-for="n in [2, 3, 4, 5, 6]" :key="n" :class="{ actif: nbOrdis === n }" @click="nbOrdis = n">🤖 {{ n }}</button>
@@ -228,8 +232,8 @@
           <div class="presents"><span v-for="p in pub.ordre" :key="p" :class="{ absent: !estPresent(p) }">{{ p }}{{ p === moi ? ' (moi)' : '' }}</span></div>
           <div class="petit-titre">Version {{ role === 'hote' ? '' : '(choisie par l\'hôte)' }}</div>
           <div class="segment">
-            <button :disabled="role !== 'hote'" :class="{ actif: pub.mode !== 'duel' }" @click="envoyerJeu({ type: 'MODE', mode: 'classique' })">🏛️ Classique</button>
             <button :disabled="role !== 'hote'" :class="{ actif: pub.mode === 'duel' }" @click="envoyerJeu({ type: 'MODE', mode: 'duel' })">⚔️ Duel</button>
+            <button :disabled="role !== 'hote'" :class="{ actif: pub.mode !== 'duel' }" @click="envoyerJeu({ type: 'MODE', mode: 'classique' })">🏛️ Classique</button>
           </div>
           <template v-if="pub.mode === 'duel'">
             <div class="aide" style="margin-top:0">À deux, chacun son tour : cartes en pyramide, tir à la corde militaire, jetons de savoir.{{ presents.length < 2 ? ' Seul dans le salon : tu joues contre un ordinateur.' : '' }}</div>
@@ -705,7 +709,7 @@
       data: {
         version: VERSION,
         LIGNES_SCORE: LIGNES_SCORE, LIGNES_DUEL: LIGNES_DUEL, PROGRES: SD.PROGRES, MERVEILLES: SD.MERVEILLES, CARTES_DUEL: SD.CARTES, TYPES_DUEL: SD.TYPES, JOYAUX: SJ.JOYAUX, DV: DV,
-        modeChoisi: lireStockage('joyaux-mode') || 'classique',
+        modeChoisi: lireStockage('joyaux-version') || 'duel',   // Duel par défaut (demandé par l'utilisateur, 2.60)
         selDuel: null,
         infoJeton: null,
         onglet: 'config',
@@ -869,7 +873,7 @@
         sonActif: function(v) { ecrireStockage('brillant-son', v); },
         vibrationActive: function(v) { ecrireStockage('brillant-vibration', v); if (v) vibrer(40); },
         nbOrdis: function(v) { ecrireStockage('joyaux-ordis', v); },
-        modeChoisi: function(v) { ecrireStockage('joyaux-mode', v); },
+        modeChoisi: function(v) { ecrireStockage('joyaux-version', v); },
         quiDuel: function() { this.selDuel = null; },
         pseudoInput: function() { this.sauvegarder(); },
         conflitVu: function(v) { ecrireStockage('joyaux-conflit-vu', v); },
@@ -1073,6 +1077,7 @@
           if (m.type === 'MODE') {
             if (!hote || pubHote.phase !== 'attente' || (m.mode !== 'duel' && m.mode !== 'classique')) return;
             pubHote.mode = m.mode;
+            this.modeChoisi = m.mode;   // l'hôte garde ce choix pour la suite (salon comme solo)
           } else if (m.type === 'ROBOTS') {
             if (!hote || pubHote.phase !== 'attente') return;
             var humains = Math.min(7, pubHote.ordre.filter(x => this.estConnecte(x)).length);

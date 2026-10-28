@@ -213,7 +213,7 @@ Agents secrets : `agents-sauvegarde` (dont `maCle`, la carte secrète si on est 
 Quatre en ligne : `quatre-sauvegarde` (salon), `quatre-solo` (partie contre l'ordinateur), `quatre-boss` (partie contre un boss d'expédition), `quatre-niveau`, `quatre-stats`, `quatre-dernier-salon`.
 Dominos : `domino-sauvegarde` (salon ; chez l'hôte, l'état complet avec toutes les mains), `domino-solo` (partie contre l'ordinateur), `domino-jeu`, `domino-ordis`, `domino-buts`, `domino-dernier-salon`.
 Lettres croisées : `lettres-sauvegarde` (salon ; chez l'hôte, l'état complet avec chevalets et sac), `lettres-solo` (partie contre l'ordinateur), `lettres-niveau`, `lettres-ordis`, `lettres-dernier-salon`.
-Les 7 joyaux : `joyaux-sauvegarde` (salon ; chez l'hôte, l'état complet avec toutes les mains), `joyaux-solo` (partie contre les ordinateurs, classique ou duel : `mode`), `joyaux-mode` (version choisie pour jouer seul), `joyaux-ordis`, `joyaux-dernier-salon`, `joyaux-conflit-vu` (dernière fenêtre de conflits fermée).
+Les 7 joyaux : `joyaux-sauvegarde` (salon ; chez l'hôte, l'état complet avec toutes les mains), `joyaux-solo` (partie contre les ordinateurs, classique ou duel : `mode`), `joyaux-version` (version choisie, duel par défaut ; remplace l'ancienne clé `joyaux-mode`), `joyaux-ordis`, `joyaux-dernier-salon`, `joyaux-conflit-vu` (dernière fenêtre de conflits fermée).
 Mon compagnon : `compagnon-animal` (espèce, nom, couleur, besoins, objets possédés et portés, série de jours), `compagnon-etoiles` (solde),
 `compagnon-journal` (dernières étoiles gagnées ou dépensées), `compagnon-parties` (parties déjà récompensées), `compagnon-jour` (tâches du jour),
 `compagnon-cadeau` (bonus de bienvenue donné), `compagnon-ancien`, `compagnon-gains-jeux` (étoiles gagnées en jouant aujourd'hui),
@@ -413,8 +413,9 @@ Bataille navale : `bataille-boss` (partie contre un boss d'expédition), `batail
   tableau du décompte à la fin. Hôte disparu : retour à la salle d'attente (les mains étaient chez lui). Étoiles : `finDePartie('Les 7 joyaux')` (« entre amis »
   seulement à 2 humains et plus), série de victoires solo `Etoiles.serie('joyaux')`.
 - **Version Duel** (demandée par l'utilisateur, puis **refaite en 2.53 aux règles exactes du jeu d'origine** à sa demande : « reprendre les règles exactes et des visuels
-  qui rappellent l'original », appli privée entre amis) : choix **🏛️ Classique / ⚔️ Duel** dans l'onglet Partie pour jouer seul (`modeChoisi`, `joyaux-mode` ; duel = contre 1 🤖)
-  et dans la salle d'attente du salon (l'hôte, `pubHote.mode`, message `MODE` ; les 2 premiers présents jouent, un 🤖 si l'on est seul, les autres regardent).
+  qui rappellent l'original », appli privée entre amis) : choix **⚔️ Duel / 🏛️ Classique** (Duel d'abord et **par défaut**, 2.60) **en haut de l'onglet Partie, commun au salon et au solo**
+  (`modeChoisi`, `joyaux-version` ; duel seul = contre 1 🤖) : le salon s'ouvre dans cette version (`pubHote.mode`), l'hôte peut encore la changer dans la salle d'attente
+  (message `MODE`, repris dans son `modeChoisi`) ; les 2 premiers présents jouent, un 🤖 si l'on est seul, les autres regardent.
   Moteur `SD` (`joyaux/joyaux-duel.js`, `VERSION_REGLES = 2`, `SD.compatible` : un duel solo de l'ancienne version est oublié) :
   - Cartes d'origine sous des noms français génériques (`LISTE` : 23 / 23 / 20 cartes + 7 guildes, `[id, nom, âge, type, coût, effet, chaîne]`), chaînages, 12 merveilles
     (`MERVEILLES` : Voie Appienne, Circus Maximus, Colosse, Grande Bibliothèque, Phare, Jardins suspendus, Mausolée, Pirée, Pyramides, Sphinx, Statue de Zeus, Temple d'Artémis),
