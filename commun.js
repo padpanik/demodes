@@ -3,7 +3,7 @@
 // Les clés de stockage gardent l'ancien préfixe "brillant-" : les réglages déjà faits sont conservés.
 
 // Numéro de version affiché (à augmenter à chaque mise en ligne, avec brilliant/index.html et sw.js)
-const VERSION = '2.72';
+const VERSION = '2.73';
 
 // ---------- Stockage local ----------
 function lireStockage(cle) {
@@ -272,6 +272,19 @@ const Voix = {
 // Étoiles ⭐ de « Mon compagnon » : dans etoiles.js (aussi chargé par brilliant/index.html, qui n'utilise pas ce fichier)
 
 // ---------- Pseudo : choisi une fois sur le portail (profil du salon global), le même dans tous les jeux ----------
+// Ordinateurs autour de la table : « 🤖 » + un prénom tiré au hasard (demandé par l'utilisateur, à la place de « Ordi », « Ordi 2 »…).
+// Le « 🤖 » au début du nom suffit à reconnaître un ordinateur (anciennes parties « 🤖 Ordi » comprises).
+const PRENOMS_ORDIS = ['Léon', 'Margot', 'Basile', 'Rosalie', 'Gaston', 'Suzanne', 'Félix', 'Odette', 'Achille', 'Colette', 'Marius', 'Lucienne',
+  'Firmin', 'Agathe', 'Hector', 'Mireille', 'Anatole', 'Germaine', 'Barnabé', 'Josette', 'Eugène', 'Paulette', 'Octave', 'Simone',
+  'Ernest', 'Huguette', 'Jules', 'Yvette', 'Gustave', 'Odile', 'Lucien', 'Ginette'];
+function estNomOrdi(n) { return typeof n === 'string' && n.indexOf('🤖') === 0; }
+function nomsOrdis(n, exclus) {
+  var pris = (exclus || []).map(x => String(x).replace(/^🤖\s*/, '').toLowerCase());
+  var l = PRENOMS_ORDIS.filter(p => pris.indexOf(p.toLowerCase()) === -1);
+  for (var i = l.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)), x = l[i]; l[i] = l[j]; l[j] = x; }
+  return l.slice(0, n).map(p => '🤖 ' + p);
+}
+
 function pseudoPortail() {
   var p = lireStockage('desdale-profil');
   if (p && p.pseudo) return p.pseudo;

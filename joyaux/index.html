@@ -292,7 +292,7 @@
           <template v-if="pub.mode === 'duel'">
             <div class="aide" style="margin-top:0">À deux, chacun son tour : cartes en pyramide, tir à la corde militaire, jetons de savoir.{{ presents.length < 2 ? ' Seul dans le salon : tu joues contre un ordinateur.' : '' }}</div>
             <button v-if="role === 'hote'" class="btn principal" style="width:100%;margin-top:8px" @click="envoyerJeu({ type: 'COMMENCER' })">
-              ⚔️ Commencer le duel ({{ presents.length >= 2 ? presents.slice(0, 2).join(' contre ') : moi + ' contre 🤖 Ordi' }})</button>
+              ⚔️ Commencer le duel ({{ presents.length >= 2 ? presents.slice(0, 2).join(' contre ') : moi + ' contre un 🤖 ordinateur' }})</button>
             <div v-else class="aide">L'hôte lance la partie quand tout le monde est là.</div>
             <div class="aide" v-if="presents.length > 2">Au-delà de 2, les suivants regardent le duel.</div>
           </template>
@@ -555,7 +555,7 @@
           <section class="carte" v-if="e.phase === 'fin'" style="margin-top:8px">
             <div class="titre-carte">{{ e.vainqueur === moiJ ? '🏆 Ta cité l\'emporte !' : '🏆 ' + e.vainqueur + ' l\'emporte' }}</div>
             <table class="tableau-sj">
-              <tr><th></th><th v-for="j in e.classement" :key="j">{{ j === moiJ ? 'Moi' : (e.n > 4 ? j.replace('🤖 Ordi', '🤖').slice(0, 6) : court(j)) }}</th></tr>
+              <tr><th></th><th v-for="j in e.classement" :key="j">{{ j === moiJ ? 'Moi' : (e.n > 4 ? j.replace('🤖 ', '🤖').slice(0, 8) : court(j)) }}</th></tr>
               <tr v-for="l in LIGNES_SCORE" :key="l[0]"><td>{{ l[1] }}</td><td v-for="j in e.classement" :key="j">{{ e.scores[j][l[0]] }}</td></tr>
               <tr class="total"><td>Total</td><td v-for="j in e.classement" :key="j">{{ e.scores[j].total }}</td></tr>
             </table>
@@ -675,13 +675,12 @@
     const JEU_RESEAU = 'jx';
     const DELAI_SILENCE = 15000;
     const MAX_SALONS = 8;
-    const ORDIS = ['🤖 Ordi', '🤖 Ordi 2', '🤖 Ordi 3', '🤖 Ordi 4', '🤖 Ordi 5', '🤖 Ordi 6'];
     const LIGNES_SCORE = [['militaire', '⚔️ Conflits'], ['pieces', '🪙 Pièces'], ['joyau', '✨ Merveille'], ['monuments', '🏛️ Monuments'], ['commerce', '🏪 Commerce'], ['guildes', '🎭 Guildes'], ['savoir', '📚 Savoir']];
     const LIGNES_DUEL = [['civils', '🏛️ Bâtiments civils'], ['science', '🔬 Bâtiments scientifiques'], ['commerce', '🏪 Bâtiments commerciaux'], ['guildes', '🎭 Guildes'],
                          ['merveilles', '🏺 Merveilles'], ['progres', '🌿 Jetons Progrès'], ['pieces', '🪙 Pièces (1 pt / 3)'], ['militaire', '⚔️ Militaire']];
     const NOMS_TYPES = { brun: 'carte marron', gris: 'carte grise', bleu: 'carte bleue', jaune: 'carte jaune', rouge: 'carte rouge', vert: 'carte verte', violet: 'guilde', joyau: 'étape de merveille', defaite: 'défaite' };
     function copie(o) { return JSON.parse(JSON.stringify(o)); }
-    function estOrdi(n) { return ORDIS.indexOf(n) !== -1; }
+    function estOrdi(n) { return estNomOrdi(n); }   // « 🤖 » + prénom (nomsOrdis, commun.js)
     function ico(r) { return SJ.RES[r] ? SJ.RES[r].ico : r; }
 
     // ---------- Textes des cartes ----------
@@ -894,7 +893,7 @@
           if (!this.aMoiDuel) {
             var quoi = !a ? (e.phase === 'merveilles' ? ' choisit une merveille…' : (estOrdi(j) ? ' réfléchit…' : ' joue…'))
               : { jeton: ' choisit un jeton Progrès…', bibliotheque: ' choisit un jeton Progrès…', detruire: ' choisit une carte à te faire défausser…', mausolee: ' choisit dans la défausse…', debut: ' choisit qui commence…' }[a.phase];
-            return (j === this.advDuel && this.estJoueur ? (estOrdi(j) ? '🤖 L\'ordinateur' : j) : j) + quoi;
+            return (j === this.advDuel && this.estJoueur ? j : j) + quoi;
           }
           if (e.phase === 'merveilles') return 'À toi : choisis une merveille.';
           return '';   // à moi de jouer : la pastille « à toi ! » suffit (consigne retirée à la demande de l'utilisateur)
@@ -1091,8 +1090,8 @@
           else this.nouveauSolo();
         },
         nouveauSolo: function() {
-          if (this.modeChoisi === 'duel') etatSolo = SD.nouvellePartie(SJ.melanger([this.moi, ORDIS[0]]));
-          else etatSolo = SJ.nouvellePartie([this.moi].concat(ORDIS.slice(0, this.nbOrdis)));
+          if (this.modeChoisi === 'duel') etatSolo = SD.nouvellePartie(SJ.melanger([this.moi, nomsOrdis(1, [this.moi])[0]]));
+          else etatSolo = SJ.nouvellePartie([this.moi].concat(nomsOrdis(this.nbOrdis, [this.moi])));
           etatSolo.partieId = nouvelId();
           this.lancerSolo();
         },
@@ -1262,7 +1261,7 @@
             // Duel : les deux premiers présents (ou un ordinateur si l'on est seul)
             if (!hote || pubHote.phase !== 'attente') return;
             var deux = pubHote.ordre.filter(x => this.estConnecte(x)).slice(0, 2);
-            if (deux.length < 2) deux.push(ORDIS[0]);
+            if (deux.length < 2) deux.push(nomsOrdis(1, deux)[0]);
             pubHote.etat = SD.nouvellePartie(SJ.melanger(deux));
             pubHote.partieId = pubHote.etat.partieId = nouvelId();
             pubHote.phase = 'jeu';
@@ -1272,7 +1271,7 @@
           } else if (m.type === 'COMMENCER') {
             if (!hote || pubHote.phase !== 'attente') return;
             var joueurs = pubHote.ordre.filter(x => this.estConnecte(x)).slice(0, 7);
-            joueurs = joueurs.concat(ORDIS.slice(0, Math.max(0, Math.min(pubHote.robots, 7 - joueurs.length))));
+            joueurs = joueurs.concat(nomsOrdis(Math.max(0, Math.min(pubHote.robots, 7 - joueurs.length)), joueurs));
             if (joueurs.length < 3) return;
             // Les cités sont placées au hasard autour de la table
             pubHote.etat = SJ.nouvellePartie(SJ.melanger(joueurs));

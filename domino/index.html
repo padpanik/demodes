@@ -306,13 +306,12 @@
     const JEU_RESEAU = 'dm';
     const DELAI_SILENCE = 15000;
     const MAX_SALONS = 8;
-    const ORDIS = ['🤖 Ordi', '🤖 Ordi 2', '🤖 Ordi 3'];
     const BUTS = { domino: [50, 100, 150], triomino: [200, 400] };
     const NOMS = { domino: 'Dominos', triomino: 'Triominos' };
     // Couleur de chaque chiffre des triominos (lisibilité)
     const COUL = ['#6b6b6b', '#d64541', '#2c7be5', '#2e9e6b', '#8e44ad', '#e67e22'];
     function copie(o) { return JSON.parse(JSON.stringify(o)); }
-    function estOrdi(n) { return ORDIS.indexOf(n) !== -1; }
+    function estOrdi(n) { return estNomOrdi(n); }   // « 🤖 » + prénom (nomsOrdis, commun.js)
 
     // ================== DESSINS (SVG faits par le code) ==================
     const PIPS = { 0: [], 1: [[.5, .5]], 2: [[.27, .27], [.73, .73]], 3: [[.25, .25], [.5, .5], [.75, .75]], 4: [[.27, .27], [.73, .27], [.27, .73], [.73, .73]],
@@ -503,7 +502,7 @@
           this.lancerSolo();
         },
         nouveauSolo: function() {
-          var joueurs = [this.moi].concat(ORDIS.slice(0, this.nbOrdis));
+          var joueurs = [this.moi].concat(nomsOrdis(this.nbOrdis, [this.moi]));
           etatSolo = DM.nouvellePartie(this.jeuChoisi, joueurs, { but: this.buts[this.jeuChoisi] });
           etatSolo.partieId = nouvelId();
           this.lancerSolo();

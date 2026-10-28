@@ -375,12 +375,11 @@
     const LIB_BONUS = { MT: 'M×3', MD: 'M×2', LT: 'L×3', LD: 'L×2' };
     // Une couleur par joueur, dans l'ordre de la partie
     const COULEURS = ['#e8590c', '#1c7ed6', '#2b8a3e', '#9c36b5'];
-    const ORDIS = ['🤖 Ordi', '🤖 Ordi 2', '🤖 Ordi 3'];
     const NIVEAUX_NOMS = { facile: 'Facile', normal: 'Normal', fort: 'Fort' };
     const AIDE_NIVEAUX = { facile: 'Petits mots (5 lettres au plus), sans joker, rarement le meilleur coup.',
                            normal: 'Mots de 8 lettres au plus, de bons coups sans être les meilleurs.',
                            fort: 'Connaît tous les mots du dictionnaire et joue toujours le meilleur coup.' };
-    function estOrdi(n) { return ORDIS.indexOf(n) !== -1; }
+    function estOrdi(n) { return estNomOrdi(n); }   // « 🤖 » + prénom (nomsOrdis, commun.js)
     function copie(o) { return JSON.parse(JSON.stringify(o)); }
     const LOGO = '<svg width="51" height="51" viewBox="0 0 51 51">' +
       [[3, 15, 'L', -8], [18, 6, 'E', 4], [33, 17, 'T', -3]].map(t => '<g transform="rotate(' + t[3] + ' ' + (t[0] + 7.5) + ' ' + (t[1] + 7.5) + ')"><rect x="' + t[0] + '" y="' + t[1] + '" width="16" height="16" rx="3" fill="#f6dfa6" stroke="#8a5a35" stroke-width="1.4"/>' +
@@ -610,7 +609,7 @@
           else this.nouveauSolo();
         },
         nouveauSolo: function() {
-          etatSolo = LC.nouvellePartie([this.moi].concat(ORDIS.slice(0, this.nbOrdis)));
+          etatSolo = LC.nouvellePartie([this.moi].concat(nomsOrdis(this.nbOrdis, [this.moi])));
           etatSolo.niveau = this.niveau;
           etatSolo.partieId = nouvelId();
           this.lancerSolo();
@@ -836,7 +835,7 @@
             var rs = pubHote.robots = pubHote.robots || [];
             if (!m.ajouter) pubHote.robots = rs.filter(r => r !== m.nom);
             else {
-              var libre = ORDIS.find(r => rs.indexOf(r) === -1);
+              var libre = nomsOrdis(1, rs.concat(pubHote.ordre || []))[0];
               if (!libre || Math.min(4, pubHote.ordre.filter(x => this.estConnecte(x)).length) + rs.length >= 4) return;
               rs.push(libre);
             }
