@@ -506,7 +506,7 @@ var SalonGlobal = (function () {
       '.sg-apercu{display:flex;align-items:center;gap:10px;margin-top:4px}',
       
       '.sg-carte{background:#fff;border-radius:18px;padding:12px 14px;box-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(29,43,54,.06);display:flex;align-items:center;gap:8px;cursor:pointer;font-family:system-ui,sans-serif}',
-      '.sg-carte .sg-titre{font-weight:700;color:#5b6b78;margin-right:4px}.sg-carte .sg-avs{display:flex;flex:1;min-width:0}.sg-carte .sg-avs .sg-av{margin-right:-6px;box-shadow:0 0 0 2px #fff}.sg-carte .sg-plus{background:#8a97a1;font-size:12px}'
+      '.sg-carte .sg-titre{font-weight:700;color:#5b6b78;margin-right:4px;display:inline-flex;align-items:center;gap:6px}.sg-carte .sg-avs{display:flex;flex:1;min-width:0}.sg-carte .sg-avs .sg-av{margin-right:-6px;box-shadow:0 0 0 2px #fff}.sg-carte .sg-plus{background:#8a97a1;font-size:12px}'
     ].join('\n');
     document.head.appendChild(css);
 
@@ -605,7 +605,7 @@ var SalonGlobal = (function () {
       var autres = listeMembres().filter(m => m.id !== monId());
       // Carte de l'accueil : seulement les présents (le chat passe par la bulle) ; un toucher montre qui est où
       var max = 9, reste = autres.length - max;
-      ici.innerHTML = '<div class="sg-carte"><span class="sg-titre">👥 En ligne</span><span class="sg-avs">' +
+      ici.innerHTML = '<div class="sg-carte"><span class="sg-titre"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#2b8a3e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8.5" r="3.2"/><path d="M3.5 19c.8-3.1 3-4.9 5.5-4.9s4.7 1.8 5.5 4.9"/><circle cx="16.5" cy="9" r="2.6"/><path d="M16.2 14.1c2.2.1 3.8 1.6 4.4 4.4"/></svg>En ligne</span><span class="sg-avs">' +
         (autres.length ? autres.slice(0, reste > 0 ? max - 1 : max).map(m => avatar(m, 30)).join('') +
           (reste > 0 ? '<span class="sg-av sg-plus" style="width:30px;height:30px">+' + (reste + 1) + '</span>' : '')
           : '<span style="color:#8a97a1;font-size:14px">' + (role ? 'personne d\'autre pour l\'instant' : 'connexion…') + '</span>') +

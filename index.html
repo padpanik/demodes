@@ -55,7 +55,7 @@
     .carte-compagnon .nom-cp { font-weight: 800; font-size: 1.15em; }
     .carte-compagnon .etat-cp { font-size: 0.85em; color: #6b5a3a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .carte-compagnon .defis-cp { margin-left: 6px; font-size: 0.6em; font-weight: 800; color: #9a6400; background: #fff; border-radius: 8px; padding: 1px 6px; vertical-align: 2px; }
-    .carte-compagnon .etoiles-cp { background: #fff; color: #7a5600; font-weight: 900; border-radius: 12px; padding: 4px 10px; flex-shrink: 0; }
+    .carte-compagnon .etoiles-cp { display: inline-flex; align-items: center; gap: 4px; background: #fff; color: #7a5600; font-weight: 900; border-radius: 12px; padding: 4px 10px; flex-shrink: 0; }
     .ico-cp { width: 51px; height: 51px; border-radius: 14px; background: #fff3c4; display: flex; align-items: center; justify-content: center; font-size: 30px; flex-shrink: 0; }
     .jeu > .ico-cp { height: 56px; }
     .ico-neuve { flex-shrink: 0; width: 68px; height: 68px; display: flex; align-items: center; justify-content: center; line-height: 0; }
@@ -78,6 +78,10 @@
     .menu-compte button:active { background: #f1f5f9; }
     .menu-compte button { padding: 7px 10px; }
     .mc-ico { width: 34px; height: 34px; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; line-height: 0; }
+    .ico-trait { display: inline-block; vertical-align: -0.2em; flex-shrink: 0; }
+    .btn .ico-trait, label.btn .ico-trait { margin-right: 7px; vertical-align: -0.22em; }
+    .ligne-ico .ico-trait { margin-right: 4px; vertical-align: -0.18em; }
+    .carte-compagnon .etoiles-cp svg { width: 17px; height: 17px; }
     .titre-ico { display: flex; align-items: center; justify-content: center; gap: 10px; }
     .titre-ico .mc-ico { width: 32px; height: 32px; }
     .jeu .nb-parties { font-size: 0.72em; color: #9aa6b0; margin-top: 2px; font-weight: 600; }
@@ -118,7 +122,7 @@
     .qr-partage svg { display: block; width: 100%; height: 100%; }
     .lien-partage { font-size: 0.8em; color: #3b5568; word-break: break-all; margin-bottom: 12px; }
     .carte-demenagement { display: flex; align-items: center; gap: 12px; width: 100%; box-sizing: border-box; text-align: left; margin-bottom: 8px; padding: 12px 14px; border-radius: 16px; border: 2px solid #f59f00; background: #fff4db; color: #5c3d00; font: inherit; cursor: pointer; }
-    .carte-demenagement .ico-dm { font-size: 30px; }
+    .carte-demenagement .ico-dm { width: 46px; height: 46px; border-radius: 13px; }
     .carte-demenagement b { display: block; font-size: 17px; }
     .carte-demenagement small { display: block; font-size: 13px; line-height: 1.3; margin-top: 2px; }
     .carte-demenagement .fl { margin-left: auto; font-size: 26px; color: #f59f00; }
@@ -181,9 +185,9 @@
           <div class="aide-partage">Fais-lui scanner ce code avec l'appareil photo de son téléphone, ou envoie-lui le lien.</div>
           <div class="qr-partage" v-html="qrPartage"></div>
           <div class="lien-partage">{{ lienSite }}</div>
-          <button v-if="peutPartager" class="btn principal" style="width:100%" @click="partagerLien">📤 Partager le lien…</button>
-          <button class="btn" style="width:100%;margin-top:6px" @click="copierLien">{{ copie ? '✓ Lien copié' : '📋 Copier le lien' }}</button>
-          <div class="aide-partage" style="margin-top:10px">🔒 Le code d'accès n'est pas dans le lien : donne-le-lui toi-même.</div>
+          <button v-if="peutPartager" class="btn principal" style="width:100%" @click="partagerLien"><span v-html="icoTrait('partager')"></span>Partager le lien…</button>
+          <button class="btn" style="width:100%;margin-top:6px" @click="copierLien"><span v-html="icoTrait(copie ? 'coche' : 'copier')"></span>{{ copie ? 'Lien copié' : 'Copier le lien' }}</button>
+          <div class="aide-partage ligne-ico" style="margin-top:10px"><span v-html="icoTrait('cadenas', 16)"></span><span>Le code d'accès n'est pas dans le lien : donne-le-lui toi-même.</span></div>
           <button class="btn" style="width:100%;margin-top:8px" @click="partage = false">Fermer</button>
         </div>
       </div>
@@ -192,7 +196,7 @@
       <div class="haut-fixe">
         <!-- Déménagement vers Cloudflare : sur l'ancienne adresse (GitHub Pages), on emporte ses données vers la nouvelle -->
         <button v-if="ancienneAdresse" class="carte-demenagement" @click="demenager">
-          <span class="ico-dm">🚚</span>
+          <span class="ico-dm mc-ico" v-html="icoCompte('camion', 28)"></span>
           <span><b>Désdale déménage !</b><small>Touche ici pour emporter {{ compagnon ? compagnon.nom + ', ' : '' }}tes étoiles et tes réglages à la nouvelle adresse.</small></span>
           <span class="fl">›</span>
         </button>
@@ -200,12 +204,12 @@
         <div id="sg-ici" style="margin-bottom:8px"></div>
         <a class="carte-compagnon" href="compagnon/" @click="retenir('compagnon')">
           <svg v-if="compagnon" viewBox="0 -6 200 216" v-html="compagnon.dessin"></svg>
-          <span v-else class="ico-cp">🐾</span>
+          <span v-else class="ico-cp" v-html="icoCompte('patte', 30)"></span>
           <span class="infos-cp">
             <span class="nom-cp">{{ compagnon ? compagnon.nom : 'Mon compagnon' }} <small v-if="compagnon" style="font-weight:600;font-size:0.6em;color:#9a7a2a">{{ compagnon.age }}</small><small v-if="compagnon && compagnon.defis" class="defis-cp">🏆 {{ compagnon.defis }}</small></span>
             <span class="etat-cp">{{ compagnon ? compagnon.etat : 'Adopte un petit animal' }}</span>
           </span>
-          <span class="etoiles-cp">⭐ {{ compagnon ? compagnon.etoiles : etoiles }}</span>
+          <span class="etoiles-cp"><span v-html="etoile"></span> {{ compagnon ? compagnon.etoiles : etoiles }}</span>
         </a>
       </div>
 
@@ -233,7 +237,7 @@
       </transition-group>
 
       <section class="carte installer" v-if="!estInstallee && (installPossible || estIOS)" style="margin-top:16px">
-        <div class="titre-carte">📲 Installer l'application</div>
+        <div class="titre-carte titre-ico" style="justify-content:flex-start"><span class="mc-ico" v-html="icoCompte('installer')"></span>Installer l'application</div>
         <button v-if="installPossible" class="btn principal" @click="installer">Ajouter à l'écran d'accueil</button>
         <div v-else class="aide">Sur iPhone : touche <strong>Partager</strong> puis <strong>« Sur l'écran d'accueil »</strong>.</div>
       </section>
@@ -259,7 +263,7 @@
           </div>
           <div class="resume-stats">
             <span><b>{{ statsVue.total.n }}</b> partie{{ statsVue.total.n > 1 ? 's' : '' }}</span>
-            <span>🏆 <b>{{ statsVue.total.g }}</b> gagnée{{ statsVue.total.g > 1 ? 's' : '' }}</span>
+            <span><span v-html="icoTrait('trophee', 17)" style="color:#c98c0a"></span> <b>{{ statsVue.total.g }}</b> gagnée{{ statsVue.total.g > 1 ? 's' : '' }}</span>
           </div>
           <table class="table-stats" v-if="statsVue.lignes.length">
             <colgroup><col><col class="c-st"><col class="c-st"><col class="c-st"><col class="c-st"></colgroup>
@@ -297,24 +301,24 @@
         <div class="fenetre-partage" role="dialog" aria-label="Sauvegarde">
           <template v-if="!sauvegarde.lue">
             <div class="titre-partage titre-ico"><span class="mc-ico" v-html="icoCompte('sauvegarde')"></span>Ma sauvegarde</div>
-            <div class="aide-partage">Un fichier avec tout ce qui est sur ce téléphone : {{ sauvegarde.ici.compagnon ? 'ton compagnon ' + sauvegarde.ici.compagnon + ', ' : '' }}tes {{ sauvegarde.ici.etoiles }} ⭐, ta maison, tes records et tes réglages.
+            <div class="aide-partage">Un fichier avec tout ce qui est sur ce téléphone : {{ sauvegarde.ici.compagnon ? 'ton compagnon ' + sauvegarde.ici.compagnon + ', ' : '' }}tes {{ sauvegarde.ici.etoiles }} étoiles, ta maison, tes records et tes réglages.
               Garde-le (Drive, mail à toi-même…), puis ouvre-le sur l'autre téléphone ou navigateur.</div>
-            <button v-if="peutEnvoyerFichier" class="btn principal" style="width:100%;margin-top:12px" @click="envoyerSauvegarde">📤 Envoyer le fichier…</button>
-            <button class="btn" :class="{ principal: !peutEnvoyerFichier }" style="width:100%;margin-top:6px" @click="telechargerSauvegarde">⬇️ Télécharger le fichier</button>
+            <button v-if="peutEnvoyerFichier" class="btn principal" style="width:100%;margin-top:12px" @click="envoyerSauvegarde"><span v-html="icoTrait('envoyer')"></span>Envoyer le fichier…</button>
+            <button class="btn" :class="{ principal: !peutEnvoyerFichier }" style="width:100%;margin-top:6px" @click="telechargerSauvegarde"><span v-html="icoTrait('telecharger')"></span>Télécharger le fichier</button>
             <div class="separateur-sv">Sur le nouveau téléphone</div>
-            <label class="btn" style="width:100%;display:block;box-sizing:border-box">📥 Récupérer une sauvegarde…
+            <label class="btn" style="width:100%;display:block;box-sizing:border-box"><span v-html="icoTrait('recuperer')"></span>Récupérer une sauvegarde…
               <input type="file" accept=".json,application/json" style="display:none" @change="choisirFichier">
             </label>
-            <div class="aide-partage" style="margin-top:10px">🔒 Le code d'accès n'est pas dans le fichier. Les parties en salon en cours ne sont pas sauvegardées.</div>
+            <div class="aide-partage ligne-ico" style="margin-top:10px"><span v-html="icoTrait('cadenas', 16)"></span><span>Le code d'accès n'est pas dans le fichier. Les parties en salon en cours ne sont pas sauvegardées.</span></div>
             <div class="erreur-sv" v-if="sauvegarde.erreur">{{ sauvegarde.erreur }}</div>
           </template>
           <template v-else>
-            <div class="titre-partage" v-if="sauvegarde.demenagement">🚚 Bienvenue à la nouvelle adresse !</div>
+            <div class="titre-partage titre-ico" v-if="sauvegarde.demenagement"><span class="mc-ico" v-html="icoCompte('camion')"></span>Bienvenue à la nouvelle adresse !</div>
             <div class="aide-partage" v-if="sauvegarde.demenagement" style="margin-bottom:6px">Tes données arrivent de l'ancienne adresse. Une fois récupérées, pense à ajouter cette nouvelle adresse à ton écran d'accueil (et à retirer l'ancienne).</div>
-            <div class="titre-partage" v-else>📥 Récupérer cette sauvegarde ?</div>
+            <div class="titre-partage titre-ico" v-else><span class="mc-ico" v-html="icoCompte('sauvegarde')"></span>Récupérer cette sauvegarde ?</div>
             <div class="aide-partage">Sauvegarde du {{ dateSv(sauvegarde.lue.date) }}<span v-if="sauvegarde.lue.pseudo"> · {{ sauvegarde.lue.pseudo }}</span><br>
-              {{ sauvegarde.lue.compagnon ? 'Compagnon : ' + sauvegarde.lue.compagnon + ' · ' : '' }}{{ sauvegarde.lue.etoiles }} ⭐</div>
-            <div class="erreur-sv" v-if="sauvegarde.ici.nb">⚠️ Les données actuelles de ce téléphone seront remplacées<span v-if="sauvegarde.ici.compagnon"> (dont {{ sauvegarde.ici.compagnon }} et ses {{ sauvegarde.ici.etoiles }} ⭐)</span>.</div>
+              {{ sauvegarde.lue.compagnon ? 'Compagnon : ' + sauvegarde.lue.compagnon + ' · ' : '' }}{{ sauvegarde.lue.etoiles }} <span v-html="etoile"></span></div>
+            <div class="erreur-sv" v-if="sauvegarde.ici.nb"><span v-html="icoTrait('attention', 16)"></span> Les données actuelles de ce téléphone seront remplacées<span v-if="sauvegarde.ici.compagnon"> (dont {{ sauvegarde.ici.compagnon }} et ses {{ sauvegarde.ici.etoiles }} étoiles)</span>.</div>
             <button class="btn principal" style="width:100%;margin-top:12px" @click="restaurerSauvegarde">{{ sauvegarde.demenagement ? '✓ Récupérer mes données' : '✓ Remplacer par la sauvegarde' }}</button>
           </template>
           <button class="btn" style="width:100%;margin-top:8px" @click="sauvegarde = null">{{ sauvegarde.lue ? 'Annuler' : 'Fermer' }}</button>
@@ -334,12 +338,31 @@
       profil:     { c: '#7c5cd6', f: '#efeafc', d: '<circle cx="12" cy="8.5" r="3.6"/><path d="M4.8 19.6c.9-3.6 3.8-5.6 7.2-5.6s6.3 2 7.2 5.6"/>' },
       stats:      { c: '#2f7fd8', f: '#e5f0fc', d: '<path d="M4 20h16"/><rect x="5.5" y="12" width="3" height="5.5" rx="1"/><rect x="10.5" y="7" width="3" height="10.5" rx="1"/><rect x="15.5" y="9.5" width="3" height="8" rx="1"/>' },
       sauvegarde: { c: '#2b8a3e', f: '#e3f4e7', d: '<path d="M12 3.5v10"/><path d="M7.8 9.4L12 13.6l4.2-4.2"/><path d="M4.5 15v2.8a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V15"/>' },
-      inviter:    { c: '#e07a1f', f: '#fdeedd', d: '<circle cx="9.5" cy="8.5" r="3.4"/><path d="M3.5 19.5c.8-3.3 3.2-5.2 6-5.2s5.2 1.9 6 5.2"/><path d="M18.5 7.5v6M15.5 10.5h6"/>' }
+      inviter:    { c: '#e07a1f', f: '#fdeedd', d: '<circle cx="9.5" cy="8.5" r="3.4"/><path d="M3.5 19.5c.8-3.3 3.2-5.2 6-5.2s5.2 1.9 6 5.2"/><path d="M18.5 7.5v6M15.5 10.5h6"/>' },
+      // Icônes des boutons et des petites lignes (dessinées dans la couleur du texte)
+      partager:   { d: '<circle cx="17.5" cy="5.5" r="2.5"/><circle cx="6.5" cy="12" r="2.5"/><circle cx="17.5" cy="18.5" r="2.5"/><path d="M8.7 10.8l6.6-4M8.7 13.2l6.6 4"/>' },
+      copier:     { d: '<rect x="8.5" y="8.5" width="11" height="12" rx="2"/><path d="M15.5 8.5V5.5a2 2 0 0 0-2-2h-7a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h2"/>' },
+      coche:      { d: '<path d="M5 12.5l4.5 4.5L19 7.5"/>' },
+      cadenas:    { d: '<rect x="5" y="10.5" width="14" height="10" rx="2.2"/><path d="M8.2 10.5V8a3.8 3.8 0 0 1 7.6 0v2.5"/><path d="M12 14.5v2.3"/>' },
+      envoyer:    { d: '<path d="M12 15V4"/><path d="M7.8 8.2L12 4l4.2 4.2"/><path d="M4.5 13v4.8a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V13"/>' },
+      telecharger:{ d: '<path d="M12 3.5v10"/><path d="M7.8 9.4L12 13.6l4.2-4.2"/><path d="M4.5 15v2.8a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V15"/>' },
+      recuperer:  { d: '<path d="M4 8.5V6a2 2 0 0 1 2-2h3.5l2 2.2H18a2 2 0 0 1 2 2V18a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-1.5"/><path d="M2.5 12.5h9"/><path d="M8.5 9.5l3 3-3 3"/>' },
+      attention:  { d: '<path d="M12 4l9 15.5H3z"/><path d="M12 10v4"/><path d="M12 17v.2"/>' },
+      installer:  { d: '<rect x="6.5" y="2.8" width="11" height="18.4" rx="2.5"/><path d="M12 7.5v6.5"/><path d="M9.3 11.5L12 14.2l2.7-2.7"/><path d="M10.5 18h3"/>' },
+      trophee:    { d: '<path d="M8 4h8v5a4 4 0 0 1-8 0z"/><path d="M8 5.5H5v1.2a3 3 0 0 0 3 3M16 5.5h3v1.2a3 3 0 0 1-3 3"/><path d="M12 13v3.5M8.5 20h7M9.5 20c0-2 1-3.5 2.5-3.5s2.5 1.5 2.5 3.5"/>' },
+      camion:     { c: '#b5651d', f: '#fdebd3', d: '<path d="M2.5 7h11v9.5h-11z"/><path d="M13.5 10h4l3 3.2v3.3h-7"/><circle cx="6.5" cy="17.5" r="1.8"/><circle cx="17" cy="17.5" r="1.8"/>' },
+      patte:      { c: '#c08a1e', f: '#fff3c4', d: '<ellipse cx="12" cy="15.5" rx="4.2" ry="3.6"/><ellipse cx="6" cy="10.2" rx="1.7" ry="2.2"/><ellipse cx="9.6" cy="6.6" rx="1.7" ry="2.3"/><ellipse cx="14.4" cy="6.6" rx="1.7" ry="2.3"/><ellipse cx="18" cy="10.2" rx="1.7" ry="2.2"/>' }
     };
-    function icoCompte(nom) {
-      var i = ICONES_COMPTE[nom];
+    // Icône seule, dans la couleur du texte autour (boutons, petites lignes)
+    function icoTrait(nom, taille) {
+      return '<svg class="ico-trait" viewBox="0 0 24 24" width="' + (taille || 18) + '" height="' + (taille || 18) + '" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + ICONES_COMPTE[nom].d + '</svg>';
+    }
+    // Étoile dorée pleine (monnaie du compagnon), comme sur la page du compagnon
+    const ETOILE = '<svg class="ico-trait" viewBox="0 0 24 24" width="17" height="17" aria-hidden="true"><path d="M12 2.8l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 16.8l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z" fill="#f5b81f" stroke="#c98c0a" stroke-width="1.3" stroke-linejoin="round"/></svg>';
+    function icoCompte(nom, taille) {
+      var i = ICONES_COMPTE[nom], t = taille || 21;
       return '<span style="display:inline-flex;align-items:center;justify-content:center;width:100%;height:100%;border-radius:inherit;background:' + i.f + '">' +
-        '<svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="' + i.c + '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + i.d + '</svg></span>';
+        '<svg viewBox="0 0 24 24" width="' + t + '" height="' + t + '" fill="none" stroke="' + i.c + '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + i.d + '</svg></span>';
     }
 
     const B = '#5dc1ec', V = '#7fcc8f', J = '#f7d24a', R = '#ee7163', M = '#b39ddb', O = '#f9a15a';
@@ -370,6 +393,7 @@
         menuCompte: false, // menu du badge « Mon compte »
         profilV: 0,        // change quand le profil change (événement desdale-profil)
         stats: null,       // fenêtre « Mes statistiques » : { periode, date (référence), calA, calM }
+        etoile: ETOILE,
         PERIODES: [['jour', 'Jour'], ['semaine', 'Semaine'], ['mois', 'Mois'], ['tout', 'Tout']],
         sauvegarde: null,  // fenêtre « Ma sauvegarde » : { ici, lue (sauvegarde choisie, à confirmer), erreur }
         peutEnvoyerFichier: false,
@@ -489,6 +513,7 @@
       },
       methods: {
         icoCompte: icoCompte,
+        icoTrait: icoTrait,
         // ---------- Déménagement : toutes les données dans l'adresse (après « # », jamais envoyée au serveur) ----------
         demenager: function() {
           var json = JSON.stringify(Sauvegarde.creer());
