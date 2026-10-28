@@ -74,8 +74,12 @@
     .menu-compte-voile { position: fixed; inset: 0; z-index: 900; }
     .menu-compte { position: absolute; right: 2px; top: 54px; z-index: 901; background: #fff; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.22); padding: 6px; min-width: 210px; }
     .menu-compte .mc-tete { font-weight: 900; padding: 8px 12px 6px; color: #1d2b36; border-bottom: 1px solid #edf1f4; margin-bottom: 4px; }
-    .menu-compte button { display: block; width: 100%; text-align: left; border: none; background: none; font: inherit; font-size: 1em; padding: 11px 12px; border-radius: 10px; cursor: pointer; color: #2c3e50; }
+    .menu-compte button { display: flex; align-items: center; gap: 12px; width: 100%; font-weight: 700; text-align: left; border: none; background: none; font: inherit; font-size: 1em; padding: 11px 12px; border-radius: 10px; cursor: pointer; color: #2c3e50; }
     .menu-compte button:active { background: #f1f5f9; }
+    .menu-compte button { padding: 7px 10px; }
+    .mc-ico { width: 34px; height: 34px; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; line-height: 0; }
+    .titre-ico { display: flex; align-items: center; justify-content: center; gap: 10px; }
+    .titre-ico .mc-ico { width: 32px; height: 32px; }
     .jeu .nb-parties { font-size: 0.72em; color: #9aa6b0; margin-top: 2px; font-weight: 600; }
     /* Fenêtre « Mes statistiques » */
     .fenetre-stats { max-width: 400px; max-height: 92vh; overflow-y: auto; padding: 16px 14px; }
@@ -86,13 +90,15 @@
     .periode-stats b { min-width: 0; }
     .periode-stats button, .cal-tete button { border: none; background: #eef2f5; border-radius: 50%; width: 30px; height: 30px; font-size: 18px; font-weight: 900; color: #3b4b57; cursor: pointer; flex-shrink: 0; }
     .resume-stats { display: flex; justify-content: center; gap: 18px; color: #3b4b57; margin: 4px 0 8px; }
-    .table-stats { width: 100%; border-collapse: collapse; font-size: 0.9em; text-align: center; }
+    .table-stats { width: 100%; table-layout: fixed; border-collapse: collapse; font-size: 0.9em; text-align: center; }
     .table-stats th { font-size: 0.8em; color: #6b7a86; font-weight: 800; padding: 2px 4px; }
     .table-stats tr.sous th { font-size: 0.85em; padding-bottom: 4px; border-bottom: 1px solid #e3e8ec; }
     .table-stats td { padding: 5px 4px; border-bottom: 1px solid #f0f3f5; font-weight: 800; }
     .table-stats td.jeu-st { text-align: left; font-weight: 700; color: #1d2b36; }
     .table-stats td.jeu-st > div { display: flex; align-items: center; gap: 6px; }
     .table-stats td.jeu-st span { line-height: 0; flex-shrink: 0; }
+    .table-stats col.c-st { width: 40px; }
+    .table-stats td.jeu-st > div { overflow: hidden; }
     .table-stats td.g { color: #2b8a3e; } .table-stats td.p { color: #c0392b; }
     .cal-stats { margin-top: 12px; background: #f7f9fb; border-radius: 14px; padding: 8px; }
     .cal-tete { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
@@ -161,17 +167,17 @@
         <div v-if="menuCompte" class="menu-compte-voile" @click="menuCompte = false"></div>
         <div v-if="menuCompte" class="menu-compte" role="menu">
           <div class="mc-tete">{{ profilAff.pseudo || 'Pas encore de pseudo' }}</div>
-          <button @click="menuCompte = false; ouvrirProfilPortail()">👤 Mon profil</button>
-          <button @click="menuCompte = false; ouvrirStats()">📊 Mes statistiques</button>
-          <button @click="menuCompte = false; ouvrirSauvegarde()">💾 Ma sauvegarde</button>
-          <button @click="menuCompte = false; partage = true">📤 Inviter un ami</button>
+          <button @click="menuCompte = false; ouvrirProfilPortail()"><span class="mc-ico" v-html="icoCompte('profil')"></span>Mon profil</button>
+          <button @click="menuCompte = false; ouvrirStats()"><span class="mc-ico" v-html="icoCompte('stats')"></span>Mes statistiques</button>
+          <button @click="menuCompte = false; ouvrirSauvegarde()"><span class="mc-ico" v-html="icoCompte('sauvegarde')"></span>Ma sauvegarde</button>
+          <button @click="menuCompte = false; partage = true"><span class="mc-ico" v-html="icoCompte('inviter')"></span>Inviter un ami</button>
         </div>
       </header>
 
       <!-- Inviter un ami : QR code à scanner, ou partage du lien (menu de partage du téléphone, sinon copie) -->
       <div v-if="partage" class="voile-partage" @click.self="partage = false">
         <div class="fenetre-partage" role="dialog" aria-label="Inviter un ami">
-          <div class="titre-partage">Inviter un ami</div>
+          <div class="titre-partage titre-ico"><span class="mc-ico" v-html="icoCompte('inviter')"></span>Inviter un ami</div>
           <div class="aide-partage">Fais-lui scanner ce code avec l'appareil photo de son téléphone, ou envoie-lui le lien.</div>
           <div class="qr-partage" v-html="qrPartage"></div>
           <div class="lien-partage">{{ lienSite }}</div>
@@ -242,7 +248,7 @@
       <!-- Mes statistiques : parties par jeu, seul / entre amis, gagnées / perdues, sur une période (jour, semaine, mois, tout) choisie aussi dans le calendrier -->
       <div v-if="stats" class="voile-partage" @click.self="stats = null">
         <div class="fenetre-partage fenetre-stats" role="dialog" aria-label="Mes statistiques">
-          <div class="titre-partage">📊 Mes statistiques</div>
+          <div class="titre-partage titre-ico"><span class="mc-ico" v-html="icoCompte('stats')"></span>Mes statistiques</div>
           <div class="seg-stats">
             <button v-for="p in PERIODES" :key="p[0]" :class="{ actif: stats.periode === p[0] }" @click="stats.periode = p[0]">{{ p[1] }}</button>
           </div>
@@ -256,6 +262,7 @@
             <span>🏆 <b>{{ statsVue.total.g }}</b> gagnée{{ statsVue.total.g > 1 ? 's' : '' }}</span>
           </div>
           <table class="table-stats" v-if="statsVue.lignes.length">
+            <colgroup><col><col class="c-st"><col class="c-st"><col class="c-st"><col class="c-st"></colgroup>
             <thead>
               <tr><th></th><th colspan="2">Seul</th><th colspan="2">Entre amis</th></tr>
               <tr class="sous"><th></th><th>✓</th><th>✗</th><th>✓</th><th>✗</th></tr>
@@ -289,7 +296,7 @@
       <div v-if="sauvegarde" class="voile-partage" @click.self="sauvegarde = null">
         <div class="fenetre-partage" role="dialog" aria-label="Sauvegarde">
           <template v-if="!sauvegarde.lue">
-            <div class="titre-partage">💾 Ma sauvegarde</div>
+            <div class="titre-partage titre-ico"><span class="mc-ico" v-html="icoCompte('sauvegarde')"></span>Ma sauvegarde</div>
             <div class="aide-partage">Un fichier avec tout ce qui est sur ce téléphone : {{ sauvegarde.ici.compagnon ? 'ton compagnon ' + sauvegarde.ici.compagnon + ', ' : '' }}tes {{ sauvegarde.ici.etoiles }} ⭐, ta maison, tes records et tes réglages.
               Garde-le (Drive, mail à toi-même…), puis ouvre-le sur l'autre téléphone ou navigateur.</div>
             <button v-if="peutEnvoyerFichier" class="btn principal" style="width:100%;margin-top:12px" @click="envoyerSauvegarde">📤 Envoyer le fichier…</button>
@@ -322,6 +329,19 @@
   <script src="icones-jeux.js"></script>
   <script src="qr.js"></script>
   <script>
+    // Icônes du menu « Mon compte » : dessin au trait de la couleur, sur une pastille teintée (même esprit que les onglets du compagnon)
+    const ICONES_COMPTE = {
+      profil:     { c: '#7c5cd6', f: '#efeafc', d: '<circle cx="12" cy="8.5" r="3.6"/><path d="M4.8 19.6c.9-3.6 3.8-5.6 7.2-5.6s6.3 2 7.2 5.6"/>' },
+      stats:      { c: '#2f7fd8', f: '#e5f0fc', d: '<path d="M4 20h16"/><rect x="5.5" y="12" width="3" height="5.5" rx="1"/><rect x="10.5" y="7" width="3" height="10.5" rx="1"/><rect x="15.5" y="9.5" width="3" height="8" rx="1"/>' },
+      sauvegarde: { c: '#2b8a3e', f: '#e3f4e7', d: '<path d="M12 3.5v10"/><path d="M7.8 9.4L12 13.6l4.2-4.2"/><path d="M4.5 15v2.8a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V15"/>' },
+      inviter:    { c: '#e07a1f', f: '#fdeedd', d: '<circle cx="9.5" cy="8.5" r="3.4"/><path d="M3.5 19.5c.8-3.3 3.2-5.2 6-5.2s5.2 1.9 6 5.2"/><path d="M18.5 7.5v6M15.5 10.5h6"/>' }
+    };
+    function icoCompte(nom) {
+      var i = ICONES_COMPTE[nom];
+      return '<span style="display:inline-flex;align-items:center;justify-content:center;width:100%;height:100%;border-radius:inherit;background:' + i.f + '">' +
+        '<svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="' + i.c + '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + i.d + '</svg></span>';
+    }
+
     const B = '#5dc1ec', V = '#7fcc8f', J = '#f7d24a', R = '#ee7163', M = '#b39ddb', O = '#f9a15a';
 
     // Partie en cours dans un jeu ? (pour l'afficher, et y retourner tout seul au lancement)
@@ -468,6 +488,7 @@
         if (ACCES.memorise()) { this.accesOk = true; if (!arrivee) this.reprendre(); }
       },
       methods: {
+        icoCompte: icoCompte,
         // ---------- Déménagement : toutes les données dans l'adresse (après « # », jamais envoyée au serveur) ----------
         demenager: function() {
           var json = JSON.stringify(Sauvegarde.creer());
