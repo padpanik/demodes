@@ -108,10 +108,10 @@
 
     /* ===== DUEL ===== */
     /* Bloc d'un joueur : bande de couleur à gauche (rouge brique l'adversaire, bleu moi), en relief, encadré de vert quand c'est son tour */
-    .zone-duel { display: block; width: 100%; text-align: left; border: none; font: inherit; border-radius: 14px; padding: 6px 10px 7px 12px; cursor: pointer; margin-bottom: 5px; font-size: 14px;
-      background: linear-gradient(90deg, var(--zc) 0 6px, var(--zf) 6px); box-shadow: 0 2px 6px rgba(0,0,0,0.13); --zc: #2b6cb0; --zf: #f2f7fd; }
-    .zone-duel.adv { --zc: #b9472f; --zf: #fdf4f1; }
-    .zone-duel.actif { box-shadow: 0 0 0 3px #2ecc71, 0 2px 8px rgba(46,204,113,0.35); }
+    /* Trois blocs blancs : joueur adverse, plateau, moi ; détachés par de l'espace et une ombre douce (sans bordure de couleur, choix de l'utilisateur) */
+    .zone-duel, .plateau-duel { background: #fff; border-radius: 14px; box-shadow: 0 2px 10px rgba(30,45,60,0.13), 0 1px 2px rgba(30,45,60,0.08); margin-bottom: 10px; }
+    .zone-duel { display: block; width: 100%; text-align: left; border: none; font: inherit; padding: 7px 11px 8px; cursor: pointer; font-size: 14px; }
+    .plateau-duel { padding: 6px 8px 2px; }
     .zone-duel .zl1 { display: flex; align-items: center; gap: 6px; }
     .zone-duel .zn { flex: none; max-width: 45%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 17px; font-weight: 900; color: #1d2b36; }
     .zone-duel .ztour { background: #2ecc71; color: #fff; font-weight: 800; font-size: 12px; border-radius: 10px; padding: 1px 8px; animation: ztour 1.6s ease-in-out infinite; }
@@ -145,7 +145,7 @@
     .jetons-duel button.vu { box-shadow: 0 0 0 2px #2b6cb0; }
     .aide-jetons { margin-left: auto; font-size: 11px; color: #6b7a86; text-align: right; }
     .info-jeton { font-size: 0.8em; color: #3b4b57; margin-bottom: 3px; background: #e9f8ef; border-radius: 8px; padding: 3px 7px; }
-    .pyramide { position: relative; margin: 2px auto 6px; }
+    .pyramide { position: relative; margin: 2px auto 6px; left: 50%; transform: translateX(-50%); }
     .pyr { position: absolute; border: none; padding: 0; background: none; cursor: pointer; border-radius: 6px; line-height: 0; }
     .pyr .dv-carte { --t: 8.1px; }
     .pyr.bloquee .dv-carte { filter: brightness(0.82) saturate(0.75); }
@@ -280,6 +280,8 @@
             <div class="zl2" v-html="zoneAdv.detail"></div>
             <div class="zl3"><span class="zmv" v-html="zoneAdv.merveilles"></span><span class="zjt" v-html="zoneAdv.jetons"></span></div>
           </button>
+          <!-- Le plateau (piste, jetons, pyramide) : un bloc entre les deux joueurs -->
+          <div class="plateau-duel">
           <!-- Plateau militaire : ma capitale à gauche -->
           <div class="plateau-mil" v-if="e.phase !== 'merveilles'">
             <span class="capitale">🏰</span>
@@ -302,6 +304,7 @@
           <!-- La pyramide de l'âge -->
           <div v-if="e.phase !== 'merveilles'" class="pyramide" :style="{ width: pyramideAff.w + 'px', height: pyramideAff.h + 'px' }">
             <button v-for="c in pyramideAff.cartes" :key="e.age + '-' + c.k" class="pyr" :class="c.cl" :style="c.style" @click="toucherPyramide(c)" v-html="c.html"></button>
+          </div>
           </div>
 
           <!-- Ma cité -->

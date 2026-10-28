@@ -434,8 +434,9 @@ Bataille navale : `bataille-boss` (partie contre un boss d'expédition), `batail
     et butins. **Coûts lisibles** (2.54-2.55, demandé par l'utilisateur) : chaque ressource sur une grande pastille claire (1,75em), les identiques regroupées avec un « ×2 »,
     sur deux colonnes dès 2 pastilles ; icônes à contour sombre ; icônes d'effet plus grandes quand il y en a peu. Merveilles agrandies (2.61) : `dv-mchoix` 11,5 px
     (choix et feuille de la carte), `dv-mcite` 11,6 px (détail d'une cité), deux par ligne à 360 px. Cartes du volet cité agrandies (2.62) : `.cartes-cite .dv-carte.dv-mini` 9 px (5 par ligne).
-    **Blocs des joueurs** (2.63, demandés par l'utilisateur : plus visibles, ressources plus grandes, merveilles mieux montrées) : bande de couleur à gauche
-    (rouge brique l'adversaire `.adv`, bleu moi), fond teinté, ombre ; ligne 1 : nom en gros, pastille « à toi ! » / « joue… » qui palpite, pièces et points à droite ;
+    **Trois blocs blancs** (2.63-2.64, demandés par l'utilisateur) : joueur adverse, **plateau** (`.plateau-duel` : piste, jetons, statut, pyramide), moi ; séparés de 10 px,
+    ombre douce, **ni bordure de couleur ni cadre vert** (l'utilisateur les trouve peu esthétiques ; la pastille « à toi ! » / « joue… » qui palpite suffit).
+    Bloc joueur : ligne 1 : nom en gros, pastille, pièces et points à droite ;
     ligne 2 : ressources (icônes 1,65em, nombre en gras), ressources au choix, symboles scientifiques ; ligne 3 : les merveilles en **vignettes**
     (`DV.merveille(id, { taille: 'zone' })` : seul le monument sur fond doré ; construite = dorée bordée de vert, à faire = pâle) et les jetons Progrès à droite.
     **Panneaux du bas fermables d'un glissement vers le bas** (2.59, demandé par l'utilisateur pour jouer à une main) : voiles marqués `data-fermable`
