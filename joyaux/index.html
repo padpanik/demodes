@@ -5,7 +5,7 @@
   <!-- La page est rangée dans son dossier : les adresses relatives partent de la racine du site (fichiers communs) -->
   <base href="../">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>Les 7 joyaux · Désdale</title>
+  <title>7 piliers · Désdale</title>
   <meta name="robots" content="noindex, nofollow, noarchive">
   <link rel="manifest" href="manifest.webmanifest">
   <meta name="theme-color" content="#f3f5f7">
@@ -171,7 +171,7 @@
 <body>
   <div id="app" v-cloak class="app">
 
-    <fiche-jeu jeu="joyaux" nom="Les 7 joyaux" resume="Désdale · bâtis ta cité et polis ton joyau, en trois âges" :onglet.sync="onglet" :son.sync="sonActif" :connexion="role ? connexion : ''">
+    <fiche-jeu jeu="joyaux" nom="7 piliers" resume="Désdale · bâtis ta cité et ses merveilles, en trois âges" :onglet.sync="onglet" :son.sync="sonActif" :connexion="role ? connexion : ''">
       <template v-slot:logo><span class="logo-sj">💎</span></template>
 
       <!-- PARTIE : salon, jouer seul -->
@@ -230,7 +230,7 @@
           </section>
         </template>
 
-        <p class="version">Désdale · Les 7 joyaux · version {{ version }}</p>
+        <p class="version">Désdale · 7 piliers · version {{ version }}</p>
       </template>
 
       <!-- JOUER -->
@@ -602,7 +602,7 @@
     if (!ACCES.memorise()) location.replace('index.html');
 
     const CLE_SAUVEGARDE = 'joyaux-sauvegarde';
-    const NOM_JEU = 'Les 7 joyaux';
+    const NOM_JEU = '7 piliers';   // ancien nom « Les 7 joyaux » (avant 2.69), encore lu par StatsParties
     const JEU_RESEAU = 'jx';
     const DELAI_SILENCE = 15000;
     const MAX_SALONS = 8;

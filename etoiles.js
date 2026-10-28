@@ -93,7 +93,7 @@ const StatsParties = {
   // Nom du jeu (tel que donné à Etoiles.evenement) → identifiant (icône, fiche de l'accueil)
   IDS: { 'Brilliant': 'brilliant', 'Yams': 'yams', 'Backgammon': 'backgammon', 'Assaut': 'assaut', 'Bataille navale': 'bataille', 'Gribouille': 'gribouille',
          'Petit bac': 'petitbac', 'Agents secrets': 'agents', 'Quatre en ligne': 'quatre', 'Dominos': 'domino', 'Triominos': 'domino',
-         'Lettres croisées': 'lettres', 'Les 7 joyaux': 'joyaux', 'Expédition': 'expedition', 'Donjon': 'donjon' },
+         'Lettres croisées': 'lettres', 'Les 7 joyaux': 'joyaux', '7 piliers': 'joyaux', 'Expédition': 'expedition', 'Donjon': 'donjon' },
   lire: function() {
     var l = lireStockage(this.CLE);
     if (!Array.isArray(l)) {

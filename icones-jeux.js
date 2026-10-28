@@ -97,11 +97,21 @@ var IconesJeux = (function () {
              '<path d="M19 44 V26 Q19 17 28 17 Q37 17 37 26 V44 Z" fill="' + c[1] + '" opacity="0.35"/>' +
              '<circle cx="23" cy="33" r="4.2" fill="none" stroke="#fab005" stroke-width="2.6"/><path d="M27 33 H38 M34 33 V37 M37 33 V36" stroke="#fab005" stroke-width="2.6" stroke-linecap="round"/>';
     },
-    // Les 7 joyaux : une pierre taillée
+    // 7 piliers (ex « Les 7 joyaux ») : le phare d'Alexandrie, trois étages (carré, octogonal, rond) et son feu
     joyaux: function (c) {
-      return '<path d="M16 22 L22 13 H34 L40 22 L28 44 Z" fill="' + B + '"/>' +
-             '<path d="M16 22 H40 M22 13 L25 22 L28 44 L31 22 L34 13" fill="none" stroke="' + c[1] + '" stroke-width="1.6" stroke-linejoin="round" opacity="0.55"/>' +
-             '<path d="M10 14 l2 -4 l2 4 l-2 4 z M44 34 l1.6 -3.2 l1.6 3.2 l-1.6 3.2 z" fill="#fab005"/>';
+      return '<g transform="translate(28 29) scale(0.84) translate(-28 -25)">' +
+             '<path d="M12 12.6 L21.5 10.6 M12 7.4 L21.5 9 M44 12.6 L34.5 10.6 M44 7.4 L34.5 9" stroke="#fab005" stroke-width="1.8" stroke-linecap="round" opacity="0.8"/>' +
+             '<rect x="11" y="43" width="34" height="4" rx="1.6" fill="' + B + '"/>' +
+             '<path d="M16.5 43 L18.5 27 H37.5 L39.5 43 Z" fill="' + B + '"/>' +
+             '<rect x="16" y="24.6" width="24" height="3" rx="1" fill="' + B + '"/>' +
+             '<path d="M21.5 24.6 L23 16 H33 L34.5 24.6 Z" fill="' + B + '"/>' +
+             '<rect x="21" y="14" width="14" height="2.6" rx="1" fill="' + B + '"/>' +
+             '<path d="M24.5 14 V9.5 Q28 7 31.5 9.5 V14 Z" fill="' + B + '"/>' +
+             '<path d="M28 2.5 Q31.6 6.5 28 9.6 Q24.4 6.5 28 2.5 Z" fill="#fab005"/>' +
+             '<rect x="26.6" y="10.4" width="2.8" height="3" rx="1.2" fill="#ffe066"/>' +
+             '<path d="M26 43 V36 Q28 33.4 30 36 V43 Z" fill="' + c[1] + '"/>' +
+             '<rect x="22" y="30" width="2.6" height="3.4" rx="1.1" fill="' + c[1] + '" opacity="0.85"/><rect x="31.4" y="30" width="2.6" height="3.4" rx="1.1" fill="' + c[1] + '" opacity="0.85"/>' +
+             '<rect x="27" y="18.4" width="2" height="3.4" rx="1" fill="' + c[1] + '" opacity="0.85"/></g>';
     },
     // Lettres croisées : trois lettres posées
     lettres: function (c) {
