@@ -88,11 +88,19 @@
     .boite-sj { background: #fff; border-radius: 18px 18px 0 0; padding: 14px 14px 18px; width: 100%; max-width: 480px; max-height: 86vh; overflow-y: auto; box-shadow: 0 -6px 24px rgba(0,0,0,0.25); }
     .boite-sj.centre { border-radius: 18px; margin: 16px; align-self: center; }
     /* Duel : le coup de l'adversaire, montré un moment en haut de l'écran (toucher = fermer) */
-    .coup-adv { position: fixed; top: 10px; left: 50%; transform: translateX(-50%); width: calc(100% - 20px); max-width: 420px; box-sizing: border-box; z-index: 55;
+    .coup-adv { position: fixed; top: 10px; left: 50%; transform: translateX(-50%); width: calc(100% - 20px); max-width: 420px; box-sizing: border-box; z-index: 70;
       background: #fff; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.25); padding: 10px 12px 14px; display: flex; gap: 12px; align-items: center; overflow: hidden; cursor: pointer; }
-    .coup-adv .ca-visuel { flex-shrink: 0; line-height: 0; }
+    .coup-adv .ca-visuel { flex-shrink: 0; line-height: 0; padding: 4px 0 0 4px; }
     .coup-adv .dv-carte.dv-grand { --t: 9.5px; }
-    .coup-adv .dv-merveille.dv-mgrand { --t: 7px; }
+    .coup-adv .ca-carte { position: relative; display: inline-block; margin: 2px 12px 6px 0; }
+    .coup-adv .ca-carte.vendre .dv-carte { filter: saturate(0.55); }
+    .coup-adv .ca-tampon { position: absolute; left: -6px; right: -6px; top: 44%; transform: rotate(-14deg); text-align: center; color: #fff; font: 900 10.5px/1 system-ui, sans-serif;
+      padding: 5px 0; border-radius: 4px; box-shadow: 0 2px 6px rgba(0,0,0,0.3); background: #2b8a3e; }
+    .coup-adv .ca-carte.vendre .ca-tampon { background: #d9480f; }
+    .coup-adv .ca-carte.merveille .ca-tampon { background: #b7791f; }
+    .coup-adv .ca-mv { position: absolute; right: -18px; bottom: -10px; line-height: 0; filter: drop-shadow(0 2px 3px rgba(0,0,0,0.3)); }
+    .coup-adv .ca-mv .dv-merveille { --t: 4.6px; }
+    .coup-adv .ca-gain { position: absolute; right: -12px; top: -6px; line-height: 1; }
     .coup-adv .ca-texte { flex: 1; min-width: 0; }
     .coup-adv .ca-qui { font-size: 0.85em; color: #6b7a86; font-weight: 700; }
     .coup-adv .ca-nom { font-size: 1.15em; font-weight: 900; color: #1d2b36; line-height: 1.2; }
@@ -924,14 +932,15 @@
           var d = this.coupAdv;
           if (!d || !SD.CARTES[d.id]) return null;
           var c = SD.CARTES[d.id], qui = this.court(d.j), r = { cle: d.n };
-          if (d.type === 'merveille') {
-            r.qui = qui + ' construit une merveille'; r.nom = SD.MERVEILLES[d.merveille].nom;
-            r.sous = 'avec la carte « ' + c.nom + ' »'; r.visuel = DV.merveille(d.merveille, { taille: 'grand', faite: true });
-          } else if (d.type === 'vendre') {
-            r.qui = qui + ' défausse'; r.nom = c.nom; r.sous = d.gain ? '+' + d.gain + ' pièces' : 'contre des pièces'; r.visuel = DV.carte(d.id, 'grand');
-          } else {
-            r.qui = qui + ' construit'; r.nom = c.nom; r.sous = DV.texte(c); r.visuel = DV.carte(d.id, 'grand');
-          }
+          // Toujours l'image de la carte prise, avec un tampon qui dit ce qu'elle est devenue
+          var tampon = d.type === 'merveille' ? 'Merveille' : d.type === 'vendre' ? 'Défaussée' : 'Construite';
+          r.visuel = '<div class="ca-carte ' + d.type + '">' + DV.carte(d.id, 'grand') + '<span class="ca-tampon">' + tampon + '</span>' +
+            (d.type === 'merveille' ? '<span class="ca-mv">' + DV.merveille(d.merveille, { taille: 'zone', faite: true }) + '</span>' : '') +
+            (d.type === 'vendre' && d.gain ? '<span class="ca-gain">' + DV.piece(d.gain, 1.25) + '</span>' : '') + '</div>';
+          r.nom = c.nom;
+          if (d.type === 'merveille') { r.qui = qui + ' s\'en sert pour une merveille'; r.sous = 'Construit : ' + SD.MERVEILLES[d.merveille].nom; }
+          else if (d.type === 'vendre') { r.qui = qui + ' la défausse pour de l\'argent'; r.sous = d.gain ? '+' + d.gain + ' pièces' : 'contre des pièces'; }
+          else { r.qui = qui + ' construit'; r.sous = DV.texte(c); }
           return r;
         },
         // Fin du duel : qui gagne, et pourquoi
