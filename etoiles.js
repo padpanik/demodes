@@ -45,6 +45,7 @@ const Etoiles = {
     var ev = lireStockage('compagnon-evenements') || [];
     ev.push({ h: Date.now(), jeu: jeu, g: !!gagne, p: !!aPlusieurs, i: info || {} });
     ecrireStockage('compagnon-evenements', ev.slice(-150));
+    try { StatsParties.ajouter(jeu, gagne, aPlusieurs); } catch (e) {}
     // Défi réussi ? (le module du compagnon est chargé par le salon global sur toutes les pages)
     setTimeout(() => { try { if (typeof CP !== 'undefined' && CP.verifierDefis) CP.verifierDefis(true); } catch (e) {} }, 1500);
   },
@@ -80,5 +81,38 @@ const Etoiles = {
       setTimeout(() => { d.style.opacity = '0'; d.style.transform = 'translate(-50%,-20px)'; }, 2600);
       setTimeout(() => d.remove(), 3300);
     } catch (e) {}
+  }
+};
+
+
+// ================== STATISTIQUES DES PARTIES (fenêtre « Mes statistiques » de l'accueil) ==================
+// Toutes les parties terminées, sur ce téléphone : [heure, nom du jeu, gagnée 0/1, à plusieurs 0/1], 5 000 au plus.
+// Rempli par Etoiles.evenement (appelé à chaque fin de partie, dans tous les jeux). Clé « desdale-stats » : gardée dans la sauvegarde.
+const StatsParties = {
+  CLE: 'desdale-stats',
+  // Nom du jeu (tel que donné à Etoiles.evenement) → identifiant (icône, fiche de l'accueil)
+  IDS: { 'Brilliant': 'brilliant', 'Yams': 'yams', 'Backgammon': 'backgammon', 'Assaut': 'assaut', 'Bataille navale': 'bataille', 'Gribouille': 'gribouille',
+         'Petit bac': 'petitbac', 'Agents secrets': 'agents', 'Quatre en ligne': 'quatre', 'Dominos': 'domino', 'Triominos': 'domino',
+         'Lettres croisées': 'lettres', 'Les 7 joyaux': 'joyaux', 'Expédition': 'expedition', 'Donjon': 'donjon' },
+  lire: function() {
+    var l = lireStockage(this.CLE);
+    if (!Array.isArray(l)) {
+      // Première fois : on part du journal du compagnon (ses 150 dernières parties), pour ne pas commencer à zéro
+      l = (lireStockage('compagnon-evenements') || []).map(e => [e.h, e.jeu, e.g ? 1 : 0, e.p ? 1 : 0]);
+      ecrireStockage(this.CLE, l);
+    }
+    return l;
+  },
+  ajouter: function(jeu, gagne, aPlusieurs) {
+    var l = this.lire();
+    l.push([Date.now(), jeu, gagne ? 1 : 0, aPlusieurs ? 1 : 0]);
+    ecrireStockage(this.CLE, l.slice(-5000));
+  },
+  id: function(nom) { return this.IDS[nom] || nom; },
+  // Nombre de parties par identifiant de jeu (pour la petite mention sur les fiches de l'accueil)
+  parJeu: function() {
+    var n = {};
+    this.lire().forEach(x => { var id = this.id(x[1]); n[id] = (n[id] || 0) + 1; });
+    return n;
   }
 };

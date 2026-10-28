@@ -62,6 +62,48 @@
     /* Inviter un ami (bouton en haut à droite, fenêtre avec QR code) */
     .hero .btn-inviter { margin-left: auto; align-self: flex-start; display: inline-flex; align-items: center; gap: 5px; border: none; background: #e7f1fc; color: #1c6fc4;
                          font: inherit; font-weight: 800; font-size: 0.85em; border-radius: 11px; padding: 7px 10px; cursor: pointer; }
+    /* Mon compte : badge rond (photo, émoji ou initiale) et petit menu */
+    .hero { position: relative; }
+    /* Inviter : bouton rond (icône seule) à gauche de mon badge, pour laisser la place au titre */
+    .hero .btn-inviter { margin-left: auto; width: 38px; height: 38px; padding: 0; justify-content: center; border-radius: 50%; flex-shrink: 0; }
+    .hero > div { min-width: 0; }
+    .hero > .logo { flex-shrink: 0; }
+    .btn-compte { align-self: flex-start; flex-shrink: 0; width: 38px; height: 38px; border-radius: 50%; border: 2.5px solid #fff; padding: 0; overflow: hidden; cursor: pointer;
+                  box-shadow: 0 2px 8px rgba(0,0,0,0.18); display: flex; align-items: center; justify-content: center; color: #fff; font: inherit; font-weight: 900; font-size: 18px; }
+    .btn-compte img { width: 100%; height: 100%; object-fit: cover; }
+    .menu-compte-voile { position: fixed; inset: 0; z-index: 900; }
+    .menu-compte { position: absolute; right: 2px; top: 54px; z-index: 901; background: #fff; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.22); padding: 6px; min-width: 210px; }
+    .menu-compte .mc-tete { font-weight: 900; padding: 8px 12px 6px; color: #1d2b36; border-bottom: 1px solid #edf1f4; margin-bottom: 4px; }
+    .menu-compte button { display: block; width: 100%; text-align: left; border: none; background: none; font: inherit; font-size: 1em; padding: 11px 12px; border-radius: 10px; cursor: pointer; color: #2c3e50; }
+    .menu-compte button:active { background: #f1f5f9; }
+    .jeu .nb-parties { font-size: 0.72em; color: #9aa6b0; margin-top: 2px; font-weight: 600; }
+    /* Fenêtre « Mes statistiques » */
+    .fenetre-stats { max-width: 400px; max-height: 92vh; overflow-y: auto; padding: 16px 14px; }
+    .seg-stats { display: flex; background: #eef2f5; border-radius: 12px; padding: 3px; margin: 10px 0 6px; }
+    .seg-stats button { flex: 1; border: none; background: none; font: inherit; font-weight: 700; font-size: 0.9em; padding: 7px 0; border-radius: 9px; color: #5b6b78; cursor: pointer; }
+    .seg-stats button.actif { background: #fff; color: #1d2b36; box-shadow: 0 1px 3px rgba(0,0,0,0.12); }
+    .periode-stats { display: flex; align-items: center; justify-content: center; gap: 10px; margin: 4px 0; }
+    .periode-stats b { min-width: 0; }
+    .periode-stats button, .cal-tete button { border: none; background: #eef2f5; border-radius: 50%; width: 30px; height: 30px; font-size: 18px; font-weight: 900; color: #3b4b57; cursor: pointer; flex-shrink: 0; }
+    .resume-stats { display: flex; justify-content: center; gap: 18px; color: #3b4b57; margin: 4px 0 8px; }
+    .table-stats { width: 100%; border-collapse: collapse; font-size: 0.9em; text-align: center; }
+    .table-stats th { font-size: 0.8em; color: #6b7a86; font-weight: 800; padding: 2px 4px; }
+    .table-stats tr.sous th { font-size: 0.85em; padding-bottom: 4px; border-bottom: 1px solid #e3e8ec; }
+    .table-stats td { padding: 5px 4px; border-bottom: 1px solid #f0f3f5; font-weight: 800; }
+    .table-stats td.jeu-st { text-align: left; font-weight: 700; color: #1d2b36; }
+    .table-stats td.jeu-st > div { display: flex; align-items: center; gap: 6px; }
+    .table-stats td.jeu-st span { line-height: 0; flex-shrink: 0; }
+    .table-stats td.g { color: #2b8a3e; } .table-stats td.p { color: #c0392b; }
+    .cal-stats { margin-top: 12px; background: #f7f9fb; border-radius: 14px; padding: 8px; }
+    .cal-tete { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
+    .cal-grille { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; }
+    .cal-j { font-size: 0.72em; font-weight: 800; color: #9aa6b0; }
+    .cal-case { position: relative; border: none; background: #fff; border-radius: 8px; height: 34px; font: inherit; font-size: 0.85em; color: #3b4b57; cursor: pointer; padding: 0; }
+    .cal-case:disabled { background: none; cursor: default; }
+    .cal-case.joue { background: #e6f4ea; color: #1d2b36; font-weight: 800; }
+    .cal-case.dans { box-shadow: inset 0 0 0 2px #4c6ef5; }
+    .cal-case.ajd span { text-decoration: underline; }
+    .cal-case i { position: absolute; right: 2px; top: 1px; font-style: normal; font-size: 0.68em; color: #2b8a3e; font-weight: 900; }
     .voile-partage { position: fixed; inset: 0; z-index: 5000; background: rgba(20,30,40,0.55); display: flex; align-items: center; justify-content: center; padding: 16px; }
     .fenetre-partage { background: #fff; border-radius: 22px; padding: 18px; width: 100%; max-width: 330px; text-align: center; box-shadow: 0 12px 40px rgba(0,0,0,0.3); }
     .titre-partage { font-weight: 900; font-size: 1.25em; margin-bottom: 4px; }
@@ -110,8 +152,20 @@
         </div>
         <button class="btn-inviter" @click="partage = true" aria-label="Inviter un ami">
           <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="2.6"/><circle cx="6" cy="12" r="2.6"/><circle cx="18" cy="19" r="2.6"/><path d="M8.3 10.8l7.4-4.3M8.3 13.2l7.4 4.3"/></svg>
-          Inviter
         </button>
+        <!-- Mon compte : mon avatar (profil du salon global), menu Profil / Statistiques / Sauvegarde -->
+        <button class="btn-compte" @click="menuCompte = !menuCompte" aria-label="Mon compte" :style="{ background: profilAff.couleur }">
+          <img v-if="profilAff.image" :src="profilAff.image" alt="">
+          <span v-else>{{ profilAff.emoji || profilAff.initiale }}</span>
+        </button>
+        <div v-if="menuCompte" class="menu-compte-voile" @click="menuCompte = false"></div>
+        <div v-if="menuCompte" class="menu-compte" role="menu">
+          <div class="mc-tete">{{ profilAff.pseudo || 'Pas encore de pseudo' }}</div>
+          <button @click="menuCompte = false; ouvrirProfilPortail()">👤 Mon profil</button>
+          <button @click="menuCompte = false; ouvrirStats()">📊 Mes statistiques</button>
+          <button @click="menuCompte = false; ouvrirSauvegarde()">💾 Ma sauvegarde</button>
+          <button @click="menuCompte = false; partage = true">📤 Inviter un ami</button>
+        </div>
       </header>
 
       <!-- Inviter un ami : QR code à scanner, ou partage du lien (menu de partage du téléphone, sinon copie) -->
@@ -162,6 +216,7 @@
           <div>
             <div class="nom">{{ j.nom }}<span v-if="j.nouveau" class="nouveau">Nouveau</span></div>
             <div class="desc">{{ j.desc }}</div>
+            <div class="nb-parties" v-if="nbParties[j.id]">{{ nbParties[j.id] }} partie{{ nbParties[j.id] > 1 ? 's' : '' }} jouée{{ nbParties[j.id] > 1 ? 's' : '' }}</div>
             <span class="badge" v-if="j.enCours">{{ j.enCours }}<button v-if="!j.solo" class="badge-quitter" @click.prevent.stop="quitter(j)" aria-label="Quitter ce salon">✕ Quitter</button></span>
           </div>
           <button class="favori" :class="{ oui: favoris.includes(j.id) }" @click.prevent.stop="basculerFavori(j.id)"
@@ -183,6 +238,52 @@
         <span class="fl">›</span>
       </button>
       <p class="version" style="margin-top:6px">Désdale · version {{ version }}</p>
+
+      <!-- Mes statistiques : parties par jeu, seul / entre amis, gagnées / perdues, sur une période (jour, semaine, mois, tout) choisie aussi dans le calendrier -->
+      <div v-if="stats" class="voile-partage" @click.self="stats = null">
+        <div class="fenetre-partage fenetre-stats" role="dialog" aria-label="Mes statistiques">
+          <div class="titre-partage">📊 Mes statistiques</div>
+          <div class="seg-stats">
+            <button v-for="p in PERIODES" :key="p[0]" :class="{ actif: stats.periode === p[0] }" @click="stats.periode = p[0]">{{ p[1] }}</button>
+          </div>
+          <div class="periode-stats">
+            <button v-if="stats.periode !== 'tout'" @click="decalerStats(-1)" aria-label="Période précédente">‹</button>
+            <b>{{ statsVue.libelle }}</b>
+            <button v-if="stats.periode !== 'tout'" @click="decalerStats(1)" aria-label="Période suivante">›</button>
+          </div>
+          <div class="resume-stats">
+            <span><b>{{ statsVue.total.n }}</b> partie{{ statsVue.total.n > 1 ? 's' : '' }}</span>
+            <span>🏆 <b>{{ statsVue.total.g }}</b> gagnée{{ statsVue.total.g > 1 ? 's' : '' }}</span>
+          </div>
+          <table class="table-stats" v-if="statsVue.lignes.length">
+            <thead>
+              <tr><th></th><th colspan="2">Seul</th><th colspan="2">Entre amis</th></tr>
+              <tr class="sous"><th></th><th>✓</th><th>✗</th><th>✓</th><th>✗</th></tr>
+            </thead>
+            <tbody>
+              <tr v-for="l in statsVue.lignes" :key="l.id">
+                <td class="jeu-st"><div><span v-html="icone24(l.id)"></span>{{ l.nom }}</div></td>
+                <td class="g">{{ l.sn ? l.sg : '·' }}</td><td class="p">{{ l.sn ? l.sn - l.sg : '·' }}</td>
+                <td class="g">{{ l.an ? l.ag : '·' }}</td><td class="p">{{ l.an ? l.an - l.ag : '·' }}</td>
+              </tr>
+            </tbody>
+          </table>
+          <div v-else class="aide-partage" style="margin:10px 0">Aucune partie sur cette période.</div>
+          <!-- Calendrier : un point par jour joué ; toucher un jour = ce jour -->
+          <div class="cal-stats">
+            <div class="cal-tete"><button @click="moisCal(-1)" aria-label="Mois précédent">‹</button><b>{{ calendrier.titre }}</b><button @click="moisCal(1)" aria-label="Mois suivant">›</button></div>
+            <div class="cal-grille">
+              <span v-for="d in ['L','M','M','J','V','S','D']" class="cal-j">{{ d }}</span>
+              <button v-for="(c, k) in calendrier.cases" :key="k" class="cal-case" :disabled="!c.j"
+                      :class="{ joue: c.n, dans: c.dans, ajd: c.ajd }" @click="choisirJour(c)">
+                <span v-if="c.j">{{ c.j }}</span><i v-if="c.n">{{ c.n }}</i>
+              </button>
+            </div>
+          </div>
+          <div class="aide-partage" style="margin-top:8px">✓ gagnées · ✗ perdues (ou nulles). Comptées sur ce téléphone, depuis la fin de chaque partie.</div>
+          <button class="btn" style="width:100%;margin-top:10px" @click="stats = null">Fermer</button>
+        </div>
+      </div>
 
       <!-- Sauvegarde : un fichier à garder (Drive, mail à soi-même…) pour tout retrouver sur un autre téléphone ou navigateur -->
       <div v-if="sauvegarde" class="voile-partage" @click.self="sauvegarde = null">
@@ -246,6 +347,10 @@
         decalY: 0,
         maj: 0,
         partage: false,    // fenêtre « Inviter un ami »
+        menuCompte: false, // menu du badge « Mon compte »
+        profilV: 0,        // change quand le profil change (événement desdale-profil)
+        stats: null,       // fenêtre « Mes statistiques » : { periode, date (référence), calA, calM }
+        PERIODES: [['jour', 'Jour'], ['semaine', 'Semaine'], ['mois', 'Mois'], ['tout', 'Tout']],
         sauvegarde: null,  // fenêtre « Ma sauvegarde » : { ici, lue (sauvegarde choisie, à confirmer), erreur }
         peutEnvoyerFichier: false,
         copie: false,
@@ -269,6 +374,52 @@
         lienSite: function() { return location.origin + location.pathname.replace(/[^/]*$/, ''); },
         qrPartage: function() { return this.partage ? QR.svg(this.lienSite, 220) : ''; },
         peutPartager: function() { return !!navigator.share; },
+        // Mon avatar : photo, émoji ou initiale, sur ma couleur (profil du salon global)
+        profilAff: function() {
+          this.profilV;
+          var p = lireStockage('desdale-profil') || {};
+          return { pseudo: p.pseudo || '', image: p.image || '', emoji: p.emoji || '', couleur: p.couleur || '#4c6ef5', initiale: (p.pseudo || '?').charAt(0).toUpperCase() };
+        },
+        nbParties: function() { this.maj; this.stats; return StatsParties.parJeu(); },
+        bornesStats: function() {
+          var s = this.stats, d = new Date(s.date), a, b;
+          d.setHours(0, 0, 0, 0);
+          if (s.periode === 'jour') { a = d; b = new Date(d); b.setDate(b.getDate() + 1); }
+          else if (s.periode === 'semaine') { a = new Date(d); a.setDate(a.getDate() - ((a.getDay() + 6) % 7)); b = new Date(a); b.setDate(b.getDate() + 7); }
+          else if (s.periode === 'mois') { a = new Date(d.getFullYear(), d.getMonth(), 1); b = new Date(d.getFullYear(), d.getMonth() + 1, 1); }
+          else { a = new Date(0); b = new Date(8.64e15); }
+          return [a.getTime(), b.getTime()];
+        },
+        statsVue: function() {
+          var s = this.stats, bo = this.bornesStats, par = {}, total = { n: 0, g: 0 };
+          var noms = {}; this.jeux.forEach(j => { noms[j.id] = j.nom; }); noms.donjon = 'Donjon'; noms.domino = 'Dominos';
+          StatsParties.lire().forEach(x => {
+            if (x[0] < bo[0] || x[0] >= bo[1]) return;
+            var id = StatsParties.id(x[1]), l = par[id] || (par[id] = { id: id, nom: noms[id] || x[1], sn: 0, sg: 0, an: 0, ag: 0 });
+            if (x[3]) { l.an++; l.ag += x[2]; } else { l.sn++; l.sg += x[2]; }
+            total.n++; total.g += x[2];
+          });
+          var d = new Date(s.date), opt = { weekday: 'long', day: 'numeric', month: 'long' }, libelle;
+          if (s.periode === 'jour') libelle = d.toLocaleDateString('fr-FR', opt);
+          else if (s.periode === 'semaine') libelle = 'Semaine du ' + new Date(bo[0]).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' });
+          else if (s.periode === 'mois') libelle = d.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
+          else libelle = 'Depuis le début';
+          return { libelle: libelle.charAt(0).toUpperCase() + libelle.slice(1), total: total,
+                   lignes: Object.values(par).sort((x, y) => (y.sn + y.an) - (x.sn + x.an)) };
+        },
+        calendrier: function() {
+          var s = this.stats, debut = new Date(s.calA, s.calM, 1), nbJ = new Date(s.calA, s.calM + 1, 0).getDate(), parJour = {}, bo = this.bornesStats;
+          StatsParties.lire().forEach(x => { var d = new Date(x[0]); if (d.getFullYear() === s.calA && d.getMonth() === s.calM) parJour[d.getDate()] = (parJour[d.getDate()] || 0) + 1; });
+          var cases = [], decal = (debut.getDay() + 6) % 7, ajd = new Date();
+          for (var k = 0; k < decal; k++) cases.push({});
+          for (var j = 1; j <= nbJ; j++) {
+            var t = new Date(s.calA, s.calM, j).getTime();
+            cases.push({ j: j, n: parJour[j] || 0, t: t, dans: s.periode !== 'tout' && t >= bo[0] && t < bo[1],
+                         ajd: ajd.getFullYear() === s.calA && ajd.getMonth() === s.calM && ajd.getDate() === j });
+          }
+          var titre = debut.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
+          return { titre: titre.charAt(0).toUpperCase() + titre.slice(1), cases: cases };
+        },
         // Mon compagnon, dessiné sur sa carte avec son humeur du moment
         compagnon: function() {
           this.maj;
@@ -312,6 +463,7 @@
         document.addEventListener('mouseup', () => this.finAppui());
         window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); this._invitation = e; this.installPossible = true; });
         window.addEventListener('appinstalled', () => { this.installPossible = false; this.estInstallee = true; });
+        window.addEventListener('desdale-profil', () => { this.profilV++; });
         var arrivee = this.lireDemenagement();
         if (ACCES.memorise()) { this.accesOk = true; if (!arrivee) this.reprendre(); }
       },
@@ -333,6 +485,28 @@
             return true;
           } catch (e) { return false; }
         },
+        // ---------- Mes statistiques ----------
+        ouvrirStats: function() {
+          var d = new Date();
+          this.stats = { periode: 'semaine', date: d.getTime(), calA: d.getFullYear(), calM: d.getMonth() };
+        },
+        decalerStats: function(sens) {
+          var s = this.stats, d = new Date(s.date);
+          if (s.periode === 'jour') d.setDate(d.getDate() + sens);
+          else if (s.periode === 'semaine') d.setDate(d.getDate() + 7 * sens);
+          else d.setMonth(d.getMonth() + sens, 1);
+          s.date = d.getTime(); s.calA = d.getFullYear(); s.calM = d.getMonth();
+        },
+        moisCal: function(sens) {
+          var d = new Date(this.stats.calA, this.stats.calM + sens, 1);
+          this.stats.calA = d.getFullYear(); this.stats.calM = d.getMonth();
+        },
+        choisirJour: function(c) {
+          if (!c.j) return;
+          this.stats.date = c.t; this.stats.periode = 'jour';
+        },
+        ouvrirProfilPortail: function() { ouvrirProfilPortail(); },
+        icone24: function(id) { return IconesJeux.svg(id, 24) || '🎲'; },
         // ---------- Sauvegarde (fichier) ----------
         ouvrirSauvegarde: function() {
           var s = Sauvegarde.creer();
