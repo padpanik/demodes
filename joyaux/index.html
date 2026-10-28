@@ -107,13 +107,29 @@
     .logo-sj { font-size: 40px; }
 
     /* ===== DUEL ===== */
-    .zone-duel { display: block; width: 100%; text-align: left; background: #fff; border: none; font: inherit; border-radius: 12px; padding: 4px 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.08); cursor: pointer; margin-bottom: 4px; font-size: 13px; }
-    .zone-duel.actif { box-shadow: 0 0 0 2.5px #2ecc71; }
+    /* Bloc d'un joueur : bande de couleur à gauche (rouge brique l'adversaire, bleu moi), en relief, encadré de vert quand c'est son tour */
+    .zone-duel { display: block; width: 100%; text-align: left; border: none; font: inherit; border-radius: 14px; padding: 6px 10px 7px 12px; cursor: pointer; margin-bottom: 5px; font-size: 14px;
+      background: linear-gradient(90deg, var(--zc) 0 6px, var(--zf) 6px); box-shadow: 0 2px 6px rgba(0,0,0,0.13); --zc: #2b6cb0; --zf: #f2f7fd; }
+    .zone-duel.adv { --zc: #b9472f; --zf: #fdf4f1; }
+    .zone-duel.actif { box-shadow: 0 0 0 3px #2ecc71, 0 2px 8px rgba(46,204,113,0.35); }
     .zone-duel .zl1 { display: flex; align-items: center; gap: 6px; }
-    .zone-duel .zn { flex: none; max-width: 32%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .zone-duel .zm { margin-left: auto; display: flex; gap: 2px; }
-    .zone-duel .zl2 { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 6px; margin-top: 2px; min-height: 18px; font-size: 12px; }
+    .zone-duel .zn { flex: none; max-width: 45%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 17px; font-weight: 900; color: #1d2b36; }
+    .zone-duel .ztour { background: #2ecc71; color: #fff; font-weight: 800; font-size: 12px; border-radius: 10px; padding: 1px 8px; animation: ztour 1.6s ease-in-out infinite; }
+    @keyframes ztour { 50% { opacity: 0.55; } }
+    .zone-duel .zcompte { margin-left: auto; display: flex; gap: 5px; align-items: center; }
+    .zone-duel .zl2 { display: flex; flex-wrap: wrap; align-items: center; gap: 3px 9px; margin-top: 4px; min-height: 24px; font-size: 13px; }
     .zone-duel .zl2 .grp { display: inline-flex; align-items: center; gap: 1px; }
+    .zone-duel .zl2 .grp b { font-size: 15px; font-weight: 900; color: #1d2b36; }
+    .zone-duel .zl2 .grp.choix i { font-style: normal; color: #6b7a86; margin: 0 1px; }
+    .zone-duel .zl3 { display: flex; align-items: center; gap: 6px; margin-top: 5px; }
+    .zone-duel .zmv { display: flex; gap: 4px; flex-wrap: wrap; }
+    .zone-duel .zjt { margin-left: auto; display: flex; gap: 2px; }
+    /* Merveille en vignette : juste le monument sur fond doré */
+    .dv-merveille.dv-mzone { --t: 4.7px; width: 12em; height: 7.6em; border-width: 0.3em; }
+    .dv-merveille.dv-mzone .dv-bandeau, .dv-merveille.dv-mzone .dv-cout, .dv-merveille.dv-mzone .dv-nom, .dv-merveille.dv-mzone .dv-tampon { display: none !important; }
+    .dv-merveille.dv-mzone .dv-monu { top: 0.6em; left: 0.8em; right: 0.8em; height: 6.2em; opacity: 0.85; }
+    .dv-merveille.dv-mzone:not(.dv-faite):not(.dv-retiree) { filter: saturate(0.35) brightness(1.15); opacity: 0.75; }
+    .dv-merveille.dv-mzone.dv-faite { box-shadow: 0 0 0 2px #2ecc71; }
     .mvp { display: inline-block; width: 15px; height: 11px; border-radius: 2px; border: 1.5px solid #b7791f; box-sizing: border-box; }
     .mvp.faite { background: #d9b25a; }
     .plateau-mil { display: flex; align-items: center; gap: 2px; margin: 2px 0 2px; background: #efe3c2; border-radius: 10px; padding: 3px 4px; box-shadow: inset 0 0 0 1.5px #c9ad6a; }
@@ -259,9 +275,10 @@
         <!-- ===== DUEL ===== -->
         <template v-else-if="e && e.mode === 'duel'">
           <!-- Cité adverse -->
-          <button class="zone-duel" :class="{ actif: quiDuel === advDuel }" @click="vueCite = advDuel" v-if="zoneAdv">
-            <div class="zl1"><b class="zn">{{ zoneAdv.nom }}</b><span v-html="zoneAdv.pieces"></span><span v-html="zoneAdv.pv"></span><span class="zm" v-html="zoneAdv.merveilles"></span></div>
+          <button class="zone-duel adv" :class="{ actif: quiDuel === advDuel }" @click="vueCite = advDuel" v-if="zoneAdv">
+            <div class="zl1"><b class="zn">{{ zoneAdv.nom }}</b><span class="ztour" v-if="quiDuel === advDuel && e.phase !== 'fin'">joue…</span><span class="zcompte"><span v-html="zoneAdv.pieces"></span><span v-html="zoneAdv.pv"></span></span></div>
             <div class="zl2" v-html="zoneAdv.detail"></div>
+            <div class="zl3"><span class="zmv" v-html="zoneAdv.merveilles"></span><span class="zjt" v-html="zoneAdv.jetons"></span></div>
           </button>
           <!-- Plateau militaire : ma capitale à gauche -->
           <div class="plateau-mil" v-if="e.phase !== 'merveilles'">
@@ -289,8 +306,9 @@
 
           <!-- Ma cité -->
           <button class="zone-duel moi" :class="{ actif: quiDuel === moiDuel }" @click="vueCite = moiDuel" v-if="zoneMoi">
-            <div class="zl1"><b class="zn">{{ zoneMoi.nom }}</b><span v-html="zoneMoi.pieces"></span><span v-html="zoneMoi.pv"></span><span class="zm" v-html="zoneMoi.merveilles"></span></div>
+            <div class="zl1"><b class="zn">{{ zoneMoi.nom }}</b><span class="ztour" v-if="quiDuel === moiDuel && e.phase !== 'fin'">{{ moiDuel === moiJ ? 'à toi !' : 'joue…' }}</span><span class="zcompte"><span v-html="zoneMoi.pieces"></span><span v-html="zoneMoi.pv"></span></span></div>
             <div class="zl2" v-html="zoneMoi.detail"></div>
+            <div class="zl3"><span class="zmv" v-html="zoneMoi.merveilles"></span><span class="zjt" v-html="zoneMoi.jetons"></span></div>
           </button>
           <div class="actions-sj" v-if="e.phase !== 'fin'">
             <button v-if="!solo && role === 'hote' && duelAbsent" class="btn" @click="envoyerJeu({ type: 'REMPLACER' })">🤖 Jouer à la place de {{ duelAbsent }}</button>
@@ -971,15 +989,17 @@
         zone: function(j) {
           var e = this.e, cite = e.cites[j], prod = {}, choix = [];
           SD.sources(cite).forEach(s => { if (s.length === 1) prod[s[0]] = (prod[s[0]] || 0) + 1; else choix.push(s); });
-          var d = 'BAPVR'.split('').filter(r => prod[r]).map(r => '<span class="grp">' + DV.res(r, 1.15) + (prod[r] > 1 ? '<b>' + prod[r] + '</b>' : '') + '</span>').join('');
-          d += choix.map(c => '<span class="grp">' + c.map(r => DV.res(r, 0.95)).join('/') + '</span>').join('');
+          var d = 'BAPVR'.split('').filter(r => prod[r]).map(r => '<span class="grp">' + DV.res(r, 1.65) + (prod[r] > 1 ? '<b>' + prod[r] + '</b>' : '') + '</span>').join('');
+          d += choix.map(c => '<span class="grp choix">' + c.map(r => DV.res(r, 1.3)).join('<i>/</i>') + '</span>').join('');
           var sy = SD.symboles(e, j);
-          d += Object.keys(sy).map(k => '<span class="grp">' + DV.sci(k, 1.1) + (sy[k] > 1 ? '<b>' + sy[k] + '</b>' : '') + '</span>').join('');
-          d += cite.jetons.map(t => DV.jeton(t, 0.75)).join('');
+          d += Object.keys(sy).map(k => '<span class="grp">' + DV.sci(k, 1.45) + (sy[k] > 1 ? '<b>' + sy[k] + '</b>' : '') + '</span>').join('');
           var rouges = cite.cartes.filter(id => SD.CARTES[id].type === 'rouge').length;
           if (!d) d = '<span class="aide" style="margin:0">rien encore</span>';
-          return { nom: j === this.moiJ ? 'Moi' : j, pieces: DV.piece(cite.pieces, 1.25), pv: DV.pv(SD.score(e, j).total, 1.25),
-                   merveilles: cite.merveilles.map(m => '<span class="mvp' + (m.faite ? ' faite' : '') + '" title="' + SD.MERVEILLES[m.id].nom + '"></span>').join(''), detail: d };
+          // Merveilles en vignettes (silhouette du monument) : construite = dorée et cochée, à faire = pâle, retirée (7 déjà construites) = grise
+          var plus = this.merveillesFaites >= SD.MAX_MERVEILLES;
+          return { nom: j === this.moiJ ? 'Moi' : j, pieces: DV.piece(cite.pieces, 1.45), pv: DV.pv(SD.score(e, j).total, 1.45),
+                   merveilles: cite.merveilles.map(m => DV.merveille(m.id, { taille: 'zone', faite: m.faite, retiree: !m.faite && plus })).join('') || '<span class="aide" style="margin:0">merveilles à choisir</span>',
+                   jetons: cite.jetons.map(t => DV.jeton(t, 1)).join(''), detail: d };
         },
         texteCout: function(p) {
           if (p.gratuit) return 'gratuit (chaînage)';
