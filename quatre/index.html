@@ -191,7 +191,10 @@
     const JEU_RESEAU = 'ql';
     const DELAI_SILENCE = 15000;
     const MAX_SALONS = 8;
+    // Identifiant interne de l'ordinateur (scores et sauvegardes rangés sous cette clé : ne pas changer)
+    // et le nom affiché, séparé (2.74, demandé par l'utilisateur : un prénom fixe comme les ordinateurs des autres jeux)
     const ORDI = '🤖 Ordi';
+    const NOM_ORDI = '🤖 Hector';
     const NIVEAUX = [{ id: 'facile', nom: 'Facile' }, { id: 'normal', nom: 'Normal' }, { id: 'fort', nom: 'Fort' }];
     function copie(o) { return JSON.parse(JSON.stringify(o)); }
 
@@ -277,7 +280,7 @@
           return [0, 1].map(k => {
             var n = p.joueurs[k];
             if (!n) return null;
-            return { nom: this.boss && n === ORDI ? this.boss.ico + ' ' + this.boss.nom : n === this.moi && !this.solo ? n + ' (moi)' : n, score: p.scores[n] || 0, connecte: n === ORDI || this.estConnecteVue[n] !== false };
+            return { nom: n === ORDI ? this.nomAff(n) : n === this.moi && !this.solo ? n + ' (moi)' : n, score: p.scores[n] || 0, connecte: n === ORDI || this.estConnecteVue[n] !== false };
           });
         },
         monNumero: function() { return this.pub ? this.pub.joueurs.indexOf(this.solo ? this.moiSolo : this.moi) + 1 : 0; },
@@ -300,11 +303,11 @@
             if (!g) return 'Match nul : la grille est pleine.';
             if (g === this.monNumero) return '🎉 Tu as gagné !';
             if (this.boss) return '😱 ' + this.boss.nom + ' gagne…';
-            return (this.estJoueur ? '😕 ' : '🏆 ') + p.joueurs[g - 1] + ' gagne.';
+            return (this.estJoueur ? '😕 ' : '🏆 ') + this.nomAff(p.joueurs[g - 1]) + ' gagne.';
           }
           if (this.peutJouer) return 'À toi : touche une colonne.';
           var autre = p.joueurs[p.tour - 1];
-          return autre === ORDI ? (this.boss ? this.boss.nom : 'L\'ordinateur') + ' réfléchit…' : 'Au tour de ' + autre + '…';
+          return autre === ORDI ? (this.boss ? this.boss.nom : NOM_ORDI.replace('🤖 ', '')) + ' réfléchit…' : 'Au tour de ' + autre + '…';
         },
         classeStatut: function() {
           var p = this.pub;
@@ -330,6 +333,8 @@
         window.addEventListener('pageshow', () => this.auRetourPremierPlan());
       },
       methods: {
+        // Nom à l'écran d'un joueur : l'ordinateur garde son identifiant interne (ORDI), on montre son prénom (ou le boss d'expédition)
+        nomAff: function(n) { return n !== ORDI ? n : this.boss ? this.boss.ico + ' ' + this.boss.nom : NOM_ORDI; },
         ouvrirProfil: function() { ouvrirProfilPortail(false); },
         ajouterLog: function(m, systeme) {
           this.historique.push({ m: m, s: !!systeme });
