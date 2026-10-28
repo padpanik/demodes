@@ -169,9 +169,9 @@ var DV = (function () {
   // ---------- Styles ----------
   var css = [
     '.dv-ico{vertical-align:-0.15em;flex:none}',
-    '.dv-piece{display:inline-flex;align-items:center;justify-content:center;min-width:1.15em;padding:0 0.08em;height:1.15em;border-radius:50%;background:radial-gradient(circle at 35% 30%,#ffe58a,#e0a91a 70%);border:0.08em solid #9a6b00;color:#5a3d00;font-weight:900;font-size:1em;line-height:1;box-sizing:border-box}',
+    '.dv-piece{display:inline-flex;align-items:center;justify-content:center;min-width:1.15em;padding:0 0.26em;height:1.15em;border-radius:0.6em;background:radial-gradient(circle at 35% 30%,#ffe58a,#e0a91a 70%);border:0.08em solid #9a6b00;color:#5a3d00;font-weight:900;font-size:1em;line-height:1;box-sizing:border-box}',
     '.dv-piece:empty::after{content:""}',
-    '.dv-pv{display:inline-flex;align-items:center;justify-content:center;min-width:1.2em;height:1.2em;border-radius:50%;background:#fff6d8;border:0.12em solid #3f8f3f;color:#245a24;font-weight:900;line-height:1;box-sizing:border-box;padding:0 0.1em}',
+    '.dv-pv{display:inline-flex;align-items:center;justify-content:center;min-width:1.2em;height:1.2em;border-radius:0.6em;background:#fff6d8;border:0.12em solid #3f8f3f;color:#245a24;font-weight:900;line-height:1;box-sizing:border-box;padding:0 0.28em}',
     '.dv-sci{display:inline-flex;align-items:center;justify-content:center;width:1.2em;height:1.2em;border-radius:0.25em;background:#e8f5ec;line-height:1}',
     '.dv-carre{display:inline-block;width:0.9em;height:1.15em;border-radius:0.15em;border:0.08em solid #fff;vertical-align:-0.2em}',
     '.dv-mv{display:inline-block;color:#b7791f;font-weight:900}',
@@ -199,9 +199,8 @@ var DV = (function () {
     '.dv-merveille .dv-nom{position:absolute;left:0.3em;right:0.3em;bottom:0.25em;text-align:center;font-weight:900;font-size:1em;text-shadow:0 0.08em 0.2em rgba(0,0,0,0.6)}',
     '.dv-merveille.dv-mgrand{--t:12px}',
     '.dv-merveille.dv-mmini{--t:4.4px}',
-    '.dv-merveille.dv-faite{box-shadow:0 0 0 0.25em #2ecc71}',
     '.dv-merveille.dv-retiree{filter:grayscale(1);opacity:0.4}',
-    '.dv-merveille .dv-tampon{position:absolute;right:0.4em;top:2.3em;background:#2ecc71;color:#fff;border-radius:50%;width:1.8em;height:1.8em;display:flex;align-items:center;justify-content:center;font-weight:900}',
+    '.dv-merveille .dv-tampon{position:absolute;right:0.35em;top:0.3em;background:#2ecc71;color:#fff;border-radius:50%;width:1.7em;height:1.7em;display:flex;align-items:center;justify-content:center;font-weight:900;box-shadow:0 0 0 0.15em #fff, 0 0.1em 0.3em rgba(0,0,0,0.35);z-index:2}',
     '.dv-rejouer{display:inline-flex;align-items:center;justify-content:center;width:1.2em;height:1.2em;border-radius:50%;background:#2b6cb0;color:#fff;font-weight:900;line-height:1}',
     '.dv-vol{color:#c53030;font-weight:900}',
     '.dv-detruit{color:#c53030;font-weight:900}',

@@ -436,6 +436,8 @@ Bataille navale : `bataille-boss` (partie contre un boss d'expédition), `batail
     (choix et feuille de la carte), `dv-mcite` 11,6 px (détail d'une cité), deux par ligne à 360 px. Cartes du volet cité agrandies (2.62) : `.cartes-cite .dv-carte.dv-mini` 9 px (5 par ligne).
     **Trois blocs blancs** (2.63-2.64, demandés par l'utilisateur) : joueur adverse, **plateau** (`.plateau-duel` : piste, jetons, statut, pyramide), moi ; séparés de 10 px,
     ombre douce, **ni bordure de couleur ni cadre vert** (l'utilisateur les trouve peu esthétiques ; la pastille « à toi ! » / « joue… » qui palpite suffit).
+    Merveille construite = **coche verte en haut à droite** (`.dv-tampon`), plus de cadre vert nulle part (2.65). Plus de consigne « À toi : touche une carte… »
+    (`statutDuel` vide quand c'est à moi ; il reste « X joue… », « Partie terminée »…). Pièces et points en **pilule** (padding latéral) pour les nombres à 2 chiffres.
     Bloc joueur : ligne 1 : nom en gros, pastille, pièces et points à droite ;
     ligne 2 : ressources (icônes 1,65em, nombre en gras), ressources au choix, symboles scientifiques ; ligne 3 : les merveilles en **vignettes**
     (`DV.merveille(id, { taille: 'zone' })` : seul le monument sur fond doré ; construite = dorée bordée de vert, à faire = pâle) et les jetons Progrès à droite.

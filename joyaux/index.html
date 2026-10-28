@@ -126,13 +126,13 @@
     .zone-duel .zjt { margin-left: auto; display: flex; gap: 2px; }
     /* Merveille en vignette : juste le monument sur fond doré */
     .dv-merveille.dv-mzone { --t: 4.7px; width: 12em; height: 7.6em; border-width: 0.3em; }
-    .dv-merveille.dv-mzone .dv-bandeau, .dv-merveille.dv-mzone .dv-cout, .dv-merveille.dv-mzone .dv-nom, .dv-merveille.dv-mzone .dv-tampon { display: none !important; }
+    .dv-merveille.dv-mzone .dv-bandeau, .dv-merveille.dv-mzone .dv-cout, .dv-merveille.dv-mzone .dv-nom { display: none !important; }
+    .dv-merveille.dv-mzone .dv-tampon { font-size: 9px; top: 2px; right: 2px; }
     .dv-merveille.dv-mzone .dv-monu { top: 0.6em; left: 0.8em; right: 0.8em; height: 6.2em; opacity: 0.85; }
     .dv-merveille.dv-mzone:not(.dv-faite):not(.dv-retiree) { filter: saturate(0.35) brightness(1.15); opacity: 0.75; }
-    .dv-merveille.dv-mzone.dv-faite { box-shadow: 0 0 0 2px #2ecc71; }
     .mvp { display: inline-block; width: 15px; height: 11px; border-radius: 2px; border: 1.5px solid #b7791f; box-sizing: border-box; }
     .mvp.faite { background: #d9b25a; }
-    .plateau-mil { display: flex; align-items: center; gap: 2px; margin: 2px 0 2px; background: #efe3c2; border-radius: 10px; padding: 3px 4px; box-shadow: inset 0 0 0 1.5px #c9ad6a; }
+    .plateau-mil { display: flex; align-items: center; gap: 2px; margin: 4px 0 2px; background: #efe3c2; border-radius: 10px; padding: 3px 4px; box-shadow: inset 0 0 0 1.5px #c9ad6a; }
     .plateau-mil .capitale { font-size: 15px; width: 18px; text-align: center; }
     .plateau-mil .cases { flex: 1; display: flex; gap: 1px; }
     .plateau-mil .cs { flex: 1; height: 15px; background: #f7efd9; border-radius: 2px; position: relative; }
@@ -140,7 +140,7 @@
     .plateau-mil .cs.centre { background: #c9ad6a; }
     .plateau-mil .pion { position: absolute; left: 50%; top: -3px; transform: translateX(-50%); width: 10px; height: 20px; background: #c53030; border-radius: 5px 5px 2px 2px; box-shadow: 0 0 0 1.5px #fff, 0 1px 3px rgba(0,0,0,0.5); z-index: 2; }
     .plateau-mil .butin { position: absolute; left: 50%; top: -1px; transform: translateX(-50%); font-size: 7px; z-index: 1; }
-    .jetons-duel { display: flex; align-items: center; gap: 3px; margin: 3px 0; }
+    .jetons-duel { display: flex; align-items: center; gap: 3px; margin: 9px 0 10px; }
     .jetons-duel button { border: none; background: none; padding: 0; cursor: pointer; border-radius: 50%; }
     .jetons-duel button.vu { box-shadow: 0 0 0 2px #2b6cb0; }
     .aide-jetons { margin-left: auto; font-size: 11px; color: #6b7a86; text-align: right; }
@@ -299,7 +299,7 @@
             <span class="aide-jetons">Âge {{ ['', 'I', 'II', 'III'][e.age] }} · {{ e.pyramide.filter(c => !c.pris).length }} cartes · {{ merveillesFaites }}/7 merveilles</span>
           </div>
           <div class="info-jeton" v-if="infoJeton && e.phase !== 'merveilles'"><b>{{ PROGRES[infoJeton].nom }}</b> : {{ PROGRES[infoJeton].txt }}</div>
-          <div class="statut-sj" :class="{ moi: aMoiDuel }">{{ statutDuel }}</div>
+          <div class="statut-sj" v-if="statutDuel" :class="{ moi: aMoiDuel }">{{ statutDuel }}</div>
 
           <!-- La pyramide de l'âge -->
           <div v-if="e.phase !== 'merveilles'" class="pyramide" :style="{ width: pyramideAff.w + 'px', height: pyramideAff.h + 'px' }">
@@ -824,7 +824,7 @@
             return (j === this.advDuel && this.estJoueur ? (estOrdi(j) ? '🤖 L\'ordinateur' : j) : j) + quoi;
           }
           if (e.phase === 'merveilles') return 'À toi : choisis une merveille.';
-          return this.selDuel === null ? 'À toi : touche une carte dégagée (bordure verte).' : 'Que fais-tu de cette carte ?';
+          return '';   // à moi de jouer : la pastille « à toi ! » suffit (consigne retirée à la demande de l'utilisateur)
         },
         zoneAdv: function() { return this.e && this.e.mode === 'duel' ? this.zone(this.advDuel) : null; },
         zoneMoi: function() { return this.e && this.e.mode === 'duel' ? this.zone(this.moiDuel) : null; },
