@@ -433,7 +433,7 @@ Bataille navale : `bataille-boss` (partie contre un boss d'expédition), `batail
     silhouette du bâtiment, nom ; dos d'âge (I, II, III) ; merveilles dorées avec la silhouette du monument ; jetons Progrès ronds verts ; piste militaire avec capitales
     et butins. **Coûts lisibles** (2.54-2.55, demandé par l'utilisateur) : chaque ressource sur une grande pastille claire (1,75em), les identiques regroupées avec un « ×2 »,
     sur deux colonnes dès 2 pastilles ; icônes à contour sombre ; icônes d'effet plus grandes quand il y en a peu. Merveilles agrandies (2.61) : `dv-mchoix` 11,5 px
-    (choix et feuille de la carte), `dv-mcite` 11,6 px (détail d'une cité), deux par ligne à 360 px.
+    (choix et feuille de la carte), `dv-mcite` 11,6 px (détail d'une cité), deux par ligne à 360 px. Cartes du volet cité agrandies (2.62) : `.cartes-cite .dv-carte.dv-mini` 9 px (5 par ligne).
     **Panneaux du bas fermables d'un glissement vers le bas** (2.59, demandé par l'utilisateur pour jouer à une main) : voiles marqués `data-fermable`
     (carte touchée, cité, conflits), petite poignée en haut ; à partir de 80 px (ou d'un geste vif), quand le panneau est remonté en haut, on « touche le voile »
     (`v.click()`, même effet que toucher à côté). Pas sur les choix obligatoires (merveilles, jetons, premier joueur). Écran : cité adverse en haut, piste, jetons, pyramide, ma cité en bas ; toucher une carte ouvre ses actions et la liste des merveilles ; toucher une cité ouvre le détail.
