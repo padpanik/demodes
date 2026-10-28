@@ -646,6 +646,23 @@ Bataille navale : `bataille-boss` (partie contre un boss d'expédition), `batail
   dans `bataille/sons/` (sources dans `bataille/sons/LICENCES.txt`), choisis par l'utilisateur : plouf (à l'eau), explosion (touché),
   et pour un coulé l'explosion **puis** la sirène. Sons fabriqués par le code en secours. Sons et vibrations réglables séparément.
 
+## Jeux envisagés et idées en attente (liste tenue à la demande de l'utilisateur)
+
+Ajouter ici chaque jeu ou idée que l'utilisateur veut garder pour plus tard ; retirer la ligne quand c'est fait.
+Rappel pour un jeu du commerce : version maison, sans le nom de la marque ni ses visuels (appli privée entre amis).
+
+**Jeux à ajouter** (règles et nombre de joueurs à voir avec l'utilisateur au moment de s'y mettre) :
+- Schadenfreude (noté le 28 octobre 2026)
+- Serenity (noté le 28 octobre 2026)
+
+**Idées déjà évoquées** :
+- 7 piliers, Duel : guildes et merveilles à deux faces ; un boss d'expédition sur ce jeu.
+- Expédition : lieux annoncés « Bientôt » (Château fort, Île aux trésors, Conservatoire, Forêt enchantée), sorties en groupe.
+- Mon compagnon : lui apprendre sa langue pas à pas ; redessiner les autres animaux comme le renard et le dragon.
+- Compagnons en jeu (`compagnons-jeu.js`) : seulement dans Lettres croisées pour l'instant, à poser dans les autres jeux à plusieurs.
+- Hébergement : porte Cloudflare Access ; après le déménagement, retirer la carte « Désdale déménage », l'origine GitHub Pages et rendre les icônes crème définitives.
+- Bulle 💬 du salon global : la faire passer sous les fenêtres ouvertes (proposé, pas encore demandé).
+
 ## Tester
 
 Les tests se font dans un navigateur sans tête (Playwright + Chromium, déjà installés dans l'environnement cloud),
