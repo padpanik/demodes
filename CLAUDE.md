@@ -441,6 +441,11 @@ Bataille navale : `bataille-boss` (partie contre un boss d'expédition), `batail
     Bloc joueur : ligne 1 : nom en gros, pastille, pièces et points à droite ;
     ligne 2 : ressources (icônes 1,65em, nombre en gras), ressources au choix, symboles scientifiques ; ligne 3 : les merveilles en **vignettes**
     (`DV.merveille(id, { taille: 'zone' })` : seul le monument sur fond doré ; construite = dorée bordée de vert, à faire = pâle) et les jetons Progrès à droite.
+    **Coup de l'adversaire montré** (2.71, demandé par l'utilisateur : « le temps de voir quelle carte a pris l'adversaire ») : `e.dernier` porte la place `k`, l'âge et un numéro `n` (`e.nCoups`) ;
+    bandeau en haut de l'écran (`coupAdv`, `coupAdvAff`, file `filesCoups` de 2 au plus, 3,6 s avec barre qui se vide, toucher = fermer) : la carte (ou la merveille) et « X construit / défausse / construit une merveille » ;
+    l'emplacement vide palpite en pointillés orange dans la pyramide (`fantomeDuel`). Pas pour mes propres coups ni pour l'état retrouvé au chargement (`_charge`). L'ordinateur attend que le bandeau soit fermé pour rejouer.
+    **Fenêtre de fin** (`finDuel`, `finVue`) : qui gagne et pourquoi (suprématie militaire : le pion a atteint la capitale ; scientifique : les six symboles, dessinés ; aux points : « 62 contre 49 »
+    et les deux lignes qui font la différence), tableau des points avec la colonne du gagnant surlignée, « Voir le plateau » / « Nouvelle partie » ; ouverte après le dernier bandeau, rouvrable par « Voir le résultat ».
     **Panneaux du bas fermables d'un glissement vers le bas** (2.59, demandé par l'utilisateur pour jouer à une main) : voiles marqués `data-fermable`
     (carte touchée, cité, conflits), petite poignée en haut ; à partir de 80 px (ou d'un geste vif), quand le panneau est remonté en haut, on « touche le voile »
     (`v.click()`, même effet que toucher à côté). Pas sur les choix obligatoires (merveilles, jetons, premier joueur). Écran : cité adverse en haut, piste, jetons, pyramide, ma cité en bas ; toucher une carte ouvre ses actions et la liste des merveilles ; toucher une cité ouvre le détail.

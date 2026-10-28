@@ -87,6 +87,36 @@
     .voile-sj { position: fixed; inset: 0; z-index: 60; background: rgba(15,20,30,0.5); display: flex; align-items: flex-end; justify-content: center; }
     .boite-sj { background: #fff; border-radius: 18px 18px 0 0; padding: 14px 14px 18px; width: 100%; max-width: 480px; max-height: 86vh; overflow-y: auto; box-shadow: 0 -6px 24px rgba(0,0,0,0.25); }
     .boite-sj.centre { border-radius: 18px; margin: 16px; align-self: center; }
+    /* Duel : le coup de l'adversaire, montré un moment en haut de l'écran (toucher = fermer) */
+    .coup-adv { position: fixed; top: 10px; left: 50%; transform: translateX(-50%); width: calc(100% - 20px); max-width: 420px; box-sizing: border-box; z-index: 55;
+      background: #fff; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.25); padding: 10px 12px 14px; display: flex; gap: 12px; align-items: center; overflow: hidden; cursor: pointer; }
+    .coup-adv .ca-visuel { flex-shrink: 0; line-height: 0; }
+    .coup-adv .dv-carte.dv-grand { --t: 9.5px; }
+    .coup-adv .dv-merveille.dv-mgrand { --t: 7px; }
+    .coup-adv .ca-texte { flex: 1; min-width: 0; }
+    .coup-adv .ca-qui { font-size: 0.85em; color: #6b7a86; font-weight: 700; }
+    .coup-adv .ca-nom { font-size: 1.15em; font-weight: 900; color: #1d2b36; line-height: 1.2; }
+    .coup-adv .ca-sous { font-size: 0.82em; color: #3b4b57; margin-top: 2px; }
+    .coup-adv .ca-barre { position: absolute; left: 0; bottom: 0; height: 4px; background: #f0a020; animation: caBarre 3.6s linear forwards; }
+    @keyframes caBarre { from { width: 100%; } to { width: 0; } }
+    .coup-enter-active, .coup-leave-active { transition: transform 0.25s, opacity 0.25s; }
+    .coup-enter, .coup-leave-to { opacity: 0; transform: translate(-50%, -20px); }
+    .pyr-fantome { position: absolute; width: 51px; height: 69px; box-sizing: border-box; border: 2.5px dashed #f0a020; border-radius: 6px; background: rgba(240,160,32,0.16);
+      pointer-events: none; animation: fantome 0.8s ease-in-out infinite alternate; }
+    @keyframes fantome { from { opacity: 0.4; } to { opacity: 1; } }
+    /* Duel : fenêtre de fin de partie (qui gagne et pourquoi) */
+    .fin-duel { text-align: center; max-width: 400px; }
+    .fin-duel .fd-ico { width: 68px; height: 68px; border-radius: 50%; margin: 2px auto 8px; display: flex; align-items: center; justify-content: center; font-size: 36px; background: #fff2c7; }
+    .fin-duel .fd-ico.militaire { background: #fde2df; }
+    .fin-duel .fd-ico.science { background: #e2f4e6; }
+    .fin-duel .fd-titre { font-size: 1.35em; font-weight: 900; color: #1d2b36; }
+    .fin-duel .fd-raison { font-weight: 800; color: #b7791f; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.04em; font-size: 0.82em; }
+    .fin-duel .fd-detail { color: #3b4b57; margin: 6px 0 4px; line-height: 1.35; }
+    .fin-duel .fd-symboles { margin: 6px 0; display: flex; justify-content: center; gap: 6px; }
+    .fin-duel .tableau-sj { text-align: center; }
+    .fin-duel .tableau-sj .gagnant { background: #fff7e0; font-weight: 800; }
+    .fin-duel .actions-sj { display: flex; gap: 8px; margin-top: 12px; }
+    .fin-duel .actions-sj .btn { flex: 1; }
     /* Panneau qu'on ferme en le tirant vers le bas : petite poignée en haut */
     .voile-sj[data-fermable] > .boite-sj:not(.centre) { padding-top: 22px; position: relative; }
     .voile-sj[data-fermable] > .boite-sj:not(.centre)::before { content: ''; position: absolute; top: 8px; left: 50%; width: 44px; height: 5px; margin-left: -22px; border-radius: 3px; background: #c9d2da; }
@@ -304,6 +334,7 @@
           <!-- La pyramide de l'âge -->
           <div v-if="e.phase !== 'merveilles'" class="pyramide" :style="{ width: pyramideAff.w + 'px', height: pyramideAff.h + 'px' }">
             <button v-for="c in pyramideAff.cartes" :key="e.age + '-' + c.k" class="pyr" :class="c.cl" :style="c.style" @click="toucherPyramide(c)" v-html="c.html"></button>
+            <div v-if="fantomeDuel" class="pyr-fantome" :style="fantomeDuel" aria-hidden="true"></div>
           </div>
           </div>
 
@@ -319,19 +350,49 @@
           </div>
 
           <!-- Fin du duel -->
-          <section class="carte" v-if="e.phase === 'fin'" style="margin-top:8px">
-            <div class="titre-carte">{{ !e.vainqueur ? '🤝 Égalité parfaite' : e.vainqueur === moiJ ? '🏆 Tu remportes le duel !' : '🏆 ' + e.vainqueur + ' remporte le duel' }}</div>
-            <div class="aide" style="margin-top:0">{{ { militaire: '⚔️ Suprématie militaire : le pion a atteint la capitale.', science: '🔬 Suprématie scientifique : six symboles différents réunis.', civile: 'Victoire civile : aux points.' }[e.fin.type] }}</div>
-            <table class="tableau-sj">
-              <tr><th></th><th v-for="j in e.classement" :key="j">{{ j === moiJ ? 'Moi' : court(j) }}</th></tr>
-              <tr v-for="l in LIGNES_DUEL" :key="l[0]"><td>{{ l[1] }}</td><td v-for="j in e.classement" :key="j">{{ e.scores[j][l[0]] }}</td></tr>
-              <tr class="total"><td>Total</td><td v-for="j in e.classement" :key="j">{{ e.scores[j].total }}</td></tr>
-            </table>
+          <section class="carte" v-if="e.phase === 'fin' && finDuel" style="margin-top:8px">
+            <div class="titre-carte">{{ finDuel.ico }} {{ finDuel.titre }}</div>
+            <div class="aide" style="margin-top:0">{{ finDuel.raison }}</div>
             <div class="actions-sj">
+              <button class="btn" @click="finVue = true">Voir le résultat</button>
               <button v-if="solo || role === 'hote'" class="btn principal" @click="nouvellePartie">Nouvelle partie</button>
-              <div v-else class="aide">L'hôte peut relancer une partie.</div>
             </div>
+            <div v-if="!solo && role !== 'hote'" class="aide">L'hôte peut relancer une partie.</div>
           </section>
+
+          <!-- Le coup de l'adversaire : la carte prise, montrée un moment (toucher = fermer) -->
+          <transition name="coup">
+            <div v-if="coupAdvAff" class="coup-adv" role="status" @click="coupSuivant">
+              <div class="ca-visuel" v-html="coupAdvAff.visuel"></div>
+              <div class="ca-texte">
+                <div class="ca-qui">{{ coupAdvAff.qui }}</div>
+                <div class="ca-nom">{{ coupAdvAff.nom }}</div>
+                <div class="ca-sous">{{ coupAdvAff.sous }}</div>
+              </div>
+              <div class="ca-barre" :key="coupAdvAff.cle"></div>
+            </div>
+          </transition>
+
+          <!-- Fin du duel : qui gagne et pourquoi -->
+          <div class="voile-sj" v-if="finVue && finDuel" @click.self="finVue = false">
+            <div class="boite-sj centre fin-duel" role="dialog" aria-label="Fin de la partie">
+              <div class="fd-ico" :class="finDuel.type">{{ finDuel.ico }}</div>
+              <div class="fd-titre">{{ finDuel.titre }}</div>
+              <div class="fd-raison">{{ finDuel.raison }}</div>
+              <div class="fd-detail">{{ finDuel.detail }}</div>
+              <div class="fd-symboles" v-if="finDuel.symboles" v-html="finDuel.symboles"></div>
+              <table class="tableau-sj">
+                <tr><th></th><th v-for="j in e.classement" :key="j" :class="{ gagnant: j === e.vainqueur }">{{ j === moiJ ? 'Moi' : court(j) }}</th></tr>
+                <tr v-for="l in LIGNES_DUEL" :key="l[0]"><td>{{ l[1] }}</td><td v-for="j in e.classement" :key="j" :class="{ gagnant: j === e.vainqueur }">{{ e.scores[j][l[0]] }}</td></tr>
+                <tr class="total"><td>Total</td><td v-for="j in e.classement" :key="j" :class="{ gagnant: j === e.vainqueur }">{{ e.scores[j].total }}</td></tr>
+              </table>
+              <div class="aide" v-if="finDuel.type !== 'civile'" style="margin-top:6px">Les points sont là pour mémoire : une suprématie gagne d'office.</div>
+              <div class="actions-sj">
+                <button class="btn" @click="finVue = false">Voir le plateau</button>
+                <button v-if="solo || role === 'hote'" class="btn principal" @click="finVue = false; nouvellePartie()">Nouvelle partie</button>
+              </div>
+            </div>
+          </div>
 
           <!-- La carte touchée : grande, avec ce qu'on peut en faire -->
           <div class="voile-sj" data-fermable v-if="carteDuel" @click.self="selDuel = null">
@@ -733,6 +794,9 @@
         LIGNES_SCORE: LIGNES_SCORE, LIGNES_DUEL: LIGNES_DUEL, PROGRES: SD.PROGRES, MERVEILLES: SD.MERVEILLES, CARTES_DUEL: SD.CARTES, TYPES_DUEL: SD.TYPES, JOYAUX: SJ.JOYAUX, DV: DV,
         modeChoisi: lireStockage('joyaux-version') || 'duel',   // Duel par défaut (demandé par l'utilisateur, 2.60)
         selDuel: null,
+        coupAdv: null,      // coup de l'adversaire montré en haut de l'écran (e.dernier)
+        filesCoups: [],     // coups suivants à montrer (merveille « Rejouer »)
+        finVue: false,      // fenêtre de fin du duel ouverte
         infoJeton: null,
         onglet: 'config',
         pub: null,
@@ -849,6 +913,57 @@
           });
           return { cartes: cartes, w: 12 * u, h: (rangs - 1) * pas + H };
         },
+        // Emplacement de la carte que l'adversaire vient de prendre (cadre pointillé qui palpite)
+        fantomeDuel: function() {
+          var d = this.coupAdv, e = this.e;
+          if (!d || d.k == null || !e || e.mode !== 'duel' || d.age !== e.age || !e.pyramide[d.k]) return null;
+          var p = e.pyramide[d.k];
+          return { left: ((p.x + 5) * 27) + 'px', top: (p.r * 36) + 'px', zIndex: 50 };
+        },
+        coupAdvAff: function() {
+          var d = this.coupAdv;
+          if (!d || !SD.CARTES[d.id]) return null;
+          var c = SD.CARTES[d.id], qui = this.court(d.j), r = { cle: d.n };
+          if (d.type === 'merveille') {
+            r.qui = qui + ' construit une merveille'; r.nom = SD.MERVEILLES[d.merveille].nom;
+            r.sous = 'avec la carte « ' + c.nom + ' »'; r.visuel = DV.merveille(d.merveille, { taille: 'grand', faite: true });
+          } else if (d.type === 'vendre') {
+            r.qui = qui + ' défausse'; r.nom = c.nom; r.sous = d.gain ? '+' + d.gain + ' pièces' : 'contre des pièces'; r.visuel = DV.carte(d.id, 'grand');
+          } else {
+            r.qui = qui + ' construit'; r.nom = c.nom; r.sous = DV.texte(c); r.visuel = DV.carte(d.id, 'grand');
+          }
+          return r;
+        },
+        // Fin du duel : qui gagne, et pourquoi
+        finDuel: function() {
+          var e = this.e;
+          if (!e || e.mode !== 'duel' || e.phase !== 'fin' || !e.fin || !e.scores) return null;
+          var v = e.vainqueur, p = v ? e.joueurs.find(x => x !== v) : null, t = e.fin.type || 'civile';
+          var vMoi = this.estJoueur && v === this.moiJ, pMoi = this.estJoueur && p === this.moiJ;
+          var r = { type: t, ico: !v ? '🤝' : t === 'militaire' ? '⚔️' : t === 'science' ? '🔬' : '🏆',
+                    titre: !v ? 'Égalité parfaite' : vMoi ? 'Tu remportes le duel !' : v + ' remporte le duel' };
+          if (t === 'militaire') {
+            r.raison = 'Suprématie militaire';
+            r.detail = (vMoi ? 'Ton armée a poussé' : v + ' a poussé') + ' le pion jusqu\'à la capitale ' + (pMoi ? 'de ta cité' : 'de ' + p) + ' : victoire immédiate.';
+          } else if (t === 'science') {
+            r.raison = 'Suprématie scientifique';
+            r.detail = (vMoi ? 'Tu as réuni' : v + ' a réuni') + ' six symboles scientifiques différents : victoire immédiate.';
+            r.symboles = Object.keys(SD.symboles(e, v)).map(k => DV.sci(k, 1.7)).join('');
+          } else if (!v) {
+            var s0 = e.scores[e.joueurs[0]];
+            r.raison = 'Même score';
+            r.detail = 'Même total (' + s0.total + ' points) et autant de bâtiments civils : personne ne l\'emporte.';
+          } else {
+            var sv = e.scores[v], sp = e.scores[p];
+            r.raison = 'Victoire aux points';
+            if (sv.total === sp.total) r.detail = 'Égalité à ' + sv.total + ' points, départagée par les bâtiments civils (' + sv.civils + ' contre ' + sp.civils + ').';
+            else {
+              var ecarts = LIGNES_DUEL.map(l => ({ nom: l[1].replace(/^\S+\s/, '').replace(/\s*\(.*\)$/, ''), d: sv[l[0]] - sp[l[0]] })).filter(x => x.d > 0).sort((a, b) => b.d - a.d).slice(0, 2);
+              r.detail = sv.total + ' points contre ' + sp.total + '.' + (ecarts.length ? ' La différence : ' + ecarts.map(x => x.nom.toLowerCase() + ' (+' + x.d + ')').join(' et ') + '.' : '');
+            }
+          }
+          return r;
+        },
         carteDuel: function() {
           var e = this.e, k = this.selDuel;
           if (!e || e.mode !== 'duel' || k === null || !e.pyramide[k] || e.pyramide[k].pris || !e.pyramide[k].id) return null;
@@ -900,9 +1015,17 @@
         pseudoInput: function() { this.sauvegarder(); },
         conflitVu: function(v) { ecrireStockage('joyaux-conflit-vu', v); },
         'e.tour': function() { this.selection = -1; },
-        'e.age': function() { this.selection = -1; }
+        'e.age': function() { this.selection = -1; },
+        'e.dernier': function(d) { this.voirCoup(d); },
+        'e.phase': function(p, avant) {
+          if (p !== 'fin') { this.finVue = false; this._finAttente = false; return; }
+          if (!avant || avant === 'fin' || !this.e || this.e.mode !== 'duel' || Date.now() - this._charge < 1500) return;
+          // La fenêtre de fin s'ouvre après le dernier coup adverse montré
+          this.$nextTick(() => { if (this.coupAdv || this.filesCoups.length) this._finAttente = true; else setTimeout(() => { this.finVue = true; }, 700); });
+        }
       },
       created: function() {
+        this._charge = Date.now();   // rien n'est « montré » pour l'état retrouvé au chargement
         window.addEventListener('desdale-profil', () => { if (!this.role) this.pseudoInput = pseudoPortail(); });
         if (!ACCES.cleSalon) return;
         this.conflitVu = lireStockage('joyaux-conflit-vu') || '';
@@ -1030,10 +1153,30 @@
           this._timerDuel = setTimeout(() => {
             var e2 = this.solo ? etatSolo : pubHote && pubHote.etat;
             if (e2 !== e || e.phase === 'fin' || SD.qui(e) !== j) return;
+            // On laisse d'abord le temps de voir le coup précédent de l'ordinateur (bandeau en haut)
+            if (this.coupAdv) return this.planifierOrdiDuel();
             SD.jouer(e, j, SD.ordinateur(e, j));
             if (this.solo) this.majSolo(); else this.publier();
             this.planifierOrdiDuel();
           }, e.phase === 'merveilles' ? 1300 : 1200);
+        },
+        // Duel : montrer le coup que l'adversaire vient de jouer (une fois par coup ; pas le mien)
+        voirCoup: function(d) {
+          if (!d || !d.n || !this.e || this.e.mode !== 'duel') return;
+          var cle = (this.pub && this.pub.partieId || '') + ':' + d.n;
+          if (this._coupVu === cle) return;
+          this._coupVu = cle;
+          if (Date.now() - this._charge < 1500) return;
+          if (this.estJoueur && d.j === this.moiJ) return;
+          this.filesCoups.push(Object.assign({}, d));
+          if (this.filesCoups.length > 2) this.filesCoups.shift();   // jamais plus de 2 coups en attente
+          if (!this.coupAdv) this.coupSuivant();
+        },
+        coupSuivant: function() {
+          clearTimeout(this._tCoup);
+          this.coupAdv = this.filesCoups.shift() || null;
+          if (this.coupAdv) { this.vibre(25); this._tCoup = setTimeout(() => this.coupSuivant(), 3600); }
+          else if (this._finAttente) { this._finAttente = false; setTimeout(() => { this.finVue = true; }, 300); }
         },
         toucherPyramide: function(c) {
           this.infoJeton = null;

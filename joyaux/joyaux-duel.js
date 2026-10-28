@@ -341,14 +341,14 @@ var SD = (function () {
       depenser(e, j, o.construire.total, o.construire.commerce);
       if (o.construire.gratuit && aJeton(cite, 'urbanisme')) cite.pieces += 4;
       journal(e, j + ' construit « ' + CARTES[id].nom + ' »' + (o.construire.gratuit ? ' (chaînage)' : '') + '.');
-      e.dernier = { j: j, type: 'construire', id: id };
+      e.dernier = { j: j, type: 'construire', id: id, k: k, age: e.age, n: (e.nCoups = (e.nCoups || 0) + 1) };
       carte.pris = true; decouvrir(e);
       entrer(e, j, id);
     } else if (a.action === 'vendre') {
       cite.pieces += o.vendre;
       e.defausse.push(id);
       journal(e, j + ' défausse « ' + CARTES[id].nom + ' » (+' + o.vendre + ' 🪙).');
-      e.dernier = { j: j, type: 'vendre', id: id };
+      e.dernier = { j: j, type: 'vendre', id: id, gain: o.vendre, k: k, age: e.age, n: (e.nCoups = (e.nCoups || 0) + 1) };
       carte.pris = true; decouvrir(e);
     } else if (a.action === 'merveille') {
       var om = o.merveilles.find(x => x.id === a.merveille);
@@ -359,7 +359,7 @@ var SD = (function () {
       m.faite = true; m.sous = e.age;
       carte.pris = true; decouvrir(e);
       journal(e, j + ' construit ' + W.nom + '.');
-      e.dernier = { j: j, type: 'merveille', id: id, merveille: m.id };
+      e.dernier = { j: j, type: 'merveille', id: id, merveille: m.id, k: k, age: e.age, n: (e.nCoups = (e.nCoups || 0) + 1) };
       var adv2 = autre(e, j);
       if (W.pieces) cite.pieces += W.pieces;
       if (W.vol) { var v = Math.min(W.vol, e.cites[adv2].pieces); e.cites[adv2].pieces -= v; }
