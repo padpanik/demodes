@@ -875,6 +875,8 @@
     </template>
   </div>
 
+  <script src="joueur.js"></script>   <!-- identité du joueur (clientId = Joueur.id) -->
+
   <script src="icones-jeux.js"></script>
   <script src="fiche-jeu.js"></script>
   <script src="etoiles.js"></script>   <!-- étoiles de « Mon compagnon » (utilise lireStockage / ecrireStockage d'ici) -->
@@ -1045,7 +1047,7 @@
     function lireLigne(ligne) { return ligne.trim().split(/\s+/); }
 
     // Numéro de version affiché sur l'accueil (à augmenter à chaque mise en ligne)
-    const VERSION = '2.74';
+    const VERSION = '2.75';
 
     // ================== ACCÈS PRIVÉ ==================
     // Application réservée à un cercle d'amis : un code est demandé au premier lancement.
@@ -1257,8 +1259,8 @@
       else alert('Choisis ton pseudo sur l\'accueil de Désdale.');
     }
 
-    // Identifiant propre à ce téléphone : permet à l'hôte de reconnaître un joueur qui revient
-    var clientId = lireStockage('brillant-client-id');
+    // Identité du joueur (joueur.js) : suit la personne, et sa sauvegarde, d'un téléphone à l'autre
+    var clientId = window.Joueur ? Joueur.id : lireStockage('brillant-client-id');
     if (!clientId) { clientId = nouvelId() + nouvelId(); ecrireStockage('brillant-client-id', clientId); }
 
     // ================== RÉSEAU ==================

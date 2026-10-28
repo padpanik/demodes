@@ -5,7 +5,7 @@
 //   version mise en ligne est donc visible dès le prochain lancement.
 // Pensez à changer VERSION à chaque mise en ligne (même numéro que dans commun.js et brilliant/index.html).
 
-const VERSION = '2.74';
+const VERSION = '2.75';
 const CACHE = 'desdale-' + VERSION;
 
 const FICHIERS = [
@@ -47,6 +47,7 @@ const FICHIERS = [
   './bataille/sons/plouf.mp3',
   './bataille/sons/touche.mp3',
   './bataille/sons/sirene.mp3',
+  './joueur.js',
   './commun.js',
   './fiche-jeu.js', './compagnons-jeu.js', './reseau.js',
   './icones-jeux.js',

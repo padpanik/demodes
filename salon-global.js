@@ -71,7 +71,7 @@ var SalonGlobal = (function () {
     setTimeout(() => { envoyer({ t: 'PROFIL', profil: publicProfil() }); majMoi(); rendre(); }, 0);   // après la fin du « change » / « blur » en cours (sinon le champ disparaît sous le doigt)
     try { window.dispatchEvent(new CustomEvent('desdale-profil')); } catch (e) {}   // les pages de jeu reprennent le nouveau pseudo
   }
-  function publicProfil() { var p = profil(); return { pseudo: (p.pseudo || '').slice(0, 20) || 'Anonyme', couleur: p.couleur, emoji: p.emoji || '', image: p.image || '', invisible: !!p.invisible, cp: compagnonResume() }; }
+  function publicProfil() { var p = profil(); return { pseudo: (p.pseudo || '').slice(0, 20) || 'Anonyme', couleur: p.couleur, emoji: p.emoji || '', image: p.image || '', invisible: !!p.invisible, cp: compagnonResume(), j: window.Joueur ? Joueur.id : '' }; }   // j : identité de la personne (joueur.js), monId() : ce téléphone
   // Mon compagnon (s'il y en a un), montré aux autres dans la liste des présents
   function compagnonResume() {
     var a = lire('compagnon-animal');
@@ -278,14 +278,20 @@ var SalonGlobal = (function () {
     var img = String(p.image || '');
     return { pseudo: String(p.pseudo || 'Anonyme').slice(0, 20), couleur: /^#[0-9a-f]{6}$/i.test(p.couleur) ? p.couleur : '#7d8a94',
              emoji: String(p.emoji || '').slice(0, 8), image: img.indexOf('data:image/') === 0 && img.length < 30000 ? img : '', invisible: !!p.invisible,
-             cp: nettoyerCompagnon(p.cp) };
+             cp: nettoyerCompagnon(p.cp), j: nettoyerJ(p.j, p.pseudo) };
+  }
+  // Identité de la personne : on retient au passage son dernier pseudo (Joueur.nom)
+  function nettoyerJ(j, pseudo) {
+    j = /^[a-z0-9]{4,40}$/i.test(String(j || '')) ? String(j) : '';
+    if (j && window.Joueur) Joueur.noter(j, String(pseudo || '').slice(0, 20));
+    return j;
   }
   function nettoyerOu(o) { o = o || {}; return { jeu: JEUX[o.jeu] ? o.jeu : 'accueil', salon: String(o.salon || '').slice(0, 40) }; }
 
   // ---------- Client ----------
   function recevoirHote(d) {
     switch (d.t) {
-      case 'MEMBRES': membres = {}; (d.membres || []).forEach(m => { membres[m.id] = m; }); rendre(); break;
+      case 'MEMBRES': membres = {}; (d.membres || []).forEach(m => { membres[m.id] = m; if (m.j && window.Joueur) Joueur.noter(m.j, m.pseudo); }); rendre(); break;
       case 'HISTO': (d.messages || []).forEach(m => ajouterMessage(m, true)); rendre(); break;
       case 'MSG': ajouterMessage(d.m); break;
       case 'RELAIS': recevoirRelais(String(d.de || ''), d.m || {}); break;

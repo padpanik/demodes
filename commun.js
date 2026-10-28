@@ -3,7 +3,7 @@
 // Les clés de stockage gardent l'ancien préfixe "brillant-" : les réglages déjà faits sont conservés.
 
 // Numéro de version affiché (à augmenter à chaque mise en ligne, avec brilliant/index.html et sw.js)
-const VERSION = '2.74';
+const VERSION = '2.75';
 
 // ---------- Stockage local ----------
 function lireStockage(cle) {
@@ -17,8 +17,9 @@ function effacerStockage(cle) {
 }
 function nouvelId() { return Math.random().toString(36).slice(2, 10); }
 
-// Identifiant propre à ce téléphone : permet à l'hôte de reconnaître un joueur qui revient
-var clientId = lireStockage('brillant-client-id');
+// Identité du joueur (joueur.js, chargé juste avant) : permet à l'hôte de reconnaître un joueur qui revient,
+// et range classements et scores. Elle suit la sauvegarde d'un téléphone à l'autre (voir joueur.js).
+var clientId = window.Joueur ? Joueur.id : lireStockage('brillant-client-id');
 if (!clientId) { clientId = nouvelId() + nouvelId(); ecrireStockage('brillant-client-id', clientId); }
 
 // ---------- Un seul salon à la fois ----------
