@@ -441,6 +441,8 @@ Bataille navale : `bataille-boss` (partie contre un boss d'expédition), `batail
   `.dv-plc`, toute la largeur, 7,05em de haut) : nom + merveille + pastille sur une ligne, bande de production, étapes **coût | gain côte à côte** (trait vertical, sans légende ;
   la légende reste sur la carte de la fiche de cité). Taille réglée sur la hauteur de l'écran (`styleTable` → `--tc`, `hEcran` : écran − onglets − barre − volet réduit, partagé
   entre les joueurs, 9,5 à 14 px) : 7 joueurs tiennent entre la barre et le volet réduit sur 360 × 800. 3 joueurs : grandes cartes comme en 2.78.
+  **2.80** : la marge sous la table (`.sous-volet`) suit la **hauteur réelle du volet** (`voletH`, mesurée dans `majReserve`) : volet ouvert, on fait défiler la table
+  jusqu'à voir la dernière merveille au-dessus (demandé par l'utilisateur : « ça bloque trop tôt »).
   Bandeau « ce qu'ils ont joué » : il manquait après le **1er tour** de chaque partie (pas de `e.nTour` précédent) ; corrigé.
   Plus tard (proposé) : les cartes de la fiche de cité en petites cartes dessinées, comme dans le Duel.
   Choix fait : bandeau « ✓ … · On attend … » avec « Changer » (jusqu'à la révélation, 0,7 s après le dernier choix). Fenêtre des conflits à chaque fin d'âge,

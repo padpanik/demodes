@@ -145,7 +145,7 @@
     .vt-t small { display: block; font-weight: 600; color: #6b7a86; font-size: 0.82em; }
     .vt-ligne .btn { padding: 6px 10px; font-size: 0.85em; flex: none; }
     .vt-chevron { flex: none; width: 34px; height: 34px; border-radius: 50%; background: #eef1f4; display: flex; align-items: center; justify-content: center; font-size: 1.1em; color: #3b4b57; }
-    .sous-volet { height: 86px; }
+    .sous-volet { height: 86px; transition: height 0.2s; }
     /* Classique : ce qu'a joué chacun au dernier tour */
     .tour-adv { position: fixed; top: 10px; left: 50%; transform: translateX(-50%); width: calc(100% - 20px); max-width: 420px; box-sizing: border-box; z-index: 70;
       background: #fff; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.25); padding: 9px 12px 13px; overflow: hidden; cursor: pointer; max-height: 80vh; overflow-y: auto; }
@@ -609,7 +609,7 @@
               </button>
             </div>
           </div>
-          <div class="sous-volet" v-if="estJoueur && e.phase === 'jeu'"></div>
+          <div class="sous-volet" v-if="estJoueur && e.phase === 'jeu'" :style="{ height: (voletH + 12) + 'px' }"></div>
 
           <div class="voile-sj" data-fermable v-if="carteSel" @click.self="selection = -1">
             <div class="boite-sj">
@@ -899,7 +899,8 @@
         coupAdv: null,      // coup de l'adversaire montré en haut de l'écran (e.dernier)
         tourAff: null,      // Classique : ce qu'a joué chacun au tour qui vient d'être révélé (e.nTour)
         voletOuvert: true,  // Classique : volet de ma main ouvert (réduit pour regarder la table)
-        hEcran: window.innerHeight,   // pour régler la taille des cartes de la table
+        hEcran: window.innerHeight,
+        voletH: 74,         // hauteur du volet de ma main (marge sous la table)   // pour régler la taille des cartes de la table
         filesCoups: [],     // coups suivants à montrer (merveille « Rejouer »)
         finVue: false,      // fenêtre de fin du duel ouverte
         infoJeton: null,
@@ -1268,9 +1269,9 @@
           });
         },
         majReserve: function() {
-          if (!window.SalonGlobal || !SalonGlobal.reserverBas) return;
           var v = document.querySelector('.volet-sj'), h = v && v.getClientRects().length ? v.offsetHeight + 6 : 0;   // fixe : pas d'offsetParent
-          if (h !== this._reserve) { this._reserve = h; SalonGlobal.reserverBas(h); }
+          if (v && v.offsetHeight) this.voletH = v.offsetHeight;   // la page peut défiler jusqu'à voir la dernière merveille au-dessus du volet, même ouvert
+          if (h !== this._reserve && window.SalonGlobal && SalonGlobal.reserverBas) { this._reserve = h; SalonGlobal.reserverBas(h); }
         },
         // Volet de ma main : glisser vers le bas = réduire, vers le haut = ouvrir
         voletDebut: function(ev) { this._voletY = ev.touches[0].clientY; this._voletGlisse = false; },
