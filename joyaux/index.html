@@ -74,6 +74,21 @@
     .carte-sj.choisie { box-shadow: 0 0 0 2.5px #ff9800; }
     .carte-sj.terne { opacity: 0.45; }
     .pts { display: inline-block; background: #2c7be5; color: #fff; border-radius: 6px; padding: 0 5px; font-weight: 900; font-size: 0.95em; }
+    /* Classique : la merveille en carte large (DV.plateau), la main en cartes dessinées (DV.carteC) */
+    .plateau-sj { margin-bottom: 6px; cursor: pointer; line-height: normal; }
+    .plateau-sj .dv-plateau { --t: min(13.5px, calc((100vw - 26px) / 26)); margin: 0 auto; }
+    .boite-sj .plateau-sj .dv-plateau { --t: min(13.5px, calc((100vw - 34px) / 26)); }
+    .main-cartes { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px 4px; justify-items: center; }
+    .main-cartes .mc { background: none; border: none; padding: 0; font: inherit; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 2px; line-height: normal; }
+    .main-cartes .dv-carte.dv-main { --t: min(12.5px, calc((100vw - 44px) / 4 / 6.4)); transition: transform 0.15s; }
+    .main-cartes .mc.choisie .dv-carte { transform: translateY(-3px); box-shadow: 0 0 0 2.5px #ff9800, 0 4px 10px rgba(0,0,0,0.25); }
+    .main-cartes .mc.terne { opacity: 0.4; }
+    .mc-etat { font-size: 0.72em; font-weight: 800; border-radius: 8px; padding: 0 6px; white-space: nowrap; background: #eef1f4; color: #6b7a86; }
+    .mc-etat.ok { background: #e3f6ea; color: #2f8a5b; } .mc-etat.paie { background: #fff1d6; color: #a86b00; } .mc-etat.non { color: #9aa5ae; }
+    .etape-btn { width: 100%; display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 4px 8px; padding: 8px; }
+    .etape-btn small { flex-basis: 100%; font-weight: 600; font-size: 0.8em; opacity: 0.8; }
+    .etape-btn .eb-cout, .etape-btn .eb-gain { display: inline-flex; align-items: center; gap: 3px; font-size: 15px; }
+    .etape-btn .eb-fl { font-weight: 900; color: #6b7a86; }
     .actions-carte { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin: 4px 0 2px; }
     .actions-carte .btn { padding: 8px 6px; font-size: 0.86em; }
     .actions-carte .btn small { display: block; font-weight: 600; font-size: 0.82em; opacity: 0.8; }
@@ -513,8 +528,8 @@
             </button>
           </div>
 
+          <div class="plateau-sj" v-if="maCite" @click="vueCite = moiJ" v-html="DV.plateau(maCite.joyau, { faites: maCite.etapes, suivante: true })"></div>
           <div class="cite-sj" v-if="maCite" @click="vueCite = moiJ">
-            <span class="joyau">{{ joyau(maCite).ico }} <span class="pips">{{ pips(maCite) }}</span></span>
             <span class="res">{{ maProduction }}</span>
             <span class="res" v-if="mesSciences">{{ mesSciences }}</span>
             <span class="res" style="color:#2c7be5;font-weight:700">ma cité ›</span>
@@ -528,23 +543,40 @@
             <button class="btn" @click="annulerChoix">Changer</button>
           </div>
 
-          <!-- Ma main -->
-          <div class="main-sj" v-if="estJoueur && e.phase === 'jeu'">
-            <template v-for="(m, i) in mainAff">
-              <button :key="'c' + i + m.id" class="carte-sj" :class="{ choisie: selection === i || (monChoix && monChoix.i === i), terne: monChoix && monChoix.i !== i }" @click="toucherCarte(i)">
-                <span class="bande" :style="{ background: m.coul }"></span>
-                <span class="corps">
-                  <span class="l1"><span class="titre">{{ m.c.nom }}</span><span class="cout" v-html="m.cout"></span></span>
-                  <span class="l2"><span class="effet" v-html="m.effet"></span><span class="etat" :class="m.etat.cl">{{ m.etat.txt }}</span></span>
-                </span>
-              </button>
-              <div v-if="selection === i && !monChoix" :key="'a' + i" class="actions-carte">
-                <button class="btn principal" :disabled="!m.o.construire.ok" @click="jouer(i, 'construire')">🏗️ Construire<small>{{ m.o.construire.ok ? paiementTexte(m.o.construire) : m.o.construire.raison }}</small></button>
-                <button class="btn" :disabled="!m.o.joyau.ok" @click="jouer(i, 'joyau')">{{ joyau(maCite).ico }} Étape {{ Math.min(3, maCite.etapes + 1) }} de la merveille<small>{{ m.o.joyau.ok ? paiementTexte(m.o.joyau) : m.o.joyau.raison }}</small></button>
-                <button class="btn" @click="jouer(i, 'vendre')">🪙 Vendre<small>+3 pièces</small></button>
-                <button class="btn" v-if="m.o.gratuit" @click="jouer(i, 'gratuit')">✨ Construire gratuitement<small>une fois par âge</small></button>
+          <!-- Ma main : des cartes dessinées (comme le Duel) ; toucher = la feuille de la carte -->
+          <div class="main-cartes" v-if="estJoueur && e.phase === 'jeu'">
+            <button v-for="(m, i) in mainAff" :key="'c' + i + m.id" class="mc" :class="{ choisie: selection === i || (monChoix && monChoix.i === i), terne: monChoix && monChoix.i !== i }" @click="toucherCarte(i)">
+              <span v-html="DV.carteC(m.c, 'main')"></span>
+              <span class="mc-etat" :class="m.etat.cl">{{ m.etat.txt }}</span>
+            </button>
+          </div>
+
+          <div class="voile-sj" data-fermable v-if="carteSel" @click.self="selection = -1">
+            <div class="boite-sj">
+              <div class="feuille-carte">
+                <div v-html="DV.carteC(carteSel.c, 'grand')"></div>
+                <div class="fc-texte">
+                  <div class="titre">{{ carteSel.c.nom }}</div>
+                  <div class="aide" style="margin:0 0 4px">{{ SJ.TYPES[carteSel.c.type].nom }} · âge {{ ['', 'I', 'II', 'III'][carteSel.c.age] }}</div>
+                  <div style="font-size:0.88em">{{ texteCarte(carteSel.c) }}</div>
+                  <div class="aide" v-if="carteSel.c.chaine.length">🔗 Gratuite si tu as déjà « {{ carteSel.c.chaine.map(x => SJ.CARTES[x].nom).join(' » ou « ') }} ».</div>
+                </div>
               </div>
-            </template>
+              <div class="actions-carte">
+                <button class="btn principal" :disabled="!carteSel.o.construire.ok" @click="jouer(selection, 'construire')">🏗️ Construire<small>{{ carteSel.o.construire.ok ? paiementTexte(carteSel.o.construire) : carteSel.o.construire.raison }}</small></button>
+                <button class="btn" @click="jouer(selection, 'vendre')">🪙 Vendre<small>+3 pièces</small></button>
+                <button class="btn" v-if="carteSel.o.gratuit" @click="jouer(selection, 'gratuit')">✨ Construire gratuitement<small>une fois par âge</small></button>
+              </div>
+              <template v-if="maCite.etapes < 3">
+                <div class="petit-titre">… ou la glisser sous ta merveille pour bâtir l'étape {{ ['I', 'II', 'III'][maCite.etapes] }} :</div>
+                <button class="btn etape-btn" :disabled="!carteSel.o.joyau.ok" @click="jouer(selection, 'joyau')">
+                  <span class="eb-cout" v-html="coutEtape"></span><span class="eb-fl">→</span><span class="eb-gain" v-html="gainEtapeHtml"></span>
+                  <small>{{ carteSel.o.joyau.ok ? paiementTexte(carteSel.o.joyau) : carteSel.o.joyau.raison }}</small>
+                </button>
+              </template>
+              <div class="aide" v-else>Ta merveille est terminée.</div>
+              <button class="btn" style="width:100%;margin-top:8px" @click="selection = -1">Fermer</button>
+            </div>
           </div>
           <div class="actions-sj" v-if="e.phase === 'jeu'">
             <button v-if="!solo && role === 'hote' && absentsAttendus.length" class="btn" @click="envoyerJeu({ type: 'REMPLACER' })">🤖 Jouer à la place de {{ absentsAttendus.join(', ') }}</button>
@@ -571,10 +603,7 @@
           <div class="boite-sj">
             <div class="titre">{{ citeAff.nom === moiJ ? 'Ma cité' : 'Cité de ' + citeAff.nom }}</div>
             <div class="ligne" v-if="!citeAff.jy">Pas encore de merveille.</div>
-            <div class="ligne" v-if="citeAff.jy"><b>{{ citeAff.jy.ico }} {{ citeAff.jy.nom }}</b> · ressource de départ {{ ico(citeAff.jy.base) }}</div>
-            <div class="etapes" v-if="citeAff.jy">
-              <div v-for="(t, k) in citeAff.jy.etapes" :key="k" :class="{ faite: k < citeAff.cite.etapes }">{{ k < citeAff.cite.etapes ? '✓' : (k + 1) + '.' }} <span v-html="coutHtml(t.cout, 0)"></span> → <span v-html="etapeHtml(t)"></span></div>
-            </div>
+            <div class="plateau-sj" v-if="citeAff.jy" v-html="DV.plateau(citeAff.cite.joyau, { faites: citeAff.cite.etapes })"></div>
             <div class="ligne" v-if="citeAff.duel">🪙 {{ citeAff.cite.pieces }} · jetons : {{ citeAff.cite.jetons.length ? citeAff.cite.jetons.map(t => JETONS[t].ico + ' ' + JETONS[t].nom).join(', ') : 'aucun' }}</div>
             <div class="ligne" v-else>🪙 {{ citeAff.cite.pieces }} · 🛡️ {{ citeAff.boucliers }} · conflits : {{ citeAff.cite.militaire.length ? citeAff.cite.militaire.map(x => x > 0 ? '+' + x : x).join(' ') : 'aucun' }}</div>
             <div class="ligne">Produit : {{ citeAff.production || 'rien encore' }}</div>
@@ -799,7 +828,7 @@
       data: {
         version: VERSION,
         iconeJeu: IconesJeux.svg('joyaux', 76),   // le phare dessiné (icones-jeux.js)
-        LIGNES_SCORE: LIGNES_SCORE, LIGNES_DUEL: LIGNES_DUEL, PROGRES: SD.PROGRES, MERVEILLES: SD.MERVEILLES, CARTES_DUEL: SD.CARTES, TYPES_DUEL: SD.TYPES, JOYAUX: SJ.JOYAUX, DV: DV,
+        LIGNES_SCORE: LIGNES_SCORE, LIGNES_DUEL: LIGNES_DUEL, PROGRES: SD.PROGRES, MERVEILLES: SD.MERVEILLES, CARTES_DUEL: SD.CARTES, TYPES_DUEL: SD.TYPES, JOYAUX: SJ.JOYAUX, DV: DV, SJ: SJ,
         modeChoisi: lireStockage('joyaux-version') || 'duel',   // Duel par défaut (demandé par l'utilisateur, 2.60)
         selDuel: null,
         coupAdv: null,      // coup de l'adversaire montré en haut de l'écran (e.dernier)
@@ -843,13 +872,18 @@
         mesSciences: function() { return this.maCite ? sciencesTexte(SJ.symboles(this.e, this.moiJ)) : ''; },
         monChoix: function() { return this.e && this.e.choix ? this.e.choix[this.moiJ] || null : null; },
         aMoiDeChoisir: function() { return !!this.e && this.e.phase === 'jeu' && this.estJoueur && !this.monChoix && (this.solo || this.connexion === 'ok'); },
+        // Classique : la carte touchée (feuille du bas) et l'étape de merveille qu'elle permettrait de bâtir
+        carteSel: function() { return this.selection >= 0 && !this.monChoix && this.aMoiDeChoisir ? this.mainAff[this.selection] || null : null; },
+        etapeSuivante: function() { var c = this.maCite; return c && c.etapes < 3 ? SJ.JOYAUX[c.joyau].etapes[c.etapes] : null; },
+        coutEtape: function() { var t = this.etapeSuivante; return t ? t.cout.split('').map(r => DV.res(r, 1.2)).join('') : ''; },
+        gainEtapeHtml: function() { var t = this.etapeSuivante; if (!t) return ''; var g = DV.gainEtape(t); return g[0] + ' <small style="font-size:12px;font-weight:700;color:#3b4b57">' + g[1] + '</small>'; },
         mainAff: function() {
           var e = this.e, j = this.moiJ;
           return ((e && e.mains[j]) || []).map(id => {
             var c = SJ.CARTES[id], o = SJ.options(e, j, id), k = o.construire, etat;
             if (k.ok && k.chaine) etat = { txt: '✓ gratuit', cl: 'ok' };
             else if (k.ok && !k.g && !k.d) etat = { txt: '✓', cl: 'ok' };
-            else if (k.ok) etat = { txt: (k.g + k.d) + '🪙 aux voisins', cl: 'paie' };
+            else if (k.ok) etat = { txt: (k.g + k.d) + ' 🪙', cl: 'paie' };   // à payer aux voisins (détail dans la feuille de la carte)
             else etat = { txt: k.raison === 'Déjà dans ta cité' ? 'déjà là' : '✗', cl: 'non' };
             return { id: id, c: c, o: o, etat: etat, coul: SJ.TYPES[c.type].coul, cout: coutHtml(c.cout, c.pieces), effet: effetHtml(c) };
           });
@@ -1062,6 +1096,23 @@
           if (this.role === 'hote') return !!(salle.infos[p] && salle.infos[p].connecte);
           var j = this.joueurs.find(x => x.pseudo === p);
           return !j || j.connecte !== false;
+        },
+        // Texte clair d'une carte du Classique (feuille de la carte)
+        texteCarte: function(c) {
+          var f = c.effet, l = [], nr = r => SJ.RES[r].nom.toLowerCase(), q = f => f.indexOf('/') >= 0;
+          var qui = { v: 'chez tes deux voisins', s: 'dans ta cité', sv: 'dans ta cité et chez tes voisins' };
+          if (f.prod) l.push(q(f.prod) ? 'Produit chaque tour, au choix : ' + f.prod.split('/').map(nr).join(' ou ') + '.' : 'Produit ' + f.prod.split('').map(nr).join(' + ') + ' chaque tour.');
+          if (f.choix) l.push('Produit au choix ' + f.choix.split('/').map(nr).join(' ou ') + ', pour toi seul (tes voisins ne peuvent pas l\'acheter).');
+          if (f.comptoir) l.push('Tu achètes bois, pierre, argile et minerai à ton voisin de ' + (f.comptoir === 'g' ? 'gauche ◀' : 'droite ▶') + ' pour 1 🪙 au lieu de 2.');
+          if (f.marche) l.push('Tu achètes verre, tissu et parchemin à tes deux voisins pour 1 🪙 au lieu de 2.');
+          if (f.boucliers) l.push(f.boucliers + ' bouclier' + (f.boucliers > 1 ? 's' : '') + ' pour les conflits contre tes voisins.');
+          if (f.sci) l.push(f.sci === '*' ? 'Un symbole de savoir au choix, compté à la fin.' : 'Symbole de savoir ' + SJ.SCIENCES[f.sci] + ' (carrés + 7 points par série de trois différents).');
+          if (f.pieces) l.push('+' + f.pieces + ' 🪙 tout de suite.');
+          if (f.gain) l.push(f.gain.pieces + ' 🪙 tout de suite par ' + NOMS_TYPES[f.gain.type] + ' chez toi et chez tes voisins.');
+          if (f.fin) l.push(f.fin.pieces + ' 🪙 tout de suite, puis ' + f.fin.pts + ' point' + (f.fin.pts > 1 ? 's' : '') + ' à la fin, par ' + NOMS_TYPES[f.fin.type] + ' de ta cité.');
+          if (f.guilde) l.push('À la fin : ' + f.guilde.pts + ' point' + (f.guilde.pts > 1 ? 's' : '') + ' par ' + f.guilde.types.map(t => NOMS_TYPES[t]).join(', ') + ' ' + qui[f.guilde.qui] + '.');
+          if (f.pts) l.push(f.pts + ' points de victoire.');
+          return l.join(' ');
         },
         paiementTexte: function(p) {
           if (p.chaine) return 'gratuit (chaîne)';

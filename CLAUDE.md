@@ -408,8 +408,19 @@ Bataille navale : `bataille-boss` (partie contre un boss d'expédition), `batail
   parmi 10. 7 **merveilles** à 3 étapes : 3 pts / pouvoir / 7 pts (2.70, harmonisé avec « 7 piliers » : ex « joyaux » maison Saphir, Rubis… ; affichées sous les noms des sept merveilles de l'Antiquité : Phare d'Alexandrie, Colosse de Rhodes, Temple d'Artémis, Grande Pyramide, Mausolée d'Halicarnasse, Jardins de Babylone, Statue de Zeus ; **clés internes inchangées** : `JOYAUX`, `cite.joyau`, action `'joyau'`, `saphir`… pour les sauvegardes). Onglet Jouer vide : le phare dessiné (`iconeJeu`).
 - Ordinateur (`SJ.ordinateur`) : estime chaque coup (points, ressources utiles selon l'âge, boucliers s'il est à la traîne, savoir, pièces), un peu de hasard.
   Testé en Node : 300 parties de 3 à 7 joueurs (~45 points en moyenne). Joueur absent en salon : l'hôte peut « jouer à sa place » (un coup de l'ordinateur).
-- Écran (360 px) : barre (âge, tour, sens, 🪙, 🛡️, points du moment), joueurs (✓ = a choisi, dernier coup, ◀ ▶ = mes voisins ; toucher = voir sa cité),
-  ma cité en une ligne, **ma main en lignes** (bande de couleur, coût, effet, « ✓ / gratuit / N🪙 aux voisins / ✗ ») ; toucher une carte ouvre ses actions.
+- Écran (360 px) : barre (âge, tour, sens, 🪙, 🛡️, points du moment), joueurs (✓ = a choisi, dernier coup, ◀ ▶ = mes voisins ; toucher = voir sa cité).
+  **Modernisé comme le Duel** (2.76, demandé par l'utilisateur : « coller aux évolutions de Duel ») :
+  **ma merveille en carte large** (`DV.plateau(clé, { faites, suivante })` dans `joyaux-visuels.js`, ~toute la largeur, hauteur en proportion, fond doré + silhouette du monument
+  (`MONU_C` : clé classique → monument du Duel)) : ressource produite dès le départ (pastille « produit dès le départ »), nom, avancement N/3, puis les **3 étapes**
+  côte à côte (coût en pastilles → gain en icône + légende en clair : « 3 points », « 2 boucliers », « +9 pièces », « 1 matière au choix, chaque tour », « 1 savoir au choix »,
+  « matières à 1 🪙 chez mes voisins », « 1 carte gratuite par âge » ; `DV.gainEtape`) ; étape faite = coche verte et coût pâli, prochaine étape un peu éclairée.
+  Toucher = ma cité (la fiche de cité montre la même carte). Ligne « ma cité » dessous : production et savoirs.
+  **Ma main en cartes dessinées** (`DV.carteC(SJ.CARTES[id], 'main' | 'grand')`, `DV.effetC` : mêmes cartes que le Duel, effets du Classique en icônes,
+  ◀ ▶ = voisins, ● = ma cité ; icônes Minerai `M` et Tissu `T` ajoutées à `R`), grille de 4 colonnes (`.main-cartes`, taille réglée sur la largeur),
+  pastille d'état sous chaque carte (✓ / ✓ gratuit / N 🪙 à payer aux voisins / ✗). Coût de 5 ressources et plus : 3 colonnes plus petites (`dv-cout3`) ;
+  nom plus petit quand un mot est long (`taillenom`, jamais coupé au milieu). Toucher une carte ouvre **une feuille qui monte du bas** (`carteSel`, fermable d'un glissement) :
+  grande carte, texte clair (`texteCarte`), chaînage, Construire / Vendre / Construire gratuitement, et « la glisser sous ta merveille » avec l'étape dessinée (coût → gain).
+  Plus tard (proposé) : les cartes de la fiche de cité en petites cartes dessinées, comme dans le Duel.
   Choix fait : bandeau « ✓ … · On attend … » avec « Changer » (jusqu'à la révélation, 0,7 s après le dernier choix). Fenêtre des conflits à chaque fin d'âge,
   tableau du décompte à la fin. Hôte disparu : retour à la salle d'attente (les mains étaient chez lui). Étoiles : `finDePartie('Les 7 joyaux')` (« entre amis »
   seulement à 2 humains et plus), série de victoires solo `Etoiles.serie('joyaux')`.

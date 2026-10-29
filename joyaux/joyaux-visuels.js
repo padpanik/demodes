@@ -2,6 +2,7 @@
 // Cartes, merveilles, jetons Progrès, ressources, pièces, boucliers et points de victoire, en HTML + SVG maison
 // (aucune illustration officielle). Une carte se dessine à n'importe quelle taille : tout est en « em » (variable --t).
 //   DV.carte(id, 'pyr' | 'grand' | 'mini')   DV.dos(age)   DV.merveille(id, { faite, taille })   DV.jeton(id, taille)   DV.res('B')
+// Classique (SJ) : DV.carteC(SJ.CARTES[id], 'main' | 'grand' | 'mini')   DV.plateau(cléMerveille, { faites, suivante })
 var DV = (function () {
   var COUL = { brun: '#8a5a2b', gris: '#7d8590', bleu: '#2b6cb0', jaune: '#d69e2e', rouge: '#c53030', vert: '#2f855a', violet: '#6b46c1' };
 
@@ -11,6 +12,8 @@ var DV = (function () {
     A: '<rect x="0.6" y="2.2" width="8.8" height="5.6" rx="0.6" fill="#e0703f" stroke="#5a200a" stroke-width="0.6"/><path d="M0.6 5 H9.4 M4.2 2.2 V5 M6.8 5 V7.8 M2.4 5 V7.8" stroke="#5a200a" stroke-width="0.6"/>',
     P: '<path d="M0.6 8.6 L1.8 3.8 L4.6 2.2 L6.8 3.6 L9 3.2 L9.5 8.6 Z" fill="#b3bcc4" stroke="#3c434a" stroke-width="0.6" stroke-linejoin="round"/><path d="M1.8 3.8 L4 6 L6.8 3.6 M4 6 L4.4 8.6" fill="none" stroke="#3c434a" stroke-width="0.55"/>',
     V: '<path d="M3.5 0.6 H6.5 V2.4 L8.1 4.3 V8.7 Q8.1 9.5 7.2 9.5 H2.8 Q1.9 9.5 1.9 8.7 V4.3 L3.5 2.4 Z" fill="#8fe0f2" stroke="#145e72" stroke-width="0.6"/><path d="M3.3 4.8 V8.2" stroke="#fff" stroke-width="0.7"/>',
+    M: '<path d="M1 8.8 L1.6 5 L3.8 3.2 L6.6 3.4 L8.8 5.4 L9.2 8.8 Z" fill="#5d6670" stroke="#22282e" stroke-width="0.6" stroke-linejoin="round"/><path d="M3.2 5.2 L4.4 4.6 L4.8 5.8 Z M6.2 6.2 L7.4 5.6 L7.6 7 Z M2.6 7.4 L3.6 7 L3.8 8 Z" fill="#f2c94c" stroke="#8a6a10" stroke-width="0.3"/>',
+    T: '<rect x="1" y="1.6" width="5.6" height="7.2" rx="0.8" fill="#c04f8f" stroke="#5a1840" stroke-width="0.6"/><ellipse cx="6.6" cy="5.2" rx="2.4" ry="3.6" fill="#e07ab2" stroke="#5a1840" stroke-width="0.6"/><ellipse cx="6.6" cy="5.2" rx="0.8" ry="1.3" fill="#7a2456"/><path d="M1.6 3.6 H5.6 M1.6 5.4 H5.6 M1.6 7.2 H5.6" stroke="#f7c5df" stroke-width="0.45"/>',
     R: '<rect x="1.8" y="1.2" width="6.4" height="7.6" fill="#f5e6bb" stroke="#6b5520" stroke-width="0.5"/><rect x="0.9" y="0.6" width="8.2" height="1.8" rx="0.9" fill="#d9bd70" stroke="#6b5520" stroke-width="0.5"/><rect x="0.9" y="7.6" width="8.2" height="1.8" rx="0.9" fill="#d9bd70" stroke="#6b5520" stroke-width="0.5"/><path d="M3 4 H7 M3 5.3 H7 M3 6.6 H6" stroke="#8a6d2a" stroke-width="0.55"/>'
   };
   function svg(contenu, taille) { return '<svg class="dv-ico" viewBox="0 0 10 10" style="width:' + (taille || 1) + 'em;height:' + (taille || 1) + 'em">' + contenu + '</svg>'; }
@@ -73,7 +76,7 @@ var DV = (function () {
   // Deux pastilles ou plus : sur deux colonnes, pour ne pas descendre sur le nom
   function colonneCout(html) {
     var n = (html.match(/class="dv-past/g) || []).length;
-    return '<div class="dv-cout' + (n > 1 ? ' dv-cout2' : '') + '">' + html + '</div>';
+    return '<div class="dv-cout' + (n > 4 ? ' dv-cout2 dv-cout3' : n > 1 ? ' dv-cout2' : '') + '">' + html + '</div>';   // 5 et plus : 3 colonnes, un peu plus petites
   }
   function cout(c) {
     return (c.pieces ? '<span class="dv-past dv-past-p">' + piece(c.pieces, 1) + '</span>' : '') + pastilles(c.cout);
@@ -166,6 +169,87 @@ var DV = (function () {
     return l.join(' ');
   }
 
+  // ================== VERSION CLASSIQUE : mêmes visuels, cartes et merveilles du Classique (SJ) ==================
+  var MONU_C = { saphir: 'm-phare', rubis: 'm-colosse', emeraude: 'm-artemis', ambre: 'm-pyramides', opale: 'm-mausolee', jade: 'm-jardins', amethyste: 'm-zeus' };
+  function sciC(k, t) { return '<span class="dv-sci" style="font-size:' + (t || 1) + 'em">' + (k === '*' ? '❓' : SJ.SCIENCES[k]) + '</span>'; }
+  function prodC(p, t) { return p.indexOf('/') >= 0 ? p.split('/').map(r => res(r, t * (p.length > 5 ? 0.78 : 0.9))).join('<b class="dv-ou">/</b>') : p.split('').map(r => res(r, t)).join(''); }
+  function fleche(f, t) { return '<b class="dv-fl" style="font-size:' + (t * 0.62) + 'em">' + f + '</b>'; }
+  function typeC(type, t) { return type === 'joyau' ? merveillePetite(t) : type === 'defaite' ? '<span class="dv-defaite" style="font-size:' + (t * 0.8) + 'em">−1</span>' : carreType(type, t * 0.8); }
+  // Effet d'une carte du Classique, en icônes (◀ ▶ = mes voisins)
+  function effetC(c, t) {
+    var f = c.effet, o = '';
+    if (!t) {
+      var nb = (f.prod ? (f.prod.indexOf('/') >= 0 ? 2.5 : f.prod.length) : 0) + (f.choix ? 3 : 0) + (f.comptoir || f.marche ? 5 : 0) + (f.boucliers || 0) + (f.sci ? 1 : 0) +
+               (f.pieces ? 1 : 0) + (f.gain ? 3 : 0) + (f.fin ? 4 : 0) + (f.guilde ? 2 + f.guilde.types.length : 0) + (f.pts ? 1 : 0);
+      t = nb <= 1 ? 1.9 : nb <= 2 ? 1.75 : nb <= 3 ? 1.5 : nb <= 4 ? 1.3 : 1.1;
+    }
+    if (f.prod) o += prodC(f.prod, t);
+    if (f.choix) o += prodC(f.choix, t);
+    if (f.comptoir) o += fleche(f.comptoir === 'g' ? '◀' : '▶', t) + 'BPAM'.split('').map(r => res(r, t * 0.62)).join('') + '<b class="dv-eg">=</b>' + piece(1, t * 0.8);
+    if (f.marche) o += fleche('◀▶', t) + 'VTR'.split('').map(r => res(r, t * 0.7)).join('') + '<b class="dv-eg">=</b>' + piece(1, t * 0.8);
+    if (f.boucliers) o += bouclier(f.boucliers, t);
+    if (f.sci) o += sciC(f.sci, t);
+    if (f.pieces) o += piece(f.pieces, t);
+    if (f.gain) o += piece(f.gain.pieces, t * 0.85) + '<b class="dv-ou">/</b>' + typeC(f.gain.type, t) + fleche('◀●▶', t);
+    if (f.fin) o += piece(f.fin.pieces, t * 0.8) + pv(f.fin.pts, t * 0.8) + '<b class="dv-ou">/</b>' + typeC(f.fin.type, t);
+    if (f.guilde) {
+      var g = f.guilde;
+      o += fleche(g.qui === 's' ? '●' : g.qui === 'sv' ? '◀●▶' : '◀▶', t) + g.types.map(x => typeC(x, t * 0.85)).join('') + '<b class="dv-eg">→</b>' + pv(g.pts, t * 0.85);
+    }
+    if (f.pts) o += pv(f.pts, t);
+    return o;
+  }
+  function coutC(c) { return (c.pieces ? '<span class="dv-past dv-past-p">' + piece(c.pieces, 1) + '</span>' : '') + pastilles(c.cout); }
+  // Une carte du Classique (c = SJ.CARTES[id]) ; tailles : 'main' (réglée par la page), 'grand', 'mini'
+  function carteC(c, taille) {
+    if (!c) return '';
+    return '<div class="dv-carte dv-' + (taille || 'main') + '" style="--c:' + COUL[c.type] + '">' +
+      '<div class="dv-bandeau">' + effetC(c) + '</div>' +
+      colonneCout(coutC(c)) +
+      silhouette(c.type) +
+      '<div class="dv-nom"' + taillenom(c.nom) + '>' + c.nom + '</div></div>';
+  }
+  // Nom plus petit quand un mot est long, pour ne jamais le couper au milieu (« Parcheminerie », « Bibliothèque »)
+  function taillenom(nom) {
+    var l = Math.max.apply(null, nom.split(/[\s'-]/).map(m => m.length));
+    return l > 11 ? ' style="font-size:0.62em"' : l > 10 ? ' style="font-size:0.7em"' : l > 8 ? ' style="font-size:0.8em"' : '';
+  }
+  // Ce que rapporte une étape de merveille : l'icône et une légende en clair
+  function gainEtape(t) {
+    if (t.pts) return [pv(t.pts, 1.7), t.pts + ' points'];
+    if (t.boucliers) return [bouclier(t.boucliers, 1.6), t.boucliers + ' boucliers'];
+    if (t.pieces) return [piece(t.pieces, 1.6), '+' + t.pieces + ' pièces'];
+    if (t.prod) return [prodC(t.prod, 1.55), t.prod.length > 5 ? '1 matière au choix, chaque tour' : '1 objet au choix, chaque tour'];
+    if (t.sci) return [sciC('*', 1.5), '1 savoir au choix'];
+    if (t.comptoir) return [fleche('◀▶', 1.6) + 'BPAM'.split('').map(r => res(r, 0.95)).join('') + '<b class="dv-eg">=</b>' + piece(1, 1.1), 'matières à 1 🪙 chez mes voisins'];
+    if (t.gratuit) return ['<span class="dv-gratuit">0</span>', '1 carte gratuite par âge'];
+    return ['', ''];
+  }
+  // La merveille d'une cité, en carte large : ressource de départ, puis les 3 étapes (coût → gain) ; faites = cochées
+  function plateau(cle, opts) {
+    opts = opts || {};
+    var J = SJ.JOYAUX[cle], faites = opts.faites || 0;
+    if (!J) return '';
+    var et = J.etapes.map(function (t, k) {
+      var g = gainEtape(t), faite = k < faites;
+      return '<div class="dv-pl-et' + (faite ? ' dv-pl-faite' : '') + (k === faites && opts.suivante ? ' dv-pl-suiv' : '') + '">' +
+        '<span class="dv-pl-num">' + ['I', 'II', 'III'][k] + '</span>' +
+        '<div class="dv-pl-cout">' + pastilles(t.cout) + '</div>' +
+        '<div class="dv-pl-fl">▼</div>' +
+        '<div class="dv-pl-gain">' + g[0] + '</div>' +
+        '<div class="dv-pl-leg">' + g[1] + '</div>' +
+        (faite ? '<div class="dv-tampon">✓</div>' : '') + '</div>';
+    }).join('');
+    return '<div class="dv-plateau">' +
+      '<svg class="dv-pl-monu" viewBox="0 0 80 48" fill="#fff">' + MONU[MONU_C[cle]] + '</svg>' +
+      '<div class="dv-pl-tete">' +
+        '<div class="dv-pl-base"><span class="dv-past">' + res(J.base, 1) + '</span><span>produit<br>dès le départ</span></div>' +
+        '<div class="dv-pl-nom">' + J.nom + '</div>' +
+        '<div class="dv-pl-avance">' + faites + '/3</div>' +
+      '</div>' +
+      '<div class="dv-pl-etapes">' + et + '</div></div>';
+  }
+
   // ---------- Styles ----------
   var css = [
     '.dv-ico{vertical-align:-0.15em;flex:none}',
@@ -184,6 +268,7 @@ var DV = (function () {
     '.dv-past-p .dv-piece{font-size:1.5em!important}',
     '.dv-nb{position:absolute;right:-0.4em;bottom:-0.35em;min-width:1.05em;height:1.05em;border-radius:50%;background:#1d2b36;color:#fff;font-size:0.9em;line-height:1.05em;text-align:center;font-weight:900;border:0.08em solid #fff}',
     '.dv-cout.dv-cout2{display:grid!important;grid-template-columns:1.75em 1.75em;gap:0.15em 0.2em!important}',
+    '.dv-carte .dv-cout.dv-cout3{grid-template-columns:repeat(3,1.75em);font-size:0.8em}',
     '.dv-carte .dv-cout{position:absolute;top:2.5em;left:0.15em;display:flex;flex-direction:column;gap:0.15em;font-size:1em}',
     '.dv-carte .dv-sil{position:absolute;left:1.9em;right:0.2em;top:2.6em;width:auto;height:3.6em;opacity:0.33}',
     '.dv-carte .dv-nom{position:absolute;left:0.15em;right:0.15em;bottom:0.25em;text-align:center;font-weight:800;font-size:0.88em;line-height:1.05;overflow-wrap:anywhere;text-shadow:0 0.08em 0.15em rgba(0,0,0,0.5)}',
@@ -206,9 +291,32 @@ var DV = (function () {
     '.dv-detruit{color:#c53030;font-weight:900}',
     '.dv-texte{font-weight:700;color:#3b4b57}',
     '.dv-jeton{display:inline-flex;align-items:center;justify-content:center;width:2em;height:2em;border-radius:50%;background:radial-gradient(circle at 35% 30%,#7fd6a2,#2f855a 75%);border:0.12em solid #1c5a3a;box-shadow:inset 0 0 0 0.12em rgba(255,255,255,0.35);line-height:1}'
+,
+    '.dv-fl{color:#2c5ea8;margin:0 0.08em;letter-spacing:-0.05em}',
+    '.dv-defaite{display:inline-flex;align-items:center;justify-content:center;min-width:1.2em;height:1.2em;border-radius:0.25em;background:#fde2df;color:#c53030;font-weight:900;line-height:1;padding:0 0.15em}',
+    '.dv-carte.dv-main{--t:12px}',
+    '.dv-gratuit{display:inline-flex;align-items:center;justify-content:center;width:1.3em;height:1.75em;border-radius:0.25em;background:#2b6cb0;color:#fff;font-weight:900;font-size:1.25em;border:0.1em solid #fff;box-shadow:0 0.06em 0.2em rgba(0,0,0,0.4)}',
+    '.dv-plateau{--t:13px;font-size:var(--t);width:26em;height:11.4em;border-radius:0.75em;position:relative;overflow:hidden;box-sizing:border-box;border:0.15em solid #a07a2c;color:#fff;font-family:system-ui,sans-serif;background:linear-gradient(180deg,#d9b25a,#9c6f1e);box-shadow:0 0.15em 0.4em rgba(0,0,0,0.18)}',
+    '.dv-plateau .dv-pl-monu{position:absolute;right:0.4em;top:0.2em;width:9em;height:5.4em;opacity:0.4}',
+    '.dv-pl-tete{position:absolute;left:0;right:0;top:0;height:3.1em;display:flex;align-items:center;gap:0.5em;padding:0 0.5em}',
+    '.dv-pl-base{display:flex;align-items:center;gap:0.3em;background:rgba(255,253,245,0.95);border-radius:0.5em;padding:0.25em 0.4em 0.25em 0.25em;color:#3b4b57;font-size:0.68em;line-height:1.05;font-weight:700;flex:none}',
+    '.dv-pl-base .dv-past{font-size:1.45em}',
+    '.dv-pl-nom{flex:1;min-width:0;font-weight:900;font-size:1.05em;line-height:1.1;text-shadow:0 0.08em 0.2em rgba(0,0,0,0.55);position:relative}',
+    '.dv-pl-avance{flex:none;background:rgba(0,0,0,0.28);border-radius:1em;padding:0.1em 0.5em;font-weight:900;font-size:0.8em;position:relative}',
+    '.dv-pl-etapes{position:absolute;left:0.35em;right:0.35em;bottom:0.35em;top:3.1em;display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.3em}',
+    '.dv-pl-et{position:relative;background:rgba(255,253,245,0.95);border-radius:0.5em;color:#1d2b36;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.1em;padding:0.25em 0.2em;min-width:0}',
+    '.dv-pl-num{position:absolute;left:0.3em;top:0.25em;font:900 0.7em/1 Georgia,serif;color:#9c6f1e}',
+    '.dv-pl-cout{display:flex;gap:0.2em;justify-content:center;min-height:1.75em}',
+    '.dv-pl-faite .dv-pl-cout{opacity:0.4}',
+    '.dv-pl-fl{font-size:0.55em;color:#b08a3c;line-height:1.3}',
+    '.dv-pl-gain{display:flex;align-items:center;justify-content:center;min-height:2.1em;white-space:nowrap}',
+    '.dv-pl-leg{font-size:0.62em;line-height:1.1;text-align:center;color:#3b4b57;font-weight:700;margin-top:0.15em}',
+    '.dv-pl-suiv{box-shadow:0 0 0 0.14em #fff,0 0 0.6em rgba(255,255,255,0.8)}',
+    '.dv-pl-et .dv-tampon{position:absolute;right:-0.15em;top:-0.15em;background:#2ecc71;color:#fff;border-radius:50%;width:1.35em;height:1.35em;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:0.95em;box-shadow:0 0 0 0.12em #fff,0 0.1em 0.3em rgba(0,0,0,0.35)}'
   ].join('\n');
   if (typeof document !== 'undefined') { var st = document.createElement('style'); st.textContent = css; document.head.appendChild(st); }
 
   return { COUL: COUL, res: res, piece: piece, bouclier: bouclier, pv: pv, sci: sci, carre: carreType, carte: carte, dos: dos, merveille: merveille,
-           jeton: jeton, effet: effet, cout: cout, texte: texte, texteMerveille: texteMerveille, effetMerveille: effetMerveille };
+           jeton: jeton, effet: effet, cout: cout, texte: texte, texteMerveille: texteMerveille, effetMerveille: effetMerveille,
+           carteC: carteC, effetC: effetC, plateau: plateau, gainEtape: gainEtape };
 })();
