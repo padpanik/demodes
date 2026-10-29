@@ -543,11 +543,20 @@ var SalonGlobal = (function () {
       if (aGlisse) { aGlisse = false; return; }
       ouvrir_panneau(ongletChat());
     });
-    window.addEventListener('resize', () => placerBulle(b.offsetTop));
+    window.addEventListener('resize', () => placerBulle(topVoulu != null ? topVoulu : b.offsetTop));
     if (window.visualViewport) window.visualViewport.addEventListener('resize', ajusterPanneau);
     rendre();
   }
-  function placerBulle(top) { el.bulle.style.top = Math.max(60, Math.min(window.innerHeight - 56, top)) + 'px'; }
+  // La bulle reste là où on l'a mise, mais jamais sur la bande du bas qu'une page a réservée (volet de cartes…)
+  var reserveBas = 0, topVoulu = null;
+  function placerBulle(top) {
+    topVoulu = top;
+    if (el.bulle) el.bulle.style.top = Math.max(60, Math.min(window.innerHeight - 56 - reserveBas, top)) + 'px';
+  }
+  function reserverBas(px) {
+    reserveBas = Math.max(0, Math.round(px || 0));
+    if (el.bulle && topVoulu != null) placerBulle(topVoulu);
+  }
   function ajusterPanneau() {
     if (!el.panneau) return;
     var h = window.visualViewport ? window.visualViewport.height : window.innerHeight;
@@ -752,5 +761,5 @@ var SalonGlobal = (function () {
   if (script && script.dataset.jeu) demarrer(script.dataset.jeu);
 
   return { demarrer: demarrer, ouvrir: ouvrir_panneau, pret: () => !!role, membre: id => membres[id] || null, demander: demander, envoyerA: envoyerA,
-           membresDuSalon: membresDuSalon, emote: emote, dessinCompagnon: dessinCompagnon, _etat: () => ({ role: role, membres: membres, messages: messages, ou: ou() }) };
+           membresDuSalon: membresDuSalon, emote: emote, reserverBas: reserverBas, dessinCompagnon: dessinCompagnon, _etat: () => ({ role: role, membres: membres, messages: messages, ou: ou() }) };
 })();

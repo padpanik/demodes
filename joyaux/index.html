@@ -87,7 +87,7 @@
     .boite-sj .plateau-sj .dv-plateau { --t: min(13.5px, calc((100vw - 34px) / 26)); }
     .main-cartes { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px 4px; justify-items: center; }
     .main-cartes .mc { background: none; border: none; padding: 0; font: inherit; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 2px; line-height: normal; }
-    .main-cartes .dv-carte.dv-main { --t: min(11.2px, calc((100vw - 44px) / 4 / 6.4)); transition: transform 0.15s; }
+    .main-cartes .dv-carte.dv-main { --t: min(11.8px, calc((100vw - 44px) / 4 / 6.4)); transition: transform 0.15s; }
     .main-cartes .mc.choisie .dv-carte { transform: translateY(-3px); box-shadow: 0 0 0 2.5px #ff9800, 0 4px 10px rgba(0,0,0,0.25); }
     .main-cartes .mc.terne { opacity: 0.4; }
     .mc-etat { font-size: 0.72em; font-weight: 800; border-radius: 8px; padding: 0 6px; white-space: nowrap; background: #eef1f4; color: #6b7a86; }
@@ -128,6 +128,22 @@
     .coup-adv .ca-nom { font-size: 1.15em; font-weight: 900; color: #1d2b36; line-height: 1.2; }
     .coup-adv .ca-sous { font-size: 0.82em; color: #3b4b57; margin-top: 2px; }
     .coup-adv .ca-barre { position: absolute; left: 0; bottom: 0; height: 4px; background: #f0a020; animation: caBarre 3.6s linear forwards; }
+    /* Classique : la table (une carte de merveille par joueur) et le volet de ma main */
+    .table-sj { display: flex; flex-direction: column; gap: 7px; }
+    .table-sj .pj { cursor: pointer; line-height: normal; }
+    .table-sj .dv-plateau { --t: min(13.5px, calc((100vw - 26px) / 26)); margin: 0 auto; }
+    .volet-sj { position: fixed; left: 0; right: 0; bottom: 0; z-index: 45; background: #fff; border-radius: 18px 18px 0 0; box-shadow: 0 -6px 22px rgba(0,0,0,0.2);
+      max-width: 480px; margin: 0 auto; padding: 0 10px calc(10px + env(safe-area-inset-bottom)); box-sizing: border-box; }
+    .volet-tete { position: relative; padding: 14px 2px 8px; cursor: pointer; user-select: none; }
+    .volet-tete .poignee { position: absolute; top: 6px; left: 50%; width: 44px; height: 5px; margin-left: -22px; border-radius: 3px; background: #c9d2da; }
+    .vt-ligne { display: flex; align-items: center; gap: 8px; }
+    .vt-t { flex: 1; min-width: 0; font-weight: 800; color: #3b4b57; font-size: 0.95em; }
+    .vt-t.moi { color: #2f8a5b; }
+    .vt-t.ok { color: #2f8a5b; font-size: 0.88em; }
+    .vt-t small { display: block; font-weight: 600; color: #6b7a86; font-size: 0.82em; }
+    .vt-ligne .btn { padding: 6px 10px; font-size: 0.85em; flex: none; }
+    .vt-chevron { flex: none; width: 34px; height: 34px; border-radius: 50%; background: #eef1f4; display: flex; align-items: center; justify-content: center; font-size: 1.1em; color: #3b4b57; }
+    .sous-volet { height: 86px; }
     /* Classique : ce qu'a joué chacun au dernier tour */
     .tour-adv { position: fixed; top: 10px; left: 50%; transform: translateX(-50%); width: calc(100% - 20px); max-width: 420px; box-sizing: border-box; z-index: 70;
       background: #fff; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.25); padding: 9px 12px 13px; overflow: hidden; cursor: pointer; max-height: 80vh; overflow-y: auto; }
@@ -543,26 +559,20 @@
         <template v-else-if="e">
           <div class="barre-sj">
             <span class="age">Âge {{ ['', 'I', 'II', 'III'][e.age] }}</span>
-            <span class="sens" v-if="e.phase === 'jeu'">tour {{ e.tour }}/6 {{ e.age === 2 ? '▶' : '◀' }}</span>
+            <span class="sens" v-if="e.phase === 'jeu'">tour {{ e.tour }}/6</span>
             <span class="sens" v-else>· partie finie</span>
             <span class="espace"></span>
-            <template v-if="maCite"><span class="val">🪙 {{ maCite.pieces }}</span><span class="val">🛡️ {{ mesBoucliers }}</span><span class="pts">{{ monScore }}</span></template>
+            <span class="sens" v-if="e.phase === 'jeu'">{{ e.age === 2 ? 'la main passe à droite ▶' : '◀ la main passe à gauche' }}</span>
           </div>
 
-          <!-- Les joueurs vus de ma place : mon voisin de gauche à gauche, moi au milieu, celui de droite à droite ; toucher = sa cité -->
-          <div class="joueurs-sj" :class="{ nombreux: joueursAff.length > 3 }" ref="joueursSj">
-            <button v-for="j in joueursAff" :key="j.nom" class="j" :class="{ moi: j.moi, absent: j.absent }" :data-moi="j.moi ? 1 : null" @click="vueCite = j.nom">
-              <span class="fait" v-if="j.fait">✓</span>
-              <div class="nom"><span class="fleche" v-if="j.gauche">◀ </span>{{ j.court }}<span class="fleche" v-if="j.droite"> ▶</span></div>
-              <div class="chiffres" v-html="j.chiffres"></div>
-              <div class="prod" v-html="j.prod"></div>
-              <div class="coup">{{ j.coup }}</div>
-            </button>
+          <!-- La table : la merveille de chaque joueur, dans l'ordre (voisins de gauche ◀ au-dessus, moi au milieu, voisins de droite ▶ en dessous) ; toucher = sa cité -->
+          <div class="table-sj" ref="joueursSj">
+            <div v-for="j in joueursAff" :key="j.nom" class="pj" :data-moi="j.moi ? 1 : null" @click="vueCite = j.nom" v-html="j.carte"></div>
           </div>
-
-          <div class="plateau-sj" v-if="maCite" @click="vueCite = moiJ" v-html="DV.plateau(maCite.joyau, { faites: maCite.etapes, suivante: true })"></div>
-
-          <div class="statut-sj" :class="{ moi: aMoiDeChoisir }">{{ statut }}</div>
+          <div class="actions-sj" v-if="e.phase === 'jeu'">
+            <button v-if="!solo && role === 'hote' && absentsAttendus.length" class="btn" @click="envoyerJeu({ type: 'REMPLACER' })">🤖 Jouer à la place de {{ absentsAttendus.join(', ') }}</button>
+            <button v-if="solo" class="btn" @click="quitterSolo">Arrêter</button>
+          </div>
 
           <!-- Révélation d'un tour : ce qu'a joué chacun des autres, un moment en haut de l'écran (toucher = fermer) -->
           <transition name="coup">
@@ -577,19 +587,27 @@
             </div>
           </transition>
 
-          <!-- Mon choix est fait : on attend les autres -->
-          <div class="choix-fait" v-if="monChoix && e.phase === 'jeu'">
-            <span class="t">✓ {{ texteChoix(monChoix) }}<br><small style="color:#5b6b78">{{ attenteTexte }}</small></span>
-            <button class="btn" @click="annulerChoix">Changer</button>
+          <!-- Ma main : un volet en bas de l'écran ; on le réduit (toucher l'en-tête ou glisser vers le bas) pour regarder la table -->
+          <div class="volet-sj" v-if="estJoueur && e.phase === 'jeu'" :class="{ ouvert: voletOuvert }">
+            <div class="volet-tete" @click="voletOuvert = !voletOuvert" @touchstart.passive="voletDebut" @touchend="voletFin">
+              <span class="poignee"></span>
+              <div class="vt-ligne">
+                <template v-if="monChoix">
+                  <span class="vt-t ok">✓ {{ texteChoix(monChoix) }}<small>{{ attenteTexte }}</small></span>
+                  <button class="btn" @click.stop="annulerChoix">Changer</button>
+                </template>
+                <span v-else class="vt-t" :class="{ moi: aMoiDeChoisir }">{{ aMoiDeChoisir ? 'À toi : choisis une carte' : (statut || 'Ma main') }}<small>{{ mainAff.length }} cartes en main</small></span>
+                <span class="vt-chevron">{{ voletOuvert ? '▾' : '▴' }}</span>
+              </div>
+            </div>
+            <div class="main-cartes" v-show="voletOuvert">
+              <button v-for="(m, i) in mainAff" :key="'c' + i + m.id" class="mc" :class="{ choisie: selection === i || (monChoix && monChoix.i === i), terne: monChoix && monChoix.i !== i }" @click="toucherCarte(i)">
+                <span v-html="DV.carteC(m.c, 'main')"></span>
+                <span class="mc-etat" :class="m.etat.cl">{{ m.etat.txt }}</span>
+              </button>
+            </div>
           </div>
-
-          <!-- Ma main : des cartes dessinées (comme le Duel) ; toucher = la feuille de la carte -->
-          <div class="main-cartes" v-if="estJoueur && e.phase === 'jeu'">
-            <button v-for="(m, i) in mainAff" :key="'c' + i + m.id" class="mc" :class="{ choisie: selection === i || (monChoix && monChoix.i === i), terne: monChoix && monChoix.i !== i }" @click="toucherCarte(i)">
-              <span v-html="DV.carteC(m.c, 'main')"></span>
-              <span class="mc-etat" :class="m.etat.cl">{{ m.etat.txt }}</span>
-            </button>
-          </div>
+          <div class="sous-volet" v-if="estJoueur && e.phase === 'jeu'"></div>
 
           <div class="voile-sj" data-fermable v-if="carteSel" @click.self="selection = -1">
             <div class="boite-sj">
@@ -618,11 +636,6 @@
               <button class="btn" style="width:100%;margin-top:8px" @click="selection = -1">Fermer</button>
             </div>
           </div>
-          <div class="actions-sj" v-if="e.phase === 'jeu'">
-            <button v-if="!solo && role === 'hote' && absentsAttendus.length" class="btn" @click="envoyerJeu({ type: 'REMPLACER' })">🤖 Jouer à la place de {{ absentsAttendus.join(', ') }}</button>
-            <button v-if="solo" class="btn" @click="quitterSolo">Arrêter</button>
-          </div>
-
           <!-- Fin de partie -->
           <section class="carte" v-if="e.phase === 'fin'" style="margin-top:8px">
             <div class="titre-carte">{{ e.vainqueur === moiJ ? '🏆 Ta cité l\'emporte !' : '🏆 ' + e.vainqueur + ' l\'emporte' }}</div>
@@ -816,7 +829,7 @@
       choix.forEach(o => l.push('<span class="ch">' + o.map(r => DV.res(r, 0.85)).join('') + '</span>'));
       var sc = sciencesTexte(SJ.symboles(e, j));
       if (sc) l.push('<span class="sc">' + sc + '</span>');
-      return l.join('') || '<span style="color:#9aa5ae">—</span>';
+      return l.join('') || '<span class="vide">ne produit rien encore</span>';
     }
     function productionTexte(cite) {
       var fixe = {}, choix = [];
@@ -883,6 +896,7 @@
         selDuel: null,
         coupAdv: null,      // coup de l'adversaire montré en haut de l'écran (e.dernier)
         tourAff: null,      // Classique : ce qu'a joué chacun au tour qui vient d'être révélé (e.nTour)
+        voletOuvert: true,  // Classique : volet de ma main ouvert (réduit pour regarder la table)
         filesCoups: [],     // coups suivants à montrer (merveille « Rejouer »)
         finVue: false,      // fenêtre de fin du duel ouverte
         infoJeton: null,
@@ -923,6 +937,7 @@
         mesSciences: function() { return this.maCite ? sciencesTexte(SJ.symboles(this.e, this.moiJ)) : ''; },
         monChoix: function() { return this.e && this.e.choix ? this.e.choix[this.moiJ] || null : null; },
         aMoiDeChoisir: function() { return !!this.e && this.e.phase === 'jeu' && this.estJoueur && !this.monChoix && (this.solo || this.connexion === 'ok'); },
+        cleVolet: function() { var e = this.e; return [this.onglet, this.voletOuvert, this.estJoueur && e && e.mode !== 'duel' ? e.phase : '', this.mainAff.length, !!this.monChoix, this.connexion].join('|'); },
         // Classique : la carte touchée (feuille du bas) et l'étape de merveille qu'elle permettrait de bâtir
         carteSel: function() { return this.selection >= 0 && !this.monChoix && this.aMoiDeChoisir ? this.mainAff[this.selection] || null : null; },
         etapeSuivante: function() { var c = this.maCite; return c && c.etapes < 3 ? SJ.JOYAUX[c.joyau].etapes[c.etapes] : null; },
@@ -951,11 +966,11 @@
         joueursAff: function() {
           var e = this.e, moi = this.moiJ, g = this.estJoueur ? SJ.gauche(e, moi) : null, d = this.estJoueur ? SJ.droite(e, moi) : null;
           return this.ordreTable.map(j => {
-            var cite = e.cites[j], k = e.coups && e.coups[j];
-            var chiffres = DV.piece(cite.pieces, 1.05) + '<span>' + DV.bouclier(1, 1) + SJ.boucliers(e, j) + '</span><span class="pips">' + this.pips(cite) + '</span>' + DV.pv(SJ.score(e, j).total, 1);
-            return { nom: j, court: j === moi ? 'Moi' : this.court(j), moi: j === moi, gauche: j === g, droite: j === d && j !== g,
-                     chiffres: chiffres, prod: prodHtml(e, j), fait: e.phase === 'jeu' && e.aChoisi && e.aChoisi[j],
-                     absent: !this.solo && !this.estPresent(j), coup: k ? this.texteCoup(k) : '' };
+            var cite = e.cites[j], gauche = j === g, droite = j === d && j !== g;
+            var nom = (gauche ? '◀ ' : '') + (j === moi ? 'Moi' : j) + (droite ? ' ▶' : '');
+            return { nom: j, moi: j === moi,
+                     carte: DV.plateauJoueur(cite.joyau, { nom: nom, pieces: cite.pieces, boucliers: SJ.boucliers(e, j), pts: SJ.score(e, j).total, prod: prodHtml(e, j),
+                                                            faites: cite.etapes, moi: j === moi, fait: e.phase === 'jeu' && e.aChoisi && e.aChoisi[j], absent: !this.solo && !this.estPresent(j) }) };
           });
         },
         absentsAttendus: function() { var e = this.e; return e && e.phase === 'jeu' ? e.joueurs.filter(j => !e.aChoisi[j] && !this.estPresent(j)) : []; },
@@ -1126,6 +1141,10 @@
           this.montrerTour();
         },
         'e.n': function() { this.centrerJoueurs(); },
+        aMoiDeChoisir: function(v) { if (v) this.voletOuvert = true; },   // nouveau tour : la main remonte
+        // Le volet de ma main occupe le bas de l'écran : la bulle 💬 du salon global reste au-dessus
+        // (le contenu des onglets est rendu par <fiche-jeu> : on suit ce qui change la hauteur du volet)
+        cleVolet: function() { this.$nextTick(() => this.majReserve()); },
         onglet: function(o) { if (o === 'play') this.centrerJoueurs(); },
         'e.phase': function(p, avant) {
           if (p !== 'fin') { this.finVue = false; this._finAttente = false; return; }
@@ -1233,8 +1252,19 @@
         centrerJoueurs: function() {
           this.$nextTick(() => {
             var b = this.$refs.joueursSj, m = b && b.querySelector('[data-moi]');
-            if (b && m && b.scrollWidth > b.clientWidth) b.scrollLeft = m.offsetLeft - (b.clientWidth - m.offsetWidth) / 2;
+            if (m && this.e && this.e.n > 3) m.scrollIntoView({ block: 'center' });
           });
+        },
+        majReserve: function() {
+          if (!window.SalonGlobal || !SalonGlobal.reserverBas) return;
+          var v = document.querySelector('.volet-sj'), h = v && v.getClientRects().length ? v.offsetHeight + 6 : 0;   // fixe : pas d'offsetParent
+          if (h !== this._reserve) { this._reserve = h; SalonGlobal.reserverBas(h); }
+        },
+        // Volet de ma main : glisser vers le bas = réduire, vers le haut = ouvrir
+        voletDebut: function(ev) { this._voletY = ev.touches[0].clientY; this._voletGlisse = false; },
+        voletFin: function(ev) {
+          var dy = ev.changedTouches[0].clientY - (this._voletY || 0);
+          if (Math.abs(dy) > 30) { this.voletOuvert = dy < 0; ev.preventDefault(); }   // un glissement : pas de « clic » derrière
         },
         texteCoup: function(k) {
           if (k.type === 'vendre') return '🪙 a vendu';
@@ -1365,6 +1395,7 @@
         },
         jouer: function(i, type) {
           this.selection = -1;
+          this.voletOuvert = false;   // choix fait : on regarde la table pendant que les autres choisissent
           var action = { i: i, type: type };
           this.son('toc'); this.vibre(15);
           if (this.solo) {

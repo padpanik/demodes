@@ -226,18 +226,21 @@ var DV = (function () {
     return ['', ''];
   }
   // La merveille d'une cité, en carte large : ressource de départ, puis les 3 étapes (coût → gain) ; faites = cochées
-  function plateau(cle, opts) {
-    opts = opts || {};
-    var J = SJ.JOYAUX[cle], faites = opts.faites || 0;
-    if (!J) return '';
-    var et = J.etapes.map(function (t, k) {
+  // Les 3 étapes d'une merveille (coût en haut à gauche sur 1/3, un trait, gain sur 2/3) ; faites = cochées
+  function etapesPl(J, faites, suivante) {
+    return J.etapes.map(function (t, k) {
       var g = gainEtape(t), faite = k < faites;
-      // Un tiers de la hauteur pour le coût (en haut à gauche), un trait, deux tiers pour le gain
-      return '<div class="dv-pl-et' + (faite ? ' dv-pl-faite' : '') + (k === faites && opts.suivante ? ' dv-pl-suiv' : '') + '">' +
+      return '<div class="dv-pl-et' + (faite ? ' dv-pl-faite' : '') + (k === faites && suivante ? ' dv-pl-suiv' : '') + '">' +
         '<div class="dv-pl-cout">' + pastilles(t.cout) + '</div>' +
         (faite ? '<div class="dv-tampon">✓</div>' : '<span class="dv-pl-num">' + ['I', 'II', 'III'][k] + '</span>') +
         '<div class="dv-pl-bas"><div class="dv-pl-gain">' + g[0] + '</div><div class="dv-pl-leg">' + g[1] + '</div></div></div>';
     }).join('');
+  }
+  // La merveille d'une cité, en carte large : ressource de départ, puis les 3 étapes (coût → gain) ; faites = cochées
+  function plateau(cle, opts) {
+    opts = opts || {};
+    var J = SJ.JOYAUX[cle], faites = opts.faites || 0;
+    if (!J) return '';
     return '<div class="dv-plateau">' +
       '<svg class="dv-pl-monu" viewBox="0 0 80 48" fill="#fff">' + MONU[MONU_C[cle]] + '</svg>' +
       '<div class="dv-pl-tete">' +
@@ -245,7 +248,22 @@ var DV = (function () {
         '<div class="dv-pl-nom">' + J.nom + '</div>' +
         '<div class="dv-pl-avance">' + faites + '/3</div>' +
       '</div>' +
-      '<div class="dv-pl-etapes">' + et + '</div></div>';
+      '<div class="dv-pl-etapes">' + etapesPl(J, faites, opts.suivante) + '</div></div>';
+  }
+  // La carte d'un joueur sur la table : son nom, ses pièces, boucliers et points, ce que produit sa cité, sa merveille et ses étapes
+  //   o = { nom, pieces, boucliers, pts, prod (html), faites, moi, fait (a choisi), absent }
+  function plateauJoueur(cle, o) {
+    var J = SJ.JOYAUX[cle];
+    if (!J) return '';
+    return '<div class="dv-plateau dv-plj' + (o.moi ? ' dv-plj-moi' : '') + (o.absent ? ' dv-plj-absent' : '') + '">' +
+      '<svg class="dv-pl-monu" viewBox="0 0 80 48" fill="#fff">' + MONU[MONU_C[cle]] + '</svg>' +
+      '<div class="dv-plj-tete">' +
+        '<div class="dv-plj-qui"><div class="dv-plj-nom">' + o.nom + (o.fait ? ' <span class="dv-plj-fait">✓</span>' : '') + '</div>' +
+          '<div class="dv-plj-mv">' + J.nom + '</div></div>' +
+        '<div class="dv-plj-chiffres">' + piece(o.pieces, 1.2) + '<span class="dv-plj-b">' + bouclier(1, 1.15) + '<b>' + o.boucliers + '</b></span>' + pv(o.pts, 1.2) + '</div>' +
+      '</div>' +
+      '<div class="dv-plj-prod">' + o.prod + '</div>' +
+      '<div class="dv-pl-etapes dv-plj-etapes">' + etapesPl(J, o.faites || 0, o.moi) + '</div></div>';
   }
 
   // ---------- Styles ----------
@@ -310,11 +328,28 @@ var DV = (function () {
     '.dv-pl-gain{display:flex;align-items:center;justify-content:center;white-space:nowrap}',
     '.dv-pl-leg{font-size:0.62em;line-height:1.1;text-align:center;color:#3b4b57;font-weight:700}',
     '.dv-pl-suiv{box-shadow:0 0 0 0.14em #fff,0 0 0.6em rgba(255,255,255,0.8)}',
+    '.dv-plateau.dv-plj{height:11.9em}',
+    '.dv-plj-tete{position:absolute;left:0;right:0;top:0;height:2.75em;display:flex;align-items:center;gap:0.4em;padding:0 0.5em}',
+    '.dv-plj-qui{flex:1;min-width:0;position:relative}',
+    '.dv-plj-nom{font-weight:900;font-size:1.12em;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-shadow:0 0.08em 0.2em rgba(0,0,0,0.55)}',
+    '.dv-plj-mv{font-size:0.7em;font-weight:700;opacity:0.92;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-shadow:0 0.08em 0.15em rgba(0,0,0,0.5)}',
+    '.dv-plj-fait{display:inline-flex;align-items:center;justify-content:center;width:1.2em;height:1.2em;border-radius:50%;background:#2ecc71;font-size:0.75em;vertical-align:0.12em;text-shadow:none;box-shadow:0 0 0 0.12em #fff}',
+    '.dv-plj-chiffres{flex:none;display:flex;align-items:center;gap:0.3em;background:rgba(255,253,245,0.95);border-radius:1em;padding:0.2em 0.35em;color:#1d2b36;position:relative}',
+    '.dv-plj-b{display:inline-flex;align-items:center;gap:0.1em;font-size:1em}',
+    '.dv-plj-b b{font-weight:900}',
+    '.dv-plj-prod{position:absolute;left:0.35em;right:0.35em;top:2.8em;height:1.85em;background:rgba(255,253,245,0.9);border-radius:0.45em;display:flex;align-items:center;gap:0.15em 0.35em;padding:0 0.4em;color:#1d2b36;font-size:0.95em;white-space:nowrap;overflow:hidden}',
+    '.dv-plj-prod b{font-size:0.85em;font-weight:900;margin-left:0.05em}',
+    '.dv-plj-prod .ch{background:#efe6cf;border-radius:0.3em;padding:0 0.15em;display:inline-flex;align-items:center}',
+    '.dv-plj-prod .sc{font-size:0.9em}',
+    '.dv-plj-prod .vide{color:#8a7a5a;font-size:0.8em;font-weight:700}',
+    '.dv-plj-etapes{top:4.95em}',
+    '.dv-plj .dv-pl-leg{font-size:0.6em}',
+    '.dv-plj-absent{filter:grayscale(0.7);opacity:0.7}',
     '.dv-pl-et .dv-tampon{position:absolute;right:-0.2em;top:-0.2em;background:#2ecc71;color:#fff;border-radius:50%;width:1.35em;height:1.35em;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:0.95em;box-shadow:0 0 0 0.12em #fff,0 0.1em 0.3em rgba(0,0,0,0.35)}'
   ].join('\n');
   if (typeof document !== 'undefined') { var st = document.createElement('style'); st.textContent = css; document.head.appendChild(st); }
 
   return { COUL: COUL, res: res, piece: piece, bouclier: bouclier, pv: pv, sci: sci, carre: carreType, carte: carte, dos: dos, merveille: merveille,
            jeton: jeton, effet: effet, cout: cout, texte: texte, texteMerveille: texteMerveille, effetMerveille: effetMerveille,
-           carteC: carteC, effetC: effetC, plateau: plateau, gainEtape: gainEtape };
+           carteC: carteC, effetC: effetC, plateau: plateau, plateauJoueur: plateauJoueur, gainEtape: gainEtape };
 })();

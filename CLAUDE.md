@@ -189,7 +189,7 @@ Pas d'étape de construction, pas de dépendance à ajouter.
 - **État de la connexion sur la bulle** (demandé par l'utilisateur, `etatConnexion`) : petit point vert en haut à gauche = connecté ; après 8 s sans
   connexion (pas de rôle, téléphone hors ligne, ou hôte coupé du serveur), pastille orange « ! » qui palpite et anneau orange ; le panneau dit pourquoi
   (« plus Internet », ou « nouvel essai tout seul… essaie la 4G »). Vérifié chaque seconde, événements `online` / `offline`.
-- Interface injectée par le module : bulle 💬 (déplaçable le long du bord droit, pastille rouge = non lus, verte = connectés),
+- Interface injectée par le module : bulle 💬 (déplaçable le long du bord droit, pastille rouge = non lus, verte = connectés ; une page peut réserver une bande en bas avec `SalonGlobal.reserverBas(px)`, la bulle reste au-dessus),
   panneau en haut de l'écran (ajusté au clavier), carte « En ligne » sur l'accueil (`#sg-ici`). Pas de notification appli fermée.
 
 ## Stockage local (préfixe historique `brillant-` conservé volontairement)
@@ -428,7 +428,16 @@ Bataille navale : `bataille-boss` (partie contre un boss d'expédition), `batail
   `SJ.resoudre`, `montrerTour`, `tourAff`) : bandeau en haut comme le Duel, une ligne par joueur (dans l'ordre de la table) avec l'image de la carte et un tampon Construite /
   Gratuite / Merveille (+ l'étape et son gain) / Vendue, les pièces payées aux voisins, et « Tes voisins t'ont acheté des ressources : +N » ; 2,6 s + 1,3 s par ligne (9 s au plus),
   toucher = fermer ; resserré au-delà de 3 lignes. **Achats détaillés** : `SJ.payer` rend aussi `ag` / `ad` (ressources achetées à gauche / à droite), la feuille de la carte affiche
-  « ◀ Marius : 🧱 2 🪙 » (`paiementHtml`). Plus tard (proposé) : les cartes de la fiche de cité en petites cartes dessinées, comme dans le Duel.
+  « ◀ Marius : 🧱 2 🪙 » (`paiementHtml`).
+  **2.78 : la table + le volet** (demandé par l'utilisateur, pour dé-densifier) : plus de bandeau de petites fiches ; **une carte de merveille par joueur**
+  (`DV.plateauJoueur(clé, { nom, pieces, boucliers, pts, prod, faites, moi, fait, absent })`, `.table-sj`) empilées **dans l'ordre de la table** (`ordreTable` : voisins de gauche ◀ au-dessus,
+  **moi au milieu**, voisins de droite ▶ en dessous ; plus de 3 joueurs : la page défile et se centre sur moi, `centrerJoueurs`). Chaque carte : nom (◀ / ▶, ✓ vert = a choisi),
+  nom de la merveille, pastille pièces / boucliers / points, **bande de production** (`prodHtml`, savoirs compris), puis les 3 étapes (faites = cochées).
+  Toucher une carte = la cité de ce joueur. Barre du haut : âge, tour et sens de passage en clair (« ◀ la main passe à gauche »). **Ma main dans un volet fixé en bas**
+  (`.volet-sj`, `voletOuvert`) : en-tête (« À toi : choisis une carte » / « ✓ … » + Changer, chevron) qu'on touche ou qu'on glisse (`voletDebut` / `voletFin`) pour réduire / ouvrir ;
+  il remonte tout seul à chaque nouveau tour (`aMoiDeChoisir`) et se réduit après mon choix. Bulle 💬 : **`SalonGlobal.reserverBas(px)`** (nouveau, commun) garde la bulle
+  au-dessus d'une bande réservée en bas ; la page la tient à jour (`cleVolet` → `majReserve` ; pas `updated` : le contenu des onglets est rendu par `<fiche-jeu>`).
+  Plus tard (proposé) : les cartes de la fiche de cité en petites cartes dessinées, comme dans le Duel.
   Choix fait : bandeau « ✓ … · On attend … » avec « Changer » (jusqu'à la révélation, 0,7 s après le dernier choix). Fenêtre des conflits à chaque fin d'âge,
   tableau du décompte à la fin. Hôte disparu : retour à la salle d'attente (les mains étaient chez lui). Étoiles : `finDePartie('Les 7 joyaux')` (« entre amis »
   seulement à 2 humains et plus), série de victoires solo `Etoiles.serie('joyaux')`.
