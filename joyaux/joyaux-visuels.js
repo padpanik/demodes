@@ -252,9 +252,16 @@ var DV = (function () {
   }
   // La carte d'un joueur sur la table : son nom, ses pièces, boucliers et points, ce que produit sa cité, sa merveille et ses étapes
   //   o = { nom, pieces, boucliers, pts, prod (html), faites, moi, fait (a choisi), absent }
+  //   o.compact : carte basse (beaucoup de joueurs) : nom et chiffres sur une ligne, étapes coût | gain côte à côte, sans légende
   function plateauJoueur(cle, o) {
     var J = SJ.JOYAUX[cle];
     if (!J) return '';
+    if (o.compact) return '<div class="dv-plateau dv-plj dv-plc' + (o.absent ? ' dv-plj-absent' : '') + '">' +
+      '<svg class="dv-pl-monu" viewBox="0 0 80 48" fill="#fff">' + MONU[MONU_C[cle]] + '</svg>' +
+      '<div class="dv-plc-tete"><div class="dv-plj-nom">' + o.nom + (o.fait ? ' <span class="dv-plj-fait">✓</span>' : '') + '<span class="dv-plc-mv">' + J.nom + '</span></div>' +
+        '<div class="dv-plj-chiffres">' + piece(o.pieces, 1.1) + '<span class="dv-plj-b">' + bouclier(1, 1.05) + '<b>' + o.boucliers + '</b></span>' + pv(o.pts, 1.1) + '</div></div>' +
+      '<div class="dv-plj-prod">' + o.prod + '</div>' +
+      '<div class="dv-pl-etapes dv-plc-etapes">' + etapesPl(J, o.faites || 0, o.moi) + '</div></div>';
     return '<div class="dv-plateau dv-plj' + (o.moi ? ' dv-plj-moi' : '') + (o.absent ? ' dv-plj-absent' : '') + '">' +
       '<svg class="dv-pl-monu" viewBox="0 0 80 48" fill="#fff">' + MONU[MONU_C[cle]] + '</svg>' +
       '<div class="dv-plj-tete">' +
@@ -345,6 +352,20 @@ var DV = (function () {
     '.dv-plj-etapes{top:4.95em}',
     '.dv-plj .dv-pl-leg{font-size:0.6em}',
     '.dv-plj-absent{filter:grayscale(0.7);opacity:0.7}',
+    '.dv-plateau.dv-plc{width:100%;height:7.05em}',
+    '.dv-plc .dv-pl-monu{width:6em;height:3.4em;top:0.1em;right:7.5em;opacity:0.3}',
+    '.dv-plc-tete{position:absolute;left:0;right:0;top:0;height:2em;display:flex;align-items:center;gap:0.4em;padding:0 0.4em}',
+    '.dv-plc-tete .dv-plj-nom{flex:1;min-width:0;font-size:1em;position:relative}',
+    '.dv-plc-mv{font-size:0.66em;font-weight:700;opacity:0.9;margin-left:0.5em}',
+    '.dv-plc-tete .dv-plj-chiffres{padding:0.1em 0.3em;font-size:0.9em}',
+    '.dv-plc .dv-plj-prod{top:2.05em;height:1.45em;font-size:0.82em}',
+    '.dv-plc-etapes{top:3.6em;bottom:0.3em;left:0.3em;right:0.3em;gap:0.25em}',
+    '.dv-plc .dv-pl-et{display:flex;align-items:stretch}',
+    '.dv-plc .dv-pl-cout{flex:none;border-bottom:none;border-right:0.1em solid rgba(156,111,30,0.45);padding:0 0.25em;font-size:0.78em;gap:0.12em}',
+    '.dv-plc .dv-pl-bas{flex:1;padding:0 0.1em}',
+    '.dv-plc .dv-pl-gain{font-size:0.78em}',
+    '.dv-plc .dv-pl-leg,.dv-plc .dv-pl-num{display:none}',
+    '.dv-plc .dv-pl-et .dv-tampon{font-size:0.8em}',
     '.dv-pl-et .dv-tampon{position:absolute;right:-0.2em;top:-0.2em;background:#2ecc71;color:#fff;border-radius:50%;width:1.35em;height:1.35em;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:0.95em;box-shadow:0 0 0 0.12em #fff,0 0.1em 0.3em rgba(0,0,0,0.35)}'
   ].join('\n');
   if (typeof document !== 'undefined') { var st = document.createElement('style'); st.textContent = css; document.head.appendChild(st); }

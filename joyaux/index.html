@@ -132,6 +132,8 @@
     .table-sj { display: flex; flex-direction: column; gap: 7px; }
     .table-sj .pj { cursor: pointer; line-height: normal; }
     .table-sj .dv-plateau { --t: min(13.5px, calc((100vw - 26px) / 26)); margin: 0 auto; }
+    .table-sj.compacte { gap: 5px; }
+    .table-sj.compacte .dv-plateau { --t: var(--tc); }
     .volet-sj { position: fixed; left: 0; right: 0; bottom: 0; z-index: 45; background: #fff; border-radius: 18px 18px 0 0; box-shadow: 0 -6px 22px rgba(0,0,0,0.2);
       max-width: 480px; margin: 0 auto; padding: 0 10px calc(10px + env(safe-area-inset-bottom)); box-sizing: border-box; }
     .volet-tete { position: relative; padding: 14px 2px 8px; cursor: pointer; user-select: none; }
@@ -566,7 +568,7 @@
           </div>
 
           <!-- La table : la merveille de chaque joueur, dans l'ordre (voisins de gauche ◀ au-dessus, moi au milieu, voisins de droite ▶ en dessous) ; toucher = sa cité -->
-          <div class="table-sj" ref="joueursSj">
+          <div class="table-sj" ref="joueursSj" :class="{ compacte: tableCompacte }" :style="styleTable">
             <div v-for="j in joueursAff" :key="j.nom" class="pj" :data-moi="j.moi ? 1 : null" @click="vueCite = j.nom" v-html="j.carte"></div>
           </div>
           <div class="actions-sj" v-if="e.phase === 'jeu'">
@@ -897,6 +899,7 @@
         coupAdv: null,      // coup de l'adversaire montré en haut de l'écran (e.dernier)
         tourAff: null,      // Classique : ce qu'a joué chacun au tour qui vient d'être révélé (e.nTour)
         voletOuvert: true,  // Classique : volet de ma main ouvert (réduit pour regarder la table)
+        hEcran: window.innerHeight,   // pour régler la taille des cartes de la table
         filesCoups: [],     // coups suivants à montrer (merveille « Rejouer »)
         finVue: false,      // fenêtre de fin du duel ouverte
         infoJeton: null,
@@ -963,6 +966,13 @@
           x = moi; for (k = 0; k < ng; k++) { x = SJ.gauche(e, x); g.unshift(x); }
           return g.concat([moi], d);
         },
+        // Plus de 3 joueurs : cartes basses, réglées pour que toute la table tienne entre la barre et le volet réduit
+        tableCompacte: function() { return !!this.e && this.e.n > 3; },
+        styleTable: function() {
+          if (!this.tableCompacte) return {};
+          var n = this.e.n, dispo = this.hEcran - 58 - 46 - 80 - 14, t = (dispo - (n - 1) * 5) / n / 7.05;
+          return { '--tc': Math.max(9.5, Math.min(14, t)).toFixed(2) + 'px' };
+        },
         joueursAff: function() {
           var e = this.e, moi = this.moiJ, g = this.estJoueur ? SJ.gauche(e, moi) : null, d = this.estJoueur ? SJ.droite(e, moi) : null;
           return this.ordreTable.map(j => {
@@ -970,7 +980,8 @@
             var nom = (gauche ? '◀ ' : '') + (j === moi ? 'Moi' : j) + (droite ? ' ▶' : '');
             return { nom: j, moi: j === moi,
                      carte: DV.plateauJoueur(cite.joyau, { nom: nom, pieces: cite.pieces, boucliers: SJ.boucliers(e, j), pts: SJ.score(e, j).total, prod: prodHtml(e, j),
-                                                            faites: cite.etapes, moi: j === moi, fait: e.phase === 'jeu' && e.aChoisi && e.aChoisi[j], absent: !this.solo && !this.estPresent(j) }) };
+                                                            faites: cite.etapes, moi: j === moi, fait: e.phase === 'jeu' && e.aChoisi && e.aChoisi[j], absent: !this.solo && !this.estPresent(j),
+                                                            compact: this.tableCompacte }) };
           });
         },
         absentsAttendus: function() { var e = this.e; return e && e.phase === 'jeu' ? e.joueurs.filter(j => !e.aChoisi[j] && !this.estPresent(j)) : []; },
@@ -1137,7 +1148,7 @@
         'e.age': function() { this.selection = -1; },
         'e.dernier': function(d) { this.voirCoup(d); },
         'e.nTour': function(n, avant) {
-          if (!n || !avant || n <= avant || Date.now() - this._charge < 1500) return;   // pas pour l'état retrouvé au chargement
+          if (!n || (avant && n <= avant) || Date.now() - this._charge < 1500) return;   // pas pour l'état retrouvé au chargement
           this.montrerTour();
         },
         'e.n': function() { this.centrerJoueurs(); },
@@ -1155,6 +1166,7 @@
       },
       created: function() {
         this._charge = Date.now();   // rien n'est « montré » pour l'état retrouvé au chargement
+        window.addEventListener('resize', () => { this.hEcran = window.innerHeight; });
         window.addEventListener('desdale-profil', () => { if (!this.role) this.pseudoInput = pseudoPortail(); });
         if (!ACCES.cleSalon) return;
         this.conflitVu = lireStockage('joyaux-conflit-vu') || '';

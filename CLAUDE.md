@@ -437,6 +437,11 @@ Bataille navale : `bataille-boss` (partie contre un boss d'expédition), `batail
   (`.volet-sj`, `voletOuvert`) : en-tête (« À toi : choisis une carte » / « ✓ … » + Changer, chevron) qu'on touche ou qu'on glisse (`voletDebut` / `voletFin`) pour réduire / ouvrir ;
   il remonte tout seul à chaque nouveau tour (`aMoiDeChoisir`) et se réduit après mon choix. Bulle 💬 : **`SalonGlobal.reserverBas(px)`** (nouveau, commun) garde la bulle
   au-dessus d'une bande réservée en bas ; la page la tient à jour (`cleVolet` → `majReserve` ; pas `updated` : le contenu des onglets est rendu par `<fiche-jeu>`).
+  **2.79** (demandé par l'utilisateur : « que le max de joueurs tienne sur la hauteur ») : **plus de 3 joueurs = cartes basses** (`tableCompacte`, `DV.plateauJoueur(…, { compact: true })`,
+  `.dv-plc`, toute la largeur, 7,05em de haut) : nom + merveille + pastille sur une ligne, bande de production, étapes **coût | gain côte à côte** (trait vertical, sans légende ;
+  la légende reste sur la carte de la fiche de cité). Taille réglée sur la hauteur de l'écran (`styleTable` → `--tc`, `hEcran` : écran − onglets − barre − volet réduit, partagé
+  entre les joueurs, 9,5 à 14 px) : 7 joueurs tiennent entre la barre et le volet réduit sur 360 × 800. 3 joueurs : grandes cartes comme en 2.78.
+  Bandeau « ce qu'ils ont joué » : il manquait après le **1er tour** de chaque partie (pas de `e.nTour` précédent) ; corrigé.
   Plus tard (proposé) : les cartes de la fiche de cité en petites cartes dessinées, comme dans le Duel.
   Choix fait : bandeau « ✓ … · On attend … » avec « Changer » (jusqu'à la révélation, 0,7 s après le dernier choix). Fenêtre des conflits à chaque fin d'âge,
   tableau du décompte à la fin. Hôte disparu : retour à la salle d'attente (les mains étaient chez lui). Étoiles : `finDePartie('Les 7 joyaux')` (« entre amis »
