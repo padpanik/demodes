@@ -232,13 +232,11 @@ var DV = (function () {
     if (!J) return '';
     var et = J.etapes.map(function (t, k) {
       var g = gainEtape(t), faite = k < faites;
+      // Un tiers de la hauteur pour le coût (en haut à gauche), un trait, deux tiers pour le gain
       return '<div class="dv-pl-et' + (faite ? ' dv-pl-faite' : '') + (k === faites && opts.suivante ? ' dv-pl-suiv' : '') + '">' +
-        '<span class="dv-pl-num">' + ['I', 'II', 'III'][k] + '</span>' +
         '<div class="dv-pl-cout">' + pastilles(t.cout) + '</div>' +
-        '<div class="dv-pl-fl">▼</div>' +
-        '<div class="dv-pl-gain">' + g[0] + '</div>' +
-        '<div class="dv-pl-leg">' + g[1] + '</div>' +
-        (faite ? '<div class="dv-tampon">✓</div>' : '') + '</div>';
+        (faite ? '<div class="dv-tampon">✓</div>' : '<span class="dv-pl-num">' + ['I', 'II', 'III'][k] + '</span>') +
+        '<div class="dv-pl-bas"><div class="dv-pl-gain">' + g[0] + '</div><div class="dv-pl-leg">' + g[1] + '</div></div></div>';
     }).join('');
     return '<div class="dv-plateau">' +
       '<svg class="dv-pl-monu" viewBox="0 0 80 48" fill="#fff">' + MONU[MONU_C[cle]] + '</svg>' +
@@ -304,15 +302,15 @@ var DV = (function () {
     '.dv-pl-nom{flex:1;min-width:0;font-weight:900;font-size:1.05em;line-height:1.1;text-shadow:0 0.08em 0.2em rgba(0,0,0,0.55);position:relative}',
     '.dv-pl-avance{flex:none;background:rgba(0,0,0,0.28);border-radius:1em;padding:0.1em 0.5em;font-weight:900;font-size:0.8em;position:relative}',
     '.dv-pl-etapes{position:absolute;left:0.35em;right:0.35em;bottom:0.35em;top:3.1em;display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.3em}',
-    '.dv-pl-et{position:relative;background:rgba(255,253,245,0.95);border-radius:0.5em;color:#1d2b36;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.1em;padding:0.25em 0.2em;min-width:0}',
-    '.dv-pl-num{position:absolute;left:0.3em;top:0.25em;font:900 0.7em/1 Georgia,serif;color:#9c6f1e}',
-    '.dv-pl-cout{display:flex;gap:0.2em;justify-content:center;min-height:1.75em}',
+    '.dv-pl-et{position:relative;background:rgba(255,253,245,0.95);border-radius:0.5em;color:#1d2b36;display:grid;grid-template-rows:1fr 2fr;min-width:0;overflow:visible}',
+    '.dv-pl-num{position:absolute;right:0.35em;top:0.3em;font:900 0.75em/1 Georgia,serif;color:#b08a3c}',
+    '.dv-pl-cout{display:flex;gap:0.2em;justify-content:flex-start;align-items:center;padding:0 0.3em;border-bottom:0.1em solid rgba(156,111,30,0.45)}',
     '.dv-pl-faite .dv-pl-cout{opacity:0.4}',
-    '.dv-pl-fl{font-size:0.55em;color:#b08a3c;line-height:1.3}',
-    '.dv-pl-gain{display:flex;align-items:center;justify-content:center;min-height:2.1em;white-space:nowrap}',
-    '.dv-pl-leg{font-size:0.62em;line-height:1.1;text-align:center;color:#3b4b57;font-weight:700;margin-top:0.15em}',
+    '.dv-pl-bas{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.15em;padding:0.15em 0.15em 0.25em;min-width:0}',
+    '.dv-pl-gain{display:flex;align-items:center;justify-content:center;white-space:nowrap}',
+    '.dv-pl-leg{font-size:0.62em;line-height:1.1;text-align:center;color:#3b4b57;font-weight:700}',
     '.dv-pl-suiv{box-shadow:0 0 0 0.14em #fff,0 0 0.6em rgba(255,255,255,0.8)}',
-    '.dv-pl-et .dv-tampon{position:absolute;right:-0.15em;top:-0.15em;background:#2ecc71;color:#fff;border-radius:50%;width:1.35em;height:1.35em;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:0.95em;box-shadow:0 0 0 0.12em #fff,0 0.1em 0.3em rgba(0,0,0,0.35)}'
+    '.dv-pl-et .dv-tampon{position:absolute;right:-0.2em;top:-0.2em;background:#2ecc71;color:#fff;border-radius:50%;width:1.35em;height:1.35em;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:0.95em;box-shadow:0 0 0 0.12em #fff,0 0.1em 0.3em rgba(0,0,0,0.35)}'
   ].join('\n');
   if (typeof document !== 'undefined') { var st = document.createElement('style'); st.textContent = css; document.head.appendChild(st); }
 

@@ -420,7 +420,15 @@ Bataille navale : `bataille-boss` (partie contre un boss d'expédition), `batail
   pastille d'état sous chaque carte (✓ / ✓ gratuit / N 🪙 à payer aux voisins / ✗). Coût de 5 ressources et plus : 3 colonnes plus petites (`dv-cout3`) ;
   nom plus petit quand un mot est long (`taillenom`, jamais coupé au milieu). Toucher une carte ouvre **une feuille qui monte du bas** (`carteSel`, fermable d'un glissement) :
   grande carte, texte clair (`texteCarte`), chaînage, Construire / Vendre / Construire gratuitement, et « la glisser sous ta merveille » avec l'étape dessinée (coût → gain).
-  Plus tard (proposé) : les cartes de la fiche de cité en petites cartes dessinées, comme dans le Duel.
+  **2.77** (demandé par l'utilisateur) : dans chaque étape de la carte de merveille, **coût en haut à gauche sur 1/3 de la hauteur, un trait, gain sur 2/3** (plus de flèche ;
+  numéro I/II/III en haut à droite, remplacé par la coche quand l'étape est faite). **Ligne « ma cité » retirée** (toucher la merveille ouvre ma cité).
+  **Bandeau des joueurs vu de ma place** (`ordreTable` : voisins de gauche ◀ à gauche, moi au milieu, voisins de droite ▶ à droite ; plus de 3 joueurs : il défile, centré sur moi,
+  `centrerJoueurs`) ; chaque joueur : pièces, boucliers, avancement de la merveille, **points** (`SJ.score`), **ce qu'il produit** en icônes (`prodHtml` : fixes avec nombre,
+  au choix groupées, savoirs) et son dernier coup. Cartes de la main un peu plus petites (11,2 px). **Ce qu'ont joué les autres** à chaque révélation (`e.nTour` incrémenté par
+  `SJ.resoudre`, `montrerTour`, `tourAff`) : bandeau en haut comme le Duel, une ligne par joueur (dans l'ordre de la table) avec l'image de la carte et un tampon Construite /
+  Gratuite / Merveille (+ l'étape et son gain) / Vendue, les pièces payées aux voisins, et « Tes voisins t'ont acheté des ressources : +N » ; 2,6 s + 1,3 s par ligne (9 s au plus),
+  toucher = fermer ; resserré au-delà de 3 lignes. **Achats détaillés** : `SJ.payer` rend aussi `ag` / `ad` (ressources achetées à gauche / à droite), la feuille de la carte affiche
+  « ◀ Marius : 🧱 2 🪙 » (`paiementHtml`). Plus tard (proposé) : les cartes de la fiche de cité en petites cartes dessinées, comme dans le Duel.
   Choix fait : bandeau « ✓ … · On attend … » avec « Changer » (jusqu'à la révélation, 0,7 s après le dernier choix). Fenêtre des conflits à chaque fin d'âge,
   tableau du décompte à la fin. Hôte disparu : retour à la salle d'attente (les mains étaient chez lui). Étoiles : `finDePartie('Les 7 joyaux')` (« entre amis »
   seulement à 2 humains et plus), série de victoires solo `Etoiles.serie('joyaux')`.

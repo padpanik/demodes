@@ -42,11 +42,18 @@
     /* Les joueurs (défilent si on est nombreux) ; toucher = voir sa cité */
     .joueurs-sj { display: flex; gap: 5px; overflow-x: auto; padding: 2px 1px 6px; scrollbar-width: none; }
     .joueurs-sj::-webkit-scrollbar { display: none; }
-    .joueurs-sj .j { flex: 1 0 auto; min-width: 80px; background: #fff; border: none; font: inherit; border-radius: 12px; padding: 4px 5px; box-shadow: 0 1px 2px rgba(0,0,0,0.06); text-align: center; cursor: pointer; position: relative; }
+    .joueurs-sj .j { flex: 1 1 0; min-width: 0; background: #fff; border: none; font: inherit; border-radius: 12px; padding: 4px 5px; box-shadow: 0 1px 2px rgba(0,0,0,0.06); text-align: center; cursor: pointer; position: relative; }
     .joueurs-sj .j.moi { box-shadow: 0 0 0 2px #2c7be5; }
     .joueurs-sj .j.absent { opacity: 0.5; }
     .joueurs-sj .nom { font-weight: 800; font-size: 0.78em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .joueurs-sj .infos { font-size: 0.74em; color: #3b4b57; white-space: nowrap; }
+    .joueurs-sj.nombreux .j { flex: 0 0 104px; }
+    .joueurs-sj .chiffres { display: flex; justify-content: center; align-items: center; gap: 2px; font-size: 0.72em; font-weight: 800; color: #1d2b36; white-space: nowrap; margin: 1px 0; }
+    .joueurs-sj .chiffres .dv-pv { font-size: 1em; }
+    .joueurs-sj .chiffres .pips { letter-spacing: 0; font-size: 0.85em; }
+    .joueurs-sj .prod { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 1px 3px; font-size: 11px; line-height: 1.25; min-height: 14px; }
+    .joueurs-sj .prod b { font-size: 0.9em; margin-left: -1px; }
+    .joueurs-sj .prod .ch { white-space: nowrap; background: #f1f3f5; border-radius: 4px; padding: 0 2px; }
+    .joueurs-sj .prod .sc { font-size: 0.95em; white-space: nowrap; }
     .joueurs-sj .coup { font-size: 0.68em; color: #6b7a86; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .joueurs-sj .fait { position: absolute; top: -4px; right: -3px; background: #2ecc71; color: #fff; border-radius: 50%; width: 17px; height: 17px; font-size: 11px; line-height: 17px; font-weight: 900; }
     .joueurs-sj .fleche { color: #2c7be5; font-weight: 900; }
@@ -80,7 +87,7 @@
     .boite-sj .plateau-sj .dv-plateau { --t: min(13.5px, calc((100vw - 34px) / 26)); }
     .main-cartes { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px 4px; justify-items: center; }
     .main-cartes .mc { background: none; border: none; padding: 0; font: inherit; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 2px; line-height: normal; }
-    .main-cartes .dv-carte.dv-main { --t: min(12.5px, calc((100vw - 44px) / 4 / 6.4)); transition: transform 0.15s; }
+    .main-cartes .dv-carte.dv-main { --t: min(11.2px, calc((100vw - 44px) / 4 / 6.4)); transition: transform 0.15s; }
     .main-cartes .mc.choisie .dv-carte { transform: translateY(-3px); box-shadow: 0 0 0 2.5px #ff9800, 0 4px 10px rgba(0,0,0,0.25); }
     .main-cartes .mc.terne { opacity: 0.4; }
     .mc-etat { font-size: 0.72em; font-weight: 800; border-radius: 8px; padding: 0 6px; white-space: nowrap; background: #eef1f4; color: #6b7a86; }
@@ -121,6 +128,29 @@
     .coup-adv .ca-nom { font-size: 1.15em; font-weight: 900; color: #1d2b36; line-height: 1.2; }
     .coup-adv .ca-sous { font-size: 0.82em; color: #3b4b57; margin-top: 2px; }
     .coup-adv .ca-barre { position: absolute; left: 0; bottom: 0; height: 4px; background: #f0a020; animation: caBarre 3.6s linear forwards; }
+    /* Classique : ce qu'a joué chacun au dernier tour */
+    .tour-adv { position: fixed; top: 10px; left: 50%; transform: translateX(-50%); width: calc(100% - 20px); max-width: 420px; box-sizing: border-box; z-index: 70;
+      background: #fff; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.25); padding: 9px 12px 13px; overflow: hidden; cursor: pointer; max-height: 80vh; overflow-y: auto; }
+    .tour-adv .ta-titre { font-size: 0.78em; font-weight: 800; color: #6b7a86; margin-bottom: 6px; }
+    .tour-adv .ta-ligne { display: flex; gap: 12px; align-items: center; padding: 4px 0; border-top: 1px solid #eef1f4; }
+    .tour-adv .ta-ligne:first-of-type { border-top: none; }
+    .tour-adv .ca-carte { position: relative; flex: none; line-height: 0; margin: 2px 4px 2px 2px; }
+    .tour-adv .dv-carte { --t: 7.2px; }
+    .tour-adv .ca-carte.vendre .dv-carte { filter: saturate(0.5); }
+    .tour-adv .ca-tampon { position: absolute; left: -5px; right: -5px; top: 42%; transform: rotate(-14deg); text-align: center; color: #fff; font: 900 8px/1 system-ui, sans-serif;
+      padding: 3px 0; border-radius: 3px; box-shadow: 0 2px 5px rgba(0,0,0,0.3); background: #2b8a3e; }
+    .tour-adv .vendre .ca-tampon { background: #d9480f; }
+    .tour-adv .joyau .ca-tampon { background: #b7791f; }
+    .tour-adv .ta-texte { flex: 1; min-width: 0; }
+    .tour-adv .ta-qui { font-size: 0.8em; color: #6b7a86; font-weight: 700; }
+    .tour-adv .ta-nom { font-weight: 900; color: #1d2b36; line-height: 1.2; }
+    .tour-adv .ta-sous { font-size: 0.8em; color: #3b4b57; }
+    .tour-adv.serre .dv-carte { --t: 5px; }
+    .tour-adv.serre .ca-tampon { font-size: 6px; padding: 2px 0; }
+    .tour-adv.serre .ta-ligne { padding: 2px 0; gap: 10px; }
+    .tour-adv.serre .ta-nom { font-size: 0.92em; }
+    .tour-adv .ta-moi { margin-top: 6px; background: #fff7e0; border-radius: 10px; padding: 5px 8px; font-size: 0.84em; font-weight: 700; color: #7a5200; }
+    .tour-adv .ca-barre { position: absolute; left: 0; bottom: 0; height: 4px; background: #f0a020; animation-name: caBarre; animation-timing-function: linear; animation-fill-mode: forwards; }
     @keyframes caBarre { from { width: 100%; } to { width: 0; } }
     .coup-enter-active, .coup-leave-active { transition: transform 0.25s, opacity 0.25s; }
     .coup-enter, .coup-leave-to { opacity: 0; transform: translate(-50%, -20px); }
@@ -519,23 +549,33 @@
             <template v-if="maCite"><span class="val">🪙 {{ maCite.pieces }}</span><span class="val">🛡️ {{ mesBoucliers }}</span><span class="pts">{{ monScore }}</span></template>
           </div>
 
-          <div class="joueurs-sj">
-            <button v-for="j in joueursAff" :key="j.nom" class="j" :class="{ moi: j.moi, absent: j.absent }" @click="vueCite = j.nom">
+          <!-- Les joueurs vus de ma place : mon voisin de gauche à gauche, moi au milieu, celui de droite à droite ; toucher = sa cité -->
+          <div class="joueurs-sj" :class="{ nombreux: joueursAff.length > 3 }" ref="joueursSj">
+            <button v-for="j in joueursAff" :key="j.nom" class="j" :class="{ moi: j.moi, absent: j.absent }" :data-moi="j.moi ? 1 : null" @click="vueCite = j.nom">
               <span class="fait" v-if="j.fait">✓</span>
               <div class="nom"><span class="fleche" v-if="j.gauche">◀ </span>{{ j.court }}<span class="fleche" v-if="j.droite"> ▶</span></div>
-              <div class="infos">🪙{{ j.pieces }} 🛡️{{ j.boucliers }} <span class="pips">{{ j.pips }}</span></div>
+              <div class="chiffres" v-html="j.chiffres"></div>
+              <div class="prod" v-html="j.prod"></div>
               <div class="coup">{{ j.coup }}</div>
             </button>
           </div>
 
           <div class="plateau-sj" v-if="maCite" @click="vueCite = moiJ" v-html="DV.plateau(maCite.joyau, { faites: maCite.etapes, suivante: true })"></div>
-          <div class="cite-sj" v-if="maCite" @click="vueCite = moiJ">
-            <span class="res">{{ maProduction }}</span>
-            <span class="res" v-if="mesSciences">{{ mesSciences }}</span>
-            <span class="res" style="color:#2c7be5;font-weight:700">ma cité ›</span>
-          </div>
 
           <div class="statut-sj" :class="{ moi: aMoiDeChoisir }">{{ statut }}</div>
+
+          <!-- Révélation d'un tour : ce qu'a joué chacun des autres, un moment en haut de l'écran (toucher = fermer) -->
+          <transition name="coup">
+            <div v-if="tourAff" class="tour-adv" :class="{ serre: tourAff.lignes.length > 3 }" role="status" @click="fermerTour" :key="tourAff.cle">
+              <div class="ta-titre">Âge {{ ['', 'I', 'II', 'III'][tourAff.age] }} · tour {{ tourAff.tour }} : ce qu'ils ont joué</div>
+              <div class="ta-ligne" v-for="l in tourAff.lignes" :key="l.j">
+                <div class="ca-carte" :class="l.cl" v-html="l.visuel"></div>
+                <div class="ta-texte"><div class="ta-qui">{{ l.qui }}</div><div class="ta-nom">{{ l.nom }}</div><div class="ta-sous" v-html="l.sous"></div></div>
+              </div>
+              <div class="ta-moi" v-if="tourAff.moi" v-html="tourAff.moi"></div>
+              <div class="ca-barre" :style="{ animationDuration: tourAff.duree + 'ms' }"></div>
+            </div>
+          </transition>
 
           <!-- Mon choix est fait : on attend les autres -->
           <div class="choix-fait" v-if="monChoix && e.phase === 'jeu'">
@@ -563,7 +603,7 @@
                 </div>
               </div>
               <div class="actions-carte">
-                <button class="btn principal" :disabled="!carteSel.o.construire.ok" @click="jouer(selection, 'construire')">🏗️ Construire<small>{{ carteSel.o.construire.ok ? paiementTexte(carteSel.o.construire) : carteSel.o.construire.raison }}</small></button>
+                <button class="btn principal" :disabled="!carteSel.o.construire.ok" @click="jouer(selection, 'construire')">🏗️ Construire<small v-html="carteSel.o.construire.ok ? paiementHtml(carteSel.o.construire) : carteSel.o.construire.raison"></small></button>
                 <button class="btn" @click="jouer(selection, 'vendre')">🪙 Vendre<small>+3 pièces</small></button>
                 <button class="btn" v-if="carteSel.o.gratuit" @click="jouer(selection, 'gratuit')">✨ Construire gratuitement<small>une fois par âge</small></button>
               </div>
@@ -571,7 +611,7 @@
                 <div class="petit-titre">… ou la glisser sous ta merveille pour bâtir l'étape {{ ['I', 'II', 'III'][maCite.etapes] }} :</div>
                 <button class="btn etape-btn" :disabled="!carteSel.o.joyau.ok" @click="jouer(selection, 'joyau')">
                   <span class="eb-cout" v-html="coutEtape"></span><span class="eb-fl">→</span><span class="eb-gain" v-html="gainEtapeHtml"></span>
-                  <small>{{ carteSel.o.joyau.ok ? paiementTexte(carteSel.o.joyau) : carteSel.o.joyau.raison }}</small>
+                  <small v-html="carteSel.o.joyau.ok ? paiementHtml(carteSel.o.joyau) : carteSel.o.joyau.raison"></small>
                 </button>
               </template>
               <div class="aide" v-else>Ta merveille est terminée.</div>
@@ -768,6 +808,16 @@
       if (t.gratuit) return 'une carte gratuite par âge';
       return '';
     }
+    // Ce que produit une cité, en petites icônes (bandeau des joueurs) : 🪵2 🧱 🪨/⛏️ … puis les savoirs
+    function prodHtml(e, j) {
+      var cite = e.cites[j], fixe = {}, choix = [];
+      SJ.sources(cite, false).forEach(x => { if (x.o.length === 1) fixe[x.o[0]] = (fixe[x.o[0]] || 0) + 1; else choix.push(x.o); });
+      var l = 'BPAMVTR'.split('').filter(r => fixe[r]).map(r => '<span>' + DV.res(r, 1.15) + (fixe[r] > 1 ? '<b>' + fixe[r] + '</b>' : '') + '</span>');
+      choix.forEach(o => l.push('<span class="ch">' + o.map(r => DV.res(r, 0.85)).join('') + '</span>'));
+      var sc = sciencesTexte(SJ.symboles(e, j));
+      if (sc) l.push('<span class="sc">' + sc + '</span>');
+      return l.join('') || '<span style="color:#9aa5ae">—</span>';
+    }
     function productionTexte(cite) {
       var fixe = {}, choix = [];
       SJ.sources(cite, false).forEach(s => { if (s.o.length === 1) fixe[s.o[0]] = (fixe[s.o[0]] || 0) + 1; else choix.push(s.o.map(ico).join('/')); });
@@ -832,6 +882,7 @@
         modeChoisi: lireStockage('joyaux-version') || 'duel',   // Duel par défaut (demandé par l'utilisateur, 2.60)
         selDuel: null,
         coupAdv: null,      // coup de l'adversaire montré en haut de l'écran (e.dernier)
+        tourAff: null,      // Classique : ce qu'a joué chacun au tour qui vient d'être révélé (e.nTour)
         filesCoups: [],     // coups suivants à montrer (merveille « Rejouer »)
         finVue: false,      // fenêtre de fin du duel ouverte
         infoJeton: null,
@@ -888,12 +939,22 @@
             return { id: id, c: c, o: o, etat: etat, coul: SJ.TYPES[c.type].coul, cout: coutHtml(c.cout, c.pieces), effet: effetHtml(c) };
           });
         },
+        // Les joueurs dans l'ordre de la table vu de ma place : voisins de gauche (◀) à gauche, moi au milieu, voisins de droite (▶) à droite
+        ordreTable: function() {
+          var e = this.e, moi = this.moiJ;
+          if (!this.estJoueur) return e.joueurs.slice();
+          var nd = Math.ceil((e.n - 1) / 2), ng = e.n - 1 - nd, d = [], g = [], x = moi, k;
+          for (k = 0; k < nd; k++) { x = SJ.droite(e, x); d.push(x); }
+          x = moi; for (k = 0; k < ng; k++) { x = SJ.gauche(e, x); g.unshift(x); }
+          return g.concat([moi], d);
+        },
         joueursAff: function() {
           var e = this.e, moi = this.moiJ, g = this.estJoueur ? SJ.gauche(e, moi) : null, d = this.estJoueur ? SJ.droite(e, moi) : null;
-          return e.joueurs.map(j => {
+          return this.ordreTable.map(j => {
             var cite = e.cites[j], k = e.coups && e.coups[j];
+            var chiffres = DV.piece(cite.pieces, 1.05) + '<span>' + DV.bouclier(1, 1) + SJ.boucliers(e, j) + '</span><span class="pips">' + this.pips(cite) + '</span>' + DV.pv(SJ.score(e, j).total, 1);
             return { nom: j, court: j === moi ? 'Moi' : this.court(j), moi: j === moi, gauche: j === g, droite: j === d && j !== g,
-                     pieces: cite.pieces, boucliers: SJ.boucliers(e, j), pips: this.pips(cite), fait: e.phase === 'jeu' && e.aChoisi && e.aChoisi[j],
+                     chiffres: chiffres, prod: prodHtml(e, j), fait: e.phase === 'jeu' && e.aChoisi && e.aChoisi[j],
                      absent: !this.solo && !this.estPresent(j), coup: k ? this.texteCoup(k) : '' };
           });
         },
@@ -1060,6 +1121,12 @@
         'e.tour': function() { this.selection = -1; },
         'e.age': function() { this.selection = -1; },
         'e.dernier': function(d) { this.voirCoup(d); },
+        'e.nTour': function(n, avant) {
+          if (!n || !avant || n <= avant || Date.now() - this._charge < 1500) return;   // pas pour l'état retrouvé au chargement
+          this.montrerTour();
+        },
+        'e.n': function() { this.centrerJoueurs(); },
+        onglet: function(o) { if (o === 'play') this.centrerJoueurs(); },
         'e.phase': function(p, avant) {
           if (p !== 'fin') { this.finVue = false; this._finAttente = false; return; }
           if (!avant || avant === 'fin' || !this.e || this.e.mode !== 'duel' || Date.now() - this._charge < 1500) return;
@@ -1121,6 +1188,53 @@
           if (p.g) l.push(p.g + '🪙 à ' + this.court(SJ.gauche(this.e, this.moiJ)));
           if (p.d) l.push(p.d + '🪙 à ' + this.court(SJ.droite(this.e, this.moiJ)));
           return l.length ? l.join(', ') : 'tu as tout';
+        },
+        // Ce que je paie et à qui, avec les ressources achetées : « ◀ Lucien : 🧵 · 2🪙 »
+        paiementHtml: function(p) {
+          if (p.chaine) return 'gratuit (chaîne)';
+          var l = [], ic = r => (r || '').split('').map(x => DV.res(x, 1.1)).join('');
+          if (p.pieces) l.push(p.pieces + ' 🪙 à la banque');
+          if (p.g) l.push('◀ ' + this.court(SJ.gauche(this.e, this.moiJ)) + ' : ' + ic(p.ag) + ' ' + p.g + ' 🪙');
+          if (p.d) l.push('▶ ' + this.court(SJ.droite(this.e, this.moiJ)) + ' : ' + ic(p.ad) + ' ' + p.d + ' 🪙');
+          return l.length ? l.join('<br>') : 'tu as tout';
+        },
+        // Révélation d'un tour : chaque autre joueur, sa carte et ce qu'il en a fait
+        montrerTour: function() {
+          var e = this.e;
+          if (!e || e.mode === 'duel' || !e.coups) return;
+          var moi = this.estJoueur ? this.moiJ : null, g = moi ? SJ.gauche(e, moi) : null, d = moi ? SJ.droite(e, moi) : null;
+          var tour = e.tour > 1 && e.phase === 'jeu' ? e.tour - 1 : 6, age = e.tour > 1 || e.phase !== 'jeu' ? e.age : e.age - 1;
+          var lignes = this.ordreTable.filter(j => j !== moi && e.coups[j]).map(j => {
+            var k = e.coups[j], c = SJ.CARTES[k.id], qui = (j === g ? '◀ ' : '') + this.court(j) + (j === d && j !== g ? ' ▶' : ''), t = k.type, sous = [];
+            var tampon = { construire: 'Construite', gratuit: 'Gratuite', joyau: 'Merveille', vendre: 'Vendue' }[t];
+            if (t === 'joyau') { var cite = e.cites[j], et = SJ.JOYAUX[cite.joyau].etapes[cite.etapes - 1]; sous.push('étape ' + ['I', 'II', 'III'][cite.etapes - 1] + ' de sa merveille : ' + DV.gainEtape(et)[1]); }
+            else if (t === 'vendre') sous.push('vendue pour 3 🪙');
+            else if (k.chaine) sous.push('gratuite grâce à sa chaîne');
+            else if (t === 'gratuit') sous.push('construite gratuitement (merveille)');
+            if (k.g) sous.push(k.g + ' 🪙 payées à ' + (SJ.gauche(e, j) === moi ? 'toi' : this.court(SJ.gauche(e, j))));
+            if (k.d) sous.push(k.d + ' 🪙 payées à ' + (SJ.droite(e, j) === moi ? 'toi' : this.court(SJ.droite(e, j))));
+            return { j: j, cl: t, qui: qui + ({ construire: ' construit', gratuit: ' construit', joyau: ' bâtit sa merveille avec', vendre: ' vend' })[t],
+                     nom: c.nom, sous: sous.join(' · '), visuel: DV.carteC(c, 'main') + '<span class="ca-tampon">' + tampon + '</span>' };
+          });
+          if (!lignes.length) return;
+          var km = moi && e.coups[moi], dmoi = '';
+          if (km) {
+            var aMoi = e.joueurs.filter(j => j !== moi && e.coups[j]).reduce((t, j) => t + (SJ.gauche(e, j) === moi ? e.coups[j].g || 0 : 0) + (SJ.droite(e, j) === moi ? e.coups[j].d || 0 : 0), 0);
+            if (aMoi) dmoi = DV.piece(aMoi, 1.1) + ' Tes voisins t\'ont acheté des ressources : +' + aMoi + ' pièce' + (aMoi > 1 ? 's' : '') + '.';
+          }
+          var duree = Math.min(9000, 2600 + 1300 * lignes.length);
+          clearTimeout(this._tTour);
+          this.tourAff = { cle: e.nTour, age: age, tour: tour, lignes: lignes, moi: dmoi, duree: duree };
+          this.vibre(20);
+          this._tTour = setTimeout(() => this.fermerTour(), duree);
+        },
+        fermerTour: function() { clearTimeout(this._tTour); this.tourAff = null; },
+        // Beaucoup de joueurs : le bandeau défile, on le centre sur moi
+        centrerJoueurs: function() {
+          this.$nextTick(() => {
+            var b = this.$refs.joueursSj, m = b && b.querySelector('[data-moi]');
+            if (b && m && b.scrollWidth > b.clientWidth) b.scrollLeft = m.offsetLeft - (b.clientWidth - m.offsetWidth) / 2;
+          });
         },
         texteCoup: function(k) {
           if (k.type === 'vendre') return '🪙 a vendu';

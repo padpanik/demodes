@@ -177,7 +177,7 @@ var SJ = (function () {
   }
   // Le paiement le moins cher d'un coût en ressources : { ok, g, d } (pièces à verser à chaque voisin), ou { ok: false }
   function payer(e, j, cout) {
-    if (!cout) return { ok: true, g: 0, d: 0 };
+    if (!cout) return { ok: true, g: 0, d: 0, ag: '', ad: '' };
     var cite = e.cites[j], cg = e.cites[gauche(e, j)], cd = e.cites[droite(e, j)];
     var besoin = cout.split('').sort();
     var mien = sources(cite, false), sg = sources(cg, true), sd = sources(cd, true);
@@ -187,13 +187,14 @@ var SJ = (function () {
     var pg = {}, pd = {};
     'BPAMVTR'.split('').forEach(r => { pg[r] = prix(cite, 'g', r); pd[r] = prix(cite, 'd', r); });
     var meilleur = null, usM = mien.map(() => false), usG = sg.map(() => false), usD = sd.map(() => false), max = cite.pieces;
+    var achG = [], achD = [];   // ce qu'on achète à chaque voisin (pour l'afficher : « ◀ Lucien : 🪵 »)
     function chercher(k, g, d) {
       if (g + d > max || (meilleur && g + d >= meilleur.g + meilleur.d)) return;
-      if (k === besoin.length) { meilleur = { ok: true, g: g, d: d }; return; }
+      if (k === besoin.length) { meilleur = { ok: true, g: g, d: d, ag: achG.join(''), ad: achD.join('') }; return; }
       var r = besoin[k], i;
       for (i = 0; i < mien.length; i++) if (!usM[i] && mien[i].o.indexOf(r) >= 0) { usM[i] = true; chercher(k + 1, g, d); usM[i] = false; if (meilleur && meilleur.g + meilleur.d === g + d) return; }
-      for (i = 0; i < sg.length; i++) if (!usG[i] && sg[i].o.indexOf(r) >= 0) { usG[i] = true; chercher(k + 1, g + pg[r], d); usG[i] = false; }
-      for (i = 0; i < sd.length; i++) if (!usD[i] && sd[i].o.indexOf(r) >= 0) { usD[i] = true; chercher(k + 1, g, d + pd[r]); usD[i] = false; }
+      for (i = 0; i < sg.length; i++) if (!usG[i] && sg[i].o.indexOf(r) >= 0) { usG[i] = true; achG.push(r); chercher(k + 1, g + pg[r], d); achG.pop(); usG[i] = false; }
+      for (i = 0; i < sd.length; i++) if (!usD[i] && sd[i].o.indexOf(r) >= 0) { usD[i] = true; achD.push(r); chercher(k + 1, g, d + pd[r]); achD.pop(); usD[i] = false; }
     }
     chercher(0, 0, 0);
     return meilleur || { ok: false, cher: true };
@@ -209,11 +210,11 @@ var SJ = (function () {
       var p = payer(e, j, c.cout);
       // Les pièces du coût de la carte et celles des voisins sortent de la même bourse
       if (p.ok && p.g + p.d + c.pieces > cite.pieces) p = { ok: false, cher: true };
-      r.construire = p.ok ? { ok: true, g: p.g, d: p.d, pieces: c.pieces } : { ok: false, raison: p.cher ? 'Trop cher' : 'Ressources introuvables' };
+      r.construire = p.ok ? { ok: true, g: p.g, d: p.d, ag: p.ag, ad: p.ad, pieces: c.pieces } : { ok: false, raison: p.cher ? 'Trop cher' : 'Ressources introuvables' };
     }
     var jy = JOYAUX[cite.joyau];
     if (cite.etapes >= 3) r.joyau = { ok: false, raison: 'Merveille terminée' };
-    else { var q = payer(e, j, jy.etapes[cite.etapes].cout); r.joyau = q.ok ? { ok: true, g: q.g, d: q.d, pieces: 0 } : { ok: false, raison: q.cher ? 'Trop cher' : 'Ressources introuvables' }; }
+    else { var q = payer(e, j, jy.etapes[cite.etapes].cout); r.joyau = q.ok ? { ok: true, g: q.g, d: q.d, ag: q.ag, ad: q.ad, pieces: 0 } : { ok: false, raison: q.cher ? 'Trop cher' : 'Ressources introuvables' }; }
     r.gratuit = !aDeja(cite, id) && jy.etapes.slice(0, cite.etapes).some(t => t.gratuit) && cite.gratuitAge !== e.age;
     return r;
   }
@@ -246,6 +247,7 @@ var SJ = (function () {
     if (!tousOntChoisi(e)) return false;
     var verse = {}, gains = {};
     e.coups = {};
+    e.nTour = (e.nTour || 0) + 1;   // numéro de révélation : la page montre alors ce qu'a joué chacun
     e.joueurs.forEach(j => { verse[j] = 0; gains[j] = 0; });
     // 1. Chacun paie et pose (sur l'état du début du tour : c'est simultané)
     var poses = e.joueurs.map(j => {
