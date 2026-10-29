@@ -214,7 +214,7 @@ Agents secrets : `agents-sauvegarde` (dont `maCle`, la carte secrète si on est 
 Quatre en ligne : `quatre-sauvegarde` (salon), `quatre-solo` (partie contre l'ordinateur), `quatre-boss` (partie contre un boss d'expédition), `quatre-niveau`, `quatre-stats`, `quatre-dernier-salon`.
 Dominos : `domino-sauvegarde` (salon ; chez l'hôte, l'état complet avec toutes les mains), `domino-solo` (partie contre l'ordinateur), `domino-jeu`, `domino-ordis`, `domino-buts`, `domino-dernier-salon`.
 Lettres croisées : `lettres-sauvegarde` (salon ; chez l'hôte, l'état complet avec chevalets et sac), `lettres-solo` (partie contre l'ordinateur), `lettres-niveau`, `lettres-ordis`, `lettres-dernier-salon`.
-Les 7 joyaux : `joyaux-sauvegarde` (salon ; chez l'hôte, l'état complet avec toutes les mains), `joyaux-solo` (partie contre les ordinateurs, classique ou duel : `mode`), `joyaux-version` (version choisie, duel par défaut ; remplace l'ancienne clé `joyaux-mode`), `joyaux-ordis`, `joyaux-dernier-salon`, `joyaux-conflit-vu` (dernière fenêtre de conflits fermée).
+Les 7 joyaux : `joyaux-sauvegarde` (salon ; chez l'hôte, l'état complet avec toutes les mains), `joyaux-solo` (partie contre les ordinateurs, classique ou duel : `mode`), `joyaux-version` (version choisie, duel par défaut ; remplace l'ancienne clé `joyaux-mode`), `joyaux-ordis`, `joyaux-faces` (face des merveilles du Classique en solo : A, B ou hasard), `joyaux-dernier-salon`, `joyaux-conflit-vu` (dernière fenêtre de conflits fermée).
 Mon compagnon : `compagnon-animal` (espèce, nom, couleur, besoins, objets possédés et portés, série de jours), `compagnon-etoiles` (solde),
 `compagnon-journal` (dernières étoiles gagnées ou dépensées), `compagnon-parties` (parties déjà récompensées), `compagnon-jour` (tâches du jour),
 `compagnon-cadeau` (bonus de bienvenue donné), `compagnon-ancien`, `compagnon-gains-jeux` (étoiles gagnées en jouant aujourd'hui),
@@ -399,7 +399,17 @@ Bataille navale : `bataille-boss` (partie contre un boss d'expédition), `batail
 - Nom choisi par l'utilisateur. Ils sont **souvent 2, parfois 4** : il faut 3 cités au moins, donc des 🤖 complètent la table
   (salle d'attente : l'hôte règle le nombre d'ordinateurs, 2 par défaut, un de moins à chaque ami qui arrive tant qu'on reste à 3 ; solo : 2 à 6 ordinateurs).
   Cités placées au hasard autour de la table. Ordinateurs : `ORDIS`, ils choisissent dès le début du tour (`jouerRobots`), sur le téléphone de l'hôte.
-- Règles (toutes maison, noms et valeurs inventés) : 3 âges, 7 cartes chacun, **tout le monde choisit en même temps** une carte (construire,
+- **Règles exactes du jeu de base d'origine, 1re édition 2010** (2.82, demandé par l'utilisateur : « les règles, cartes et merveilles exactes, pour s'assurer que c'est équilibré » ;
+  cercle privé ; pas les visuels). Cartes avec les **noms de la boîte** (Chantier, Cavité, Bassin argileux… Guilde des travailleurs…), coûts, effets, chaînages et nombre
+  d'exemplaires par nombre de joueurs du jeu d'origine ; **identifiants internes gardés** (`coupe`, `carriere`… pour les sauvegardes). **Valeurs reprises de mémoire :
+  à vérifier avec la boîte de l'utilisateur.** Merveilles **faces A et B** (`JOYAUX[clé].A / .B`, `ville`) : l'hôte (salle d'attente, message `FACES`, `pubHote.faces`)
+  ou le joueur seul (`joyaux-faces`) choisit **A, B ou Au hasard** (chaque cité tire sa face) ; `SJ.nouvellePartie(joueurs, h, { faces })`, `cite.face` (absente = A).
+  `SJ.etapesDe(cite)` / `SJ.faites(cite)` partout (Gizeh B : 4 étapes, Rhodes B : 2). Pouvoirs : **Mausolée** (construire gratuitement une carte de la défausse :
+  phase `'pouvoir'`, `e.attente = [{ type: 'mausolee', j }]`, `SJ.pouvoir(e, j, id | null)`, message `POUVOIR`, fenêtre « Ton Mausolée », `SJ.ordinateurDefausse` pour les 🤖
+  et les absents), **Babylone B** (jouer la 7e carte : `e.seuls` = les seuls participants, `SJ.participants`, « 7e carte » dans la barre), **Olympie** (A : 1 carte gratuite par âge ;
+  B : matières à 1 🪙 chez les deux voisins, copier une guilde voisine au décompte), gains combinés (Rhodes B, Éphèse B) dessinés côte à côte (`DV.gainEtape`).
+  `e.coupsDe = { age, tour }` (7 = 7e carte) pour le bandeau « ce qu'ils ont joué ». Simulation Node : 1 800 parties (3 à 7, faces A / B / hasard), toutes finies.
+  Avant 2.82, règles maison (noms et valeurs inventés) : 3 âges, 7 cartes chacun, **tout le monde choisit en même temps** une carte (construire,
   étape suivante de son **joyau**, ou vendre 3 🪙), puis passe sa main (à gauche aux âges I et III, à droite à l'âge II) ; 6 cartes jouées, la 7e défaussée.
   3 🪙 au départ. Ressources 🪵🪨🧱⛏️ (marron) et 🔮🧵📜 (grises), le joyau en produit une dès le départ ; achat aux deux voisins 2 🪙 (1 avec comptoir / marché),
   **le jeu choisit tout seul le paiement le moins cher** (`SJ.payer`, recherche exhaustive). Chaînes : carte gratuite si l'on a une carte précise (`chaine`).

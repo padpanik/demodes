@@ -216,39 +216,49 @@ var DV = (function () {
   }
   // Ce que rapporte une étape de merveille : l'icône et une légende en clair
   function gainEtape(t) {
-    if (t.pts) return [pv(t.pts, 1.7), t.pts + ' points'];
-    if (t.boucliers) return [bouclier(t.boucliers, 1.6), t.boucliers + ' boucliers'];
-    if (t.pieces) return [piece(t.pieces, 1.6), '+' + t.pieces + ' pièces'];
-    if (t.prod) return [prodC(t.prod, 1.55), t.prod.length > 5 ? '1 matière au choix, chaque tour' : '1 objet au choix, chaque tour'];
-    if (t.sci) return [sciC('*', 1.5), '1 savoir au choix'];
-    if (t.comptoir) return [fleche('◀▶', 1.6) + 'BPAM'.split('').map(r => res(r, 0.95)).join('') + '<b class="dv-eg">=</b>' + piece(1, 1.1), 'matières à 1 🪙 chez mes voisins'];
-    if (t.gratuit) return ['<span class="dv-gratuit">0</span>', '1 carte gratuite par âge'];
-    return ['', ''];
+    // Une étape peut rapporter plusieurs choses (Rhodes B : bouclier + pièces + points) : icônes côte à côte, légendes jointes
+    var ic = [], lg = [], n = 0;
+    ['boucliers', 'pieces', 'pts', 'prod', 'sci', 'comptoir', 'gratuit', 'defausse', 'septieme', 'guilde'].forEach(function (k) { if (t[k]) n++; });
+    var z = n > 1 ? 0.75 : 1;
+    if (t.boucliers) { ic.push(bouclier(t.boucliers, 1.6 * z)); lg.push(t.boucliers + (t.boucliers > 1 ? ' boucliers' : ' bouclier')); }
+    if (t.pieces) { ic.push(piece(t.pieces, 1.6 * z)); lg.push('+' + t.pieces + ' pièces'); }
+    if (t.prod) { ic.push(prodC(t.prod, 1.55 * z)); lg.push(t.prod.length > 5 ? '1 matière au choix, chaque tour' : '1 objet au choix, chaque tour'); }
+    if (t.sci) { ic.push(sciC('*', 1.5 * z)); lg.push('1 savoir au choix'); }
+    if (t.comptoir) { ic.push(fleche('◀▶', 1.6 * z) + 'BPAM'.split('').map(r => res(r, 0.95 * z)).join('') + '<b class="dv-eg">=</b>' + piece(1, 1.1 * z)); lg.push('matières à 1 🪙 chez mes voisins'); }
+    if (t.gratuit) { ic.push('<span class="dv-gratuit">0</span>'); lg.push('1 carte gratuite par âge'); }
+    if (t.defausse) { ic.push('<span class="dv-gratuit dv-pouv">♻</span>'); lg.push('construire 1 carte de la défausse'); }
+    if (t.septieme) { ic.push('<span class="dv-gratuit dv-pouv">7</span>'); lg.push('jouer aussi la 7e carte de chaque âge'); }
+    if (t.guilde) { ic.push('<span class="dv-gratuit dv-pouv dv-guilde">⧉</span>'); lg.push('copier une guilde d\'un voisin'); }
+    if (t.pts) { ic.push(pv(t.pts, 1.7 * z)); lg.push(t.pts + (t.pts > 1 ? ' points' : ' point')); }
+    return [ic.join(''), lg.join(', ')];
   }
   // La merveille d'une cité, en carte large : ressource de départ, puis les 3 étapes (coût → gain) ; faites = cochées
   // Les 3 étapes d'une merveille (coût en haut à gauche sur 1/3, un trait, gain sur 2/3) ; faites = cochées
-  function etapesPl(J, faites, suivante) {
-    return J.etapes.map(function (t, k) {
+  function etapesPl(et, faites, suivante) {
+    return et.map(function (t, k) {
       var g = gainEtape(t), faite = k < faites;
       return '<div class="dv-pl-et' + (faite ? ' dv-pl-faite' : '') + (k === faites && suivante ? ' dv-pl-suiv' : '') + '">' +
         '<div class="dv-pl-cout">' + pastilles(t.cout) + '</div>' +
-        (faite ? '<div class="dv-tampon">✓</div>' : '<span class="dv-pl-num">' + ['I', 'II', 'III'][k] + '</span>') +
+        (faite ? '<div class="dv-tampon">✓</div>' : '<span class="dv-pl-num">' + ['I', 'II', 'III', 'IV'][k] + '</span>') +
         '<div class="dv-pl-bas"><div class="dv-pl-gain">' + g[0] + '</div><div class="dv-pl-leg">' + g[1] + '</div></div></div>';
     }).join('');
   }
-  // La merveille d'une cité, en carte large : ressource de départ, puis les 3 étapes (coût → gain) ; faites = cochées
+  // Nombre de colonnes = nombre d'étapes (2 à 4 selon la face)
+  function colonnes(et) { return et.length === 3 ? '' : ' style="grid-template-columns:repeat(' + et.length + ',1fr)"'; }
+  // La merveille d'une cité, en carte large : ressource de départ, puis les étapes (coût → gain) ; faites = cochées
   function plateau(cle, opts) {
     opts = opts || {};
     var J = SJ.JOYAUX[cle], faites = opts.faites || 0;
     if (!J) return '';
+    var et = SJ.etapesDe({ joyau: cle, face: opts.face });
     return '<div class="dv-plateau">' +
       '<svg class="dv-pl-monu" viewBox="0 0 80 48" fill="#fff">' + MONU[MONU_C[cle]] + '</svg>' +
       '<div class="dv-pl-tete">' +
         '<div class="dv-pl-base"><span class="dv-past">' + res(J.base, 1) + '</span><span>produit<br>dès le départ</span></div>' +
         '<div class="dv-pl-nom">' + J.nom + '</div>' +
-        '<div class="dv-pl-avance">' + faites + '/3</div>' +
+        '<div class="dv-pl-avance">' + (opts.face === 'B' ? 'face B · ' : '') + faites + '/' + et.length + '</div>' +
       '</div>' +
-      '<div class="dv-pl-etapes">' + etapesPl(J, faites, opts.suivante) + '</div></div>';
+      '<div class="dv-pl-etapes"' + colonnes(et) + '>' + etapesPl(et, faites, opts.suivante) + '</div></div>';
   }
   // La carte d'un joueur sur la table : son nom, ses pièces, boucliers et points, ce que produit sa cité, sa merveille et ses étapes
   //   o = { nom, pieces, boucliers, pts, prod (html), faites, moi, fait (a choisi), absent }
@@ -256,20 +266,21 @@ var DV = (function () {
   function plateauJoueur(cle, o) {
     var J = SJ.JOYAUX[cle];
     if (!J) return '';
+    var et = SJ.etapesDe({ joyau: cle, face: o.face });
     if (o.compact) return '<div class="dv-plateau dv-plj dv-plc' + (o.moi ? ' dv-plj-moi' : '') + (o.absent ? ' dv-plj-absent' : '') + '">' +
       '<svg class="dv-pl-monu" viewBox="0 0 80 48" fill="#fff">' + MONU[MONU_C[cle]] + '</svg>' +
-      '<div class="dv-plj-tete dv-plc-tete"><div class="dv-plj-nom">' + o.nom + (o.fait ? ' <span class="dv-plj-fait">✓</span>' : '') + '</div><div class="dv-plj-mv">' + J.nom + '</div>' +
+      '<div class="dv-plj-tete dv-plc-tete"><div class="dv-plj-nom">' + o.nom + (o.fait ? ' <span class="dv-plj-fait">✓</span>' : '') + '</div><div class="dv-plj-mv">' + J.nom + (o.face === 'B' ? ' · B' : '') + '</div>' +
         '<div class="dv-plj-chiffres">' + piece(o.pieces, 1.1) + '<span class="dv-plj-b">' + bouclier(1, 1.05) + '<b>' + o.boucliers + '</b></span>' + pv(o.pts, 1.1) + '</div></div>' +
       '<div class="dv-plj-prod">' + o.prod + '</div>' +
-      '<div class="dv-pl-etapes dv-plc-etapes">' + etapesPl(J, o.faites || 0, o.moi) + '</div></div>';
+      '<div class="dv-pl-etapes dv-plc-etapes"' + colonnes(et) + '>' + etapesPl(et, o.faites || 0, o.moi) + '</div></div>';
     return '<div class="dv-plateau dv-plj' + (o.moi ? ' dv-plj-moi' : '') + (o.absent ? ' dv-plj-absent' : '') + '">' +
       '<svg class="dv-pl-monu" viewBox="0 0 80 48" fill="#fff">' + MONU[MONU_C[cle]] + '</svg>' +
       '<div class="dv-plj-tete">' +
-        '<div class="dv-plj-nom">' + o.nom + (o.fait ? ' <span class="dv-plj-fait">✓</span>' : '') + '</div><div class="dv-plj-mv">' + J.nom + '</div>' +
+        '<div class="dv-plj-nom">' + o.nom + (o.fait ? ' <span class="dv-plj-fait">✓</span>' : '') + '</div><div class="dv-plj-mv">' + J.nom + (o.face === 'B' ? ' · B' : '') + '</div>' +
         '<div class="dv-plj-chiffres">' + piece(o.pieces, 1.2) + '<span class="dv-plj-b">' + bouclier(1, 1.15) + '<b>' + o.boucliers + '</b></span>' + pv(o.pts, 1.2) + '</div>' +
       '</div>' +
       '<div class="dv-plj-prod">' + o.prod + '</div>' +
-      '<div class="dv-pl-etapes dv-plj-etapes">' + etapesPl(J, o.faites || 0, o.moi) + '</div></div>';
+      '<div class="dv-pl-etapes dv-plj-etapes"' + colonnes(et) + '>' + etapesPl(et, o.faites || 0, o.moi) + '</div></div>';
   }
 
   // ---------- Styles ----------
@@ -318,6 +329,7 @@ var DV = (function () {
     '.dv-defaite{display:inline-flex;align-items:center;justify-content:center;min-width:1.2em;height:1.2em;border-radius:0.25em;background:#fde2df;color:#c53030;font-weight:900;line-height:1;padding:0 0.15em}',
     '.dv-carte.dv-main{--t:12px}',
     '.dv-gratuit{display:inline-flex;align-items:center;justify-content:center;width:1.3em;height:1.75em;border-radius:0.25em;background:#2b6cb0;color:#fff;font-weight:900;font-size:1.25em;border:0.1em solid #fff;box-shadow:0 0.06em 0.2em rgba(0,0,0,0.4)}',
+    '.dv-gratuit.dv-pouv{background:#2f855a}.dv-gratuit.dv-guilde{background:#6b46c1}',
     '.dv-plateau{--t:13px;font-size:var(--t);width:26em;height:11.4em;border-radius:0.75em;position:relative;overflow:hidden;box-sizing:border-box;border:0.15em solid #a07a2c;color:#fff;font-family:system-ui,sans-serif;background:linear-gradient(180deg,#d9b25a,#9c6f1e);box-shadow:0 0.15em 0.4em rgba(0,0,0,0.18)}',
     '.dv-plateau .dv-pl-monu{position:absolute;right:0.4em;top:0.2em;width:9em;height:5.4em;opacity:0.4}',
     '.dv-pl-tete{position:absolute;left:0;right:0;top:0;height:3.1em;display:flex;align-items:center;gap:0.5em;padding:0 0.5em}',

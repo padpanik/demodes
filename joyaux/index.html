@@ -85,6 +85,8 @@
     .plateau-sj { margin-bottom: 6px; cursor: pointer; line-height: normal; }
     .plateau-sj .dv-plateau { --t: min(13.5px, calc((100vw - 26px) / 26)); margin: 0 auto; }
     .boite-sj .plateau-sj .dv-plateau { --t: min(13.5px, calc((100vw - 34px) / 26)); }
+    .pouvoir-sj { text-align: center; margin: 6px 0 0; font-weight: 700; color: #6b4e16; background: #fff6e0; border-radius: 10px; padding: 6px 8px; }
+    .defausse-sj { margin-top: 8px; }
     .main-cartes { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px 4px; justify-items: center; }
     .main-cartes .mc { background: none; border: none; padding: 0; font: inherit; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 2px; line-height: normal; }
     .main-cartes .dv-carte.dv-main { --t: min(11.8px, calc((100vw - 44px) / 4 / 6.4)); transition: transform 0.15s; }
@@ -324,6 +326,11 @@
               <div class="segment">
                 <button v-for="n in [2, 3, 4, 5, 6]" :key="n" :class="{ actif: nbOrdis === n }" @click="nbOrdis = n">🤖 {{ n }}</button>
               </div>
+              <div class="petit-titre">Face des merveilles</div>
+              <div class="segment">
+                <button v-for="f in FACES" :key="f[0]" :class="{ actif: facesChoisies === f[0] }" @click="facesChoisies = f[0]">{{ f[1] }}</button>
+              </div>
+              <div class="aide" style="margin-top:0">{{ aideFaces(facesChoisies) }}</div>
             </template>
             <button class="btn principal" style="width:100%" @click="demarrerSolo">{{ soloEnCours ? 'Reprendre la partie (' + (soloEnCours === 'duel' ? 'duel' : 'classique') + ')' : 'Jouer seul' }}</button>
             <button v-if="soloEnCours" class="btn" style="width:100%;margin-top:6px" @click="nouveauSolo">Nouvelle partie ({{ modeChoisi === 'duel' ? 'duel' : 'classique' }})</button>
@@ -366,6 +373,11 @@
               <b>🤖 {{ pub.robots }}</b>
               <button v-if="role === 'hote'" @click="reglerRobots(1)" :disabled="humainsTable + pub.robots >= 7">+</button>
             </div>
+            <div class="petit-titre">Face des merveilles {{ role === 'hote' ? '' : '(choisie par l\'hôte)' }}</div>
+            <div class="segment">
+              <button v-for="f in FACES" :key="f[0]" :disabled="role !== 'hote'" :class="{ actif: (pub.faces || 'A') === f[0] }" @click="envoyerJeu({ type: 'FACES', faces: f[0] })">{{ f[1] }}</button>
+            </div>
+            <div class="aide" style="margin-top:0">{{ aideFaces(pub.faces || 'A') }}</div>
             <button v-if="role === 'hote'" class="btn principal" style="width:100%" :disabled="humainsTable + pub.robots < 3" @click="envoyerJeu({ type: 'COMMENCER' })">
               {{ humainsTable + pub.robots < 3 ? 'Il faut 3 cités : ajoute un ordinateur' : 'Commencer (' + (humainsTable + pub.robots) + ' cités)' }}</button>
             <div v-else class="aide">L'hôte lance la partie quand tout le monde est là.</div>
@@ -561,17 +573,19 @@
         <template v-else-if="e">
           <div class="barre-sj">
             <span class="age">Âge {{ ['', 'I', 'II', 'III'][e.age] }}</span>
-            <span class="sens" v-if="e.phase === 'jeu'">tour {{ e.tour }}/6</span>
+            <span class="sens" v-if="e.phase === 'jeu'">{{ e.seuls ? '7e carte' : 'tour ' + e.tour + '/6' }}</span>
+            <span class="sens" v-else-if="e.phase === 'pouvoir'">· Mausolée</span>
             <span class="sens" v-else>· partie finie</span>
             <span class="espace"></span>
-            <span class="sens" v-if="e.phase === 'jeu'">{{ e.age === 2 ? 'la main passe à droite ▶' : '◀ la main passe à gauche' }}</span>
+            <span class="sens" v-if="e.phase === 'jeu' && !e.seuls">{{ e.age === 2 ? 'la main passe à droite ▶' : '◀ la main passe à gauche' }}</span>
           </div>
 
           <!-- La table : la merveille de chaque joueur, dans l'ordre (voisins de gauche ◀ au-dessus, moi au milieu, voisins de droite ▶ en dessous) ; toucher = sa cité -->
           <div class="table-sj" ref="joueursSj" :class="{ compacte: tableCompacte }" :style="styleTable">
             <div v-for="j in joueursAff" :key="j.nom" class="pj" :data-moi="j.moi ? 1 : null" @click="vueCite = j.nom" v-html="j.carte"></div>
           </div>
-          <div class="actions-sj" v-if="e.phase === 'jeu'">
+          <div class="aide pouvoir-sj" v-if="messagePause">{{ messagePause }}</div>
+          <div class="actions-sj" v-if="e.phase === 'jeu' || e.phase === 'pouvoir'">
             <button v-if="!solo && role === 'hote' && absentsAttendus.length" class="btn" @click="envoyerJeu({ type: 'REMPLACER' })">🤖 Jouer à la place de {{ absentsAttendus.join(', ') }}</button>
             <button v-if="solo" class="btn" @click="quitterSolo">Arrêter</button>
           </div>
@@ -579,7 +593,7 @@
           <!-- Révélation d'un tour : ce qu'a joué chacun des autres, un moment en haut de l'écran (toucher = fermer) -->
           <transition name="coup">
             <div v-if="tourAff" class="tour-adv" :class="{ serre: tourAff.lignes.length > 3 }" role="status" @click="fermerTour" :key="tourAff.cle">
-              <div class="ta-titre">Âge {{ ['', 'I', 'II', 'III'][tourAff.age] }} · tour {{ tourAff.tour }} : ce qu'ils ont joué</div>
+              <div class="ta-titre">Âge {{ ['', 'I', 'II', 'III'][tourAff.age] }} · {{ tourAff.tour === 7 ? '7e carte' : 'tour ' + tourAff.tour }} : ce qu'ils ont joué</div>
               <div class="ta-ligne" v-for="l in tourAff.lignes" :key="l.j">
                 <div class="ca-carte" :class="l.cl" v-html="l.visuel"></div>
                 <div class="ta-texte"><div class="ta-qui">{{ l.qui }}</div><div class="ta-nom">{{ l.nom }}</div><div class="ta-sous" v-html="l.sous"></div></div>
@@ -627,8 +641,8 @@
                 <button class="btn" @click="jouer(selection, 'vendre')">🪙 Vendre<small>+3 pièces</small></button>
                 <button class="btn" v-if="carteSel.o.gratuit" @click="jouer(selection, 'gratuit')">✨ Construire gratuitement<small>une fois par âge</small></button>
               </div>
-              <template v-if="maCite.etapes < 3">
-                <div class="petit-titre">… ou la glisser sous ta merveille pour bâtir l'étape {{ ['I', 'II', 'III'][maCite.etapes] }} :</div>
+              <template v-if="etapeSuivante">
+                <div class="petit-titre">… ou la glisser sous ta merveille pour bâtir l'étape {{ ['I', 'II', 'III', 'IV'][maCite.etapes] }} :</div>
                 <button class="btn etape-btn" :disabled="!carteSel.o.joyau.ok" @click="jouer(selection, 'joyau')">
                   <span class="eb-cout" v-html="coutEtape"></span><span class="eb-fl">→</span><span class="eb-gain" v-html="gainEtapeHtml"></span>
                   <small v-html="carteSel.o.joyau.ok ? paiementHtml(carteSel.o.joyau) : carteSel.o.joyau.raison"></small>
@@ -636,6 +650,20 @@
               </template>
               <div class="aide" v-else>Ta merveille est terminée.</div>
               <button class="btn" style="width:100%;margin-top:8px" @click="selection = -1">Fermer</button>
+            </div>
+          </div>
+          <!-- Mausolée : construire gratuitement une carte de la défausse -->
+          <div class="voile-sj" v-if="monPouvoir">
+            <div class="boite-sj">
+              <div class="titre">⚱️ Ton Mausolée : choisis une carte de la défausse</div>
+              <div class="aide" style="margin-top:0">Tu la construis gratuitement (pas deux fois la même carte dans ta cité).</div>
+              <div class="main-cartes defausse-sj">
+                <button v-for="d in defausseAff" :key="d.id" class="mc" :class="{ terne: !d.ok }" :disabled="!d.ok" @click="choisirDefausse(d.id)">
+                  <span v-html="DV.carteC(d.c, 'main')"></span>
+                  <span class="mc-etat" :class="d.ok ? 'ok' : 'non'">{{ d.ok ? '✓' : 'déjà là' }}</span>
+                </button>
+              </div>
+              <button class="btn" style="width:100%;margin-top:8px" @click="choisirDefausse(null)">Ne rien prendre</button>
             </div>
           </div>
           <!-- Fin de partie -->
@@ -658,7 +686,7 @@
           <div class="boite-sj">
             <div class="titre">{{ citeAff.nom === moiJ ? 'Ma cité' : 'Cité de ' + citeAff.nom }}</div>
             <div class="ligne" v-if="!citeAff.jy">Pas encore de merveille.</div>
-            <div class="plateau-sj" v-if="citeAff.jy" v-html="DV.plateau(citeAff.cite.joyau, { faites: citeAff.cite.etapes })"></div>
+            <div class="plateau-sj" v-if="citeAff.jy" v-html="DV.plateau(citeAff.cite.joyau, { faites: citeAff.cite.etapes, face: citeAff.cite.face })"></div>
             <div class="ligne" v-if="citeAff.duel">🪙 {{ citeAff.cite.pieces }} · jetons : {{ citeAff.cite.jetons.length ? citeAff.cite.jetons.map(t => JETONS[t].ico + ' ' + JETONS[t].nom).join(', ') : 'aucun' }}</div>
             <div class="ligne" v-else>🪙 {{ citeAff.cite.pieces }} · 🛡️ {{ citeAff.boucliers }} · conflits : {{ citeAff.cite.militaire.length ? citeAff.cite.militaire.map(x => x > 0 ? '+' + x : x).join(' ') : 'aucun' }}</div>
             <div class="ligne">Produit : {{ citeAff.production || 'rien encore' }}</div>
@@ -697,7 +725,7 @@
         <section class="carte regles">
           <div class="titre-carte">Le but</div>
           <ul>
-            <li>Chaque joueur bâtit sa cité pendant <strong>trois âges</strong> et bâtit sa <strong>merveille</strong> (un monument en 3 étapes, tiré au hasard parmi les sept merveilles de l'Antiquité). À la fin, la cité qui a le plus de points gagne.</li>
+            <li>Chaque joueur bâtit sa cité pendant <strong>trois âges</strong> et bâtit sa <strong>merveille</strong> (tirée au hasard parmi les sept merveilles de l'Antiquité). Cartes, merveilles et valeurs sont celles du jeu de base d'origine (1re édition). À la fin, la cité qui a le plus de points gagne.</li>
             <li>De 3 à 7 cités : à deux, on joue avec un ou deux ordinateurs autour de la table.</li>
           </ul>
         </section>
@@ -706,7 +734,8 @@
           <ul>
             <li>Au début de chaque âge, chacun reçoit <strong>7 cartes</strong>. Tout le monde choisit <strong>en même temps</strong> une carte de sa main, puis passe le reste à son voisin (à gauche aux âges I et III, à droite à l'âge II).</li>
             <li>Avec la carte choisie, on peut : la <strong>construire</strong> (en payant son coût), s'en servir pour bâtir <strong>l'étape suivante de sa merveille</strong> (en payant le coût de l'étape), ou la <strong>vendre</strong> pour 3 pièces.</li>
-            <li>On joue 6 cartes par âge ; la 7e est défaussée.</li>
+            <li>On joue 6 cartes par âge ; la 7e est défaussée (sauf Babylone, face B, qui peut la jouer).</li>
+            <li><strong>Faces des merveilles</strong> (choisies avant la partie) : <strong>A</strong>, 3 étapes simples ; <strong>B</strong>, de 2 à 4 étapes avec des pouvoirs (Mausolée : construire une carte de la défausse ; Babylone : jouer la 7e carte ; Olympie : matières à 1 pièce chez les voisins, copier une guilde voisine…).</li>
             <li>On ne peut pas construire deux fois la même carte. Certaines cartes sont <strong>gratuites</strong> si l'on a déjà construit une carte précise (c'est écrit sur la carte).</li>
           </ul>
         </section>
@@ -721,7 +750,7 @@
         <section class="carte regles">
           <div class="titre-carte">Les points (version classique)</div>
           <ul>
-            <li>🏛️ Monuments (bleues) : leurs points. ✨ Étapes de la merveille : leurs points ou leur pouvoir.</li>
+            <li>🏛️ Bâtiments civils (bleues) : leurs points. ✨ Étapes de la merveille : leurs points ou leur pouvoir.</li>
             <li>⚔️ Fin de chaque âge, chaque cité compare ses 🛡️ boucliers avec chacun de ses deux voisins : plus fort, +1 / +3 / +5 points (âge I / II / III) ; moins fort, −1.</li>
             <li>📚 Savoir (vertes) : pour chaque symbole 📐 ⚙️ 📖, son nombre au carré, et +7 par série des trois.</li>
             <li>🪙 1 point pour 3 pièces. Commerce (jaunes) et guildes (violettes) : comme écrit sur la carte.</li>
@@ -909,6 +938,8 @@
         joueurs: [],
         solo: false,
         nbOrdis: lireStockage('joyaux-ordis') || 2,
+        facesChoisies: lireStockage('joyaux-faces') || 'A',   // face des merveilles du Classique : 'A', 'B' ou 'hasard'
+        FACES: [['A', 'Face A'], ['B', 'Face B'], ['hasard', 'Au hasard']],
         selection: -1,
         vueCite: null,
         conflitVu: '',
@@ -940,11 +971,21 @@
         maProduction: function() { return this.maCite ? productionTexte(this.maCite) : ''; },
         mesSciences: function() { return this.maCite ? sciencesTexte(SJ.symboles(this.e, this.moiJ)) : ''; },
         monChoix: function() { return this.e && this.e.choix ? this.e.choix[this.moiJ] || null : null; },
-        aMoiDeChoisir: function() { return !!this.e && this.e.phase === 'jeu' && this.estJoueur && !this.monChoix && (this.solo || this.connexion === 'ok'); },
+        aMoiDeChoisir: function() { var e = this.e; return !!e && e.phase === 'jeu' && this.estJoueur && !this.monChoix && (!e.seuls || e.seuls.indexOf(this.moiJ) >= 0) && (this.solo || this.connexion === 'ok'); },
+        // Pauses du tour : le Mausolée choisit dans la défausse, ou Babylone (face B) joue sa 7e carte
+        monPouvoir: function() { var e = this.e; return !!e && e.mode !== 'duel' && e.phase === 'pouvoir' && !!e.attente && !!e.attente[0] && e.attente[0].j === this.moiJ && (this.solo || this.connexion === 'ok'); },
+        defausseAff: function() { var e = this.e, cite = this.maCite; return ((e && e.defausse) || []).map(id => ({ id: id, c: SJ.CARTES[id], ok: !cite || cite.cartes.indexOf(id) < 0 })); },
+        messagePause: function() {
+          var e = this.e;
+          if (!e || e.mode === 'duel') return '';
+          if (e.phase === 'pouvoir' && e.attente && e.attente[0] && e.attente[0].j !== this.moiJ) return '⚱️ ' + this.court(e.attente[0].j) + ' choisit une carte dans la défausse (Mausolée)…';
+          if (e.phase === 'jeu' && e.seuls && e.seuls.indexOf(this.moiJ) < 0) return '🌿 ' + e.seuls.map(j => this.court(j)).join(', ') + ' joue sa 7e carte (Jardins de Babylone)…';
+          return '';
+        },
         cleVolet: function() { var e = this.e; return [this.onglet, this.voletOuvert, this.estJoueur && e && e.mode !== 'duel' ? e.phase : '', this.mainAff.length, !!this.monChoix, this.connexion].join('|'); },
         // Classique : la carte touchée (feuille du bas) et l'étape de merveille qu'elle permettrait de bâtir
         carteSel: function() { return this.selection >= 0 && !this.monChoix && this.aMoiDeChoisir ? this.mainAff[this.selection] || null : null; },
-        etapeSuivante: function() { var c = this.maCite; return c && c.etapes < 3 ? SJ.JOYAUX[c.joyau].etapes[c.etapes] : null; },
+        etapeSuivante: function() { var c = this.maCite; return c ? SJ.etapesDe(c)[c.etapes] || null : null; },
         coutEtape: function() { var t = this.etapeSuivante; return t ? t.cout.split('').map(r => DV.res(r, 1.2)).join('') : ''; },
         gainEtapeHtml: function() { var t = this.etapeSuivante; if (!t) return ''; var g = DV.gainEtape(t); return g[0] + ' <small style="font-size:12px;font-weight:700;color:#3b4b57">' + g[1] + '</small>'; },
         mainAff: function() {
@@ -981,11 +1022,15 @@
             var nom = (gauche ? '◀ ' : '') + (j === moi ? 'Moi' : j) + (droite ? ' ▶' : '');
             return { nom: j, moi: j === moi,
                      carte: DV.plateauJoueur(cite.joyau, { nom: nom, pieces: cite.pieces, boucliers: SJ.boucliers(e, j), pts: SJ.score(e, j).total, prod: prodHtml(e, j),
-                                                            faites: cite.etapes, moi: j === moi, fait: e.phase === 'jeu' && e.aChoisi && e.aChoisi[j], absent: !this.solo && !this.estPresent(j),
+                                                            faites: cite.etapes, face: cite.face, moi: j === moi, fait: e.phase === 'jeu' && e.aChoisi && e.aChoisi[j], absent: !this.solo && !this.estPresent(j),
                                                             compact: this.tableCompacte }) };
           });
         },
-        absentsAttendus: function() { var e = this.e; return e && e.phase === 'jeu' ? e.joueurs.filter(j => !e.aChoisi[j] && !this.estPresent(j)) : []; },
+        absentsAttendus: function() {
+          var e = this.e;
+          if (e && e.phase === 'pouvoir') return e.attente && e.attente[0] && !this.estPresent(e.attente[0].j) && !estOrdi(e.attente[0].j) ? [e.attente[0].j] : [];
+          return e && e.phase === 'jeu' ? e.joueurs.filter(j => !e.aChoisi[j] && !this.estPresent(j)) : [];
+        },
         attenteTexte: function() {
           var e = this.e;
           if (!e || e.phase !== 'jeu') return '';
@@ -1141,6 +1186,7 @@
         sonActif: function(v) { ecrireStockage('brillant-son', v); },
         vibrationActive: function(v) { ecrireStockage('brillant-vibration', v); if (v) vibrer(40); },
         nbOrdis: function(v) { ecrireStockage('joyaux-ordis', v); },
+        facesChoisies: function(v) { ecrireStockage('joyaux-faces', v); },
         modeChoisi: function(v) { ecrireStockage('joyaux-version', v); },
         quiDuel: function() { this.selDuel = null; },
         pseudoInput: function() { this.sauvegarder(); },
@@ -1188,7 +1234,7 @@
         son: function(nom, arg) { if (this.sonActif) Sons.jouer(nom, arg); },
         ico: ico, coutHtml: coutHtml, etapeHtml: etapeHtml,
         joyau: function(cite) { return SJ.JOYAUX[cite.joyau]; },
-        pips: function(cite) { return '●'.repeat(cite.etapes) + '○'.repeat(3 - cite.etapes); },
+        pips: function(cite) { return '●'.repeat(cite.etapes) + '○'.repeat(SJ.etapesDe(cite).length - cite.etapes); },
         court: function(j) { return j.length > 9 ? j.slice(0, 8) + '…' : j; },
         estPresent: function(p) {
           if (this.solo || p === this.moi || estOrdi(p)) return true;
@@ -1235,11 +1281,11 @@
           var e = this.e;
           if (!e || e.mode === 'duel' || !e.coups) return;
           var moi = this.estJoueur ? this.moiJ : null, g = moi ? SJ.gauche(e, moi) : null, d = moi ? SJ.droite(e, moi) : null;
-          var tour = e.tour > 1 && e.phase === 'jeu' ? e.tour - 1 : 6, age = e.tour > 1 || e.phase !== 'jeu' ? e.age : e.age - 1;
+          var tour = e.coupsDe ? e.coupsDe.tour : e.tour > 1 && e.phase === 'jeu' ? e.tour - 1 : 6, age = e.coupsDe ? e.coupsDe.age : e.tour > 1 || e.phase !== 'jeu' ? e.age : e.age - 1;
           var lignes = this.ordreTable.filter(j => j !== moi && e.coups[j]).map(j => {
             var k = e.coups[j], c = SJ.CARTES[k.id], qui = (j === g ? '◀ ' : '') + this.court(j) + (j === d && j !== g ? ' ▶' : ''), t = k.type, sous = [];
             var tampon = { construire: 'Construite', gratuit: 'Gratuite', joyau: 'Merveille', vendre: 'Vendue' }[t];
-            if (t === 'joyau') { var cite = e.cites[j], et = SJ.JOYAUX[cite.joyau].etapes[cite.etapes - 1]; sous.push('étape ' + ['I', 'II', 'III'][cite.etapes - 1] + ' de sa merveille : ' + DV.gainEtape(et)[1]); }
+            if (t === 'joyau') { var cite = e.cites[j], ne = k.etape || cite.etapes, et = SJ.etapesDe(cite)[ne - 1]; if (et) sous.push('étape ' + ['I', 'II', 'III', 'IV'][ne - 1] + ' de sa merveille : ' + DV.gainEtape(et)[1]); }
             else if (t === 'vendre') sous.push('vendue pour 3 🪙');
             else if (k.chaine) sous.push('gratuite grâce à sa chaîne');
             else if (t === 'gratuit') sous.push('construite gratuitement (merveille)');
@@ -1300,7 +1346,7 @@
         },
         nouveauSolo: function() {
           if (this.modeChoisi === 'duel') etatSolo = SD.nouvellePartie(SJ.melanger([this.moi, nomsOrdis(1, [this.moi])[0]]));
-          else etatSolo = SJ.nouvellePartie([this.moi].concat(nomsOrdis(this.nbOrdis, [this.moi])));
+          else etatSolo = SJ.nouvellePartie([this.moi].concat(nomsOrdis(this.nbOrdis, [this.moi])), null, { faces: this.facesChoisies });
           etatSolo.partieId = nouvelId();
           this.lancerSolo();
         },
@@ -1324,8 +1370,11 @@
         quitterSolo: function() { clearTimeout(this._timerRes); clearTimeout(this._timerDuel); this.solo = false; this.pub = null; etatSolo = null; this.onglet = 'config'; this.majSoloEnCours(); },
         // Les ordinateurs choisissent dès que le tour commence
         jouerRobots: function(e) {
-          if (!e || e.mode === 'duel' || e.phase !== 'jeu') return;
-          e.joueurs.forEach(j => { if (estOrdi(j) && !e.choix[j]) SJ.choisir(e, j, SJ.ordinateur(e, j)); });
+          if (!e || e.mode === 'duel') return;
+          // Mausolée d'un ordinateur : il choisit tout de suite dans la défausse (la suite du tour peut alors repartir)
+          for (var garde = 0; e.phase === 'pouvoir' && e.attente && e.attente[0] && estOrdi(e.attente[0].j) && garde < 10; garde++) SJ.pouvoir(e, e.attente[0].j, SJ.ordinateurDefausse(e, e.attente[0].j));
+          if (e.phase !== 'jeu') return;
+          SJ.participants(e).forEach(j => { if (estOrdi(j) && !e.choix[j]) SJ.choisir(e, j, SJ.ordinateur(e, j)); });
         },
 
         // ================== DUEL : actions et ordinateur ==================
@@ -1419,6 +1468,13 @@
           }
           this.envoyerJeu({ type: 'CHOIX', partieId: this.pub.partieId, action: action });
         },
+        choisirDefausse: function(id) {
+          if (this.solo) { SJ.pouvoir(etatSolo, this.moiJ, id); this.jouerRobots(etatSolo); this.majSolo(); return this.planifierResolution(); }
+          this.envoyerJeu({ type: 'POUVOIR', partieId: this.pub.partieId, id: id || null });
+        },
+        aideFaces: function(f) {
+          return f === 'B' ? 'Face B : des merveilles plus subtiles (pouvoirs, 2 à 4 étapes).' : f === 'hasard' ? 'Chaque cité tire sa face, A ou B.' : 'Face A : la plus simple, 3 étapes pour chaque merveille.';
+        },
         annulerChoix: function() {
           if (this.solo) { clearTimeout(this._timerRes); SJ.annuler(etatSolo, etatSolo.joueurs[0]); return this.majSolo(); }
           this.envoyerJeu({ type: 'ANNULER', partieId: this.pub.partieId });
@@ -1439,7 +1495,7 @@
         },
         nouvellePartie: function() {
           if (this.solo) {
-            etatSolo = etatSolo.mode === 'duel' ? SD.nouvellePartie(SJ.melanger(etatSolo.joueurs)) : SJ.nouvellePartie(etatSolo.joueurs.slice());
+            etatSolo = etatSolo.mode === 'duel' ? SD.nouvellePartie(SJ.melanger(etatSolo.joueurs)) : SJ.nouvellePartie(etatSolo.joueurs.slice(), null, { faces: etatSolo.faces || this.facesChoisies });
             etatSolo.partieId = nouvelId();
             this.jouerRobots(etatSolo);
             this.majSolo(true);
@@ -1463,6 +1519,14 @@
             if (!hote || pubHote.phase !== 'attente' || (m.mode !== 'duel' && m.mode !== 'classique')) return;
             pubHote.mode = m.mode;
             this.modeChoisi = m.mode;   // l'hôte garde ce choix pour la suite (salon comme solo)
+          } else if (m.type === 'FACES') {
+            if (!hote || pubHote.phase !== 'attente' || ['A', 'B', 'hasard'].indexOf(m.faces) < 0) return;
+            pubHote.faces = m.faces;
+            this.facesChoisies = m.faces;
+          } else if (m.type === 'POUVOIR') {
+            if (!e || e.mode === 'duel' || m.partieId !== pubHote.partieId) return;
+            if (SJ.pouvoir(e, p, m.id || null)) return;
+            this.jouerRobots(e);
           } else if (m.type === 'ROBOTS') {
             if (!hote || pubHote.phase !== 'attente') return;
             var humains = Math.min(7, pubHote.ordre.filter(x => this.estConnecte(x)).length);
@@ -1484,7 +1548,7 @@
             joueurs = joueurs.concat(nomsOrdis(Math.max(0, Math.min(pubHote.robots, 7 - joueurs.length)), joueurs));
             if (joueurs.length < 3) return;
             // Les cités sont placées au hasard autour de la table
-            pubHote.etat = SJ.nouvellePartie(SJ.melanger(joueurs));
+            pubHote.etat = SJ.nouvellePartie(SJ.melanger(joueurs), null, { faces: pubHote.faces || 'A' });
             pubHote.partieId = pubHote.etat.partieId = nouvelId();
             pubHote.phase = 'jeu';
             this.jouerRobots(pubHote.etat);
@@ -1501,7 +1565,10 @@
             if (e.mode === 'duel') {
               var qui = SD.qui(e);
               if (qui && !this.estConnecte(qui) && !estOrdi(qui)) SD.jouer(e, qui, SD.ordinateur(e, qui));
-            } else if (e.phase === 'jeu') e.joueurs.forEach(j => { if (!e.choix[j] && !this.estConnecte(j) && !estOrdi(j)) SJ.choisir(e, j, SJ.ordinateur(e, j)); });
+            } else if (e.phase === 'pouvoir') {
+              var a = e.attente && e.attente[0];
+              if (a && !this.estConnecte(a.j) && !estOrdi(a.j)) { SJ.pouvoir(e, a.j, SJ.ordinateurDefausse(e, a.j)); this.jouerRobots(e); }
+            } else if (e.phase === 'jeu') SJ.participants(e).forEach(j => { if (!e.choix[j] && !this.estConnecte(j) && !estOrdi(j)) SJ.choisir(e, j, SJ.ordinateur(e, j)); });
           } else if (m.type === 'NOUVELLE') {
             if (!hote || !e || e.phase !== 'fin') return;
             pubHote.phase = 'attente'; pubHote.etat = null; pubHote.partieId = null;
@@ -1513,7 +1580,7 @@
         // Ce que voit chaque joueur : sa main seulement, et qui a choisi (pas quoi)
         etatPour: function(pseudo) {
           var et = pubHote.etat;
-          return { ordre: pubHote.ordre.slice(), phase: pubHote.phase, robots: pubHote.robots || 0, mode: pubHote.mode || 'classique', partieId: pubHote.partieId,
+          return { ordre: pubHote.ordre.slice(), phase: pubHote.phase, robots: pubHote.robots || 0, mode: pubHote.mode || 'classique', faces: pubHote.faces || 'A', partieId: pubHote.partieId,
                    e: et ? (et.mode === 'duel' ? SD.vuePour(et) : SJ.vuePour(et, pseudo)) : null };
         },
 
@@ -1666,7 +1733,7 @@
         },
         // L'hôte ne répond plus : on rouvre le salon. Les mains étaient chez lui : la partie en cours s'arrête (retour à la salle d'attente).
         reprendreLeSalon: function() {
-          pubHote = { ordre: this.pub.ordre.slice(), phase: 'attente', robots: this.pub.robots || 0, mode: this.pub.mode || 'classique', partieId: null, etat: null };
+          pubHote = { ordre: this.pub.ordre.slice(), phase: 'attente', robots: this.pub.robots || 0, mode: this.pub.mode || 'classique', faces: this.pub.faces || 'A', partieId: null, etat: null };
           salle = { infos: {} };
           pubHote.ordre.forEach(p => { if (p !== monPseudo) salle.infos[p] = { connecte: false, clientId: null }; });
           this._repriseParClient = true;
@@ -1698,7 +1765,7 @@
               this.onglet = 'play';
               this.finEntree(true);
               salle = { infos: {} };
-              pubHote = { ordre: [monPseudo], phase: 'attente', robots: 2, mode: this.modeChoisi, partieId: null, etat: null };
+              pubHote = { ordre: [monPseudo], phase: 'attente', robots: 2, mode: this.modeChoisi, faces: this.facesChoisies, partieId: null, etat: null };
               this.ajouterLog(monPseudo + ' a ouvert le salon.', true);
             }
             this.publier();

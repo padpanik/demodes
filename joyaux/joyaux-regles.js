@@ -19,45 +19,48 @@ var SJ = (function () {
   var VICTOIRE = { 1: 1, 2: 3, 3: 5 };   // points d'une victoire militaire selon l'âge (défaite : −1)
   var MAIN = 7, TOURS = 6, PIECES_DEPART = 3, VENTE = 3;
 
-  // ---------- Les cartes : [id, nom, âge, type, coût (lettres = ressources, chiffre = pièces), nombres de joueurs, effet, gratuite si l'on a…] ----------
+  // ---------- Les cartes du jeu de base, 1re édition (2010) : coûts, effets, exemplaires et chaînages d'origine, noms de la boîte française ----------
+  // (2.82, demandé par l'utilisateur pour un jeu équilibré, appli désormais réservée à un cercle privé ; valeurs reprises de mémoire, à vérifier avec la boîte)
+  // [id, nom, âge, type, coût (lettres = ressources, chiffre = pièces), nombres de joueurs, effet, gratuite si l'on a…]
+  // Identifiants internes d'avant gardés (sauvegardes) : seuls les noms et quelques valeurs ont changé.
   // « n » : la carte entre dans le paquet à partir de ce nombre de joueurs (une fois par valeur : [3, 6] = 1 exemplaire à 3-5, 2 à 6-7)
   var LISTE = [
     // ÂGE I
-    ['coupe', 'Coupe de bois', 1, 'brun', '', [3, 4], { prod: 'B' }],
-    ['carriere', 'Carrière', 1, 'brun', '', [3, 5], { prod: 'P' }],
-    ['glaisiere', 'Glaisière', 1, 'brun', '', [3, 5], { prod: 'A' }],
+    ['coupe', 'Chantier', 1, 'brun', '', [3, 4], { prod: 'B' }],
+    ['carriere', 'Cavité', 1, 'brun', '', [3, 5], { prod: 'P' }],
+    ['glaisiere', 'Bassin argileux', 1, 'brun', '', [3, 5], { prod: 'A' }],
     ['filon', 'Filon', 1, 'brun', '', [3, 4], { prod: 'M' }],
-    ['terrier', 'Terrier', 1, 'brun', '1', [3], { prod: 'A/M' }],
-    ['lisiere', 'Lisière', 1, 'brun', '1', [3], { prod: 'P/B' }],
-    ['eboulis', 'Éboulis', 1, 'brun', '1', [4], { prod: 'P/A' }],
-    ['falaise', 'Falaise', 1, 'brun', '1', [5], { prod: 'B/M' }],
-    ['sousbois', 'Sous-bois', 1, 'brun', '1', [6], { prod: 'B/A' }],
-    ['gisement', 'Gisement', 1, 'brun', '1', [6], { prod: 'M/P' }],
+    ['terrier', 'Fosse argileuse', 1, 'brun', '1', [3], { prod: 'A/M' }],
+    ['lisiere', 'Exploitation forestière', 1, 'brun', '1', [3], { prod: 'P/B' }],
+    ['eboulis', 'Excavation', 1, 'brun', '1', [4], { prod: 'P/A' }],
+    ['falaise', 'Gisement', 1, 'brun', '1', [5], { prod: 'B/M' }],
+    ['sousbois', 'Friche', 1, 'brun', '1', [6], { prod: 'B/A' }],
+    ['gisement', 'Mine', 1, 'brun', '1', [6], { prod: 'M/P' }],
     ['verrerie', 'Verrerie', 1, 'gris', '', [3, 6], { prod: 'V' }],
-    ['tissage', 'Atelier de tissage', 1, 'gris', '', [3, 6], { prod: 'T' }],
-    ['parcheminerie', 'Parcheminerie', 1, 'gris', '', [3, 6], { prod: 'R' }],
-    ['fontaine', 'Fontaine', 1, 'bleu', 'A', [3, 7], { pts: 3 }],
+    ['tissage', 'Métier à tisser', 1, 'gris', '', [3, 6], { prod: 'T' }],
+    ['parcheminerie', 'Presse', 1, 'gris', '', [3, 6], { prod: 'R' }],
+    ['fontaine', 'Bains', 1, 'bleu', 'P', [3, 7], { pts: 3 }],
     ['autel', 'Autel', 1, 'bleu', '', [3, 5], { pts: 2 }],
-    ['kiosque', 'Kiosque', 1, 'bleu', '', [3, 6], { pts: 2 }],
-    ['bijouterie', 'Bijouterie', 1, 'bleu', '', [4, 7], { pts: 3 }],
+    ['kiosque', 'Théâtre', 1, 'bleu', '', [3, 6], { pts: 2 }],
+    ['bijouterie', 'Prêteur sur gages', 1, 'bleu', '', [4, 7], { pts: 3 }],
     ['taverne', 'Taverne', 1, 'jaune', '', [4, 5, 7], { pieces: 5 }],
-    ['comptoirO', 'Comptoir de l\'ouest', 1, 'jaune', '', [3, 7], { comptoir: 'g' }],
-    ['comptoirE', 'Comptoir de l\'est', 1, 'jaune', '', [3, 7], { comptoir: 'd' }],
+    ['comptoirO', 'Comptoir ouest', 1, 'jaune', '', [3, 7], { comptoir: 'g' }],
+    ['comptoirE', 'Comptoir est', 1, 'jaune', '', [3, 7], { comptoir: 'd' }],
     ['marche', 'Marché', 1, 'jaune', '', [3, 6], { marche: true }],
     ['palissade', 'Palissade', 1, 'rouge', 'B', [3, 7], { boucliers: 1 }],
     ['caserne', 'Caserne', 1, 'rouge', 'M', [3, 5], { boucliers: 1 }],
-    ['tourguet', 'Tour de guet', 1, 'rouge', 'A', [3, 4], { boucliers: 1 }],
-    ['infirmerie', 'Infirmerie', 1, 'vert', 'T', [3, 5], { sci: 'compas' }],
+    ['tourguet', 'Tour de garde', 1, 'rouge', 'A', [3, 4], { boucliers: 1 }],
+    ['infirmerie', 'Officine', 1, 'vert', 'T', [3, 5], { sci: 'compas' }],
     ['atelier', 'Atelier', 1, 'vert', 'V', [3, 7], { sci: 'roue' }],
     ['scriptorium', 'Scriptorium', 1, 'vert', 'R', [3, 4], { sci: 'tablette' }],
     // ÂGE II
     ['scierie', 'Scierie', 2, 'brun', '1', [3, 4], { prod: 'BB' }],
-    ['taille', 'Taille de pierre', 2, 'brun', '1', [3, 4], { prod: 'PP' }],
+    ['taille', 'Carrière', 2, 'brun', '1', [3, 4], { prod: 'PP' }],
     ['briqueterie', 'Briqueterie', 2, 'brun', '1', [3, 4], { prod: 'AA' }],
     ['fonderie', 'Fonderie', 2, 'brun', '1', [3, 4], { prod: 'MM' }],
     ['verrerie2', 'Verrerie', 2, 'gris', '', [3, 5], { prod: 'V' }],
-    ['tissage2', 'Atelier de tissage', 2, 'gris', '', [3, 5], { prod: 'T' }],
-    ['parcheminerie2', 'Parcheminerie', 2, 'gris', '', [3, 5], { prod: 'R' }],
+    ['tissage2', 'Métier à tisser', 2, 'gris', '', [3, 5], { prod: 'T' }],
+    ['parcheminerie2', 'Presse', 2, 'gris', '', [3, 5], { prod: 'R' }],
     ['aqueduc', 'Aqueduc', 2, 'bleu', 'PPP', [3, 7], { pts: 5 }, 'fontaine'],
     ['temple', 'Temple', 2, 'bleu', 'BAV', [3, 6], { pts: 3 }, 'autel'],
     ['statue', 'Statue', 2, 'bleu', 'MMB', [3, 7], { pts: 4 }, 'kiosque'],
@@ -66,10 +69,10 @@ var SJ = (function () {
     ['caravanserail', 'Caravansérail', 2, 'jaune', 'BB', [3, 5, 6], { choix: 'B/P/A/M' }, 'marche'],
     ['vignoble', 'Vignoble', 2, 'jaune', '', [3, 6], { gain: { type: 'brun', pieces: 1 } }],
     ['bazar', 'Bazar', 2, 'jaune', '', [4, 7], { gain: { type: 'gris', pieces: 2 } }],
-    ['murailles', 'Murailles', 2, 'rouge', 'PPP', [3, 7], { boucliers: 2 }],
+    ['murailles', 'Muraille', 2, 'rouge', 'PPP', [3, 7], { boucliers: 2 }],
     ['ecuries', 'Écuries', 2, 'rouge', 'ABM', [3, 5], { boucliers: 2 }, 'infirmerie'],
     ['champtir', 'Champ de tir', 2, 'rouge', 'BBM', [3, 6], { boucliers: 2 }, 'atelier'],
-    ['entrainement', 'Terrain d\'entraînement', 2, 'rouge', 'MMB', [4, 6, 7], { boucliers: 2 }],
+    ['entrainement', 'Place d\'armes', 2, 'rouge', 'MMB', [4, 6, 7], { boucliers: 2 }],
     ['dispensaire', 'Dispensaire', 2, 'vert', 'MMV', [3, 4], { sci: 'compas' }, 'infirmerie'],
     ['laboratoire', 'Laboratoire', 2, 'vert', 'AAR', [3, 5], { sci: 'roue' }, 'atelier'],
     ['bibliotheque', 'Bibliothèque', 2, 'vert', 'PPT', [3, 6], { sci: 'tablette' }, 'scriptorium'],
@@ -84,7 +87,7 @@ var SJ = (function () {
     ['port', 'Port', 3, 'jaune', 'BMT', [3, 4], { fin: { type: 'brun', pieces: 1, pts: 1 } }, 'forum'],
     ['chambre', 'Chambre de commerce', 3, 'jaune', 'AAR', [4, 6], { fin: { type: 'gris', pieces: 2, pts: 2 } }],
     ['arene', 'Arène', 3, 'jaune', 'PPM', [3, 5, 7], { fin: { type: 'joyau', pieces: 3, pts: 1 } }, 'dispensaire'],
-    ['fortifications', 'Fortifications', 3, 'rouge', 'MMMA', [3, 7], { boucliers: 3 }, 'murailles'],
+    ['fortifications', 'Fortifications', 3, 'rouge', 'MMMP', [3, 7], { boucliers: 3 }, 'murailles'],
     ['cirque', 'Cirque', 3, 'rouge', 'PPPM', [4, 5, 6], { boucliers: 3 }, 'entrainement'],
     ['arsenal', 'Arsenal', 3, 'rouge', 'BBMT', [3, 4, 7], { boucliers: 3 }],
     ['siege', 'Atelier de siège', 3, 'rouge', 'AAAB', [3, 5], { boucliers: 3 }, 'laboratoire'],
@@ -92,17 +95,17 @@ var SJ = (function () {
     ['observatoire', 'Observatoire', 3, 'vert', 'MMVT', [3, 7], { sci: 'roue' }, 'laboratoire'],
     ['universite', 'Université', 3, 'vert', 'BBRV', [3, 4], { sci: 'tablette' }, 'bibliotheque'],
     ['academie', 'Académie', 3, 'vert', 'PPPV', [3, 7], { sci: 'compas' }, 'ecole'],
-    ['etudes', 'Bureau d\'études', 3, 'vert', 'BRT', [3, 5], { sci: 'roue' }, 'ecole'],
+    ['etudes', 'Étude', 3, 'vert', 'BRT', [3, 5], { sci: 'roue' }, 'ecole'],
     // GUILDES (âge III) : on en tire au hasard le nombre de joueurs + 2
-    ['g-ouvriers', 'Guilde des ouvriers', 3, 'violet', 'MMAPB', null, { guilde: { types: ['brun'], qui: 'v', pts: 1 } }],
+    ['g-ouvriers', 'Guilde des travailleurs', 3, 'violet', 'MMAPB', null, { guilde: { types: ['brun'], qui: 'v', pts: 1 } }],
     ['g-artisans', 'Guilde des artisans', 3, 'violet', 'MMPP', null, { guilde: { types: ['gris'], qui: 'v', pts: 2 } }],
-    ['g-marchands', 'Guilde des marchands', 3, 'violet', 'AAAR', null, { guilde: { types: ['jaune'], qui: 'v', pts: 1 } }],
+    ['g-marchands', 'Guilde des commerçants', 3, 'violet', 'VTR', null, { guilde: { types: ['jaune'], qui: 'v', pts: 1 } }],
     ['g-philosophes', 'Guilde des philosophes', 3, 'violet', 'AAATR', null, { guilde: { types: ['vert'], qui: 'v', pts: 1 } }],
     ['g-espions', 'Guilde des espions', 3, 'violet', 'AAAV', null, { guilde: { types: ['rouge'], qui: 'v', pts: 1 } }],
     ['g-magistrats', 'Guilde des magistrats', 3, 'violet', 'BBBPT', null, { guilde: { types: ['bleu'], qui: 'v', pts: 1 } }],
     ['g-batisseurs', 'Guilde des bâtisseurs', 3, 'violet', 'PPAAV', null, { guilde: { types: ['joyau'], qui: 'sv', pts: 1 } }],
     ['g-armateurs', 'Guilde des armateurs', 3, 'violet', 'BBBVR', null, { guilde: { types: ['brun', 'gris', 'violet'], qui: 's', pts: 1 } }],
-    ['g-savants', 'Guilde des savants', 3, 'violet', 'BBMMR', null, { sci: '*' }],
+    ['g-savants', 'Guilde des scientifiques', 3, 'violet', 'BBMMR', null, { sci: '*' }],
     ['g-strateges', 'Guilde des stratèges', 3, 'violet', 'MMPT', null, { guilde: { types: ['defaite'], qui: 'v', pts: 1 } }]
   ];
   var CARTES = {};
@@ -111,17 +114,37 @@ var SJ = (function () {
     CARTES[l[0]] = { id: l[0], nom: l[1], age: l[2], type: l[3], cout: cout.replace(/[0-9]/g, ''), pieces: pieces, n: l[5], effet: l[6], chaine: l[7] ? l[7].split('|') : [] };
   });
 
-  // ---------- Les merveilles (nom interne historique : joyaux ; clés gardées pour les sauvegardes) : une ressource de départ, trois étapes ----------
-  // Noms affichés depuis 2.69 : les sept merveilles de l'Antiquité (le jeu s'appelle « 7 piliers »)
+  // ---------- Les 7 merveilles, faces A et B (1re édition) ----------
+  // Clés internes historiques (saphir, rubis…) gardées pour les sauvegardes. Une étape peut tout cumuler :
+  //   pts, pieces, boucliers, prod ('B/P/A/M' ou 'V/T/R' : une ressource au choix, réservée à soi), sci ('*'), comptoir ('gd' : matières à 1 chez les deux voisins),
+  //   gratuit (une carte gratuite par âge), defausse (construire gratuitement une carte de la défausse), septieme (jouer aussi la 7e carte de chaque âge),
+  //   guilde (copier en fin de partie une guilde d'un voisin)
   var JOYAUX = {
-    saphir: { nom: 'Le Phare d\'Alexandrie', ico: '🗼', coul: '#2c6fd6', base: 'P', etapes: [{ cout: 'BB', pts: 3 }, { cout: 'AAA', prod: 'B/P/A/M' }, { cout: 'PPPP', pts: 7 }] },
-    rubis: { nom: 'Le Colosse de Rhodes', ico: '🗿', coul: '#c0392b', base: 'M', etapes: [{ cout: 'PP', pts: 3 }, { cout: 'AAA', boucliers: 2 }, { cout: 'MMMM', pts: 7 }] },
-    emeraude: { nom: 'Le Temple d\'Artémis', ico: '🏛️', coul: '#1e8e5a', base: 'R', etapes: [{ cout: 'AA', pts: 3 }, { cout: 'MMT', sci: '*' }, { cout: 'BBBB', pts: 7 }] },
-    ambre: { nom: 'La Grande Pyramide', ico: '🔺', coul: '#d68910', base: 'A', etapes: [{ cout: 'PP', pts: 3 }, { cout: 'BBB', pieces: 9 }, { cout: 'AAAA', pts: 7 }] },
-    opale: { nom: 'Le Mausolée d\'Halicarnasse', ico: '⚱️', coul: '#8a9bb0', base: 'V', etapes: [{ cout: 'AA', pts: 3 }, { cout: 'BBB', prod: 'V/T/R' }, { cout: 'PPPP', pts: 7 }] },
-    jade: { nom: 'Les Jardins de Babylone', ico: '🌿', coul: '#4f9a3a', base: 'B', etapes: [{ cout: 'AA', pts: 3 }, { cout: 'PPP', comptoir: 'gd' }, { cout: 'MMMM', pts: 7 }] },
-    amethyste: { nom: 'La Statue de Zeus', ico: '⚡', coul: '#7d3c98', base: 'T', etapes: [{ cout: 'BB', pts: 3 }, { cout: 'AAA', gratuit: true }, { cout: 'MMMM', pts: 7 }] }
+    saphir: { nom: 'Le Phare d\'Alexandrie', ville: 'Alexandrie', ico: '🗼', coul: '#2c6fd6', base: 'V',
+      A: [{ cout: 'PP', pts: 3 }, { cout: 'MM', prod: 'B/P/A/M' }, { cout: 'VV', pts: 7 }],
+      B: [{ cout: 'AA', prod: 'B/P/A/M' }, { cout: 'BB', prod: 'V/T/R' }, { cout: 'PPP', pts: 7 }] },
+    rubis: { nom: 'Le Colosse de Rhodes', ville: 'Rhodes', ico: '🗿', coul: '#c0392b', base: 'M',
+      A: [{ cout: 'BB', pts: 3 }, { cout: 'AAA', boucliers: 2 }, { cout: 'MMMM', pts: 7 }],
+      B: [{ cout: 'PPP', boucliers: 1, pieces: 3, pts: 3 }, { cout: 'MMMM', boucliers: 1, pieces: 4, pts: 4 }] },
+    emeraude: { nom: 'Le Temple d\'Artémis', ville: 'Éphèse', ico: '🏛️', coul: '#1e8e5a', base: 'R',
+      A: [{ cout: 'PP', pts: 3 }, { cout: 'BB', pieces: 9 }, { cout: 'RR', pts: 7 }],
+      B: [{ cout: 'PP', pieces: 4, pts: 2 }, { cout: 'BB', pieces: 4, pts: 3 }, { cout: 'RTV', pieces: 4, pts: 5 }] },
+    ambre: { nom: 'La Grande Pyramide', ville: 'Gizeh', ico: '🔺', coul: '#d68910', base: 'P',
+      A: [{ cout: 'PP', pts: 3 }, { cout: 'BBB', pts: 5 }, { cout: 'PPPP', pts: 7 }],
+      B: [{ cout: 'BB', pts: 3 }, { cout: 'PPP', pts: 5 }, { cout: 'AAA', pts: 5 }, { cout: 'PPPPR', pts: 7 }] },
+    opale: { nom: 'Le Mausolée d\'Halicarnasse', ville: 'Halicarnasse', ico: '⚱️', coul: '#8a9bb0', base: 'T',
+      A: [{ cout: 'AA', pts: 3 }, { cout: 'MMM', defausse: true }, { cout: 'TT', pts: 7 }],
+      B: [{ cout: 'MM', pts: 2, defausse: true }, { cout: 'AAA', pts: 1, defausse: true }, { cout: 'VRT', defausse: true }] },
+    jade: { nom: 'Les Jardins de Babylone', ville: 'Babylone', ico: '🌿', coul: '#4f9a3a', base: 'A',
+      A: [{ cout: 'AA', pts: 3 }, { cout: 'BBB', sci: '*' }, { cout: 'AAAA', pts: 7 }],
+      B: [{ cout: 'AT', pts: 3 }, { cout: 'BBV', septieme: true }, { cout: 'AAAR', sci: '*' }] },
+    amethyste: { nom: 'La Statue de Zeus', ville: 'Olympie', ico: '⚡', coul: '#7d3c98', base: 'B',
+      A: [{ cout: 'BB', pts: 3 }, { cout: 'PP', gratuit: true }, { cout: 'MM', pts: 7 }],
+      B: [{ cout: 'BB', comptoir: 'gd' }, { cout: 'PP', pts: 5 }, { cout: 'MMT', guilde: true }] }
   };
+  // Les étapes de la merveille d'une cité (selon sa face ; les parties d'avant 2.82 n'ont pas de face : A)
+  function etapesDe(cite) { var J = JOYAUX[cite.joyau]; return J[cite.face === 'B' ? 'B' : 'A']; }
+  function faites(cite) { return etapesDe(cite).slice(0, cite.etapes); }
 
   // ---------- Hasard reproductible ou non ----------
   function melanger(t, h) { h = h || Math.random; t = t.slice(); for (var i = t.length - 1; i > 0; i--) { var j = Math.floor(h() * (i + 1)), x = t[i]; t[i] = t[j]; t[j] = x; } return t; }
@@ -135,12 +158,14 @@ var SJ = (function () {
   }
 
   // ---------- Partie ----------
-  function nouvellePartie(joueurs, h) {
-    h = h || Math.random;
+  // opts.faces : 'A', 'B' ou 'hasard' (chaque cité tire sa face) ; A par défaut
+  function nouvellePartie(joueurs, h, opts) {
+    h = h || Math.random; opts = opts || {};
     var n = joueurs.length, js = melanger(Object.keys(JOYAUX), h);
     if (n < 3 || n > 7) throw new Error('De 3 à 7 joueurs');
     var e = { joueurs: joueurs.slice(), n: n, age: 1, tour: 1, phase: 'jeu', mains: {}, cites: {}, choix: {}, defausse: [], journal: [], coups: {}, conflits: null, scores: null };
-    joueurs.forEach((j, i) => { e.cites[j] = { cartes: [], pieces: PIECES_DEPART, joyau: js[i], etapes: 0, militaire: [], gratuitAge: 0 }; });
+    e.faces = opts.faces === 'B' || opts.faces === 'hasard' ? opts.faces : 'A';
+    joueurs.forEach((j, i) => { e.cites[j] = { cartes: [], pieces: PIECES_DEPART, joyau: js[i], face: e.faces === 'hasard' ? (h() < 0.5 ? 'A' : 'B') : e.faces, etapes: 0, militaire: [], gratuitAge: 0 }; });
     distribuer(e, h);
     journal(e, 'Âge I : chacun reçoit 7 cartes.');
     return e;
@@ -165,13 +190,12 @@ var SJ = (function () {
       }
       if (f.choix) s.push({ o: f.choix.split('/'), v: false });
     });
-    JOYAUX[cite.joyau].etapes.slice(0, cite.etapes).forEach(t => { if (t.prod) s.push({ o: t.prod.split('/'), v: false }); });
+    faites(cite).forEach(t => { if (t.prod) s.push({ o: t.prod.split('/'), v: false }); });
     return vendablesSeulement ? s.filter(x => x.v) : s;
   }
   // Prix d'une ressource achetée à un voisin (côté 'g' ou 'd')
   function prix(cite, cote, r) {
-    var jy = JOYAUX[cite.joyau];
-    var reduitMat = cite.cartes.some(id => CARTES[id].effet.comptoir === cote) || jy.etapes.slice(0, cite.etapes).some(t => t.comptoir);
+    var reduitMat = cite.cartes.some(id => CARTES[id].effet.comptoir === cote) || faites(cite).some(t => t.comptoir);
     var reduitObj = cite.cartes.some(id => CARTES[id].effet.marche);
     return (MATIERES.indexOf(r) >= 0 ? reduitMat : reduitObj) ? 1 : 2;
   }
@@ -212,17 +236,17 @@ var SJ = (function () {
       if (p.ok && p.g + p.d + c.pieces > cite.pieces) p = { ok: false, cher: true };
       r.construire = p.ok ? { ok: true, g: p.g, d: p.d, ag: p.ag, ad: p.ad, pieces: c.pieces } : { ok: false, raison: p.cher ? 'Trop cher' : 'Ressources introuvables' };
     }
-    var jy = JOYAUX[cite.joyau];
-    if (cite.etapes >= 3) r.joyau = { ok: false, raison: 'Merveille terminée' };
-    else { var q = payer(e, j, jy.etapes[cite.etapes].cout); r.joyau = q.ok ? { ok: true, g: q.g, d: q.d, ag: q.ag, ad: q.ad, pieces: 0 } : { ok: false, raison: q.cher ? 'Trop cher' : 'Ressources introuvables' }; }
-    r.gratuit = !aDeja(cite, id) && jy.etapes.slice(0, cite.etapes).some(t => t.gratuit) && cite.gratuitAge !== e.age;
+    var et = etapesDe(cite);
+    if (cite.etapes >= et.length) r.joyau = { ok: false, raison: 'Merveille terminée' };
+    else { var q = payer(e, j, et[cite.etapes].cout); r.joyau = q.ok ? { ok: true, g: q.g, d: q.d, ag: q.ag, ad: q.ad, pieces: 0 } : { ok: false, raison: q.cher ? 'Trop cher' : 'Ressources introuvables' }; }
+    r.gratuit = !aDeja(cite, id) && faites(cite).some(t => t.gratuit) && cite.gratuitAge !== e.age;
     return r;
   }
 
   // ---------- Choisir (en même temps) ----------
   // action : { i (place dans la main), type: 'construire' | 'joyau' | 'vendre' | 'gratuit' }
   function choisir(e, j, action) {
-    if (e.phase !== 'jeu' || !e.mains[j]) return 'La partie n\'attend rien de toi.';
+    if (e.phase !== 'jeu' || !e.mains[j] || participants(e).indexOf(j) < 0) return 'La partie n\'attend rien de toi.';
     var main = e.mains[j], id = main[action.i];
     if (!id) return 'Carte inconnue.';
     var o = options(e, j, id);
@@ -234,7 +258,8 @@ var SJ = (function () {
     return null;
   }
   function annuler(e, j) { if (e.phase === 'jeu') delete e.choix[j]; }
-  function tousOntChoisi(e) { return e.phase === 'jeu' && e.joueurs.every(j => e.choix[j]); }
+  function participants(e) { return e.seuls || e.joueurs; }
+  function tousOntChoisi(e) { return e.phase === 'jeu' && participants(e).every(j => e.choix[j]); }
 
   // ---------- Tout le monde a choisi : on révèle et on joue ----------
   function compter(e, j, type) {
@@ -245,12 +270,13 @@ var SJ = (function () {
   }
   function resoudre(e, h) {
     if (!tousOntChoisi(e)) return false;
-    var verse = {}, gains = {};
+    var qui = participants(e), verse = {}, gains = {}, mausolee = [];
     e.coups = {};
     e.nTour = (e.nTour || 0) + 1;   // numéro de révélation : la page montre alors ce qu'a joué chacun
+    e.coupsDe = { age: e.age, tour: e.seuls ? 7 : e.tour };   // à quel tour ces coups appartiennent (7 = la 7e carte de Babylone)
     e.joueurs.forEach(j => { verse[j] = 0; gains[j] = 0; });
     // 1. Chacun paie et pose (sur l'état du début du tour : c'est simultané)
-    var poses = e.joueurs.map(j => {
+    var poses = qui.map(j => {
       var ch = e.choix[j], cite = e.cites[j], c = CARTES[ch.id], o = options(e, j, ch.id), coup = { type: ch.type, id: ch.id };
       if (ch.type === 'construire' && o.construire.ok) {
         var p = o.construire;
@@ -263,6 +289,7 @@ var SJ = (function () {
       } else if (ch.type === 'gratuit' && o.gratuit) {
         cite.gratuitAge = e.age;
       } else { coup.type = 'vendre'; }
+      if (e.seuls) coup.septieme = true;
       e.coups[j] = coup;
       return { j: j, coup: coup, c: c };
     });
@@ -271,9 +298,11 @@ var SJ = (function () {
       e.mains[x.j].splice(e.choix[x.j].i, 1);
       if (x.coup.type === 'construire' || x.coup.type === 'gratuit') cite.cartes.push(x.c.id);
       else if (x.coup.type === 'joyau') {
-        var t = JOYAUX[cite.joyau].etapes[cite.etapes];
+        var t = etapesDe(cite)[cite.etapes];
         cite.etapes++;
+        x.coup.etape = cite.etapes;
         if (t.pieces) gains[x.j] += t.pieces;
+        if (t.defausse) mausolee.push(x.j);
       } else { gains[x.j] += VENTE; e.defausse.push(x.c.id); }
     });
     // 2. Les pièces que rapportent les cartes jaunes posées ce tour-ci (en comptant ce qui vient d'être construit)
@@ -284,20 +313,56 @@ var SJ = (function () {
       if (f.gain) gains[j] += f.gain.pieces * (compter(e, j, f.gain.type) + compter(e, gauche(e, j), f.gain.type) + compter(e, droite(e, j), f.gain.type));
       if (f.fin) gains[j] += f.fin.pieces * compter(e, j, f.fin.type);
     });
-    e.joueurs.forEach(j => { e.cites[j].pieces += verse[j] + gains[j]; e.coups[j].recu = verse[j] + gains[j]; });
+    e.joueurs.forEach(j => { e.cites[j].pieces += verse[j] + gains[j]; if (e.coups[j]) e.coups[j].recu = verse[j] + gains[j]; });
     e.choix = {};
-    // 3. On passe sa main au voisin (vers la gauche aux âges I et III, vers la droite à l'âge II), ou fin de l'âge
+    // 3. Le Mausolée : construire gratuitement une carte de la défausse (s'il y en a une), avant la suite
+    e.attente = mausolee.filter(j => e.defausse.some(id => !aDeja(e.cites[j], id))).map(j => ({ type: 'mausolee', j: j }));
+    if (e.attente.length) { e.phase = 'pouvoir'; e.attenteSuite = true; return true; }
+    e.attente = null;
+    suite(e, h);
+    return true;
+  }
+  // Après un tour : passer sa main, ou la 7e carte (Babylone, face B), ou fin de l'âge
+  function suite(e, h) {
+    var avaitSeuls = !!e.seuls;
+    e.seuls = null; e.attenteSuite = false; e.phase = 'jeu';
     if (e.tour < TOURS) {
       var anciennes = {}; e.joueurs.forEach(j => { anciennes[j] = e.mains[j]; });
       e.joueurs.forEach(j => { e.mains[j] = anciennes[e.age === 2 ? gauche(e, j) : droite(e, j)]; });
       e.tour++;
-    } else finAge(e, h);
-    return true;
+      return;
+    }
+    if (!avaitSeuls) {
+      var sept = e.joueurs.filter(j => e.mains[j].length && faites(e.cites[j]).some(t => t.septieme));
+      if (sept.length) { e.seuls = sept; journal(e, 'Babylone joue sa 7e carte.'); return; }
+    }
+    finAge(e, h);
+  }
+  // Pouvoir du Mausolée : id d'une carte de la défausse à construire gratuitement (ou null pour passer)
+  function pouvoir(e, j, id, h) {
+    var a = e.attente && e.attente[0];
+    if (e.phase !== 'pouvoir' || !a || a.j !== j) return 'Rien à faire pour toi.';
+    if (id) {
+      var k = e.defausse.indexOf(id);
+      if (k < 0) return 'Cette carte n\'est pas dans la défausse.';
+      if (aDeja(e.cites[j], id)) return 'Déjà dans ta cité.';
+      e.defausse.splice(k, 1);
+      var cite = e.cites[j], f = CARTES[id].effet;
+      cite.cartes.push(id);
+      if (f.pieces) cite.pieces += f.pieces;
+      if (f.gain) cite.pieces += f.gain.pieces * (compter(e, j, f.gain.type) + compter(e, gauche(e, j), f.gain.type) + compter(e, droite(e, j), f.gain.type));
+      if (f.fin) cite.pieces += f.fin.pieces * compter(e, j, f.fin.type);
+      if (e.coups[j]) e.coups[j].defausse = id;
+      journal(e, j + ' construit « ' + CARTES[id].nom + ' » depuis la défausse.');
+    }
+    e.attente.shift();
+    if (!e.attente.length) { e.attente = null; suite(e, h); }
+    return null;
   }
   function boucliers(e, j) {
     var cite = e.cites[j], b = 0;
     cite.cartes.forEach(id => { b += CARTES[id].effet.boucliers || 0; });
-    JOYAUX[cite.joyau].etapes.slice(0, cite.etapes).forEach(t => { b += t.boucliers || 0; });
+    faites(cite).forEach(t => { b += t.boucliers || 0; });
     return b;
   }
   function finAge(e, h) {
@@ -333,7 +398,7 @@ var SJ = (function () {
   function symboles(e, j) {
     var cite = e.cites[j], s = { compas: 0, roue: 0, tablette: 0, joker: 0 };
     cite.cartes.forEach(id => { var x = CARTES[id].effet.sci; if (x === '*') s.joker++; else if (x) s[x]++; });
-    JOYAUX[cite.joyau].etapes.slice(0, cite.etapes).forEach(t => { if (t.sci) s.joker++; });
+    faites(cite).forEach(t => { if (t.sci) s.joker++; });
     return s;
   }
   function pointsScience(s) {
@@ -348,7 +413,7 @@ var SJ = (function () {
   function score(e, j) {
     var cite = e.cites[j], r = { militaire: 0, pieces: Math.floor(cite.pieces / 3), joyau: 0, monuments: 0, commerce: 0, guildes: 0, savoir: 0 };
     cite.militaire.forEach(t => { r.militaire += t; });
-    JOYAUX[cite.joyau].etapes.slice(0, cite.etapes).forEach(t => { r.joyau += t.pts || 0; });
+    faites(cite).forEach(t => { r.joyau += t.pts || 0; });
     var voisins = [gauche(e, j), droite(e, j)];
     cite.cartes.forEach(id => {
       var c = CARTES[id], f = c.effet;
@@ -359,6 +424,18 @@ var SJ = (function () {
         qui.forEach(x => g.types.forEach(t => { r.guildes += g.pts * compter(e, x, t); }));
       }
     });
+    // Olympie (face B) : copie en fin de partie la guilde d'un voisin qui lui rapporte le plus
+    if (faites(cite).some(t => t.guilde)) {
+      var mieux = 0, copie = null, dejaG = cite.cartes.filter(id => CARTES[id].type === 'violet');
+      voisins.forEach(v => e.cites[v].cartes.forEach(id => {
+        var g = CARTES[id].effet.guilde, gv = 0;
+        if (CARTES[id].type !== 'violet' || dejaG.indexOf(id) >= 0) return;
+        if (!g) { var s1 = symboles(e, j), avant = pointsScience(s1); s1.joker++; gv = pointsScience(s1) - avant; }
+        else { var q = g.qui === 's' ? [j] : g.qui === 'v' ? voisins : [j].concat(voisins); q.forEach(x => g.types.forEach(t => { gv += g.pts * compter(e, x, t); })); }
+        if (gv > mieux) { mieux = gv; copie = id; }
+      }));
+      if (copie) { r.guildes += mieux; r.copie = copie; }
+    }
     r.savoir = pointsScience(symboles(e, j));
     r.total = r.militaire + r.pieces + r.joyau + r.monuments + r.commerce + r.guildes + r.savoir;
     return r;
@@ -377,8 +454,9 @@ var SJ = (function () {
     var p = type === 'joyau' ? o.joyau : o.construire;
     if (type === 'vendre') return 1.2 + (cite.pieces < 3 ? 1 : 0);
     if (type === 'joyau') {
-      var t = JOYAUX[cite.joyau].etapes[cite.etapes];
-      v = (t.pts || 0) * 0.9 + (t.boucliers ? 3 : 0) + (t.pieces ? 3 : 0) + (t.prod ? 4 - age : 0) + (t.sci ? 4 : 0) + (t.comptoir ? 3 - age : 0) + (t.gratuit ? 4 : 0);
+      var t = etapesDe(cite)[cite.etapes];
+      v = (t.pts || 0) * 0.9 + (t.boucliers ? 1.5 + t.boucliers : 0) + (t.pieces ? t.pieces / 3 + 1 : 0) + (t.prod ? 4 - age : 0) + (t.sci ? 4 : 0) + (t.comptoir ? 3 - age : 0)
+        + (t.gratuit ? 4 : 0) + (t.defausse ? (e.defausse.length ? 3 : 1) : 0) + (t.septieme ? 4 - age : 0) + (t.guilde ? 3 : 0);
       v += age === 3 ? 1.5 : 0.5;
     } else {
       if (f.pts) v += f.pts * 0.9;
@@ -425,6 +503,17 @@ var SJ = (function () {
     return { i: best.i, type: best.type };
   }
 
+  // Mausolée : la carte de la défausse qui rapporte le plus (null s'il n'y en a pas)
+  function ordinateurDefausse(e, j) {
+    var best = null;
+    e.defausse.forEach(id => {
+      if (aDeja(e.cites[j], id)) return;
+      var v = valeur(e, j, id, 'gratuit', { construire: { ok: true, g: 0, d: 0, pieces: 0 } }, null);
+      if (!best || v > best.v) best = { v: v, id: id };
+    });
+    return best ? best.id : null;
+  }
+
   // ---------- Ce que voit chaque joueur : sa main et les choix des autres (faits ou pas, jamais quoi) ----------
   function vuePour(e, j) {
     var v = JSON.parse(JSON.stringify(e));
@@ -432,9 +521,9 @@ var SJ = (function () {
     e.joueurs.forEach(x => { v.nbMain[x] = e.mains[x].length; });
     if (e.mains[j]) v.mains[j] = e.mains[j].slice();
     v.choix = {}; v.aChoisi = {};
-    e.joueurs.forEach(x => { v.aChoisi[x] = !!e.choix[x]; });
+    e.joueurs.forEach(x => { v.aChoisi[x] = !!e.choix[x] || participants(e).indexOf(x) < 0; });   // 7e carte : les autres n'ont rien à choisir
     if (e.choix[j]) v.choix[j] = Object.assign({}, e.choix[j]);
-    v.defausse = [];
+    v.defausse = e.attente && e.attente[0] && e.attente[0].j === j ? e.defausse.slice() : [];
     v.nbDefausse = e.defausse.length;
     return v;
   }
@@ -442,6 +531,7 @@ var SJ = (function () {
   return { RES: RES, SCIENCES: SCIENCES, TYPES: TYPES, CARTES: CARTES, LISTE: LISTE, JOYAUX: JOYAUX, MAIN: MAIN, TOURS: TOURS, VENTE: VENTE,
            paquet: paquet, nouvellePartie: nouvellePartie, gauche: gauche, droite: droite, sources: sources, payer: payer, options: options,
            choisir: choisir, annuler: annuler, tousOntChoisi: tousOntChoisi, resoudre: resoudre, boucliers: boucliers, symboles: symboles,
-           pointsScience: pointsScience, score: score, compter: compter, ordinateur: ordinateur, vuePour: vuePour, melanger: melanger };
+           pointsScience: pointsScience, score: score, compter: compter, ordinateur: ordinateur, vuePour: vuePour, melanger: melanger,
+           etapesDe: etapesDe, faites: faites, participants: participants, pouvoir: pouvoir, ordinateurDefausse: ordinateurDefausse };
 })();
 if (typeof module !== 'undefined') module.exports = SJ;
