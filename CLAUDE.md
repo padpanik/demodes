@@ -443,6 +443,8 @@ Bataille navale : `bataille-boss` (partie contre un boss d'expédition), `batail
   entre les joueurs, 9,5 à 14 px) : 7 joueurs tiennent entre la barre et le volet réduit sur 360 × 800. 3 joueurs : grandes cartes comme en 2.78.
   **2.80** : la marge sous la table (`.sous-volet`) suit la **hauteur réelle du volet** (`voletH`, mesurée dans `majReserve`) : volet ouvert, on fait défiler la table
   jusqu'à voir la dernière merveille au-dessus (demandé par l'utilisateur : « ça bloque trop tôt »).
+  **2.81** (demandé par l'utilisateur) : **ma carte en bleu acier** (`.dv-plj-moi` : même dessin, dégradé #9dc0e3 → #4f79a6, grandes et petites cartes) pour me repérer ;
+  en-tête des cartes de la table sur une ligne en grille `nom | merveille centrée | pièces · boucliers · points` (`.dv-plj-tete`, nom de la merveille centré sur la carte).
   Bandeau « ce qu'ils ont joué » : il manquait après le **1er tour** de chaque partie (pas de `e.nTour` précédent) ; corrigé.
   Plus tard (proposé) : les cartes de la fiche de cité en petites cartes dessinées, comme dans le Duel.
   Choix fait : bandeau « ✓ … · On attend … » avec « Changer » (jusqu'à la révélation, 0,7 s après le dernier choix). Fenêtre des conflits à chaque fin d'âge,
