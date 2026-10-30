@@ -5,8 +5,12 @@
 //   version mise en ligne est donc visible dès le prochain lancement.
 // Pensez à changer VERSION à chaque mise en ligne (même numéro que dans commun.js et brilliant/index.html).
 
-const VERSION = '2.82';
+const VERSION = '2.83';
 const CACHE = 'desdale-' + VERSION;
+// Au-delà de ce délai sans réponse du réseau, on sert la copie gardée (réseau faible)
+const DELAI_RESEAU = 3000;
+// Après un réseau trop lent, on sert directement les copies pendant 30 s (sinon chaque script d'une page attendrait ses 3 s)
+let lentJusqua = 0;
 
 const FICHIERS = [
   // Une page par dossier (jeu/), les fichiers communs à la racine
@@ -99,19 +103,30 @@ self.addEventListener('fetch', event => {
   // Chaque page est rangée sous sa propre adresse (sans le "?choix" éventuel).
   if (req.mode === 'navigate' || (memeSite && /\.(html|js|css)$|\/$/.test(url.pathname))) {
     const cle = url.origin + url.pathname;
+    const enCache = () => caches.match(cle)
+      .then(r => r || caches.match(url.origin + url.pathname.replace(/index\.html$/, '')))
+      .then(r => r || (req.mode === 'navigate' ? caches.match('./') : null));
     // cache: 'no-cache' : on redemande toujours au serveur si le fichier a changé
     // (sinon le navigateur peut resservir sa copie jusqu'à 10 minutes après une mise en ligne)
-    event.respondWith(
-      fetch(req.url, { cache: 'no-cache', credentials: 'same-origin' })
-        .then(rep => {
-          // Cloudflare Pages renvoie « index.html » vers « / » : une page qui a été redirigée ne peut pas servir
-          // de réponse à la navigation (le navigateur la refuse). On renvoie donc la redirection elle-même.
-          if (rep.redirected && req.mode === 'navigate') return Response.redirect(rep.url, 302);
-          if (rep.ok && !rep.redirected) { const copie = rep.clone(); caches.open(CACHE).then(c => c.put(cle, copie)); }
-          return rep;
-        })
-        .catch(() => caches.match(cle).then(r => r || caches.match(url.origin + url.pathname.replace(/index\.html$/, ''))).then(r => r || caches.match('./')))
-    );
+    const reseau = fetch(req.url, { cache: 'no-cache', credentials: 'same-origin' })
+      .then(rep => {
+        // Cloudflare renvoie « index.html » vers « / » : une page qui a été redirigée ne peut pas servir
+        // de réponse à la navigation (le navigateur la refuse). On renvoie donc la redirection elle-même.
+        if (rep.redirected && req.mode === 'navigate') return Response.redirect(rep.url, 302);
+        if (rep.ok && !rep.redirected) { const copie = rep.clone(); caches.open(CACHE).then(c => c.put(cle, copie)); }
+        return rep;
+      });
+    // Réseau faible (demandé par l'utilisateur : « connexion nulle, ça ne marche pas ») : on n'attend le réseau
+    // que DELAI_RESEAU ms ; au-delà, on sert la copie gardée (s'il y en a une) et la réponse du réseau,
+    // si elle finit par arriver, met seulement la copie à jour pour la fois suivante.
+    event.waitUntil(reseau.catch(() => {}));
+    event.respondWith(new Promise(resoudre => {
+      let fini = false;
+      const servir = r => { if (!fini && r) { fini = true; resoudre(r); } };
+      const minuterie = setTimeout(() => { lentJusqua = Date.now() + 30000; enCache().then(servir); }, Date.now() < lentJusqua ? 0 : DELAI_RESEAU);
+      reseau.then(r => { clearTimeout(minuterie); if (!fini) lentJusqua = 0; servir(r); })
+        .catch(() => { clearTimeout(minuterie); enCache().then(r => r ? servir(r) : servir(Response.error())); });
+    }));
     return;
   }
 

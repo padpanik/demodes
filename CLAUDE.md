@@ -74,7 +74,7 @@ Lien vers un jeu : `yams/` (pas `yams.html`). `404.html` renvoie les anciennes a
 | `compagnon/compagnon-3d.html` | Maquette « niveau 2 » : le chien en vraie 3D (Three.js **r128** par CDN, uniquement sur cette page). **Mise de côté** par l'utilisateur (plus de lien dans le jeu, page gardée pour plus tard). |
 | `bataille/sons/` | Sons enregistrés de la Bataille navale (MP3 libres de droits) et leurs sources (`LICENCES.txt`). |
 | `salon-global.js` | **Salon global** commun à toutes les pages (présence, chat, profil), chargé en fin de page avec `data-jeu`. Indépendant du réseau des jeux. |
-| `sw.js` | Service worker (PWA) : nos fichiers en « réseau d'abord » avec `cache: 'no-cache'`, bibliothèques en cache. |
+| `sw.js` | Service worker (PWA) : nos fichiers en « réseau d'abord » avec `cache: 'no-cache'`, bibliothèques en cache. **Réseau faible** (2.83, signalé par l'utilisateur : « connexion nulle, ça ne fonctionne pas ») : on n'attend le réseau que `DELAI_RESEAU` (3 s), puis on sert la copie gardée (la réponse tardive met seulement la copie à jour) ; après un tel retard, copies servies tout de suite pendant 30 s (`lentJusqua`). Hors ligne : l'appli s'ouvre et les jeux seuls fonctionnent (vérifié : serveur ralenti à 20 s → page en 3 s ; serveur coupé → 0,1 s). Tester le service worker sur `localhost` (pas `127.0.0.1` : l'enregistrement est réservé à https et localhost). |
 | `manifest.webmanifest`, icônes | Installation comme application. |
 | `netlify.toml` | Inutilisé (essai d'hébergement abandonné). |
 
