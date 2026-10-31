@@ -387,13 +387,20 @@ Bataille navale : `bataille-boss` (partie contre un boss d'expédition), `batail
   méthode des ancres (`LC.coupsPossibles`) et ne joue que des mots du dictionnaire. Niveaux (`LC.NIVEAUX`, `LC.ordinateur`) :
   **Facile** mots très courants (fréquence 3) de 6 lettres au plus, sans joker, coup au hasard dans la moitié la moins payante (~80-170 pts) ;
   **Normal** mots courants (fréquence ≥ 2) de 8 lettres au plus, coup entre 55 % et 85 % du classement (~250 contre Facile) ;
+  **Confirmé** (2.84, demandé par l'utilisateur : « on passe de tout à rien » entre Normal et Fort) mots connus (fréquence ≥ 1) de 12 lettres au plus, un coup qui rapporte **50 à 80 % du meilleur** (`ratio`, le classement seul laissait trop d'écart ; mesuré en Node : ~365 contre ~150 face à Normal, ~275 contre ~450 face à Fort) ;
   **Fort** tous les mots, meilleur coup (~450-700). Le mot principal suit ces limites (`opts.frequence`, `T[nœud] = 1 + fréquence`),
   pas les petits mots croisés. Liste trop permissive pour les humains (signalé par l'utilisateur, ex. CF joué) : abréviations
   retirées, et le vote affiche un lien vers le vérificateur ODS de la Fédération (https://www.ffscrabble.fr/verificateur-de-mots/).
   Sans coup : il échange ses lettres sauf jokers, E et S (sac ≥ 7), sinon passe. Seul, pas de vote : un mot hors dictionnaire
   ouvre une fenêtre (`doute`) avec le lien vers le vérificateur ODS, « ↺ Changer mon mot » ou « ✓ Il est valable » (`jouerQuandMeme`).
   Bouton **« 🔎 Vérifier »** (demandé par l'utilisateur, pour progresser en solo) dans la ligne d'aperçu dès qu'un mot est prêt, en solo comme en salon :
-  ouvre le vérificateur de la Fédération et copie les mots formés (`verifierODS` / `copierMots` ; le site ne se remplit pas par un lien). Série de victoires par niveau (`Etoiles.serie('lettres-<niveau>')`).
+  ouvre le vérificateur de la Fédération et copie les mots formés (`verifierODS` / `copierMots` ; le site ne se remplit pas par un lien).
+  **Mon lexique** (2.84, demandé par l'utilisateur : le dictionnaire libre « s'écarte pas mal par moment » de celui du jeu officiel) : chaque téléphone retient des mots
+  **acceptés** ou **refusés** (`lettres-lexique` = { ok, non }, `motValide(lx, m)` : l'avis compte avant le dictionnaire), seul et dans les salons dont il est l'hôte (c'est lui qui vérifie) ;
+  l'ordinateur ne joue jamais un mot refusé (`LC.ordinateur(…, exclus)`). On touche un mot joué (« Dernier coup », sous un score) : **fiche du mot** (`ficheMot`) avec
+  Définition (Wiktionnaire), Vérifier dans l'ODS, et ✓ Accepté / Dictionnaire / ✗ Refusé. Option **« 📌 Retenir pour les prochaines parties »** (`lettres-retenir`, cochée par défaut)
+  dans la fenêtre du doute (solo : « Il est valable » l'ajoute aux acceptés) et sous le vote (salon : résultat `e.decision = { n, mots, ok }` retenu par l'hôte et chaque joueur).
+  Réglages : liste des mots, ajout à la main, ✕ pour retirer. Série de victoires par niveau (`Etoiles.serie('lettres-<niveau>')`).
 
 ### 7 piliers, ex « Les 7 joyaux » (version maison du draft de cartes et de cités, 2.51 ; renommé en 2.69)
 - Nom choisi par l'utilisateur. Ils sont **souvent 2, parfois 4** : il faut 3 cités au moins, donc des 🤖 complètent la table

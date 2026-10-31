@@ -5,7 +5,7 @@
 //   version mise en ligne est donc visible dès le prochain lancement.
 // Pensez à changer VERSION à chaque mise en ligne (même numéro que dans commun.js et brilliant/index.html).
 
-const VERSION = '2.83';
+const VERSION = '2.84';
 const CACHE = 'desdale-' + VERSION;
 // Au-delà de ce délai sans réponse du réseau, on sert la copie gardée (réseau faible)
 const DELAI_RESEAU = 3000;

@@ -93,6 +93,20 @@
     .vote-lc .mots { font-weight: 900; font-size: 1.15em; letter-spacing: 1px; margin: 4px 0; }
     .vote-lc .lien-ffsc { display: inline-block; margin-top: 4px; font-size: 0.82em; color: #1c7ed6; }
     .ods-btn { background: #e7f1fc; color: #1c63b7; font-weight: 800; }
+    .retenir-lc { display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 0.85em; font-weight: 700; color: #3b4b57; margin-top: 8px; }
+    .retenir-lc input { width: 18px; height: 18px; }
+    .lien-mot { background: none; border: 0; padding: 0; font: inherit; color: inherit; text-decoration: underline; cursor: pointer; }
+    button.mot-def { background: none; border: 0; padding: 0; font: inherit; cursor: pointer; }
+    .actions-lc.colonne { flex-direction: column; }
+    .actions-lc.colonne .btn { width: 100%; text-decoration: none; text-align: center; }
+    .ajout-lc { display: flex; gap: 6px; margin: 8px 0; }
+    .ajout-lc input { flex: 1; min-width: 0; padding: 8px 10px; border-radius: 10px; border: 1px solid #ccd5dd; font-size: 16px; text-transform: uppercase; }
+    .ajout-lc .btn { min-width: 46px; }
+    .puces-lc { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 6px; }
+    .puces-lc span.ok, .puces-lc span.non { padding: 3px 8px; border-radius: 999px; font-weight: 800; font-size: 0.85em; cursor: pointer; }
+    .puces-lc .ok { background: #e3f6e9; color: #1e7a45; }
+    .puces-lc .non { background: #fde7e7; color: #b42318; }
+    .puces-lc b { margin-left: 3px; opacity: 0.6; }
     .doute-lc { background: #fff; border-radius: 16px; padding: 16px 14px; max-width: 330px; width: 100%; text-align: center; }
     .doute-lc .mots { font-weight: 900; font-size: 1.3em; letter-spacing: 1px; margin: 6px 0; color: #c0392b; }
     .doute-lc .lien-ffsc { display: block; margin: 8px 0 4px; font-weight: 800; color: #1c7ed6; }
@@ -214,7 +228,7 @@
               <div class="nom">{{ j.nom }}</div>
               <div><span class="score">{{ j.score }}</span> <span class="nb">· {{ j.nb }}</span></div>
               <div v-if="j.action" class="mot-def vide">{{ j.action }}</div>
-              <a v-else-if="j.mot" class="mot-def" :href="lienDef(j.mot)" target="_blank" rel="noopener" title="Définition">{{ j.mot }}</a>
+              <button v-else-if="j.mot" class="mot-def" @click="ouvrirMot(j.mot)" title="Définition, vérifier, accepter ou refuser">{{ j.mot }}</button>
               <div v-else class="mot-def vide">–</div>
             </div>
           </div>
@@ -231,7 +245,7 @@
           </div>
           <div class="ligne-apercu">
             <div v-if="!analyse && e.dernier && e.phase !== 'verif'" class="apercu-lc" :style="{ color: couleurDe(e.dernier.j) }">
-              Dernier coup :<template v-for="(m, k) in e.dernier.mots">{{ k ? ',' : '' }} <a :key="k" :href="lienDef(m)" target="_blank" rel="noopener">{{ m }}</a></template>
+              Dernier coup :<template v-for="(m, k) in e.dernier.mots">{{ k ? ',' : '' }} <button :key="k" class="lien-mot" @click="ouvrirMot(m)">{{ m }}</button></template>
               ({{ e.dernier.j === moiJ ? 'moi' : e.dernier.j }}, +{{ e.dernier.points }})</div>
             <div v-else class="apercu-lc" :class="apercuClasse">{{ apercuTexte }}</div>
             <button v-if="analyse && !analyse.erreur" class="zoom-btn ods-btn" @click="verifierODS(analyse.mots.map(m => m.mot))" title="Vérifier mes mots dans l'ODS">{{ copieODS ? '📋 copié' : '🔎 Vérifier' }}</button>
@@ -251,6 +265,8 @@
             <div class="actions-lc" v-if="e.verif.j === moiJ">
               <button class="btn" @click="envoyerJeu({ type: 'ANNULER', partieId: pub.partieId })">↺ Reprendre mes lettres</button>
             </div>
+            <label class="retenir-lc"><input type="checkbox" v-model="retenirMots"> 📌 Retenir pour les prochaines parties</label>
+
           </div>
 
           <!-- Seul : mot hors dictionnaire, on vérifie soi-même avant de décider -->
@@ -258,12 +274,35 @@
             <div class="doute-lc">
               <div style="font-size:2em;line-height:1">🤔</div>
               <div class="mots">{{ doute.inconnus.join(', ') }}</div>
-              <div class="aide" style="margin:0">{{ doute.inconnus.length > 1 ? 'Ces mots ne sont pas' : 'Ce mot n\'est pas' }} dans le dictionnaire de Désdale (il lui manque quelques petits mots). À toi de vérifier, et de décider honnêtement !</div>
+              <div class="aide" style="margin:0">{{ doute.inconnus.length > 1 ? 'Ces mots ne sont pas' : 'Ce mot n\'est pas' }} {{ doute.inconnus.some(m => avisMot(m) === false) ? 'refusé dans ton lexique' : 'dans le dictionnaire de Désdale (il lui manque quelques petits mots)' }}. À toi de vérifier, et de décider honnêtement !</div>
               <a class="lien-ffsc" href="https://www.ffscrabble.fr/verificateur-de-mots/" target="_blank" rel="noopener" @click="copierMots(doute.inconnus)">🔎 Vérifier dans l'ODS (site de la Fédération){{ copieODS ? ' · 📋 mot copié' : '' }}</a>
               <div class="actions-lc">
                 <button class="btn" @click="changerMot">↺ Changer mon mot</button>
                 <button class="btn principal" @click="jouerQuandMeme">✓ Il est valable</button>
               </div>
+              <label class="retenir-lc"><input type="checkbox" v-model="retenirMots"> 📌 Retenir pour les prochaines parties</label>
+
+            </div>
+          </div>
+
+          <!-- Un mot touché : définition, vérification dans l'ODS, et mon avis retenu pour la suite -->
+          <div class="voile" v-if="ficheMot" @click.self="ficheMot = null">
+            <div class="doute-lc fiche-mot">
+              <div class="mots" style="color:#1d2b36">{{ ficheMot }}</div>
+              <div class="aide" style="margin:0">{{ dicoPret ? (dansDico(ficheMot) ? 'Dans le dictionnaire de Désdale.' : 'Absent du dictionnaire de Désdale.') : 'Dictionnaire en chargement…' }}
+                {{ avisMot(ficheMot) === true ? 'Tu l\'as accepté.' : avisMot(ficheMot) === false ? 'Tu l\'as refusé.' : '' }}</div>
+              <div class="actions-lc colonne">
+                <a class="btn" :href="lienDef(ficheMot)" target="_blank" rel="noopener">📖 Définition (Wiktionnaire)</a>
+                <button class="btn" @click="verifierODS([ficheMot])">🔎 Vérifier dans l'ODS{{ copieODS ? ' · 📋 copié' : '' }}</button>
+              </div>
+              <div class="petit-titre" style="margin-top:8px">Pour les prochaines parties</div>
+              <div class="segment">
+                <button :class="{ actif: avisMot(ficheMot) === true }" @click="reglerMot(ficheMot, true)">✓ Accepté</button>
+                <button :class="{ actif: avisMot(ficheMot) === null }" @click="reglerMot(ficheMot, null)">Dictionnaire</button>
+                <button :class="{ actif: avisMot(ficheMot) === false }" @click="reglerMot(ficheMot, false)">✗ Refusé</button>
+              </div>
+              <div class="aide">Compte seul et dans les salons dont tu es l'hôte. L'ordinateur ne joue plus un mot refusé.</div>
+              <button class="btn principal" style="width:100%;margin-top:6px" @click="ficheMot = null">Fermer</button>
             </div>
           </div>
 
@@ -323,6 +362,20 @@
           <div class="titre-carte">Réglages</div>
           <reglages-base :son.sync="sonActif" :vibration.sync="vibrationActive"></reglages-base>
         </section>
+        <section class="carte reglages lexique-lc">
+          <div class="titre-carte">Mon lexique</div>
+          <div class="aide" style="margin-top:0">Le dictionnaire de Désdale s'écarte parfois de celui du jeu officiel (ODS). Les mots que tu acceptes ou refuses sont retenus ici et comptent avant le dictionnaire : seul, et dans les salons dont tu es l'hôte. L'ordinateur ne joue jamais un mot refusé. Touche un mot sur le plateau (dernier coup, sous un score) pour le vérifier.</div>
+          <label class="retenir-lc"><input type="checkbox" v-model="retenirMots"> 📌 Retenir les mots acceptés ou refusés (vote, ou seul)</label>
+          <div class="ajout-lc">
+            <input v-model="motAjout" placeholder="Un mot…" maxlength="15" autocapitalize="characters" @keyup.enter="ajouterMot(true)">
+            <button class="btn" @click="ajouterMot(true)">✓</button>
+            <button class="btn" @click="ajouterMot(false)">✗</button>
+          </div>
+          <div class="petit-titre">Acceptés ({{ lexique.ok.length }})</div>
+          <div class="puces-lc"><span v-for="m in lexique.ok" :key="'o' + m" class="ok" @click="ouvrirMot(m)">{{ m }} <b @click.stop="reglerMot(m, null)">✕</b></span><span v-if="!lexique.ok.length" class="aide">aucun</span></div>
+          <div class="petit-titre">Refusés ({{ lexique.non.length }})</div>
+          <div class="puces-lc"><span v-for="m in lexique.non" :key="'n' + m" class="non" @click="ouvrirMot(m)">{{ m }} <b @click.stop="reglerMot(m, null)">✕</b></span><span v-if="!lexique.non.length" class="aide">aucun</span></div>
+        </section>
 
       </template>
 
@@ -334,12 +387,13 @@
             <li>Chacun a 7 lettres. À son tour, on pose des lettres sur <strong>une seule ligne ou colonne</strong>, sans trou, pour former un mot qui croise ou touche ceux déjà posés. Le premier mot passe par l'étoile du centre.</li>
             <li>On marque les points de chaque mot formé (le mot principal et ceux qui se croisent). Cases colorées : <strong>L×2 / L×3</strong> (la lettre compte double / triple), <strong>M×2 / M×3</strong> (le mot compte double / triple), seulement pour les lettres posées ce tour-ci.</li>
             <li>Les 7 lettres d'un coup : <strong>+50</strong>. Les deux jokers valent 0 point et remplacent n'importe quelle lettre.</li>
-            <li>Le dernier mot de chacun s'affiche sous son score : touche-le (ou un mot du « Dernier coup ») pour lire sa définition sur le Wiktionnaire.</li>
+            <li>Le dernier mot de chacun s'affiche sous son score : touche-le (ou un mot du « Dernier coup ») pour lire sa définition sur le Wiktionnaire, le vérifier dans l'ODS, l'accepter ou le refuser.</li>
             <li>🔀 : range tes lettres à la main (fais-les glisser, ou touche-en deux pour les échanger), puis « Retour à la partie ».</li>
             <li>Toucher deux fois rapidement le plateau le grossit (ou le remet en entier) : pratique pour viser une case.</li>
             <li>On peut aussi <strong>échanger</strong> des lettres (s'il en reste au moins 7 dans le sac) ou <strong>passer</strong>.</li>
             <li>Mot absent du dictionnaire : les autres joueurs <strong>votent</strong>. S'il est refusé, les lettres reviennent et on rejoue. Seul contre l'ordinateur, c'est toi qui décides, après avoir vérifié dans l'ODS si tu veux.</li>
             <li><strong>🔎 Vérifier</strong> (à côté de la loupe, quand ton mot est prêt) : ouvre le vérificateur de la Fédération et copie tes mots, tu n'as plus qu'à les coller.</li>
+            <li><strong>Mon lexique</strong> : touche un mot déjà joué pour lire sa définition, le vérifier, puis l'<strong>accepter</strong> ou le <strong>refuser</strong> pour les prochaines parties. Les votes et tes décisions seul sont retenus aussi (option « 📌 Retenir »). La liste est dans Réglages.</li>
             <li>Fin : quand un joueur a posé toutes ses lettres et que le sac est vide (il gagne les points restant chez les autres, qui les perdent), ou quand tout le monde passe deux fois de suite.</li>
           </ul>
         </section>
@@ -376,9 +430,10 @@
     const LIB_BONUS = { MT: 'M×3', MD: 'M×2', LT: 'L×3', LD: 'L×2' };
     // Une couleur par joueur, dans l'ordre de la partie
     const COULEURS = ['#e8590c', '#1c7ed6', '#2b8a3e', '#9c36b5'];
-    const NIVEAUX_NOMS = { facile: 'Facile', normal: 'Normal', fort: 'Fort' };
+    const NIVEAUX_NOMS = { facile: 'Facile', normal: 'Normal', confirme: 'Confirmé', fort: 'Fort' };
     const AIDE_NIVEAUX = { facile: 'Petits mots (5 lettres au plus), sans joker, rarement le meilleur coup.',
                            normal: 'Mots de 8 lettres au plus, de bons coups sans être les meilleurs.',
+                           confirme: 'Mots connus, souvent de beaux coups, mais pas toujours le meilleur : entre Normal et Fort.',
                            fort: 'Connaît tous les mots du dictionnaire et joue toujours le meilleur coup.' };
     function estOrdi(n) { return estNomOrdi(n); }   // « 🤖 » + prénom (nomsOrdis, commun.js)
     function copie(o) { return JSON.parse(JSON.stringify(o)); }
@@ -397,6 +452,13 @@
         .catch(() => { promesseDico = null; return null; });
       return promesseDico;
     }
+    // ---------- Mon lexique (2.84, demandé par l'utilisateur) ----------
+    // Le dictionnaire libre s'écarte parfois de l'ODS : chaque téléphone retient les mots acceptés (ok) ou refusés (non) à la main,
+    // pour les parties suivantes. Ils comptent avant le dictionnaire : seul, et dans les salons dont on est l'hôte (c'est lui qui vérifie).
+    // L'ordinateur ne joue jamais un mot refusé.
+    function lireLexique() { var l = lireStockage('lettres-lexique') || {}; return { ok: Array.isArray(l.ok) ? l.ok : [], non: Array.isArray(l.non) ? l.non : [] }; }
+    function avisLexique(lx, m) { return lx.ok.indexOf(m) !== -1 ? true : lx.non.indexOf(m) !== -1 ? false : null; }
+    function motValide(lx, m) { var a = avisLexique(lx, m); return a !== null ? a : !!(DICO && DICO.has(m)); }
     let etatSolo = null;      // en solo : l'état complet (chevalets des ordinateurs et sac compris)
 
     // ================== RÉSEAU ==================
@@ -439,6 +501,10 @@
         aEchanger: {},
         jokerPour: null,       // { i, c } : joker en attente de sa lettre
         zoom: false,
+        lexique: lireLexique(),
+        retenirMots: lireStockage('lettres-retenir') !== false,   // retenir les mots acceptés ou refusés pour les parties suivantes
+        ficheMot: null,   // mot touché (dernier coup, sous un score, lexique) : définition, vérification, mon avis
+        motAjout: '',
         doute: null,      // seul : mot hors dictionnaire en attente de décision ({ poses, inconnus })
         copieODS: false,  // mot copié pour le coller dans le vérificateur de la Fédération
         dicoPret: false,
@@ -499,7 +565,8 @@
         inconnus: function() {
           var a = this.analyse;
           if (!a || a.erreur || !this.dicoPret) return [];
-          return a.mots.map(m => m.mot).filter(m => !DICO.has(m));
+          var lx = this.lexique;
+          return a.mots.map(m => m.mot).filter(m => !motValide(lx, m));
         },
         apercuTexte: function() {
           var a = this.analyse;
@@ -545,6 +612,7 @@
         vibrationActive: function(v) { ecrireStockage('brillant-vibration', v); if (v) vibrer(40); },
         pseudoInput: function() { this.sauvegarder(); },
         niveau: function(v) { ecrireStockage('lettres-niveau', v); },
+        retenirMots: function(v) { ecrireStockage('lettres-retenir', v); },
         nbOrdis: function(v) { ecrireStockage('lettres-ordis', v); },
         // Nouveau chevalet (après un coup, un échange, une nouvelle partie) : on repart de zéro
         'monChevalet': function(n, a) {
@@ -639,7 +707,7 @@
           this._timerOrdi = setTimeout(() => {
             chargerDico().then(() => {
               if (!this.solo || etatSolo !== e || e.phase !== 'jeu' || !ARBRE) return;
-              var j = LC.joueurDuTour(e), a = LC.ordinateur(e, j, ARBRE, e.niveau);
+              var j = LC.joueurDuTour(e), a = LC.ordinateur(e, j, ARBRE, e.niveau, null, new Set(this.lexique.non));
               if (a.type === 'poser') LC.poser(e, j, a.poses);
               else if (a.type === 'echanger') LC.echanger(e, j, a.rangs);
               else LC.passer(e, j);
@@ -655,7 +723,7 @@
             if (e.phase !== 'jeu' || LC.joueurDuTour(e) !== j) return;
             var a = LC.analyser(e, j, m.poses);
             if (a.erreur) { this.poses = m.poses; return; }
-            var inconnus = a.mots.map(x => x.mot).filter((w, k, t) => !(DICO && DICO.has(w)) && t.indexOf(w) === k);
+            var inconnus = a.mots.map(x => x.mot).filter((w, k, t) => !motValide(this.lexique, w) && t.indexOf(w) === k);
             // Seul, pas de vote : on vérifie soi-même dans l'ODS et on décide (la liste n'a pas tous les petits mots)
             if (inconnus.length && !m.force) { this.poses = m.poses; this.doute = { poses: copie(m.poses), inconnus: inconnus }; return; }
             LC.poser(e, j, m.poses);
@@ -782,10 +850,26 @@
           window.open('https://www.ffscrabble.fr/verificateur-de-mots/', '_blank', 'noopener');
         },
         changerMot: function() { this.doute = null; },
+        // Mon lexique : v = true (accepté), false (refusé), null (comme le dictionnaire)
+        reglerMot: function(m, v) {
+          m = String(m || '').toUpperCase().replace(/[^A-Z]/g, '');
+          if (!m) return;
+          var lx = lireLexique();
+          lx.ok = lx.ok.filter(x => x !== m); lx.non = lx.non.filter(x => x !== m);
+          if (v === true) lx.ok.push(m); else if (v === false) lx.non.push(m);
+          lx.ok.sort(); lx.non.sort();
+          ecrireStockage('lettres-lexique', lx);
+          this.lexique = lx;
+        },
+        ouvrirMot: function(m) { chargerDico(); this.ficheMot = String(m || '').toUpperCase(); },
+        avisMot: function(m) { return avisLexique(this.lexique, m); },
+        dansDico: function(m) { return this.dicoPret && !!DICO && DICO.has(m); },
+        ajouterMot: function(v) { var m = this.motAjout.trim(); if (!m) return; this.reglerMot(m, v); this.motAjout = ''; },
         jouerQuandMeme: function() {
           var d = this.doute;
           if (!d) return;
           this.doute = null; this.poses = []; this.choisi = -1;
+          if (this.retenirMots) d.inconnus.forEach(m => this.reglerMot(m, true));
           this.traiterSolo({ type: 'POSER', poses: d.poses, force: true });
         },
         jouer: function() {
@@ -852,7 +936,7 @@
               var poses = m.poses.slice(0, 7).map(x => ({ i: +x.i, c: +x.c, l: String(x.l || '').toUpperCase().slice(0, 1) }));
               var a = LC.analyser(e, p, poses);
               if (a.erreur) return;
-              var inconnus = a.mots.map(x => x.mot).filter((w, k, t) => !(dico && dico.has(w)) && t.indexOf(w) === k);
+              var inconnus = a.mots.map(x => x.mot).filter((w, k, t) => !motValide(this.lexique, w) && t.indexOf(w) === k);
               if (!inconnus.length) LC.poser(e, p, poses);
               else {
                 e.phase = 'verif';
@@ -898,12 +982,16 @@
           var v = e.verif, votants = e.joueurs.filter(j => j !== v.j && this.estConnecte(j));
           var n = votants.length, non = votants.filter(j => v.votes[j] === false).length, oui = votants.filter(j => v.votes[j] === true).length;
           var seuil = Math.floor(n / 2) + 1;
+          var ok;
           if (n && non >= seuil) {
             LC.noter(e, 'Refusé : ' + v.inconnus.join(', ') + '. ' + v.j + ' rejoue.');
-            e.phase = 'jeu'; e.verif = null;
+            e.phase = 'jeu'; e.verif = null; ok = false;
           } else if (!n || oui > n - seuil) {
-            LC.poser(e, v.j, v.poses);
+            LC.poser(e, v.j, v.poses); ok = true;
           } else return false;
+          // Le résultat du vote voyage avec l'état : chaque téléphone peut le retenir dans son lexique
+          if (n) e.decision = { n: ((e.decision && e.decision.n) || 0) + 1, mots: v.inconnus.slice(), ok: ok };
+          if (n && this.retenirMots) v.inconnus.forEach(m => this.reglerMot(m, ok));
           return true;
         },
         // Ce que voit chaque joueur : son chevalet seulement
@@ -933,6 +1021,9 @@
             this.vibre([60, 40, 60]);
           }
           if (e.phase === 'verif' && (!ea || ea.phase !== 'verif') && e.verif.j !== moi && e.joueurs.indexOf(moi) !== -1) this.vibre([30, 40, 30]);
+          // Vote tranché : je retiens le résultat dans mon lexique (si l'option est cochée)
+          if (memePartie && e.decision && (!ea.decision || ea.decision.n !== e.decision.n) && this.retenirMots && this.role !== 'hote')
+            e.decision.mots.forEach(m => this.reglerMot(m, e.decision.ok));
           if (e.phase === 'jeu' && e.joueurs[e.tour] === moi && (!memePartie || ea.tour !== e.tour || ea.phase !== 'jeu')) this.vibre([30, 40, 30]);
           // Fin de partie : les étoiles du compagnon (une seule fois par partie)
           if (e.phase === 'fin' && (!memePartie || ea.phase !== 'fin') && e.joueurs.indexOf(moi) !== -1) {
@@ -957,7 +1048,7 @@
           setTimeout(() => {
             chargerDico().then(() => {
               if (this.role !== 'hote' || !pubHote || pubHote.etat !== e || e.phase !== 'jeu' || !ARBRE || cle !== pubHote.partieId + ':' + e.nbCoups + ':' + e.tour + ':' + e.passes) return;
-              var j = LC.joueurDuTour(e), a = LC.ordinateur(e, j, ARBRE, e.niveau);
+              var j = LC.joueurDuTour(e), a = LC.ordinateur(e, j, ARBRE, e.niveau, null, new Set(this.lexique.non));
               if (a.type === 'poser') LC.poser(e, j, a.poses);
               else if (a.type === 'echanger') LC.echanger(e, j, a.rangs);
               else LC.passer(e, j);

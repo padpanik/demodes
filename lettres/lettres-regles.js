@@ -345,15 +345,27 @@ var LC = (function () {
   //   normal : mots courants de 8 lettres au plus, un coup « bon sans plus » (entre 55 % et 85 % du classement) ;
   //   fort   : tous les mots, le meilleur coup.
   // (Le mot principal suit ces limites ; les petits mots formés en travers peuvent être n'importe quel mot de la liste.)
-  var NIVEAUX = { facile: { maxLong: 6, jokers: false, frequence: 3 }, normal: { maxLong: 8, frequence: 2 }, fort: {} };
-  function ordinateur(e, j, a, niveau, hasard) {
+  // Niveaux : mots permis (longueur, fréquence, jokers) et place du coup choisi dans le classement des coups possibles (de, a)
+  //   confirme (2.84, demandé par l'utilisateur : « on passe de tout à rien » entre Normal et Fort) : un coup qui rapporte 50 à 80 % du meilleur
+  //   (mesuré : ~365 contre ~150 face à Normal, ~275 contre ~450 face à Fort)
+  var NIVEAUX = { facile: { maxLong: 6, jokers: false, frequence: 3, de: 0, a: 0.5 }, normal: { maxLong: 8, frequence: 2, de: 0.55, a: 0.85 },
+                  confirme: { maxLong: 12, frequence: 1, ratio: [0.5, 0.8] }, fort: {} };
+  // exclus : mots que l'ordinateur ne doit pas jouer (refusés dans « Mon lexique »)
+  function ordinateur(e, j, a, niveau, hasard, exclus) {
     hasard = hasard || Math.random;
     niveau = NIVEAUX[niveau] ? niveau : 'normal';
     var l = coupsPossibles(e, j, a, NIVEAUX[niveau]).sort((x, y) => x.points - y.points), choix = null;
+    if (exclus && exclus.size) l = l.filter(x => !x.mots.some(w => exclus.has(w)));
     if (l.length) {
       if (niveau === 'fort') { var best = l.filter(x => x.points === l[l.length - 1].points); choix = best[Math.floor(hasard() * best.length)]; }
       else {
-        var de = niveau === 'facile' ? 0 : 0.55, a2 = niveau === 'facile' ? 0.5 : 0.85;
+        var nv = NIVEAUX[niveau], de = nv.de, a2 = nv.a;
+        if (nv.ratio) {
+          // Un coup qui rapporte entre ratio[0] et ratio[1] du meilleur (le classement seul laisse trop d'écart avec Fort)
+          var max = l[l.length - 1].points, bons = l.filter(x => x.points >= nv.ratio[0] * max && x.points <= nv.ratio[1] * max);
+          if (!bons.length) bons = l.filter(x => x.points >= nv.ratio[0] * max);
+          return { type: 'poser', poses: bons[Math.floor(hasard() * bons.length)].poses };
+        }
         var i0 = Math.floor(de * (l.length - 1)), i1 = Math.max(i0, Math.floor(a2 * (l.length - 1)));
         choix = l[i0 + Math.floor(hasard() * (i1 - i0 + 1))];
       }
