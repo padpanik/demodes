@@ -189,7 +189,7 @@
           <div class="aide" v-if="serieRecord > 1">Record : {{ serieRecord }} parties gagnées d'affilée ({{ NIVEAUX_NOMS[niveau] }}).</div>
         </section>
 
-        <p class="version">Désdale · Lettres croisées · version {{ version }}<br>Liste de mots : an-array-of-french-words (licence MIT, voir lettres/lettres-mots-licence.txt)</p>
+        <p class="version">Désdale · Lettres croisées · version {{ version }}<br>Liste de mots : ODS (liste officielle), fréquences d'après wordfreq (voir lettres/lettres-mots-licence.txt)</p>
 
       </template>
 
@@ -274,7 +274,7 @@
             <div class="doute-lc">
               <div style="font-size:2em;line-height:1">🤔</div>
               <div class="mots">{{ doute.inconnus.join(', ') }}</div>
-              <div class="aide" style="margin:0">{{ doute.inconnus.length > 1 ? 'Ces mots ne sont pas' : 'Ce mot n\'est pas' }} {{ doute.inconnus.some(m => avisMot(m) === false) ? 'refusé dans ton lexique' : 'dans le dictionnaire de Désdale (il lui manque quelques petits mots)' }}. À toi de vérifier, et de décider honnêtement !</div>
+              <div class="aide" style="margin:0">{{ doute.inconnus.length > 1 ? 'Ces mots ne sont pas' : 'Ce mot n\'est pas' }} {{ doute.inconnus.some(m => avisMot(m) === false) ? 'refusé dans ton lexique' : 'dans la liste officielle (ODS) chargée par Désdale' }}. À toi de vérifier, et de décider honnêtement !</div>
               <a class="lien-ffsc" href="https://www.ffscrabble.fr/verificateur-de-mots/" target="_blank" rel="noopener" @click="copierMots(doute.inconnus)">🔎 Vérifier dans l'ODS (site de la Fédération){{ copieODS ? ' · 📋 mot copié' : '' }}</a>
               <div class="actions-lc">
                 <button class="btn" @click="changerMot">↺ Changer mon mot</button>
@@ -289,7 +289,7 @@
           <div class="voile" v-if="ficheMot" @click.self="ficheMot = null">
             <div class="doute-lc fiche-mot">
               <div class="mots" style="color:#1d2b36">{{ ficheMot }}</div>
-              <div class="aide" style="margin:0">{{ dicoPret ? (dansDico(ficheMot) ? 'Dans le dictionnaire de Désdale.' : 'Absent du dictionnaire de Désdale.') : 'Dictionnaire en chargement…' }}
+              <div class="aide" style="margin:0">{{ dicoPret ? (dansDico(ficheMot) ? 'Dans la liste officielle (ODS).' : 'Absent de la liste officielle (ODS).') : 'Dictionnaire en chargement…' }}
                 {{ avisMot(ficheMot) === true ? 'Tu l\'as accepté.' : avisMot(ficheMot) === false ? 'Tu l\'as refusé.' : '' }}</div>
               <div class="actions-lc colonne">
                 <a class="btn" :href="lienDef(ficheMot)" target="_blank" rel="noopener">📖 Définition (Wiktionnaire)</a>
@@ -364,7 +364,7 @@
         </section>
         <section class="carte reglages lexique-lc">
           <div class="titre-carte">Mon lexique</div>
-          <div class="aide" style="margin-top:0">Le dictionnaire de Désdale s'écarte parfois de celui du jeu officiel (ODS). Les mots que tu acceptes ou refuses sont retenus ici et comptent avant le dictionnaire : seul, et dans les salons dont tu es l'hôte. L'ordinateur ne joue jamais un mot refusé. Touche un mot sur le plateau (dernier coup, sous un score) pour le vérifier.</div>
+          <div class="aide" style="margin-top:0">Le dictionnaire est la liste officielle du jeu (ODS). Pour vos règles maison, les mots que tu acceptes ou refuses sont retenus ici et comptent avant elle : seul, et dans les salons dont tu es l'hôte. L'ordinateur ne joue jamais un mot refusé. Touche un mot sur le plateau (dernier coup, sous un score) pour le vérifier.</div>
           <label class="retenir-lc"><input type="checkbox" v-model="retenirMots"> 📌 Retenir les mots acceptés ou refusés (vote, ou seul)</label>
           <div class="ajout-lc">
             <input v-model="motAjout" placeholder="Un mot…" maxlength="15" autocapitalize="characters" @keyup.enter="ajouterMot(true)">
@@ -391,7 +391,7 @@
             <li>🔀 : range tes lettres à la main (fais-les glisser, ou touche-en deux pour les échanger), puis « Retour à la partie ».</li>
             <li>Toucher deux fois rapidement le plateau le grossit (ou le remet en entier) : pratique pour viser une case.</li>
             <li>On peut aussi <strong>échanger</strong> des lettres (s'il en reste au moins 7 dans le sac) ou <strong>passer</strong>.</li>
-            <li>Mot absent du dictionnaire : les autres joueurs <strong>votent</strong>. S'il est refusé, les lettres reviennent et on rejoue. Seul contre l'ordinateur, c'est toi qui décides, après avoir vérifié dans l'ODS si tu veux.</li>
+            <li>Le dictionnaire est la <strong>liste officielle (ODS)</strong>. Mot absent de la liste : les autres joueurs <strong>votent</strong> (règle maison). S'il est refusé, les lettres reviennent et on rejoue. Seul contre l'ordinateur, c'est toi qui décides.</li>
             <li><strong>🔎 Vérifier</strong> (à côté de la loupe, quand ton mot est prêt) : ouvre le vérificateur de la Fédération et copie tes mots, tu n'as plus qu'à les coller.</li>
             <li><strong>Mon lexique</strong> : touche un mot déjà joué pour lire sa définition, le vérifier, puis l'<strong>accepter</strong> ou le <strong>refuser</strong> pour les prochaines parties. Les votes et tes décisions seul sont retenus aussi (option « 📌 Retenir »). La liste est dans Réglages.</li>
             <li>Fin : quand un joueur a posé toutes ses lettres et que le sac est vide (il gagne les points restant chez les autres, qui les perdent), ou quand tout le monde passe deux fois de suite.</li>
@@ -453,7 +453,7 @@
       return promesseDico;
     }
     // ---------- Mon lexique (2.84, demandé par l'utilisateur) ----------
-    // Le dictionnaire libre s'écarte parfois de l'ODS : chaque téléphone retient les mots acceptés (ok) ou refusés (non) à la main,
+    // Règles maison par-dessus la liste officielle (ODS, 2.85) : chaque téléphone retient les mots acceptés (ok) ou refusés (non) à la main,
     // pour les parties suivantes. Ils comptent avant le dictionnaire : seul, et dans les salons dont on est l'hôte (c'est lui qui vérifie).
     // L'ordinateur ne joue jamais un mot refusé.
     function lireLexique() { var l = lireStockage('lettres-lexique') || {}; return { ok: Array.isArray(l.ok) ? l.ok : [], non: Array.isArray(l.non) ? l.non : [] }; }
