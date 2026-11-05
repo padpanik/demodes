@@ -699,6 +699,12 @@ Bataille navale : `bataille-boss` (partie contre un boss d'expédition), `batail
   Au choix d'une langue, il dit « Coucou » à voix haute dans cette langue (`CP.direEnLangue`). Le petit jeu de devinettes essayé en 2.35 a été retiré.
 - Accueil : carte « Mon compagnon » (son dessin, son humeur, les étoiles) fixée en haut avec « En ligne », au-dessus de la liste des jeux qui défile.
 - Boutique : tête, cou (dont laisse et laisse de grande marque), habits (manteau d'hiver…), couchage (coussin → château), déco, friandises.
+- **Couchages = refuges** (2.86, demandé par l'utilisateur : « le panier et la niche sont minuscules, il ne peut pas aller dedans ») : coussin, panier, niche et château
+  sont dessinés en SVG (`CP.REFUGES` dans `compagnon-commun.js` : calque `fond` derrière l'animal, calque `devant` par-dessus, `ech` = taille de l'animal dedans,
+  `pied` = où il est posé ; `CP.refugePetit(id)` = le petit dessin à sa place dans la pièce, à la place de l'émoji). Bouton **« Au panier ! / À la niche ! / Sur ton coussin ! /
+  Au château ! »** en haut à droite de la pièce où est le couchage (`allerAuRefuge`, comme « Appeler » : il change de pièce si besoin), il y marche, et **le couchage grandit**
+  autour de lui (`refugeIci`, `styleRefuge`, 250 px au salon, 215 ailleurs ; animation `refuge-pousse`), il s'y couche 1 à 2 min (`blottir`, `vie.refuge` = le slot) ;
+  « 🐾 Sortir » ou une caresse le fait sortir. Il y va aussi tout seul pour une sieste (action `refuge`), et la nuit il dort dedans si le couchage est dans sa pièce.
 
 ### Autres choix déjà tranchés
 - Annonce vocale du tour : **seulement sur le téléphone du joueur concerné**, après 5 s sans lancer.

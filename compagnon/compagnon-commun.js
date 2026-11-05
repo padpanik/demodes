@@ -921,7 +921,58 @@ var CP = (function () {
     } catch (e) { return false; }
   }
 
-  return { ESPECES: ESPECES, LANGUES: LANGUES, TRADUCTIONS: TRADUCTIONS, traduire: traduire, direEnLangue: direEnLangue, demarrerVeille: demarrerVeille, regler: regler, surveiller: surveiller, jaugesVides: jaugesVides, verifierVeille: verifierVeille, reglagesMessages: reglagesMessages, BESOINS: BESOINS, RECOMPENSE_JOUR: RECOMPENSE_JOUR, RECOMPENSE_SEMAINE: RECOMPENSE_SEMAINE, RAYONS: RAYONS, ARTICLES: ARTICLES,
+
+  // ---------- Refuges : les couchages où il va se blottir (2.86, demandé par l'utilisateur : « le panier et la niche sont minuscules,
+  // il ne peut pas aller dedans ») ----------
+  // Chaque couchage est dessiné en deux calques (viewBox 0 0 240 200) : le fond (derrière l'animal) et le devant (par-dessus),
+  // pour qu'il ait l'air d'être dedans. ech : taille de l'animal dedans ; pied : hauteur (dans la viewBox) où il est posé.
+  var BOIS = '#b8763d', BOIS_F = '#8a5326';
+  var REFUGES = {
+    coussin: { ech: 0.92, pied: 176, phrase: 'Mon coussin tout doux 😌',
+      fond: '<ellipse cx="120" cy="186" rx="112" ry="12" fill="rgba(0,0,0,0.15)"/>' +
+            '<path d="M14 172 Q10 150 40 148 L200 148 Q230 150 226 172 Q230 192 200 192 L40 192 Q10 192 14 172 Z" fill="#c9849a" stroke="#9c5b70" stroke-width="3"/>' +
+            '<path d="M30 160 Q120 146 210 160" stroke="#e3aec0" stroke-width="7" fill="none" stroke-linecap="round"/>' +
+            '<circle cx="120" cy="170" r="4" fill="#9c5b70"/><circle cx="70" cy="170" r="3" fill="#9c5b70"/><circle cx="170" cy="170" r="3" fill="#9c5b70"/>' +
+            '<path d="M14 150 l-8 -10 M226 150 l8 -10 M14 192 l-8 8 M226 192 l8 8" stroke="#e9b949" stroke-width="5" stroke-linecap="round"/>',
+      devant: '<path d="M18 184 Q120 198 222 184 Q226 192 200 194 L40 194 Q14 192 18 184 Z" fill="#b5728a"/>' },
+    panier: { ech: 0.8, pied: 166, phrase: 'Bien au chaud dans mon panier 😌',
+      fond: '<ellipse cx="120" cy="192" rx="110" ry="9" fill="rgba(0,0,0,0.15)"/>' +
+            '<ellipse cx="120" cy="112" rx="106" ry="32" fill="#7a5230"/>' +
+            '<ellipse cx="120" cy="124" rx="92" ry="22" fill="#e8d6bf"/><ellipse cx="120" cy="120" rx="70" ry="13" fill="#f4e7d6"/>',
+      devant: '<path d="M14 112 A106 32 0 0 0 226 112 L206 180 Q120 200 34 180 Z" fill="#c08a45"/>' +
+              '<path d="M24 136 Q120 168 216 136 M30 156 Q120 186 210 156" stroke="#9a6a2f" stroke-width="4" fill="none"/>' +
+              [50, 80, 110, 140, 170, 200].map(x => '<path d="M' + x + ' 140 l-3 46" stroke="#9a6a2f" stroke-width="3"/>').join('') +
+              '<path d="M14 112 A106 32 0 0 0 226 112" stroke="#d9a65d" stroke-width="11" fill="none" stroke-linecap="round"/>' +
+              '<path d="M20 120 A106 32 0 0 0 220 120" stroke="#a87437" stroke-width="2" fill="none"/>' },
+    niche: { ech: 0.6, pied: 190, phrase: 'Ma petite maison à moi ! 🏠',
+      fond: '<ellipse cx="120" cy="194" rx="116" ry="7" fill="rgba(0,0,0,0.15)"/>' +
+            '<path d="M70 194 L70 120 A50 50 0 0 1 170 120 L170 194 Z" fill="#2b1d12"/>' +
+            '<path d="M70 194 L170 194 L160 178 L80 178 Z" fill="#3b2a1b"/>',
+      devant: '<path fill-rule="evenodd" fill="' + BOIS + '" stroke="' + BOIS_F + '" stroke-width="3" d="M32 96 L208 96 L208 194 L32 194 Z M70 194 L70 120 A50 50 0 0 1 170 120 L170 194 Z"/>' +
+              [118, 142, 166].map(y => '<path d="M34 ' + y + ' L68 ' + y + ' M172 ' + y + ' L206 ' + y + '" stroke="' + BOIS_F + '" stroke-width="2"/>').join('') +
+              '<path d="M8 104 L120 14 L232 104 L214 112 L120 38 L26 112 Z" fill="#9b3b2c" stroke="#6e2419" stroke-width="3" stroke-linejoin="round"/>' +
+              '<path d="M44 86 L120 26 L196 86" stroke="#c4553f" stroke-width="5" fill="none"/>' +
+              '<path d="M70 194 L70 120 A50 50 0 0 1 170 120 L170 194" stroke="#7a4520" stroke-width="7" fill="none"/>' +
+              '<rect x="98" y="76" width="44" height="14" rx="3" fill="#f3e2c4" stroke="' + BOIS_F + '" stroke-width="2"/>' +
+              '<path d="M108 83 h24" stroke="#c49a6c" stroke-width="2"/>' },
+    chateau: { ech: 0.58, pied: 192, phrase: 'Le roi du château, c\'est moi ! 👑',
+      fond: '<ellipse cx="120" cy="195" rx="118" ry="6" fill="rgba(0,0,0,0.15)"/>' +
+            '<path d="M76 196 L76 128 A44 44 0 0 1 164 128 L164 196 Z" fill="#241a2e"/>' +
+            '<path d="M86 196 L154 196 L148 184 L92 184 Z" fill="#b8323a"/>',
+      devant: '<path fill-rule="evenodd" fill="#cfc6b8" stroke="#8d8577" stroke-width="3" d="M44 80 L196 80 L196 196 L44 196 Z M76 196 L76 128 A44 44 0 0 1 164 128 L164 196 Z"/>' +
+              '<path d="M44 80 v-14 h18 v14 h18 v-14 h18 v14 h18 v-14 h18 v14 h18 v-14 h18 v14 h18 v-14 h10 v14" fill="#cfc6b8" stroke="#8d8577" stroke-width="3" stroke-linejoin="round"/>' +
+              [[8, 44], [194, 230]].map(t => '<rect x="' + t[0] + '" y="44" width="' + (t[1] - t[0]) + '" height="152" fill="#bdb3a3" stroke="#8d8577" stroke-width="3"/>' +
+                '<path d="M' + t[0] + ' 44 L' + ((t[0] + t[1]) / 2) + ' 6 L' + t[1] + ' 44 Z" fill="#5b6fb5" stroke="#3c4c86" stroke-width="3" stroke-linejoin="round"/>' +
+                '<path d="M' + ((t[0] + t[1]) / 2) + ' 6 v-6 l14 4 l-14 4" fill="#e03131" stroke="#a61e1e" stroke-width="1.5"/>' +
+                '<rect x="' + ((t[0] + t[1]) / 2 - 5) + '" y="80" width="10" height="20" rx="5" fill="#3b2f4a"/>').join('') +
+              [104, 128, 152, 176].map(y => '<path d="M46 ' + y + ' h28 M166 ' + y + ' h28" stroke="#a79e90" stroke-width="2"/>').join('') +
+              '<path d="M76 196 L76 128 A44 44 0 0 1 164 128 L164 196" stroke="#8d8577" stroke-width="8" fill="none"/>' +
+              '<path d="M120 84 l6 10 l-6 10 l-6 -10 Z" fill="#e9b949" stroke="#b8860b" stroke-width="1.5"/>' }
+  };
+  // Le couchage en petit (dans la pièce, à sa place) : les deux calques ensemble
+  function refugePetit(id) { var r = REFUGES[id]; return r ? '<svg viewBox="0 0 240 200" class="refuge-mini">' + r.fond + r.devant + '</svg>' : ''; }
+
+  return { REFUGES: REFUGES, refugePetit: refugePetit, ESPECES: ESPECES, LANGUES: LANGUES, TRADUCTIONS: TRADUCTIONS, traduire: traduire, direEnLangue: direEnLangue, demarrerVeille: demarrerVeille, regler: regler, surveiller: surveiller, jaugesVides: jaugesVides, verifierVeille: verifierVeille, reglagesMessages: reglagesMessages, BESOINS: BESOINS, RECOMPENSE_JOUR: RECOMPENSE_JOUR, RECOMPENSE_SEMAINE: RECOMPENSE_SEMAINE, RAYONS: RAYONS, ARTICLES: ARTICLES,
            FETES: FETES, guirlande: guirlande, feteDu: feteDu, prochaineFete: prochaineFete, coeur: coeur,
            niveaux: niveaux, humeur: humeur, signes: signes, age: age, estNuit: estNuit, dessin: dessin, art: art,
            NIVEAUX_DEFI: NIVEAUX_DEFI, DEFIS: DEFIS, BLOCS: BLOCS, ETAGERE_MAX: ETAGERE_MAX, etatDefis: etatDefis, verifierDefis: verifierDefis,
