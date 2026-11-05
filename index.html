@@ -552,7 +552,7 @@
             if (lireStockage('desdale-fete-annoncee') === cle) return [];
             var fin = new Date(f.fin).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' });
             return [['fete', 'Boutique ' + (f.id === 'anniversaire' ? 'd\'anniversaire de ' + a.nom : 'de ' + f.nom),
-                     'Ouverte jusqu\'au ' + fin + ' dans Mon compagnon : des articles qu\'on ne trouve qu\'à ce moment-là.', cle]];
+                     'ouverte jusqu\'au ' + fin + ' dans Mon compagnon : des articles qu\'on ne trouve qu\'à ce moment-là.', cle]];
           } catch (e) { return []; }
         },
         // ---------- Déménagement : toutes les données dans l'adresse (après « # », jamais envoyée au serveur) ----------
