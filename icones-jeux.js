@@ -12,7 +12,7 @@ var IconesJeux = (function () {
     brilliant: ['#9775fa', '#6741d9'], yams: ['#ff6b6b', '#e03131'], backgammon: ['#e8a061', '#a8591f'],
     assaut: ['#94b04a', '#55701c'], bataille: ['#4dabf7', '#1864ab'], gribouille: ['#f783ac', '#d6336c'],
     petitbac: ['#3bc9db', '#0c8599'], agents: ['#68727c', '#25292e'], quatre: ['#748ffc', '#3b5bdb'],
-    domino: ['#51cf66', '#2b8a3e'], lettres: ['#ffa94d', '#e8590c'], expedition: ['#da77f2', '#9c36b5'], donjon: ['#ffa94d', '#a8590f'], joyaux: ['#38d9a9', '#087f5b']
+    domino: ['#51cf66', '#2b8a3e'], lettres: ['#ffa94d', '#e8590c'], expedition: ['#da77f2', '#9c36b5'], donjon: ['#ffa94d', '#a8590f'], joyaux: ['#38d9a9', '#087f5b'], dix: ['#fcc419', '#e67700']
   };
   var B = '#fff';   // couleur du dessin (blanc sur fond plein, couleur du jeu sur fond clair) ; c[1] = touche d'accent
   function pips(cx, cy, s, n, c) {   // points d'un dé de côté s centré en cx, cy
@@ -69,6 +69,13 @@ var IconesJeux = (function () {
       return '<path d="M16 22 C17 13 39 13 40 22" fill="' + B + '"/><path d="M10 23 H46" stroke="' + B + '" stroke-width="3" stroke-linecap="round"/>' +
              '<path d="M13 31 C13 27 24 27 28 30 C32 27 43 27 43 31 C43 37 34 40 28 35 C22 40 13 37 13 31 Z" fill="' + B + '"/>' +
              '<ellipse cx="21" cy="32" rx="3.6" ry="2.4" fill="' + c[1] + '"/><ellipse cx="35" cy="32" rx="3.6" ry="2.4" fill="' + c[1] + '"/>';
+    },
+    // Combien sur 10 ? : une carte, le « 10 » et une jauge qui monte
+    dix: function (c) {
+      var s = '<rect x="12" y="8" width="32" height="40" rx="6" fill="' + B + '"/>' +
+              '<text x="28" y="30" font-family="system-ui, sans-serif" font-size="17" font-weight="900" text-anchor="middle" fill="' + c[1] + '">10</text>';
+      for (var i = 0; i < 5; i++) s += '<rect x="' + (16.5 + i * 5) + '" y="' + (43 - (i + 1) * 1.8) + '" width="3.6" height="' + ((i + 1) * 1.8) + '" rx="1" fill="' + c[1] + '" opacity="' + (0.45 + i * 0.13) + '"/>';
+      return s;
     },
     // Quatre en ligne : la grille et quatre jetons alignés
     quatre: function (c) {

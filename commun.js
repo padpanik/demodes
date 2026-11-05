@@ -3,12 +3,13 @@
 // Les clés de stockage gardent l'ancien préfixe "brillant-" : les réglages déjà faits sont conservés.
 
 // Numéro de version affiché (à augmenter à chaque mise en ligne, avec brilliant/index.html et sw.js)
-const VERSION = '2.88';
+const VERSION = '2.89';
 
 // ---------- Nouveautés (2.87, demandé par l'utilisateur) ----------
 // Une ligne très brève par mise en ligne (la plus récente en haut) : l'accueil les montre une seule fois, dans une petite fenêtre,
 // à qui n'a pas encore vu cette version. [version, jeu ou partie de l'appli, ce qui change]
 const NOUVEAUTES = [
+  ['2.89', 'Nouveau jeu', '« Combien sur 10 ? » : quiz en équipes, lu à voix haute, sur un seul téléphone (premier essai).'],
   ['2.88', 'Mon compagnon', '« Quoi de neuf ? » prévient aussi quand une boutique de fête ouvre (Noël dès le 1er décembre).'],
   ['2.87', 'Désdale', 'Cette petite fenêtre : un résumé de ce qui change à chaque mise à jour.'],
   ['2.86', 'Mon compagnon', 'Il va dans son panier, sa niche, son coussin ou son château : bouton « Au panier ! » dans la pièce.'],
@@ -80,7 +81,7 @@ oublierSalonsPerimes();   // au chargement de chaque page, avant que l'accueil o
 var DEMENAGEMENT = { ouvert: true, ancienHote: 'padpanik.github.io', nouvelle: 'https://demodes.desdale.workers.dev/' };
 
 var Sauvegarde = (function () {
-  var NOTRES = /^(brillant|desdale|compagnon|expedition|yams2?|bg|assaut|bataille|gribouille|petitbac|agents|quatre|domino|lettres|donjon|joyaux)-/;
+  var NOTRES = /^(brillant|desdale|compagnon|expedition|yams2?|bg|assaut|bataille|gribouille|petitbac|agents|quatre|domino|lettres|donjon|joyaux|dix)-/;
   var EXCLUES = ['brillant-acces', 'brillant-client-id', 'desdale-admin'];
   function gardee(k) { return NOTRES.test(k) && EXCLUES.indexOf(k) === -1 && !/-sauvegarde(-v1)?$/.test(k) && !/-prive$/.test(k); }
   function cles() { var l = []; try { for (var i = 0; i < localStorage.length; i++) { var k = localStorage.key(i); if (gardee(k)) l.push(k); } } catch (e) {} return l.sort(); }

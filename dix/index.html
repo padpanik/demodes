@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <!-- La page est rangée dans son dossier : les adresses relatives partent de la racine du site (fichiers communs) -->
+  <base href="../">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Combien sur 10 ? · Désdale</title>
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="theme-color" content="#f3f5f7">
+  <link rel="icon" type="image/png" href="favicon.png">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Désdale">
+  <script src="https://cdn.jsdelivr.net/npm/vue@2.7.16/dist/vue.min.js"></script>
+  <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+  <script src="reseau.js"></script>
+  <link rel="stylesheet" href="commun.css">
+  <style>
+    .segment { display: flex; background: #e3e8ec; border-radius: 10px; padding: 3px; gap: 3px; margin-bottom: 8px; }
+    .segment button { flex: 1; border: none; background: transparent; border-radius: 8px; padding: 8px 4px; font: inherit; font-weight: 700; color: #5b6b78; cursor: pointer; line-height: 1.2; }
+    .segment button small { display: block; font-weight: 500; font-size: 0.75em; color: #8a97a1; }
+    .segment button.actif { background: #fff; color: #1d2b36; box-shadow: 0 1px 3px rgba(0,0,0,0.12); }
+    .petit-titre { font-size: 0.8em; font-weight: 800; color: #5b6b78; text-transform: uppercase; letter-spacing: 0.04em; margin: 10px 0 5px; }
+    .aide { font-size: 0.85em; color: #5b6b78; line-height: 1.4; margin: 6px 0; }
+    .regles ul { padding-left: 18px; margin: 8px 0 0; font-size: 0.88em; line-height: 1.45; color: #3b4b57; }
+    .panneau-vide { text-align: center; padding: 36px 16px; color: #5b6b78; }
+
+    /* Équipes (onglet Partie) */
+    .equipe-l { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+    .equipe-l .pastille { width: 22px; height: 22px; border-radius: 50%; flex: none; box-shadow: inset 0 -2px 0 rgba(0,0,0,0.2); }
+    .equipe-l input[type=text] { flex: 1; min-width: 0; padding: 9px 10px; border-radius: 10px; border: 1px solid #ccd5dd; font: inherit; font-size: 16px; }
+    .equipe-l label { font-size: 0.78em; font-weight: 700; color: #5b6b78; display: flex; align-items: center; gap: 3px; white-space: nowrap; }
+
+    /* Plateau : cases en serpent */
+    .plateau-dx { display: grid; grid-template-columns: repeat(8, 1fr); gap: 3px; background: #fff; border-radius: 14px; padding: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+    .case-dx { position: relative; aspect-ratio: 1; border-radius: 7px; border: 2px solid transparent; display: flex; align-items: center; justify-content: center; font-size: 13px; }
+    .case-dx .ico-c { opacity: 0.55; }
+    .case-dx.depart, .case-dx.arrivee { background: #1d2b36; color: #fff; font-size: 15px; }
+    .case-dx .pions { position: absolute; inset: 2px; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; place-items: center; }
+    .pion-dx { width: 13px; height: 13px; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 1px 2px rgba(0,0,0,0.4); }
+    .pion-dx.joue { animation: pion-pulse 1s ease-in-out infinite; }
+    @keyframes pion-pulse { 50% { transform: scale(1.35); } }
+
+    /* Bandeau des équipes */
+    .scores-dx { display: flex; gap: 5px; margin: 6px 0; }
+    .scores-dx .eq { flex: 1; min-width: 0; background: #fff; border-radius: 10px; padding: 4px 6px; font-size: 0.78em; font-weight: 800; color: #1d2b36; display: flex; align-items: center; gap: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.06); }
+    .scores-dx .eq.joue { box-shadow: 0 0 0 2.5px var(--c); }
+    .scores-dx .eq span.n { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; min-width: 0; }
+    .scores-dx .eq .pastille { width: 11px; height: 11px; border-radius: 50%; flex: none; }
+
+    /* La carte */
+    .carte-dx { background: #fff; border-radius: 16px; padding: 12px; margin-top: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); border-top: 6px solid var(--c); }
+    .carte-dx .entete { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+    .badge-dx { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: 999px; background: var(--cl); color: var(--c); font-weight: 800; font-size: 0.82em; }
+    .lecteur { font-size: 0.78em; color: #5b6b78; font-weight: 700; }
+    .a-vous { font-size: 1.25em; font-weight: 900; margin: 8px 0 4px; }
+    .sujet-dx { font-size: 1.5em; font-weight: 900; text-align: center; margin: 12px 0 6px; color: var(--c); line-height: 1.2; }
+    .question-dx { font-size: 1.22em; font-weight: 700; line-height: 1.35; margin: 10px 0; color: #1d2b36; }
+    .reponse-dx { background: #e9f9ee; border-radius: 12px; padding: 10px 12px; font-size: 1.1em; font-weight: 800; color: #1e7a45; margin: 8px 0; }
+    .niveaux-dx { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin: 8px 0; }
+    .niveaux-dx button { border: none; border-radius: 12px; padding: 12px 0; font: inherit; font-size: 1.3em; font-weight: 900; color: #fff; background: var(--c); cursor: pointer; }
+    .niveaux-dx button:nth-child(-n+3) { opacity: 0.72; }
+    .actions-dx { display: flex; gap: 8px; margin-top: 10px; }
+    .actions-dx .btn { flex: 1; }
+    .btn.vert { background: #2f9e44; color: #fff; }
+    .btn.rouge { background: #e03131; color: #fff; }
+    .chrono-dx { position: relative; height: 34px; border-radius: 10px; background: #eef0f2; overflow: hidden; margin: 8px 0; cursor: pointer; border: none; width: 100%; font: inherit; font-weight: 800; color: #1d2b36; }
+    .chrono-dx .barre { position: absolute; left: 0; top: 0; bottom: 0; background: var(--cl); transition: width 1s linear; }
+    .chrono-dx span { position: relative; }
+    .chrono-dx.fini { background: #ffe3e3; color: #c92a2a; }
+    .lien-discret { background: none; border: none; color: #5b6b78; font: inherit; font-size: 0.82em; text-decoration: underline; cursor: pointer; padding: 6px 0 0; display: block; margin: 0 auto; }
+    .journal-dx { font-size: 0.8em; color: #5b6b78; margin-top: 8px; text-align: center; min-height: 1.2em; }
+    .gagnant-dx { text-align: center; font-size: 1.4em; font-weight: 900; margin: 10px 0; }
+    .equipes-btn { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
+    .equipes-btn .btn { display: flex; align-items: center; gap: 8px; justify-content: center; }
+  </style>
+</head>
+<body>
+  <div id="app" v-cloak class="app">
+    <fiche-jeu jeu="dix" nom="Combien sur 10 ?" resume="Désdale · quiz en équipes, lu à voix haute" :onglet.sync="onglet" :son.sync="sonActif">
+      <template v-slot:logo><span style="font-size:36px">🔟</span></template>
+
+      <!-- PARTIE -->
+      <template v-slot:partie>
+        <section class="carte" v-if="e && e.phase !== 'fin'">
+          <div class="titre-carte">Partie en cours</div>
+          <div class="aide">{{ e.equipes.map(q => q.nom + ' (case ' + q.pos + ')').join(' · ') }}</div>
+          <div class="actions-dx">
+            <button class="btn principal" @click="onglet = 'play'">▶ Reprendre</button>
+            <button class="btn" @click="abandonner">Arrêter</button>
+          </div>
+        </section>
+        <section class="carte">
+          <div class="titre-carte">Nouvelle partie</div>
+          <div class="aide" style="margin-top:0">Un seul téléphone pour tous, posé au milieu : l'équipe voisine lit la carte à voix haute et dit si la réponse est bonne.</div>
+          <div class="petit-titre">Équipes</div>
+          <div class="segment">
+            <button v-for="n in [2, 3, 4]" :key="n" :class="{ actif: nbEquipes === n }" @click="nbEquipes = n">{{ n }} équipes</button>
+          </div>
+          <div class="equipe-l" v-for="(q, i) in reglage.slice(0, nbEquipes)" :key="i">
+            <span class="pastille" :style="{ background: COULEURS[i] }"></span>
+            <input type="text" v-model="q.nom" maxlength="16" :placeholder="NOMS[i]">
+            <label><input type="radio" :value="i" v-model="monEquipe"> la mienne</label>
+          </div>
+          <div class="petit-titre">Longueur du plateau</div>
+          <div class="segment">
+            <button v-for="(n, k) in LONGUEURS" :key="k" :class="{ actif: longueur === k }" @click="longueur = k">{{ { court: 'Courte', normal: 'Normale', long: 'Longue' }[k] }}<small>{{ n }} cases</small></button>
+          </div>
+          <button class="btn principal" style="width:100%;margin-top:6px" @click="nouvellePartie">{{ e && e.phase !== 'fin' ? 'Recommencer une partie' : 'Commencer' }}</button>
+          <div class="aide">{{ DX.SUJETS.length }} sujets, {{ DX.SUJETS.length * 10 }} questions maison, {{ DX.CHALLENGES.length }} challenges.</div>
+        </section>
+      </template>
+
+      <!-- JOUER -->
+      <template v-slot:jouer>
+        <div v-if="!e" class="panneau-vide">
+          <div style="font-size:3em">🔟</div>
+          <p>Pas de partie en cours.</p>
+          <button class="btn principal" @click="onglet = 'config'">Préparer une partie</button>
+        </div>
+        <template v-else>
+          <div class="scores-dx">
+            <div v-for="(q, i) in e.equipes" :key="i" class="eq" :class="{ joue: i === e.tour && e.phase !== 'fin' }" :style="{ '--c': q.couleur }">
+              <span class="pastille" :style="{ background: q.couleur }"></span><span class="n">{{ q.nom }}</span>{{ q.pos }}
+            </div>
+          </div>
+          <div class="plateau-dx">
+            <div v-for="c in casesAff" :key="c.i" class="case-dx" :class="c.type" :style="c.style">
+              <span class="ico-c">{{ c.ico }}</span>
+              <div class="pions" v-if="c.pions.length"><span v-for="p in c.pions" :key="p.i" class="pion-dx" :class="{ joue: p.i === e.tour && e.phase !== 'fin' }" :style="{ background: p.c }"></span></div>
+            </div>
+          </div>
+
+          <!-- Qui commence ? -->
+          <div class="carte-dx" v-if="e.phase === 'depart'" style="--c:#1d2b36">
+            <div class="a-vous">Qui commence ?</div>
+            <div class="question-dx">{{ DX.DEPARTS[e.depart] }}</div>
+            <div class="equipes-btn">
+              <button v-for="(q, i) in e.equipes" :key="i" class="btn" @click="commencer(i)"><span class="pion-dx" :style="{ background: q.couleur }"></span>{{ q.nom }}</button>
+            </div>
+          </div>
+
+          <!-- Le tour d'une équipe -->
+          <div class="carte-dx" v-else-if="e.phase !== 'fin'" :style="{ '--c': th.couleur, '--cl': th.clair }">
+            <div class="entete">
+              <span class="badge-dx">{{ th.ico }} {{ e.carte && e.carte.finale ? 'Question finale' : th.nom }}</span>
+              <span class="lecteur">📖 Lu par {{ lecteur.nom }}</span>
+            </div>
+
+            <template v-if="e.phase === 'theme'">
+              <div class="a-vous" :style="{ color: equipe.couleur }">À vous, {{ equipe.nom }} !</div>
+              <div class="aide" v-if="themeTour === 'arrivee'">Vous êtes sur l'arrivée : répondez juste à une question de niveau {{ DX.NIVEAU_FINAL }} pour gagner.</div>
+              <div class="aide" v-else-if="!equipe.joues">Premier tour : tout le monde commence par un sujet Improbable.</div>
+              <div class="aide" v-else>{{ th.desc }}</div>
+              <button class="btn principal" style="width:100%;margin-top:8px" @click="tirerCarte">{{ lecteur.nom }} : tirez la carte</button>
+            </template>
+
+            <template v-else-if="e.phase === 'mise'">
+              <div class="sujet-dx">{{ sujetCourant.nom }}</div>
+              <div class="aide" style="text-align:center">{{ equipe.nom }}, combien vous mettez-vous sur 10 ?</div>
+              <div class="niveaux-dx"><button v-for="n in 10" :key="n" @click="miser(n)">{{ n }}</button></div>
+              <button class="lien-discret" @click="autreSujet">Sujet déjà joué ? En tirer un autre</button>
+            </template>
+
+            <template v-else-if="e.phase === 'question' || e.phase === 'reponse'">
+              <div class="entete" style="margin-top:8px"><b>{{ sujetCourant.nom }}</b><span class="badge-dx">Niveau {{ e.carte.niveau }}</span></div>
+              <div class="question-dx">{{ questionCourante[0] }}</div>
+              <button class="chrono-dx" :class="{ fini: chrono === 0 }" @click="lancerChrono"><div class="barre" :style="{ width: (chrono === null ? 0 : chrono / 30 * 100) + '%' }"></div>
+                <span>{{ chrono === null ? '⏱ Lancer les 30 secondes' : chrono === 0 ? '⏰ Temps écoulé !' : chrono + ' s' }}</span></button>
+              <template v-if="e.phase === 'question'">
+                <button class="btn principal" style="width:100%" @click="e.phase = 'reponse'; sauver()">Voir la réponse</button>
+              </template>
+              <template v-else>
+                <div class="reponse-dx">{{ questionCourante[1] }}</div>
+                <div class="actions-dx">
+                  <button class="btn rouge" @click="juger(false)">✗ Raté</button>
+                  <button class="btn vert" @click="juger(true)">✓ Bonne réponse{{ e.carte.finale ? '' : ' (+' + e.carte.niveau + ')' }}</button>
+                </div>
+              </template>
+            </template>
+
+            <template v-else-if="e.phase === 'challenge'">
+              <div class="sujet-dx">⚡ {{ challenge.titre }}</div>
+              <div class="question-dx">{{ challenge.texte }}</div>
+              <button class="chrono-dx" :class="{ fini: chrono === 0 }" @click="lancerChrono"><div class="barre" :style="{ width: (chrono === null ? 0 : chrono / 30 * 100) + '%' }"></div>
+                <span>{{ chrono === null ? '⏱ Lancer les 30 secondes' : chrono === 0 ? '⏰ Temps écoulé !' : chrono + ' s' }}</span></button>
+              <div class="reponse-dx" v-if="challenge.reponse && voirReponse">{{ challenge.reponse }}</div>
+              <button v-else-if="challenge.reponse" class="lien-discret" @click="voirReponse = true">Voir la réponse</button>
+              <div class="actions-dx">
+                <button class="btn rouge" @click="jugerChallenge(false)">✗ Raté</button>
+                <button class="btn vert" @click="jugerChallenge(true)">✓ Réussi (+{{ challenge.gain }})</button>
+              </div>
+            </template>
+
+            <template v-else-if="e.phase === 'surprise'">
+              <div class="sujet-dx" :style="{ color: surprise.bon ? '#2f9e44' : '#e03131' }">{{ surprise.bon ? '🎉 Superbe !' : '😬 Aïe !' }}</div>
+              <div class="question-dx" style="text-align:center">{{ surprise.texte.replace(/^(Superbe|Aïe) ! /, '') }}</div>
+              <div class="equipes-btn" v-if="surprise.effet === 'reculerAutre'">
+                <button v-for="x in autresEquipes" :key="x.i" class="btn" @click="appliquerSurprise(x.i)"><span class="pion-dx" :style="{ background: x.q.couleur }"></span>{{ x.q.nom }} recule</button>
+              </div>
+              <button v-else class="btn principal" style="width:100%;margin-top:8px" @click="appliquerSurprise()">OK</button>
+            </template>
+            <div class="journal-dx">{{ e.journal }}</div>
+          </div>
+
+          <!-- Fin -->
+          <div class="carte-dx" v-else :style="{ '--c': gagnant.couleur }">
+            <div class="gagnant-dx" :style="{ color: gagnant.couleur }">🏆 {{ gagnant.nom }} gagne !</div>
+            <div class="aide" style="text-align:center">{{ e.journal }}</div>
+            <button class="btn principal" style="width:100%;margin-top:8px" @click="rejouer">Nouvelle partie (mêmes équipes)</button>
+          </div>
+        </template>
+      </template>
+
+      <!-- RÉGLAGES -->
+      <template v-slot:reglages>
+        <section class="carte reglages">
+          <div class="titre-carte">Réglages</div>
+          <reglages-base :son.sync="sonActif" :vibration.sync="vibrationActive"></reglages-base>
+        </section>
+      </template>
+
+      <!-- RÈGLES -->
+      <template v-slot:regles>
+        <section class="carte regles">
+          <div class="titre-carte">Règles</div>
+          <ul>
+            <li>De 2 à 4 <strong>équipes</strong>, autour d'<strong>un seul téléphone</strong>. Les coéquipiers peuvent discuter, mais sans téléphone ni dictionnaire.</li>
+            <li>À son tour, l'équipe regarde la <strong>case</strong> de son pion : elle donne le thème, <span style="color:#7950f2;font-weight:800">Improbable</span>, <span style="color:#e64980;font-weight:800">Plaisir</span>, <span style="color:#f76707;font-weight:800">Mature</span> ou <span style="color:#1c7ed6;font-weight:800">Scolaire</span>. Au premier tour, tout le monde joue Improbable.</li>
+            <li>L'<strong>équipe suivante</strong> tire la carte et annonce le sujet. L'équipe qui joue dit <strong>combien elle se met, de 1 à 10</strong> : plus on se sent fort, plus le chiffre est haut… et plus la question est difficile.</li>
+            <li>L'équipe qui lit pose la question de ce niveau. <strong>30 secondes</strong>, une seule réponse. Elle juge : bonne réponse, on avance d'autant de cases que le chiffre annoncé ; sinon, on reste sur place.</li>
+            <li><span style="color:#f59f00;font-weight:800">⚡ Challenge</span> : une épreuve originale (liste, mime, dessin, vrai ou faux…), avec son gain.</li>
+            <li><strong>🎲 Superbe ou aïe</strong> : un bonus ou un malus, appliqué tout de suite.</li>
+            <li>Atteindre l'<strong>arrivée</strong> ne suffit pas : il faut encore répondre juste à une <strong>question finale</strong> de niveau {{ DX.NIVEAU_FINAL }}. Raté : on retente au tour suivant.</li>
+            <li>Questions maison, écrites pour Désdale.</li>
+          </ul>
+        </section>
+      </template>
+    </fiche-jeu>
+  </div>
+
+  <script src="icones-jeux.js"></script>
+  <script src="fiche-jeu.js"></script>
+  <script src="joueur.js"></script>
+  <script src="commun.js"></script>
+  <script src="etoiles.js"></script>
+  <script src="dix/dix-regles.js"></script>
+  <script>
+    if (!ACCES.memorise()) location.replace('index.html');
+
+    const CLE = 'dix-partie', NOM_JEU = 'Combien sur 10';
+    const COULEURS = ['#e03131', '#1c7ed6', '#2f9e44', '#f59f00'], NOMS = ['Rouges', 'Bleus', 'Verts', 'Jaunes'];
+    const ICOS = { depart: '🏁', arrivee: '🏆' };
+
+    new Vue({
+      el: '#app',
+      data: function() {
+        var r = lireStockage('dix-reglage') || {};
+        return {
+          DX: DX, COULEURS: COULEURS, NOMS: NOMS, LONGUEURS: DX.LONGUEURS,
+          onglet: 'config',
+          e: lireStockage(CLE),
+          nbEquipes: r.nb || 2,
+          reglage: [0, 1, 2, 3].map(i => ({ nom: (r.noms && r.noms[i]) || '' })),
+          monEquipe: r.moi !== undefined ? r.moi : 0,
+          longueur: r.longueur || 'normal',
+          chrono: null, voirReponse: false, anime: false,
+          sonActif: lireStockage('brillant-son') !== false,
+          vibrationActive: lireStockage('brillant-vibration') !== null ? lireStockage('brillant-vibration') !== false : lireStockage('brillant-son') !== false
+        };
+      },
+      computed: {
+        equipe: function() { return this.e.equipes[this.e.tour]; },
+        lecteur: function() { return this.e.equipes[(this.e.tour + 1) % this.e.equipes.length]; },
+        // Thème du tour : la case du pion (Improbable au premier tour de chaque équipe)
+        themeTour: function() {
+          var q = this.equipe, c = this.e.cases[q.pos];
+          if (c === 'arrivee') return 'arrivee';
+          return !q.joues ? 'improbable' : c === 'depart' ? 'improbable' : c;
+        },
+        th: function() {
+          var k = this.e.carte && this.e.carte.theme || this.themeTour;
+          return DX.THEMES[k] || { nom: 'Arrivée', couleur: '#1d2b36', clair: '#eef0f2', ico: '🏆', desc: '' };
+        },
+        sujetCourant: function() { return this.e.carte && DX.sujet(this.e.carte.sujet) || { nom: '', q: [] }; },
+        questionCourante: function() { return this.sujetCourant.q[(this.e.carte.niveau || 1) - 1] || ['', '']; },
+        challenge: function() { return DX.CHALLENGES[this.e.carte.challenge] || {}; },
+        surprise: function() { return DX.SURPRISES[this.e.carte.surprise] || {}; },
+        autresEquipes: function() { return this.e.equipes.map((q, i) => ({ q: q, i: i })).filter(x => x.i !== this.e.tour); },
+        gagnant: function() { return this.e.equipes[this.e.gagnant] || {}; },
+        // Les cases en serpent : 8 par ligne, une ligne sur deux de droite à gauche
+        casesAff: function() {
+          var e = this.e, l = [];
+          e.cases.forEach((t, i) => {
+            var rang = Math.floor(i / 8), col = i % 8, T = DX.THEMES[t];
+            l.push({ i: i, type: t, ico: ICOS[t] || (T ? T.ico : ''),
+                     style: Object.assign({ gridRow: rang + 1, gridColumn: (rang % 2 ? 8 - col : col + 1) }, T ? { background: T.clair, borderColor: T.couleur } : {}),
+                     pions: e.equipes.map((q, k) => ({ i: k, c: q.couleur, pos: q.pos })).filter(p => p.pos === i) });
+          });
+          return l;
+        }
+      },
+      watch: {
+        nbEquipes: function() { this.retenirReglage(); },
+        monEquipe: function() { this.retenirReglage(); },
+        longueur: function() { this.retenirReglage(); },
+        reglage: { deep: true, handler: function() { this.retenirReglage(); } }
+      },
+      created: function() {
+        if (this.e && this.e.phase !== 'fin') this.onglet = 'play';
+      },
+      methods: {
+        son: function(nom) { if (this.sonActif) Sons.jouer(nom); },
+        vibre: function(m) { if (this.vibrationActive) vibrer(m); },
+        sauver: function() { if (this.e) this.e.t = Date.now(); ecrireStockage(CLE, this.e); },
+        retenirReglage: function() { ecrireStockage('dix-reglage', { nb: this.nbEquipes, noms: this.reglage.map(q => q.nom), moi: this.monEquipe, longueur: this.longueur }); },
+        noter: function(t) { this.e.journal = t; },
+
+        nouvellePartie: function() {
+          if (this.e && this.e.phase !== 'fin' && !confirm('Arrêter la partie en cours et en commencer une nouvelle ?')) return;
+          var equipes = this.reglage.slice(0, this.nbEquipes).map((q, i) => ({ nom: q.nom.trim() || NOMS[i], couleur: COULEURS[i], pos: 0, joues: 0, passe: false, moi: i === this.monEquipe }));
+          this.demarrer(equipes);
+        },
+        rejouer: function() { this.demarrer(this.e.equipes.map(q => Object.assign({}, q, { pos: 0, joues: 0, passe: false }))); },
+        demarrer: function(equipes) {
+          this.e = { id: Date.now().toString(36), cases: DX.plateau(DX.LONGUEURS[this.longueur] || 40), equipes: equipes, tour: 0,
+                     phase: 'depart', depart: DX.tirer(DX.DEPARTS), carte: null, journal: '', gagnant: -1 };
+          this.chrono = null; this.arreterChrono();
+          this.sauver();
+          this.onglet = 'play';
+        },
+        abandonner: function() { if (confirm('Arrêter cette partie ?')) { this.e = null; localStorage.removeItem(CLE); } },
+        commencer: function(i) { this.e.tour = i; this.e.phase = 'theme'; this.noter(this.e.equipes[i].nom + ' commence.'); this.sauver(); },
+
+        // Tirage de la carte selon la case
+        tirerCarte: function() {
+          var t = this.themeTour, e = this.e;
+          this.chrono = null; this.arreterChrono(); this.voirReponse = false;
+          if (t === 'arrivee') {
+            var s = DX.tirerSujet(null, this.vus());
+            this.retenirVu(s.id);
+            e.carte = { theme: s.theme, sujet: s.id, niveau: DX.NIVEAU_FINAL, finale: true };
+            e.phase = 'question';
+          } else if (t === 'challenge') { e.carte = { theme: 'challenge', challenge: DX.tirer(DX.CHALLENGES) }; e.phase = 'challenge'; }
+          else if (t === 'surprise') { e.carte = { theme: 'surprise', surprise: DX.tirer(DX.SURPRISES) }; e.phase = 'surprise'; }
+          else {
+            var s2 = DX.tirerSujet(t, this.vus());
+            this.retenirVu(s2.id);
+            e.carte = { theme: t, sujet: s2.id }; e.phase = 'mise';
+          }
+          this.son('toc');
+          this.sauver();
+        },
+        vus: function() { return lireStockage('dix-vus') || []; },
+        retenirVu: function(id) { var v = this.vus().filter(x => x !== id); v.push(id); ecrireStockage('dix-vus', v.slice(-200)); },
+        autreSujet: function() { var s = DX.tirerSujet(this.e.carte.theme, this.vus()); this.retenirVu(s.id); this.e.carte.sujet = s.id; this.sauver(); },
+        miser: function(n) { this.e.carte.niveau = n; this.e.phase = 'question'; this.chrono = null; this.sauver(); },
+
+        lancerChrono: function() {
+          if (this.chrono !== null && this.chrono > 0) return;
+          this.arreterChrono();
+          this.chrono = 30;
+          this._chrono = setInterval(() => {
+            this.chrono--;
+            if (this.chrono <= 5 && this.chrono > 0) this.son('toc');
+            if (this.chrono <= 0) { this.chrono = 0; this.arreterChrono(); this.vibre([200, 100, 200]); }
+          }, 1000);
+        },
+        arreterChrono: function() { if (this._chrono) clearInterval(this._chrono); this._chrono = null; },
+
+        juger: function(ok) {
+          var e = this.e, q = this.equipe, n = e.carte.niveau;
+          this.arreterChrono();
+          if (e.carte.finale) {
+            if (ok) return this.victoire();
+            this.noter(q.nom + ' rate la question finale : on retentera au prochain tour.');
+            return this.suivant();
+          }
+          if (ok) { this.noter(q.nom + ' avance de ' + n + (n > 1 ? ' cases.' : ' case.')); this.son('zone'); this.deplacer(e.tour, n, () => this.suivant()); }
+          else { this.noter(q.nom + ' reste sur place.'); this.vibre(80); this.suivant(); }
+        },
+        jugerChallenge: function(ok) {
+          var c = this.challenge, q = this.equipe;
+          this.arreterChrono();
+          if (ok) { this.noter('Challenge réussi : ' + q.nom + ' avance de ' + c.gain + ' cases.'); this.son('zone'); this.deplacer(this.e.tour, c.gain, () => this.suivant()); }
+          else { this.noter('Challenge raté.'); this.suivant(); }
+        },
+        appliquerSurprise: function(cible) {
+          var e = this.e, s = this.surprise, moi = e.tour, q = this.equipe, fin = () => this.suivant(), autres = e.equipes.map((x, i) => i).filter(i => i !== moi);
+          switch (s.effet) {
+            case 'avancer': this.noter(q.nom + ' avance de ' + s.n + ' cases.'); return this.deplacer(moi, s.n, fin);
+            case 'reculer': this.noter(q.nom + ' recule de ' + s.n + (s.n > 1 ? ' cases.' : ' case.')); return this.deplacer(moi, -s.n, fin);
+            case 'rejouer': this.noter(q.nom + ' rejoue !'); return this.suivant(true);
+            case 'passer': q.passe = true; this.noter(q.nom + ' passera son prochain tour.'); return fin();
+            case 'rattraper': {
+              var devant = autres.map(i => e.equipes[i].pos).filter(p => p > q.pos).sort((a, b) => a - b)[0];
+              if (devant === undefined) { this.noter(q.nom + ' est en tête : +' + s.n + ' cases.'); return this.deplacer(moi, s.n, fin); }
+              this.noter(q.nom + ' rejoint l\'équipe devant.'); return this.deplacer(moi, devant - q.pos, fin);
+            }
+            case 'echangerDernier': {
+              var dernier = autres.slice().sort((a, b) => e.equipes[a].pos - e.equipes[b].pos)[0], d = e.equipes[dernier];
+              if (d.pos >= q.pos) { this.noter('Personne n\'est derrière vous : rien ne change.'); return fin(); }
+              var p = q.pos; q.pos = d.pos; d.pos = p;
+              this.noter(q.nom + ' échange sa place avec ' + d.nom + '.'); return fin();
+            }
+            case 'reculerAutre': { var c = e.equipes[cible]; this.noter(c.nom + ' recule de ' + s.n + ' cases.'); return this.deplacer(cible, -s.n, fin); }
+            default: this.noter('Ouf, rien ne se passe.'); return fin();
+          }
+        },
+        // Le pion avance (ou recule) case par case
+        deplacer: function(i, n, ensuite) {
+          var e = this.e, q = e.equipes[i], fin = e.cases.length - 1, cible = Math.max(0, Math.min(fin, q.pos + n)), pas = cible > q.pos ? 1 : -1;
+          this.anime = true;
+          var avancer = () => {
+            if (q.pos === cible) { this.anime = false; this.sauver(); return ensuite && ensuite(); }
+            q.pos += pas;
+            this.vibre(12);
+            setTimeout(avancer, 230);
+          };
+          setTimeout(avancer, 150);
+        },
+        // Équipe suivante (memeEquipe : elle rejoue) ; une équipe qui doit passer son tour est sautée
+        suivant: function(memeEquipe) {
+          var e = this.e;
+          e.equipes[e.tour].joues++;
+          e.carte = null; this.chrono = null; this.voirReponse = false;
+          if (!memeEquipe) {
+            for (var k = 0; k < e.equipes.length; k++) {
+              e.tour = (e.tour + 1) % e.equipes.length;
+              var q = e.equipes[e.tour];
+              if (!q.passe) break;
+              q.passe = false; q.joues++;
+              this.noter((e.journal ? e.journal + ' ' : '') + q.nom + ' passe son tour.');
+            }
+          }
+          e.phase = 'theme';
+          this.sauver();
+        },
+        victoire: function() {
+          var e = this.e;
+          e.gagnant = e.tour; e.phase = 'fin';
+          this.noter(this.equipe.nom + ' a répondu juste à la question finale.');
+          this.son('victoire'); this.vibre([60, 60, 120]);
+          var mon = e.equipes.findIndex(q => q.moi);
+          try { Etoiles.finDePartie(NOM_JEU, mon === e.gagnant, true, e.id); } catch (err) {}
+          this.sauver();
+        }
+      }
+    });
+  </script>
+  <script src="salon-global.js" data-jeu="dix"></script>
+</body>
+</html>
