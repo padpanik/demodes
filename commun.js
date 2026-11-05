@@ -3,12 +3,13 @@
 // Les clés de stockage gardent l'ancien préfixe "brillant-" : les réglages déjà faits sont conservés.
 
 // Numéro de version affiché (à augmenter à chaque mise en ligne, avec brilliant/index.html et sw.js)
-const VERSION = '2.87';
+const VERSION = '2.88';
 
 // ---------- Nouveautés (2.87, demandé par l'utilisateur) ----------
 // Une ligne très brève par mise en ligne (la plus récente en haut) : l'accueil les montre une seule fois, dans une petite fenêtre,
 // à qui n'a pas encore vu cette version. [version, jeu ou partie de l'appli, ce qui change]
 const NOUVEAUTES = [
+  ['2.88', 'Mon compagnon', '« Quoi de neuf ? » prévient aussi quand une boutique de fête ouvre (Noël dès le 1er décembre).'],
   ['2.87', 'Désdale', 'Cette petite fenêtre : un résumé de ce qui change à chaque mise à jour.'],
   ['2.86', 'Mon compagnon', 'Il va dans son panier, sa niche, son coussin ou son château : bouton « Au panier ! » dans la pièce.'],
   ['2.85', 'Lettres croisées', 'Le dictionnaire est maintenant la liste officielle (ODS).'],

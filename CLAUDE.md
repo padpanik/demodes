@@ -87,7 +87,8 @@ Pas d'étape de construction, pas de dépendance à ajouter.
    `commun.js`, `brilliant/index.html`, `sw.js`.
    Ajouter **une ligne très brève** en tête de `NOUVEAUTES` (`commun.js` : `[version, jeu ou partie de l'appli, ce qui change]`) : l'accueil montre une fois
    la fenêtre « Quoi de neuf ? » (2.87, demandée par l'utilisateur ; `nouveautesAVoir` / `nouveautesVues`, clé `desdale-version-vue` ; 5 lignes au plus ;
-   rien à la première installation ; un téléphone déjà utilisé sans cette clé voit les 5 dernières).
+   rien à la première installation ; un téléphone déjà utilisé sans cette clé voit les 5 dernières) ; 2.88 : la fenêtre annonce aussi, une fois par période,
+   l'ouverture d'une **boutique de fête** du compagnon (`annonceFete` dans `index.html` : `CP.feteDu`, clé `desdale-fete-annoncee` = `<fête>-<année>`, seulement si l'on a un compagnon).
 2. Nouveau fichier servi ? L'ajouter à `FICHIERS` dans `sw.js` (avec son dossier : `'./yams/'`, `'./lettres/lettres-regles.js'`).
 3. Nouveau jeu ? Son dossier (`jeu/index.html` avec `<base href="../">`, copier `lettres/index.html`), puis l'ajouter à la liste `jeux` d'`index.html` (avec la clé de sa sauvegarde pour le badge « partie en cours »).
 4. Vérifier la syntaxe des scripts (`node --check`) et l'absence d'échappements doublés (`\\'`) après une modification par script.
