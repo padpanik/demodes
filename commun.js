@@ -3,7 +3,30 @@
 // Les clés de stockage gardent l'ancien préfixe "brillant-" : les réglages déjà faits sont conservés.
 
 // Numéro de version affiché (à augmenter à chaque mise en ligne, avec brilliant/index.html et sw.js)
-const VERSION = '2.86';
+const VERSION = '2.87';
+
+// ---------- Nouveautés (2.87, demandé par l'utilisateur) ----------
+// Une ligne très brève par mise en ligne (la plus récente en haut) : l'accueil les montre une seule fois, dans une petite fenêtre,
+// à qui n'a pas encore vu cette version. [version, jeu ou partie de l'appli, ce qui change]
+const NOUVEAUTES = [
+  ['2.87', 'Désdale', 'Cette petite fenêtre : un résumé de ce qui change à chaque mise à jour.'],
+  ['2.86', 'Mon compagnon', 'Il va dans son panier, sa niche, son coussin ou son château : bouton « Au panier ! » dans la pièce.'],
+  ['2.85', 'Lettres croisées', 'Le dictionnaire est maintenant la liste officielle (ODS).'],
+  ['2.84', 'Lettres croisées', 'Nouveau niveau Confirmé, et « Mon lexique » pour accepter ou refuser un mot.'],
+  ['2.83', 'Désdale', 'L\'appli s\'ouvre même avec une connexion faible ou sans réseau.'],
+  ['2.82', '7 piliers', 'Classique : cartes et merveilles du jeu d\'origine, faces A et B.']
+];
+// Les nouveautés pas encore vues sur ce téléphone (5 au plus). Première installation : rien à montrer.
+function nouveautesAVoir() {
+  var vu = lireStockage('desdale-version-vue');
+  if (!vu) {
+    var dejaLa = lireStockage('desdale-profil') || lireStockage('compagnon-animal') || lireStockage('desdale-stats');
+    if (!dejaLa) { ecrireStockage('desdale-version-vue', VERSION); return []; }
+    vu = '0';
+  }
+  return NOUVEAUTES.filter(n => parseFloat(n[0]) > parseFloat(vu)).slice(0, 5);
+}
+function nouveautesVues() { ecrireStockage('desdale-version-vue', VERSION); }
 
 // ---------- Stockage local ----------
 function lireStockage(cle) {
