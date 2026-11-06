@@ -122,7 +122,8 @@ var CJ = (function () {
   function finManche(e) {
     var details = {}, bas = Infinity, nbBas = 0;
     e.joueurs.forEach(function (j) {
-      e.grilles[j].forEach(function (x) { if (x) x.vis = true; });   // les cartes encore cachées sont montrées ; aucune colonne ne part à ce moment-là
+      e.grilles[j].forEach(function (x) { if (x) x.vis = true; });   // les cartes encore cachées sont montrées
+      retirerColonnes(e, j);   // livret : une colonne identique révélée à ce moment-là part aussi, avant le calcul
       var t = total(e.grilles[j]);
       details[j] = { points: t, brut: t, double: false };
       if (t < bas) { bas = t; nbBas = 1; } else if (t === bas) nbBas++;
