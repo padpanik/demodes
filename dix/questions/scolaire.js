@@ -551,4 +551,59 @@ Quel maire du palais a arrêté les Arabes à Poitiers en 732 ? | Charles Martel
 Quel surnom a-t-on donné aux derniers rois de la dynastie ? | Les rois fainéants
 Quel est le dernier roi mérovingien ? | Childéric III
 En quelle année a-t-il été déposé ? | En 751
+# Les Trois Mousquetaires
+Combien de mousquetaires y a-t-il vraiment, avec le héros ? | Quatre
+Quel écrivain a écrit le roman ? | Alexandre Dumas
+Comment s'appelle le jeune héros ? | D'Artagnan
+De quelle région vient-il ? | La Gascogne
+Quels sont les trois mousquetaires ? | Athos, Porthos, Aramis
+Quel cardinal est leur ennemi ? | Richelieu
+Quelle espionne le sert ? | Milady de Winter
+Quels bijoux de la reine les héros doivent-ils rapporter ? | Les ferrets
+Quelle reine les a offerts au duc de Buckingham ? | Anne d'Autriche
+En quelle année paraît le roman ? | En 1844
+# Les volcans
+Que crache un volcan ? | De la lave
+Quel volcan a enseveli Pompéi ? | Le Vésuve
+En quelle année ? | En 79
+Sur quelle île française se trouve le Piton de la Fournaise ? | La Réunion
+Quelle montagne a détruit Saint-Pierre de Martinique en 1902 ? | La montagne Pelée
+Quel volcan d'Indonésie a explosé en 1883 ? | Le Krakatoa
+Quel volcan islandais a bloqué le ciel européen en 2010 ? | L'Eyjafjöll
+Quelle chaîne de volcans français est classée à l'Unesco ? | La chaîne des Puys
+Quel couple français de volcanologues est mort au Japon en 1991 ? | Katia et Maurice Krafft
+Sur quel volcan japonais ? | Le mont Unzen
+# Jules César
+Quel mois de l'année lui doit son nom ? | Juillet
+Quelle rivière franchit-il, le sort en étant jeté ? | Le Rubicon
+Que signifie « Veni, vidi, vici » ? | Je suis venu, j'ai vu, j'ai vaincu
+Quel jour de mars est-il assassiné ? | Aux ides de mars (le 15)
+En quelle année ? | En 44 avant J.-C.
+Quel chef gaulois a-t-il vaincu ? | Vercingétorix
+Dans quelle ville gauloise ? | Alésia
+Quelle reine d'Égypte a-t-il aimée ? | Cléopâtre
+Quel livre a-t-il écrit sur ses campagnes ? | La Guerre des Gaules
+Quel calendrier a-t-il instauré ? | Le calendrier julien
+# Le Petit Prince
+Que dessine l'aviateur à sa demande ? | Un mouton
+Quelle fleur aime-t-il ? | Une rose
+Quel animal veut être apprivoisé ? | Le renard
+Quel écrivain a écrit le livre ? | Antoine de Saint-Exupéry
+Quel était le métier de l'auteur ? | Aviateur
+Dans quel désert l'aviateur tombe-t-il en panne ? | Le Sahara
+Quel est le nom de son astéroïde ? | B 612
+Quel animal a avalé un éléphant, dans le premier dessin ? | Un boa
+En quelle année paraît le livre ? | En 1943
+Dans quelle ville a-t-il d'abord paru ? | New York
+# Léonard de Vinci
+Quel tableau sourit au Louvre ? | La Joconde
+Quel repas a-t-il peint à Milan ? | La Cène
+Dans quel musée parisien est la Joconde ? | Le Louvre
+Quel roi français l'a accueilli ? | François Ier
+Dans quelle ville française est-il mort ? | Amboise
+Dans quel manoir y habitait-il ? | Le Clos Lucé
+En quelle année est-il mort ? | En 1519
+Comment s'appelle son dessin d'homme dans un cercle ? | L'Homme de Vitruve
+Dans quel sens écrivait-il ses carnets ? | En miroir
+Dans quel village de Toscane est-il né ? | Vinci (Anchiano)
 `;

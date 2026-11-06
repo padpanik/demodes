@@ -859,4 +859,224 @@ Quel port de Minorque lui a donné son nom, selon la légende ? | Mahón
 Quel duc français y a gagné une bataille en 1756 ? | Le duc de Richelieu
 Quel épicier new-yorkais a lancé une mayonnaise en pot à succès ? | Richard Hellmann
 Au début de quel siècle l'a-t-il lancée ? | Le XXe siècle
+# Les chats d'Internet
+Quel animal Internet semble-t-il avoir été inventé pour montrer ? | Le chat
+Quelle tête fait Grumpy Cat, comme son nom l'indique ? | Une tête grincheuse
+Quel chat pixélisé vole en laissant un arc-en-ciel derrière lui ? | Nyan Cat
+Comment appelle-t-on ces images de chats légendées avec des fautes ? | Des lolcats
+Quel chat japonais est célèbre pour se glisser dans des boîtes en carton ? | Maru
+De quel instrument joue le chat d'une vidéo culte de 2007, Keyboard Cat ? | Un clavier électronique
+Quel est le vrai nom de Grumpy Cat ? | Tardar Sauce
+En quelle année est morte Grumpy Cat ? | En 2019
+Quelle phrase mal écrite a donné son nom au grand site de lolcats ? | I Can Has Cheezburger?
+En quelle année Nyan Cat a-t-il été mis en ligne ? | En 2011
+# Les poissons rouges
+Où vit le poisson rouge, dans les vieux dessins ? | Dans un bocal
+Que gagnait-on à la fête foraine, dans un sachet ? | Un poisson rouge
+Combien de secondes de mémoire lui prête-t-on, à tort ? | Trois
+Sa mémoire dure-t-elle en réalité plus longtemps ? | Oui, plusieurs mois
+De quel grand poisson d'eau douce est-il un cousin ? | La carpe
+De quel pays vient-il ? | La Chine
+Quelle ville italienne a interdit les bocaux à poissons rouges ? | Monza
+Peut-il dépasser 30 centimètres dans un grand bassin ? | Oui
+Quel est son nom scientifique ? | Carassius auratus
+De quelle couleur était le carassin sauvage, avant la sélection ? | Gris-vert
+# Les hérissons
+Que risque-t-on en faisant un câlin à un hérisson ? | De se piquer
+Que fait-il quand il a peur ? | Il se met en boule
+Quel hérisson bleu court très vite dans les jeux vidéo ? | Sonic
+Que fait-il pendant l'hiver ? | Il hiberne
+Quel aliment, souvent donné par erreur, est mauvais pour lui ? | Le lait
+Que mange-t-il surtout ? | Des insectes, des limaces et des vers
+Environ combien de piquants a un hérisson adulte d'Europe ? | Entre 5 000 et 7 000
+Quel roman de Muriel Barbery a un hérisson dans son titre ? | L'Élégance du hérisson
+Quel est le genre scientifique du hérisson d'Europe ? | Erinaceus
+Comment appelle-t-on son habitude de s'enduire les piquants de salive ? | L'auto-onction
+# Les autruches
+Où est-elle censée se cacher la tête ? | Dans le sable
+Que peut-elle faire avec ses ailes ? | Rien pour voler
+Est-ce vrai qu'elle se cache la tête dans le sable ? | Non, c'est un mythe
+Quel est son record parmi les oiseaux ? | La plus grande
+Sur quel continent vit-elle à l'état sauvage ? | L'Afrique
+Combien de doigts a-t-elle à chaque patte ? | Deux
+À quelle vitesse peut-elle courir, à peu près ? | 70 km/h
+Combien pèse à peu près un de ses œufs ? | Environ 1,4 kg
+Quel organe est plus gros que son cerveau ? | Son œil
+Quel est son nom scientifique ? | Struthio camelus
+# Les girafes
+Quelle partie de son corps est démesurée ? | Le cou
+Quel jouet à mâcher pour bébé est une girafe française ? | Sophie la girafe
+Comment s'appelle la girafe du film Madagascar ? | Melman
+Combien a-t-elle de vertèbres dans le cou ? | Sept, comme nous
+De quelle couleur tire sa langue ? | Bleu-violet
+Quelle longueur fait à peu près sa langue ? | Environ 45 cm
+Sur quel continent la croise-t-on en liberté ? | L'Afrique
+Comment s'appelait la girafe offerte à Charles X ? | Zarafa
+Qui la lui a offerte ? | Méhémet Ali, le vice-roi d'Égypte
+En quelle année est-elle arrivée à Paris, à pied depuis Marseille ? | En 1827
+# Les kangourous
+Dans quoi la mère transporte-t-elle son petit ? | Une poche
+Quel pays en a sur son blason ? | L'Australie
+Comment se déplace-t-il ? | En sautant
+Comment s'appelle le kangourou d'une série australienne des années 1960 ? | Skippy
+Quel sport les caricatures lui font-elles pratiquer ? | La boxe
+Dans quel ordre de mammifères est-il classé ? | Les marsupiaux
+Quelle taille fait son petit à la naissance ? | Environ celle d'un haricot
+Quel navigateur britannique a rapporté le mot en Europe, en 1770 ? | James Cook
+Quelle langue aborigène a donné le mot kangourou ? | Le guugu yimithirr
+Quelle fausse explication du mot court toujours ? | Il voudrait dire « je ne comprends pas »
+# Les ornithorynques
+À quel oiseau emprunte-t-il son bec ? | Le canard
+Dans quel pays vit-il ? | L'Australie
+Comment s'appelle l'ornithorynque espion du dessin animé Phinéas et Ferb ? | Perry
+Que fait-il de très étrange pour un mammifère ? | Il pond des œufs
+À quel petit groupe de mammifères pondeurs appartient-il ? | Les monotrèmes
+Quel autre animal fait partie de ce groupe ? | L'échidné
+Que porte le mâle aux pattes arrière ? | Un ergot venimeux
+Comment repère-t-il ses proies sous l'eau ? | Par électroréception
+Qu'ont cru les savants anglais en voyant le premier spécimen ? | À un canular
+Quel naturaliste britannique l'a décrit en 1799 ? | George Shaw
+# Les abeilles
+Que fabriquent-elles qu'on tartine ? | Du miel
+Quelle abeille d'un dessin animé a un ami Willy ? | Maya
+Comment appelle-t-on celle qui commande la ruche ? | La reine
+Comment s'appelle le mâle de l'abeille ? | Le faux-bourdon
+Quelle matière forme les alvéoles ? | La cire
+Quel parasite ravage les ruches, depuis les années 1980 en France ? | Le varroa
+Quelle résine récoltée sur les arbres sert à colmater la ruche ? | La propolis
+Quel est le nom scientifique de l'abeille domestique ? | Apis mellifera
+Comment les abeilles s'indiquent-elles où sont les fleurs ? | Par une danse
+Quel savant autrichien a reçu le Nobel en 1973 pour l'avoir décodée ? | Karl von Frisch
+# Les fourmis
+Combien de fourmis faut-il pour gâcher un pique-nique ? | Une seule suffit
+Que fait la fourmi de la fable, l'été ? | Elle travaille
+Quel écrivain français a fait un best-seller avec elles ? | Bernard Werber
+Quel film Pixar de 1998 raconte la vie d'une colonie ? | 1001 pattes
+Quelles substances chimiques utilisent-elles pour communiquer ? | Les phéromones
+Comment s'appelle l'étude des fourmis ? | La myrmécologie
+Que font les fourmis coupe-feuilles de leurs feuilles ? | Elles cultivent un champignon
+Quel biologiste américain, surnommé « l'homme-fourmi », a créé la sociobiologie ? | Edward O. Wilson
+Comment appelle-t-on la colonie mobile des fourmis légionnaires, sans nid fixe ? | Un bivouac
+Quel acide projettent certaines fourmis ? | L'acide formique
+# Les araignées
+Que crie-t-on en en voyant une dans la baignoire ? | Au secours
+Combien a-t-elle de pattes ? | Huit
+Quel super-héros est mordu par l'une d'elles ? | Spider-Man
+Comment s'appelle la peur des araignées ? | L'arachnophobie
+Quelle araignée géante vit dans la Forêt interdite d'Harry Potter ? | Aragog
+Quel fil produit-elle ? | De la soie
+Quel roman pour enfants de 1952 met en scène l'araignée Charlotte ? | Le Petit Monde de Charlotte
+Quelle classe d'animaux forme-t-elle avec les scorpions ? | Les arachnides
+Quelle tisseuse changée en araignée par Athéna leur a donné leur nom ? | Arachné
+Quel est le genre scientifique de la veuve noire ? | Latrodectus
+# Les parcmètres
+Pourquoi les aime-t-on si peu ? | Il faut les payer
+Que risque-t-on sur le pare-brise sans ticket ? | Une amende
+Comment s'appelle le modèle qui imprime un ticket ? | L'horodateur
+Comment s'appelle ce papier glissé sous l'essuie-glace ? | Un PV
+Que peut-on utiliser aujourd'hui au lieu de pièces ? | Une application de téléphone
+De quel pays vient le parcmètre ? | Les États-Unis
+Dans quelle ville a été installé le premier ? | Oklahoma City
+En quelle année ? | En 1935
+Qui l'a inventé ? | Carl Magee
+Quel nom a porté le premier modèle ? | Park-O-Meter
+# Les passages piétons
+Quelle est leur couleur ? | Blanche
+Quel animal rayé leur donne leur surnom anglais ? | Le zèbre
+Que vaut-il mieux faire avant de traverser ? | Regarder des deux côtés
+Quel groupe y pose sur une pochette de 1969 ? | Les Beatles
+Comment s'appelle ce passage piéton de Londres ? | Abbey Road
+Lequel des quatre Beatles traverse pieds nus ? | Paul McCartney
+Qui marche en tête sur la photo ? | John Lennon
+Quel globe jaune clignote au bord des passages britanniques ? | La balise Belisha
+Quel ministre britannique a donné son nom à ces balises ? | Leslie Hore-Belisha
+En quelle année ont-elles été introduites ? | En 1934
+# Les ascenseurs
+Où regarde-t-on quand on y est à plusieurs ? | Les chiffres qui défilent, ou ses chaussures
+Quelle musique y entend-on ? | Une musique d'ascenseur
+Quel appareil le remplace quand il est en panne ? | L'escalier
+Quel nom de marque américaine est gravé dans de nombreuses cabines ? | Otis
+Que risque-t-on si le câble casse, grâce à Otis ? | Rien, le frein de sécurité bloque la cabine
+Dans quelle ville Otis a-t-il fait sa démonstration ? | New York
+En quelle année ? | En 1854
+À quelle occasion ? | L'exposition du Crystal Palace de New York
+Quel est le prénom d'Otis ? | Elisha
+Quel immeuble new-yorkais a reçu le premier ascenseur à passagers d'Otis, en 1857 ? | Le magasin E. V. Haughwout
+# Les horloges
+Quel oiseau sort des horloges de la Forêt-Noire ? | Le coucou
+Que fait l'oiseau du coucou à chaque heure ? | Il sort et chante
+Dans quel pays la Forêt-Noire se trouve-t-elle ? | L'Allemagne
+Quel est le nom de la célèbre grande cloche de Londres ? | Big Ben
+Comment s'appelle la tour qui l'abrite, depuis 2012 ? | La tour Élisabeth
+Quelle cathédrale française abrite une célèbre horloge astronomique ? | Strasbourg
+Quelle ville d'Europe centrale a un Orloj médiéval ? | Prague
+Dans quel film Orson Welles dit-il que la Suisse a inventé le coucou ? | Le Troisième Homme
+Quel Néerlandais a inventé l'horloge à pendule en 1656 ? | Christiaan Huygens
+Comment s'appelle le mécanisme qui régule la chute des poids ? | L'échappement
+# Les superstitions
+Quel jour de la semaine, un 13, fait peur ? | Le vendredi
+Quel animal porte malheur quand il croise la route ? | Le chat noir
+Sous quoi ne faut-il pas passer ? | Une échelle
+Combien d'années de malheur coûte un miroir brisé ? | Sept
+Que jette-t-on par-dessus l'épaule si on l'a renversé ? | Du sel
+Quel objet ne faut-il pas ouvrir à l'intérieur d'une maison ? | Un parapluie
+Quel objet accroché à la porte porte bonheur ? | Un fer à cheval
+Comment s'appelle la peur du nombre 13 ? | La triskaïdékaphobie
+Quel mot savant désigne la peur du vendredi 13 ? | La paraskevidékatriaphobie
+Quelle couleur ne doit-on pas porter sur scène, selon la tradition du théâtre français ? | Le vert
+# L'horoscope
+Que lit-on en dernière page du magazine ? | L'horoscope
+Combien y a-t-il de signes ? | Douze
+Quel signe porte une paire de plateaux ? | La Balance
+Que regarde-t-on pour trouver son signe ? | Sa date de naissance
+Quel signe vient juste après le Bélier ? | Le Taureau
+Quelle voyante de la télé française était surnommée Madame… ? | Madame Soleil
+Quelle astrologue a conseillé François Mitterrand ? | Élizabeth Teissier
+Quel treizième signe oublié est traversé par le Soleil ? | Ophiuchus (le Serpentaire)
+Quel médecin français du XVIe siècle a écrit les Prophéties ? | Nostradamus
+Quel mot désigne le décalage du zodiaque au fil des siècles ? | La précession des équinoxes
+# Les tatouages
+Avec quoi se les fait-on faire ? | Une aiguille
+Que regrette-t-on en lisant un prénom sur son bras ? | Son ex
+Qu'utilise-t-on pour les effacer ? | Un laser
+Quelle plante sert aux tatouages éphémères d'Orient ? | Le henné
+Quelle partie du monde a donné le mot tatouage ? | La Polynésie (Tahiti)
+Quel navigateur britannique a rapporté le mot ? | James Cook
+Quel peuple de Nouvelle-Zélande porte le moko ? | Les Maoris
+Quel homme des glaces porte des tatouages vieux de plus de 5 000 ans ? | Ötzi
+Combien de tatouages a-t-il ? | 61
+En quelle année a-t-il été découvert ? | En 1991
+# Les coupes de cheveux
+Quelle coupe laisse court devant et long derrière ? | Le mulet
+Qui coupe les cheveux ? | Le coiffeur
+Quel surnom donne-t-on à la coupe faite en s'aidant d'un récipient ? | La coupe au bol
+Quelle coupe de crête porte le nom d'un peuple américain ? | L'iroquoise
+Quelle coupe rasée portaient les moines au sommet du crâne ? | La tonsure
+Comment s'appelle le barbier de Séville ? | Figaro
+Quelle coupe a été rendue célèbre par Jennifer Aniston dans Friends ? | La « Rachel »
+Quel groupe a popularisé le « mop top » ? | Les Beatles
+Quel coiffeur britannique a lancé la coupe à cinq pointes ? | Vidal Sassoon
+Quelle actrice américaine des années 1920 a popularisé le carré court ? | Louise Brooks
+# Les pets
+Quel coussin en fait le bruit ? | Le coussin péteur
+Quel gaz leur donne parfois leur odeur ? | Le sulfure d'hydrogène
+Que mange-t-on quand on veut en faire plus ? | Des haricots
+Comment dit-on poliment ? | Une flatulence
+Quel film de 1974 de Mel Brooks a une scène culte de pets autour d'un feu ? | Le shérif est en prison
+Quel gaz d'origine animale inquiète pour le climat ? | Le méthane
+Quel artiste français du Moulin Rouge en jouait des airs ? | Le Pétomane
+Quel était son vrai nom ? | Joseph Pujol
+Dans quelle décennie a-t-il débuté au Moulin Rouge ? | Les années 1890
+Quelle ville a vu sa naissance ? | Marseille
+# Le nombril
+Quelle petite boule de fibres s'y loge ? | Une peluche
+Qui a la manie de regarder le sien ? | Les égocentriques
+À quoi sert-il, une fois adulte ? | À rien
+Avec quoi étions-nous reliés à notre mère à cet endroit ? | Le cordon ombilical
+Quel rocher de Delphes passait pour le nombril du monde ? | L'omphalos
+Quel prix a récompensé une étude sur sa peluche ? | Un Ig Nobel
+Comment s'appelle cet Australien ? | Karl Kruszelnicki
+En quelle année a-t-il été récompensé ? | En 2002
+Quel chimiste autrichien a analysé la composition de cette peluche ? | Georg Steinhauser
+De quoi cette peluche est-elle surtout faite ? | De fibres de vêtements
 `;

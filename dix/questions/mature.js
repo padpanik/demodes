@@ -650,4 +650,70 @@ Combien d'années font les noces d'or ? | 50 ans
 Quelles noces fête-t-on à 40 ans ? | Les noces d'émeraude
 En quelle année le mariage pour tous a-t-il été voté ? | En 2013
 Quelle ministre a porté ce texte ? | Christiane Taubira
+# La baguette de pain
+Quel morceau disparaît avant d'arriver à la maison ? | Le quignon
+Comment s'appelle la baguette faite sans additif, plus chère ? | La tradition
+Quel poids tourne autour de la baguette classique ? | 250 grammes
+Quelle organisation a inscrit son savoir-faire au patrimoine, en 2022 ? | L'Unesco
+Quel texte de 1993 encadre l'appellation « tradition » ? | Le décret Pain
+Quels sont ses seuls ingrédients, levure ou levain mis à part ? | Farine, eau et sel
+Comment s'appelle l'entaille faite sur le dessus ? | La grigne
+Quel outil sert à la faire ? | Une lame
+Que désigne la « sole » d'un four ? | Sa plaque de cuisson
+Comment s'appelle le pétrissage doux et lent de la pâte ? | Le frasage
+# Le notaire
+Pour quel achat va-t-on presque toujours le voir ? | Une maison
+Que signe-t-on chez lui ? | Un acte
+Comment appelle-t-on, à tort, ce qu'on lui paie ? | Les frais de notaire
+Quelle part ces frais représentent-ils surtout ? | Des taxes reversées à l'État
+Quel document prépare-t-il à un décès ? | La déclaration de succession
+De combien de jours dispose l'acheteur pour se rétracter ? | 10 jours
+Comment s'appelle ce que la loi réserve aux enfants ? | La réserve héréditaire
+Comment s'appelle ce qu'on peut léguer librement ? | La quotité disponible
+Qu'apporte à un acte son caractère « authentique » ? | Une date et une force probante difficile à contester
+Quelle est la durée de conservation de ses minutes avant archivage ? | 75 ans
+# La taxe foncière
+Qui la paie ? | Le propriétaire
+En quelle saison arrive-t-elle d'ordinaire ? | En automne
+Quelle autre taxe a disparu pour les résidences principales ? | La taxe d'habitation
+Qui en vote les taux ? | Les communes et intercommunalités
+Sur quelle valeur est-elle calculée ? | La valeur locative cadastrale
+Quel document public décrit les parcelles ? | Le cadastre
+Sur quel site peut-on la payer ? | impots.gouv.fr
+Quel empereur a lancé le cadastre parcellaire ? | Napoléon Ier
+Quelle période a créé la contribution foncière ? | La Révolution française
+Quel impôt d'autrefois taxait les ouvertures d'une maison ? | L'impôt sur les portes et fenêtres
+# Le rhume
+Que fait le nez ? | Il coule
+Que fait-on sans arrêt avec un mouchoir ? | On se mouche
+Combien de temps dure-t-il, à peu près ? | Environ une semaine
+Les antibiotiques sont-ils efficaces ? | Non
+Pourquoi ? | C'est un virus
+Le froid seul peut-il donner un rhume ? | Non
+Comment l'appelle-t-on en médecine ? | La rhinopharyngite
+Quel virus en est le plus souvent la cause ? | Le rhinovirus
+Quel chimiste, double Nobel, a défendu la vitamine C contre lui ? | Linus Pauling
+À quelle famille de virus appartient le rhinovirus ? | Les picornavirus
+# Les huîtres
+À quelle fête en mange-t-on surtout ? | Noël
+Quel fruit presse-t-on dessus ? | Le citron
+Que rêve-t-on de trouver dedans ? | Une perle
+Quel bassin français est célèbre pour elles, en Gironde ? | Arcachon
+Quelle ville bretonne l'est aussi ? | Cancale
+Comment s'appelle leur élevage ? | L'ostréiculture
+Quelle règle dit qu'on les mange les mois en R ? | Le dicton des mois en R
+Quelle huître creuse a remplacé la portugaise en France ? | La japonaise
+Vers quelle année une maladie a-t-elle décimé la portugaise ? | Vers 1970
+Quelle huître plate bretonne a pris le nom de sa rivière ? | La belon
+# Le foie gras
+De quels oiseaux vient-il ? | Le canard et l'oie
+À quel repas de fête arrive-t-il sur la table ? | Le réveillon de Noël
+Quelle région française en est la grande productrice ? | Le Sud-Ouest
+Avec quel vin liquoreux l'associe-t-on ? | Le sauternes
+Comment s'appelle l'alimentation forcée des oiseaux ? | Le gavage
+Quel peuple antique pratiquait déjà ce gavage ? | Les Égyptiens
+Dans quelle ville d'Alsace le foie gras en croûte a-t-il été mis au point ? | Strasbourg
+Quelle loi française de 2006 l'a protégé ? | La loi d'orientation agricole
+Quel statut lui donne-t-elle ? | Patrimoine culturel et gastronomique
+Quelle grande ville américaine a voté son interdiction en 2019 ? | New York
 `;

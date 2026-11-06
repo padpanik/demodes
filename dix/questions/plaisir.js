@@ -650,4 +650,114 @@ Quelle mer a-t-il traversée en premier, en 1913 ? | La Méditerranée
 Comment s'appelle la coupe du vainqueur ? | La coupe des Mousquetaires
 Comment s'appelle celle de la gagnante ? | La coupe Suzanne-Lenglen
 Quels quatre joueurs sont les Mousquetaires ? | Borotra, Brugnon, Cochet, Lacoste
+# Breaking Bad
+Quelle matière Walter White enseigne-t-il au lycée, avant de mal tourner ? | La chimie
+Quelle drogue fabrique-t-il avec son ancien élève ? | La méthamphétamine
+Quel pseudonyme de physicien allemand prend-il ? | Heisenberg
+Quel acteur joue Walter White ? | Bryan Cranston
+Dans quelle ville se déroule la série ? | Albuquerque
+De quelle couleur est sa drogue ? | Bleue
+Comment s'appelle son avocat véreux ? | Saul Goodman
+Quel acteur joue Jesse Pinkman ? | Aaron Paul
+Comment s'appelle le patron de la chaîne de poulet frit ? | Gustavo Fring
+Comment s'appelle cette chaîne de restaurants ? | Los Pollos Hermanos
+# Stranger Things
+De quelle spécialité sucrée Eleven raffole-t-elle ? | Les gaufres
+Dans quelle décennie se déroule la série ? | Les années 1980
+Quelle plateforme la diffuse ? | Netflix
+Comment s'appelle la ville fictive de la série ? | Hawkins
+Comment s'appelle le monde parallèle qui menace la ville ? | Le Monde à l'envers
+Quel jeu de rôle pratiquent les enfants ? | Donjons et Dragons
+Quel monstre de la saison 1 doit son nom à ce jeu ? | Le Démogorgon
+Quel garçon disparaît au tout début ? | Will Byers
+Quelle actrice joue Eleven ? | Millie Bobby Brown
+Comment s'appellent les frères qui ont créé la série ? | Les frères Duffer
+# Les Schtroumpfs
+De quelle couleur sont-ils ? | Bleus
+Quel sorcier veut les attraper ? | Gargamel
+Comment s'appelle son chat ? | Azraël
+Comment s'appelle la seule fille du village, au départ ? | La Schtroumpfette
+Quel Schtroumpf porte une barbe blanche et un bonnet rouge ? | Le Grand Schtroumpf
+Quel dessinateur belge les a créés ? | Peyo
+Quel est le vrai nom de ce dessinateur ? | Pierre Culliford
+Dans quelle série de BD sont-ils apparus ? | Johan et Pirlouit
+En quelle année sont-ils apparus ? | En 1958
+Qui a créé la Schtroumpfette, dans l'histoire ? | Gargamel
+# Gaston Lagaffe
+Quel est son rapport au travail ? | Il l'évite soigneusement
+Quel instrument infernal a-t-il inventé ? | Le gaffophone
+Quelle vieille voiture conduit-il ? | Une Fiat 509
+Dans quel magazine travaille-t-il ? | Spirou
+Quel dessinateur l'a créé ? | André Franquin
+Comment s'appelle sa bien-aimée ? | Mademoiselle Jeanne
+Quel homme d'affaires n'arrive jamais à signer ses contrats ? | Monsieur De Mesmaeker
+Comment s'appelle le chef de la rédaction qui lui crie dessus ? | Fantasio, puis Prunelle
+En quelle année apparaît-il ? | En 1957
+Quel animal surnommé « dingue » vit dans la rédaction ? | Le chat
+# Goldorak
+De quel pays vient le dessin animé ? | Le Japon
+Quel mot crie le pilote pour lancer le robot ? | Métamorphose !
+Comment s'appelle le pilote ? | Actarus
+Comment s'appelle son ami terrien, pilote lui aussi ? | Alcor
+Dans quelle émission d'Antenne 2 était-il diffusé ? | Récré A2
+En quelle année arrive-t-il en France ? | En 1978
+De quelle planète vient Actarus ? | Euphor
+Quelles forces l'ont détruite ? | Celles de Véga
+Quel mangaka a créé la série ? | Go Nagai
+Comment s'appelle-t-elle au Japon ? | UFO Robot Grendizer
+# La Soupe aux choux
+De quoi est faite la soupe ? | De choux
+Quel acteur joue Claude Ratinier ? | Louis de Funès
+Quel acteur joue le Bombé ? | Jean Carmet
+Qui descend de l'espace attiré par la soupe ? | La Denrée, un extraterrestre
+Quel acteur joue cet extraterrestre ? | Jacques Villeret
+De quelle planète vient-il ? | Oxo
+Qui réalise le film ? | Jean Girault
+En quelle année sort-il ? | En 1981
+Quel écrivain a écrit le roman ? | René Fallet
+Dans quelle région se déroule l'histoire ? | Le Bourbonnais
+# Le Grand Bleu
+Quel sport est au cœur du film ? | La plongée en apnée
+Qui le réalise ? | Luc Besson
+Quel animal fascine le héros ? | Le dauphin
+Quel acteur joue Enzo ? | Jean Reno
+Quel acteur joue Jacques Mayol ? | Jean-Marc Barr
+Quelle actrice américaine joue Johana ? | Rosanna Arquette
+En quelle année sort le film ? | En 1988
+Qui en a composé la musique ? | Éric Serra
+Quel vrai champion italien a inspiré Enzo ? | Enzo Maiorca
+Dans quelle ville de Sicile Enzo Maiorca est-il né ? | Syracuse
+# Les Choristes
+Que dirige Clément Mathieu ? | Une chorale
+Dans quel genre d'établissement se déroule le film ? | Un internat de garçons
+Quel acteur joue Clément Mathieu ? | Gérard Jugnot
+Quel acteur joue le directeur Rachin ? | François Berléand
+Quelle chanson du film commence par « Vois sur ton… » ? | Chemin
+Qui réalise le film ? | Christophe Barratier
+En quelle année sort-il ? | En 2004
+Quel jeune soliste joue Pierre Morhange ? | Jean-Baptiste Maunier
+Quel chœur chante la bande originale ? | Les Petits Chanteurs de Saint-Marc
+Quel film de 1945 a-t-il repris ? | La Cage aux rossignols
+# Céline Dion
+De quelle province canadienne vient-elle ? | Le Québec
+Quelle chanson de Titanic a-t-elle chantée ? | My Heart Will Go On
+Dans quelle ville américaine a-t-elle eu un spectacle fixe ? | Las Vegas
+Quel Français a écrit « Pour que tu m'aimes encore » ? | Jean-Jacques Goldman
+Pour quel pays a-t-elle gagné l'Eurovision ? | La Suisse
+En quelle année ? | En 1988
+Avec quelle chanson ? | Ne partez pas sans moi
+Qui était son mari et manager ? | René Angélil
+Quel syndrome rare a-t-elle révélé en 2022 ? | Le syndrome de la personne raide
+Sur quel monument a-t-elle chanté aux Jeux de Paris, en 2024 ? | La tour Eiffel
+# Madonna
+Comment la surnomme-t-on ? | La reine de la pop
+Quel tube de 1984 commence par « Like a… » ? | Virgin
+Quel tube de 1990 porte le nom d'un magazine de mode ? | Vogue
+Quelle pièce de lingerie conique a marqué sa tournée de 1990 ? | Le soutien-gorge pointu
+Quel couturier français l'a dessinée ? | Jean Paul Gaultier
+Quel est son nom de famille ? | Ciccone
+De quel État américain vient-elle ? | Le Michigan
+Quel rôle joue-t-elle dans le film d'Alan Parker de 1996 ? | Evita
+Quel acteur a-t-elle épousé en 1985 ? | Sean Penn
+Quel réalisateur britannique a-t-elle épousé en 2000 ? | Guy Ritchie
 `;
