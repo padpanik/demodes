@@ -518,4 +518,37 @@ Que devient « que tu sois » ? | Que tu fusses
 « Que vous fassiez » ? | Que vous fissiez
 « Que je sache » ? | Que je susse
 « Qu'ils naissent » ? | Qu'ils naquissent
+# Le nombre pi
+Comment s'écrit-il ? | π
+Quelle est sa valeur à deux décimales ? | 3,14
+À quelle figure sert-il ? | Le cercle
+Quelle formule donne le périmètre d'un cercle ? | 2πr
+Quelle formule donne son aire ? | πr²
+Quel jour de l'année le fête-t-on, à l'américaine ? | Le 14 mars
+Quelle est sa cinquième décimale ? | 9 (3,14159)
+Comment dit-on d'un nombre qui, comme lui, n'est pas une fraction ? | Irrationnel
+Qui l'a prouvé en 1761 ? | Jean-Henri Lambert
+Qui a prouvé en 1882 qu'il est transcendant ? | Ferdinand von Lindemann
+# Les nombres premiers
+Quel est le plus petit ? | 2
+Combien de diviseurs a un nombre premier ? | Deux
+1 est-il premier ? | Non
+Quel est le seul nombre premier pair ? | 2
+Quel est le premier nombre premier après 90 ? | 97
+Quelle méthode antique permet de les trouver ? | Le crible d'Ératosthène
+Qui a montré qu'il y en a une infinité ? | Euclide
+Comment s'appellent les nombres de la forme 2 puissance n moins 1 ? | Les nombres de Mersenne
+Quelle conjecture dit que tout nombre pair supérieur à 2 est la somme de deux premiers ? | La conjecture de Goldbach
+Quel projet collaboratif recherche les plus grands d'entre eux ? | GIMPS
+# Les Mérovingiens
+Quel roi franc est le plus célèbre de la dynastie ? | Clovis
+Quel objet est au cœur de l'anecdote de Soissons ? | Un vase
+Qui a baptisé Clovis ? | Saint Remi
+Dans quelle ville ? | Reims
+Quel roi met sa culotte à l'envers, dans la chanson ? | Dagobert
+Quel saint lui en fait la remarque ? | Saint Éloi
+Quel maire du palais a arrêté les Arabes à Poitiers en 732 ? | Charles Martel
+Quel surnom a-t-on donné aux derniers rois de la dynastie ? | Les rois fainéants
+Quel est le dernier roi mérovingien ? | Childéric III
+En quelle année a-t-il été déposé ? | En 751
 `;

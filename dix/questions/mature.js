@@ -577,7 +577,7 @@ Quel est le nom du premier frigo domestique américain, de 1913 ? | Domelre
 Quelle boisson écossaise boit-on sur glaçons ? | Le whisky
 Quelle marque écossaise a pour logo un marcheur ? | Johnnie Walker
 Quel nom pour un whisky écossais d'une seule distillerie ? | Single malt
-Quel pays l'écrit avec un e ? | L'Irlande (whiskey)
+Quel pays européen l'écrit avec un e ? | L'Irlande (whiskey)
 Quelle céréale domine le bourbon ? | Le maïs
 Quel État américain produit le bourbon ? | Le Kentucky
 Quelle île d'Écosse est réputée pour ses whiskies tourbés ? | Islay
@@ -595,4 +595,59 @@ Quel empereur a commandé ce classement ? | Napoléon III
 Quel château a été promu en 1973 ? | Mouton Rothschild
 Quel sous-sol caractérise Saint-Émilion ? | Le calcaire
 Quel est le seul château de Graves classé en 1855 ? | Haut-Brion
+# Le train et la SNCF
+Que fait le train, le jour où l'on est en avance ? | Il est à l'heure
+Que veut dire TGV ? | Train à grande vitesse
+Quelle ligne TGV a ouvert en premier, en 1981 ? | Paris-Lyon
+En quelle année la SNCF a-t-elle été créée ? | En 1937
+Comment s'appelle son offre à petits prix ? | Ouigo
+Quel geste à la borne jaune n'est presque plus demandé ? | Composter son billet
+Quel est le record de vitesse du TGV en 2007, à 0,1 près ? | 574,8 km/h
+Sur quelle ligne ce record a-t-il été battu ? | La LGV Est
+À partir de combien de minutes de retard la garantie TGV s'applique-t-elle ? | 30 minutes
+Comment s'appelle cette garantie de la SNCF ? | La garantie G30
+# BlaBlaCar
+Que partage-t-on ? | Une voiture
+Que risque-t-on de faire avec le conducteur ? | Parler
+Comment appelle-t-on ce mode de déplacement ? | Le covoiturage
+De quel pays vient l'entreprise ? | La France
+Quels trois niveaux de bavardage indique le profil ? | Bla, BlaBla, BlaBlaBla
+Quel est son fondateur ? | Frédéric Mazzella
+Quel était son nom français d'origine ? | Covoiturage.fr
+Dans quelle décennie est-elle née ? | Les années 2000
+Quelle société de bus a-t-elle rachetée à la SNCF ? | Ouibus
+Comment s'appelle aujourd'hui ce service ? | BlaBlaBus
+# Le champagne
+Quel bruit fait le bouchon ? | Pop !
+Quel geste ne faut-il pas faire, à part sur un podium ? | Le secouer
+Dans quelle ville de la Marne fait-on sacrer les rois et mousser les bulles ? | Reims
+Quel moine est associé à sa légende ? | Dom Pérignon
+Quelle veuve a donné son nom à une grande maison ? | La veuve Clicquot
+Quels sont les trois principaux cépages ? | Pinot noir, pinot meunier, chardonnay
+Comment appelle-t-on l'étape où l'on tourne les bouteilles ? | Le remuage
+Comment appelle-t-on l'étape qui retire le dépôt ? | Le dégorgement
+Combien de litres contient un jéroboam ? | 3 litres
+Quelle veuve a inventé la table de remuage ? | Barbe-Nicole Clicquot-Ponsardin
+# La bière
+Quelle céréale sert le plus souvent de base ? | L'orge
+Quelle plante apporte l'amertume ? | Le houblon
+Dans quelle ville se tient la grande fête de la bière d'octobre ? | Munich
+Quelle bière brune vient d'Irlande ? | La Guinness
+Comment appelle-t-on une bière brassée dans une abbaye de moines ? | Une trappiste
+Quel pays compte le plus de trappistes ? | La Belgique
+Quelle différence entre une lager et une ale ? | Fermentation basse ou haute
+Quelle loi de pureté allemande limite les ingrédients ? | La Reinheitsgebot
+En quelle année a-t-elle été promulguée ? | En 1516
+Quelle ville tchèque a donné son nom à la pils ? | Plzeň
+# Le mariage
+Qu'échange-t-on au doigt ? | Des alliances
+Où se dit-on oui, officiellement ? | À la mairie
+Quel gâteau haut de plusieurs étages est servi ? | La pièce montée
+À partir de quel âge peut-on se marier en France ? | 18 ans
+Quel régime s'applique sans contrat ? | La communauté réduite aux acquêts
+Combien d'années font les noces d'argent ? | 25 ans
+Combien d'années font les noces d'or ? | 50 ans
+Quelles noces fête-t-on à 40 ans ? | Les noces d'émeraude
+En quelle année le mariage pour tous a-t-il été voté ? | En 2013
+Quelle ministre a porté ce texte ? | Christiane Taubira
 `;

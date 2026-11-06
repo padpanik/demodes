@@ -403,11 +403,11 @@ Qui joue Marty ? | Michael J. Fox
 Comment s'appelle le savant ? | Doc
 Quelle vitesse faut-il atteindre ? | 88 miles à l'heure
 Quelle puissance faut-il ? | 1,21 gigawatt
-Quelle matière chauffe-t-on à la fin pour l'énergie ? | Le plutonium
+Quel combustible radioactif alimente d'abord la DeLorean ? | Le plutonium
 En quelle année retourne Marty, dans le premier film ? | En 1955
 Comment s'appelle la ville du film ? | Hill Valley
 Comment s'appelle le chien de Doc en 1985 ? | Einstein
-Quelle horloge est frappée par la foudre, à quelle heure ? | 22 h 04
+À quelle heure la foudre frappe-t-elle l'horloge ? | 22 h 04
 # Super Mario
 Quel métier a Mario ? | Plombier
 De quelle couleur est sa casquette ? | Rouge
@@ -437,7 +437,7 @@ Quel est le film au sujet de trois frères ? | Les Trois Frères
 Quel est le nom de famille de Pascal ? | Légitimus
 Quel est celui de Didier ? | Bourdon
 Quel est celui de Bernard ? | Campan
-Quelle chanson parle d'Isabelle aux yeux bleus ? | Isabelle a les yeux bleus
+De quelle couleur sont les yeux d'Isabelle, dans leur chanson ? | Bleus
 Quelle chanson parodie le rap français, en 1991 ? | Rap-Tout
 Quel film de 2001 les envoie à notre époque en rois mages ? | Les Rois mages
 Dans quel film de 2014 se reforment-ils ? | Les Trois Frères, le retour
@@ -446,7 +446,7 @@ Quel lapin de Pâques en est fait ? | Celui en chocolat
 Quelle pâte à tartiner italienne aux noisettes est célèbre ? | Le Nutella
 Quel arbre le produit ? | Le cacaoyer
 Quel peuple d'Amérique en buvait : les Aztèques ou les Grecs ? | Les Aztèques
-Quelle est la couleur du chocolat sans cacao ? | Blanc
+Quel chocolat ne contient pas de pâte de cacao ? | Le chocolat blanc
 Quel pays produit le plus de fèves de cacao ? | La Côte d'Ivoire
 Quelle femme a amené le chocolat en France en 1615, selon la tradition ? | Anne d'Autriche
 Dans quel pays Rodolphe Lindt a-t-il inventé le conchage ? | La Suisse
@@ -510,7 +510,7 @@ En quelle année est-il sorti ? | En 1994
 # Les chansons de Johnny Hallyday
 Quel surnom l'associe aux rockers français ? | L'idole des jeunes
 Que veut-il allumer ? | Le feu
-Quelle chanson dit « Que je t'aime » ? | Que je t'aime
+Quelle chanteuse a-t-il épousée en 1965 ? | Sylvie Vartan
 « Les portes du… » quoi ? | Pénitencier
 Quel est son vrai nom ? | Jean-Philippe Smet
 Qui a composé Allumer le feu ? | Pascal Obispo
@@ -540,4 +540,114 @@ Quel est le vrai prénom de Freddie Mercury ? | Farrokh
 Où est né Freddie Mercury ? | À Zanzibar
 Quel concert de 1985 a marqué le groupe ? | Live Aid
 Quel film d'action de 1980 a pour musique Flash ? | Flash Gordon
+# Dragon Ball
+Comment s'appelle le héros, un petit garçon à queue de singe ? | Son Goku
+Combien de boules faut-il réunir ? | Sept
+Quel dragon apparaît alors pour exaucer un vœu ? | Shenron
+Quel prince Saiyan devient le grand rival du héros ? | Vegeta
+Quel vieux maître lubrique enseigne le Kamehameha ? | Tortue Géniale
+Quel mangaka a créé la série ? | Akira Toriyama
+En quelle année commence le manga ? | En 1984
+Dans quel magazine japonais a-t-il paru ? | Weekly Shōnen Jump
+Comment s'appelle le frère de Goku, premier Saiyan à débarquer sur Terre ? | Raditz
+Quel est le vrai nom saiyan de Goku ? | Kakarot
+# The Legend of Zelda
+Comment s'appelle le héros, souvent pris à tort pour Zelda ? | Link
+Qui est Zelda ? | Une princesse
+De quelle couleur est la tunique du héros ? | Verte
+Quel méchant veut s'emparer de son royaume ? | Ganon
+Comment s'appelle ce royaume ? | Hyrule
+Quel objet est formé de trois triangles d'or ? | La Triforce
+Quel épisode de 1998 sur Nintendo 64 est le plus célébré ? | Ocarina of Time
+Comment s'appelle la fée qui crie « Hey, listen » dans cet épisode ? | Navi
+En quelle année sort le tout premier jeu, au Japon ? | En 1986
+Quel co-créateur a travaillé avec Miyamoto sur le premier jeu ? | Takashi Tezuka
+# Minecraft
+De quoi le monde est-il entièrement fait ? | De cubes
+Quel monstre vert explose en silence près de vous ? | Le Creeper
+Quel minerai bleu rêve-t-on de trouver ? | Le diamant
+Comment s'appelle la dimension infernale du jeu ? | Le Nether
+De quel pays vient le studio d'origine ? | La Suède
+Comment s'appelle ce studio ? | Mojang
+Quel surnom porte son créateur, Markus Persson ? | Notch
+Quelle entreprise a racheté le studio en 2014 ? | Microsoft
+Quel boss volant affronte-t-on à la fin du jeu ? | L'Ender Dragon
+Quels objets faut-il poser pour ouvrir le portail de l'End ? | Des yeux de l'Ender
+# Indiana Jones
+Quel objet tient-il à la main, à part son chapeau ? | Un fouet
+De quel animal a-t-il une peur bleue ? | Des serpents
+Qui le joue ? | Harrison Ford
+Quel est son métier ? | Archéologue
+Qui réalise la saga ? | Steven Spielberg
+Quel objet biblique cherche-t-il dans le film de 1981 ? | L'Arche d'alliance
+Quel acteur joue son père en 1989 ? | Sean Connery
+Quel objet cherche-t-on dans ce film de 1989 ? | Le Graal
+Quel est son vrai prénom ? | Henry
+D'où vient son surnom d'Indiana ? | Du nom de son chien
+# Matrix
+Quelle pilule Neo choisit-il ? | La rouge
+Quel acteur joue Neo ? | Keanu Reeves
+Que fait-il aux balles, au ralenti ? | Il les esquive
+En quelle année sort le film ? | En 1999
+Qui lui propose les deux pilules ? | Morpheus
+Comment s'appelle l'héroïne ? | Trinity
+Quel acteur joue l'agent Smith ? | Hugo Weaving
+Quel est le vrai nom de Neo dans la matrice ? | Thomas Anderson
+Comment s'appelle le vaisseau de Morpheus ? | Le Nebuchadnezzar
+Dans quel livre Neo cache-t-il ses disques ? | Simulacres et Simulation, de Baudrillard
+# Le Père Noël est une ordure
+Quelle troupe en est à l'origine ? | Le Splendid
+Quel soir de l'année se passe l'histoire ? | Le soir de Noël
+Comment s'appelle l'association où travaillent les héros ? | SOS Détresse Amitié
+Quelle actrice joue Thérèse ? | Anémone
+Quel acteur joue Pierre Mortez ? | Thierry Lhermitte
+Quelle spécialité infecte Monsieur Preskovitch apporte-t-il ? | Les doubitchous
+Quel acteur joue Katia, le travesti ? | Christian Clavier
+Qui réalise le film ? | Jean-Marie Poiré
+En quelle année sort le film ? | En 1982
+Quel acteur joue Monsieur Preskovitch ? | Bruno Moynot
+# Intouchables
+Quel acteur a reçu le César pour ce film ? | Omar Sy
+Quel acteur joue l'homme riche ? | François Cluzet
+Quel est le handicap de Philippe ? | Il est tétraplégique
+Quelle voiture de sport sort-il du garage ? | Une Maserati
+Sur quelle chanson d'Earth, Wind & Fire danse-t-on ? | Boogie Wonderland
+En quelle année est-il sorti ? | En 2011
+Quels sont les deux réalisateurs ? | Olivier Nakache et Éric Toledano
+Quel compositeur italien signe la musique ? | Ludovico Einaudi
+Quel aristocrate a inspiré le personnage de Philippe ? | Philippe Pozzo di Borgo
+Comment s'appelle le vrai auxiliaire de vie ? | Abdel Sellou
+# Daft Punk
+Que portent-ils sur la tête ? | Des casques de robots
+Combien sont-ils ? | Deux
+De quel pays viennent-ils ? | La France
+Quel tube de 2013 chante Pharrell Williams avec eux ? | Get Lucky
+Quel tube de 2000 a un clip en anime japonais ? | One More Time
+Comment s'appelle leur premier album ? | Homework
+Quels sont leurs deux noms ? | Thomas Bangalter et Guy-Manuel de Homem-Christo
+De quel film Disney de 2010 ont-ils écrit la musique ? | Tron : L'Héritage
+Quel était le nom de leur groupe de rock précédent ? | Darlin'
+En quelle année se sont-ils séparés ? | En 2021
+# ABBA
+De quel pays vient le groupe ? | La Suède
+Combien de membres compte-t-il ? | Quatre
+Quelle comédie musicale reprend leurs chansons ? | Mamma Mia!
+Que forme le nom ABBA ? | Les initiales de leurs prénoms
+Quel concours ont-ils gagné en 1974 ? | L'Eurovision
+Avec quelle chanson ? | Waterloo
+Dans quelle ville anglaise s'est tenu ce concours ? | Brighton
+Quels sont leurs quatre prénoms ? | Agnetha, Björn, Benny, Anni-Frid
+Comment s'appelle leur album de retour de 2021 ? | Voyage
+De quel groupe de folk suédois venait Björn ? | Hootenanny Singers
+# Roland-Garros
+Sur quelle surface se joue le tournoi ? | La terre battue
+Dans quelle ville ? | Paris
+Quel Espagnol l'a gagné 14 fois ? | Rafael Nadal
+Quel est le dernier Français à l'avoir gagné ? | Yannick Noah
+En quelle année ? | En 1983
+Quel était le métier de Roland Garros ? | Aviateur
+Quelle mer a-t-il traversée en premier, en 1913 ? | La Méditerranée
+Comment s'appelle la coupe du vainqueur ? | La coupe des Mousquetaires
+Comment s'appelle celle de la gagnante ? | La coupe Suzanne-Lenglen
+Quels quatre joueurs sont les Mousquetaires ? | Borotra, Brugnon, Cochet, Lacoste
 `;

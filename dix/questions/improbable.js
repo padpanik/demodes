@@ -315,7 +315,7 @@ Que glisse-t-on dans la fente pour le décrocher ? | Une pièce ou un jeton
 Comment appelle-t-on aussi la personne qui porte les clubs au golf ? | Un caddie
 Que faut-il faire du caddie pour récupérer sa pièce ? | Le raccrocher aux autres
 Quel mot a remplacé « caddie » dans les textes officiels, car c'est une marque ? | Chariot
-Quelle ville française a donné naissance à la marque Caddie ? | Strasbourg
+Près de quelle grande ville française est née la marque Caddie ? | Strasbourg (à Schiltigheim)
 De quel pays vient le chariot de supermarché ? | Les États-Unis
 En quelle décennie a-t-il été inventé ? | Les années 1930
 Comment s'appelle son inventeur, épicier dans l'Oklahoma ? | Sylvan Goldman
@@ -339,7 +339,7 @@ Quel voyageur du temps britannique a une cabine de police bleue ? | Doctor Who
 Comment s'appelle ce vaisseau ? | Le Tardis
 Quelle carte glissait-on dedans dans les années 1990 ? | Une télécarte
 Quel opérateur français a retiré les dernières cabines ? | Orange
-En quelle année a pris fin l'obligation d'en entretenir en France ? | En 2017
+En quelle année les cabines devaient-elles avoir disparu de France ? | En 2017 (obligation supprimée fin 2016)
 Quel architecte a dessiné la cabine rouge britannique ? | Sir Giles Gilbert Scott
 Quel monument funéraire l'a inspiré ? | Le tombeau de la famille de John Soane, à St Pancras
 # Les pigeons
@@ -358,7 +358,7 @@ Sur quoi faut-il éviter de marcher ? | Une crotte
 Quel pied porte bonheur, paraît-il ? | Le pied gauche
 Que doit faire le maître, sachet à la main ? | Ramasser
 Comment s'appelaient les motos vertes de Paris qui les aspiraient ? | Les motocrottes
-Quel maire de Paris les a lancées ? | Jacques Chirac
+Quel maire dirigeait Paris à leur lancement, en 1982 ? | Jacques Chirac
 Quel était leur nom officiel ? | Les caninettes
 Dans quelle décennie ont-elles disparu ? | Les années 2000
 Quelle ville espagnole a renvoyé leurs crottes à leurs propriétaires par colis ? | Brunete
@@ -551,4 +551,312 @@ Tête en bas, que fait-il presque toute la journée ? | Il dort
 Quelle plante pousse sur son pelage et le rend verdâtre ? | Des algues
 De quel arbre mange-t-il surtout les feuilles ? | Le cecropia
 Quel papillon de nuit vit dans son pelage ? | Cryptoses choloepi
+# Le Velcro
+Quel bruit fait-il quand on l'ouvre ? | Scratch
+Sur quoi le trouve-t-on souvent, à la place des lacets ? | Des chaussures d'enfant
+Combien de bandes faut-il pour qu'il tienne ? | Deux
+Quelles sont les deux faces, en gros ? | Des crochets et des boucles
+Quels deux mots français ont formé le nom Velcro ? | Velours et crochet
+Quelle agence spatiale l'a rendu célèbre ? | La NASA
+De quel pays vient son inventeur ? | La Suisse
+Quelle plante accrochée au poil de son chien lui a donné l'idée ? | La bardane
+Comment s'appelle cet inventeur ? | George de Mestral
+Dans quelle décennie a-t-il eu cette idée, en promenade ? | Les années 1940
+# La fermeture Éclair
+Que fait-on monter pour fermer son pantalon ? | La fermeture Éclair
+Quel oubli gênant ne faut-il pas faire en sortant des toilettes ? | La remonter
+Quel mot anglais la désigne ? | Zipper
+Quelle marque japonaise est gravée sur beaucoup de curseurs ? | YKK
+Comment s'appelle la petite pièce qu'on tire ? | Le curseur
+De quel pays vient l'invention ? | Les États-Unis
+Quel Américain a présenté un premier « fermoir à glissière » en 1893 ? | Whitcomb Judson
+Quel ingénieur suédo-américain l'a rendue fiable en 1913 ? | Gideon Sundback
+Quelle entreprise a popularisé le mot zipper, pour des bottes en caoutchouc ? | B.F. Goodrich
+Que signifient les lettres YKK, en japonais ? | Yoshida Kogyo Kabushikikaisha
+# Le stylo Bic
+Que mâchouille-t-on en réfléchissant ? | Le capuchon
+Quelle couleur d'encre est la plus classique ? | Le bleu
+Comment s'appelle son célèbre modèle transparent ? | Le Cristal
+À quoi sert la petite bille au bout ? | À déposer l'encre
+Pourquoi le capuchon a-t-il un trou ? | Pour laisser passer l'air si on l'avale
+De quel nom de famille vient Bic ? | Bich
+Quel est le prénom du baron Bich, son fondateur ? | Marcel
+Quel inventeur hongrois a mis au point le stylo à bille ? | László Bíró
+En quelle année sort le Bic Cristal ? | En 1950
+Quelle ville près de Paris abrite historiquement le siège de Bic ? | Clichy
+# Tupperware
+Que range-t-on dedans ? | Les restes
+Que fait-on de son couvercle, immanquablement ? | On le perd
+Comment vendait-on les boîtes, chez les particuliers ? | En réunion à domicile
+Quel bruit le couvercle est-il censé faire ? | Un petit « pshit » d'air qui sort
+De quel pays vient la marque ? | Les États-Unis
+Quel chimiste a fondé l'entreprise ? | Earl Tupper
+Dans quelle décennie ? | Les années 1940
+Quelle vendeuse a inventé les « Tupperware parties » ? | Brownie Wise
+Dans quel État américain l'entreprise est-elle installée ? | La Floride
+Quelle procédure l'entreprise a-t-elle demandée en 2024 ? | Une mise en faillite
+# Les Crocs
+Que porte-t-on de plus moche, mais confortable, aux pieds ? | Des Crocs
+Que trouve-t-on sur le dessus ? | Des trous
+De quoi sont-elles faites ? | D'une sorte de mousse plastique
+Comment s'appellent les petits décors qu'on clipse ? | Les Jibbitz
+Quel animal a inspiré le nom ? | Le crocodile
+Pour quel usage les premières étaient-elles pensées ? | La navigation de plaisance
+Dans quel État américain est née la marque ? | Le Colorado
+En quelle année ? | En 2002
+Comment s'appelle la matière d'origine ? | Le Croslite
+Quelle entreprise québécoise a fabriqué les premières ? | Foam Creations
+# Les flamants roses
+Quelle est leur couleur ? | Rose
+Sur combien de pattes dorment-ils ? | Une seule
+Quelle est la forme de leur long cou ? | En S
+Dans quel livre sert-on d'un flamant comme maillet de croquet ? | Alice au pays des merveilles
+Qu'est-ce qui les rend roses ? | Leur alimentation
+Quelle région française en accueille des milliers ? | La Camargue
+Comment tiennent-ils la tête pour filtrer l'eau ? | À l'envers
+Quels pigments colorent les plumes ? | Les caroténoïdes
+Quel petit crustacé leur donne en partie cette couleur ? | L'artémia
+De quelle langue vient le mot flamant ? | Du provençal flamenc, « couleur de flamme »
+# Les wombats
+Quelle forme ont leurs crottes ? | Cubes
+Dans quel pays vivent-ils ? | L'Australie
+Quelle catégorie d'animal, comme le kangourou ? | Marsupial
+À quoi ressemble-t-il : à un ours, ou à une girafe ? | Un petit ours trapu
+Où creusent-ils leur maison ? | Sous terre, dans un terrier
+Dans quel sens s'ouvre la poche de la mère ? | Vers l'arrière, pour ne pas s'emplir de terre
+Quelle partie du corps sert à boucher son terrier face à un prédateur ? | Son arrière-train
+Quelle île australienne en abrite une population célèbre ? | La Tasmanie
+Comment appelle-t-on le petit, comme chez le kangourou ? | Un joey
+Quel animal australien est son plus proche cousin ? | Le koala
+# Les pieuvres
+Combien de bras ? | Huit
+Que crache-t-elle pour s'enfuir ? | De l'encre
+Quelle méchante de La Petite Sirène est mi-femme mi-pieuvre ? | Ursula
+Combien a-t-elle de cœurs ? | Trois
+Quelle couleur a son sang ? | Bleu
+Quel nom de pieuvre a prédit les matchs de la Coupe du monde 2010 ? | Paul
+Dans quel aquarium allemand vivait-il ? | Oberhausen
+Quelle molécule à base de cuivre rend son sang bleu ? | L'hémocyanine
+Comment appelle-t-on sa classe, avec calmars et seiches ? | Les céphalopodes
+Quel est son genre scientifique ? | Octopus
+# Les moustiques
+Qui te pique ? | La femelle
+Quel bruit t'empêche de dormir ? | Son bourdonnement
+Quel petit appareil branche-t-on la nuit contre lui ? | Un diffuseur
+Quel moustique tigré s'est installé en France ? | Le moustique tigre
+Quel est le genre scientifique du moustique tigre ? | Aedes
+Quelle maladie tropicale transmet-il ? | Le paludisme
+Quel moustique précis transmet cette maladie ? | L'anophèle
+Quel Français a découvert le parasite du paludisme, en 1880 ? | Alphonse Laveran
+Quel Britannique a montré le rôle du moustique ? | Ronald Ross
+En quelle année Ronald Ross a-t-il reçu le Nobel ? | En 1902
+# Les cafards
+Où les trouve-t-on la nuit ? | Dans la cuisine
+Quel autre nom leur donne-t-on ? | Blatte
+Combien de pattes ont-ils ? | Six
+Combien de temps peut vivre un cafard sans tête ? | Plusieurs jours
+Quel robot Pixar a un cafard pour seul ami ? | WALL-E
+Quel livre de Kafka commence par une transformation en insecte ? | La Métamorphose
+Comment s'appelle son héros ? | Gregor Samsa
+Comment s'appelle la capsule d'œufs ? | L'oothèque
+Quel cafard est le plus répandu dans les maisons ? | La blatte germanique
+Quels insectes sont, étonnamment, classés parmi les blattes ? | Les termites
+# Les escargots
+Qu'est-ce qu'il porte sur son dos ? | Sa coquille
+Que laisse-t-il sur le mur ? | De la bave
+Comment est-il cuisiné en Bourgogne ? | Au beurre persillé
+Comment s'appelle celui de Bob l'éponge ? | Gary
+Combien a-t-il de « cornes » sur la tête ? | Quatre
+Quel sexe a-t-il ? | Les deux, il est hermaphrodite
+Comment s'appelle l'élevage d'escargots ? | L'héliciculture
+Quelle langue râpeuse lui sert à manger ? | La radula
+Quel est le nom latin de l'escargot de Bourgogne ? | Helix pomatia
+Comment s'appelle le « bouchon » qui ferme sa coquille en hiver ? | L'épiphragme
+# Les capybaras
+Quelle famille d'animaux : rongeur ou félin ? | Rongeur
+Quel continent ? | L'Amérique du Sud
+Où passe-t-il son temps ? | Près de l'eau
+Quel record détient-il ? | Le plus gros rongeur du monde
+Quel réseau social en a fait une star, par son calme ? | TikTok
+Dans quel pays prend-il des bains chauds dans les zoos ? | Le Japon
+Quel pays en consomme la viande pendant le Carême ? | Le Venezuela
+Quel est le genre scientifique du capybara ? | Hydrochoerus
+De quel rongeur domestique est-il un cousin ? | Le cochon d'Inde
+Quelle langue a donné le mot capybara ? | Le tupi, « mangeur de plantes fines »
+# Les lamas
+Que fait-il quand il est fâché ? | Il crache
+Dans quel album Tintin en reçoit-il un jet ? | Le Temple du Soleil
+Quel empereur Disney est transformé en lama ? | Kuzco
+Quel pays lui est très lié ? | Le Pérou
+Quel peuple l'utilisait pour porter ? | Les Incas
+Quelle laine très recherchée vient de son cousin ? | L'alpaga
+Quelle chaîne de montagnes est son habitat ? | Les Andes
+Quel cousin sauvage donne la laine la plus fine ? | La vigogne
+De quel camélidé sauvage le lama descend-il ? | Le guanaco
+À quelle famille appartient-il, avec le chameau ? | Les camélidés
+# Les ninjas
+De quelle couleur est sa tenue ? | Noire
+Quels animaux mutants du cinéma sont aussi ninjas ? | Les Tortues Ninja
+Comment s'appelle leur maître rat ? | Splinter
+Laquelle porte un bandeau bleu ? | Leonardo
+De quel pays viennent les ninjas ? | Le Japon
+Quelle étoile lancent-ils ? | Le shuriken
+Quel est le terme pour une femme ninja ? | Kunoichi
+Quelles sont les deux provinces célèbres pour ses écoles ? | Iga et Kōga
+Quel samouraï légendaire a dirigé des hommes d'Iga ? | Hattori Hanzō
+Quel seigneur leur a fait la guerre à Iga en 1581 ? | Oda Nobunaga
+# Les pirates
+Quel oiseau a-t-il sur l'épaule ? | Un perroquet
+Que porte-t-il à la place d'une jambe ? | Une jambe de bois
+Quel drapeau hisse-t-il ? | Le drapeau noir
+Quel capitaine joue Johnny Depp ? | Jack Sparrow
+Quel est le nom du célèbre drapeau, tête de mort comprise ? | Le Jolly Roger
+Quel pirate anglais tenait des mèches allumées dans sa barbe ? | Barbe Noire
+Quel était son vrai nom ? | Edward Teach
+Quel était le nom de son navire ? | Le Queen Anne's Revenge
+Quelles deux femmes pirates ont navigué avec Calico Jack ? | Anne Bonny et Mary Read
+Quelle île était un repaire de flibustiers au nord de Saint-Domingue ? | La Tortue
+# Les cow-boys
+Que met-il sur sa tête ? | Un chapeau
+Que monte-t-il ? | Un cheval
+Quel cow-boy de BD tire plus vite que son ombre ? | Lucky Luke
+Quelle marque de chapeau est célèbre ? | Stetson
+Quelle marque de jean ? | Levi's
+Quel hors-la-loi a un surnom de gamin ? | Billy the Kid
+Dans quelle ville se déroule la fusillade d'O.K. Corral ? | Tombstone
+En quelle année ? | En 1881
+Quel marshal y participe ? | Wyatt Earp
+Qui a tué Billy the Kid ? | Pat Garrett
+# Les dinosaures
+Quel film de Spielberg les ramène à la vie ? | Jurassic Park
+Lequel est le plus célèbre carnivore ? | Le T. rex
+Quel objet venu de l'espace les a condamnés ? | Une météorite
+Quel groupe d'animaux actuels en descend ? | Les oiseaux
+Dans quel pays se trouve le cratère de Chicxulub ? | Le Mexique
+Il y a combien de millions d'années ont-ils disparu ? | 66 millions
+Quel Britannique a inventé le mot « dinosaure » ? | Richard Owen
+En quelle année ? | En 1842
+Quel médecin anglais a décrit l'iguanodon ? | Gideon Mantell
+Comment s'appelle le T. rex le plus complet, au Field Museum ? | Sue
+# Les fantômes
+Comment s'appelle le gentil petit fantôme ? | Casper
+Sur quoi le déguisement est-il fait ? | Un drap blanc
+Que dit-il en surgissant ? | Bouh !
+Quel film de 1984 envoie des chasseurs de fantômes à New York ? | SOS Fantômes
+Quel acteur y joue Peter Venkman ? | Bill Murray
+Quel film de 1990 montre Patrick Swayze en fantôme ? | Ghost
+Quelle pièce de Shakespeare commence par un fantôme de roi ? | Hamlet
+Quel fantôme apparaît à un banquet chez Macbeth ? | Banquo
+Quel fantôme vert glouton apparaît dans SOS Fantômes ? | Bouffe-tout (Slimer)
+Quelle nouvelle d'Oscar Wilde a un fantôme chez des Américains ? | Le Fantôme de Canterville
+# Le Père Noël
+Par quels animaux son traîneau est-il tiré ? | Des rennes
+Par où passe-t-il ? | Par la cheminée
+Quel renne a le nez rouge ? | Rudolphe
+Quelle couleur a son habit ? | Rouge
+Dans quelle ville de Laponie finlandaise a-t-il son village ? | Rovaniemi
+Quel saint est à son origine ? | Saint Nicolas
+De quelle ville turque actuelle Nicolas était-il évêque ? | Myre
+Quelle marque de boisson a popularisé son image, dans les années 1930 ? | Coca-Cola
+Quel illustrateur l'a dessinée ? | Haddon Sundblom
+Dans quelle ville française a-t-on brûlé son effigie en 1951 ? | Dijon
+# La petite souris
+Que laisse-t-on sous l'oreiller ? | Une dent
+Que trouve-t-on à la place ? | Une pièce
+Qui passe la chercher, en France ? | La petite souris
+Qui remplace la souris chez les anglophones ? | La fée des dents
+Comment s'appelle-t-elle en anglais ? | Tooth Fairy
+Quelle souris s'occupe des dents en Espagne ? | Ratoncito Pérez
+Combien a-t-on de dents de lait ? | Vingt
+Pour qui Luis Coloma a-t-il écrit le conte espagnol ? | Le jeune roi Alphonse XIII
+Quelle conteuse française a écrit « La Bonne Petite Souris » ? | Madame d'Aulnoy
+En quel siècle ? | Au XVIIe siècle
+# Les clowns
+Quelle est la couleur du nez ? | Rouge
+Quelle taille ont ses chaussures ? | Immenses
+Quel clown terrifiant de Stephen King ? | Pennywise (dans Ça)
+Comment s'appelle celui des Simpson ? | Krusty
+Quel est le partenaire du clown blanc ? | L'Auguste
+Comment s'appelle la peur des clowns ? | La coulrophobie
+Quelle famille française de clowns célèbre ? | Les Fratellini
+Quel clown français a fondé un cirque à son nom ? | Achille Zavatta
+Quel Anglais est considéré comme le père du clown moderne ? | Joseph Grimaldi
+Quelle école de clowns a été fondée par Annie Fratellini et Pierre Étaix ? | L'École nationale du cirque
+# Les mimes
+Que dit-il ? | Rien
+Contre quoi s'appuie-t-il dans la rue ? | Un mur invisible
+Quelle est sa couleur au visage ? | Blanche
+Quel Français est le mime le plus connu ? | Marcel Marceau
+Quel personnage a-t-il créé ? | Bip
+Quelle école a-t-il dirigée ? | L'École internationale de mimodrame de Paris
+Quel film de Marcel Carné met en scène un mime célèbre ? | Les Enfants du paradis
+Quel mime du XIXe siècle y est incarné ? | Jean-Gaspard Deburau
+Quel acteur le joue ? | Jean-Louis Barrault
+Quel maître a formé Marcel Marceau ? | Étienne Decroux
+# Les magiciens
+Que sort-il de son chapeau ? | Un lapin
+Quel mot magique ? | Abracadabra
+Que scie-t-il en deux ? | Une assistante
+Quel Américain échappait à tout ? | Houdini
+À quel illusionniste français Houdini a-t-il emprunté son nom ? | Robert-Houdin
+Quel monument David Copperfield a-t-il fait disparaître ? | La statue de la Liberté
+En quelle année ? | En 1983
+Quel duo américain a un membre muet ? | Penn et Teller
+Quel Français de la télévision s'appelle Gérard… ? | Majax
+Dans quelle ville est né Houdini ? | Budapest
+# Les feux tricolores
+Combien de couleurs ? | Trois
+Quelle couleur veut dire stop ? | Rouge
+Que doit-on faire à l'orange, normalement ? | S'arrêter
+Dans quelle ville a été posé le premier feu ? | Londres
+Devant quel bâtiment ? | Le Parlement
+En quelle année ? | En 1868
+De quoi marchait-il ? | Au gaz
+Pourquoi a-t-il été retiré ? | Il a explosé
+Quelle ville américaine a eu le premier feu électrique, en 1914 ? | Cleveland
+Quel petit bonhomme de feux piétons est resté célèbre à Berlin ? | L'Ampelmann
+# Les stations fantômes du métro
+Dans quelle ville ? | Paris
+Qui s'y arrête ? | Personne
+Quelle entreprise gère le métro ? | La RATP
+Quel ingénieur a dirigé la construction du métro ? | Fulgence Bienvenüe
+Quel architecte a dessiné ses entrées ? | Hector Guimard
+En quelle année a ouvert la ligne 1 ? | En 1900
+Quelle station fermée de la ligne 8 et 9 est près de République ? | Saint-Martin
+Quelle station fermée de la ligne 5 est proche de Bastille ? | Arsenal
+Quelle station fermée de la ligne 8 porte le nom du lieu de la tour Eiffel ? | Champ-de-Mars
+Quelle station n'a jamais été ouverte, sur la voie des Fêtes ? | Haxo
+# Les grille-pain
+Que brûle-t-il ? | Le pain
+De quel côté tombe la tartine ? | Du côté beurré
+Quelle loi l'explique ? | La loi de Murphy
+Que fait-on si elle reste coincée ? | On la sort, surtout pas avec un couteau
+Qui a inventé le pain déjà tranché, bien utile ? | Otto Rohwedder
+Dans quelle décennie ? | Les années 1920
+Quel inventeur américain a fait le grille-pain qui saute ? | Charles Strite
+En quelle année ? | En 1919
+Quelle marque a commercialisé ce modèle ? | Toastmaster
+Quelle société britannique a lancé en 1893 l'Eclipse ? | Crompton & Co
+# Les nouilles instantanées
+Que suffit-il d'ajouter ? | De l'eau chaude
+Combien de minutes attend-on ? | Environ 3
+De quel pays vient la marque Yum Yum ? | La Thaïlande
+Comment s'appelle son gobelet classique ? | Cup Noodles
+De quel pays viennent-elles ? | Le Japon
+Quelle entreprise japonaise ? | Nissin
+Qui les a inventées ? | Momofuku Ando
+En quelle année ? | En 1958
+Comment s'appelait le produit ? | Chikin Ramen
+Quelle année est sorti le Cup Noodles ? | En 1971
+# La mayonnaise
+Que fait-elle quand elle est ratée ? | Elle tombe
+Avec du jaune d'œuf, quel est son ingrédient principal ? | L'huile
+De quelle couleur est-elle ? | Jaune pâle
+Quelle marque française en vend en tube ? | Amora
+Quel type de mélange est-elle ? | Une émulsion
+Quelle molécule de l'œuf la stabilise ? | La lécithine
+Quel port de Minorque lui a donné son nom, selon la légende ? | Mahón
+Quel duc français y a gagné une bataille en 1756 ? | Le duc de Richelieu
+Quel épicier new-yorkais a lancé une mayonnaise en pot à succès ? | Richard Hellmann
+Au début de quel siècle l'a-t-il lancée ? | Le XXe siècle
 `;
