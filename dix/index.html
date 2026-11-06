@@ -47,12 +47,12 @@
     .choisir-eq .boutons { display: flex; gap: 6px; margin-top: 6px; }
     .choisir-eq .btn { padding: 8px 4px; font-size: 0.9em; color: #fff; border: none; }
 
-    /* Plateau : un chemin sinueux de cases rondes (dessiné en SVG) */
-    .plateau-dx { background: #16243b; border-radius: 18px; box-shadow: 0 2px 8px rgba(22,36,59,0.35); overflow: hidden; }
+    /* Plateau : un jeu imprimé, route de tuiles en serpent */
+    .plateau-dx { border-radius: 14px; box-shadow: 0 2px 6px rgba(60,40,10,0.28); overflow: hidden; }
     .plateau-dx svg { display: block; width: 100%; height: auto; }
     .pion-g { transition: transform 0.22s ease-out; }
-    .anneau-joue { animation: anneau 1.2s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
-    @keyframes anneau { 50% { opacity: 0.25; transform: scale(1.18); } }
+    .anneau-joue { animation: anneau 1.1s ease-in-out infinite; }
+    @keyframes anneau { 50% { opacity: 0.3; } }
 
     /* Bandeau des équipes */
     .scores-dx { display: flex; gap: 5px; margin: 6px 0; }
@@ -216,26 +216,39 @@
           <div class="plateau-dx">
             <svg :viewBox="'0 0 ' + geo.W + ' ' + geo.H" :style="{ aspectRatio: geo.W + ' / ' + geo.H }">
               <defs>
-                <radialGradient id="dx-fond" cx="50%" cy="35%" r="75%"><stop offset="0" stop-color="#2d4a73"/><stop offset="1" stop-color="#16243b"/></radialGradient>
-                <radialGradient v-for="(t, k) in DX.THEMES" :key="k" :id="'dx-' + k" cx="38%" cy="30%" r="75%"><stop offset="0" :stop-color="eclaircir(t.couleur)"/><stop offset="1" :stop-color="t.couleur"/></radialGradient>
-                <radialGradient id="dx-bout" cx="38%" cy="30%" r="75%"><stop offset="0" stop-color="#3b4b5c"/><stop offset="1" stop-color="#121a24"/></radialGradient>
+                <pattern id="dx-damier" width="8" height="8" patternUnits="userSpaceOnUse"><rect width="8" height="8" fill="#fff"/><rect width="4" height="4" fill="#1b2433"/><rect x="4" y="4" width="4" height="4" fill="#1b2433"/></pattern>
               </defs>
-              <rect x="0" y="0" :width="geo.W" :height="geo.H" fill="url(#dx-fond)"/>
-              <g v-for="(d, k) in decor" :key="'d' + k" :transform="'translate(' + d.x + ',' + d.y + ') scale(' + d.s + ')'" :opacity="d.o">
-                <path d="M0 -5 Q0.8 -0.8 5 0 Q0.8 0.8 0 5 Q-0.8 0.8 -5 0 Q-0.8 -0.8 0 -5 Z" :fill="d.c"/>
-              </g>
-              <path :d="geo.ruban" fill="none" stroke="#0d1522" stroke-width="11" stroke-linecap="round" stroke-linejoin="round" opacity="0.55"/>
-              <path :d="geo.ruban" fill="none" stroke="#f3e2bd" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
-              <path :d="geo.ruban" fill="none" stroke="#c9a46a" stroke-width="1.4" stroke-dasharray="2 5" stroke-linecap="round"/>
+              <!-- Le carton du jeu et son filet -->
+              <rect width="100%" height="100%" fill="#f5e9cf"/>
+              <rect x="4.5" y="4.5" :width="geo.W - 9" :height="geo.H - 9" rx="9" fill="none" stroke="#b08a4e" stroke-width="1"/>
+              <!-- La route -->
+              <path :d="geo.route" fill="none" stroke="#2a3548" :stroke-width="geo.T + 5" stroke-linejoin="round" stroke-linecap="round"/>
+              <path v-for="(f, k) in geo.virages" :key="'v' + k" :d="f" fill="none" stroke="#f5e9cf" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+              <!-- Les tuiles -->
               <g v-for="c in casesSvg" :key="c.i">
-                <circle :cx="c.x" :cy="c.y + 2" :r="c.r" fill="rgba(0,0,0,0.35)"/>
-                <circle :cx="c.x" :cy="c.y" :r="c.r" :fill="c.fond" :stroke="c.bout ? '#ffd43b' : '#fff'" :stroke-width="c.bout ? 2.6 : 2.2"/>
-                <circle v-if="c.ici" class="anneau-joue" :cx="c.x" :cy="c.y" :r="c.r + 4" fill="none" :stroke="equipe.couleur" stroke-width="3"/>
-                <g :transform="'translate(' + c.x + ',' + c.y + ') scale(' + (c.bout ? 1.3 : 1.05) + ')'" v-html="c.ico"></g>
+                <rect :x="c.x" :y="c.y + 2" :width="c.w" :height="c.h" rx="6" :fill="c.bord"/>
+                <rect :x="c.x" :y="c.y" :width="c.w" :height="c.h" rx="6" :fill="c.fond"/>
+                <rect v-if="c.arrivee" :x="c.x" :y="c.y" width="12" :height="c.h" rx="5" fill="url(#dx-damier)" :transform="c.damier"/>
+                <rect v-if="c.ici" class="anneau-joue" :x="c.x - 2" :y="c.y - 2" :width="c.w + 4" :height="c.h + 6" rx="8" fill="none" :stroke="equipe.couleur" stroke-width="3"/>
+                <text v-if="c.num" :x="c.x + 3.5" :y="c.y + 9" font-size="7.5" font-weight="800" fill="#fff" opacity="0.85">{{ c.num }}</text>
+                <g :transform="'translate(' + c.cx + ',' + (c.bout ? c.cy - 3.5 : c.cy + 1.5) + ') scale(' + c.echelle + ')'" v-html="c.ico"></g>
+                <text v-if="c.bout" :x="c.cx" :y="c.y + c.h - 4" text-anchor="middle" font-size="7" font-weight="900" letter-spacing="0.2" fill="#ffd43b">{{ c.bout }}</text>
               </g>
-              <g v-for="p in pionsSvg" :key="'p' + p.i" class="pion-g" :style="{ transform: 'translate(' + p.x + 'px,' + p.y + 'px)' }">
-                <ellipse cx="0" cy="7" rx="7" ry="2.6" fill="rgba(0,0,0,0.45)"/>
-                <path d="M -6 6 Q -6 -1 -3.2 -3.5 A 5 5 0 1 1 3.2 -3.5 Q 6 -1 6 6 Z" :fill="p.c" stroke="#fff" stroke-width="1.6"/>
+              <!-- Le nom du jeu, dans la place libre après l'arrivée -->
+              <g v-if="geo.titre" :transform="'translate(' + geo.titre.x + ',' + geo.titre.y + ')'" text-anchor="middle" fill="#6b4f24" font-family="Georgia,serif">
+                <text :font-size="geo.titre.t" font-weight="700" font-style="italic" y="-1">Combien</text>
+                <text :font-size="geo.titre.t" font-weight="700" font-style="italic" :y="geo.titre.t">sur 10 ?</text>
+              </g>
+              <!-- La légende -->
+              <g font-size="8" font-weight="800">
+                <g v-for="l in legende" :key="l.t" :transform="'translate(' + l.x + ',' + (geo.H - 15) + ')'">
+                  <rect x="0" y="-6" width="9" height="9" rx="2.5" :fill="l.c"/><text x="11.5" y="1.7" fill="#4a3a20">{{ l.t }}</text>
+                </g>
+              </g>
+              <!-- Les pions -->
+              <g v-for="p in pionsSvg" :key="'p' + p.i" class="pion-g" :style="{ transform: 'translate(' + p.x + 'px,' + p.y + 'px) scale(' + p.s + ')' }">
+                <ellipse cx="0" cy="7" rx="7" ry="2.6" fill="rgba(0,0,0,0.5)"/>
+                <path d="M -6 6 Q -6 -1 -3.2 -3.5 A 5 5 0 1 1 3.2 -3.5 Q 6 -1 6 6 Z" :fill="p.c" stroke="#fff" stroke-width="1.7"/>
                 <circle cx="-1.6" cy="-8.2" r="1.6" fill="rgba(255,255,255,0.75)"/>
               </g>
             </svg>
@@ -304,7 +317,9 @@
 
             <template v-else-if="e.phase === 'challenge'">
               <div class="sujet-dx">⚡ {{ challenge.titre }}</div>
-              <div class="question-dx">{{ challenge.texte }}</div>
+              <div class="aide" v-if="monRole === 'lecteur'" style="margin-bottom:0">📖 Lisez le challenge à voix haute aux {{ equipe.nom }}.</div>
+              <div class="question-dx" v-if="monRole !== 'joue'">{{ challenge.texte }}</div>
+              <div class="ecoute-dx" v-else>🎧 Écoutez bien :<br>les {{ lecteur.nom }} vous lisent le challenge.</div>
               <button class="chrono-dx" :class="{ fini: chronoReste === 0, actif: peut('chrono') }" @click="lancerChrono">
                 <div class="barre" :style="{ width: (chronoReste === null ? 0 : chronoReste / 30 * 100) + '%' }"></div>
                 <span>{{ chronoReste === null ? (peut('chrono') ? '⏱ Lancer les 30 secondes' : '⏱ 30 secondes') : chronoReste === 0 ? '⏰ Temps écoulé !' : chronoReste + ' s' }}</span>
@@ -334,7 +349,7 @@
               <button v-else-if="peut('surprise')" class="btn principal" style="width:100%;margin-top:8px" @click="jouer({ type: 'surprise' })">OK</button>
             </template>
             <div class="journal-dx">{{ e.journal }}</div>
-            <div class="derniere-dx" v-if="e.derniere && e.phase === 'theme'"><div v-if="e.derniere.q" style="margin-bottom:2px">{{ e.derniere.q }}</div>{{ e.derniere.ok ? '✓' : '✗' }} Réponse : <b>{{ e.derniere.r || '—' }}</b></div>
+            <div class="derniere-dx" v-if="e.derniere && e.phase === 'theme'"><div v-if="e.derniere.q" style="margin-bottom:2px">{{ e.derniere.q }}</div>{{ e.derniere.ok ? '✓' : '✗' }} <template v-if="e.derniere.r">Réponse : <b>{{ e.derniere.r }}</b></template><template v-else>{{ e.derniere.ok ? 'Réussi' : 'Raté' }}</template></div>
           </div>
 
           <!-- Fin -->
@@ -371,8 +386,8 @@
             <li>À son tour, l'équipe regarde la <strong>case</strong> de son pion : elle donne le thème, <span style="color:#7950f2;font-weight:800">Improbable</span>, <span style="color:#e64980;font-weight:800">Plaisir</span>, <span style="color:#f76707;font-weight:800">Mature</span> ou <span style="color:#1c7ed6;font-weight:800">Scolaire</span>. Au premier tour, tout le monde joue Improbable.</li>
             <li>L'<strong>équipe d'avant</strong> (celle qui vient de jouer) tire la carte et annonce le sujet. L'équipe qui joue dit <strong>combien elle se met, de 1 à 10</strong> : plus on se sent fort, plus le chiffre est haut… et plus la question est difficile.</li>
             <li>L'équipe qui lit pose la question de ce niveau à voix haute : en salon, l'équipe qui joue ne la voit pas sur son écran, et seule l'équipe qui lit voit la réponse. <strong>30 secondes</strong>, une seule réponse. Elle juge : bonne réponse, on avance d'autant de cases que le chiffre annoncé ; sinon, on reste sur place.</li>
-            <li><span style="color:#f59f00;font-weight:800">⚡ Challenge</span> : une épreuve originale (liste, mime, dessin, vrai ou faux…), avec son gain.</li>
-            <li><strong>🎲 Superbe ou aïe</strong> : un bonus ou un malus, appliqué tout de suite.</li>
+            <li><span style="color:#f59f00;font-weight:800">⚡ Challenge</span> : une épreuve originale (liste, mime, dessin, vrai ou faux…), avec son gain. Elle est lue à voix haute : en salon, l'équipe qui joue ne la voit pas sur son écran.</li>
+            <li><strong>🎲 Superbe ou aïe</strong> : un bonus ou un malus, appliqué tout de suite. La carte déplace toujours le pion : on ne reste jamais sur cette case.</li>
             <li>Atteindre l'<strong>arrivée</strong> ne suffit pas : il faut encore répondre juste à une <strong>question finale</strong> de niveau {{ DX.NIVEAU_FINAL }}. Raté : on retente au tour suivant.</li>
             <li>Une équipe sans personne de connecté : les autres peuvent jouer à sa place (lire, juger, miser).</li>
             <li>Questions maison, écrites pour Désdale.</li>
@@ -408,26 +423,32 @@
     };
     // Une couleur un peu plus claire (reflet des cases)
     function eclaircir(c) { var n = parseInt(c.slice(1), 16), f = (v) => Math.round(v + (255 - v) * 0.35); return 'rgb(' + f(n >> 16) + ',' + f((n >> 8) & 255) + ',' + f(n & 255) + ')'; }
+    function foncer(c) { var n = parseInt(c.slice(1), 16), f = (v) => Math.round(v * 0.68); return 'rgb(' + f(n >> 16) + ',' + f((n >> 8) & 255) + ',' + f(n & 255) + ')'; }
     function copie(o) { return JSON.parse(JSON.stringify(o)); }
 
-    // ================== PLATEAU : un chemin en serpent, cases rondes régulièrement espacées ==================
-    // Lignes droites légèrement bombées, reliées par des demi-cercles ; les cases sont posées tous les PAS le long du chemin
+    // ================== PLATEAU : une route de tuiles carrées, en serpent, sur une grille de 8 colonnes ==================
     function geometrie(n) {
-      var W = 340, xG = 39, xD = 301, R = 22, PAS = 36.5, HAUT = 25;
-      var droite = xD - xG, tour = droite + Math.PI * R, total = (n - 1) * PAS;
-      function point(d) {
-        var r = Math.floor(d / tour), u = d - r * tour, y0 = HAUT + r * 2 * R, versDroite = r % 2 === 0;
-        if (u <= droite) {
-          var bombe = 4 * Math.sin(Math.PI * u / droite) * (versDroite ? 1 : -1);
-          return [versDroite ? xG + u : xD - u, y0 + bombe];
-        }
-        var a = (u - droite) / R, cx = versDroite ? xD : xG, cy = y0 + R;
-        return [cx + (versDroite ? 1 : -1) * R * Math.sin(a), cy - R * Math.cos(a)];
+      var COLS = 8, W = 340, MARGE = 12, PX = (W - 2 * MARGE) / COLS, T = PX - 3, PY = T + 9, HAUT = 13;
+      function place(i) {
+        var l = Math.floor(i / COLS), k = i % COLS, col = l % 2 ? COLS - 1 - k : k;
+        return { l: l, col: col, x: MARGE + col * PX + 1.5, y: HAUT + l * PY };
       }
-      var pts = [], ruban = [], maxY = 0;
-      for (var i = 0; i < n; i++) { var p = point(i * PAS); pts.push(p); maxY = Math.max(maxY, p[1]); }
-      for (var d = 0; d <= total + 0.01; d += 5) { var q = point(Math.min(d, total)); ruban.push(q[0].toFixed(1) + ' ' + q[1].toFixed(1)); }
-      return { W: W, H: Math.ceil(maxY + HAUT), pts: pts, ruban: 'M ' + ruban.join(' L ') };
+      var pts = [], route = [], virages = [];
+      for (var i = 0; i < n; i++) { var p = place(i); p.cx = p.x + T / 2; p.cy = p.y + T / 2; pts.push(p); route.push(p.cx.toFixed(1) + ' ' + p.cy.toFixed(1)); }
+      // L'arrivée s'étend vers la place libre de sa ligne (3 tuiles de large au plus)
+      var fin = pts[n - 1], sens = fin.l % 2 ? -1 : 1, libres = sens > 0 ? COLS - 1 - fin.col : fin.col, lrg = Math.min(2, libres);
+      var a = { x: sens > 0 ? fin.x : fin.x - lrg * PX, w: T + lrg * PX };
+      route.push((fin.cx + sens * lrg * PX).toFixed(1) + ' ' + fin.cy.toFixed(1));
+      fin.ax = a.x; fin.aw = a.w;
+      // Un chevron dans chaque virage, pour lire le sens de la route
+      for (var v = COLS; v < n; v += COLS) {
+        var c = pts[v], yc = c.y - (PY - T) / 2 + 1;
+        virages.push('M ' + (c.cx - 4) + ' ' + (yc - 2) + ' L ' + c.cx + ' ' + (yc + 2) + ' L ' + (c.cx + 4) + ' ' + (yc - 2));
+      }
+      // La place restante sur la dernière ligne accueille le nom du jeu
+      var reste = libres - lrg, titre = null;
+      if (reste >= 2) titre = { x: (sens > 0 ? a.x + a.w + (W - MARGE - a.x - a.w) / 2 : MARGE + (a.x - MARGE) / 2), y: fin.cy - 3, t: reste >= 4 ? 14 : 12 };
+      return { W: W, H: Math.ceil(fin.y + T + 30), T: T, pts: pts, route: 'M ' + route.join(' L '), virages: virages, titre: titre };
     }
 
     // ================== RÉSEAU (même principe que les autres jeux : étoile autour de l'hôte) ==================
@@ -502,28 +523,24 @@
         casesSvg: function() {
           var e = this.e, g = this.geo, ici = this.enJeu && e.phase !== 'depart' ? this.posAff[e.tour] : -1;
           return e.cases.map((t, i) => {
-            var T = DX.THEMES[t], bout = t === 'depart' || t === 'arrivee';
-            return { i: i, x: g.pts[i][0], y: g.pts[i][1], r: bout ? 17 : 14.5, bout: bout, fond: T ? 'url(#dx-' + t + ')' : 'url(#dx-bout)', ico: ICOS[t] || '', ici: i === ici };
+            var T = DX.THEMES[t], d = t === 'depart', ar = t === 'arrivee', p = g.pts[i], x = ar ? p.ax : p.x, w = ar ? p.aw : g.T;
+            return { i: i, x: x, y: p.y, w: w, h: g.T, cx: x + w / 2, cy: p.y + g.T / 2,
+                     fond: T ? T.couleur : '#1b2433', bord: T ? foncer(T.couleur) : '#05080d', ico: ICOS[t] || '', ici: i === ici,
+                     num: T ? i : '', bout: d ? 'DÉPART' : ar ? 'ARRIVÉE' : '', echelle: T ? 1.02 : 0.9, arrivee: ar,
+                     damier: ar && p.l % 2 ? '' : 'translate(' + (w - 12) + ',0)' };
           });
         },
-        // Petites étoiles du fond, toujours aux mêmes places, jamais sous une case
-        decor: function() {
-          var g = this.geo, l = [], graine = 7, h = () => { graine = (graine * 16807) % 2147483647; return graine / 2147483647; };
-          var COUL = ['#ffe8a3', '#c5d8ff', '#ffffff'];
-          for (var k = 0; k < 90 && l.length < 26; k++) {
-            var x = 6 + h() * (g.W - 12), y = 6 + h() * (g.H - 12);
-            if (g.pts.some(p => Math.hypot(p[0] - x, p[1] - y) < 21)) continue;
-            l.push({ x: x.toFixed(1), y: y.toFixed(1), s: (0.35 + h() * 0.6).toFixed(2), o: (0.35 + h() * 0.5).toFixed(2), c: COUL[k % 3] });
-          }
-          return l;
+        legende: function() {
+          var l = [['improbable', 'Improbable'], ['plaisir', 'Plaisir'], ['mature', 'Mature'], ['scolaire', 'Scolaire'], ['challenge', 'Challenge'], ['surprise', 'Superbe/aïe']], x = 13;
+          return l.map(c => { var o = { t: c[1], c: DX.THEMES[c[0]].couleur, x: x }; x += 14.5 + c[1].length * 4.55; return o; });
         },
-        // Pions (posAff : positions affichées, qui rattrapent les vraies case par case) ; plusieurs sur une case : en carré
+        // Pions (posAff : positions affichées, qui rattrapent les vraies case par case) ; plusieurs sur une tuile : côte à côte, plus petits
         pionsSvg: function() {
-          var e = this.e, g = this.geo, pos = this.posAff, DEC = [[-7, -6], [7, -6], [-7, 7], [7, 7]];
+          var e = this.e, g = this.geo, pos = this.posAff, DEC = { 1: [[0, 0]], 2: [[-8, 0], [8, 0]], 3: [[-9, 2], [9, 2], [0, -6]], 4: [[-8, -5], [8, -5], [-8, 7], [8, 7]] };
           return e.equipes.map((q, i) => {
             var p = Math.max(0, Math.min(e.cases.length - 1, pos[i] !== undefined ? pos[i] : q.pos)), meme = e.equipes.map((x, k) => k).filter(k => (pos[k] !== undefined ? pos[k] : e.equipes[k].pos) === p);
-            var d = meme.length > 1 ? DEC[meme.indexOf(i)] : [0, -3];
-            return { i: i, c: q.couleur, x: g.pts[p][0] + d[0], y: g.pts[p][1] + d[1] };
+            var d = DEC[meme.length][meme.indexOf(i)], P = g.pts[p];
+            return { i: i, c: q.couleur, s: meme.length > 1 ? 0.8 : 1, x: (p === e.cases.length - 1 ? P.ax + P.aw / 2 : P.cx) + d[0], y: P.cy + 3 + d[1] };
           }).sort((a, b) => (a.i === e.tour) - (b.i === e.tour));
         }
       },
