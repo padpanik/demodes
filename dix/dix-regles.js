@@ -960,7 +960,7 @@ var DX = (function () {
     l.push('arrivee');
     return l;
   }
-  var NIVEAU_FINAL = 7;   // question de la case Arrivée : niveau 7 d'un sujet tiré au hasard
+  var NIVEAUX_FINALE = [6, 7];   // question de la case Arrivée : niveau 6 ou 7 au hasard, d'un sujet tiré au hasard
 
   function melanger(t, h) { h = h || Math.random; t = t.slice(); for (var i = t.length - 1; i > 0; i--) { var j = Math.floor(h() * (i + 1)), x = t[i]; t[i] = t[j]; t[j] = x; } return t; }
   // Un sujet du thème, pas encore vu si possible (vus : identifiants déjà tirés, les plus récents à la fin)
@@ -1039,7 +1039,7 @@ var DX = (function () {
         var t = themeTour(e); e.chrono = null; e.derniere = null;
         if (t === 'arrivee') {
           var s = tirerSujet(null, ctx.vus, h); ctx.tire = s.id;
-          e.carte = { theme: s.theme, sujet: s.id, niveau: NIVEAU_FINAL, finale: true }; e.phase = 'question';
+          e.carte = { theme: s.theme, sujet: s.id, niveau: NIVEAUX_FINALE[tirer(NIVEAUX_FINALE, h)], finale: true }; e.phase = 'question';
         } else if (t === 'challenge') { e.carte = { theme: 'challenge', challenge: tirerChallenge(e, h) }; e.phase = 'challenge'; }
         else if (t === 'surprise') { e.carte = { theme: 'surprise', surprise: tirer(SURPRISES, h) }; e.phase = 'surprise'; }
         else { var s2 = tirerSujet(t, ctx.vus, h); ctx.tire = s2.id; e.carte = { theme: t, sujet: s2.id }; e.phase = 'mise'; }
@@ -1066,7 +1066,7 @@ var DX = (function () {
       case 'juger': {
         if (e.phase !== 'question' && e.phase !== 'reponse') return 'Pas maintenant.';
         var qr = question(e), n = c.niveau;
-        e.derniere = { q: qr[0], r: qr[1], ok: !!a.ok, equipe: e.tour };
+        e.derniere = { q: qr[0], r: qr[1], ok: !!a.ok, equipe: e.tour, s: sujet(c.sujet).nom, nv: n };
         if (c.finale) {
           if (a.ok) { e.gagnant = e.tour; e.phase = 'fin'; e.carte = null; e.chrono = null; e.journal = q.nom + ' a répondu juste à la question finale !'; break; }
           e.journal = q.nom + ' rate la question finale : on retentera au prochain tour.';
@@ -1078,7 +1078,7 @@ var DX = (function () {
       case 'challenge': {
         if (e.phase !== 'challenge') return 'Pas maintenant.';
         var ch = CHALLENGES[c.challenge], nb = Math.max(0, Math.min(ch.max || 0, Math.round(a.n) || 0));
-        e.derniere = { q: ch.texte, r: ch.vf ? ch.vf.map(v => v[1] ? 'V' : 'F').join(' · ') : (ch.reponse || ''), n: nb, ok: nb > 0, equipe: e.tour, challenge: true };
+        e.derniere = { q: ch.texte, r: ch.vf ? ch.vf.map(v => v[1] ? 'V' : 'F').join(' · ') : (ch.reponse || ''), n: nb, ok: nb > 0, equipe: e.tour, challenge: true, s: 'Challenge' };
         if (nb) { e.journal = 'Challenge : ' + nb + (nb > 1 ? ' bonnes réponses' : ' bonne réponse') + ', ' + q.nom + ' avance de ' + cases(nb) + '.'; deplacer(e, e.tour, nb); }
         else e.journal = 'Challenge : aucune bonne réponse pour ' + q.nom + '.';
         suivant(e);
@@ -1125,7 +1125,7 @@ var DX = (function () {
   }
 
   return { THEMES: THEMES, ORDRE_THEMES: ORDRE_THEMES, SUJETS: SUJETS, CHALLENGES: CHALLENGES, SURPRISES: SURPRISES, DEPARTS: DEPARTS,
-           LONGUEURS: LONGUEURS, NIVEAU_FINAL: NIVEAU_FINAL, plateau: plateau, tirerSujet: tirerSujet, tirer: tirer, sujet: sujet, melanger: melanger,
+           LONGUEURS: LONGUEURS, NIVEAUX_FINALE: NIVEAUX_FINALE, plateau: plateau, tirerSujet: tirerSujet, tirer: tirer, sujet: sujet, melanger: melanger,
            nouvellePartie: nouvellePartie, lecteur: lecteur, themeTour: themeTour, question: question, agir: agir, QUI: QUI };
 })();
 if (typeof module !== 'undefined') module.exports = DX;

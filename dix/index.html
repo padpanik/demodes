@@ -77,6 +77,7 @@
     .vf-dx { margin: 4px 0 6px; padding-left: 20px; font-weight: 600; font-size: 0.86em; line-height: 1.22; color: #1d2b36; }
     .vf-dx li { margin-bottom: 3px; }
     .vf-dx b { white-space: nowrap; }
+    .doute-dx { display: flex; gap: 8px; justify-content: space-between; font-size: 0.85em; padding: 6px 0; border-bottom: 1px solid #eef0f2; }
     .compte-dx { display: grid; gap: 5px; margin: 4px 0 2px; }
     .compte-dx button { border: none; border-radius: 11px; padding: 11px 0; font: inherit; font-size: 1.2em; font-weight: 900; color: #fff; background: var(--c); cursor: pointer; }
     .vf-dx b.vrai { color: #1e7a45; }
@@ -285,7 +286,7 @@
 
             <template v-if="e.phase === 'theme'">
               <div class="a-vous" :style="{ color: equipe.couleur }">{{ monRole === 'joue' ? 'À vous de jouer !' : 'Au tour des ' + equipe.nom + ' !' }}</div>
-              <div class="aide" v-if="themeTour === 'arrivee'">{{ equipe.nom }} sont sur l'arrivée : une bonne réponse à une question de niveau {{ DX.NIVEAU_FINAL }} pour gagner.</div>
+              <div class="aide" v-if="themeTour === 'arrivee'">{{ equipe.nom }} sont sur l'arrivée : une bonne réponse à une question de niveau 6 ou 7 pour gagner.</div>
               <div class="aide" v-else-if="!equipe.joues">Premier tour : tout le monde commence par un sujet Improbable.</div>
               <div class="aide" v-else>{{ th.desc }}</div>
               <button v-if="peut('tirer')" class="btn principal" style="width:100%;margin-top:8px" @click="jouer({ type: 'tirer' })">{{ monRole === 'test' ? lecteur.nom + ' : tirez la carte' : '📖 Tirer la carte' }}</button>
@@ -360,7 +361,7 @@
               <button v-else-if="peut('surprise')" class="btn principal" style="width:100%;margin-top:8px" @click="jouer({ type: 'surprise' })">OK</button>
             </template>
             <div class="journal-dx">{{ e.journal }}</div>
-            <div class="derniere-dx" v-if="e.derniere && e.phase === 'theme'"><div v-if="e.derniere.q" style="margin-bottom:2px">{{ e.derniere.q }}</div><template v-if="e.derniere.challenge">{{ e.derniere.n }} bonne{{ e.derniere.n > 1 ? 's' : '' }} réponse{{ e.derniere.n > 1 ? 's' : '' }}<template v-if="e.derniere.r"> · <b>{{ e.derniere.r }}</b></template></template><template v-else>{{ e.derniere.ok ? '✓' : '✗' }} Réponse : <b>{{ e.derniere.r || '—' }}</b></template></div>
+            <div class="derniere-dx" v-if="e.derniere && e.phase === 'theme'"><div v-if="e.derniere.q" style="margin-bottom:2px">{{ e.derniere.q }}</div><template v-if="e.derniere.challenge">{{ e.derniere.n }} bonne{{ e.derniere.n > 1 ? 's' : '' }} réponse{{ e.derniere.n > 1 ? 's' : '' }}<template v-if="e.derniere.r"> · <b>{{ e.derniere.r }}</b></template></template><template v-else>{{ e.derniere.ok ? '✓' : '✗' }} Réponse : <b>{{ e.derniere.r || '—' }}</b></template><button class="lien-discret" @click="noterDoute">{{ douteNote ? '✓ Notée dans Réglages' : '⚠️ Question douteuse' }}</button></div>
           </div>
 
           <!-- Fin -->
@@ -379,6 +380,14 @@
         <section class="carte reglages">
           <div class="titre-carte">Réglages</div>
           <reglages-base :son.sync="sonActif" :vibration.sync="vibrationActive"></reglages-base>
+        </section>
+        <section class="carte">
+          <div class="titre-carte">Questions douteuses ({{ doutes.length }})</div>
+          <div class="aide" v-if="!doutes.length">Après une question, touche « ⚠️ Question douteuse » : elle arrive ici.</div>
+          <template v-else>
+            <div v-for="(d, i) in doutes" :key="i" class="doute-dx"><div><b>{{ d.s }}{{ d.nv ? ' · niveau ' + d.nv : '' }}</b><br>{{ d.q }}<br><i>{{ d.r }}</i></div><button class="lien-discret" @click="retirerDoute(i)">✕</button></div>
+            <button class="btn principal" style="width:100%;margin-top:6px" @click="copierDoutes">{{ doutesCopies ? '✓ Liste copiée' : 'Copier la liste pour me l\'envoyer' }}</button>
+          </template>
         </section>
         <section class="carte journal" v-if="historique.length">
           <details>
@@ -399,7 +408,7 @@
             <li>L'équipe qui lit pose la question de ce niveau à voix haute : en salon, l'équipe qui joue ne la voit pas sur son écran, et seule l'équipe qui lit voit la réponse. <strong>30 secondes</strong>, une seule réponse. Elle juge : bonne réponse, on avance d'autant de cases que le chiffre annoncé ; sinon, on reste sur place.</li>
             <li><span style="color:#f59f00;font-weight:800">⚡ Challenge</span> : citer des choses, ou une série de vrai ou faux : on avance d'une case par bonne réponse. Elle est lue à voix haute : en salon, l'équipe qui joue ne la voit pas sur son écran.</li>
             <li><strong>🎲 Superbe ou aïe</strong> : un bonus ou un malus, appliqué tout de suite. La carte déplace toujours le pion : on ne reste jamais sur cette case.</li>
-            <li>Atteindre l'<strong>arrivée</strong> ne suffit pas : il faut encore répondre juste à une <strong>question finale</strong> de niveau {{ DX.NIVEAU_FINAL }}. Raté : on retente au tour suivant.</li>
+            <li>Atteindre l'<strong>arrivée</strong> ne suffit pas : il faut encore répondre juste à une <strong>question finale</strong> de niveau 6 ou 7, au hasard. Raté : on retente au tour suivant.</li>
             <li>Une équipe sans personne de connecté : les autres peuvent jouer à sa place (lire, juger, miser).</li>
             <li>Questions maison, écrites pour Désdale.</li>
           </ul>
@@ -481,7 +490,7 @@
           reglage: [0, 1, 2, 3].map(i => ({ nom: (r.noms && r.noms[i]) || '' })),
           monEquipe: r.moi !== undefined ? r.moi : 0,
           longueur: r.longueur || 'normal',
-          voirReponse: false, posAff: [], maintenant: Date.now(), decalage: 0,
+          doutes: lireStockage('dix-doutes') || [], doutesCopies: false, voirReponse: false, posAff: [], maintenant: Date.now(), decalage: 0,
           // salon
           pub: null, joueurs: [], historique: [],
           pseudoInput: pseudoPour(CLE_SAUVEGARDE),
@@ -511,6 +520,7 @@
         sujetCourant: function() { return this.e.carte && DX.sujet(this.e.carte.sujet) || { nom: '', q: [] }; },
         questionCourante: function() { return this.sujetCourant.q[(this.e.carte.niveau || 1) - 1] || ['', '']; },
         challenge: function() { return DX.CHALLENGES[this.e.carte.challenge] || {}; },
+        douteNote: function() { var d = this.e && this.e.derniere; return !!d && this.doutes.some(x => x.q === d.q); },
         nombresChallenge: function() { var l = []; for (var i = 0; i <= (this.challenge.max || 0); i++) l.push(i); return l; },
         surprise: function() { return DX.SURPRISES[this.e.carte.surprise] || {}; },
         autresEquipes: function() { return this.e.equipes.map((q, i) => ({ q: q, i: i })).filter(x => x.i !== this.e.tour); },
@@ -579,6 +589,17 @@
         window.addEventListener('pageshow', () => this.auRetourPremierPlan());
       },
       methods: {
+        noterDoute: function() {
+          var d = this.e && this.e.derniere;
+          if (!d || this.douteNote) return;
+          this.doutes.push({ s: d.s || '', nv: d.nv || 0, q: d.q, r: d.r || '' });
+          ecrireStockage('dix-doutes', this.doutes);
+        },
+        retirerDoute: function(i) { this.doutes.splice(i, 1); ecrireStockage('dix-doutes', this.doutes); },
+        copierDoutes: function() {
+          var txt = this.doutes.map(d => d.s + (d.nv ? ' (niveau ' + d.nv + ')' : '') + ' : ' + d.q + ' → ' + d.r).join('\n');
+          navigator.clipboard.writeText(txt).then(() => { this.doutesCopies = true; setTimeout(() => { this.doutesCopies = false; }, 2500); });
+        },
         son: function(nom) { if (this.sonActif) Sons.jouer(nom); },
         vibre: function(m) { if (this.vibrationActive) vibrer(m); },
         ouvrirProfil: function() { ouvrirProfilPortail(false); },

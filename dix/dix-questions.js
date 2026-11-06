@@ -201,5 +201,269 @@ Quel saint a inspiré le personnage ? | Saint Nicolas
 De quelle troupe vient « Le père Noël est une ordure » ? | Le Splendid
 De quel pays vient le chant dont « Mon beau sapin » est l'adaptation ? | L'Allemagne (« O Tannenbaum »)
 Quelle ville suédoise dresse chaque année un bouc de paille géant, souvent incendié ? | Gävle
+# improbable | Les trombones de bureau
+Un trombone de bureau sert-il surtout à jouer dans une fanfare ? | Non, à tenir des feuilles
+Quel instrument à coulisse porte le même nom ? | Le trombone
+Quelle petite trappe de téléphone ouvre-t-on avec un trombone déplié ? | Le tiroir de la carte SIM
+En quel métal est fait un trombone classique ? | L'acier
+Comment s'appelait le trombone à gros yeux qui proposait son aide dans Word ? | Clippy
+Dans quelle suite de logiciels sévissait-il ? | Microsoft Office
+Dans quel pays des gens ont-ils porté un trombone au revers de leur veste pour narguer l'occupant, en 1940 ? | La Norvège
+Quel Norvégien est souvent présenté, à tort, comme l'inventeur du trombone ? | Johan Vaaler
+Quel Canadien a échangé un trombone rouge, de troc en troc, jusqu'à obtenir une maison ? | Kyle MacDonald
+Quelle entreprise britannique a donné son nom au modèle classique à double boucle ? | Gem
+# improbable | Les chaussettes
+Combien de chaussettes met-on en général à chaque pied ? | Une
+Quel appareil ménager est soupçonné d'en manger une sur deux ? | Le lave-linge
+Avec quelles chaussures le port de chaussettes déclenche-t-il des moqueries ? | Les sandales
+Où les enfants suspendent-ils de grandes chaussettes à Noël, dans les films américains ? | À la cheminée
+Quel elfe de maison est libéré grâce à une chaussette ? | Dobby
+Que veut dire « laisser tomber comme une vieille chaussette » ? | Abandonner sans égards
+Quelle ville française est la capitale historique de la bonneterie ? | Troyes
+Quelle fibre synthétique lancée par DuPont a fait fureur dans les bas à partir de 1939 ? | Le nylon
+Quel pasteur anglais a inventé le métier à tricoter les bas, en 1589 ? | William Lee
+Combien mesure un point de pointure française ? | Deux tiers de centimètre (6,67 mm)
+# improbable | Le ruban adhésif
+Peut-on réparer un avion de ligne uniquement avec du scotch de bureau ? | Non
+Comment appelle-t-on familièrement le ruban adhésif transparent en France ? | Le scotch
+Que cherche-t-on à l'ongle pendant dix minutes sur un rouleau neuf ? | Le début du ruban
+Quel ruban gris répare tout selon les bricoleurs ? | Le duct tape (ou ruban gris)
+Quelle entreprise américaine fabrique le Scotch ? | 3M
+Quel autre petit papier collant célèbre vient de la même entreprise ? | Le Post-it
+Pour quelle mission Apollo un garde-boue de rover lunaire a-t-il été réparé au ruban adhésif ? | Apollo 17
+Quel ingénieur de 3M a inventé le ruban adhésif de masquage, en 1925 ? | Richard Drew
+Quel chimiste de 3M a mis au point par accident la colle du Post-it ? | Spencer Silver
+Quel collègue a eu l'idée de s'en servir comme marque-page dans son livre de chant ? | Art Fry
+# improbable | Les bouchons de liège
+Trouve-t-on des bouchons de liège dans les canalisations de vin de Bordeaux ? | Non, dans les bouteilles
+Avec quel objet retire-t-on le bouchon ? | Un tire-bouchon
+Quel défaut donne un goût de moisi au vin ? | Le goût de bouchon
+Sur quel arbre récolte-t-on le liège ? | Le chêne-liège
+Quel pays est le premier producteur mondial de liège ? | Le Portugal
+Comment s'appelle l'opération de récolte de l'écorce ? | Le démasclage
+Tous les combien d'années environ récolte-t-on l'écorce d'un chêne-liège ? | Tous les 9 ans
+Quelle molécule est responsable du goût de bouchon ? | Le TCA (trichloroanisole)
+Comment appelle-t-on la première récolte de liège, de mauvaise qualité ? | Le liège mâle
+Quel est le nom scientifique du chêne-liège ? | Quercus suber
+# improbable | Les ronds-points
+Un rond-point sert-il à jouer aux billes ? | Non, à gérer la circulation
+Dans quel sens tourne-t-on sur un rond-point français ? | Dans le sens inverse des aiguilles d'une montre
+Quel ornement absurde trône souvent au milieu d'un rond-point français ? | Une sculpture (ou tout objet local)
+Qui est prioritaire dans un carrefour à sens giratoire ? | Celui qui circule déjà sur l'anneau
+Quel célèbre rond-point parisien entoure l'Arc de triomphe ? | La place de l'Étoile (Charles-de-Gaulle)
+Quel pays compte le plus de ronds-points d'Europe, souvent cité avec plus de 30 000 ? | La France
+Dans quel sens tourne-t-on sur un rond-point britannique ? | Dans le sens des aiguilles d'une montre
+Dans quelle ville anglaise se trouve le rond-point géant à cinq petits ronds-points ? | Swindon (le Magic Roundabout)
+Quel architecte français a théorisé le carrefour giratoire vers 1906 ? | Eugène Hénard
+Sur combien d'avenues donne la place de l'Étoile ? | 12
+# improbable | La poule et l'œuf
+Une poule peut-elle pondre un œuf au plat directement ? | Non
+Quel est le mâle de la poule ? | Le coq
+Comment s'appelle le petit de la poule ? | Le poussin
+Combien de temps cuit un œuf dur, environ ? | 9 à 10 minutes
+Que veut dire le code 0 imprimé sur un œuf ? | Poule élevée en bio
+Que veut dire le code 3 ? | Poule élevée en cage
+Combien de jours faut-il pour couver un œuf de poule ? | 21 jours
+Quelle partie de l'œuf contient le plus de protéines par rapport au gras ? | Le blanc
+Comment s'appelle le cordon qui maintient le jaune au centre de l'œuf ? | Les chalazes
+Quel est l'ancêtre sauvage principal de la poule, en Asie ? | Le coq bankiva
+# improbable | Les aspirateurs
+L'aspirateur sert-il à souffler les bougies ? | Non
+Que faut-il changer ou vider quand il est plein ? | Le sac (ou le bac)
+Quel robot aspirateur américain rond porte un nom de maison ? | Roomba
+Quelle marque britannique a popularisé l'aspirateur sans sac ? | Dyson
+Que veut dire le mot anglais « to hoover » ? | Passer l'aspirateur
+Dans quel pays le mot « hoover » désigne-t-il l'aspirateur ? | Au Royaume-Uni
+De quelle société vient le Roomba ? | iRobot
+Combien de prototypes James Dyson dit-il avoir construits ? | 5 127
+Quel Anglais a inventé en 1901 un grand aspirateur à moteur tiré par des chevaux ? | Hubert Cecil Booth
+Quel concierge américain asthmatique a inventé le modèle vendu ensuite à Hoover ? | James Murray Spangler
+# improbable | Les petits suisses et yaourts
+Un petit-suisse est-il un habitant de Genève de moins d'un mètre ? | Non, un fromage frais
+Combien de pots de yaourt y a-t-il souvent dans un pack ? | 4 (ou 8, 12, 16 selon l'emballage)
+Avec quel ustensile mange-t-on un yaourt ? | Une petite cuillère
+Quelle marque de yaourts porte le diminutif catalan du prénom Daniel ? | Danone
+Quel sucre du lait les bactéries transforment-elles ? | Le lactose
+Quel pays est associé au bacille du yaourt ? | La Bulgarie
+Quel acide donne son goût au yaourt ? | L'acide lactique
+Quelle bactérie vient s'associer au Lactobacillus bulgaricus dans le yaourt ? | Streptococcus thermophilus
+Dans quelle ville Danone a-t-il été créé, en 1919 ? | Barcelone
+Quel savant russe de l'Institut Pasteur a popularisé le yaourt pour sa longévité ? | Élie Metchnikoff
+# improbable | Le camping
+Faut-il planter des pommes de terre pour tenir sa tente ? | Non, des sardines
+Quel film a rendu célèbre Patrick Chirac ? | Camping
+Quel acteur joue Patrick Chirac ? | Franck Dubosc
+Quel petit piquet sert à fixer la tente ? | La sardine
+En quelle année est sorti le film « Camping » ? | 2006
+Quelle loi de 1936 a lancé les vacances en tente et à vélo ? | Celle des congés payés
+Combien d'étoiles peut avoir un camping au maximum en France ? | 5
+Comment s'appelle le camping du film ? | Les Flots bleus
+Dans quelle commune se trouve-t-il dans le film ? | Arcachon (Pyla-sur-Mer)
+Quel Britannique, tailleur, a fondé le premier club de camping en 1901 ? | Thomas Hiram Holding
+# improbable | Les éternuements
+Sort-il de la lave quand on éternue ? | Non
+Que dit-on poliment à quelqu'un qui éternue ? | À tes souhaits (ou À vos souhaits)
+Dans quoi éternue-t-on de préférence, selon les affiches ? | Dans son coude
+Que dit-on au deuxième éternuement, selon la blague ? | « À tes amours »
+Quelle saison fait éternuer les allergiques aux pollens ? | Le printemps
+Qu'est-ce que le rhume des foins ? | Une allergie aux pollens
+Comment s'appelle le réflexe d'éternuer en regardant le soleil ? | Le réflexe photique (ou ACHOO)
+Quel est le mot savant pour désigner l'éternuement ? | La sternutation
+Quelle Anglaise détient le record d'éternuements, 978 jours d'affilée ? | Donna Griffiths
+Quel nerf crânien déclenche le réflexe ? | Le nerf trijumeau
+# plaisir | La raclette
+La raclette se mange-t-elle au petit déjeuner avec du Nutella ? | Non
+Que fait-on fondre ? | Du fromage
+Quels légumes l'accompagnent ? | Les pommes de terre
+Comment s'appelle le petit plat où l'on glisse le fromage ? | Le poêlon
+Dans quel pays et quel canton trouve-t-on sa version d'origine ? | La Suisse, le Valais
+Quels petits légumes au vinaigre l'accompagnent ? | Les cornichons
+Que veut dire « racler » dans cette recette ? | Gratter le fromage fondu de la meule
+Comment s'appelle l'appareil qui fait fondre la demi-meule ? | Le four à raclette
+Quel signe européen protège le Raclette du Valais ? | L'AOP
+Quel signe de qualité protège le Raclette de Savoie depuis 2017 ? | L'IGP
+# plaisir | Les pizzas
+L'ananas sur une pizza est-il une religion officielle ? | Non, mais ça se discute
+Quel pays a inventé la pizza ? | L'Italie
+Quelle pizza ne contient que tomate, mozzarella et basilic ? | La Margherita
+Quelle ville est son berceau ? | Naples
+Que garnit une pizza Reine ? | Jambon et champignons
+Quelle est la pizza aux quatre fromages en italien ? | Quattro formaggi
+Quels héros mutants raffolent de pizza en égouts ? | Les Tortues Ninja
+Quel pizzaïolo a créé la Margherita en 1889 ? | Raffaele Esposito
+Quel ingrédient caractérise une pizza hawaïenne, inventée au Canada ? | L'ananas
+Quel Canadien d'origine grecque l'a inventée, en 1962 ? | Sam Panopoulos
+# plaisir | Les Playmobil et Lego
+Peut-on manger une brique Lego ? | Non
+De quel pays vient Lego ? | Le Danemark
+Quel pays produit Playmobil ? | L'Allemagne
+Combien de tenons a une brique classique 2 × 4 ? | 8
+Que veut dire Lego en danois ? | « Leg godt », bien jouer
+En quelle année apparaissent les figurines Playmobil ? | 1974
+Quel menuisier a créé Lego ? | Ole Kirk Christiansen
+Qui a dessiné le personnage Playmobil ? | Hans Beck
+Combien de combinaisons existe-t-il avec 6 briques 2 × 4 ? | 915 103 765
+Dans quelle ville allemande se trouve le siège de Playmobil ? | Zirndorf
+# plaisir | Disney à la loupe
+Bambi est-il un tigre ? | Non, un faon
+Quel animal est Mickey ? | Une souris
+Combien de nains vivent avec Blanche-Neige ? | Sept
+Combien de dalmatiens dans le titre ? | 101
+Comment s'appelle le lionceau du « Roi Lion » ? | Simba
+Comment s'appelle l'oncle méchant de Simba ? | Scar
+Quel film Disney a la chanson « Hakuna Matata » ? | Le Roi Lion
+Comment s'appelait Mickey dans sa première version ? | Mortimer
+Quel est le premier court-métrage sonore de Mickey ? | Steamboat Willie
+Quel lapin de Walt Disney a précédé Mickey ? | Oswald le lapin chanceux
+# plaisir | Les Monopoly et la bonne foi
+Dans la version classique, gagne-t-on en ruinant son beau-frère ? | Oui
+Combien de cases compte le plateau ? | 40
+Quelle case envoie directement en prison ? | « Allez en prison »
+Combien touche-t-on en passant par la case Départ dans la version française en francs ? | 20 000 F
+Comment s'appelle le bonhomme à moustache, en anglais ? | Rich Uncle Pennybags
+Quelle couleur sont les rues les plus chères, en France ? | Bleu foncé
+Quelle est la moins chère ? | Le boulevard de Belleville
+Quelle gare n'est pas sur le plateau parisien : Lyon, Nord, Montparnasse ou Austerlitz ? | Austerlitz
+Quelle est la deuxième rue la plus chère du plateau français ? | L'avenue des Champs-Élysées
+Quel chômeur américain a vendu le jeu à Parker Brothers en 1935 ? | Charles Darrow
+# plaisir | Les génériques de dessins animés
+Ulysse 31 voyage-t-il en trottinette ? | Non, en vaisseau spatial
+Quel chat poursuit Jerry ? | Tom
+Quel marin mange des épinards ? | Popeye
+Quelle émission diffusait Dragon Ball et Les Chevaliers du Zodiaque ? | Le Club Dorothée
+Quel dessin animé a pour héros une abeille appelée Maya ? | Maya l'abeille
+Quel robot géant venu de loin est piloté par Actarus ? | Goldorak
+De quelle émission Goldorak a-t-il été la vedette en 1978 ? | Récré A2
+Qui a chanté le générique français de Goldorak ? | Noam Kaniel
+Quel groupe de l'émission Dorothée mené par Bernard Minet a chanté de nombreux génériques ? | Les Musclés
+Qui est le créateur japonais de Goldorak ? | Go Nagai
+# mature | La machine à laver
+Peut-on y laver son chat ? | Non
+Quel produit met-on dans le bac ? | De la lessive
+Que perd-on mystérieusement dans le tambour ? | Une chaussette
+Quelle température à 30, 40 ou 90 °C est dite « économique » la plupart du temps ? | 30 °C
+Que retient le filtre de vidange ? | Peluches et petits objets
+Que combat-on avec du vinaigre blanc dans la machine ? | Le calcaire
+Que signifie le chiffre de tours/minute indiqué ? | La vitesse d'essorage
+Quel symbole d'étiquette dit « lavage à la main » ? | Une main dans une cuvette
+Quelle énergie mesure le label en kWh pour 100 cycles ? | La consommation d'électricité
+Quelle unité mesure la dureté de l'eau en France ? | Le degré français (°f)
+# mature | La TVA
+La TVA est-elle une chaîne de télé ? | Non, un impôt
+Qui la paye au final ? | Le consommateur
+Que veut dire TVA ? | Taxe sur la valeur ajoutée
+Quel est le taux normal en France ? | 20 %
+Quel est le taux sur la plupart des produits alimentaires ? | 5,5 %
+Quel est le taux réduit en restauration sur place ? | 10 %
+Quel taux de 2,1 % s'applique notamment aux médicaments remboursés ? | Le taux super-réduit
+Quel haut fonctionnaire français a inventé la TVA ? | Maurice Lauré
+En quelle année a-t-elle été créée ? | 1954
+Quel pays de l'Union européenne a le taux normal le plus élevé ? | La Hongrie (27 %)
+# mature | Le barbecue
+Allume-t-on le barbecue avec une bombe d'insecticide ? | Non
+Quelle pince sert à retourner les saucisses sans se brûler ? | La pince à barbecue
+Quel combustible noir met-on dans le barbecue ? | Le charbon de bois
+Quelle petite saucisse rouge épicée finit souvent sur la grille ? | La merguez
+Quel gaz alimente les modèles sans charbon ? | Le propane (ou le butane)
+Quelle marque américaine ronde a un couvercle en dôme ? | Weber
+De quel pays vient le braai, un barbecue traditionnel ? | L'Afrique du Sud
+Comment s'appelle le barbecue argentin ? | L'asado
+Quel soudeur a créé le barbecue à couvercle Weber, en 1952 ? | George Stephen
+Quelle réaction chimique donne sa croûte à la viande grillée ? | La réaction de Maillard
+# mature | La déclaration d'impôts
+La déclaration se fait-elle en remplissant un formulaire sur un coussin ? | Non, sur le site des impôts
+Quel service encaisse l'impôt ? | Les finances publiques (le fisc)
+Quel est le numéro du formulaire principal ? | Le 2042
+Combien de parts fiscales compte un couple marié sans enfant ? | 2 parts
+Qu'est-ce qu'une niche fiscale ? | Un avantage qui réduit l'impôt
+Que veut dire « prélèvement à la source » ? | L'impôt est retenu directement sur le revenu
+En quelle année le prélèvement à la source a-t-il été mis en place ? | 2019
+Combien de tranches compte le barème de l'impôt sur le revenu ? | 5
+Quel est le taux de la tranche la plus haute ? | 45 %
+Quel article du Code général des impôts institue le quotient familial ? | L'article 194
+# scolaire | Les fables de La Fontaine
+Le Corbeau tient-il une baguette dans son bec ? | Non, un fromage
+Qui flatte le corbeau ? | Le renard
+Qui gagne, de la tortue ou du lièvre ? | La tortue
+Que fait la cigale tout l'été ? | Elle chante
+À qui s'adresse-t-elle pour demander à manger ? | La fourmi
+Quel animal veut se faire aussi gros que le bœuf ? | La grenouille
+À qui La Fontaine dédie-t-il ses premières fables ? | Au Dauphin, fils de Louis XIV
+Quel auteur grec a-t-il principalement repris ? | Ésope
+Quel surintendant a soutenu La Fontaine avant sa chute ? | Nicolas Fouquet
+Combien de livres comptent les Fables ? | 12
+# scolaire | Le théorème de Pythagore
+Pythagore est-il un joueur de foot ? | Non, un savant grec
+Dans quel type de triangle s'applique-t-il ? | Le triangle rectangle
+Comment s'appelle le plus grand côté ? | L'hypoténuse
+Combien vaut l'hypoténuse d'un triangle de côtés 3 et 4 ? | 5
+Combien vaut-elle pour les côtés 5 et 12 ? | 13
+De quelle île grecque Pythagore est-il originaire ? | Samos
+Comment s'appelle la réciproque utilisée sur les chantiers avec une corde à 12 nœuds ? | Le triangle 3-4-5
+Quel nombre irrationnel est l'hypoténuse d'un triangle de côtés 1 et 1 ? | Racine de 2
+Quelle tablette babylonienne contient des triplets pythagoriciens ? | Plimpton 322
+Quel théorème généralise celui-ci à tout triangle ? | Le théorème d'Al-Kashi (loi des cosinus)
+# scolaire | Les accords qui piquent
+Écrit-on « des chevals » ? | Non, des chevaux
+Quel est le pluriel de « œil » ? | Des yeux
+Quel est le féminin de « blanc » ? | Blanche
+Quels sept noms en -ou prennent un x au pluriel : citez-en trois ? | Bijou, caillou, chou, genou, hibou, joujou, pou
+Quel est le pluriel de « festival » ? | Festivals
+Écrit-on « ils se sont lavé les mains » ou « lavés » ? | Lavé
+Quel mot est masculin au singulier et féminin au pluriel, avec « orgue » et « délice » ? | Amour
+Écrit-on « cent » ou « cents » dans « deux cent trois » ? | Cent, sans s
+Pourquoi écrit-on « une demi-heure » mais « une heure et demie » ? | Invariable avant le nom, accordé après
+Quelle est la règle pour « vingt » dans « quatre-vingt-trois » ? | Sans s, car suivi d'un autre nombre
+# scolaire | La Révolution à la loupe
+Louis XVI a-t-il perdu la tête en jouant aux cartes ? | Non, guillotiné
+Quelle prison tombe le 14 juillet 1789 ? | La Bastille
+Quelle reine aurait parlé de brioche au peuple affamé ? | Marie-Antoinette
+Quelle machine porte le nom d'un médecin ? | La guillotine
+Comment s'appelle la déclaration d'août 1789 ? | La Déclaration des droits de l'homme et du citoyen
+Quel chant de marche est devenu l'hymne national ? | La Marseillaise
+Qui a écrit la Marseillaise ? | Rouget de Lisle
+Quelle jeune femme a poignardé Marat dans sa baignoire ? | Charlotte Corday
+Dans quelle ville a été arrêté Louis XVI en fuite ? | Varennes
+Quel mois du calendrier révolutionnaire voit la chute de Robespierre ? | Thermidor
 `;
 if (typeof module !== 'undefined') module.exports = DX_QUESTIONS;
