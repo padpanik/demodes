@@ -48,7 +48,7 @@
     .choisir-eq .btn { padding: 8px 4px; font-size: 0.9em; color: #fff; border: none; }
 
     /* Plateau : un chemin sinueux de cases rondes (dessiné en SVG) */
-    .plateau-dx { background: linear-gradient(#fffaf0, #fdf1dc); border-radius: 18px; box-shadow: 0 1px 3px rgba(0,0,0,0.08), inset 0 0 0 1.5px #f1e2c4; overflow: hidden; }
+    .plateau-dx { background: #16243b; border-radius: 18px; box-shadow: 0 2px 8px rgba(22,36,59,0.35); overflow: hidden; }
     .plateau-dx svg { display: block; width: 100%; height: auto; }
     .pion-g { transition: transform 0.22s ease-out; }
     .anneau-joue { animation: anneau 1.2s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
@@ -73,6 +73,7 @@
     .sujet-dx { font-size: 1.5em; font-weight: 900; text-align: center; margin: 12px 0 6px; color: var(--c); line-height: 1.2; }
     .question-dx { font-size: 1.22em; font-weight: 700; line-height: 1.35; margin: 10px 0; color: #1d2b36; }
     .reponse-dx { background: #e9f9ee; border-radius: 12px; padding: 10px 12px; font-size: 1.1em; font-weight: 800; color: #1e7a45; margin: 8px 0; }
+    .ecoute-dx { text-align: center; font-size: 1.12em; font-weight: 800; color: var(--c); background: var(--cl); border-radius: 14px; padding: 18px 12px; margin: 10px 0; line-height: 1.4; }
     .reponse-cachee { background: #eef0f2; border-radius: 12px; padding: 10px 12px; font-size: 0.92em; font-weight: 700; color: #6b7a86; margin: 8px 0; text-align: center; }
     .attente-dx { text-align: center; color: #5b6b78; font-weight: 700; margin: 12px 0 6px; }
     .niveaux-dx { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin: 8px 0; }
@@ -214,17 +215,26 @@
 
           <div class="plateau-dx">
             <svg :viewBox="'0 0 ' + geo.W + ' ' + geo.H" :style="{ aspectRatio: geo.W + ' / ' + geo.H }">
-              <path :d="geo.ruban" fill="none" stroke="#e8d3a9" stroke-width="37" stroke-linecap="round" stroke-linejoin="round"/>
-              <path :d="geo.ruban" fill="none" stroke="#f7ead0" stroke-width="31" stroke-linecap="round" stroke-linejoin="round"/>
-              <path :d="geo.ruban" fill="none" stroke="#fffaf0" stroke-width="2" stroke-dasharray="3 9" stroke-linecap="round" opacity="0.9"/>
+              <defs>
+                <radialGradient id="dx-fond" cx="50%" cy="35%" r="75%"><stop offset="0" stop-color="#2d4a73"/><stop offset="1" stop-color="#16243b"/></radialGradient>
+                <radialGradient v-for="(t, k) in DX.THEMES" :key="k" :id="'dx-' + k" cx="38%" cy="30%" r="75%"><stop offset="0" :stop-color="eclaircir(t.couleur)"/><stop offset="1" :stop-color="t.couleur"/></radialGradient>
+                <radialGradient id="dx-bout" cx="38%" cy="30%" r="75%"><stop offset="0" stop-color="#3b4b5c"/><stop offset="1" stop-color="#121a24"/></radialGradient>
+              </defs>
+              <rect x="0" y="0" :width="geo.W" :height="geo.H" fill="url(#dx-fond)"/>
+              <g v-for="(d, k) in decor" :key="'d' + k" :transform="'translate(' + d.x + ',' + d.y + ') scale(' + d.s + ')'" :opacity="d.o">
+                <path d="M0 -5 Q0.8 -0.8 5 0 Q0.8 0.8 0 5 Q-0.8 0.8 -5 0 Q-0.8 -0.8 0 -5 Z" :fill="d.c"/>
+              </g>
+              <path :d="geo.ruban" fill="none" stroke="#0d1522" stroke-width="11" stroke-linecap="round" stroke-linejoin="round" opacity="0.55"/>
+              <path :d="geo.ruban" fill="none" stroke="#f3e2bd" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+              <path :d="geo.ruban" fill="none" stroke="#c9a46a" stroke-width="1.4" stroke-dasharray="2 5" stroke-linecap="round"/>
               <g v-for="c in casesSvg" :key="c.i">
-                <circle :cx="c.x" :cy="c.y + 1.5" :r="c.r" fill="rgba(0,0,0,0.16)"/>
-                <circle :cx="c.x" :cy="c.y" :r="c.r" :fill="c.fond" stroke="#fff" stroke-width="2.5"/>
+                <circle :cx="c.x" :cy="c.y + 2" :r="c.r" fill="rgba(0,0,0,0.35)"/>
+                <circle :cx="c.x" :cy="c.y" :r="c.r" :fill="c.fond" :stroke="c.bout ? '#ffd43b' : '#fff'" :stroke-width="c.bout ? 2.6 : 2.2"/>
                 <circle v-if="c.ici" class="anneau-joue" :cx="c.x" :cy="c.y" :r="c.r + 4" fill="none" :stroke="equipe.couleur" stroke-width="3"/>
-                <text :x="c.x" :y="c.y + (c.r > 15 ? 6 : 4.5)" text-anchor="middle" :font-size="c.r > 15 ? 17 : 13">{{ c.ico }}</text>
+                <g :transform="'translate(' + c.x + ',' + c.y + ') scale(' + (c.bout ? 1.3 : 1.05) + ')'" v-html="c.ico"></g>
               </g>
               <g v-for="p in pionsSvg" :key="'p' + p.i" class="pion-g" :style="{ transform: 'translate(' + p.x + 'px,' + p.y + 'px)' }">
-                <ellipse cx="0" cy="7" rx="7" ry="2.6" fill="rgba(0,0,0,0.3)"/>
+                <ellipse cx="0" cy="7" rx="7" ry="2.6" fill="rgba(0,0,0,0.45)"/>
                 <path d="M -6 6 Q -6 -1 -3.2 -3.5 A 5 5 0 1 1 3.2 -3.5 Q 6 -1 6 6 Z" :fill="p.c" stroke="#fff" stroke-width="1.6"/>
                 <circle cx="-1.6" cy="-8.2" r="1.6" fill="rgba(255,255,255,0.75)"/>
               </g>
@@ -275,7 +285,8 @@
             <template v-else-if="e.phase === 'question' || e.phase === 'reponse'">
               <div class="entete" style="margin-top:8px"><b>{{ sujetCourant.nom }}</b><span class="badge-dx">Niveau {{ e.carte.niveau }}</span></div>
               <div class="aide" v-if="monRole === 'lecteur'" style="margin-bottom:0">📖 Lisez la question à voix haute aux {{ equipe.nom }}.</div>
-              <div class="question-dx">{{ questionCourante[0] }}</div>
+              <div class="question-dx" v-if="monRole !== 'joue'">{{ questionCourante[0] }}</div>
+              <div class="ecoute-dx" v-else>🎧 Écoutez bien :<br>les {{ lecteur.nom }} vous lisent la question.</div>
               <button class="chrono-dx" :class="{ fini: chronoReste === 0, actif: peut('chrono') }" @click="lancerChrono">
                 <div class="barre" :style="{ width: (chronoReste === null ? 0 : chronoReste / 30 * 100) + '%' }"></div>
                 <span>{{ chronoReste === null ? (peut('chrono') ? '⏱ Lancer les 30 secondes' : '⏱ 30 secondes') : chronoReste === 0 ? '⏰ Temps écoulé !' : chronoReste + ' s' }}</span>
@@ -288,7 +299,7 @@
                 </div>
               </template>
               <button v-else-if="peut('voir')" class="btn principal" style="width:100%" @click="jouer({ type: 'voir' })">Voir la réponse</button>
-              <div v-else class="reponse-cachee">{{ monRole === 'joue' ? '🗣️ Répondez à voix haute : ' + lecteur.nom + ' jugent.' : '🤫 Réponse cachée : ' + lecteur.nom + ' jugent.' }}</div>
+              <div v-else class="reponse-cachee">{{ monRole === 'joue' ? '🗣️ Une seule réponse, à voix haute : les ' + lecteur.nom + ' jugent.' : '🤫 Réponse cachée : ' + lecteur.nom + ' jugent.' }}</div>
             </template>
 
             <template v-else-if="e.phase === 'challenge'">
@@ -323,7 +334,7 @@
               <button v-else-if="peut('surprise')" class="btn principal" style="width:100%;margin-top:8px" @click="jouer({ type: 'surprise' })">OK</button>
             </template>
             <div class="journal-dx">{{ e.journal }}</div>
-            <div class="derniere-dx" v-if="e.derniere && e.phase === 'theme'">{{ e.derniere.ok ? '✓' : '✗' }} Réponse : <b>{{ e.derniere.r || '—' }}</b></div>
+            <div class="derniere-dx" v-if="e.derniere && e.phase === 'theme'"><div v-if="e.derniere.q" style="margin-bottom:2px">{{ e.derniere.q }}</div>{{ e.derniere.ok ? '✓' : '✗' }} Réponse : <b>{{ e.derniere.r || '—' }}</b></div>
           </div>
 
           <!-- Fin -->
@@ -359,7 +370,7 @@
             <li>De 2 à 4 <strong>équipes</strong>. En salon, <strong>chacun sur son téléphone</strong> : on entre dans le même salon et on rejoint une équipe. En mode test, un seul téléphone pour tout le monde.</li>
             <li>À son tour, l'équipe regarde la <strong>case</strong> de son pion : elle donne le thème, <span style="color:#7950f2;font-weight:800">Improbable</span>, <span style="color:#e64980;font-weight:800">Plaisir</span>, <span style="color:#f76707;font-weight:800">Mature</span> ou <span style="color:#1c7ed6;font-weight:800">Scolaire</span>. Au premier tour, tout le monde joue Improbable.</li>
             <li>L'<strong>équipe d'avant</strong> (celle qui vient de jouer) tire la carte et annonce le sujet. L'équipe qui joue dit <strong>combien elle se met, de 1 à 10</strong> : plus on se sent fort, plus le chiffre est haut… et plus la question est difficile.</li>
-            <li>L'équipe qui lit pose la question de ce niveau (elle seule voit la réponse). <strong>30 secondes</strong>, une seule réponse. Elle juge : bonne réponse, on avance d'autant de cases que le chiffre annoncé ; sinon, on reste sur place.</li>
+            <li>L'équipe qui lit pose la question de ce niveau à voix haute : en salon, l'équipe qui joue ne la voit pas sur son écran, et seule l'équipe qui lit voit la réponse. <strong>30 secondes</strong>, une seule réponse. Elle juge : bonne réponse, on avance d'autant de cases que le chiffre annoncé ; sinon, on reste sur place.</li>
             <li><span style="color:#f59f00;font-weight:800">⚡ Challenge</span> : une épreuve originale (liste, mime, dessin, vrai ou faux…), avec son gain.</li>
             <li><strong>🎲 Superbe ou aïe</strong> : un bonus ou un malus, appliqué tout de suite.</li>
             <li>Atteindre l'<strong>arrivée</strong> ne suffit pas : il faut encore répondre juste à une <strong>question finale</strong> de niveau {{ DX.NIVEAU_FINAL }}. Raté : on retente au tour suivant.</li>
@@ -384,13 +395,25 @@
     const JEU_RESEAU = 'dx', DELAI_SILENCE = 15000, MAX_SALONS = 8, DUREE_CHRONO = 30;
     const COULEURS = ['#e03131', '#1c7ed6', '#2f9e44', '#f59f00'], NOMS = ['Rouges', 'Bleus', 'Verts', 'Jaunes'];
     const NOMS_LONGUEUR = { court: 'Courte', normal: 'Normale', long: 'Longue' };
-    const ICOS = { depart: '🏁', arrivee: '🏆' };
+    // Icônes des cases, dessinées au trait blanc (centrées sur 0,0, environ 14 de large)
+    const ICOS = {
+      improbable: '<text y="5.3" text-anchor="middle" font-size="15.5" font-weight="900" font-family="Georgia,serif" fill="#fff">?</text>',
+      plaisir: '<path d="M0 6 C-7.5 1 -7 -5.5 -3.4 -5.6 C-1.6 -5.7 -0.5 -4.5 0 -3.3 C0.5 -4.5 1.6 -5.7 3.4 -5.6 C7 -5.5 7.5 1 0 6 Z" fill="#fff"/>',
+      mature: '<path d="M-4.6 -7 C-5.2 -2.6 -3 -0.6 0 -0.5 C3 -0.6 5.2 -2.6 4.6 -7 Z" fill="none" stroke="#fff" stroke-width="1.4"/><path d="M-4.9 -3.8 C-4.4 -1.8 -2.6 -0.6 0 -0.5 C2.6 -0.6 4.4 -1.8 4.9 -3.8 Z" fill="#fff"/><path d="M0 -0.5 V5.4 M-3.8 6.2 H3.8" stroke="#fff" stroke-width="1.3" stroke-linecap="round"/>',
+      scolaire: '<path d="M0 -5.8 L8 -2.2 L0 1.4 L-8 -2.2 Z" fill="#fff"/><path d="M-4.6 -0.4 V3.4 C-2 5.6 2 5.6 4.6 3.4 V-0.4 L0 1.6 Z" fill="#fff"/><path d="M6.4 -1.6 V3.6" stroke="#fff" stroke-width="1.3" stroke-linecap="round"/>',
+      challenge: '<path d="M1.8 -7.2 L-4.6 1 H-0.6 L-1.8 7.2 L4.6 -1 H0.6 Z" fill="#fff"/>',
+      surprise: '<rect x="-5.8" y="-5.8" width="11.6" height="11.6" rx="2.6" fill="#fff"/><circle cx="-2.7" cy="-2.7" r="1.3" fill="#495057"/><circle cx="0" cy="0" r="1.3" fill="#495057"/><circle cx="2.7" cy="2.7" r="1.3" fill="#495057"/>',
+      depart: '<path d="M-3.8 6.5 V-6.5" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/><path d="M-3 -6.3 H5.8 L3.6 -3.4 L5.8 -0.5 H-3 Z" fill="#ffd43b"/>',
+      arrivee: '<path d="M-4.4 -6 H4.4 V-2.4 C4.4 1.2 2 2.8 0 2.8 C-2 2.8 -4.4 1.2 -4.4 -2.4 Z" fill="#ffd43b"/><path d="M-4.4 -4.6 C-7.6 -4.6 -7.4 -0.2 -3.4 0.4 M4.4 -4.6 C7.6 -4.6 7.4 -0.2 3.4 0.4" fill="none" stroke="#ffd43b" stroke-width="1.4"/><path d="M0 2.8 V5 M-3.4 6.2 H3.4" stroke="#ffd43b" stroke-width="2" stroke-linecap="round"/>'
+    };
+    // Une couleur un peu plus claire (reflet des cases)
+    function eclaircir(c) { var n = parseInt(c.slice(1), 16), f = (v) => Math.round(v + (255 - v) * 0.35); return 'rgb(' + f(n >> 16) + ',' + f((n >> 8) & 255) + ',' + f(n & 255) + ')'; }
     function copie(o) { return JSON.parse(JSON.stringify(o)); }
 
     // ================== PLATEAU : un chemin en serpent, cases rondes régulièrement espacées ==================
     // Lignes droites légèrement bombées, reliées par des demi-cercles ; les cases sont posées tous les PAS le long du chemin
     function geometrie(n) {
-      var W = 340, xG = 26, xD = 314, R = 22, PAS = 36.5, HAUT = 25;
+      var W = 340, xG = 39, xD = 301, R = 22, PAS = 36.5, HAUT = 25;
       var droite = xD - xG, tour = droite + Math.PI * R, total = (n - 1) * PAS;
       function point(d) {
         var r = Math.floor(d / tour), u = d - r * tour, y0 = HAUT + r * 2 * R, versDroite = r % 2 === 0;
@@ -418,7 +441,7 @@
       data: function() {
         var r = lireStockage('dix-reglage') || {};
         return {
-          DX: DX, COULEURS: COULEURS, NOMS: NOMS, LONGUEURS: DX.LONGUEURS, NOMS_LONGUEUR: NOMS_LONGUEUR,
+          DX: DX, eclaircir: eclaircir, COULEURS: COULEURS, NOMS: NOMS, LONGUEURS: DX.LONGUEURS, NOMS_LONGUEUR: NOMS_LONGUEUR,
           version: VERSION,
           onglet: 'config',
           eTest: lireStockage(CLE_TEST),
@@ -480,8 +503,19 @@
           var e = this.e, g = this.geo, ici = this.enJeu && e.phase !== 'depart' ? this.posAff[e.tour] : -1;
           return e.cases.map((t, i) => {
             var T = DX.THEMES[t], bout = t === 'depart' || t === 'arrivee';
-            return { i: i, x: g.pts[i][0], y: g.pts[i][1], r: bout ? 17 : 14, fond: T ? T.couleur : '#1d2b36', ico: ICOS[t] || (T ? T.ico : ''), ici: i === ici };
+            return { i: i, x: g.pts[i][0], y: g.pts[i][1], r: bout ? 17 : 14.5, bout: bout, fond: T ? 'url(#dx-' + t + ')' : 'url(#dx-bout)', ico: ICOS[t] || '', ici: i === ici };
           });
+        },
+        // Petites étoiles du fond, toujours aux mêmes places, jamais sous une case
+        decor: function() {
+          var g = this.geo, l = [], graine = 7, h = () => { graine = (graine * 16807) % 2147483647; return graine / 2147483647; };
+          var COUL = ['#ffe8a3', '#c5d8ff', '#ffffff'];
+          for (var k = 0; k < 90 && l.length < 26; k++) {
+            var x = 6 + h() * (g.W - 12), y = 6 + h() * (g.H - 12);
+            if (g.pts.some(p => Math.hypot(p[0] - x, p[1] - y) < 21)) continue;
+            l.push({ x: x.toFixed(1), y: y.toFixed(1), s: (0.35 + h() * 0.6).toFixed(2), o: (0.35 + h() * 0.5).toFixed(2), c: COUL[k % 3] });
+          }
+          return l;
         },
         // Pions (posAff : positions affichées, qui rattrapent les vraies case par case) ; plusieurs sur une case : en carré
         pionsSvg: function() {
