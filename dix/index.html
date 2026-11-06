@@ -73,6 +73,14 @@
     .sujet-dx { font-size: 1.5em; font-weight: 900; text-align: center; margin: 12px 0 6px; color: var(--c); line-height: 1.2; }
     .question-dx { font-size: 1.22em; font-weight: 700; line-height: 1.35; margin: 10px 0; color: #1d2b36; }
     .reponse-dx { background: #e9f9ee; border-radius: 12px; padding: 10px 12px; font-size: 1.1em; font-weight: 800; color: #1e7a45; margin: 8px 0; }
+    .question-dx.petite { font-size: 1em; margin: 4px 0; }
+    .vf-dx { margin: 4px 0 6px; padding-left: 20px; font-weight: 600; font-size: 0.86em; line-height: 1.22; color: #1d2b36; }
+    .vf-dx li { margin-bottom: 3px; }
+    .vf-dx b { white-space: nowrap; }
+    .compte-dx { display: grid; gap: 5px; margin: 4px 0 2px; }
+    .compte-dx button { border: none; border-radius: 11px; padding: 11px 0; font: inherit; font-size: 1.2em; font-weight: 900; color: #fff; background: var(--c); cursor: pointer; }
+    .vf-dx b.vrai { color: #1e7a45; }
+    .vf-dx b.faux { color: #e03131; }
     .ecoute-dx { text-align: center; font-size: 1.12em; font-weight: 800; color: var(--c); background: var(--cl); border-radius: 14px; padding: 18px 12px; margin: 10px 0; line-height: 1.4; }
     .reponse-cachee { background: #eef0f2; border-radius: 12px; padding: 10px 12px; font-size: 0.92em; font-weight: 700; color: #6b7a86; margin: 8px 0; text-align: center; }
     .attente-dx { text-align: center; color: #5b6b78; font-weight: 700; margin: 12px 0 6px; }
@@ -221,9 +229,8 @@
               <!-- Le carton du jeu et son filet -->
               <rect width="100%" height="100%" fill="#f5e9cf"/>
               <rect x="4.5" y="4.5" :width="geo.W - 9" :height="geo.H - 9" rx="9" fill="none" stroke="#b08a4e" stroke-width="1"/>
-              <!-- La route -->
-              <path :d="geo.route" fill="none" stroke="#2a3548" :stroke-width="geo.T + 5" stroke-linejoin="round" stroke-linecap="round"/>
-              <path v-for="(f, k) in geo.virages" :key="'v' + k" :d="f" fill="none" stroke="#f5e9cf" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+              <!-- Le sens de la marche -->
+              <path v-for="(f, k) in geo.virages" :key="'v' + k" :d="f" fill="none" stroke="#8a6a3a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
               <!-- Les tuiles -->
               <g v-for="c in casesSvg" :key="c.i">
                 <rect :x="c.x" :y="c.y + 2" :width="c.w" :height="c.h" rx="6" :fill="c.bord"/>
@@ -316,11 +323,16 @@
             </template>
 
             <template v-else-if="e.phase === 'challenge'">
-              <div class="sujet-dx">⚡ {{ challenge.titre }}</div>
-              <div class="aide" v-if="monRole === 'lecteur'" style="margin-bottom:0">📖 Lisez le challenge à voix haute aux {{ equipe.nom }}.</div>
-              <div class="question-dx" v-if="monRole !== 'joue'">{{ challenge.texte }}</div>
+              <div class="sujet-dx" style="font-size:1.15em;margin:6px 0 2px">⚡ {{ challenge.titre }}</div>
+              <div class="aide" v-if="monRole === 'lecteur'" style="margin-bottom:0">📖 À lire à voix haute aux {{ equipe.nom }}.</div>
+              <template v-if="monRole !== 'joue'">
+                <div class="question-dx" :class="{ petite: challenge.vf }">{{ challenge.texte }}</div>
+                <ol class="vf-dx" v-if="challenge.vf">
+                  <li v-for="(v, k) in challenge.vf" :key="k">{{ v[0] }} <b v-if="monRole === 'lecteur' || voirReponse" :class="v[1] ? 'vrai' : 'faux'">{{ v[1] ? 'Vrai' : 'Faux' }}</b></li>
+                </ol>
+              </template>
               <div class="ecoute-dx" v-else>🎧 Écoutez bien :<br>les {{ lecteur.nom }} vous lisent le challenge.</div>
-              <button class="chrono-dx" :class="{ fini: chronoReste === 0, actif: peut('chrono') }" @click="lancerChrono">
+              <button v-if="!challenge.vf" class="chrono-dx" :class="{ fini: chronoReste === 0, actif: peut('chrono') }" @click="lancerChrono">
                 <div class="barre" :style="{ width: (chronoReste === null ? 0 : chronoReste / 30 * 100) + '%' }"></div>
                 <span>{{ chronoReste === null ? (peut('chrono') ? '⏱ Lancer les 30 secondes' : '⏱ 30 secondes') : chronoReste === 0 ? '⏰ Temps écoulé !' : chronoReste + ' s' }}</span>
               </button>
@@ -329,10 +341,9 @@
                   <div class="reponse-dx" v-if="monRole === 'lecteur' || voirReponse">{{ challenge.reponse }}</div>
                   <button v-else class="lien-discret" @click="voirReponse = true">Voir la réponse</button>
                 </template>
-                <div class="actions-dx">
-                  <button class="btn rouge" @click="jouer({ type: 'challenge', ok: false })">✗ Raté</button>
-                  <button class="btn vert" @click="jouer({ type: 'challenge', ok: true })">✓ Réussi (+{{ challenge.gain }})</button>
-                </div>
+                <button v-if="challenge.vf && monRole !== 'lecteur' && !voirReponse" class="lien-discret" @click="voirReponse = true">Voir les réponses</button>
+                <div class="aide" style="text-align:center;margin:6px 0 3px">Combien de bonnes réponses ?</div>
+                <div class="compte-dx" :style="{ gridTemplateColumns: 'repeat(' + nombresChallenge.length + ', 1fr)' }"><button v-for="n in nombresChallenge" :key="n" @click="jouer({ type: 'challenge', n: n })">{{ n }}</button></div>
               </template>
               <div v-else class="reponse-cachee">{{ lecteur.nom }} jugent le challenge.</div>
             </template>
@@ -349,7 +360,7 @@
               <button v-else-if="peut('surprise')" class="btn principal" style="width:100%;margin-top:8px" @click="jouer({ type: 'surprise' })">OK</button>
             </template>
             <div class="journal-dx">{{ e.journal }}</div>
-            <div class="derniere-dx" v-if="e.derniere && e.phase === 'theme'"><div v-if="e.derniere.q" style="margin-bottom:2px">{{ e.derniere.q }}</div>{{ e.derniere.ok ? '✓' : '✗' }} <template v-if="e.derniere.r">Réponse : <b>{{ e.derniere.r }}</b></template><template v-else>{{ e.derniere.ok ? 'Réussi' : 'Raté' }}</template></div>
+            <div class="derniere-dx" v-if="e.derniere && e.phase === 'theme'"><div v-if="e.derniere.q" style="margin-bottom:2px">{{ e.derniere.q }}</div><template v-if="e.derniere.challenge">{{ e.derniere.n }} bonne{{ e.derniere.n > 1 ? 's' : '' }} réponse{{ e.derniere.n > 1 ? 's' : '' }}<template v-if="e.derniere.r"> · <b>{{ e.derniere.r }}</b></template></template><template v-else>{{ e.derniere.ok ? '✓' : '✗' }} Réponse : <b>{{ e.derniere.r || '—' }}</b></template></div>
           </div>
 
           <!-- Fin -->
@@ -386,7 +397,7 @@
             <li>À son tour, l'équipe regarde la <strong>case</strong> de son pion : elle donne le thème, <span style="color:#7950f2;font-weight:800">Improbable</span>, <span style="color:#e64980;font-weight:800">Plaisir</span>, <span style="color:#f76707;font-weight:800">Mature</span> ou <span style="color:#1c7ed6;font-weight:800">Scolaire</span>. Au premier tour, tout le monde joue Improbable.</li>
             <li>L'<strong>équipe d'avant</strong> (celle qui vient de jouer) tire la carte et annonce le sujet. L'équipe qui joue dit <strong>combien elle se met, de 1 à 10</strong> : plus on se sent fort, plus le chiffre est haut… et plus la question est difficile.</li>
             <li>L'équipe qui lit pose la question de ce niveau à voix haute : en salon, l'équipe qui joue ne la voit pas sur son écran, et seule l'équipe qui lit voit la réponse. <strong>30 secondes</strong>, une seule réponse. Elle juge : bonne réponse, on avance d'autant de cases que le chiffre annoncé ; sinon, on reste sur place.</li>
-            <li><span style="color:#f59f00;font-weight:800">⚡ Challenge</span> : une épreuve originale (liste, mime, dessin, vrai ou faux…), avec son gain. Elle est lue à voix haute : en salon, l'équipe qui joue ne la voit pas sur son écran.</li>
+            <li><span style="color:#f59f00;font-weight:800">⚡ Challenge</span> : citer des choses, ou une série de vrai ou faux : on avance d'une case par bonne réponse. Elle est lue à voix haute : en salon, l'équipe qui joue ne la voit pas sur son écran.</li>
             <li><strong>🎲 Superbe ou aïe</strong> : un bonus ou un malus, appliqué tout de suite. La carte déplace toujours le pion : on ne reste jamais sur cette case.</li>
             <li>Atteindre l'<strong>arrivée</strong> ne suffit pas : il faut encore répondre juste à une <strong>question finale</strong> de niveau {{ DX.NIVEAU_FINAL }}. Raté : on retente au tour suivant.</li>
             <li>Une équipe sans personne de connecté : les autres peuvent jouer à sa place (lire, juger, miser).</li>
@@ -426,19 +437,18 @@
     function foncer(c) { var n = parseInt(c.slice(1), 16), f = (v) => Math.round(v * 0.68); return 'rgb(' + f(n >> 16) + ',' + f((n >> 8) & 255) + ',' + f(n & 255) + ')'; }
     function copie(o) { return JSON.parse(JSON.stringify(o)); }
 
-    // ================== PLATEAU : une route de tuiles carrées, en serpent, sur une grille de 8 colonnes ==================
+    // ================== PLATEAU : des tuiles carrées, en serpent, sur une grille de 8 colonnes ==================
     function geometrie(n) {
       var COLS = 8, W = 340, MARGE = 12, PX = (W - 2 * MARGE) / COLS, T = PX - 3, PY = T + 9, HAUT = 13;
       function place(i) {
         var l = Math.floor(i / COLS), k = i % COLS, col = l % 2 ? COLS - 1 - k : k;
         return { l: l, col: col, x: MARGE + col * PX + 1.5, y: HAUT + l * PY };
       }
-      var pts = [], route = [], virages = [];
-      for (var i = 0; i < n; i++) { var p = place(i); p.cx = p.x + T / 2; p.cy = p.y + T / 2; pts.push(p); route.push(p.cx.toFixed(1) + ' ' + p.cy.toFixed(1)); }
+      var pts = [], virages = [];
+      for (var i = 0; i < n; i++) { var p = place(i); p.cx = p.x + T / 2; p.cy = p.y + T / 2; pts.push(p); }
       // L'arrivée s'étend vers la place libre de sa ligne (3 tuiles de large au plus)
       var fin = pts[n - 1], sens = fin.l % 2 ? -1 : 1, libres = sens > 0 ? COLS - 1 - fin.col : fin.col, lrg = Math.min(2, libres);
       var a = { x: sens > 0 ? fin.x : fin.x - lrg * PX, w: T + lrg * PX };
-      route.push((fin.cx + sens * lrg * PX).toFixed(1) + ' ' + fin.cy.toFixed(1));
       fin.ax = a.x; fin.aw = a.w;
       // Un chevron dans chaque virage, pour lire le sens de la route
       for (var v = COLS; v < n; v += COLS) {
@@ -448,7 +458,7 @@
       // La place restante sur la dernière ligne accueille le nom du jeu
       var reste = libres - lrg, titre = null;
       if (reste >= 2) titre = { x: (sens > 0 ? a.x + a.w + (W - MARGE - a.x - a.w) / 2 : MARGE + (a.x - MARGE) / 2), y: fin.cy - 3, t: reste >= 4 ? 14 : 12 };
-      return { W: W, H: Math.ceil(fin.y + T + 30), T: T, pts: pts, route: 'M ' + route.join(' L '), virages: virages, titre: titre };
+      return { W: W, H: Math.ceil(fin.y + T + 30), T: T, pts: pts, virages: virages, titre: titre };
     }
 
     // ================== RÉSEAU (même principe que les autres jeux : étoile autour de l'hôte) ==================
@@ -500,6 +510,7 @@
         sujetCourant: function() { return this.e.carte && DX.sujet(this.e.carte.sujet) || { nom: '', q: [] }; },
         questionCourante: function() { return this.sujetCourant.q[(this.e.carte.niveau || 1) - 1] || ['', '']; },
         challenge: function() { return DX.CHALLENGES[this.e.carte.challenge] || {}; },
+        nombresChallenge: function() { var l = []; for (var i = 0; i <= (this.challenge.max || 0); i++) l.push(i); return l; },
         surprise: function() { return DX.SURPRISES[this.e.carte.surprise] || {}; },
         autresEquipes: function() { return this.e.equipes.map((q, i) => ({ q: q, i: i })).filter(x => x.i !== this.e.tour); },
         gagnant: function() { return this.e.equipes[this.e.gagnant] || {}; },

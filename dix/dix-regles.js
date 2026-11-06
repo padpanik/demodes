@@ -796,37 +796,110 @@ var DX = (function () {
   ].map(function (s, i) { return { id: s[0] + '-' + i, theme: s[0], nom: s[1], q: s[2] }; });
 
   // Challenges : épreuves originales, jugées par l'équipe qui lit. gain = cases gagnées si réussi
+  // Challenge : on cite des choses, ou une série de vrai ou faux ; on avance d'autant de cases que de bonnes réponses (max au plus)
   var CHALLENGES = [
-    { titre: 'Liste express', texte: 'Citez 5 pays d\'Afrique en 30 secondes.', gain: 4 },
-    { titre: 'Liste express', texte: 'Citez 5 fruits rouges en 30 secondes.', gain: 3 },
-    { titre: 'Liste express', texte: 'Citez 4 planètes du système solaire en 15 secondes.', gain: 3 },
-    { titre: 'Liste express', texte: 'Donnez 3 mots qui riment avec « chapeau » en 10 secondes.', gain: 2 },
-    { titre: 'À l\'envers', texte: 'Récitez les 7 jours de la semaine à l\'envers, en commençant par dimanche, en moins de 10 secondes.', gain: 3 },
-    { titre: 'Calcul mental', texte: 'Comptez de 7 en 7 jusqu\'à 70, sans erreur et sans hésiter.', gain: 3 },
-    { titre: 'Arc-en-ciel', texte: 'Citez les 7 couleurs de l\'arc-en-ciel dans l\'ordre.', reponse: 'Rouge, orange, jaune, vert, bleu, indigo, violet', gain: 4 },
-    { titre: 'Épellation', texte: 'Épelez « anticonstitutionnellement » sans vous tromper.', reponse: 'A-N-T-I-C-O-N-S-T-I-T-U-T-I-O-N-N-E-L-L-E-M-E-N-T', gain: 4 },
-    { titre: 'Mime', texte: 'Un joueur mime un métier choisi par l\'équipe qui lit ; ses coéquipiers ont 30 secondes pour trouver.', gain: 3 },
-    { titre: 'Dessin', texte: 'Un joueur dessine un objet choisi par l\'équipe qui lit (sans lettres ni chiffres) ; ses coéquipiers ont 30 secondes pour trouver.', gain: 3 },
-    { titre: 'Fredonne', texte: 'Un joueur fredonne (sans paroles) le générique d\'un dessin animé ; ses coéquipiers doivent le reconnaître.', gain: 3 },
-    { titre: 'Vrai ou faux', texte: 'Vrai ou faux : on voit la Grande Muraille de Chine depuis la Lune, à l\'œil nu.', reponse: 'Faux', gain: 2 },
-    { titre: 'Vrai ou faux', texte: 'Vrai ou faux : la tour Eiffel est un peu plus haute en été qu\'en hiver.', reponse: 'Vrai (le métal se dilate avec la chaleur, de quelques centimètres)', gain: 2 },
-    { titre: 'Plus ou moins', texte: 'En quelle année la tour Eiffel a-t-elle été inaugurée ? L\'équipe propose une année, l\'équipe qui lit répond « plus » ou « moins » : 5 essais pour trouver.', reponse: '1889', gain: 4 },
-    { titre: 'Le plus long', texte: 'Lequel est le plus long : le Nil, l\'équateur ou la Grande Muraille de Chine ?', reponse: 'L\'équateur (environ 40 000 km)', gain: 2 },
-    { titre: 'Sans dire non', texte: 'L\'équipe qui lit pose des questions pendant 20 secondes : répondez sans jamais dire « oui » ni « non ».', gain: 3 },
-    { titre: 'Liste express', texte: 'Citez 5 capitales européennes en 15 secondes.', gain: 2 },
-    { titre: 'Liste express', texte: 'Citez 6 départements français avec leur numéro en 30 secondes.', gain: 4 },
-    { titre: 'Liste express', texte: 'Citez 4 instruments à cordes en 10 secondes.', gain: 2 },
-    { titre: 'À l\'envers', texte: 'Récitez les 12 mois de l\'année à l\'envers, en commençant par décembre, en moins de 20 secondes.', gain: 4 },
-    { titre: 'À l\'envers', texte: 'Récitez l\'alphabet à l\'envers de Z à P, sans erreur, en moins de 15 secondes.', gain: 4 },
-    { titre: 'Sans se tromper', texte: 'Dites 3 fois de suite, sans erreur : « Les chaussettes de l\'archiduchesse sont-elles sèches, archisèches ? »', gain: 3 },
-    { titre: 'Mime', texte: 'Un joueur mime un film choisi par l\'équipe qui lit ; ses coéquipiers ont 30 secondes pour trouver.', gain: 4 },
-    { titre: 'Mime', texte: 'Un joueur mime un animal choisi par l\'équipe qui lit ; ses coéquipiers ont 30 secondes pour trouver.', gain: 2 },
-    { titre: 'Mot interdit', texte: 'Un joueur fait deviner « boulangerie » à ses coéquipiers sans dire pain, baguette, croissant ni magasin.', gain: 3 },
-    { titre: 'Vrai ou faux', texte: 'Vrai ou faux : pour les botanistes, la banane est une baie.', reponse: 'Vrai', gain: 2 },
-    { titre: 'Vrai ou faux', texte: 'Vrai ou faux : la foudre ne frappe jamais deux fois au même endroit.', reponse: 'Faux', gain: 2 },
-    { titre: 'Plus ou moins', texte: 'En quelle année l\'homme a-t-il marché pour la première fois sur la Lune ? L\'équipe propose une année, l\'équipe qui lit répond « plus » ou « moins » : 4 essais pour trouver.', reponse: '1969', gain: 3 },
-    { titre: 'Calcul mental', texte: 'Comptez à rebours de 100 à 60, de 4 en 4, sans erreur et sans hésiter.', gain: 3 },
-    { titre: 'Fredonne', texte: 'Un joueur fredonne (sans paroles) une chanson française choisie par l\'équipe qui lit ; ses coéquipiers doivent la reconnaître.', gain: 3 }
+    { titre: 'Citez !', texte: 'Citez des pays d\'Afrique.', max: 6 },
+    { titre: 'Citez !', texte: 'Citez des fruits rouges.', max: 6 },
+    { titre: 'Citez !', texte: 'Citez des planètes du système solaire.', max: 6, reponse: 'Mercure, Vénus, Terre, Mars, Jupiter, Saturne, Uranus, Neptune' },
+    { titre: 'Citez !', texte: 'Citez des capitales européennes.', max: 6 },
+    { titre: 'Citez !', texte: 'Citez des départements français avec leur numéro.', max: 6 },
+    { titre: 'Citez !', texte: 'Citez des instruments à cordes.', max: 6 },
+    { titre: 'Citez !', texte: 'Citez des longs métrages d\'animation Disney.', max: 6 },
+    { titre: 'Citez !', texte: 'Citez des fromages français.', max: 6 },
+    { titre: 'Citez !', texte: 'Citez des présidents de la Ve République.', max: 6, reponse: 'De Gaulle, Pompidou, Giscard d\'Estaing, Mitterrand, Chirac, Sarkozy, Hollande, Macron' },
+    { titre: 'Citez !', texte: 'Citez des personnages d\'Astérix.', max: 6 },
+    { titre: 'Citez !', texte: 'Citez des sports qui se jouent avec un ballon.', max: 6 },
+    { titre: 'Citez !', texte: 'Citez les nains de Blanche-Neige.', max: 7, reponse: 'Prof, Grincheux, Joyeux, Timide, Atchoum, Dormeur, Simplet' },
+    { titre: 'Citez !', texte: 'Citez les couleurs de l\'arc-en-ciel.', max: 7, reponse: 'Rouge, orange, jaune, vert, bleu, indigo, violet' },
+    { titre: 'Citez !', texte: 'Citez les pièces du jeu d\'échecs.', max: 6, reponse: 'Roi, dame, tour, fou, cavalier, pion' },
+    { titre: 'Citez !', texte: 'Citez des fleuves français.', max: 5, reponse: 'Par exemple : Seine, Loire, Garonne, Rhône, Charente, Adour, Somme' },
+    { titre: 'Citez !', texte: 'Citez des mots qui riment avec « chapeau ».', max: 6 },
+    { titre: 'Citez !', texte: 'Citez les membres des Beatles.', max: 4, reponse: 'John Lennon, Paul McCartney, George Harrison, Ringo Starr' },
+    { titre: 'Citez !', texte: 'Citez des signes du zodiaque.', max: 6, reponse: 'Bélier, Taureau, Gémeaux, Cancer, Lion, Vierge, Balance, Scorpion, Sagittaire, Capricorne, Verseau, Poissons' },
+    { titre: 'Vrai ou faux', texte: 'Cinq affirmations, vrai ou faux ?', max: 5, vf: [
+      ['On voit la Grande Muraille de Chine depuis la Lune, à l\'œil nu.', false],
+      ['La tour Eiffel est un peu plus haute en été qu\'en hiver.', true],
+      ['La foudre ne frappe jamais deux fois au même endroit.', false],
+      ['Pour les botanistes, la banane est une baie.', true],
+      ['L\'autruche enfouit sa tête dans le sable quand elle a peur.', false]
+    ] },
+    { titre: 'Vrai ou faux', texte: 'Cinq affirmations, vrai ou faux ?', max: 5, vf: [
+      ['La pieuvre a trois cœurs.', true],
+      ['Le poisson rouge a une mémoire de trois secondes.', false],
+      ['Les chauves-souris sont aveugles.', false],
+      ['Le dauphin est un mammifère.', true],
+      ['Le koala est un ours.', false]
+    ] },
+    { titre: 'Vrai ou faux', texte: 'Cinq affirmations, vrai ou faux ?', max: 5, vf: [
+      ['Napoléon était particulièrement petit pour son époque.', false],
+      ['Les Vikings portaient des casques à cornes au combat.', false],
+      ['Cléopâtre a vécu plus près de nous que de la construction de la grande pyramide de Gizeh.', true],
+      ['La guerre de Cent Ans a duré exactement cent ans.', false],
+      ['Louis XIV a régné plus de 70 ans.', true]
+    ] },
+    { titre: 'Vrai ou faux', texte: 'Cinq affirmations, vrai ou faux ?', max: 5, vf: [
+      ['On n\'utilise que 10 % de son cerveau.', false],
+      ['Les ongles continuent de pousser après la mort.', false],
+      ['Le squelette d\'un adulte compte 206 os.', true],
+      ['Le cœur humain a quatre cavités.', true],
+      ['Le sang pauvre en oxygène est bleu dans le corps.', false]
+    ] },
+    { titre: 'Vrai ou faux', texte: 'Cinq affirmations, vrai ou faux ?', max: 5, vf: [
+      ['Sydney est la capitale de l\'Australie.', false],
+      ['La Russie s\'étend sur plus de dix fuseaux horaires.', true],
+      ['Le Sahara est le plus grand désert du monde, déserts froids compris.', false],
+      ['Istanbul est à cheval sur deux continents.', true],
+      ['La France a une frontière avec le Brésil.', true]
+    ] },
+    { titre: 'Vrai ou faux', texte: 'Cinq affirmations, vrai ou faux ?', max: 5, vf: [
+      ['Le son se propage dans le vide.', false],
+      ['L\'eau bout à plus basse température en altitude.', true],
+      ['Le diamant est composé de carbone.', true],
+      ['La face cachée de la Lune n\'est jamais éclairée par le Soleil.', false],
+      ['Les saisons viennent de la distance entre la Terre et le Soleil.', false]
+    ] },
+    { titre: 'Vrai ou faux', texte: 'Cinq affirmations, vrai ou faux ?', max: 5, vf: [
+      ['Dans la version originale, Dark Vador dit exactement « Luke, je suis ton père ».', false],
+      ['« Titanic » a remporté 11 Oscars.', true],
+      ['Mickey apparaît pour la première fois au public en 1928.', true],
+      ['Sherlock Holmes dit « Élémentaire, mon cher Watson » dans les romans de Conan Doyle.', false],
+      ['Dans le roman de Mary Shelley, Frankenstein est le nom du monstre.', false]
+    ] },
+    { titre: 'Vrai ou faux', texte: 'Cinq affirmations, vrai ou faux ?', max: 5, vf: [
+      ['La tomate est un fruit pour les botanistes.', true],
+      ['Un miel bien conservé peut se garder des siècles.', true],
+      ['La cacahuète est une noix, au sens botanique.', false],
+      ['L\'eau est ce qui calme le mieux la brûlure du piment.', false],
+      ['Le chocolat blanc contient du beurre de cacao.', true]
+    ] },
+    { titre: 'Vrai ou faux', texte: 'Cinq affirmations, vrai ou faux ?', max: 5, vf: [
+      ['Le mot « oiseau » contient les cinq voyelles a, e, i, o, u.', true],
+      ['Le pluriel de « bal » est « baux ».', false],
+      ['« Après que » se construit avec l\'indicatif.', true],
+      ['Le mot « autoroute » est masculin.', false],
+      ['Le mot « squelette » est masculin.', true]
+    ] },
+    { titre: 'Vrai ou faux', texte: 'Cinq affirmations, vrai ou faux ?', max: 5, vf: [
+      ['Un marathon mesure 42,195 km.', true],
+      ['Un match de football dure 90 minutes en temps réglementaire.', true],
+      ['Les premiers Jeux olympiques modernes ont eu lieu à Paris.', false],
+      ['Au tennis, on compte 15, 30, 45.', false],
+      ['Au rugby, un essai vaut 5 points.', true]
+    ] },
+    { titre: 'Vrai ou faux', texte: 'Cinq affirmations, vrai ou faux ?', max: 5, vf: [
+      ['Vénus est plus chaude que Mercure.', true],
+      ['Sur Vénus, un jour est plus long qu\'une année.', true],
+      ['Le Soleil est une étoile.', true],
+      ['Pluton est toujours officiellement une planète.', false],
+      ['Neil Armstrong a marché sur la Lune avec la mission Apollo 13.', false]
+    ] },
+    { titre: 'Vrai ou faux', texte: 'Cinq affirmations, vrai ou faux ?', max: 5, vf: [
+      ['Marseille est la deuxième ville de France par sa population.', true],
+      ['« La Marseillaise » a été écrite à Marseille.', false],
+      ['Le Louvre a d\'abord été un palais royal.', true],
+      ['La tour Eiffel a été construite pour l\'Exposition universelle de 1889.', true],
+      ['Le mont Blanc est le plus haut sommet d\'Europe occidentale.', true]
+    ] }
   ];
 
   // « Superbe ! » (bonus) et « Aïe ! » (malus) : appliqués tout seuls par l'appli
@@ -990,10 +1063,10 @@ var DX = (function () {
       }
       case 'challenge': {
         if (e.phase !== 'challenge') return 'Pas maintenant.';
-        var ch = CHALLENGES[c.challenge];
-        e.derniere = { q: ch.texte, r: ch.reponse || '', ok: !!a.ok, equipe: e.tour, challenge: true };
-        if (a.ok) { e.journal = 'Challenge réussi : ' + q.nom + ' avance de ' + cases(ch.gain) + '.'; deplacer(e, e.tour, ch.gain); }
-        else e.journal = 'Challenge raté pour ' + q.nom + '.';
+        var ch = CHALLENGES[c.challenge], nb = Math.max(0, Math.min(ch.max || 0, Math.round(a.n) || 0));
+        e.derniere = { q: ch.texte, r: ch.vf ? ch.vf.map(v => v[1] ? 'V' : 'F').join(' · ') : (ch.reponse || ''), n: nb, ok: nb > 0, equipe: e.tour, challenge: true };
+        if (nb) { e.journal = 'Challenge : ' + nb + (nb > 1 ? ' bonnes réponses' : ' bonne réponse') + ', ' + q.nom + ' avance de ' + cases(nb) + '.'; deplacer(e, e.tour, nb); }
+        else e.journal = 'Challenge : aucune bonne réponse pour ' + q.nom + '.';
         suivant(e);
         break;
       }
