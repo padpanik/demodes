@@ -3,12 +3,13 @@
 // Les clés de stockage gardent l'ancien préfixe "brillant-" : les réglages déjà faits sont conservés.
 
 // Numéro de version affiché (à augmenter à chaque mise en ligne, avec brilliant/index.html et sw.js)
-const VERSION = '2.98';
+const VERSION = '2.99';
 
 // ---------- Nouveautés (2.87, demandé par l'utilisateur) ----------
 // Une ligne très brève par mise en ligne (la plus récente en haut) : l'accueil les montre une seule fois, dans une petite fenêtre,
 // à qui n'a pas encore vu cette version. [version, jeu ou partie de l'appli, ce qui change]
 const NOUVEAUTES = [
+  ['2.99', 'Appli', 'Mode avion : l\'accueil et le bouton Jeux s\'ouvrent de nouveau.'],
   ['2.98', 'Combien sur 10 ?', 'Défis : points à cocher puis validation. Le compagnon sert de pion.'],
   ['2.97', 'Combien sur 10 ?', '31 sujets réécrits, niveaux 4 et 5 parfois plus durs, erreurs corrigées.'],
   ['2.96', 'Combien sur 10 ?', 'Questions refaites dans l\'esprit du jeu, challenges jusqu\'à 10 cases.'],
