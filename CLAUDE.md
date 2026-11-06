@@ -565,7 +565,7 @@ Bataille navale : `bataille-boss` (partie contre un boss d'expédition), `batail
   `compagnon/`, au salon, où il raconte l'aventure (fenêtre « Retour d'expédition » : lieu, bonnes réponses, poussières, étoiles, souvenirs ;
   `expedition-retour`), avec un bouton OK. Étoiles par `Etoiles.recompenseJeu` (plafond du jour),
   `Etoiles.evenement('Expédition', …)` pour les défis ; la balade fait baisser Repas et Eau de 15. Difficultés : Balade / Aventure.
-- Accueil : l'Expédition est **tout en haut de la liste, même devant les favoris**, sans badge « Nouveau » depuis 3.02 (`tete` dans `jeux`) ;
+- Accueil : **jeu à part, associé au compagnon (décidé par l'utilisateur) : l'Expédition reste toujours juste sous le bloc « Mon compagnon »**, en tête de liste, même devant les favoris (`tete` dans `jeux`, ne pas retirer), sans badge « Nouveau » depuis 3.02 ;
   badge « Expédition en cours » (sans bouton Quitter, et la page ne se rouvre pas toute seule : `solo: true`).
 
 ### Donjon des compagnons (première version)
