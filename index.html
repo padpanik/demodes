@@ -429,8 +429,8 @@
         // Jeux dans l'ordre choisi sur ce téléphone, favoris d'abord (les jeux inconnus de l'ordre gardent leur place par défaut, à la fin)
         jeuxTries: function() {
           var o = this.ordre, f = this.favoris, rang = (j) => { var i = o.indexOf(j.id); return i < 0 ? 100 : i; }, fav = (j) => f.includes(j.id) ? 0 : 1;
-          // Les nouveautés (tete) passent devant tout, même les favoris
-          var tete = (j) => j.tete ? 0 : 1;
+          // L'Expédition (tete) reste juste sous le compagnon ; puis les jeux au badge « Nouveau », même devant les favoris
+          var tete = (j) => j.tete ? 0 : this.estNouveau(j) ? 1 : 2;
           return this.jeux.map((j, k) => ({ j: j, k: k })).sort((a, b) => (tete(a.j) - tete(b.j)) || (fav(a.j) - fav(b.j)) || (rang(a.j) - rang(b.j)) || (a.k - b.k)).map(x => x.j);
         },
         etoiles: function() { this.maj; return Etoiles.solde(); },
