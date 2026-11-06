@@ -12,7 +12,7 @@ var IconesJeux = (function () {
     brilliant: ['#9775fa', '#6741d9'], yams: ['#ff6b6b', '#e03131'], backgammon: ['#e8a061', '#a8591f'],
     assaut: ['#94b04a', '#55701c'], bataille: ['#4dabf7', '#1864ab'], gribouille: ['#f783ac', '#d6336c'],
     petitbac: ['#3bc9db', '#0c8599'], agents: ['#68727c', '#25292e'], quatre: ['#748ffc', '#3b5bdb'],
-    domino: ['#51cf66', '#2b8a3e'], lettres: ['#ffa94d', '#e8590c'], expedition: ['#da77f2', '#9c36b5'], donjon: ['#ffa94d', '#a8590f'], joyaux: ['#38d9a9', '#087f5b'], dix: ['#fcc419', '#e67700']
+    domino: ['#51cf66', '#2b8a3e'], lettres: ['#ffa94d', '#e8590c'], expedition: ['#da77f2', '#9c36b5'], donjon: ['#ffa94d', '#a8590f'], joyaux: ['#38d9a9', '#087f5b'], dix: ['#fcc419', '#e67700'], chinchon: ['#f06595', '#a61e4d']
   };
   var B = '#fff';   // couleur du dessin (blanc sur fond plein, couleur du jeu sur fond clair) ; c[1] = touche d'accent
   function pips(cx, cy, s, n, c) {   // points d'un dé de côté s centré en cx, cy
@@ -85,6 +85,12 @@ var IconesJeux = (function () {
         s += '<circle cx="' + (16.5 + x * 7.7) + '" cy="' + (17.5 + y * 7.2) + '" r="2.9" fill="' + (aligne ? '#fcc419' : rouge ? '#f03e3e' : c[1]) + '" opacity="' + (aligne || rouge ? 1 : 0.22) + '"/>';
       }
       return s;
+    },
+    // Chinchón : deux cartes en éventail, une pièce sur celle du dessus
+    chinchon: function (c) {
+      return '<rect x="12" y="13" width="22" height="33" rx="3.5" transform="rotate(-14 23 30)" fill="' + B + '" opacity="0.65"/>' +
+             '<rect x="23" y="10" width="22" height="33" rx="3.5" transform="rotate(10 34 27)" fill="' + B + '"/>' +
+             '<circle cx="34" cy="27" r="7" fill="none" stroke="' + c[1] + '" stroke-width="2.4" transform="rotate(10 34 27)"/><circle cx="34" cy="27" r="2.2" fill="' + c[1] + '"/>';
     },
     // Dominos : un domino penché
     domino: function (c) {

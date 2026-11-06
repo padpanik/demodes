@@ -3,12 +3,13 @@
 // Les clés de stockage gardent l'ancien préfixe "brillant-" : les réglages déjà faits sont conservés.
 
 // Numéro de version affiché (à augmenter à chaque mise en ligne, avec brilliant/index.html et sw.js)
-const VERSION = '2.99';
+const VERSION = '3.00';
 
 // ---------- Nouveautés (2.87, demandé par l'utilisateur) ----------
 // Une ligne très brève par mise en ligne (la plus récente en haut) : l'accueil les montre une seule fois, dans une petite fenêtre,
 // à qui n'a pas encore vu cette version. [version, jeu ou partie de l'appli, ce qui change]
 const NOUVEAUTES = [
+  ['3.00', 'Chinchón', 'Nouveau jeu de cartes espagnol, seul ou de 2 à 4.'],
   ['2.99', 'Appli', 'Mode avion : l\'accueil et le bouton Jeux s\'ouvrent de nouveau.'],
   ['2.98', 'Combien sur 10 ?', 'Défis : points à cocher puis validation. Le compagnon sert de pion.'],
   ['2.97', 'Combien sur 10 ?', '31 sujets réécrits, niveaux 4 et 5 parfois plus durs, erreurs corrigées.'],
@@ -60,7 +61,7 @@ if (!clientId) { clientId = nouvelId() + nouvelId(); ecrireStockage('brillant-cl
 // ---------- Un seul salon à la fois ----------
 // Chaque jeu garde en mémoire son salon en cours (et s'y reconnecte tout seul). Quand on entre dans un salon,
 // on oublie ceux des autres jeux : sinon le téléphone peut rester accroché à une ancienne partie.
-const SALONS_JEUX = { brilliant: 'brillant-sauvegarde-v1', yams: 'yams-sauvegarde', backgammon: 'bg-sauvegarde', assaut: 'assaut-sauvegarde', bataille: 'bataille-sauvegarde', gribouille: 'gribouille-sauvegarde', petitbac: 'petitbac-sauvegarde', agents: 'agents-sauvegarde', quatre: 'quatre-sauvegarde', domino: 'domino-sauvegarde', lettres: 'lettres-sauvegarde', donjon: 'donjon-sauvegarde', joyaux: 'joyaux-sauvegarde', dix: 'dix-sauvegarde' };
+const SALONS_JEUX = { brilliant: 'brillant-sauvegarde-v1', yams: 'yams-sauvegarde', backgammon: 'bg-sauvegarde', assaut: 'assaut-sauvegarde', bataille: 'bataille-sauvegarde', gribouille: 'gribouille-sauvegarde', petitbac: 'petitbac-sauvegarde', agents: 'agents-sauvegarde', quatre: 'quatre-sauvegarde', domino: 'domino-sauvegarde', lettres: 'lettres-sauvegarde', donjon: 'donjon-sauvegarde', joyaux: 'joyaux-sauvegarde', dix: 'dix-sauvegarde', chinchon: 'chinchon-sauvegarde' };
 function oublierSalonDuJeu(jeu) {
   var cle = SALONS_JEUX[jeu], sv = lireStockage(cle);
   if (!sv || !sv.role) return false;
@@ -91,7 +92,7 @@ oublierSalonsPerimes();   // au chargement de chaque page, avant que l'accueil o
 var DEMENAGEMENT = { ouvert: true, ancienHote: 'padpanik.github.io', nouvelle: 'https://demodes.desdale.workers.dev/' };
 
 var Sauvegarde = (function () {
-  var NOTRES = /^(brillant|desdale|compagnon|expedition|yams2?|bg|assaut|bataille|gribouille|petitbac|agents|quatre|domino|lettres|donjon|joyaux|dix)-/;
+  var NOTRES = /^(brillant|desdale|compagnon|expedition|yams2?|bg|assaut|bataille|gribouille|petitbac|agents|quatre|domino|lettres|donjon|joyaux|dix|chinchon)-/;
   var EXCLUES = ['brillant-acces', 'brillant-client-id', 'desdale-admin'];
   function gardee(k) { return NOTRES.test(k) && EXCLUES.indexOf(k) === -1 && !/-sauvegarde(-v1)?$/.test(k) && !/-prive$/.test(k); }
   function cles() { var l = []; try { for (var i = 0; i < localStorage.length; i++) { var k = localStorage.key(i); if (gardee(k)) l.push(k); } } catch (e) {} return l.sort(); }

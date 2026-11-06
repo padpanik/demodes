@@ -19,6 +19,7 @@ var SalonGlobal = (function () {
     agents: { nom: 'Agents secrets', page: 'agents/', cle: 'agents-sauvegarde' },
     quatre: { nom: 'Quatre en ligne', page: 'quatre/', cle: 'quatre-sauvegarde' },
     domino: { nom: 'Dominos', page: 'domino/', cle: 'domino-sauvegarde' },
+    chinchon: { nom: 'Chinchón', page: 'chinchon/', cle: 'chinchon-sauvegarde' },
     joyaux: { nom: '7 piliers', page: 'joyaux/', cle: 'joyaux-sauvegarde' },
     lettres: { nom: 'Lettres croisées', page: 'lettres/', cle: 'lettres-sauvegarde' },
     dix: { nom: 'Combien sur 10 ?', page: 'dix/', cle: 'dix-sauvegarde' },
