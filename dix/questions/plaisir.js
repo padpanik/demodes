@@ -760,4 +760,70 @@ De quel État américain vient-elle ? | Le Michigan
 Quel rôle joue-t-elle dans le film d'Alan Parker de 1996 ? | Evita
 Quel acteur a-t-elle épousé en 1985 ? | Sean Penn
 Quel réalisateur britannique a-t-elle épousé en 2000 ? | Guy Ritchie
+# Toy Story
+Comment s'appelle le cow-boy ? | Woody
+Comment s'appelle le ranger de l'espace ? | Buzz l'Éclair
+Comment s'appelle l'enfant propriétaire ? | Andy
+Quel studio l'a produit ? | Pixar
+En quelle année sort le tout premier Toy Story ? | En 1995
+Quel est le méchant du premier film ? | Sid, le voisin
+Qui prête sa voix à Woody en anglais ? | Tom Hanks
+Quel ours rose sent la fraise ? | Lotso
+Qui réalise le premier film ? | John Lasseter
+Quel chanteur américain signe « You've Got a Friend in Me » ? | Randy Newman
+# Shrek
+Quel genre de créature verte est Shrek ? | Un ogre
+Qui l'accompagne en parlant sans arrêt ? | L'Âne
+Comment s'appelle la princesse ? | Fiona
+Quel chat bottu arrive dans le deuxième film ? | Le Chat Potté
+En quelle année sort le tout premier Shrek ? | En 2001
+Quel studio le produit ? | DreamWorks
+Quelle chanson d'ouverture de Smash Mouth marque le film ? | All Star
+Qui prête sa voix à Shrek en anglais ? | Mike Myers
+Quel seigneur tyrannique veut épouser Fiona ? | Lord Farquaad
+Qui a écrit l'album pour enfants d'origine ? | William Steig
+# Le Roi lion
+Comment s'appelle le lionceau ? | Simba
+Quel méchant est son oncle ? | Scar
+Comment s'appelle le père ? | Mufasa
+Quel duo chante Hakuna Matata ? | Timon et Pumbaa
+Que signifie Hakuna Matata ? | Pas de souci
+Quel chanteur britannique en a composé les chansons ? | Elton John
+Quel oiseau est le majordome du roi ? | Zazu
+Comment s'appelle le mandrill sage ? | Rafiki
+En quelle année sort le film ? | En 1994
+Quel compositeur a signé la musique originale ? | Hans Zimmer
+# Alien
+Où se passe le film ? | Dans l'espace
+Quel est le nom de l'héroïne ? | Ripley
+Quelle actrice la joue ? | Sigourney Weaver
+Qui réalise le premier film ? | Ridley Scott
+En quelle année sort-il ? | En 1979
+Comment s'appelle le vaisseau ? | Le Nostromo
+Quel animal de compagnie survit ? | Le chat Jones
+Quel artiste suisse a dessiné la créature ? | H. R. Giger
+Quel acteur joue l'homme dont le ventre explose ? | John Hurt
+Quel réalisateur signe Aliens en 1986 ? | James Cameron
+# Le tiramisu
+Quel pays en est l'origine ? | L'Italie
+Quelle boisson imbibe les biscuits ? | Le café
+Quel fromage y met-on ? | Le mascarpone
+Quels biscuits y met-on ? | Les boudoirs
+Que saupoudre-t-on sur le dessus ? | Du cacao
+Que signifie tiramisu ? | Remonte-moi le moral
+Quelle région italienne le revendique, avec Trévise ? | La Vénétie
+Quelle autre région le conteste ? | Le Frioul
+Dans quelle décennie est-il apparu dans sa forme connue ? | Les années 1960
+Quel restaurant de Trévise le revendique ? | Le Beccherie
+# Le hamburger
+Quelle chaîne a un clown pour mascotte ? | McDonald's
+Combien de tranches de pain compte un Big Mac ? | Trois
+Quelle chaîne a un roi dans son nom ? | Burger King
+Quelle ville allemande lui a donné son nom ? | Hambourg
+Quels frères ont fondé McDonald's ? | Richard et Maurice McDonald
+Quel commercial a transformé la chaîne ? | Ray Kroc
+Quel film raconte son histoire ? | Le Fondateur
+En quelle année a ouvert le premier McDonald's français ? | En 1979
+Dans quelle ville ? | Strasbourg
+Comment Pulp Fiction dit-il que les Français appellent le Quarter Pounder ? | Royale with Cheese
 `;

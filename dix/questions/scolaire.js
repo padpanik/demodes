@@ -606,4 +606,15 @@ En quelle année est-il mort ? | En 1519
 Comment s'appelle son dessin d'homme dans un cercle ? | L'Homme de Vitruve
 Dans quel sens écrivait-il ses carnets ? | En miroir
 Dans quel village de Toscane est-il né ? | Vinci (Anchiano)
+# Marie Curie
+De quel pays vient-elle ? | La Pologne
+Quels deux éléments a-t-elle découverts ? | Le polonium et le radium
+Combien de Nobel a-t-elle reçus ? | Deux
+Dans quelles disciplines a-t-elle reçu ces prix ? | Physique et chimie
+Avec quel mari a-t-elle partagé le premier ? | Pierre Curie
+En quelle année a-t-elle reçu le premier ? | En 1903
+En quelle année a-t-elle reçu le second ? | En 1911
+Quel est son nom de naissance ? | Maria Skłodowska
+Quelle fille a aussi eu le Nobel ? | Irène Joliot-Curie
+Dans quel lieu a-t-elle été inhumée en 1995 ? | Au Panthéon
 `;

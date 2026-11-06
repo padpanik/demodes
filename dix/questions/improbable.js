@@ -1079,4 +1079,136 @@ Comment s'appelle cet Australien ? | Karl Kruszelnicki
 En quelle année a-t-il été récompensé ? | En 2002
 Quel chimiste autrichien a analysé la composition de cette peluche ? | Georg Steinhauser
 De quoi cette peluche est-elle surtout faite ? | De fibres de vêtements
+# Les tongs
+Quel bruit font-elles en marchant ? | Flip-flop
+À quelle saison les sort-on ? | L'été
+Entre quels orteils passe la lanière ? | Le gros orteil et son voisin
+Sur quel sol vaut-il mieux éviter de courir avec ? | Le sable brûlant, ou partout en fait
+Quelle marque brésilienne en a fait un objet de mode ? | Havaianas
+Quelle sandale traditionnelle japonaise les a inspirées ? | Le zori
+En quelle année Havaianas a-t-elle été lancée ? | En 1962
+Quel mot anglais imitant leur bruit les désigne ? | Flip-flops
+À quel archipel américain le nom Havaianas fait-il penser ? | Hawaï
+Quelle entreprise brésilienne a créé la marque ? | Alpargatas
+# Les cadenas d'amour
+Où accroche-t-on ce cadenas, en général ? | Sur un pont
+Que fait-on de la clé, romantiquement ? | On la jette à l'eau
+Qu'écrit-on dessus ? | Ses initiales
+Dans quelle ville le pont des Arts en était-il couvert ? | Paris
+Quel fleuve passe sous ce pont ? | La Seine
+Pourquoi la mairie les a-t-elle retirés ? | Leur poids menaçait le pont
+En quelle année les grilles du pont des Arts ont-elles été retirées ? | En 2015
+Que s'était-il passé en 2014, sur ce pont ? | Un pan de grille s'était effondré
+Quel matériau a remplacé les grilles ? | Du verre
+Quel roman italien de 2006 aurait lancé la mode au pont Milvius, à Rome ? | Ho voglia di te, de Federico Moccia
+# Les boîtes noires
+De quelle couleur sont-elles vraiment ? | Orange
+Où les trouve-t-on ? | Dans les avions
+Pourquoi cette couleur ? | Pour les retrouver facilement
+Combien y en a-t-il dans un avion de ligne ? | Deux
+Que garde la première ? | Les paramètres de vol
+Que garde la seconde ? | Les voix du cockpit
+Dans quelle partie de l'avion sont-elles placées ? | À l'arrière
+Quel signal émettent-elles sous l'eau ? | Des ultrasons
+Quel scientifique australien en a eu l'idée ? | David Warren
+Dans quelle décennie ? | Les années 1950
+# Les canards en plastique
+De quelle couleur est le canard de bain classique ? | Jaune
+Où flotte-t-il ? | Dans la baignoire
+Quel bruit fait-il quand on l'écrase ? | Couic
+Quel personnage de Sesame Street lui chante une chanson ? | Ernie
+Quel artiste néerlandais a fait naviguer un canard géant dans les ports du monde ? | Florentijn Hofman
+Comment les programmeurs appellent-ils la méthode d'expliquer son code à un canard ? | Le débogage au canard en plastique
+Dans quel océan des milliers de jouets sont-ils tombés d'un cargo en 1992 ? | Le Pacifique
+Combien de jouets, à peu près ? | Environ 29 000
+Comment appelle-t-on ces jouets perdus en mer ? | Les Friendly Floatees
+Quel océanographe américain a suivi leur dérive ? | Curtis Ebbesmeyer
+# Les bananes
+Sur quoi glisse-t-on, dans les dessins animés ? | Une peau de banane
+Quel animal les réclame, dans les clichés ? | Le singe
+Quel artiste a dessiné la banane de l'album du Velvet Underground ? | Andy Warhol
+Quel Italien a scotché une banane à un mur, en 2019 ? | Maurizio Cattelan
+Quelle variété occupe presque tous nos étals ? | La Cavendish
+Quel élément rend la banane très légèrement radioactive ? | Le potassium
+Le bananier est-il botaniquement un arbre ? | Non, une plante herbacée
+Quelle variété a été décimée par la maladie de Panama, dans les années 1950 ? | La Gros Michel
+Comment s'appelait l'œuvre de Cattelan ? | Comedian
+Dans quelle foire d'art a-t-elle été présentée ? | Art Basel Miami Beach
+# Les carottes
+Quel lapin en grignote une en disant « Quoi de neuf, docteur ? » ? | Bugs Bunny
+Qu'est-ce que ça rend, paraît-il ? | Aimable
+Quelle partie de la plante mange-t-on ? | La racine
+Que porte un bonhomme de neige à la place du nez ? | Une carotte
+Quelle couleur avaient souvent les carottes autrefois ? | Violette ou jaune
+Quel pigment la colore en orange ? | Le carotène
+Quel pays aurait popularisé la carotte orange ? | Les Pays-Bas
+Quelle armée a fait courir la rumeur qu'elles aidaient à voir la nuit ? | La Royal Air Force britannique
+Pendant quelle guerre ? | La Seconde Guerre mondiale
+Quel as de la RAF servait d'exemple à cette rumeur ? | John Cunningham
+# Les lapins
+Quel lapin apporte les œufs ? | Celui de Pâques
+Que tire le magicien de son chapeau ? | Un lapin
+Quel lapin blanc est toujours en retard ? | Celui d'Alice au pays des merveilles
+Quel film de 1988 mêle des acteurs et un lapin de dessin animé ? | Qui veut la peau de Roger Rabbit
+Comment s'appelle le lapin de la pub des piles ? | Duracell
+Quel film des Monty Python a un lapin tueur ? | Sacré Graal !
+Quelle maladie a été introduite pour les réduire ? | La myxomatose
+Dans quel pays ont-ils pullulé après 1859 ? | L'Australie
+Quel colon anglais en a lâché 24 pour la chasse ? | Thomas Austin
+Quel empereur français a été attaqué par des lapins en 1807 ? | Napoléon
+# Les bonshommes de neige
+De quoi est-il fait ? | De neige
+Comment finit-il au printemps ? | Fondu
+Quel bonhomme de neige Disney aime les câlins chauds ? | Olaf
+Dans quel film apparaît-il ? | La Reine des neiges
+Que lui met-on sur la tête, classiquement ? | Un vieux chapeau
+Quelle mascotte de carnaval vient de Québec ? | Bonhomme Carnaval
+Quel auteur britannique a écrit l'album sans paroles The Snowman ? | Raymond Briggs
+Quelle chanson accompagne son vol, dans le film de 1982 ? | Walking in the Air
+En quelle année a paru l'album The Snowman ? | En 1978
+Dans quel État américain a été bâti un record de bonhomme de neige à Bethel ? | Le Maine
+# La télécommande
+Où se cache-t-elle toujours ? | Entre les coussins du canapé
+Qui la garde, dans la famille ? | Celui qui ne veut pas la céder
+Que faut-il changer quand elle ne marche plus ? | Les piles
+Quel type de lumière invisible utilise-t-elle ? | L'infrarouge
+Quel surnom portait la première télécommande à fil de Zenith, en 1950 ? | Lazy Bones
+Quelle entreprise américaine l'a fabriquée ? | Zenith
+Quel inventeur a créé la première sans fil, en 1955 ? | Eugene Polley
+Comment s'appelait ce modèle à faisceau lumineux ? | Flash-Matic
+Quelle faiblesse avait-il ? | Le soleil pouvait changer les chaînes
+Quel ingénieur de Zenith l'a remplacé par des ultrasons ? | Robert Adler
+# Les essuie-glaces
+Quand les allume-t-on ? | Quand il pleut
+Que glisse-t-on dessous, sur un parking ? | Une contravention
+Quelle partie caoutchoutée s'use ? | Le balai
+Quelle Américaine a breveté le premier en 1903 ? | Mary Anderson
+Dans quelle ville a-t-elle eu l'idée, dans un tramway ? | New York
+Quel inventeur américain a créé le mode intermittent ? | Robert Kearns
+Quel constructeur a-t-il attaqué en justice ? | Ford
+Quel film de 2008 raconte son combat ? | Flash of Genius
+Quel acteur le joue ? | Greg Kinnear
+Quel autre grand constructeur a-t-il aussi fait condamner ? | Chrysler
+# Le dodo
+Dans quelle position est-il toujours ? | Allongé, c'est le dodo
+Pourquoi n'en voit-on plus ? | Il a disparu
+Sait-il voler ? | Non
+Sur quelle île vivait-il ? | L'île Maurice
+Quel livre lui a donné la célébrité ? | Alice au pays des merveilles
+Quelle nation a colonisé l'île à son époque ? | Les Pays-Bas
+À quelle époque a-t-il disparu ? | À la fin du XVIIe siècle
+Quel film de 2002 lui donne un rôle comique ? | L'Âge de glace
+Quel est son nom scientifique ? | Raphus cucullatus
+Quel oiseau actuel est son plus proche parent ? | Le pigeon de Nicobar
+# Les mots croisés
+Que faut-il remplir ? | Des cases
+Que fait-on quand on est bloqué ? | On regarde la solution
+De quelle couleur sont les cases à remplir ? | Blanches
+Dans quel sens se lisent les mots ? | Horizontal et vertical
+Quel journal américain a publié la première grille en 1913 ? | Le New York World
+Qui l'a conçue ? | Arthur Wynne
+Quel auteur des « Choses » en composait pour Le Point ? | Georges Perec
+Comment appelle-t-on un auteur de mots croisés ? | Un verbicruciste
+Quel verbicruciste français a signé dans Le Nouvel Observateur ? | Robert Scipion
+Quelle forme avait la première grille ? | Un losange
 `;

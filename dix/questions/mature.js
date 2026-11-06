@@ -716,4 +716,15 @@ Dans quelle ville d'Alsace le foie gras en croûte a-t-il été mis au point ? |
 Quelle loi française de 2006 l'a protégé ? | La loi d'orientation agricole
 Quel statut lui donne-t-elle ? | Patrimoine culturel et gastronomique
 Quelle grande ville américaine a voté son interdiction en 2019 ? | New York
+# Le lave-vaisselle
+Qui s'en charge à la maison, en théorie ? | Tout le monde
+Quel débat éternel provoque-t-il ? | Comment le remplir
+Quelle petite pastille y met-on ? | Une tablette
+Quel sel y ajoute-t-on ? | Du sel régénérant
+Pourquoi ce sel ? | Pour adoucir l'eau
+Quel pays a inventé l'appareil moderne ? | Les États-Unis
+Quelle Américaine l'a breveté en 1886 ? | Josephine Cochrane
+Dans quel État américain ? | L'Illinois
+À quelle exposition de 1893 a-t-elle présenté sa machine ? | L'Exposition universelle de Chicago
+Quelle marque allemande a lancé un modèle européen dès 1929 ? | Miele
 `;
