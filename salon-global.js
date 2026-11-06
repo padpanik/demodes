@@ -21,6 +21,7 @@ var SalonGlobal = (function () {
     domino: { nom: 'Dominos', page: 'domino/', cle: 'domino-sauvegarde' },
     joyaux: { nom: '7 piliers', page: 'joyaux/', cle: 'joyaux-sauvegarde' },
     lettres: { nom: 'Lettres croisées', page: 'lettres/', cle: 'lettres-sauvegarde' },
+    dix: { nom: 'Combien sur 10 ?', page: 'dix/', cle: 'dix-sauvegarde' },
     expedition: { nom: 'Expédition', page: 'expedition/' },
     donjon: { nom: 'Donjon des compagnons', page: 'donjon/', cle: 'donjon-sauvegarde' },
     compagnon: { nom: 'Mon compagnon', page: 'compagnon/' }

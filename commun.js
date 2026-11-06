@@ -3,12 +3,13 @@
 // Les clés de stockage gardent l'ancien préfixe "brillant-" : les réglages déjà faits sont conservés.
 
 // Numéro de version affiché (à augmenter à chaque mise en ligne, avec brilliant/index.html et sw.js)
-const VERSION = '2.89';
+const VERSION = '2.90';
 
 // ---------- Nouveautés (2.87, demandé par l'utilisateur) ----------
 // Une ligne très brève par mise en ligne (la plus récente en haut) : l'accueil les montre une seule fois, dans une petite fenêtre,
 // à qui n'a pas encore vu cette version. [version, jeu ou partie de l'appli, ce qui change]
 const NOUVEAUTES = [
+  ['2.90', 'Combien sur 10 ?', 'Chacun sur son téléphone en salon, plateau en chemin de cases rondes, questions plus drôles.'],
   ['2.89', 'Nouveau jeu', '« Combien sur 10 ? » : quiz en équipes, lu à voix haute, sur un seul téléphone (premier essai).'],
   ['2.88', 'Mon compagnon', '« Quoi de neuf ? » prévient aussi quand une boutique de fête ouvre (Noël dès le 1er décembre).'],
   ['2.87', 'Désdale', 'Cette petite fenêtre : un résumé de ce qui change à chaque mise à jour.'],
@@ -50,7 +51,7 @@ if (!clientId) { clientId = nouvelId() + nouvelId(); ecrireStockage('brillant-cl
 // ---------- Un seul salon à la fois ----------
 // Chaque jeu garde en mémoire son salon en cours (et s'y reconnecte tout seul). Quand on entre dans un salon,
 // on oublie ceux des autres jeux : sinon le téléphone peut rester accroché à une ancienne partie.
-const SALONS_JEUX = { brilliant: 'brillant-sauvegarde-v1', yams: 'yams-sauvegarde', backgammon: 'bg-sauvegarde', assaut: 'assaut-sauvegarde', bataille: 'bataille-sauvegarde', gribouille: 'gribouille-sauvegarde', petitbac: 'petitbac-sauvegarde', agents: 'agents-sauvegarde', quatre: 'quatre-sauvegarde', domino: 'domino-sauvegarde', lettres: 'lettres-sauvegarde', donjon: 'donjon-sauvegarde', joyaux: 'joyaux-sauvegarde' };
+const SALONS_JEUX = { brilliant: 'brillant-sauvegarde-v1', yams: 'yams-sauvegarde', backgammon: 'bg-sauvegarde', assaut: 'assaut-sauvegarde', bataille: 'bataille-sauvegarde', gribouille: 'gribouille-sauvegarde', petitbac: 'petitbac-sauvegarde', agents: 'agents-sauvegarde', quatre: 'quatre-sauvegarde', domino: 'domino-sauvegarde', lettres: 'lettres-sauvegarde', donjon: 'donjon-sauvegarde', joyaux: 'joyaux-sauvegarde', dix: 'dix-sauvegarde' };
 function oublierSalonDuJeu(jeu) {
   var cle = SALONS_JEUX[jeu], sv = lireStockage(cle);
   if (!sv || !sv.role) return false;
