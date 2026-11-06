@@ -465,5 +465,1138 @@ Qui a écrit la Marseillaise ? | Rouget de Lisle
 Quelle jeune femme a poignardé Marat dans sa baignoire ? | Charlotte Corday
 Dans quelle ville a été arrêté Louis XVI en fuite ? | Varennes
 Quel mois du calendrier révolutionnaire voit la chute de Robespierre ? | Thermidor
+# improbable | Les parapluies
+Un parapluie protège-t-il du soleil de minuit en plein salon ? | Pas vraiment, il protège de la pluie
+Que fait-il au premier coup de vent ? | Il se retourne
+Quelle superstition interdit de l'ouvrir où ? | Dans une maison
+Quelle nounou anglaise vole avec le sien ? | Mary Poppins
+Quel film de Jacques Demy se passe à Cherbourg ? | Les Parapluies de Cherbourg
+Quelle ville d'Auvergne est sa capitale historique en France ? | Aurillac
+Comment s'appelle un parapluie contre le soleil ? | Une ombrelle
+Quel Anglais a été moqué pour avoir osé en porter un à Londres au XVIIIe siècle ? | Jonas Hanway
+Quel marque britannique fabrique des parapluies pour la reine ? | Fulton
+Quel dissident bulgare a été assassiné par un parapluie empoisonné à Londres, en 1978 ? | Gueorgui Markov
+# improbable | Les moustaches
+Une moustache pousse-t-elle sur le front ? | Non
+Quel plombier à moustache sauve la princesse ? | Mario
+Quel détective belge est fier de la sienne ? | Hercule Poirot
+Quel Gaulois moustachu a un gros casque ailé ? | Astérix
+Quel peintre espagnol a une moustache en crocs ? | Salvador Dalí
+Quel mois de novembre fait pousser la moustache pour la santé masculine ? | Movember
+Quel acteur américain à moustache joue dans « Magnum » ? | Tom Selleck
+Quel chanteur à moustache mène Queen ? | Freddie Mercury
+Comment s'appelle la moustache qui descend de chaque côté de la bouche ? | La moustache en fer à cheval
+Quel Allemand a créé le championnat du monde de barbe et moustache en 1990 ? | Le Belzer Bart- und Schnauzerclub (à Höfen-Enz)
+# improbable | Les pingouins et manchots
+Un manchot peut-il voler ? | Non
+Sur quel continent vit surtout le manchot empereur ? | L'Antarctique
+Quel film de Luc Jacquet les suit ? | La Marche de l'empereur
+Le pingouin vole-t-il ? | Oui, le petit pingouin vole
+Quel manchot prend-on pour logo de Linux ? | Tux
+Quel oscar a reçu « La Marche de l'empereur » ? | L'Oscar du meilleur documentaire
+Qui couve l'œuf chez le manchot empereur ? | Le mâle
+Combien mesure un manchot empereur, environ ? | 1,20 m
+Quel oiseau nordique est le seul pingouin vivant ? | Le petit pingouin (Alca torda)
+Quelle espèce est disparue au XIXe siècle ? | Le grand pingouin
+# improbable | Les vampires
+Un vampire se nourrit-il de tofu ? | Non, de sang
+Que déteste-t-il dans la cuisine ? | L'ail
+Quel pieu le tue ? | Un pieu dans le cœur
+Quel comte est le plus célèbre ? | Dracula
+Qui a écrit le roman Dracula ? | Bram Stoker
+De quelle région vient-il ? | La Transylvanie
+Quel prince inspire le personnage ? | Vlad III l'Empaleur
+Quelle chauve-souris boit du sang ? | Le vampire commun (Desmodus rotundus)
+Quel film muet allemand de 1922 ? | Nosferatu
+Quel réalisateur a fait Nosferatu ? | Friedrich Wilhelm Murnau
+# improbable | Les zombies
+Un zombie travaille-t-il à la banque ? | Non, même s'il en a l'air
+Que mange-t-il ? | Des cerveaux
+Comment le tue-t-on, selon la plupart des films ? | En lui détruisant le cerveau
+Quelle île des Caraïbes est à l'origine du mythe ? | Haïti
+Quel film de George Romero, 1968 ? | La Nuit des morts-vivants
+Quelle série AMC suit Rick Grimes ? | The Walking Dead
+Quel acteur joue Rick Grimes ? | Andrew Lincoln
+Quel film britannique de 2004 avec Simon Pegg ? | Shaun of the Dead
+Quelle chanson a un clip de zombies, en 1983 ? | Thriller
+Quel réalisateur de Thriller a fait « Le Loup-garou de Londres » ? | John Landis
+# improbable | Les ovnis
+Un ovni a-t-il un permis de conduire ? | Pas à notre connaissance
+Que veut dire ovni ? | Objet volant non identifié
+Quelle zone américaine fait fantasmer ? | La Zone 51
+Quelle ville américaine, en 1947, est célèbre pour un crash ? | Roswell
+Quel agent ne croit pas, face à Mulder ? | Dana Scully
+Quel service français étudie les ovnis ? | Le GEIPAN
+Quel réalisateur français joue dans « Rencontres du troisième type » ? | François Truffaut
+Quel pilote américain a vu des « soucoupes » en 1947 ? | Kenneth Arnold
+Quel organisme français abrite le GEIPAN ? | Le CNES
+Quel programme de l'US Air Force s'est terminé en 1969 ? | Blue Book
+# improbable | Les saints bizarres
+Saint Éloi a-t-il remis sa culotte à l'endroit ? | Non, c'est le roi Dagobert
+Qui garde les clés du paradis ? | Saint Pierre
+Quel saint est fêté le 26 décembre ? | Saint Étienne
+Quel patron est invoqué pour retrouver un objet ? | Saint Antoine de Padoue
+Quel saint a vu un cerf à croix ? | Saint Hubert
+Quelle sainte est la patronne des pompiers et des mineurs ? | Sainte Barbe
+Quel saint de glace est fêté le 12 mai ? | Saint Pancrace
+Quel saint céphalophore a marché sa tête à la main jusqu'à Paris ? | Saint Denis
+Quel saint protège les voyageurs ? | Saint Christophe
+Quel saint a été martyrisé sur une grille ? | Saint Laurent
+# improbable | Les pommes de terre
+Une patate se plante-t-elle dans un smartphone ? | Non
+Comment s'appelle celle des McDonald's ? | La frite
+Quel pays défend ses frites contre la France ? | La Belgique
+Quel continent est son origine ? | L'Amérique du Sud
+Quel pharmacien l'a popularisée en France ? | Antoine Parmentier
+Quelle grande famine a touché l'Irlande en 1845 ? | La Grande Famine
+Quelle maladie a causé cette famine ? | Le mildiou
+Quel pays en produit le plus au monde ? | La Chine
+Quel est le plat de Parmentier ? | Le hachis Parmentier
+Quelle variété française est labellisée sur l'île de Ré ? | La pomme de terre de l'île de Ré (AOP)
+# plaisir | Astérix en détail
+Astérix est-il romain ? | Non, gaulois
+Qui est tombé dans la marmite ? | Obélix
+Quel petit chien l'accompagne ? | Idéfix
+Quel druide prépare la potion ? | Panoramix
+Comment s'appelle le chef du village ? | Abraracourcix
+Quel barde chante trop faux ? | Assurancetourix
+Comment s'appelle le poissonnier ? | Ordralfabétix
+Qui a dessiné les premiers albums ? | Albert Uderzo
+Dans quel magazine sont-ils apparus en 1959 ? | Pilote
+Quel camp romain entoure le village ? | Babaorum, Laudanum, Aquarium, Petibonum
+# plaisir | Tintin en détail
+Tintin est-il plombier ? | Non, reporter
+Quelle coiffure porte-t-il ? | Une houppe
+Comment s'appelle le professeur sourd ? | Tournesol
+Quels policiers se ressemblent ? | Dupond et Dupont
+Quelle cantatrice chante l'air des bijoux ? | Bianca Castafiore
+Dans quel album va-t-il sur la Lune la première fois ? | Objectif Lune
+Comment s'appelle l'ennemi aux lunettes ? | Rastapopoulos
+Quel ami chinois rencontre-t-il ? | Tchang
+Quel est le dernier album achevé ? | Tintin et les Picaros
+Quel est l'album inachevé d'Hergé ? | Tintin et l'Alph-Art
+# plaisir | Friends
+Les héros de Friends vivent-ils à Marseille ? | Non, à New York
+Combien sont-ils ? | 6
+Comment s'appelle le café ? | Central Perk
+Quel personnage est paléontologue ? | Ross
+Quelle chanson chante Phoebe ? | Smelly Cat
+Quel métier exerce Monica ? | Cuisinière
+Quel est l'acteur de Chandler ? | Matthew Perry
+Quel est le nom de famille de Joey ? | Tribbiani
+Comment s'appelle le singe de Ross ? | Marcel
+Quel est le nom de famille de Rachel ? | Green
+# plaisir | Game of Thrones
+Un Lannister paie-t-il toujours ses dettes ? | Oui, c'est sa devise officieuse
+Quel est le siège convoité ? | Le Trône de fer
+Comment s'appelle la mère des dragons ? | Daenerys Targaryen
+Quel Stark dit « winter is coming » ? | Ned Stark
+Qui a écrit les livres ? | George R.R. Martin
+Quelle maison a pour emblème un loup ? | Les Stark
+Quel est le mari de Cersei ? | Robert Baratheon
+Comment s'appelle l'épée d'Arya ? | Aiguille
+Quel épisode voit le mariage rouge ? | Les Pluies de Castamere
+Quel est le prénom complet de Jon Snow à sa naissance ? | Aegon Targaryen
+# plaisir | Le Seigneur des anneaux
+Frodon cherche-t-il à vendre l'anneau ? | Non, à le détruire
+Comment s'appelle le magicien gris ? | Gandalf
+Dans quelle ville du feu détruit-on l'anneau ? | La montagne du Destin
+Quel personnage dit « mon précieux » ? | Gollum
+Qui a écrit le livre ? | J.R.R. Tolkien
+Quel réalisateur néo-zélandais a fait les films ? | Peter Jackson
+Quel est le vrai nom de Gollum ? | Sméagol
+Combien de membres compte la Communauté ? | 9
+Quelle est la langue des elfes Noldor ? | Le quenya
+Comment s'appelle le poney de Sam ? | Bill
+# plaisir | Les fêtes foraines
+Peut-on y garer sa voiture dans le manège ? | Pas vraiment
+Quel nom donne-t-on à la barbe sucrée ? | La barbe à papa
+Quel attraction fait tourner sur des chevaux ? | Le carrousel
+Où gagne-t-on une peluche ? | Au tir à la carabine
+Quel fameux grand parc français est au nord de Paris ? | Le parc Astérix
+Quel est le parc près de Poitiers ? | Le Futuroscope
+Quel est le parc à l'histoire en Vendée ? | Le Puy du Fou
+Quelle grande roue de Londres ? | London Eye
+En quelle année a ouvert Disneyland Paris ? | 1992
+Quelle est la plus grande fête foraine de France, à Paris ? | La Foire du Trône
+# plaisir | Le karaoké
+Le karaoké est-il un plat japonais ? | Non, un loisir chanté
+D'où vient-il ? | Le Japon
+Quelle chanson de Queen massacre-t-on ? | Bohemian Rhapsody
+Quelle chanson de Gloria Gaynor ? | I Will Survive
+Que veut dire karaoké ? | Orchestre vide
+Quelle chanson de Céline Dion dans Titanic ? | My Heart Will Go On
+Quel Canadien a écrit My Way ? | Paul Anka (paroles anglaises)
+Quelle chanson tourne dans le film Grease ? | You're the One That I Want
+Quel Japonais a inventé la machine à karaoké ? | Daisuke Inoue
+Quelle récompense a-t-il reçue en 2004 ? | Un prix Ig Nobel de la paix
+# plaisir | Le poker
+Se joue-t-il avec des dominos ? | Non, des cartes
+Quel est le mot pour dire qu'on suit ? | Suivre (call)
+Quelle est la meilleure main ? | La quinte flush royale
+Combien de cartes reçoit-on au Texas Hold'em ? | 2
+Combien de cartes en tout sur la table ? | 5
+Comment s'appelle la mise forcée ? | La blinde
+Bat-on un full avec une couleur ? | Non, le full gagne
+Quel film avec Daniel Craig a un poker ? | Casino Royale
+Dans quelle ville se jouent les WSOP ? | Las Vegas
+Quel amateur a gagné le WSOP de 2003 ? | Chris Moneymaker
+# plaisir | Le Rubik's Cube
+Se mange-t-il ? | Non
+Combien de faces ? | 6
+Combien de cases par face ? | 9
+Combien de couleurs ? | 6
+De quel pays vient-il ? | La Hongrie
+En quelle année l'a-t-il inventé ? | 1974
+Qui l'a inventé ? | Ernő Rubik
+Quel est le nombre de Dieu, coups maximum ? | 20
+Combien de positions possibles ? | Environ 43 milliards de milliards
+Quel temps est le record humain d'environ ? | Environ 3 secondes
+# plaisir | La Coupe du monde 1998
+Les Bleus l'ont-ils gagnée à pied ? | Oui, évidemment
+Qui a marqué deux têtes en finale ? | Zinédine Zidane
+Quel était l'adversaire ? | Le Brésil
+Quel score ? | 3-0
+Où a eu lieu la finale ? | Le Stade de France
+Qui était le sélectionneur ? | Aimé Jacquet
+Qui a inscrit le 3e but ? | Emmanuel Petit
+Quel défenseur a marqué un doublé en demi-finale ? | Lilian Thuram
+Qui était le gardien, souvent embrassé sur le crâne ? | Fabien Barthez
+Quelle chanson de Gloria Gaynor était devenue l'hymne de l'équipe ? | I Will Survive
+# plaisir | Le rugby
+Le rugby se joue-t-il sur glace ? | Non
+Combien de joueurs par équipe ? | 15
+Quelle est la danse des All Blacks ? | Le haka
+Combien vaut un essai ? | 5 points
+Quel tournoi réunit six nations d'Europe ? | Le Tournoi des Six Nations
+Quelle école a donné son nom au sport ? | Rugby School
+Quel est le nom de la légende de ce sport ? | William Webb Ellis
+Quel est le trophée de la Coupe du monde ? | La coupe Webb-Ellis
+Combien de points vaut une transformation ? | 2
+Quel pays a remporté le plus de Coupes du monde, à 2023 ? | L'Afrique du Sud (4)
+# plaisir | La pétanque
+Se joue-t-elle avec des melons ? | Non, des boules
+Quelle est la petite boule ? | Le cochonnet
+Quelle région est sa patrie ? | La Provence
+Dans quelle ville a-t-elle été inventée ? | La Ciotat
+En quelle année ? | 1907
+Que veut dire « pétanque » ? | Pieds tanqués
+Que doit-on faire si on perd 13 à 0 ? | Embrasser Fanny
+Combien de joueurs dans une doublette ? | 2
+Quel Français est célèbre tireur, Marco ? | Marco Foyot
+Quel joueur a initié la pétanque à La Ciotat ? | Jules Lenoir
+# plaisir | La Formule 1
+Un tracteur y gagne-t-il ? | Non
+Quelle écurie est rouge ? | Ferrari
+Quel est le célèbre circuit de ville ? | Monaco
+Quel Allemand a sept titres ? | Michael Schumacher
+Quel Britannique a sept titres aussi ? | Lewis Hamilton
+Quel Français a quatre titres ? | Alain Prost
+Quel Brésilien est mort à Imola ? | Ayrton Senna
+Quel Français courait pour Alpine en 2023 ? | Esteban Ocon (ou Pierre Gasly)
+Sur quel circuit court-on au Castellet ? | Paul Ricard
+Quel est le célèbre virage de Spa ? | Eau Rouge
+# plaisir | Les Rolling Stones et les Beatles
+Sont-ils des groupes de polka ? | Non
+Qui chante chez les Stones ? | Mick Jagger
+Quel guitariste a une tête de pirate ? | Keith Richards
+Qui a écrit Imagine ? | John Lennon
+Sur quelle route marchent les Beatles ? | Abbey Road
+Quel album a une pochette avec beaucoup de gens ? | Sgt. Pepper's
+Quel Beatles est mort en 2001 ? | George Harrison
+Quel batteur des Stones est mort en 2021 ? | Charlie Watts
+Quelle chanteuse a épousé Lennon ? | Yoko Ono
+Quel Stone a été retrouvé noyé en 1969 ? | Brian Jones
+# plaisir | Michael Jackson
+Marche-t-il en avant, dans le moonwalk ? | Non, en arrière
+De quelle couleur était son gant célèbre ? | Blanc
+Quel album a battu tous les records ? | Thriller
+Quelle chanson avec des zombies ? | Thriller
+Quel était son groupe d'enfance ? | The Jackson Five
+Comment s'appelle sa propriété ? | Neverland
+En quelle année est-il mort ? | 2009
+Quel réalisateur a fait le clip « Thriller » ? | John Landis
+Quel producteur a fait Thriller ? | Quincy Jones
+Quel singe était son compagnon ? | Bubbles
+# plaisir | Bienvenue chez les Ch'tis
+Le film se passe-t-il en Bretagne ? | Non, dans le Nord
+Quel acteur joue le postier du Sud ? | Kad Merad
+Quel acteur joue Antoine, le facteur ? | Dany Boon
+Qui réalise le film ? | Dany Boon
+Quelle est la langue régionale ? | Le ch'ti
+Dans quelle ville se déroule-t-il ? | Bergues
+Quel fromage est célèbre dans le film ? | Le maroilles
+Combien d'entrées environ en France ? | 20 millions
+Quel film de 1966 a été battu ? | La Grande Vadrouille
+En quelle année est-il sorti ? | 2008
+# plaisir | Les Visiteurs
+Godefroy de Montmirail est-il plombier ? | Non, chevalier
+Comment s'appelle son écuyer ? | Jacquouille la Fripouille
+Qui joue Godefroy ? | Jean Reno
+Qui joue Jacquouille ? | Christian Clavier
+Que répète-t-il sans cesse ? | Okay ! (Jacquouille)
+Quel acteur joue le rôle du clochard Jacquart, descendant de Jacquouille ? | Christian Clavier
+Qui réalise le film ? | Jean-Marie Poiré
+Quelle actrice joue Béatrice ? | Valérie Lemercier
+En quelle année ? | 1993
+En quelle année se passe la scène d'origine ? | 1123
+# plaisir | Le Dîner de cons
+Dîne-t-on chez un président ? | Non
+Qui joue François Pignon ? | Jacques Villeret
+Quelle passion a Pignon ? | Les constructions en allumettes
+Qui joue l'éditeur ? | Thierry Lhermitte
+Qui a écrit et réalisé le film ? | Francis Veber
+En quelle année ? | 1998
+De quelle pièce est-il adapté ? | Du Dîner de cons de Veber
+Quel est le nom de l'éditeur, qui organise le dîner ? | Pierre Brochant
+Quel contrôleur fiscal vient chez lui ? | Lucien Cheval
+Quel acteur joue Cheval ? | Daniel Prévost
+# plaisir | Les Tuche
+Sont-ils d'une famille royale ? | Non
+Que fait Jeff Tuche pour se faire de l'argent ? | Il gagne au loto
+Qui joue Jeff ? | Jean-Paul Rouve
+Qui joue Cathy ? | Isabelle Nanty
+Quel est le prénom de la fille ? | Stéphanie
+Dans quel pays vont-ils ? | À Monaco (dans le premier film)
+Quel plat est sa passion ? | Les frites
+Quelle ville fictive du Nord ? | Bouzolles
+Comment s'appelle le fils ? | Wilfried
+Quel est le prénom du plus jeune, Donald ? | Coin-Coin
+# mature | La ceinture de sécurité
+Se met-elle autour du cou ? | Non
+Où la boucle-t-on, en voiture ? | Autour du buste et du bassin
+Quel petit signal sonore insiste tant qu'elle n'est pas bouclée ? | Le bip (l'alarme de ceinture)
+Combien de points de permis coûte son oubli au volant ? | 3 points
+Quelle amende forfaitaire risque-t-on en France ? | 135 euros
+Depuis quelle année est-elle obligatoire à l'arrière en France ? | 1990
+Quel constructeur a popularisé la ceinture à trois points ? | Volvo
+Quel ingénieur a inventé cette ceinture à trois points, en 1959 ? | Nils Bohlin
+Volvo a-t-il gardé le brevet pour lui seul ? | Non, il l'a laissé libre pour tous
+Quel organe ou dispositif resserre la ceinture lors d'un choc ? | Le prétensionneur
+# mature | Le contrôle technique
+Sert-il à vérifier si le conducteur est gentil ? | Non, l'état du véhicule
+À quel âge du véhicule a lieu le premier contrôle ? | 4 ans
+Quelle est la fréquence ensuite ? | Tous les 2 ans
+Qu'appose-t-on sur le pare-brise après le contrôle ? | Une vignette
+Combien de temps laisse-t-on pour une contre-visite ? | 2 mois
+Combien de points de contrôle compte environ l'examen ? | 133
+Comment s'appelle une défaillance imposant de ne plus rouler dès le jour même ? | Une défaillance critique
+En quelle année le contrôle technique devient-il obligatoire pour les voitures en France ? | 1992
+Quel type de défaillance a été ajouté par la réforme de 2018, avec la critique ? | Les défaillances majeures et mineures
+Quelle directive européenne de 2014 a inspiré cette réforme ? | La directive 2014/45/UE
+# mature | Les rendez-vous chez le dentiste
+Le dentiste soigne-t-il les genoux ? | Non, les dents
+Quelle dent pousse tard et peut poser problème ? | La dent de sagesse
+Que recommande-t-on de faire deux fois par jour ? | Se brosser les dents
+Combien de dents a un adulte, sagesse comprises ? | 32
+Combien de dents de lait a un enfant ? | 20
+Comment s'appelle la matière la plus dure du corps humain ? | L'émail
+Quel nom porte le soin qui consiste à enlever le tartre ? | Le détartrage
+Comment s'appelle le spécialiste qui redresse les dents ? | L'orthodontiste
+Quel Français est considéré comme le père de la dentisterie moderne ? | Pierre Fauchard
+Quel est le nom du tissu sous l'émail ? | La dentine
+# mature | Le rond de serviette et les bonnes manières
+Peut-on essuyer son couteau sur la nappe ? | Non
+De quel côté pose-t-on la fourchette, à la française ? | À gauche
+Faut-il couper sa salade au couteau, selon la tradition ? | Non, on la plie
+Dans quel sens repose la fourchette en France, dents vers le haut ou le bas ? | Vers le bas (vers la nappe)
+À quel doigt porte-t-on une chevalière, traditionnellement ? | L'auriculaire
+Quel mot désigne l'art de bien se tenir à table ? | L'étiquette
+Quel petit objet de table garde sa serviette en famille ? | Le rond de serviette
+Quelle baronne a publié un célèbre guide des bonnes manières ? | Nadine de Rothschild
+Quel roi a imposé l'étiquette à la cour de Versailles ? | Louis XIV
+Quel prélat italien a écrit le « Galatée », traité de savoir-vivre ? | Giovanni Della Casa
+# mature | Le pastis
+Boit-on le pastis avec du lait ? | Non, avec de l'eau
+De quelle ville est-il l'emblème ? | Marseille
+Quelle couleur prend-il quand on ajoute de l'eau ? | Il se trouble (jaune laiteux)
+Quelle plante lui donne son goût principal ? | L'anis
+Quel homme a lancé la marque à son nom en 1932 ? | Paul Ricard
+Quel est le nom du pastis de la marque concurrente, à la bouteille verte ? | Pernod
+Combien de volumes d'eau pour un volume de pastis, en général ? | 5
+Quel degré d'alcool minimal doit avoir un pastis ? | 40 %
+Comment s'appelle la molécule anisée responsable du trouble ? | L'anéthol
+Quel nom porte le pastis mêlé de sirop d'orgeat ? | La mauresque
+# mature | La tondeuse et le jardin du dimanche
+Tond-on une pelouse avec des ciseaux à ongles ? | Non
+Quel jour la tondeuse réveille-t-elle souvent le voisin ? | Le dimanche
+Que fait le bac de la tondeuse ? | Il ramasse l'herbe
+Comment s'appelle la tonte qui laisse l'herbe broyée sur place ? | Le mulching
+Quel appareil robotisé fait la tonte tout seul ? | Le robot-tondeuse
+À quelle hauteur conseille-t-on de ne pas descendre en été ? | Environ 5 à 6 cm
+Quel petit moteur alimente la plupart des tondeuses thermiques ? | Un moteur à essence
+Quel Anglais a inventé la tondeuse à gazon, en 1830 ? | Edwin Beard Budding
+Dans quel secteur industriel Budding s'était-il inspiré ? | Le textile
+Quelle est la marque suédoise leader des robots tondeuses ? | Husqvarna
+# mature | Les poubelles
+Trie-t-on les épluchures dans la boîte aux lettres ? | Non
+De quelle couleur est le plus souvent la poubelle de recyclage ? | Jaune
+Où jette-t-on le verre ? | Dans la colonne à verre
+Quel préfet de la Seine a imposé les boîtes à ordures en 1884 ? | Eugène Poubelle
+Que devient-on obligé de trier depuis janvier 2024 ? | Les biodéchets
+Qu'est-ce qu'un éco-organisme comme Citeo ? | Une société qui organise le recyclage des emballages
+Le logo Triman, à quoi sert-il ? | Il indique qu'un produit se trie
+Combien de fois le verre peut-il être recyclé ? | À l'infini
+Dans quelle ville Poubelle était-il préfet ? | Paris
+Quelle couleur de sac désigne en général les déchets médicaux à risque ? | Le jaune (DASRI)
+# mature | Le thermostat
+Le thermostat sert-il à mesurer la fièvre du chat ? | Non
+Où le règle-t-on souvent dans un couple, source de dispute ? | Sur le chauffage
+Quelle température l'ADEME conseille-t-elle dans un salon ? | 19 °C
+Et dans une chambre ? | 16 à 17 °C
+Combien économise-t-on à peu près par degré baissé ? | Environ 7 %
+Quel thermostat américain connecté a été racheté par Google ? | Nest
+Quel métal bilame était utilisé dans les thermostats mécaniques ? | Deux métaux soudés (bilame)
+Quel Américain a déposé le brevet du thermostat électrique de pièce en 1883 ? | Warren Johnson
+Quel chimiste écossais a inventé un thermostat vers 1830 ? | Andrew Ure
+Quel Néerlandais construit un thermostat pour un four au début du XVIIe siècle ? | Cornelis Drebbel
+# mature | La mutuelle santé
+La mutuelle rembourse-t-elle un week-end à Rome ? | Non
+Que rembourse-t-elle ? | Une partie des frais de santé non couverts
+Quelle carte présente-t-on avec elle chez le médecin ? | La carte Vitale
+Quelle réforme a mis en place le « 100 % santé » ? | La réforme du reste à charge zéro
+Depuis 2016, qui doit proposer une mutuelle à ses salariés ? | L'employeur
+Quelle part minimale l'employeur doit-il payer ? | 50 %
+Quels sont les trois domaines du 100 % santé ? | Optique, dentaire, audiologie
+Que veut dire « ticket modérateur » ? | La part restant à charge après l'Assurance maladie
+Quelle aide remplace la CMU-C et l'ACS depuis 2019 ? | La Complémentaire santé solidaire
+Quelle année a vu la création de la Sécurité sociale ? | 1945
+# mature | Les ampoules
+Une ampoule s'allume-t-elle si on lui parle gentiment ? | Non
+Quelle lampe consomme le moins : LED ou halogène ? | La LED
+Quel Américain a commercialisé l'ampoule à incandescence ? | Thomas Edison
+Quelle unité mesure la lumière émise ? | Le lumen
+Quelle unité mesure la puissance électrique ? | Le watt
+Que veulent dire E27 et E14 ? | Le type de culot à vis
+Quel Britannique a précédé Edison sur l'ampoule ? | Joseph Swan
+En quel métal est le filament d'une ampoule classique ? | Le tungstène
+Dans quelle ville américaine brille une ampoule depuis 1901 ? | Livermore (Californie)
+Comment s'appelle l'entente d'industriels qui limita la durée de vie à 1 000 heures ? | Le cartel de Phœbus
+# mature | Le code de la route
+Peut-on klaxonner pour saluer un mouton ? | Mieux vaut éviter
+Quelle couleur est le feu pour s'arrêter ? | Rouge
+Que veut dire un panneau triangulaire ? | Un danger
+Combien de points compte un permis complet ? | 12
+Combien en a un jeune conducteur au départ ? | 6
+Quelle vitesse maximale sur autoroute par temps de pluie ? | 110 km/h
+Quelle limite d'alcoolémie au volant pour un conducteur expérimenté ? | 0,5 g par litre de sang
+Combien de temps dure le permis probatoire avec conduite accompagnée ? | 2 ans
+En quelle année a été instauré le premier Code de la route français ? | 1921
+Depuis quelle année existe le permis à points en France ? | 1992
+# mature | La machine à café au bureau
+Fait-elle du vin blanc ? | Non, normalement
+Que met-on dans la machine pour payer ? | Une pièce ou un badge
+Que renverse-t-on souvent sur son clavier ? | Du café
+Comment appelle-t-on les ragots échangés près d'elle ? | Les potins (les bruits de couloir)
+Que veut dire « petit noir » ? | Un expresso
+Quelle marque a Clooney pour égérie ? | Nespresso
+Quel pays a inventé l'expresso ? | L'Italie
+Quelle pression exerce une bonne machine à expresso ? | 9 bars
+Quel Italien a donné son nom à la machine à piston de 1947 ? | Achille Gaggia
+Quelle est la température idéale de l'eau pour un expresso ? | 90 à 96 °C
+# mature | Le permis de conduire
+Peut-on le passer à 8 ans ? | Non
+Comment s'appelle le test théorique ? | Le code
+Combien de fautes au maximum à l'épreuve du code ? | 5 fautes
+Combien de questions compte l'examen du code ? | 40
+Combien de temps dure l'épreuve de conduite ? | 32 minutes
+Depuis 2024, à quel âge peut-on passer le permis B ? | 17 ans
+Sur combien de points est notée l'épreuve pratique ? | 31 points
+Quel score minimal faut-il pour obtenir le permis ? | 20 points
+Quel est le plus ancien document de type « permis » français, 1893 ? | Le « certificat de capacité »
+Dans quelle ville française a été délivré ce premier permis ? | Paris (préfecture de police)
+# mature | Les huissiers et petits papiers
+Un huissier joue-t-il du hautbois ? | Non, pas professionnellement
+Quel officier public signe un acte de vente de maison ? | Le notaire
+Que délivre la mairie pour se marier ? | Un acte de mariage (livret de famille)
+Quelle nouvelle profession a remplacé huissier en 2022 ? | Commissaire de justice
+Que signifie LRAR ? | Lettre recommandée avec accusé de réception
+Combien de temps garder une facture d'électricité, en général ? | 5 ans
+Que délivre le greffe du tribunal ? | Un extrait Kbis (ou de casier judiciaire)
+Combien de temps conserver un avis d'imposition ? | 3 ans
+Quel bulletin est demandé pour certains emplois ? | Le bulletin n° 3
+Quel est le délai de prescription de droit commun en matière civile ? | 5 ans
+# mature | Le vin rosé en été
+Le rosé se boit-il avec une paille ? | Non, en principe
+Quelle région française est sa grande productrice ? | La Provence
+Le rosé est-il un mélange de rouge et de blanc en France ? | Non, sauf en Champagne
+Quelle exception autorise ce mélange ? | Le champagne rosé
+Comment appelle-t-on un verre de rosé servi avec des glaçons ? | Une piscine
+Quelle appellation du Var, au bord de la mer, est réputée pour ses rosés ? | Bandol
+Comment s'appelle la méthode de macération courte pour obtenir un rosé ? | La saignée
+Quel couple d'acteurs a vendu du Miraval ? | Brad Pitt et Angelina Jolie
+Quelle appellation rhodanienne n'élabore que du rosé ? | Tavel
+Quel est le cépage principal du rosé de Tavel ? | Le grenache
+# mature | Les chiffres de la feuille de paie
+Y lit-on son horoscope ? | Non
+Que veut dire « brut » ? | Avant les cotisations
+Et « net » ? | Ce qui arrive sur le compte (après cotisations)
+Quel est le pourcentage approximatif de cotisations salariales ? | Environ 22 %
+Que veut dire CSG ? | Contribution sociale généralisée
+Que signifie RTT ? | Réduction du temps de travail
+Que veut dire CRDS ? | Contribution au remboursement de la dette sociale
+Quelle est la durée légale du travail hebdomadaire ? | 35 heures
+Combien d'années doit-on garder une fiche de paie, selon les conseils de l'État ? | À vie (jusqu'à la retraite)
+Combien de temps l'employeur doit-il conserver les doubles ? | 5 ans
+# mature | Le sommeil
+Dort-on mieux avec un marteau-piqueur ? | Non
+Combien d'heures par nuit conseille-t-on à un adulte ? | 7 à 9 heures
+Quel animal compte-t-on pour s'endormir ? | Les moutons
+Comment s'appelle le sommeil des rêves ? | Le sommeil paradoxal
+Combien de minutes dure à peu près un cycle ? | 90 minutes
+Quelle hormone favorise l'endormissement ? | La mélatonine
+Quel nom porte l'arrêt de la respiration pendant la nuit ? | L'apnée du sommeil
+Quel Français a nommé le sommeil paradoxal ? | Michel Jouvet
+Comment s'appelle le rêve où l'on se sait en train de rêver ? | Le rêve lucide
+Quelle est la protéine dont le manque cause la narcolepsie ? | L'hypocrétine (ou orexine)
+# mature | La lunette de vue
+Porte-t-on ses lunettes sur le coude ? | Non
+Quel professionnel les vend ? | L'opticien
+Quel médecin prescrit des lunettes ? | L'ophtalmologue
+Que corrigent des verres progressifs ? | La presbytie (et la vue de loin)
+Comment appelle-t-on le fait de voir flou de loin ? | La myopie
+Et voir mal de près avec l'âge ? | La presbytie
+Quel Américain aurait inventé les verres à double foyer ? | Benjamin Franklin
+Dans quel pays seraient apparues les premières lunettes, vers 1290 ? | L'Italie
+Quelle ville du Jura est la capitale française de la lunette ? | Morez (Oyonnax accepté)
+Quelle est l'unité des corrections optiques ? | La dioptrie
+# mature | Les assurances auto
+L'assurance couvre-t-elle le mauvais goût ? | Non
+Qu'est-ce qu'un « tiers » ? | Une autre personne que l'assuré
+Quel papier remplit-on à deux après un accident ? | Le constat amiable
+Quel est l'assurance minimale obligatoire ? | La responsabilité civile
+Comment s'appelle le système de récompense pour bon conducteur ? | Le bonus-malus
+Le bonus maximal correspond à quel coefficient ? | 0,50
+Combien d'années sans accident faut-il pour atteindre ce bonus ? | 13 ans
+Comment s'appelle la somme laissée à ma charge lors d'un sinistre ? | La franchise
+Quel est le délai légal pour déclarer un accident ? | 5 jours
+Quel est le délai pour un vol ? | 2 jours
+# mature | La retraite des autres
+Le père Noël part-il à la retraite ? | Non, toujours pas
+Comment dit-on d'une personne en retraite qui garde les petits-enfants ? | Papi ou mamie
+Quel mot pour un ancien travailleur ? | Retraité
+Quel âge légal a été fixé en 2023, avant la suspension ? | 64 ans
+Quel âge pour le taux plein automatique ? | 67 ans
+Quelle année a vu l'abaissement de l'âge à 60 ans ? | 1982
+Sous quel président ? | François Mitterrand
+Combien de trimestres pour un taux plein, génération 1973 ? | 172
+Quel chancelier allemand a mis en place les premières retraites, en 1889 ? | Otto von Bismarck
+Quel caisse de complément de retraite regroupe les salariés du privé ? | L'Agirc-Arrco
+# mature | La facture d'électricité
+Se paye-t-elle en coquillages ? | Non
+Quelle entreprise a longtemps eu le monopole ? | EDF
+Quelle unité sert à la facturation ? | Le kilowattheure
+Quel compteur jaune communicant a remplacé l'ancien ? | Linky
+Que veut dire « heures creuses » ? | Heures où l'électricité est moins chère
+Qui gère le réseau de distribution ? | Enedis
+Que veut dire TURPE ? | Tarif d'utilisation des réseaux publics d'électricité
+Quelle réaction fournit la majorité de l'électricité française ? | La fission nucléaire
+En quelle année EDF a-t-il été créé ? | 1946
+Quel réseau gère les lignes à très haute tension ? | RTE
+# mature | Les crédits immobiliers
+Un crédit se rembourse-t-il en sourires ? | Non
+Qui prête l'argent en général ? | La banque
+Qu'est-ce qu'une mensualité ? | Une somme payée chaque mois
+Qu'est-ce qu'un apport ? | L'argent mis de sa poche au départ
+Que veut dire TAEG ? | Taux annuel effectif global
+Quel taux maximal d'endettement recommande le HCSF ? | 35 %
+Quelle durée maximale de prêt recommande-t-il ? | 25 ans (27 dans le neuf)
+Quel prêt aidé par l'État concerne les primo-accédants ? | Le PTZ (prêt à taux zéro)
+Quel tableau détaille intérêts et capital ? | Le tableau d'amortissement
+Comment s'appelle l'indemnité payée en cas de remboursement anticipé ? | IRA, indemnité de remboursement anticipé
+# mature | Le barème des pourboires
+Laisse-t-on un pourboire à son chat ? | Non
+Où en laisse-t-on souvent ? | Au restaurant
+Quel pays attend environ 20 % de pourboire ? | Les États-Unis
+Le service est-il compris en France ? | Oui, depuis 1987
+Dans quel pays le pourboire peut-il vexer ? | Le Japon
+Quel pays a un « Trinkgeld » ? | L'Allemagne
+Que veut dire « Trinkgeld » ? | L'argent pour boire
+Quel mot américain désigne le pourboire ? | Le tip
+Que signifie « pourboire » à l'origine ? | Pour que le serveur aille boire
+Quelle loi de 1987 inclut le service ? | L'arrêté de 1987 sur le prix net
+# mature | Le divorce
+Peut-on divorcer de son chat ? | Non
+Comment se fait-on signifier son divorce gentiment ? | Par consentement mutuel
+Quel professionnel accompagne chacun ? | L'avocat
+Depuis 2017, le juge est-il nécessaire pour un divorce amiable ? | Non, un notaire enregistre
+Qu'est-ce qu'une garde alternée ? | Enfants chez chaque parent à tour de rôle
+Quelle somme verse-t-on parfois pour l'enfant ? | La pension alimentaire
+Quelle somme compense la chute de niveau de vie ? | La prestation compensatoire
+Quelle loi de 1975 a instauré le divorce par consentement mutuel ? | La loi Giscard (du 11 juillet 1975)
+En quelle année le divorce a-t-il été rétabli en France ? | 1884
+Quel député a donné son nom à cette loi de 1884 ? | Alfred Naquet
+# mature | Les plombiers
+Les plombiers sauvent-ils des princesses ? | Oui, s'ils s'appellent Mario
+Comment s'appelle le frère de Mario ? | Luigi
+Que répare le plombier ? | Les fuites
+Quelle pince utilise-t-on sur un tuyau ? | La pince multiprise
+Que dévisse-t-on sous l'évier pour déboucher ? | Le siphon
+Quel produit chimique déconseillé bouche les tuyaux ? | La soude caustique
+À quoi sert un joint de PTFE, ou téflon ? | À étanchéifier un raccord fileté
+De quel métal étaient les anciennes canalisations, d'où le nom de plombier ? | Le plomb
+Quel est le nom du symbole chimique de ce métal ? | Pb
+D'où vient-il ? | Du latin plumbum
+# mature | L'aspirine et l'armoire à pharmacie
+Une aspirine se met-elle dans le réservoir de la voiture ? | Non
+Où conserve-t-on ses médicaments ? | Dans l'armoire à pharmacie
+Quel produit désinfecte une plaie ? | L'antiseptique
+Que soigne le paracétamol ? | La douleur et la fièvre
+Quelle marque a rendu célèbre le paracétamol français ? | Doliprane
+Quel est le maximum quotidien sur la notice pour un adulte, sans avis médical ? | 3 g (selon la notice)
+Quel laboratoire allemand a déposé la marque Aspirin ? | Bayer
+De quel arbre vient le principe actif de l'aspirine ? | Le saule
+Quel Français a synthétisé l'acide acétylsalicylique pour la première fois en 1853 ? | Charles Gerhardt
+Quelle molécule n'est-elle pas un AINS : ibuprofène, aspirine ou paracétamol ? | Le paracétamol
+# mature | Les voisins
+Le voisin a-t-il le droit de tondre la nuit ? | Non
+Quel objet emprunte-t-on classiquement au voisin ? | Du sel (ou du sucre, une échelle)
+Quelle fête nationale célèbre les voisins ? | La fête des voisins
+Qui a lancé cette fête en 1999 ? | Atanase Périfan
+Qui gère les parties communes d'un immeuble ? | Le syndic
+Quel article du Code civil donne le droit de propriété ? | L'article 544
+Quelle distance minimale pour planter un arbre de plus de 2 m, en limite ? | 2 mètres
+Et un arbre de moins de 2 m ? | 50 cm
+Quel est le nom du mur commun à deux propriétés ? | Le mur mitoyen
+Quel est le tapage interdit de nuit ? | Le tapage nocturne
+# mature | Le chauffe-eau
+Fait-il du café ? | Non
+Où stocke-t-il l'eau ? | Dans un ballon (cuve)
+Pourquoi prend-on une douche froide ? | Le ballon est vide
+Quel dépôt encrasse sa résistance ? | Le calcaire
+Quelle pièce le protège de la corrosion ? | L'anode (en magnésium)
+Quelle température limite les légionelles ? | Au moins 55 °C
+Quelle bactérie redoute-t-on dans un ballon trop froid ? | La légionelle
+Quelle maladie cause-t-elle ? | La légionellose
+Quel type de chauffe-eau utilise une pompe à chaleur ? | Le thermodynamique
+Quel Norvégien a inventé le chauffe-eau électrique à accumulation ? | Edwin Ruud
+# mature | Le chien au quotidien
+Le chien vote-t-il ? | Non
+Que ramasse-t-on derrière lui ? | Ses crottes
+Qu'est-ce qu'il rapporte à son maître ? | La balle
+Quel vaccin était obligatoire pour voyager ? | La rage
+Que contient la puce d'identification ? | Un numéro
+Qu'est-ce qu'un chien de catégorie 1 ? | Un chien d'attaque
+Quel est l'âge adulte d'un chien, à peu près ? | 1 à 2 ans
+Quelle est la plus petite race ? | Le chihuahua
+Comment s'appelle le chien de Tintin ? | Milou
+Comment s'appelle la chienne de l'espace ? | Laïka
+# mature | L'apéro du voisin
+Sert-on des radis avec du ciment ? | Non
+Quel gâteau salé apporte-t-on à l'apéro ? | Le cake salé
+Quelles petites choses sont apportées à l'apéro ? | Les cacahuètes
+Quel nom d'origine espagnole pour ces petits plats ? | Les tapas
+Quel apéritif anisé boit-on à Marseille ? | Le pastis
+Quelle ville est celle du kir ? | Dijon
+Quel maire a donné son nom au kir ? | Félix Kir
+Quelle est la crème du kir ? | Le cassis
+Comment s'appelle le kir au champagne ? | Le kir royal
+Quel métier était celui de Félix Kir ? | Chanoine
+# mature | Les expressions au téléphone
+Dit-on « allô » au poisson ? | Non
+Que répond-on si on se trompe de numéro ? | Pardon
+Combien de chiffres a un numéro français ? | 10
+Quel indicatif est celui de la France ? | +33
+Quel est l'indicatif de la Belgique ? | +32
+Quel est celui de la Suisse ? | +41
+Quel inventeur a popularisé le mot « allô » ? | Thomas Edison
+Quelle marque finlandaise a vendu le 3310 ? | Nokia
+En quelle année est sorti le Nokia 3310 ? | 2000
+Quel opérateur français a lancé la marque Free Mobile en 2012 ? | Free (Iliad)
+# mature | La météo du dimanche
+Le soleil se couche-t-il à l'ouest ? | Oui
+Que porte-t-on sous la pluie ? | Un parapluie
+Quel signe de la météo annonce la pluie ? | Des nuages gris
+Que mesure l'hygromètre ? | L'humidité de l'air
+Que mesure l'anémomètre ? | La vitesse du vent
+Quelle échelle mesure le vent en mer ? | L'échelle de Beaufort
+Quel établissement public fait les prévisions en France ? | Météo-France
+Quelle présentatrice est connue pour sa longue carrière à TF1 ? | Évelyne Dhéliat
+Quelle unité mesure la pression atmosphérique ? | L'hectopascal
+Quel nom porte un nuage en forme de champignon lors d'un orage ? | Le cumulonimbus
+# mature | Les couches et les bébés
+Un bébé boit-il un expresso ? | Non
+Que change-t-on souvent ? | La couche
+Quelle est la boisson du nourrisson ? | Le lait
+Qu'est-ce qu'une tétine ? | Un objet pour apaiser le bébé
+À quel âge marche-t-il environ ? | Vers 12 à 15 mois
+Quelle marque américaine de couches ? | Pampers
+Quel est le poids moyen à la naissance ? | Environ 3,3 kg
+Quelle note évalue un nouveau-né à la naissance ? | Le score d'Apgar
+Quelle médecin américaine a créé ce score ? | Virginia Apgar
+Comment s'appelle le fin duvet du nouveau-né ? | Le lanugo
+# scolaire | La table de 7
+Combien font 7 × 1 ? | 7
+Combien font 7 × 2 ? | 14
+Combien font 7 × 5 ? | 35
+Combien font 7 × 8 ? | 56
+Combien font 7 × 13 ? | 91
+Combien font 7 × 17 ? | 119
+Combien font 7 au carré, moins 7 ? | 42
+Combien font 7 au cube ? | 343
+Combien font 7 puissance 4 ? | 2 401
+Quelle est la période du développement décimal de 1/7 ? | 142857
+# scolaire | Le compas et l'équerre
+Un compas sert-il à manger la soupe ? | Non, à tracer des cercles
+Quel instrument trace un angle droit ? | L'équerre
+Combien de degrés a un angle droit ? | 90
+Combien vaut la somme des angles d'un triangle ? | 180 degrés
+Quel instrument mesure un angle ? | Le rapporteur
+Comment s'appelle un polygone à 8 côtés ? | Un octogone
+Et à 12 côtés ? | Un dodécagone
+Quel Grec a écrit les « Éléments » ? | Euclide
+Quel polygone régulier Gauss a-t-il construit à 19 ans ? | L'heptadécagone (17 côtés)
+Quel problème antique, impossible au compas et à la règle, est prouvé en 1882 ? | La quadrature du cercle
+# scolaire | Les fractions
+Une demi-pizza, c'est combien de pizza ? | La moitié
+Combien de quarts dans une unité ? | 4
+Combien font 1/2 + 1/2 ? | 1
+Combien font 1/2 + 1/3 ? | 5/6
+Quelle fraction simplifiée vaut 12/18 ? | 2/3
+Combien fait 3/4 divisé par 3/8 ? | 2
+Comment appelle-t-on le nombre du dessous ? | Le dénominateur
+Quel est le plus petit dénominateur commun de 4, 6 et 10 ? | 60
+Comment appelle-t-on une fraction de numérateur 1 ? | Une fraction égyptienne (unitaire)
+Quel papyrus égyptien contient une table de fractions ? | Le papyrus Rhind
+# scolaire | Les chiffres romains
+Combien vaut V ? | 5
+Combien vaut X ? | 10
+Combien vaut L ? | 50
+Combien vaut C ? | 100
+Combien vaut D ? | 500
+Comment écrit-on 4 sur la plupart des textes ? | IV
+Comment écrit-on 2026 ? | MMXXVI
+Sur les cadrans de montres, comment écrit-on souvent 4 ? | IIII
+Quel est le nombre romain le plus long jusqu'à 3999 ? | 3888 (MMMDCCCLXXXVIII)
+Que signifie un trait au-dessus d'une lettre romaine ? | Multiplier par 1 000
+# scolaire | Le théorème de Thalès
+Thalès a-t-il inventé le TGV ? | Non
+De quel pays était Thalès ? | La Grèce antique (Milet)
+Sur quel monument aurait-il mesuré la hauteur ? | La grande pyramide
+Dans quelle figure s'applique le théorème ? | Deux droites parallèles coupant deux sécantes
+Grâce à quoi aurait-il mesuré la hauteur ? | L'ombre
+Quelle éclipse Thalès aurait-il prédite ? | Celle de 585 av. J.-C.
+De quelle cité d'Ionie vient-il ? | Milet
+Combien de sages comptaient les Grecs ? | 7
+Comment dit-on « théorème de Thalès » en Allemagne ? | Théorème des rayons (Strahlensatz)
+Quelle autre propriété porte son nom dans le monde, sur un demi-cercle ? | Tout angle inscrit dans un demi-cercle est droit
+# scolaire | Les conjugaisons au passé simple
+Dit-on « je mangeai » ? | Oui
+Que devient « aller » à « il » au passé simple ? | Il alla
+Et « être » à « je » ? | Je fus
+Et « avoir » à « nous » ? | Nous eûmes
+Et « venir » à « ils » ? | Ils vinrent
+Et « croître » à « il » ? | Il crût
+Et « coudre » à « je » ? | Je cousis
+Et « moudre » à « je » ? | Je moulus
+Et « résoudre » à « il » ? | Il résolut
+Et « vêtir » à « ils » ? | Ils vêtirent
+# scolaire | Les pluriels bizarres
+Quel est le pluriel de « cheval » ? | Chevaux
+Et de « journal » ? | Journaux
+Et de « carnaval » ? | Carnavals
+Et de « œil » ? | Yeux
+Et de « bal » ? | Bals
+Et de « travail » ? | Travaux
+Et de « vitrail » ? | Vitraux
+Et de « ail » ? | Aulx (ou ails)
+Et de « bétail » ? | Il n'a pas de pluriel
+Et de « monsieur » ? | Messieurs
+# scolaire | Les mots invariables et pièges
+Écrit-on « parmis » avec un s ? | Non, parmi
+Écrit-on « malgré que » dans un bon français ? | À éviter
+Quel mot : « quand même » ou « quand-même » ? | Quand même
+« Tout de suite » s'écrit-il avec un trait d'union ? | Non
+Écrit-on « autant pour moi » ou « au temps pour moi » ? | Au temps pour moi
+Combien de « r » dans « courrier » ? | 2
+Combien de « l » dans « appeler » ? | 1 (appeler)
+Combien de « p » dans « apercevoir » ? | 1
+Quel est le féminin de « favori » ? | Favorite
+Combien de « n » dans « honneur », puis « honorable » ? | 2, puis 1
+# scolaire | Les figures de style
+Dit-on « Paris est une ville lumière » ? Une comparaison ou une métaphore ? | Une métaphore
+Si je dis « rouge comme une tomate » ? | Une comparaison
+Comment appelle-t-on une exagération ? | Une hyperbole
+Comment appelle-t-on le fait de dire moins pour dire plus ? | Une litote
+Quel exemple classique : « Va, je ne te hais point » ? | Une litote
+Quelle figure donne une personnalité à un objet ? | La personnification
+Comment appelle-t-on la répétition d'une même consonne ? | Une allitération
+Quelle figure unit deux mots contraires ? | Un oxymore
+Comment s'appelle la répétition d'un mot en tête de phrases ? | Une anaphore
+Comment s'appelle la partie pour le tout, comme « une voile » pour un bateau ? | Une synecdoque
+# scolaire | L'alexandrin et la poésie
+Un alexandrin est-il un habitant d'Égypte seulement ? | Non, aussi un vers de 12 syllabes
+Combien de syllabes dans un alexandrin ? | 12
+Comment s'appelle un poème de quatorze vers ? | Un sonnet
+Comment s'appelle une strophe de 4 vers ? | Un quatrain
+De 3 vers ? | Un tercet
+Comment s'appelle la pause au milieu de l'alexandrin ? | La césure
+Quel poème de Baudelaire commence par « Sois sage, ô ma douleur » ? | Recueillement
+Qui a écrit le « Dormeur du val » ? | Arthur Rimbaud
+Comment appelle-t-on une rime qui alterne ABAB ? | Une rime croisée
+Quel nom pour une syllabe finale muette en -e, en poésie ? | Le e muet (ou caduc)
+# scolaire | Les conjonctions de coordination
+Quelle phrase les retient en français ? | « Mais où est donc Ornicar ? »
+Combien sont-elles ? | 7
+Citez la première. | Mais
+Citez la dernière. | Car
+Quel est le mot qui est en fait un adverbe ? | Donc
+Quelle est la nature de « parce que » ? | Une conjonction de subordination
+Et « lorsque » ? | Une conjonction de subordination
+Dans « que je sache », quel mode ? | Le subjonctif
+Quel est le mode après « après que » ? | L'indicatif
+Quel est le mode après « avant que » ? | Le subjonctif
+# scolaire | Le Moyen Âge à la loupe
+Un chevalier part-il en mission à vélo ? | Non, à cheval
+Où vit le seigneur ? | Dans un château fort
+Comment s'appelle le fossé plein d'eau ? | Les douves
+Quelle tour est la plus haute du château ? | Le donjon
+Quel pont se relève ? | Le pont-levis
+Quel impôt payait-on à l'Église ? | La dîme
+Quelle est la bataille de 1066 ? | Hastings
+Quel duc a gagné cette bataille ? | Guillaume le Conquérant
+Quelle broderie raconte cette conquête ? | La tapisserie de Bayeux
+Quel droit obligeait les paysans à utiliser le four du seigneur ? | La banalité
+# scolaire | Louis XIV en détail
+Louis XIV vivait-il à la Maison-Blanche ? | Non, à Versailles
+Quel surnom portait-il ? | Le Roi-Soleil
+Quel âge avait-il à son avènement ? | 4 ans
+Quel cardinal a dirigé pendant sa minorité ? | Mazarin
+Qui était la régente ? | Anne d'Autriche
+Quel ministre finances ? | Colbert
+Quel était l'architecte de Versailles ? | Jules Hardouin-Mansart
+Quel jardinier a dessiné les jardins ? | André Le Nôtre
+Quel édit révoque-t-il en 1685 ? | L'édit de Nantes (par l'édit de Fontainebleau)
+Quel est le nom de l'épouse secrète ? | Madame de Maintenon
+# scolaire | Napoléon à la loupe
+Napoléon est-il né à Paris ? | Non, à Ajaccio
+De quelle île vient-il ? | La Corse
+Quelle bataille perd-il en 1815 ? | Waterloo
+Sur quelle île meurt-il ? | Sainte-Hélène
+Comment s'appelle son code de lois ? | Le Code civil
+Quelle bataille gagne-t-il le 2 décembre 1805 ? | Austerlitz
+En quelle année est-il sacré empereur ? | 1804
+Quel surnom donnait-on à son fils ? | L'Aiglon
+Quelle fut sa première épouse ? | Joséphine de Beauharnais
+Sur quelle île s'est-il exilé d'abord ? | L'île d'Elbe
+# scolaire | La Première Guerre mondiale
+Les soldats y allaient-ils à trottinette ? | Non
+Comment s'appelle le surnom des soldats français ? | Les poilus
+Où vivaient-ils ? | Dans les tranchées
+En quelle année a-t-elle commencé ? | 1914
+Quel jour de novembre marque l'armistice ? | Le 11 novembre
+Quelle bataille de 1916 dure dix mois ? | Verdun
+Dans quelle ville est assassiné l'archiduc François-Ferdinand ? | Sarajevo
+Quel traité de 1919 met fin à la guerre ? | Le traité de Versailles
+Dans quel wagon est signé l'armistice ? | À Rethondes (forêt de Compiègne)
+Quel général français dit « Ils ne passeront pas » ? | Robert Nivelle
+# scolaire | La Ve République
+Combien de Républiques a connues la France ? | 5
+Qui fonde la Ve ? | Charles de Gaulle
+En quelle année ? | 1958
+Quel symbole représente la République ? | Marianne
+Combien de présidents a-t-elle eus à 2024 ? | 8
+Qui succède à de Gaulle ? | Georges Pompidou
+Quel président a réduit le mandat à 5 ans ? | Jacques Chirac
+Quel est le nombre de membres du Conseil constitutionnel ? | 9
+Qui en était président en 2022 ? | Laurent Fabius
+En quelle année a lieu le référendum sur l'élection directe ? | 1962
+# scolaire | Les capitales d'Europe de l'Est
+Quelle est la capitale de la Pologne ? | Varsovie
+De la Hongrie ? | Budapest
+De la Roumanie ? | Bucarest
+De la Bulgarie ? | Sofia
+De la Slovaquie ? | Bratislava
+De la Moldavie ? | Chișinău
+De la Slovénie ? | Ljubljana
+De la Lettonie ? | Riga
+De la Biélorussie ? | Minsk
+De la Macédoine du Nord ? | Skopje
+# scolaire | Les pays d'Amérique du Sud
+Quel pays a la forme longue et étroite ? | Le Chili
+Quel pays est le plus grand ? | Le Brésil
+Quelle est la capitale du Brésil ? | Brasília
+Quelle est celle de l'Argentine ? | Buenos Aires
+Celle du Pérou ? | Lima
+Celle de la Colombie ? | Bogota
+Quelle ville a deux capitales pour la Bolivie ? | La Paz et Sucre
+Celle de l'Uruguay ? | Montevideo
+Celle du Paraguay ? | Asuncion
+Quelle est la capitale du Suriname ? | Paramaribo
+# scolaire | Les départements français
+Quel numéro a Paris ? | 75
+Quel numéro a le Nord ? | 59
+Quel numéro a la Corse-du-Sud ? | 2A
+Quel est le numéro de la Haute-Garonne ? | 31
+Quel est le chef-lieu de la Gironde ? | Bordeaux
+Quel est le numéro de la Lozère ? | 48
+Quel est le chef-lieu de l'Ain ? | Bourg-en-Bresse
+Quel est le chef-lieu de la Meuse ? | Bar-le-Duc
+Quel est le chef-lieu de la Creuse ? | Guéret
+Quel est le numéro du Tarn-et-Garonne ? | 82
+# scolaire | Les fleuves du monde
+Quel fleuve traverse Londres ? | La Tamise
+Et Le Caire ? | Le Nil
+Et Rome ? | Le Tibre
+Et Lisbonne ? | Le Tage
+Quel fleuve traverse New York ? | L'Hudson
+Quel est le fleuve le plus long d'Asie ? | Le Yangzi Jiang
+Quel fleuve sépare les États-Unis et le Mexique ? | Le Rio Grande
+Dans quelle mer se jette la Volga ? | La mer Caspienne
+Quel fleuve africain a les chutes Victoria ? | Le Zambèze
+Quel fleuve d'Afrique est le seul à franchir deux fois l'équateur ? | Le Congo
+# scolaire | Les îles
+Dans quel océan est la Réunion ? | L'océan Indien
+Quelle île française est surnommée « Île de Beauté » ? | La Corse
+Quelle est la plus grande île du monde ? | Le Groenland
+Quelle est la plus grande de la Méditerranée ? | La Sicile
+Quelle est la plus grande île de France métropolitaine ? | La Corse
+Combien d'îles principales au Japon ? | 4
+Quelle île de l'Atlantique sud est un territoire britannique, malouines ? | Les Malouines
+Quelle est la capitale de la Nouvelle-Calédonie ? | Nouméa
+Quelle est l'île française la plus proche de Madagascar ? | Mayotte
+Quel archipel français est au large de Terre-Neuve ? | Saint-Pierre-et-Miquelon
+# scolaire | Le tableau périodique
+Quel est le symbole de l'oxygène ? | O
+Et de l'hydrogène ? | H
+Et de l'or ? | Au
+Et de l'argent ? | Ag
+Et du sodium ? | Na
+Et du potassium ? | K
+Quel est le numéro atomique du carbone ? | 6
+Quel Russe a créé le tableau ? | Dmitri Mendeleïev
+Quel est l'élément le plus abondant de l'univers ? | L'hydrogène
+Quel est le seul métal liquide à température ambiante ? | Le mercure
+# scolaire | La photosynthèse
+Une plante mange-t-elle des pizzas ? | Non
+Quelle lumière lui sert ? | La lumière du soleil
+Quel gaz absorbe-t-elle ? | Le dioxyde de carbone
+Quel gaz rejette-t-elle ? | L'oxygène
+Quel pigment vert capte la lumière ? | La chlorophylle
+Dans quels organites a lieu la photosynthèse ? | Les chloroplastes
+Quel sucre produit-elle ? | Le glucose
+Quels sont les petits trous des feuilles ? | Les stomates
+Quel cycle porte le nom d'un chimiste américain ? | Le cycle de Calvin
+Quelle enzyme, la plus abondante sur Terre, fixe le CO2 ? | La RuBisCO
+# scolaire | Les états de l'eau
+L'eau a-t-elle le goût de fraise, naturellement ? | Non
+Quel est l'état de la glace ? | Solide
+À quelle température gèle-t-elle ? | 0 °C
+À quelle température bout-elle ? | 100 °C
+Comment appelle-t-on le passage de liquide à gaz ? | La vaporisation
+Et de solide à gaz ? | La sublimation
+Et de gaz à solide ? | La condensation solide
+Quelle formule a-t-elle ? | H2O
+À quelle température l'eau est-elle la plus dense ? | 4 °C
+Quel est le point triple de l'eau ? | 0,01 °C
+# scolaire | La cellule et l'ADN
+Peut-on voir une cellule à l'œil nu ? | La plupart du temps, non
+Avec quoi l'observe-t-on ? | Un microscope
+Que contient le noyau ? | L'ADN
+Que veut dire ADN ? | Acide désoxyribonucléique
+Quelle est sa forme ? | Une double hélice
+Combien de chromosomes a un humain ? | 46
+Quels sont les quatre bases ? | A, T, C, G
+Quels savants ont décrit sa structure en 1953 ? | Watson et Crick
+Quelle chercheuse a pris la photo 51 ? | Rosalind Franklin
+Quel moine a établi les lois de l'hérédité ? | Gregor Mendel
+# scolaire | Le squelette
+Un squelette joue-t-il du xylophone sur ses côtes, sauf dans les dessins animés ? | Non
+Comment s'appelle l'os de la cuisse ? | Le fémur
+L'os de la tête ? | Le crâne
+Celui de l'épaule, en triangle ? | L'omoplate (la scapula)
+Combien de côtes a un humain, par paires ? | 12
+Où est la rotule ? | Au genou
+Comment s'appelle le petit os de la cheville qui saille ? | La malléole
+Combien de vertèbres cervicales a un humain ? | 7
+Comment s'appelle la première ? | L'atlas
+Et la deuxième ? | L'axis
+# scolaire | Le verbe anglais
+Comment dit-on « bonjour » en anglais ? | Hello
+Que veut dire « cat » ? | Chat
+Quel est le passé de « go » ? | Went
+Celui de « be » à la première personne ? | Was
+Celui de « eat » ? | Ate
+Que veut dire « a pair of trousers » ? | Un pantalon
+Quel est le participe de « swim » ? | Swum
+Et celui de « drink » ? | Drunk
+Et celui de « lie » (s'allonger) ? | Lain
+Quel est le passé de « wring » ? | Wrung
+# scolaire | Les faux amis anglais
+« Library » veut-il dire « librairie » ? | Non, bibliothèque
+« Pain » en anglais, ça veut dire ? | Douleur
+« Coin » en anglais ? | Une pièce de monnaie
+« Actually » ? | En fait
+« Sensible » ? | Raisonnable
+« Eventually » ? | Finalement
+« Chair » ? | Une chaise
+« Blesser » se dit-il « bless » ? | Non, « bless » veut dire bénir
+« Deception » ? | Une tromperie
+« Sympathetic » ? | Compatissant
+# scolaire | L'allemand et l'espagnol du collège
+Comment dit-on « merci » en allemand ? | Danke
+En espagnol ? | Gracias
+« Bonjour » en espagnol ? | Hola (ou buenos días)
+« Au revoir » en allemand ? | Auf Wiedersehen
+Combien de genres a l'allemand ? | 3
+Combien de cas a-t-il ? | 4
+Que veut dire « Schmetterling » ? | Papillon
+Que veut dire « Handschuh » ? | Un gant
+Que veut dire « mariposa » en espagnol ? | Papillon
+Comment s'appelle la lettre allemande ß ? | Eszett
+# scolaire | Le latin qui reste
+Le latin se parle-t-il au supermarché ? | Non
+Que veut dire « et cetera » ? | Et le reste
+Que veut dire « ad vitam aeternam » ? | Pour toujours
+Que veut dire « carpe diem » ? | Cueille le jour
+Que veut dire « in vino veritas » ? | La vérité est dans le vin
+Que veut dire « alea jacta est » ? | Le sort en est jeté
+Que veut dire « mea culpa » ? | C'est ma faute
+Que veut dire « vade retro » ? | Recule
+Qui a dit « Cogito ergo sum » ? | René Descartes
+Comment décliner « rosa » au génitif ? | Rosae
+# scolaire | Les classiques du bac français
+Qui a écrit « Le Cid » ? | Pierre Corneille
+Qui a écrit « Phèdre » ? | Jean Racine
+Qui a écrit « Le Bourgeois gentilhomme » ? | Molière
+Qui a écrit « Candide » ? | Voltaire
+Qui a écrit « Madame Bovary » ? | Gustave Flaubert
+Qui a écrit « Germinal » ? | Émile Zola
+Qui a écrit « Le Rouge et le Noir » ? | Stendhal
+Qui a écrit « Bel-Ami » ? | Guy de Maupassant
+Qui a écrit « Les Fleurs du mal » ? | Charles Baudelaire
+Qui a écrit « Thérèse Desqueyroux » ? | François Mauriac
+# scolaire | Les Misérables
+Jean Valjean a-t-il volé un yacht ? | Non, un pain
+Qui a écrit « Les Misérables » ? | Victor Hugo
+Quel policier poursuit Valjean ? | Javert
+Quelle enfant adopte-t-il ? | Cosette
+Quel gamin de Paris meurt sur la barricade ? | Gavroche
+Combien d'années de bagne en tout ? | 19
+Quel couple exploite Cosette ? | Les Thénardier
+Quel évêque le sauve ? | Monseigneur Myriel
+Quel est le matricule de Valjean ? | 24601
+En quelle année est paru le roman ? | 1862
+# scolaire | Les pièces de Molière
+Molière écrivait-il des romans policiers ? | Non, du théâtre
+Quel avare cherche sa cassette ? | Harpagon
+Quel malade a des médecins ? | Argan
+Quelle est la vraie identité de Molière ? | Jean-Baptiste Poquelin
+Dans quelle pièce est « Couvrez ce sein » ? | Tartuffe
+Quel est le nom du « Misanthrope » ? | Alceste
+Quelle pièce est interdite en 1664 ? | Tartuffe
+Quel valet rusé a des « fourberies » ? | Scapin
+Quelle compagnie a-t-il fondée en 1643 ? | L'Illustre Théâtre
+Quelle année meurt-il ? | 1673
+# scolaire | Les planètes à la loupe
+La Lune est-elle en fromage ? | Non
+Quelle est la planète rouge ? | Mars
+Quelle est la plus grosse ? | Jupiter
+La plus proche du Soleil ? | Mercure
+Combien de planètes dans le système solaire ? | 8
+Quelle planète tourne sur le côté ? | Uranus
+Comment s'appelle la plus grosse tache de Jupiter ? | La Grande Tache rouge
+Combien de temps met la lumière du Soleil pour arriver à la Terre ? | Environ 8 minutes
+Quel astronome a montré que les planètes ont des orbites elliptiques ? | Johannes Kepler
+Qui a découvert Neptune par le calcul ? | Urbain Le Verrier
+# scolaire | L'électricité du collège
+Une pile se mange-t-elle ? | Non
+Quelle unité mesure la tension ? | Le volt
+Et l'intensité ? | L'ampère
+Et la résistance ? | L'ohm
+Quelle loi relie U, R et I ? | La loi d'Ohm
+Comment est un montage en série si une ampoule grille ? | Toutes s'éteignent
+Que protège un fusible ? | Le circuit
+Quel Italien a inventé la pile ? | Alessandro Volta
+Quel Américain a fait l'expérience du cerf-volant ? | Benjamin Franklin
+Quelle tension sort d'une prise française ? | 230 V
+# scolaire | Les poids et mesures
+Combien de grammes dans un kilo ? | 1 000
+Combien de centimètres dans un mètre ? | 100
+Combien de litres dans un mètre cube ? | 1 000
+Combien de mètres dans un kilomètre ? | 1 000
+Combien vaut un hectare ? | 10 000 m²
+Combien vaut un pouce ? | 2,54 cm
+Combien vaut un mile ? | Environ 1,6 km
+Combien vaut une livre britannique ? | Environ 454 g
+Quelle ville conservait le mètre étalon ? | Sèvres
+En quelle année a-t-on défini le mètre avec la lumière ? | 1983
+# scolaire | L'Égypte antique
+Les pyramides sont-elles des résidences secondaires ? | Non, des tombeaux
+Quel fleuve traverse le pays ? | Le Nil
+Comment s'appellent les rois ? | Les pharaons
+Quel Français a déchiffré les hiéroglyphes ? | Champollion
+Quelle pierre a permis ce déchiffrement ? | La pierre de Rosette
+Dieu à tête de chacal ? | Anubis
+Quel pharaon a une tombe découverte en 1922 ? | Toutânkhamon
+Qui a découvert cette tombe ? | Howard Carter
+Quelle reine a régné en pharaon, à Deir el-Bahari ? | Hatchepsout
+Quel pharaon bâtit la plus grande pyramide ? | Khéops
+# scolaire | La géologie du dimanche
+Un caillou peut-il pondre ? | Non
+Comment s'appelle la croûte qui bouge ? | Les plaques tectoniques
+Que mesure-t-on avec Richter ? | La magnitude des séismes
+Quelle roche fait le sable à plage ? | Le quartz
+Quel Allemand a proposé la dérive des continents ? | Alfred Wegener
+Quel supercontinent a existé il y a 300 millions d'années ? | La Pangée
+Quelle roche forme les falaises d'Étretat ? | La craie
+Quelle est la dureté maximale de Mohs ? | 10 (le diamant)
+Quelle roche volcanique flotte ? | La pierre ponce
+Quel est le minéral de dureté 1 ? | Le talc
+# scolaire | L'hymne et les symboles français
+La devise de la France est-elle « Fromage, Vin, Baguette » ? | Non
+Quelle est la devise ? | Liberté, Égalité, Fraternité
+Quel animal est un symbole du pays ? | Le coq
+Quelle est la fête nationale ? | Le 14 juillet
+Quelle plante est le symbole des rois ? | Le lys
+Dans quelle ville a été composée la Marseillaise ? | Strasbourg
+Quel est le nom original de la Marseillaise ? | Chant de guerre pour l'armée du Rhin
+Depuis quelle année est-elle l'hymne officiel ? | 1879 (d'abord 1795)
+Quelle actrice a servi de modèle à Marianne en 1985 ? | Catherine Deneuve (1985)
+Quelle était la Marianne de 1969 ? | Brigitte Bardot
+# scolaire | L'orthographe des villes
+Bordeaux s'écrit-il « Bordo » ? | Non
+Comment écrit-on Reims avec un s ? | Oui, Reims
+Combien de L dans Lille ? | 2
+Comment s'écrit la ville de Metz ? | Avec un z
+Comment prononce-t-on Laon ? | Lan
+Comment prononce-t-on Auxerre ? | Ausserre
+Comment s'écrit le mot pour habitants de Reims ? | Les Rémois
+Et pour les habitants de Saint-Étienne ? | Les Stéphanois
+Et pour ceux de Bourg-en-Bresse ? | Les Burgiens (ou Bressans)
+Et pour ceux de Charleville-Mézières ? | Les Carolomacériens
+# scolaire | Les grands explorateurs
+Christophe Colomb cherchait-il le Mont-Saint-Michel ? | Non, les Indes
+En quelle année arrive-t-il en Amérique ? | 1492
+Quel Portugais fait le premier tour du monde (achevé par son équipage) ? | Magellan
+Quel Vénitien va en Chine ? | Marco Polo
+Quel Français explore le Canada ? | Jacques Cartier
+Quel Italien donne son nom à l'Amérique ? | Amerigo Vespucci
+Quel navigateur portugais rejoint l'Inde en 1498 ? | Vasco de Gama
+Quel Anglais a cartographié le Pacifique ? | James Cook
+Qui a atteint le pôle Sud le premier ? | Roald Amundsen
+Quel capitaine français a fait le tour du monde au XVIIIe ? | Bougainville
+# scolaire | Le calendrier
+Combien de jours en février les années bissextiles ? | 29
+Combien de mois ? | 12
+Quel mois vient après mars ? | Avril
+Combien de jours dans une année ordinaire ? | 365
+Quel pape a réformé le calendrier en 1582 ? | Grégoire XIII
+Quel empereur a donné son nom à juillet ? | Jules César
+Et août ? | Auguste
+Pourquoi 2100 ne sera-t-elle pas bissextile ? | Les siècles non divisibles par 400 ne le sont pas
+Combien de jours ont été sautés en 1582 ? | 10
+Comment s'appelle le premier mois du calendrier révolutionnaire ? | Vendémiaire
+# scolaire | L'imparfait du subjonctif
+Dit-on « qu'il mangeât » ? | Oui
+Comment dit-on « que je vienne » à l'imparfait ? | Que je vinsse
+Que devient « que tu sois » ? | Que tu fusses
+« Que nous ayons » ? | Que nous eussions
+« Que je voie » ? | Que je visse
+« Qu'il prenne » ? | Qu'il prît
+« Que nous allions » ? | Que nous allassions
+« Que vous fassiez » ? | Que vous fissiez
+« Que je sache » ? | Que je susse
+« Qu'ils naissent » ? | Qu'ils naquissent
 `;
 if (typeof module !== 'undefined') module.exports = DX_QUESTIONS;
