@@ -122,10 +122,12 @@ var CJ = (function () {
   function finManche(e) {
     var details = {}, bas = Infinity, nbBas = 0;
     e.joueurs.forEach(function (j) {
-      e.grilles[j].forEach(function (x) { if (x) x.vis = true; });   // les cartes encore cachées sont montrées
-      retirerColonnes(e, j);   // livret : une colonne identique révélée à ce moment-là part aussi, avant le calcul
+      var reveles = [];
+      e.grilles[j].forEach(function (x, k) { if (x && !x.vis) { x.vis = true; reveles.push(k); } });   // les cartes encore cachées sont montrées
+      var avant = copie(e.grilles[j]);   // la grille dévoilée, avant le départ des colonnes (montrée à l'étape « grilles dévoilées »)
+      var parties = retirerColonnes(e, j);   // livret : une colonne identique révélée à ce moment-là part aussi, avant le calcul
       var t = total(e.grilles[j]);
-      details[j] = { points: t, brut: t, double: false };
+      details[j] = { points: t, brut: t, double: false, reveles: reveles, avant: avant, parties: parties };
       if (t < bas) { bas = t; nbBas = 1; } else if (t === bas) nbBas++;
     });
     var f = details[e.finisseur];

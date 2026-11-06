@@ -70,6 +70,25 @@
     /* Fin de manche */
     .fin-cj { background: #fff; border-radius: 16px; padding: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
     .fin-cj .titre { font-weight: 900; font-size: 1.12em; text-align: center; margin-bottom: 8px; }
+    /* Étape « grilles dévoilées », avant les scores */
+    .devoile-cj { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 12px; }
+    .devoile-cj.serre { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+    .devoile-cj .dv { min-width: 0; border-radius: 10px; padding: 5px 5px 6px; background: #f6f8fa; }
+    .devoile-cj .dv.fini { background: #fff4d6; box-shadow: inset 0 0 0 1.5px #f0b429; }
+    .devoile-cj .qui { display: flex; justify-content: space-between; gap: 4px; font-size: 0.8em; font-weight: 800; margin-bottom: 3px; }
+    .devoile-cj.serre .qui { font-size: 0.7em; }
+    .devoile-cj .qui .nom { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .devoile-cj .note { font-size: 0.7em; color: #8a6100; text-align: center; margin-top: 3px; line-height: 1.2; }
+    .devoile-cj.serre .note { font-size: 0.62em; }
+    .mini-cj.grand { max-width: none; gap: 4px; margin: 0; }
+    .mini-cj.grand span { font-size: 0.95em; border-radius: 4px; position: relative; }
+    .devoile-cj.serre .mini-cj.grand { gap: 3px; }
+    .devoile-cj.serre .mini-cj.grand span { font-size: 0.72em; }
+    .mini-cj span.revele { outline: 2.5px solid #ffb300; outline-offset: 1px; animation: retourne 0.4s ease-out both; }
+    .mini-cj span.barree { opacity: 0.6; }
+    .mini-cj span.barree::after { content: ''; position: absolute; inset: 0; background: linear-gradient(to top right, transparent 47%, rgba(29,43,54,0.8) 48%, rgba(29,43,54,0.8) 52%, transparent 53%); }
+    .aide-fin { text-align: center; font-size: 0.8em; color: #5b6b78; margin: -2px 0 10px; line-height: 1.3; }
+    .lien-fin { display: block; margin: 8px auto 0; border: none; background: none; font: inherit; font-size: 0.85em; color: #2a86c8; font-weight: 700; cursor: pointer; }
     .bilan { display: flex; align-items: center; gap: 10px; border-top: 1px solid #eef1f3; padding: 6px 0; }
     .bilan .mini-cj { width: 78px; flex: none; margin: 0; }
     .bilan .texte { flex: 1; min-width: 0; }
@@ -160,7 +179,20 @@
 
         <template v-else-if="e">
           <!-- Fin de manche / de partie -->
-          <div class="fin-cj" v-if="e.phase === 'finManche' || e.phase === 'finPartie'">
+          <div class="fin-cj" v-if="(e.phase === 'finManche' || e.phase === 'finPartie') && !scoresVus">
+            <div class="titre">Manche {{ e.manche }} : tout est dévoilé</div>
+            <div class="aide-fin">Les cartes entourées d'or étaient encore cachées. Une colonne barrée vient de partir.</div>
+            <div class="devoile-cj" :class="{ serre: devoilement.length > 4 }">
+              <div v-for="d in devoilement" :key="d.j" class="dv" :class="{ fini: d.fini }">
+                <div class="qui"><span class="nom">{{ d.j }}{{ d.moi ? ' (moi)' : '' }}</span><span>{{ signe(d.brut) }}</span></div>
+                <div class="mini-cj grand"><span v-for="(x, k) in d.cases" :key="k" :class="x.cls" :style="x.style">{{ x.t }}</span></div>
+                <div class="note" v-if="d.fini">a fini la manche</div>
+                <div class="note" v-for="c in d.colonnes" :key="c.c">colonne de {{ signe(c.v) }} partie !</div>
+              </div>
+            </div>
+            <div class="actions-cj"><button class="btn principal" @click="voirScores">Voir les scores →</button></div>
+          </div>
+          <div class="fin-cj" v-else-if="e.phase === 'finManche' || e.phase === 'finPartie'">
             <div class="titre">{{ titreFin }}</div>
             <div v-for="b in bilans" :key="b.j" class="bilan">
               <div class="mini-cj"><span v-for="(x, k) in b.grille" :key="k" :class="miniClasse(x)" :style="miniStyle(x)">{{ miniTexte(x) }}</span></div>
@@ -176,6 +208,7 @@
               <button v-if="solo" class="btn" @click="quitterSolo">Arrêter</button>
               <button v-if="!solo && role === 'hote'" class="btn" @click="envoyerJeu({ type: 'ARRETER' })">Salle d'attente</button>
             </div>
+            <button class="lien-fin" @click="finVue = null">← Revoir les grilles dévoilées</button>
           </div>
 
           <template v-else>
@@ -325,7 +358,8 @@
         sonActif: lireStockage('brillant-son') !== false,
         vibrationActive: lireStockage('brillant-vibration') !== null ? lireStockage('brillant-vibration') !== false : lireStockage('brillant-son') !== false,
         veilleSupportee: false,
-        soloEnCours: false
+        soloEnCours: false,
+        finVue: null      // la fin de manche dont on a déjà ouvert les scores (sinon : les grilles dévoilées d'abord)
       },
       computed: {
         moi: function() { return this.pseudoInput.trim() || 'Moi'; },
@@ -391,6 +425,25 @@
           }
           return 'Manche ' + e.manche + ' : ' + (r.finisseur === moi ? 'tu as fini' : r.finisseur + ' a fini');
         },
+        cleFin: function() { return this.e ? (this.pub.partieId || '') + '-' + this.e.manche : ''; },
+        scoresVus: function() { return this.finVue === this.cleFin; },
+        // Les grilles telles qu'on les a retournées à la fin de la manche
+        devoilement: function() {
+          var e = this.e, r = e && e.resultat;
+          if (!r) return [];
+          return e.joueurs.map(j => {
+            var d = r.details[j], avant = d.avant || e.grilles[j], rev = d.reveles || [], cols = (d.parties || []).map(p => p.c);
+            var cases = avant.map((x, k) => {
+              if (!x) return { cls: 'partie', style: null, t: '' };
+              var cls = [], style = Object.assign({}, this.miniStyle(Object.assign({}, x, { vis: true })));
+              var n = rev.indexOf(k);
+              if (n !== -1) { cls.push('revele'); style.animationDelay = (n * 120) + 'ms'; }
+              if (cols.indexOf(k % CJ.COLONNES) !== -1) cls.push('barree');
+              return { cls: cls.join(' '), style: style, t: texteValeur(x.v) };
+            });
+            return { j: j, moi: j === this.moiJ, fini: j === r.finisseur, brut: d.brut, cases: cases, colonnes: d.parties || [] };
+          });
+        },
         bilans: function() {
           var e = this.e, r = e.resultat;
           if (!r) return [];
@@ -416,6 +469,7 @@
       },
       methods: {
         svgCarte: svgCarte,
+        voirScores: function() { this.finVue = this.cleFin; },
         signe: function(n) { return n > 0 ? '+' + n : texteValeur(n); },
         miniClasse: function(x) { return !x ? 'partie' : (x.vis ? '' : 'cachee'); },
         miniStyle: function(x) { if (!x || !x.vis) return null; var t = teinte(x.v); return { background: t.fond, color: t.texte, boxShadow: x.v === 0 ? 'inset 0 0 0 1px #bcd6e8' : 'none' }; },
