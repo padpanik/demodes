@@ -7,7 +7,7 @@ var DX_QUESTIONS = `
 Que cherche-t-on désespérément quand le rouleau est vide ? | Du papier toilette
 Dans quelle pièce peut-on lire tranquille tant que personne ne frappe à la porte ? | Les toilettes
 Que tire-t-on (normalement) avant de sortir ? | La chasse d'eau
-Que veut dire WC ? | Water closet
+Quel mois a lieu la Journée mondiale des toilettes décrétée par l'ONU ? | Novembre
 Quel pays est célèbre pour ses toilettes chauffantes à télécommande ? | Le Japon
 Comment appelle-t-on les anciens urinoirs publics, du nom d'un empereur romain ? | Les vespasiennes
 Quel empereur romain aurait dit « l'argent n'a pas d'odeur » à propos d'une taxe sur l'urine ? | Vespasien
@@ -40,10 +40,10 @@ Quelle dispute de marché, avec l'injure « espèce de… », aurait donné à H
 Quelle commune de la Somme tient en une seule lettre ? | Y
 Quelle ancienne commune du Loir-et-Cher promet une fin de soirée difficile ? | Bourré
 Quelle ville du Nord a servi de décor à « Bienvenue chez les Ch'tis » ? | Bergues
-Quelle ville est connue pour sa moutarde ? | Dijon
+Dans quel département se trouve Montcuq, chère à Daniel Prévost ? | Le Lot
 Quelle ville du Gers a un nom qui fait sourire les Anglais ? | Condom
 Dans quel département se trouve Sexey-les-Bois ? | La Meurthe-et-Moselle
-Quelle commune de Haute-Marne, composée, a l'un des plus longs noms de France ? | Saint-Remy-en-Bouzemont-Saint-Genest-et-Isson
+Quelle commune de la Marne, composée, a l'un des plus longs noms de France ? | Saint-Remy-en-Bouzemont-Saint-Genest-et-Isson
 Quelle commune de la Drôme est souvent citée comme la moins peuplée de France ? | Rochefourchat
 Quelle commune de la Meuse, détruite en 1916, n'a plus d'habitants mais garde un maire ? | Fleury-devant-Douaumont
 Quel département compte le plus de communes en France ? | Le Pas-de-Calais
@@ -140,7 +140,7 @@ Qu'est-ce que la marque Haribo rend beau, pour les grands et les petits ? | La v
 Quelle marque répète « Just do it » ? | Nike
 Quelle marque dit « parce que je le vaux bien » ? | L'Oréal
 Quelle marque disait « Think different » ? | Apple
-Quelle boisson « donne des ailes » ? | Red Bull
+Quelle marque de rasoir promet « la perfection au masculin » ? | Gillette
 Quelle boisson disait « Quand c'est trop, c'est… » ? | Tropico
 Quelle cause répétait « Un verre ça va, trois verres, bonjour les dégâts » ? | La sécurité routière
 Quel publicitaire a dit que si à 50 ans on n'a pas de Rolex, on a raté sa vie ? | Jacques Séguéla
@@ -172,7 +172,7 @@ Quelle collection d'enfance a inspiré Pokémon à son créateur ? | La chasse a
 Quel animateur disait « Top ! » dans « Questions pour un champion » ? | Julien Lepers
 Sur quel fort cherche-t-on des clés avec le père Fouras ? | Fort Boyard
 Qui présente « N'oubliez pas les paroles » ? | Nagui
-Qui présente « Les 12 coups de midi » ? | Jean-Luc Reichmann
+Comment s'appelle le décor à découvrir dans « Les 12 coups de midi » ? | L'Étoile mystérieuse
 Quelle émission fait trouver un compte et un mot ? | Des chiffres et des lettres
 Quel animateur faisait hurler « Intervilles » ? | Guy Lux
 Quel arbitre des chiffres a marqué « Des chiffres et des lettres » ? | Bertrand Renard
@@ -184,7 +184,7 @@ Quel petit cube coloré a rendu fou tout le monde ? | Le Rubik's Cube
 Quel baladeur Sony permet d'écouter des cassettes dans la rue ? | Le Walkman
 Quel service français faisait « 3615 » sur un petit écran ? | Le Minitel
 Quel classement des ventes est lancé par Canal+ en 1984 ? | Le Top 50
-Quel album de Michael Jackson sort fin 1982 ? | Thriller
+Quelle voiture voyage dans le temps dans « Retour vers le futur » ? | La DeLorean
 Quel mur tombe en 1989 ? | Le mur de Berlin
 Quelle animatrice a donné son nom à un club pour enfants sur TF1 ? | Dorothée
 Quelle « Ulla » hantait les publicités du Minitel rose ? | 3615 Ulla
@@ -305,11 +305,11 @@ Sort-il de la lave quand on éternue ? | Non
 Que dit-on poliment à quelqu'un qui éternue ? | À tes souhaits (ou À vos souhaits)
 Dans quoi éternue-t-on de préférence, selon les affiches ? | Dans son coude
 Que dit-on au deuxième éternuement, selon la blague ? | « À tes amours »
-Quelle saison fait éternuer les allergiques aux pollens ? | Le printemps
+Que veut dire « Gesundheit », que disent les Allemands après un éternuement ? | Santé
 Qu'est-ce que le rhume des foins ? | Une allergie aux pollens
 Comment s'appelle le réflexe d'éternuer en regardant le soleil ? | Le réflexe photique (ou ACHOO)
 Quel est le mot savant pour désigner l'éternuement ? | La sternutation
-Quelle Anglaise détient le record d'éternuements, 978 jours d'affilée ? | Donna Griffiths
+Quelle Anglaise détient le record d'éternuements, près de 1 000 jours d'affilée ? | Donna Griffiths
 Quel nerf crânien déclenche le réflexe ? | Le nerf trijumeau
 # plaisir | La raclette
 La raclette se mange-t-elle au petit déjeuner avec du Nutella ? | Non
@@ -328,7 +328,7 @@ Quel pays a inventé la pizza ? | L'Italie
 Quelle pizza ne contient que tomate, mozzarella et basilic ? | La Margherita
 Quelle ville est son berceau ? | Naples
 Que garnit une pizza Reine ? | Jambon et champignons
-Quelle est la pizza aux quatre fromages en italien ? | Quattro formaggi
+Comment s'appelle la pizza repliée en chausson ? | La calzone
 Quels héros mutants raffolent de pizza en égouts ? | Les Tortues Ninja
 Quel pizzaïolo a créé la Margherita en 1889 ? | Raffaele Esposito
 Quel ingrédient caractérise une pizza hawaïenne, inventée au Canada ? | L'ananas
@@ -349,7 +349,7 @@ Bambi est-il un tigre ? | Non, un faon
 Quel animal est Mickey ? | Une souris
 Combien de nains vivent avec Blanche-Neige ? | Sept
 Combien de dalmatiens dans le titre ? | 101
-Comment s'appelle le lionceau du « Roi Lion » ? | Simba
+Comment s'appelle le vieux singe du « Roi Lion » ? | Rafiki
 Comment s'appelle l'oncle méchant de Simba ? | Scar
 Quel film Disney a la chanson « Hakuna Matata » ? | Le Roi Lion
 Comment s'appelait Mickey dans sa première version ? | Mortimer
@@ -371,7 +371,7 @@ Ulysse 31 voyage-t-il en trottinette ? | Non, en vaisseau spatial
 Quel chat poursuit Jerry ? | Tom
 Quel marin mange des épinards ? | Popeye
 Quelle émission diffusait Dragon Ball et Les Chevaliers du Zodiaque ? | Le Club Dorothée
-Quel dessin animé a pour héros une abeille appelée Maya ? | Maya l'abeille
+Comment s'appelle le vaisseau d'Albator ? | L'Arcadia
 Quel robot géant venu de loin est piloté par Actarus ? | Goldorak
 De quelle émission Goldorak a-t-il été la vedette en 1978 ? | Récré A2
 Qui a chanté le générique français de Goldorak ? | Noam Kaniel
@@ -466,203 +466,203 @@ Quelle jeune femme a poignardé Marat dans sa baignoire ? | Charlotte Corday
 Dans quelle ville a été arrêté Louis XVI en fuite ? | Varennes
 Quel mois du calendrier révolutionnaire voit la chute de Robespierre ? | Thermidor
 # improbable | Les parapluies
-Un parapluie protège-t-il du soleil de minuit en plein salon ? | Pas vraiment, il protège de la pluie
-Que fait-il au premier coup de vent ? | Il se retourne
-Quelle superstition interdit de l'ouvrir où ? | Dans une maison
-Quelle nounou anglaise vole avec le sien ? | Mary Poppins
-Quel film de Jacques Demy se passe à Cherbourg ? | Les Parapluies de Cherbourg
-Quelle ville d'Auvergne est sa capitale historique en France ? | Aurillac
-Comment s'appelle un parapluie contre le soleil ? | Une ombrelle
+Que fait un parapluie au premier coup de vent ? | Il se retourne
+Quelle nounou anglaise s'envole avec le sien ? | Mary Poppins
+Où dit-on que l'ouvrir porte malheur ? | Dans une maison
+Comment s'appelle son cousin qui protège du soleil ? | L'ombrelle
+Quelle actrice chante dans « Les Parapluies de Cherbourg » ? | Catherine Deneuve
+Quelle ville du Cantal en est la capitale française ? | Aurillac
+Comment appelle-t-on un petit parapluie pliant, du nom d'un personnage minuscule ? | Un tom-pouce
 Quel Anglais a été moqué pour avoir osé en porter un à Londres au XVIIIe siècle ? | Jonas Hanway
-Quel marque britannique fabrique des parapluies pour la reine ? | Fulton
-Quel dissident bulgare a été assassiné par un parapluie empoisonné à Londres, en 1978 ? | Gueorgui Markov
+Quel dissident bulgare a été assassiné à Londres, en 1978, d'un coup de parapluie empoisonné ? | Gueorgui Markov
+Quel fabricant britannique a fourni la reine Élisabeth II en parapluies transparents ? | Fulton
 # improbable | Les moustaches
-Une moustache pousse-t-elle sur le front ? | Non
+Où pousse une moustache, en général ? | Sous le nez
 Quel plombier à moustache sauve la princesse ? | Mario
-Quel détective belge est fier de la sienne ? | Hercule Poirot
-Quel Gaulois moustachu a un gros casque ailé ? | Astérix
-Quel peintre espagnol a une moustache en crocs ? | Salvador Dalí
-Quel mois de novembre fait pousser la moustache pour la santé masculine ? | Movember
-Quel acteur américain à moustache joue dans « Magnum » ? | Tom Selleck
-Quel chanteur à moustache mène Queen ? | Freddie Mercury
+Quel détective belge est très fier de la sienne ? | Hercule Poirot
+Quel petit Gaulois moustachu porte un casque ailé ? | Astérix
+Quel peintre espagnol portait la sienne en pointes vers le ciel ? | Salvador Dalí
+Comment appelle-t-on le mois où l'on se laisse pousser la moustache pour la santé des hommes ? | Movember
+Quel acteur à moustache joue le détective Magnum ? | Tom Selleck
+Quel acteur à fine moustache joue Rhett Butler dans « Autant en emporte le vent » ? | Clark Gable
 Comment s'appelle la moustache qui descend de chaque côté de la bouche ? | La moustache en fer à cheval
-Quel Allemand a créé le championnat du monde de barbe et moustache en 1990 ? | Le Belzer Bart- und Schnauzerclub (à Höfen-Enz)
+Dans quel pays a eu lieu le premier championnat du monde de barbe et moustache, en 1990 ? | L'Allemagne (à Höfen-Enz)
 # improbable | Les pingouins et manchots
-Un manchot peut-il voler ? | Non
-Sur quel continent vit surtout le manchot empereur ? | L'Antarctique
-Quel film de Luc Jacquet les suit ? | La Marche de l'empereur
-Le pingouin vole-t-il ? | Oui, le petit pingouin vole
-Quel manchot prend-on pour logo de Linux ? | Tux
-Quel oscar a reçu « La Marche de l'empereur » ? | L'Oscar du meilleur documentaire
-Qui couve l'œuf chez le manchot empereur ? | Le mâle
-Combien mesure un manchot empereur, environ ? | 1,20 m
-Quel oiseau nordique est le seul pingouin vivant ? | Le petit pingouin (Alca torda)
-Quelle espèce est disparue au XIXe siècle ? | Le grand pingouin
+Quel vêtement chic le manchot semble-t-il porter ? | Un smoking (ou une queue-de-pie)
+Sur quel continent vit le manchot empereur ? | L'Antarctique
+Quel documentaire de Luc Jacquet suit des manchots ? | La Marche de l'empereur
+Comment s'appelle le manchot mascotte de Linux ? | Tux
+Lequel des deux peut voler : le manchot ou le pingouin ? | Le pingouin
+Chez le manchot empereur, qui couve l'œuf ? | Le mâle
+Combien mesure environ un manchot empereur adulte ? | 1,20 m
+Dans quel hémisphère vivent les pingouins ? | L'hémisphère Nord
+Quel oiseau incapable de voler a disparu vers 1844 ? | Le grand pingouin
+Sur quelle île islandaise ont été tués les derniers connus ? | Eldey
 # improbable | Les vampires
-Un vampire se nourrit-il de tofu ? | Non, de sang
-Que déteste-t-il dans la cuisine ? | L'ail
-Quel pieu le tue ? | Un pieu dans le cœur
-Quel comte est le plus célèbre ? | Dracula
-Qui a écrit le roman Dracula ? | Bram Stoker
-De quelle région vient-il ? | La Transylvanie
-Quel prince inspire le personnage ? | Vlad III l'Empaleur
-Quelle chauve-souris boit du sang ? | Le vampire commun (Desmodus rotundus)
-Quel film muet allemand de 1922 ? | Nosferatu
-Quel réalisateur a fait Nosferatu ? | Friedrich Wilhelm Murnau
+Un vampire choisit-il plutôt une salade de quinoa ou le cou de sa voisine ? | Le cou de sa voisine
+Quel condiment lui gâche le repas ? | L'ail
+Que ne lui renvoie jamais un miroir ? | Son reflet
+Qui a écrit le roman « Dracula » ? | Bram Stoker
+Quel vampire joue Tom Cruise dans « Entretien avec un vampire » ? | Lestat
+Quel prince valaque a inspiré Dracula ? | Vlad III l'Empaleur
+Quel film muet allemand de 1922 met en scène le comte Orlok ? | Nosferatu
+Quel professeur chasse Dracula dans le roman ? | Abraham Van Helsing
+Dans quel port anglais Dracula débarque-t-il ? | Whitby
+Quel médecin de Lord Byron a publié « Le Vampire » en 1819 ? | John Polidori
 # improbable | Les zombies
-Un zombie travaille-t-il à la banque ? | Non, même s'il en a l'air
-Que mange-t-il ? | Des cerveaux
-Comment le tue-t-on, selon la plupart des films ? | En lui détruisant le cerveau
-Quelle île des Caraïbes est à l'origine du mythe ? | Haïti
-Quel film de George Romero, 1968 ? | La Nuit des morts-vivants
-Quelle série AMC suit Rick Grimes ? | The Walking Dead
-Quel acteur joue Rick Grimes ? | Andrew Lincoln
-Quel film britannique de 2004 avec Simon Pegg ? | Shaun of the Dead
-Quelle chanson a un clip de zombies, en 1983 ? | Thriller
-Quel réalisateur de Thriller a fait « Le Loup-garou de Londres » ? | John Landis
+Pour son déjeuner, un zombie préfère-t-il le quinoa ou les cerveaux ? | Les cerveaux
+Où vise-t-on pour s'en débarrasser ? | La tête
+Quel clip de Michael Jackson en est rempli ? | Thriller
+De quelle île des Caraïbes vient le mythe ? | Haïti
+Comment appelle-t-on les zombies dans la série « The Walking Dead », en français ? | Les rôdeurs
+Quel film de George Romero, en 1968, a fondé le genre moderne ? | La Nuit des morts-vivants
+Dans quel lieu se réfugient les héros de « Zombie », en 1978 ? | Un centre commercial
+Dans quel pub Shaun veut-il se réfugier, dans « Shaun of the Dead » ? | Le Winchester
+Comment s'appelle le virus de « 28 jours plus tard » ? | La Fureur (« Rage » en anglais)
+Quel anthropologue canadien a enquêté sur la poudre zombie, dans « Le Serpent et l'Arc-en-ciel » ? | Wade Davis
 # improbable | Les ovnis
-Un ovni a-t-il un permis de conduire ? | Pas à notre connaissance
-Que veut dire ovni ? | Objet volant non identifié
-Quelle zone américaine fait fantasmer ? | La Zone 51
-Quelle ville américaine, en 1947, est célèbre pour un crash ? | Roswell
-Quel agent ne croit pas, face à Mulder ? | Dana Scully
-Quel service français étudie les ovnis ? | Le GEIPAN
+Où E.T. veut-il téléphoner ? | Maison
+Que veut dire « ovni » ? | Objet volant non identifié
+Quelle zone militaire américaine fait fantasmer ? | La Zone 51
+Dans quel État américain se trouve Roswell ? | Le Nouveau-Mexique
+Quelle agente sceptique fait équipe avec Fox Mulder ? | Dana Scully
 Quel réalisateur français joue dans « Rencontres du troisième type » ? | François Truffaut
-Quel pilote américain a vu des « soucoupes » en 1947 ? | Kenneth Arnold
-Quel organisme français abrite le GEIPAN ? | Le CNES
-Quel programme de l'US Air Force s'est terminé en 1969 ? | Blue Book
+Quel service français étudie les ovnis ? | Le GEIPAN
+Quel pilote américain a lancé le mot « soucoupes volantes », en 1947 ? | Kenneth Arnold
+Dans quel village du Var un agriculteur a-t-il vu un engin se poser, en 1981 ? | Trans-en-Provence
+Quel astronome, conseiller du projet Blue Book, a classé les « rencontres » en types ? | J. Allen Hynek
 # improbable | Les saints bizarres
-Saint Éloi a-t-il remis sa culotte à l'endroit ? | Non, c'est le roi Dagobert
+Quel bon roi a mis sa culotte à l'envers, selon la chanson ? | Dagobert
 Qui garde les clés du paradis ? | Saint Pierre
-Quel saint est fêté le 26 décembre ? | Saint Étienne
-Quel patron est invoqué pour retrouver un objet ? | Saint Antoine de Padoue
-Quel saint a vu un cerf à croix ? | Saint Hubert
-Quelle sainte est la patronne des pompiers et des mineurs ? | Sainte Barbe
+Quel saint est fêté le 14 février ? | Saint Valentin
+Quel saint aurait marché sa tête à la main ? | Saint Denis
+Quelle sainte protège les pompiers et les mineurs ? | Sainte Barbe
+Quel saint, patron des chasseurs, a vu un cerf portant une croix ? | Saint Hubert
 Quel saint de glace est fêté le 12 mai ? | Saint Pancrace
-Quel saint céphalophore a marché sa tête à la main jusqu'à Paris ? | Saint Denis
-Quel saint protège les voyageurs ? | Saint Christophe
-Quel saint a été martyrisé sur une grille ? | Saint Laurent
+Quel saint a été martyrisé sur un gril ? | Saint Laurent
+Quel saint des causes urgentes est très vénéré à La Réunion ? | Saint Expédit
+Citez les trois saints de glace. | Mamert, Pancrace et Servais
 # improbable | Les pommes de terre
-Une patate se plante-t-elle dans un smartphone ? | Non
-Comment s'appelle celle des McDonald's ? | La frite
-Quel pays défend ses frites contre la France ? | La Belgique
-Quel continent est son origine ? | L'Amérique du Sud
+Que devient une pomme de terre dans la friteuse ? | Une frite
+Quel pays dispute à la France l'invention de la frite ? | La Belgique
 Quel pharmacien l'a popularisée en France ? | Antoine Parmentier
-Quelle grande famine a touché l'Irlande en 1845 ? | La Grande Famine
-Quelle maladie a causé cette famine ? | Le mildiou
+Dans quelle cordillère a-t-elle été domestiquée ? | Les Andes
+Quel pays connaît une terrible famine à partir de 1845, à cause d'elle ? | L'Irlande
+Quelle maladie de la plante a causé cette famine ? | Le mildiou
 Quel pays en produit le plus au monde ? | La Chine
-Quel est le plat de Parmentier ? | Le hachis Parmentier
-Quelle variété française est labellisée sur l'île de Ré ? | La pomme de terre de l'île de Ré (AOP)
+Quel roi a porté sa fleur à la boutonnière pour la faire aimer ? | Louis XVI
+Quelle île française a la seule pomme de terre primeur en AOP ? | L'île de Ré
+Comment s'appelle la pomme de terre séchée au gel des Andes ? | Le chuño
 # plaisir | Astérix en détail
-Astérix est-il romain ? | Non, gaulois
-Qui est tombé dans la marmite ? | Obélix
-Quel petit chien l'accompagne ? | Idéfix
-Quel druide prépare la potion ? | Panoramix
+Que mange Obélix à longueur d'album ? | Du sanglier
+Qui est tombé dans la marmite étant petit ? | Obélix
+Comment s'appelle son petit chien ? | Idéfix
 Comment s'appelle le chef du village ? | Abraracourcix
-Quel barde chante trop faux ? | Assurancetourix
 Comment s'appelle le poissonnier ? | Ordralfabétix
-Qui a dessiné les premiers albums ? | Albert Uderzo
-Dans quel magazine sont-ils apparus en 1959 ? | Pilote
-Quel camp romain entoure le village ? | Babaorum, Laudanum, Aquarium, Petibonum
+Comment s'appelle le doyen du village ? | Agecanonix
+Qui a écrit les scénarios jusqu'à sa mort, en 1977 ? | René Goscinny
+Dans quel magazine Astérix apparaît-il en 1959 ? | Pilote
+Citez deux des quatre camps romains qui entourent le village. | Babaorum, Aquarium, Laudanum, Petibonum
+Quel est le premier album écrit par Uderzo seul ? | Le Grand Fossé
 # plaisir | Tintin en détail
-Tintin est-il plombier ? | Non, reporter
-Quelle coiffure porte-t-il ? | Une houppe
+Quelle coiffure a-t-il ? | Une houppe
+Comment s'appelle son chien ? | Milou
 Comment s'appelle le professeur sourd ? | Tournesol
-Quels policiers se ressemblent ? | Dupond et Dupont
-Quelle cantatrice chante l'air des bijoux ? | Bianca Castafiore
-Dans quel album va-t-il sur la Lune la première fois ? | Objectif Lune
-Comment s'appelle l'ennemi aux lunettes ? | Rastapopoulos
-Quel ami chinois rencontre-t-il ? | Tchang
-Quel est le dernier album achevé ? | Tintin et les Picaros
-Quel est l'album inachevé d'Hergé ? | Tintin et l'Alph-Art
+Comment s'appelle son ami chinois ? | Tchang
+Comment s'appelle son ennemi grec ? | Rastapopoulos
+Dans quel album le capitaine Haddock apparaît-il pour la première fois ? | Le Crabe aux pinces d'or
+Quel est l'album resté inachevé ? | Tintin et l'Alph-Art
+Quelle est la moustache de Dupond, celui avec un D ? | Droite
+Dans quel supplément belge Tintin est-il né, en 1929 ? | Le Petit Vingtième
+Quel conspirateur menace la Syldavie dans « Le Sceptre d'Ottokar » ? | Müsstler
 # plaisir | Friends
-Les héros de Friends vivent-ils à Marseille ? | Non, à New York
-Combien sont-ils ? | 6
-Comment s'appelle le café ? | Central Perk
-Quel personnage est paléontologue ? | Ross
-Quelle chanson chante Phoebe ? | Smelly Cat
-Quel métier exerce Monica ? | Cuisinière
-Quel est l'acteur de Chandler ? | Matthew Perry
+Combien sont-ils, dans la bande de Friends ? | Six
+Comment s'appelle leur café ? | Central Perk
+Quel personnage aime les dinosaures ? | Ross
+Quelle chanson de Phoebe parle d'un chat qui sent mauvais ? | Smelly Cat
+Quel métier exerce Monica ? | Cuisinière (chef)
 Quel est le nom de famille de Joey ? | Tribbiani
 Comment s'appelle le singe de Ross ? | Marcel
-Quel est le nom de famille de Rachel ? | Green
+Quel est le nom de famille de Phoebe ? | Buffay
+Comment s'appelle sa sœur jumelle ? | Ursula
+Quel est le deuxième prénom de Chandler ? | Muriel
 # plaisir | Game of Thrones
-Un Lannister paie-t-il toujours ses dettes ? | Oui, c'est sa devise officieuse
-Quel est le siège convoité ? | Le Trône de fer
-Comment s'appelle la mère des dragons ? | Daenerys Targaryen
-Quel Stark dit « winter is coming » ? | Ned Stark
+Que paie toujours un Lannister ? | Ses dettes
+Quel siège tout le monde convoite-t-il ? | Le Trône de fer
+Qui est la mère des dragons ? | Daenerys Targaryen
+Comment s'appelle le loup blanc de Jon Snow ? | Fantôme
 Qui a écrit les livres ? | George R.R. Martin
-Quelle maison a pour emblème un loup ? | Les Stark
-Quel est le mari de Cersei ? | Robert Baratheon
 Comment s'appelle l'épée d'Arya ? | Aiguille
-Quel épisode voit le mariage rouge ? | Les Pluies de Castamere
-Quel est le prénom complet de Jon Snow à sa naissance ? | Aegon Targaryen
+Qui est le mari de Cersei au début ? | Robert Baratheon
+Quel épisode montre les Noces pourpres ? | Les Pluies de Castamere
+Quel est le vrai nom de Jon Snow ? | Aegon Targaryen
+Quel linguiste a créé le dothraki pour la série ? | David J. Peterson
 # plaisir | Le Seigneur des anneaux
-Frodon cherche-t-il à vendre l'anneau ? | Non, à le détruire
+Frodon veut-il vendre l'anneau ou le détruire ? | Le détruire
 Comment s'appelle le magicien gris ? | Gandalf
-Dans quelle ville du feu détruit-on l'anneau ? | La montagne du Destin
 Quel personnage dit « mon précieux » ? | Gollum
 Qui a écrit le livre ? | J.R.R. Tolkien
+Comment s'appelle l'épée de Frodon ? | Dard
 Quel réalisateur néo-zélandais a fait les films ? | Peter Jackson
-Quel est le vrai nom de Gollum ? | Sméagol
-Combien de membres compte la Communauté ? | 9
-Quelle est la langue des elfes Noldor ? | Le quenya
+Quel était le nom de Gollum avant l'anneau ? | Sméagol
+Comment s'appelle le cheval de Gandalf ? | Gripoil
+Quelle est la langue des Hauts-Elfes ? | Le quenya
 Comment s'appelle le poney de Sam ? | Bill
 # plaisir | Les fêtes foraines
-Peut-on y garer sa voiture dans le manège ? | Pas vraiment
-Quel nom donne-t-on à la barbe sucrée ? | La barbe à papa
-Quel attraction fait tourner sur des chevaux ? | Le carrousel
-Où gagne-t-on une peluche ? | Au tir à la carabine
-Quel fameux grand parc français est au nord de Paris ? | Le parc Astérix
-Quel est le parc près de Poitiers ? | Le Futuroscope
-Quel est le parc à l'histoire en Vendée ? | Le Puy du Fou
-Quelle grande roue de Londres ? | London Eye
-En quelle année a ouvert Disneyland Paris ? | 1992
-Quelle est la plus grande fête foraine de France, à Paris ? | La Foire du Trône
+Quelle barbe ne se rase pas ? | La barbe à papa
+Quel manège fait tourner sur des chevaux de bois ? | Le carrousel
+Comment appelle-t-on la pomme enrobée de sucre rouge ? | La pomme d'amour
+Quelle est la grande fête foraine du printemps à Paris ? | La Foire du Trône
+Dans quelle ville allemande a lieu l'Oktoberfest ? | Munich
+Comment les Russes appellent-ils les montagnes russes ? | Les montagnes américaines
+Dans quel quartier de New York roule le célèbre Cyclone ? | Coney Island
+Quel ingénieur américain a construit une grande roue géante à Chicago, en 1893 ? | George Ferris
+Sous quel nom la Foire du Trône est-elle née ? | La foire au pain d'épice
+Quel Américain a ouvert les premières montagnes russes de Coney Island, en 1884 ? | LaMarcus Thompson
 # plaisir | Le karaoké
-Le karaoké est-il un plat japonais ? | Non, un loisir chanté
-D'où vient-il ? | Le Japon
-Quelle chanson de Queen massacre-t-on ? | Bohemian Rhapsody
-Quelle chanson de Gloria Gaynor ? | I Will Survive
-Que veut dire karaoké ? | Orchestre vide
-Quelle chanson de Céline Dion dans Titanic ? | My Heart Will Go On
-Quel Canadien a écrit My Way ? | Paul Anka (paroles anglaises)
-Quelle chanson tourne dans le film Grease ? | You're the One That I Want
+Que faut-il avant de chanter : du talent ou deux verres ? | Deux verres, au minimum
+De quel pays vient-il ? | Le Japon
+Que lit-on à l'écran ? | Les paroles
+Qui chante « I Will Survive » à l'origine ? | Gloria Gaynor
+Qui a popularisé « Les Lacs du Connemara » ? | Michel Sardou
+Que veut dire « karaoké » ? | Orchestre vide
+De quelle chanson française « My Way » est-elle l'adaptation ? | Comme d'habitude
+Quel Canadien a écrit les paroles anglaises de « My Way » ? | Paul Anka
 Quel Japonais a inventé la machine à karaoké ? | Daisuke Inoue
-Quelle récompense a-t-il reçue en 2004 ? | Un prix Ig Nobel de la paix
+Quelle récompense décalée a-t-il reçue en 2004 ? | Un prix Ig Nobel de la paix
 # plaisir | Le poker
-Se joue-t-il avec des dominos ? | Non, des cartes
-Quel est le mot pour dire qu'on suit ? | Suivre (call)
+Le poker se joue-t-il avec des dominos ? | Non, des cartes
+Comment dit-on « mentir » au poker ? | Bluffer
 Quelle est la meilleure main ? | La quinte flush royale
-Combien de cartes reçoit-on au Texas Hold'em ? | 2
-Combien de cartes en tout sur la table ? | 5
-Comment s'appelle la mise forcée ? | La blinde
-Bat-on un full avec une couleur ? | Non, le full gagne
-Quel film avec Daniel Craig a un poker ? | Casino Royale
-Dans quelle ville se jouent les WSOP ? | Las Vegas
-Quel amateur a gagné le WSOP de 2003 ? | Chris Moneymaker
+Combien de cartes cachées reçoit-on au Texas Hold'em ? | 2
+Comment s'appelle la mise forcée avant la donne ? | La blinde
+Combien de cartes dévoile-t-on au flop ? | 3
+Quelle main gagne, le full ou la couleur ? | Le full
+Quel cow-boy tenait la « main de l'homme mort » quand il a été abattu ? | Wild Bill Hickok
+Quel chanteur français a remporté un bracelet aux WSOP, en 1998 ? | Patrick Bruel
+Quel amateur au nom prédestiné a gagné le Main Event de 2003 ? | Chris Moneymaker
 # plaisir | Le Rubik's Cube
-Se mange-t-il ? | Non
-Combien de faces ? | 6
-Combien de cases par face ? | 9
-Combien de couleurs ? | 6
+Combien a-t-il de faces ? | 6
+Combien de cases par face, sur le modèle classique ? | 9
+Combien de couleurs a-t-il ? | 6
 De quel pays vient-il ? | La Hongrie
+Quel métier exerçait Ernő Rubik ? | Professeur d'architecture
 En quelle année l'a-t-il inventé ? | 1974
-Qui l'a inventé ? | Ernő Rubik
-Quel est le nombre de Dieu, coups maximum ? | 20
-Combien de positions possibles ? | Environ 43 milliards de milliards
-Quel temps est le record humain d'environ ? | Environ 3 secondes
+Combien de coups suffisent toujours, selon le « nombre de Dieu » ? | 20
+Combien de positions possibles, à peu près ? | 43 milliards de milliards
+Quelle association organise les compétitions officielles ? | La World Cube Association (WCA)
+Quel Américain a établi le record du monde en 3,13 s, en 2023 ? | Max Park
 # plaisir | La Coupe du monde 1998
-Les Bleus l'ont-ils gagnée à pied ? | Oui, évidemment
+Qui gagne la finale, à Saint-Denis ? | La France
 Qui a marqué deux têtes en finale ? | Zinédine Zidane
-Quel était l'adversaire ? | Le Brésil
-Quel score ? | 3-0
-Où a eu lieu la finale ? | Le Stade de France
-Qui était le sélectionneur ? | Aimé Jacquet
-Qui a inscrit le 3e but ? | Emmanuel Petit
-Quel défenseur a marqué un doublé en demi-finale ? | Lilian Thuram
-Qui était le gardien, souvent embrassé sur le crâne ? | Fabien Barthez
-Quelle chanson de Gloria Gaynor était devenue l'hymne de l'équipe ? | I Will Survive
+Quel est le score final ? | 3-0
+Quel est l'adversaire ? | Le Brésil
+Qui est le sélectionneur ? | Aimé Jacquet
+Qui marque le troisième but ? | Emmanuel Petit
+Quel défenseur marque ses deux seuls buts en Bleu en demi-finale ? | Lilian Thuram
+Quelle équipe la France bat-elle en demi-finale ? | La Croatie
+Qui embrasse le crâne de Barthez avant chaque match ? | Laurent Blanc
+Quel Français est expulsé en finale ? | Marcel Desailly
 # plaisir | Le rugby
 Le rugby se joue-t-il sur glace ? | Non
 Combien de joueurs par équipe ? | 15
@@ -686,71 +686,71 @@ Combien de joueurs dans une doublette ? | 2
 Quel Français est célèbre tireur, Marco ? | Marco Foyot
 Quel joueur a initié la pétanque à La Ciotat ? | Jules Lenoir
 # plaisir | La Formule 1
-Un tracteur y gagne-t-il ? | Non
 Quelle écurie est rouge ? | Ferrari
-Quel est le célèbre circuit de ville ? | Monaco
+Quel circuit serpente entre les immeubles d'une principauté ? | Monaco
 Quel Allemand a sept titres ? | Michael Schumacher
-Quel Britannique a sept titres aussi ? | Lewis Hamilton
+Quel Brésilien est mort à Imola, en 1994 ? | Ayrton Senna
 Quel Français a quatre titres ? | Alain Prost
-Quel Brésilien est mort à Imola ? | Ayrton Senna
-Quel Français courait pour Alpine en 2023 ? | Esteban Ocon (ou Pierre Gasly)
-Sur quel circuit court-on au Castellet ? | Paul Ricard
-Quel est le célèbre virage de Spa ? | Eau Rouge
+Quel célèbre virage se trouve à Spa ? | Eau Rouge
+Quel Argentin a cinq titres ? | Juan Manuel Fangio
+Quel circuit français se trouve au Castellet ? | Paul-Ricard
+Quel est le premier Français vainqueur d'un Grand Prix de F1, en 1955 ? | Maurice Trintignant
+Quel est le premier champion du monde, en 1950 ? | Giuseppe Farina
 # plaisir | Les Rolling Stones et les Beatles
-Sont-ils des groupes de polka ? | Non
+Les Beatles viennent-ils de Liverpool ou de Limoges ? | Liverpool
 Qui chante chez les Stones ? | Mick Jagger
-Quel guitariste a une tête de pirate ? | Keith Richards
-Qui a écrit Imagine ? | John Lennon
-Sur quelle route marchent les Beatles ? | Abbey Road
-Quel album a une pochette avec beaucoup de gens ? | Sgt. Pepper's
+Quel Beatles a écrit « Imagine » ? | John Lennon
 Quel Beatles est mort en 2001 ? | George Harrison
+Quel album a une pochette avec une foule de célébrités ? | Sgt. Pepper's Lonely Hearts Club Band
 Quel batteur des Stones est mort en 2021 ? | Charlie Watts
-Quelle chanteuse a épousé Lennon ? | Yoko Ono
 Quel Stone a été retrouvé noyé en 1969 ? | Brian Jones
+Quel manager des Beatles est mort en 1967 ? | Brian Epstein
+Quel batteur a été remplacé par Ringo Starr ? | Pete Best
+Quel bassiste de Hambourg, dit le « cinquième Beatles », meurt en 1962 ? | Stuart Sutcliffe
 # plaisir | Michael Jackson
-Marche-t-il en avant, dans le moonwalk ? | Non, en arrière
-De quelle couleur était son gant célèbre ? | Blanc
+Marche-t-il vers l'avant, dans le moonwalk ? | Non, vers l'arrière
+De quelle couleur est son gant célèbre ? | Blanc
 Quel album a battu tous les records ? | Thriller
-Quelle chanson avec des zombies ? | Thriller
-Quel était son groupe d'enfance ? | The Jackson Five
+Quel est son groupe d'enfance ? | The Jackson Five
 Comment s'appelle sa propriété ? | Neverland
-En quelle année est-il mort ? | 2009
-Quel réalisateur a fait le clip « Thriller » ? | John Landis
-Quel producteur a fait Thriller ? | Quincy Jones
-Quel singe était son compagnon ? | Bubbles
+Quel producteur a fait « Thriller » ? | Quincy Jones
+Comment s'appelle son chimpanzé ? | Bubbles
+Quel guitariste signe le solo de « Beat It » ? | Eddie Van Halen
+Quel réalisateur a tourné le clip « Thriller » ? | John Landis
+Dans quelle émission dévoile-t-il le moonwalk, en 1983 ? | Motown 25
 # plaisir | Bienvenue chez les Ch'tis
 Le film se passe-t-il en Bretagne ? | Non, dans le Nord
 Quel acteur joue le postier du Sud ? | Kad Merad
-Quel acteur joue Antoine, le facteur ? | Dany Boon
-Qui réalise le film ? | Dany Boon
-Quelle est la langue régionale ? | Le ch'ti
-Dans quelle ville se déroule-t-il ? | Bergues
-Quel fromage est célèbre dans le film ? | Le maroilles
-Combien d'entrées environ en France ? | 20 millions
-Quel film de 1966 a été battu ? | La Grande Vadrouille
-En quelle année est-il sorti ? | 2008
+Qui joue Antoine et réalise le film ? | Dany Boon
+Dans quelle ville se passe-t-il ? | Bergues
+Quel fromage y est célèbre ? | Le maroilles
+Que veut dire « biloute » ? | Petit gars
+De quel instrument Antoine joue-t-il dans le beffroi ? | Le carillon
+Quel film de 1966 a-t-il dépassé au box-office français ? | La Grande Vadrouille
+Quelle actrice joue l'épouse de Philippe ? | Zoé Félix
+Dans quelle ville du Sud Philippe travaille-t-il au début ? | Salon-de-Provence
 # plaisir | Les Visiteurs
 Godefroy de Montmirail est-il plombier ? | Non, chevalier
 Comment s'appelle son écuyer ? | Jacquouille la Fripouille
 Qui joue Godefroy ? | Jean Reno
 Qui joue Jacquouille ? | Christian Clavier
-Que répète-t-il sans cesse ? | Okay ! (Jacquouille)
-Quel acteur joue le rôle du clochard Jacquart, descendant de Jacquouille ? | Christian Clavier
+Que crie Jacquouille à tout bout de champ ? | « Okayyy ! »
 Qui réalise le film ? | Jean-Marie Poiré
 Quelle actrice joue Béatrice ? | Valérie Lemercier
-En quelle année ? | 1993
-En quelle année se passe la scène d'origine ? | 1123
+En quelle année sort-il ? | 1993
+De quelle année viennent les visiteurs ? | 1123
+Comment s'appelle l'enchanteur ? | Eusæbius
 # plaisir | Le Dîner de cons
-Dîne-t-on chez un président ? | Non
+Le dîner a-t-il lieu chez un président ? | Non
 Qui joue François Pignon ? | Jacques Villeret
-Quelle passion a Pignon ? | Les constructions en allumettes
+Que construit Pignon ? | Des maquettes en allumettes
 Qui joue l'éditeur ? | Thierry Lhermitte
+Quelle blessure cloue Brochant chez lui ? | Un lumbago
 Qui a écrit et réalisé le film ? | Francis Veber
-En quelle année ? | 1998
-De quelle pièce est-il adapté ? | Du Dîner de cons de Veber
-Quel est le nom de l'éditeur, qui organise le dîner ? | Pierre Brochant
-Quel contrôleur fiscal vient chez lui ? | Lucien Cheval
-Quel acteur joue Cheval ? | Daniel Prévost
+En quelle année sort-il ? | 1998
+Comment s'appelle le contrôleur fiscal ? | Lucien Cheval
+Quel acteur le joue ? | Daniel Prévost
+Combien d'allumettes a-t-il fallu pour la tour Eiffel de Pignon ? | 346 422
 # plaisir | Les Tuche
 Sont-ils d'une famille royale ? | Non
 Que fait Jeff Tuche pour se faire de l'argent ? | Il gagne au loto
@@ -812,7 +812,7 @@ De quelle ville est-il l'emblème ? | Marseille
 Quelle couleur prend-il quand on ajoute de l'eau ? | Il se trouble (jaune laiteux)
 Quelle plante lui donne son goût principal ? | L'anis
 Quel homme a lancé la marque à son nom en 1932 ? | Paul Ricard
-Quel est le nom du pastis de la marque concurrente, à la bouteille verte ? | Pernod
+Quel pastis porte le nombre de son année de lancement ? | Le 51
 Combien de volumes d'eau pour un volume de pastis, en général ? | 5
 Quel degré d'alcool minimal doit avoir un pastis ? | 40 %
 Comment s'appelle la molécule anisée responsable du trouble ? | L'anéthol
@@ -822,7 +822,7 @@ Tond-on une pelouse avec des ciseaux à ongles ? | Non
 Quel jour la tondeuse réveille-t-elle souvent le voisin ? | Le dimanche
 Que fait le bac de la tondeuse ? | Il ramasse l'herbe
 Comment s'appelle la tonte qui laisse l'herbe broyée sur place ? | Le mulching
-Quel appareil robotisé fait la tonte tout seul ? | Le robot-tondeuse
+Quel outil arrache la mousse de la pelouse ? | Le scarificateur
 À quelle hauteur conseille-t-on de ne pas descendre en été ? | Environ 5 à 6 cm
 Quel petit moteur alimente la plupart des tondeuses thermiques ? | Un moteur à essence
 Quel Anglais a inventé la tondeuse à gazon, en 1830 ? | Edwin Beard Budding
@@ -846,7 +846,7 @@ Quelle température l'ADEME conseille-t-elle dans un salon ? | 19 °C
 Et dans une chambre ? | 16 à 17 °C
 Combien économise-t-on à peu près par degré baissé ? | Environ 7 %
 Quel thermostat américain connecté a été racheté par Google ? | Nest
-Quel métal bilame était utilisé dans les thermostats mécaniques ? | Deux métaux soudés (bilame)
+Quelle pièce à deux métaux soudés faisait fonctionner les thermostats mécaniques ? | Le bilame
 Quel Américain a déposé le brevet du thermostat électrique de pièce en 1883 ? | Warren Johnson
 Quel chimiste écossais a inventé un thermostat vers 1830 ? | Andrew Ure
 Quel Néerlandais construit un thermostat pour un four au début du XVIIe siècle ? | Cornelis Drebbel
@@ -888,7 +888,7 @@ Fait-elle du vin blanc ? | Non, normalement
 Que met-on dans la machine pour payer ? | Une pièce ou un badge
 Que renverse-t-on souvent sur son clavier ? | Du café
 Comment appelle-t-on les ragots échangés près d'elle ? | Les potins (les bruits de couloir)
-Que veut dire « petit noir » ? | Un expresso
+Quel pays est le premier producteur mondial de café ? | Le Brésil
 Quelle marque a Clooney pour égérie ? | Nespresso
 Quel pays a inventé l'expresso ? | L'Italie
 Quelle pression exerce une bonne machine à expresso ? | 9 bars
@@ -905,22 +905,22 @@ Sur combien de points est notée l'épreuve pratique ? | 31 points
 Quel score minimal faut-il pour obtenir le permis ? | 20 points
 Quel est le plus ancien document de type « permis » français, 1893 ? | Le « certificat de capacité »
 Dans quelle ville française a été délivré ce premier permis ? | Paris (préfecture de police)
-# mature | Les huissiers et petits papiers
-Un huissier joue-t-il du hautbois ? | Non, pas professionnellement
+# mature | Les petits papiers
+Que contient souvent une enveloppe à fenêtre ? | Une mauvaise nouvelle (une facture)
 Quel officier public signe un acte de vente de maison ? | Le notaire
-Que délivre la mairie pour se marier ? | Un acte de mariage (livret de famille)
-Quelle nouvelle profession a remplacé huissier en 2022 ? | Commissaire de justice
 Que signifie LRAR ? | Lettre recommandée avec accusé de réception
-Combien de temps garder une facture d'électricité, en général ? | 5 ans
-Que délivre le greffe du tribunal ? | Un extrait Kbis (ou de casier judiciaire)
-Combien de temps conserver un avis d'imposition ? | 3 ans
-Quel bulletin est demandé pour certains emplois ? | Le bulletin n° 3
-Quel est le délai de prescription de droit commun en matière civile ? | 5 ans
+Quelle profession a remplacé celle d'huissier en 2022 ? | Commissaire de justice
+Quel document prouve l'existence d'une entreprise ? | L'extrait Kbis
+Combien de temps conseille-t-on de garder un avis d'imposition ? | 3 ans
+Quel bulletin du casier judiciaire peut-on demander pour soi ? | Le bulletin n° 3
+Quel est le délai de prescription de droit commun, en matière civile ? | 5 ans
+Quel article du Code civil le fixe ? | L'article 2224
+Quelle ville héberge le service central d'état civil des Français nés à l'étranger ? | Nantes
 # mature | Le vin rosé en été
 Le rosé se boit-il avec une paille ? | Non, en principe
 Quelle région française est sa grande productrice ? | La Provence
-Le rosé est-il un mélange de rouge et de blanc en France ? | Non, sauf en Champagne
-Quelle exception autorise ce mélange ? | Le champagne rosé
+De quelle couleur est la peau du raisin qui donne un rosé ? | Rouge (ou noire)
+Dans quel vin français a-t-on le droit de mélanger blanc et rouge pour faire du rosé ? | Le champagne
 Comment appelle-t-on un verre de rosé servi avec des glaçons ? | Une piscine
 Quelle appellation du Var, au bord de la mer, est réputée pour ses rosés ? | Bandol
 Comment s'appelle la méthode de macération courte pour obtenir un rosé ? | La saignée
@@ -953,12 +953,12 @@ Quelle est la protéine dont le manque cause la narcolepsie ? | L'hypocrétine (
 Porte-t-on ses lunettes sur le coude ? | Non
 Quel professionnel les vend ? | L'opticien
 Quel médecin prescrit des lunettes ? | L'ophtalmologue
-Que corrigent des verres progressifs ? | La presbytie (et la vue de loin)
+Quelle gêne, qui vient avec l'âge, corrigent les verres progressifs ? | La presbytie
 Comment appelle-t-on le fait de voir flou de loin ? | La myopie
-Et voir mal de près avec l'âge ? | La presbytie
+Comment appelle-t-on le fait de voir flou de près, dès la jeunesse ? | L'hypermétropie
 Quel Américain aurait inventé les verres à double foyer ? | Benjamin Franklin
 Dans quel pays seraient apparues les premières lunettes, vers 1290 ? | L'Italie
-Quelle ville du Jura est la capitale française de la lunette ? | Morez (Oyonnax accepté)
+Quelle ville du Jura est la capitale française de la lunette ? | Morez
 Quelle est l'unité des corrections optiques ? | La dioptrie
 # mature | Les assurances auto
 L'assurance couvre-t-elle le mauvais goût ? | Non
@@ -973,8 +973,8 @@ Quel est le délai légal pour déclarer un accident ? | 5 jours
 Quel est le délai pour un vol ? | 2 jours
 # mature | La retraite des autres
 Le père Noël part-il à la retraite ? | Non, toujours pas
-Comment dit-on d'une personne en retraite qui garde les petits-enfants ? | Papi ou mamie
-Quel mot pour un ancien travailleur ? | Retraité
+Que regarde le retraité type, les mains dans le dos ? | Les travaux
+Quel jeu de boules l'occupe sur la place du village ? | La pétanque
 Quel âge légal a été fixé en 2023, avant la suspension ? | 64 ans
 Quel âge pour le taux plein automatique ? | 67 ans
 Quelle année a vu l'abaissement de l'âge à 60 ans ? | 1982
@@ -986,7 +986,7 @@ Quel caisse de complément de retraite regroupe les salariés du privé ? | L'Ag
 Se paye-t-elle en coquillages ? | Non
 Quelle entreprise a longtemps eu le monopole ? | EDF
 Quelle unité sert à la facturation ? | Le kilowattheure
-Quel compteur jaune communicant a remplacé l'ancien ? | Linky
+Quel compteur vert communicant a remplacé l'ancien ? | Linky
 Que veut dire « heures creuses » ? | Heures où l'électricité est moins chère
 Qui gère le réseau de distribution ? | Enedis
 Que veut dire TURPE ? | Tarif d'utilisation des réseaux publics d'électricité
@@ -1013,37 +1013,37 @@ Dans quel pays le pourboire peut-il vexer ? | Le Japon
 Quel pays a un « Trinkgeld » ? | L'Allemagne
 Que veut dire « Trinkgeld » ? | L'argent pour boire
 Quel mot américain désigne le pourboire ? | Le tip
-Que signifie « pourboire » à l'origine ? | Pour que le serveur aille boire
-Quelle loi de 1987 inclut le service ? | L'arrêté de 1987 sur le prix net
+De quelle langue vient le mot « bakchich » ? | Le persan
+Comment dit-on « pourboire » en espagnol ? | Propina
 # mature | Le divorce
 Peut-on divorcer de son chat ? | Non
-Comment se fait-on signifier son divorce gentiment ? | Par consentement mutuel
+Comment s'appelle le divorce où tout le monde est d'accord ? | Le divorce par consentement mutuel
 Quel professionnel accompagne chacun ? | L'avocat
 Depuis 2017, le juge est-il nécessaire pour un divorce amiable ? | Non, un notaire enregistre
 Qu'est-ce qu'une garde alternée ? | Enfants chez chaque parent à tour de rôle
 Quelle somme verse-t-on parfois pour l'enfant ? | La pension alimentaire
 Quelle somme compense la chute de niveau de vie ? | La prestation compensatoire
-Quelle loi de 1975 a instauré le divorce par consentement mutuel ? | La loi Giscard (du 11 juillet 1975)
+En quelle année une loi instaure-t-elle ce divorce ? | 1975
 En quelle année le divorce a-t-il été rétabli en France ? | 1884
 Quel député a donné son nom à cette loi de 1884 ? | Alfred Naquet
 # mature | Les plombiers
 Les plombiers sauvent-ils des princesses ? | Oui, s'ils s'appellent Mario
 Comment s'appelle le frère de Mario ? | Luigi
 Que répare le plombier ? | Les fuites
-Quelle pince utilise-t-on sur un tuyau ? | La pince multiprise
-Que dévisse-t-on sous l'évier pour déboucher ? | Le siphon
-Quel produit chimique déconseillé bouche les tuyaux ? | La soude caustique
-À quoi sert un joint de PTFE, ou téflon ? | À étanchéifier un raccord fileté
-De quel métal étaient les anciennes canalisations, d'où le nom de plombier ? | Le plomb
-Quel est le nom du symbole chimique de ce métal ? | Pb
-D'où vient-il ? | Du latin plumbum
+Que dévisse-t-on sous l'évier pour le déboucher ? | Le siphon
+Quel outil flexible pousse-t-on dans un tuyau bouché ? | Le furet
+À quoi sert le ruban de téflon ? | À étanchéifier un raccord fileté
+Quel métal a donné son nom au métier ? | Le plomb
+Quel est le symbole chimique du plomb ? | Pb
+Comment surnommait-on l'équipe secrète de Nixon, dans l'affaire du Watergate ? | Les plombiers
+Comment s'appelaient les tuyaux en plomb des Romains ? | Les fistules
 # mature | L'aspirine et l'armoire à pharmacie
 Une aspirine se met-elle dans le réservoir de la voiture ? | Non
 Où conserve-t-on ses médicaments ? | Dans l'armoire à pharmacie
 Quel produit désinfecte une plaie ? | L'antiseptique
 Que soigne le paracétamol ? | La douleur et la fièvre
 Quelle marque a rendu célèbre le paracétamol français ? | Doliprane
-Quel est le maximum quotidien sur la notice pour un adulte, sans avis médical ? | 3 g (selon la notice)
+Quelle molécule contient le Nurofen ? | L'ibuprofène
 Quel laboratoire allemand a déposé la marque Aspirin ? | Bayer
 De quel arbre vient le principe actif de l'aspirine ? | Le saule
 Quel Français a synthétisé l'acide acétylsalicylique pour la première fois en 1853 ? | Charles Gerhardt
@@ -1057,8 +1057,8 @@ Qui gère les parties communes d'un immeuble ? | Le syndic
 Quel article du Code civil donne le droit de propriété ? | L'article 544
 Quelle distance minimale pour planter un arbre de plus de 2 m, en limite ? | 2 mètres
 Et un arbre de moins de 2 m ? | 50 cm
-Quel est le nom du mur commun à deux propriétés ? | Le mur mitoyen
-Quel est le tapage interdit de nuit ? | Le tapage nocturne
+Comment s'appelle le droit de passer chez le voisin quand on est enclavé ? | La servitude de passage
+Comment s'appelle le droit d'aller chez le voisin pour réparer son propre mur ? | Le tour d'échelle
 # mature | Le chauffe-eau
 Fait-il du café ? | Non
 Où stocke-t-il l'eau ? | Dans un ballon (cuve)
@@ -1073,57 +1073,57 @@ Quel Norvégien a inventé le chauffe-eau électrique à accumulation ? | Edwin 
 # mature | Le chien au quotidien
 Le chien vote-t-il ? | Non
 Que ramasse-t-on derrière lui ? | Ses crottes
-Qu'est-ce qu'il rapporte à son maître ? | La balle
-Quel vaccin était obligatoire pour voyager ? | La rage
-Que contient la puce d'identification ? | Un numéro
-Qu'est-ce qu'un chien de catégorie 1 ? | Un chien d'attaque
-Quel est l'âge adulte d'un chien, à peu près ? | 1 à 2 ans
-Quelle est la plus petite race ? | Le chihuahua
 Comment s'appelle le chien de Tintin ? | Milou
 Comment s'appelle la chienne de l'espace ? | Laïka
+Quel vaccin est exigé pour voyager avec lui en Europe ? | La rage
+Quel savant russe a fait saliver des chiens ? | Ivan Pavlov
+Quel saint-bernard de l'hospice aurait sauvé une quarantaine de personnes ? | Barry
+Que détermine la lettre de l'année pour un chien de race ? | L'initiale de son nom
+Quel organisme tient le Livre des origines français ? | La Société centrale canine
+Comment s'appelle le fichier national d'identification des chiens ? | I-CAD
 # mature | L'apéro du voisin
 Sert-on des radis avec du ciment ? | Non
-Quel gâteau salé apporte-t-on à l'apéro ? | Le cake salé
-Quelles petites choses sont apportées à l'apéro ? | Les cacahuètes
-Quel nom d'origine espagnole pour ces petits plats ? | Les tapas
-Quel apéritif anisé boit-on à Marseille ? | Le pastis
-Quelle ville est celle du kir ? | Dijon
-Quel maire a donné son nom au kir ? | Félix Kir
-Quelle est la crème du kir ? | Le cassis
+Quelles petites choses salées reviennent à chaque apéro ? | Les cacahuètes
+Comment s'appellent les petits plats espagnols ? | Les tapas
+Quelle crème met-on dans un kir ? | La crème de cassis
+De quelle ville vient le kir ? | Dijon
 Comment s'appelle le kir au champagne ? | Le kir royal
-Quel métier était celui de Félix Kir ? | Chanoine
+Quel maire a donné son nom au kir ? | Félix Kir
+Quel était son autre métier ? | Chanoine
+Quel cépage blanc de Bourgogne sert au kir traditionnel ? | L'aligoté
+Comment appelle-t-on le kir au vin rouge ? | Le cardinal (ou communard)
 # mature | Les expressions au téléphone
-Dit-on « allô » au poisson ? | Non
-Que répond-on si on se trompe de numéro ? | Pardon
+Que dit-on en décrochant ? | Allô
 Combien de chiffres a un numéro français ? | 10
-Quel indicatif est celui de la France ? | +33
-Quel est l'indicatif de la Belgique ? | +32
+Quel est l'indicatif de la France ? | +33
+Quel est celui de la Belgique ? | +32
 Quel est celui de la Suisse ? | +41
-Quel inventeur a popularisé le mot « allô » ? | Thomas Edison
-Quelle marque finlandaise a vendu le 3310 ? | Nokia
-En quelle année est sorti le Nokia 3310 ? | 2000
-Quel opérateur français a lancé la marque Free Mobile en 2012 ? | Free (Iliad)
+Qui a déposé le brevet du téléphone en 1876 ? | Alexander Graham Bell
+Quel humoriste a rendu célèbre « le 22 à Asnières » ? | Fernand Raynaud
+Comment appelait-on les opératrices d'autrefois ? | Les demoiselles du téléphone
+En quelle année sort le Nokia 3310 ? | 2000
+Quel Italien a été reconnu par le Congrès américain, en 2002, pour son rôle dans l'invention du téléphone ? | Antonio Meucci
 # mature | La météo du dimanche
-Le soleil se couche-t-il à l'ouest ? | Oui
-Que porte-t-on sous la pluie ? | Un parapluie
-Quel signe de la météo annonce la pluie ? | Des nuages gris
-Que mesure l'hygromètre ? | L'humidité de l'air
+Où le soleil se couche-t-il ? | À l'ouest
+Avec quel instrument mesure-t-on la température ? | Un thermomètre
 Que mesure l'anémomètre ? | La vitesse du vent
-Quelle échelle mesure le vent en mer ? | L'échelle de Beaufort
-Quel établissement public fait les prévisions en France ? | Météo-France
+S'il pleut à la Saint-Médard, combien de jours de pluie annonce le dicton ? | 40 jours
+Que mesure l'hygromètre ? | L'humidité de l'air
 Quelle présentatrice est connue pour sa longue carrière à TF1 ? | Évelyne Dhéliat
-Quelle unité mesure la pression atmosphérique ? | L'hectopascal
-Quel nom porte un nuage en forme de champignon lors d'un orage ? | Le cumulonimbus
+Quelle échelle mesure le vent en mer ? | L'échelle de Beaufort
+Quel grand nuage d'orage a la forme d'une enclume ? | Le cumulonimbus
+Quelle échelle classe les tornades ? | L'échelle de Fujita
+Quel astronome français a lancé le réseau de prévision, après la tempête de 1854 ? | Urbain Le Verrier
 # mature | Les couches et les bébés
-Un bébé boit-il un expresso ? | Non
-Que change-t-on souvent ? | La couche
-Quelle est la boisson du nourrisson ? | Le lait
-Qu'est-ce qu'une tétine ? | Un objet pour apaiser le bébé
-À quel âge marche-t-il environ ? | Vers 12 à 15 mois
-Quelle marque américaine de couches ? | Pampers
+Un bébé boit-il un expresso au réveil ? | Non
+Que lui met-on à la bouche pour l'apaiser ? | Une tétine
+Quelle marque américaine de couches est très connue ? | Pampers
+Vers quel âge commence-t-il à marcher ? | Vers 12 à 15 mois
+Comment s'appelle la partie molle du crâne d'un nouveau-né ? | La fontanelle
 Quel est le poids moyen à la naissance ? | Environ 3,3 kg
-Quelle note évalue un nouveau-né à la naissance ? | Le score d'Apgar
+Quel score évalue un nouveau-né à la naissance ? | Le score d'Apgar
 Quelle médecin américaine a créé ce score ? | Virginia Apgar
+Quel réflexe fait écarter les bras au nouveau-né qui sursaute ? | Le réflexe de Moro
 Comment s'appelle le fin duvet du nouveau-né ? | Le lanugo
 # scolaire | La table de 7
 Combien font 7 × 1 ? | 7
