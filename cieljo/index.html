@@ -1,0 +1,994 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <!-- La page est rangée dans son dossier : les adresses relatives partent de la racine du site (fichiers communs) -->
+  <base href="../">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Cieljo · Désdale</title>
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="theme-color" content="#f3f5f7">
+  <link rel="icon" type="image/png" href="favicon.png">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Désdale">
+  <script src="https://cdn.jsdelivr.net/npm/vue@2.7.16/dist/vue.min.js"></script>
+  <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+  <script src="reseau.js"></script>
+  <link rel="stylesheet" href="commun.css">
+  <style>
+    .segment { display: flex; background: #e3e8ec; border-radius: 10px; padding: 3px; gap: 3px; margin-bottom: 8px; }
+    .segment button { flex: 1; border: none; background: transparent; border-radius: 8px; padding: 8px 2px; font: inherit; font-weight: 600; color: #5b6b78; cursor: pointer; }
+    .segment button.actif { background: #fff; color: #1d2b36; box-shadow: 0 1px 3px rgba(0,0,0,0.12); }
+    .petit-titre { font-size: 0.85em; font-weight: 700; color: #5b6b78; margin: 6px 0 4px; }
+    .regles ul { padding-left: 18px; margin: 8px 0 0; font-size: 0.88em; line-height: 1.45; color: #3b4b57; }
+    .panneau-vide { text-align: center; padding: 36px 16px; color: #5b6b78; }
+
+    /* Les autres joueurs : grilles miniatures */
+    .autres-cj { display: grid; gap: 4px; margin: 2px 0 4px; }
+    .autres-cj .j { min-width: 0; background: #fff; border-radius: 10px; padding: 3px 4px 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.06); }
+    .autres-cj .j.actif { box-shadow: 0 0 0 2.5px #1d2b36; }
+    .autres-cj .j.absent { opacity: 0.5; }
+    .autres-cj .tete { display: flex; justify-content: space-between; gap: 4px; font-size: 0.72em; font-weight: 700; line-height: 1.3; }
+    .autres-cj .nom { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .autres-cj .pts { font-weight: 900; color: #1d2b36; }
+    .mini-cj { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5px; max-width: 86px; margin: 2px auto 0; }
+    .mini-cj span { display: flex; align-items: center; justify-content: center; aspect-ratio: 1 / 1; border-radius: 2.5px; font-size: 0.62em; font-weight: 800; line-height: 1; overflow: hidden; }
+    .mini-cj.serre span { font-size: 0.56em; }
+    .mini-cj .cachee { background: #274b7a; }
+    .mini-cj .partie { background: transparent; }
+
+    .statut-cj { text-align: center; font-weight: 700; color: #3b4b57; min-height: 21px; margin-bottom: 4px; font-size: 0.92em; }
+    .statut-cj.moi { color: #2f8a5b; }
+    .statut-cj .dernier { color: #c8405a; }
+
+    /* Tapis : pioche, défausse et carte en main */
+    .tapis-cj { background: linear-gradient(180deg, #bfe3f7, #e6f4fb); border-radius: 14px; box-shadow: inset 0 0 0 2px #a5d3ec;
+                display: flex; justify-content: center; align-items: flex-start; gap: 18px; padding: 8px 8px 5px; }
+    .tas { display: flex; flex-direction: column; align-items: center; gap: 3px; border: none; background: none; padding: 0; font: inherit; color: #274b7a; font-size: 0.7em; font-weight: 700; cursor: default; }
+    .tas .visuel { width: 58px; height: 77px; border-radius: 7px; line-height: 0; display: block; }
+    .tas .vide { display: flex; align-items: center; justify-content: center; border: 2px dashed #8fbcd8; box-sizing: border-box; line-height: 1.2; color: #5d88a5; font-weight: 600; }
+    .tas.prenable { cursor: pointer; }
+    .tas.prenable .visuel { animation: appelle 1s ease-in-out infinite alternate; }
+    @keyframes appelle { from { box-shadow: 0 0 0 2px #ff9800; } to { box-shadow: 0 0 0 5px #ff9800; } }
+    .action-cj { font-size: 0.76em; color: #5b6b78; text-align: center; margin: 4px 2px; min-height: 2.3em; line-height: 1.2; }
+
+    /* Ma grille */
+    .grille-cj { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; max-width: 300px; margin: 0 auto; }
+    .case-cj { display: block; border: none; background: none; padding: 0; border-radius: 7px; line-height: 0; cursor: default; aspect-ratio: 3 / 4; }
+    .case-cj svg { width: 100%; height: 100%; display: block; animation: retourne 0.28s ease-out; }
+    @keyframes retourne { from { transform: rotateY(90deg); } to { transform: rotateY(0); } }
+    .case-cj.touchable { cursor: pointer; box-shadow: 0 0 0 2.5px #ff9800; }
+    .case-cj.partie { border: 2px dashed #d5dce2; box-sizing: border-box; }
+    .bas-cj { display: flex; justify-content: space-between; font-size: 0.8em; color: #5b6b78; max-width: 300px; margin: 5px auto 0; }
+    .bas-cj b { color: #1d2b36; }
+    .actions-cj { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
+    .actions-cj .btn { flex: 1; min-width: 30%; }
+
+    /* Fin de manche */
+    .fin-cj { background: #fff; border-radius: 16px; padding: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+    .fin-cj .titre { font-weight: 900; font-size: 1.12em; text-align: center; margin-bottom: 8px; }
+    .bilan { display: flex; align-items: center; gap: 10px; border-top: 1px solid #eef1f3; padding: 6px 0; }
+    .bilan .mini-cj { width: 78px; flex: none; margin: 0; }
+    .bilan .texte { flex: 1; min-width: 0; }
+    .bilan .qui { font-weight: 800; font-size: 0.92em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .bilan .detail { font-size: 0.8em; color: #5b6b78; }
+    .bilan .double { color: #c8405a; font-weight: 800; }
+    .bilan .cumul { font-weight: 900; font-size: 1.15em; }
+
+    /* Salle d'attente */
+    .attente-cj .presents { display: flex; flex-wrap: wrap; gap: 6px; margin: 4px 0 10px; }
+    .attente-cj .presents span { background: #eef4ff; border-radius: 12px; padding: 4px 10px; font-weight: 700; font-size: 0.9em; }
+    .attente-cj .presents span.absent { opacity: 0.45; }
+    .attente-cj .presents button { border: none; background: none; cursor: pointer; font: inherit; padding: 0 0 0 4px; color: #5b6b78; }
+  </style>
+</head>
+<body>
+  <div id="app" v-cloak class="app">
+
+    <fiche-jeu jeu="cieljo" nom="Cieljo" resume="Désdale · le plus petit total gagne, seul ou de 2 à 8" :onglet.sync="onglet" :son.sync="sonActif" :connexion="role ? connexion : ''">
+
+      <!-- PARTIE : salon, jouer seul -->
+      <template v-slot:partie>
+        <section class="carte salon-actif" v-if="role">
+          <div class="salon-tete">
+            <span class="pastille" :class="{ attente: connexion !== 'ok' }"></span>
+            <div>
+              <div class="salon-nom">Salon « {{ roomCode }} »</div>
+              <div class="salon-role">Tu joues en tant que {{ moi }} · {{ connexionTexte }}</div>
+            </div>
+          </div>
+          <div class="actions-accueil">
+            <button class="btn principal" @click="onglet = 'play'">Jouer →</button>
+            <button class="btn" @click="quitterSalon">Quitter</button>
+          </div>
+        </section>
+
+        <template v-if="!role">
+          <section class="carte">
+            <div class="titre-carte">À plusieurs (2 à 8), chacun sur son téléphone</div>
+            <div class="pseudo-portail">Ton pseudo : <b>{{ pseudoInput || '(à choisir)' }}</b><button class="lien-profil" @click="ouvrirProfil">✏️ {{ pseudoInput ? 'Changer' : 'Choisir' }}</button></div>
+            <label class="champ">Nom du salon
+              <input type="text" v-model="channelInput" placeholder="ex : partie-du-dimanche" autocomplete="off">
+            </label>
+            <div class="salons-connus" v-if="salonsConnus.length">
+              <span v-for="nom in salonsConnus" :key="nom" class="salon-puce" :class="{ actif: estSalonSaisi(nom) }">
+                <button class="nom" @click="channelInput = nom">{{ nom }}</button>
+                <button class="oter" @click="oublierSalon(nom)" aria-label="Retirer de la liste">✕</button>
+              </span>
+            </div>
+            <button class="btn principal" style="width:100%;margin-top:8px" @click="entrerSalon()" :disabled="entreeEnCours">{{ entreeEnCours ? 'Connexion au salon…' + (entreeEnCours > 1 ? ' essai ' + entreeEnCours + '/4' : '') : 'Entrer dans le salon' }}</button>
+          </section>
+          <section class="carte">
+            <div class="titre-carte">Seul contre l'ordinateur</div>
+            <div class="petit-titre">Nombre d'ordinateurs contre toi</div>
+            <div class="segment">
+              <button v-for="n in [1, 2, 3, 4, 5, 6, 7]" :key="n" :class="{ actif: nbOrdis === n }" @click="nbOrdis = n">{{ n }}</button>
+            </div>
+            <button class="btn principal" style="width:100%" @click="demarrerSolo">🤖 {{ soloEnCours ? 'Reprendre la partie' : 'Jouer seul' }}</button>
+            <button v-if="soloEnCours" class="btn" style="width:100%;margin-top:6px" @click="nouveauSolo">Nouvelle partie</button>
+            <div class="aide" v-if="serieRecord > 1">Record : {{ serieRecord }} parties gagnées d'affilée contre l'ordinateur.</div>
+          </section>
+        </template>
+
+        <p class="version">Désdale · Cieljo · version {{ version }}</p>
+      </template>
+
+      <!-- JOUER -->
+      <template v-slot:jouer>
+        <div v-if="!pub" class="panneau-vide">
+          <p>Joue seul ou entre dans un salon depuis l'onglet « Partie ».</p>
+          <button class="btn principal" @click="onglet = 'config'">Aller à l'onglet « Partie »</button>
+        </div>
+
+        <!-- Salle d'attente du salon -->
+        <section v-else-if="pub.phase === 'attente'" class="carte attente-cj">
+          <div class="titre-carte">Salle d'attente</div>
+          <div class="petit-titre">Présents ({{ presents.length }})</div>
+          <div class="presents">
+            <span v-for="p in pub.ordre" :key="p" :class="{ absent: !estPresent(p) }">{{ p }}{{ p === moi ? ' (moi)' : '' }}</span>
+            <span v-for="r in robots" :key="r">{{ r }}<button v-if="role === 'hote'" @click="envoyerJeu({ type: 'ROBOT', ajouter: false, nom: r })" aria-label="Retirer">✕</button></span>
+          </div>
+          <button v-if="role === 'hote' && nbPartants < MAX_JOUEURS" class="btn" style="width:100%;margin-bottom:8px" @click="envoyerJeu({ type: 'ROBOT', ajouter: true })">🤖 Ajouter un ordinateur</button>
+          <button v-if="role === 'hote'" class="btn principal" style="width:100%" :disabled="nbPartants < 2" @click="envoyerJeu({ type: 'COMMENCER' })">
+            {{ nbPartants < 2 ? 'En attente d\'un 2e joueur…' : 'Commencer (' + nbPartants + ' joueurs)' }}</button>
+          <div v-else class="aide">L'hôte lance la partie quand tout le monde est là.</div>
+          <div class="aide" v-if="presents.length + robots.length > MAX_JOUEURS">On joue à 8 au plus : les joueurs passent avant les ordinateurs, les suivants regardent.</div>
+        </section>
+
+        <template v-else-if="e">
+          <!-- Fin de manche / de partie -->
+          <div class="fin-cj" v-if="e.phase === 'finManche' || e.phase === 'finPartie'">
+            <div class="titre">{{ titreFin }}</div>
+            <div v-for="b in bilans" :key="b.j" class="bilan">
+              <div class="mini-cj"><span v-for="(x, k) in b.grille" :key="k" :class="miniClasse(x)" :style="miniStyle(x)">{{ miniTexte(x) }}</span></div>
+              <div class="texte">
+                <div class="qui">{{ b.j }}{{ b.j === moiJ ? ' (moi)' : '' }}</div>
+                <div class="detail">{{ signe(b.points) }} cette manche<span v-if="b.double" class="double"> · doublé ({{ signe(b.brut) }})</span></div>
+              </div>
+              <div class="cumul">{{ b.total }}</div>
+            </div>
+            <div class="actions-cj">
+              <button v-if="e.phase === 'finManche' && (solo || estJoueur)" class="btn principal" @click="mancheSuivante">Manche suivante</button>
+              <button v-if="e.phase === 'finPartie' && (solo || estJoueur)" class="btn principal" @click="nouvellePartie">Nouvelle partie</button>
+              <button v-if="solo" class="btn" @click="quitterSolo">Arrêter</button>
+              <button v-if="!solo && role === 'hote'" class="btn" @click="envoyerJeu({ type: 'ARRETER' })">Salle d'attente</button>
+            </div>
+          </div>
+
+          <template v-else>
+            <div class="autres-cj" :style="{ gridTemplateColumns: 'repeat(' + Math.min(autres.length, 4) + ', minmax(0, 1fr))' }">
+              <div v-for="a in autres" :key="a.nom" class="j" :class="{ actif: a.actif, absent: a.absent }">
+                <div class="tete"><span class="nom">{{ a.nom }}</span><span class="pts">{{ a.score }}</span></div>
+                <div class="mini-cj" :class="{ serre: autres.length > 3 }"><span v-for="(x, k) in a.grille" :key="k" :class="miniClasse(x)" :style="miniStyle(x)">{{ miniTexte(x) }}</span></div>
+              </div>
+            </div>
+            <div class="statut-cj" :class="{ moi: aMoiDAgir }"><span v-if="e.finisseur" class="dernier">Dernier tour · </span>{{ statut }}</div>
+
+            <div class="tapis-cj">
+              <button class="tas" :class="{ prenable: peutPrendre }" @click="prendre('pioche')" aria-label="Piocher">
+                <span class="visuel" v-html="dos"></span>Pioche ({{ e.nbPioche }})
+              </button>
+              <button class="tas" :class="{ prenable: (peutPrendre && e.haut !== null) || peutJeter }" @click="toucherDefausse" aria-label="Défausse">
+                <span v-if="e.haut !== null" class="visuel" v-html="svgCarte(e.haut)"></span>
+                <span v-else class="visuel vide">Vide</span>{{ peutJeter ? 'Jeter ici' : 'Défausse' }}
+              </button>
+              <div class="tas">
+                <span v-if="e.main !== null" class="visuel" v-html="svgCarte(e.main)"></span>
+                <span v-else class="visuel vide">—</span>{{ e.main === null ? 'En main' : (monTour ? 'Ta carte' : 'Sa carte') }}
+              </div>
+            </div>
+            <div class="action-cj">{{ derniereAction }}</div>
+
+            <template v-if="estJoueur">
+              <div class="grille-cj">
+                <template v-for="(x, k) in maGrille">
+                  <button v-if="x" :key="k + '-' + (x.vis ? x.v : 'c')" class="case-cj" :class="{ touchable: touchable(k) }" @click="toucherCase(k)" :aria-label="x.vis ? 'Carte ' + x.v : 'Carte cachée'" v-html="x.vis ? svgCarte(x.v) : dos"></button>
+                  <div v-else :key="k + '-partie'" class="case-cj partie"></div>
+                </template>
+              </div>
+              <div class="bas-cj"><span>Visible : <b>{{ monVisible }}</b> pts</span><span>Total : <b>{{ e.scores[moiJ] }}</b> / {{ LIMITE }} · manche {{ e.manche }}</span></div>
+            </template>
+            <div v-else class="aide" style="text-align:center">Tu regardes cette partie.</div>
+
+            <div class="actions-cj">
+              <button v-if="!solo && role === 'hote' && absentAttendu" class="btn" @click="envoyerJeu({ type: 'REMPLACER' })">Jouer à la place de {{ absentAttendu }}</button>
+              <button v-if="solo" class="btn" @click="quitterSolo">Arrêter</button>
+            </div>
+          </template>
+        </template>
+      </template>
+
+      <!-- RÉGLAGES -->
+      <template v-slot:reglages>
+        <section class="carte reglages">
+          <div class="titre-carte">Réglages</div>
+          <reglages-base :son.sync="sonActif" :vibration.sync="vibrationActive"></reglages-base>
+        </section>
+      </template>
+
+      <!-- RÈGLES -->
+      <template v-slot:regles>
+        <section class="carte regles">
+          <div class="titre-carte">Règles de Cieljo</div>
+          <ul>
+            <li><strong>But :</strong> avoir le moins de points possible.</li>
+            <li><strong>Cartes :</strong> 150 cartes, de −2 à 12. Chacun a une grille de 12 cartes cachées (3 lignes, 4 colonnes) et en retourne 2. Le plus gros total commence la 1re manche.</li>
+            <li><strong>À ton tour :</strong> prends la carte de la défausse et échange-la contre une carte de ta grille, cachée ou non. Ou pioche : garde la carte et fais le même échange, ou jette-la et retourne une de tes cartes cachées.</li>
+            <li><strong>Colonne :</strong> 3 cartes visibles identiques dans une colonne partent à la défausse et ne comptent plus.</li>
+            <li><strong>Fin de manche :</strong> quand un joueur n'a plus de carte cachée, chacun des autres joue encore un tour. On montre tout, on compte les grilles.</li>
+            <li><strong>Attention :</strong> celui qui a fini double ses points s'il n'a pas strictement le total le plus bas (sauf si son total est négatif ou nul). Il commence la manche suivante.</li>
+            <li><strong>Fin de partie :</strong> dès qu'un joueur atteint 100 points à la fin d'une manche. Le plus petit total gagne.</li>
+          </ul>
+        </section>
+      </template>
+    </fiche-jeu>
+  </div>
+
+  <script src="icones-jeux.js"></script>
+  <script src="fiche-jeu.js"></script>
+  <script src="joueur.js"></script>
+  <script src="commun.js"></script>
+  <script src="etoiles.js"></script>
+  <script src="cieljo/cieljo-regles.js"></script>
+  <script>
+    if (!ACCES.memorise()) location.replace('index.html');
+
+    const CLE_SAUVEGARDE = 'cieljo-sauvegarde';
+    const JEU_RESEAU = 'cj';
+    const DELAI_SILENCE = 15000;
+    const MAX_SALONS = 8;
+    const MAX_JOUEURS = 8;
+    const NOM_JEU = 'Cieljo';
+    function copie(o) { return JSON.parse(JSON.stringify(o)); }
+    function estOrdi(n) { return estNomOrdi(n); }
+
+    // ================== CARTES (SVG faits par le code) : les couleurs du ciel, de la nuit à l'orage ==================
+    function teinte(v) {
+      if (v < 0) return { fond: '#2a2c6e', texte: '#fff', motif: 'etoile' };
+      if (v === 0) return { fond: '#eaf4fb', texte: '#274b7a', motif: 'nuage' };
+      if (v <= 4) return { fond: '#2a86c8', texte: '#fff', motif: 'nuage' };
+      if (v <= 8) return { fond: '#f5b83d', texte: '#4a2c00', motif: 'soleil' };
+      return { fond: '#c8405a', texte: '#fff', motif: 'eclair' };
+    }
+    function texteValeur(v) { return v < 0 ? '−' + (-v) : String(v); }
+    const MOTIFS = {
+      etoile: c => '<path d="M45 58 L47.2 63.6 L53 64 L48.5 67.7 L50 73.4 L45 70.2 L40 73.4 L41.5 67.7 L37 64 L42.8 63.6 Z" fill="' + c + '" opacity="0.75"/><circle cx="14" cy="66" r="1.6" fill="' + c + '" opacity="0.7"/><circle cx="24" cy="72" r="1.1" fill="' + c + '" opacity="0.7"/>',
+      nuage: c => '<path d="M34 72 a6 6 0 0 1 1 -11.8 a8 8 0 0 1 15 -1 a6.5 6.5 0 0 1 2 12.8 Z" fill="' + c + '" opacity="0.5"/>',
+      soleil: c => '<circle cx="46" cy="66" r="6.5" fill="' + c + '" opacity="0.55"/><path d="M46 54.5 V57 M46 75 V77.5 M34.5 66 H37 M55 66 H57.5 M38 58 L39.7 59.7 M52.3 72.3 L54 74 M38 74 L39.7 72.3 M52.3 59.7 L54 58" stroke="' + c + '" stroke-width="1.8" stroke-linecap="round" opacity="0.55"/>',
+      eclair: c => '<path d="M48 55 L39 68 H45.5 L42 77 L53 63 H46.5 Z" fill="' + c + '" opacity="0.6"/>'
+    };
+    const CACHE_CARTES = {};
+    function svgCarte(v) {
+      if (CACHE_CARTES[v]) return CACHE_CARTES[v];
+      var t = teinte(v), x = texteValeur(v), police = 'font-weight="900" fill="' + t.texte + '" font-family="system-ui,sans-serif"';
+      return (CACHE_CARTES[v] = '<svg viewBox="0 0 60 80" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="1" width="58" height="78" rx="6.5" fill="' + t.fond + '" stroke="rgba(0,0,0,0.22)" stroke-width="1.2"/>' +
+        MOTIFS[t.motif](t.texte) + '<text x="6" y="16" font-size="12" ' + police + '>' + x + '</text>' +
+        '<text x="30" y="49" text-anchor="middle" font-size="' + (x.length > 1 ? 29 : 34) + '" ' + police + '>' + x + '</text></svg>');
+    }
+    const DOS = '<svg viewBox="0 0 60 80" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="1" width="58" height="78" rx="6.5" fill="#274b7a" stroke="#fff" stroke-width="1.4"/><rect x="6" y="6" width="48" height="68" rx="3.5" fill="none" stroke="#7fa6cf" stroke-width="1.1"/>' +
+      '<path d="M18 51 a7 7 0 0 1 1 -13.9 a10 10 0 0 1 19 -1.5 a8 8 0 0 1 3 15.4 Z" fill="#7fa6cf"/></svg>';
+
+    // ================== RÉSEAU ==================
+    let peer = null;
+    let connections = [];
+    let connParPseudo = {};
+    let hostConn = null;
+    let dernierMsgHote = 0;
+    let monPseudo = '';
+    let pubHote = null;       // chez l'hôte : { ordre, robots, phase, partieId, etat (complet, avec les cartes cachées et la pioche) }
+    let salle = { infos: {} };
+    let etatSolo = null;      // en solo : l'état complet
+
+    new Vue({
+      el: '#app',
+      data: {
+        version: VERSION,
+        dos: DOS,
+        LIMITE: CJ.LIMITE,
+        MAX_JOUEURS: MAX_JOUEURS,
+        onglet: 'config',
+        pub: null,
+        joueurs: [],
+        solo: false,
+        nbOrdis: lireStockage('cieljo-ordis') || 3,
+        historique: [],
+        pseudoInput: pseudoPour('cieljo-sauvegarde'),
+        channelInput: lireStockage('cieljo-dernier-salon') || lireStockage('brillant-dernier-salon') || '',
+        salonsConnus: lireStockage('brillant-salons') || [],
+        role: null,
+        connexion: 'aucune',
+        roomCode: '',
+        entreeEnCours: false,
+        sonActif: lireStockage('brillant-son') !== false,
+        vibrationActive: lireStockage('brillant-vibration') !== null ? lireStockage('brillant-vibration') !== false : lireStockage('brillant-son') !== false,
+        veilleSupportee: false,
+        soloEnCours: false
+      },
+      computed: {
+        moi: function() { return this.pseudoInput.trim() || 'Moi'; },
+        moiJ: function() { return this.solo && this.e ? this.e.joueurs[0] : this.moi; },
+        serieRecord: function() { this.soloEnCours; return Etoiles.meilleureSerie('cieljo'); },
+        connexionTexte: function() { return { ok: 'en ligne', connexion: 'connexion…', perdue: 'reconnexion…', aucune: 'hors ligne' }[this.connexion]; },
+        e: function() { return this.pub && this.pub.e; },
+        robots: function() { return (this.pub && this.pub.robots) || []; },
+        presents: function() { return this.pub ? this.pub.ordre.filter(p => this.estPresent(p)) : []; },
+        nbPartants: function() { var h = Math.min(MAX_JOUEURS, this.presents.length); return h + Math.min(this.robots.length, MAX_JOUEURS - h); },
+        estJoueur: function() { return !!this.e && this.e.joueurs.indexOf(this.moiJ) !== -1; },
+        enLigne: function() { return this.solo || this.connexion === 'ok'; },
+        maGrille: function() { return (this.e && this.e.grilles[this.moiJ]) || []; },
+        monVisible: function() { return CJ.totalVisible(this.maGrille); },
+        monTour: function() { var e = this.e; return !!e && e.phase === 'jeu' && e.joueurs[e.tour] === this.moiJ && this.enLigne; },
+        aRetourner: function() { return this.estJoueur && this.e.phase === 'depart' && this.enLigne ? 2 - CJ.nbVisibles(this.maGrille) : 0; },
+        aMoiDAgir: function() { return this.monTour || this.aRetourner > 0; },
+        peutPrendre: function() { return this.monTour && this.e.etape === 'piocher'; },
+        peutJeter: function() { return this.monTour && this.e.etape === 'placer' && this.e.source === 'pioche'; },
+        autres: function() {
+          var e = this.e;
+          return e.joueurs.filter(j => j !== this.moiJ).map(j => ({ nom: j, score: e.scores[j], grille: e.grilles[j], actif: e.phase === 'jeu' && e.joueurs[e.tour] === j, absent: !this.solo && !this.estPresent(j) }));
+        },
+        // Le joueur qu'on attend et qui n'est pas là
+        absentAttendu: function() {
+          var e = this.e;
+          if (!e) return '';
+          if (e.phase === 'jeu') { var j = e.joueurs[e.tour]; return this.estPresent(j) ? '' : j; }
+          if (e.phase === 'depart') return e.joueurs.filter(j => !this.estPresent(j) && CJ.nbVisibles(e.grilles[j]) < 2).join(', ');
+          return '';
+        },
+        statut: function() {
+          var e = this.e;
+          if (!e) return '';
+          if (e.phase === 'depart') {
+            if (this.aRetourner) return 'Retourne ' + (this.aRetourner > 1 ? '2 cartes' : 'encore 1 carte') + ' de ta grille.';
+            return 'Les autres retournent leurs cartes…';
+          }
+          var j = e.joueurs[e.tour];
+          if (this.monTour) {
+            if (e.etape === 'piocher') return 'À toi : pioche ou prends la défausse.';
+            if (e.etape === 'retourner') return 'Retourne une carte cachée.';
+            return e.source === 'pioche' ? 'Échange-la dans ta grille, ou jette-la.' : 'Échange-la contre une carte de ta grille.';
+          }
+          if (estOrdi(j)) return j + ' réfléchit…';
+          return this.estPresent(j) ? 'Au tour de ' + j + '…' : 'Au tour de ' + j + ' (absent)…';
+        },
+        derniereAction: function() {
+          var e = this.e, d = e && e.dernier;
+          if (!d) return e ? (e.journal[e.journal.length - 1] || '') : '';
+          var t;
+          if (d.place !== undefined) t = d.j + ' a posé le ' + texteValeur(d.place) + ' et défaussé le ' + texteValeur(d.jete) + (d.cachee ? ' (carte cachée)' : '') + '.';
+          else if (d.jete !== undefined) t = d.j + ' a jeté le ' + texteValeur(d.jete) + (d.retournee !== undefined && d.retournee !== null ? ' et retourné un ' + texteValeur(d.retournee) : '') + '.';
+          else t = d.j + (d.source === 'defausse' ? ' a pris le ' + texteValeur(d.carte) + ' à la défausse.' : ' a pioché.');
+          if (d.colonnes && d.colonnes.length) t += ' Colonne de ' + texteValeur(d.colonnes[0].v) + ' partie !';
+          return t;
+        },
+        titreFin: function() {
+          var e = this.e, r = e.resultat, moi = this.moiJ;
+          if (e.phase === 'finPartie') {
+            if (e.vainqueurs.indexOf(moi) !== -1) return e.vainqueurs.length > 1 ? '🏆 Égalité : tu gagnes avec ' + e.vainqueurs.filter(j => j !== moi).join(', ') + ' !' : '🏆 Tu gagnes la partie !';
+            return '🏆 ' + e.vainqueurs.join(' et ') + (e.vainqueurs.length > 1 ? ' gagnent' : ' gagne') + ' la partie';
+          }
+          return 'Manche ' + e.manche + ' : ' + (r.finisseur === moi ? 'tu as fini' : r.finisseur + ' a fini');
+        },
+        bilans: function() {
+          var e = this.e, r = e.resultat;
+          if (!r) return [];
+          return e.joueurs.map(j => Object.assign({ j: j, total: e.scores[j], grille: e.grilles[j] }, r.details[j])).sort((a, b) => a.total - b.total);
+        }
+      },
+      watch: {
+        sonActif: function(v) { ecrireStockage('brillant-son', v); },
+        vibrationActive: function(v) { ecrireStockage('brillant-vibration', v); if (v) vibrer(40); },
+        nbOrdis: function(v) { ecrireStockage('cieljo-ordis', v); },
+        pseudoInput: function() { this.sauvegarder(); }
+      },
+      created: function() {
+        // Le pseudo se choisit sur le portail (profil du salon global) ; on le suit tant qu'on n'est pas dans un salon
+        window.addEventListener('desdale-profil', () => { if (!this.role) this.pseudoInput = pseudoPortail(); });
+        if (!ACCES.cleSalon) return;
+        this.majSoloEnCours();
+        this.restaurer();
+        setInterval(() => this.battement(), 4000);
+        document.addEventListener('visibilitychange', () => this.auRetourPremierPlan());
+        window.addEventListener('online', () => this.auRetourPremierPlan());
+        window.addEventListener('pageshow', () => this.auRetourPremierPlan());
+      },
+      methods: {
+        svgCarte: svgCarte,
+        signe: function(n) { return n > 0 ? '+' + n : texteValeur(n); },
+        miniClasse: function(x) { return !x ? 'partie' : (x.vis ? '' : 'cachee'); },
+        miniStyle: function(x) { if (!x || !x.vis) return null; var t = teinte(x.v); return { background: t.fond, color: t.texte, boxShadow: x.v === 0 ? 'inset 0 0 0 1px #bcd6e8' : 'none' }; },
+        miniTexte: function(x) { return x && x.vis ? texteValeur(x.v) : ''; },
+        ouvrirProfil: function() { ouvrirProfilPortail(false); },
+        ajouterLog: function(m, systeme) {
+          this.historique.push({ m: m, s: !!systeme });
+          if (this.historique.length > 100) this.historique.splice(0, this.historique.length - 100);
+        },
+        vibre: function(motif) { if (this.vibrationActive) vibrer(motif); },
+        son: function(nom, arg) { if (this.sonActif) Sons.jouer(nom, arg); },
+        estPresent: function(p) {
+          if (this.solo || p === this.moi || estOrdi(p)) return true;
+          if (this.role === 'hote') return !!(salle.infos[p] && salle.infos[p].connecte);
+          var j = this.joueurs.find(x => x.pseudo === p);
+          return !j || j.connecte !== false;
+        },
+
+        // ================== SOLO ==================
+        majSoloEnCours: function() { var s = lireStockage('cieljo-solo'); this.soloEnCours = !!(s && s.phase !== 'finPartie'); },
+        demarrerSolo: function() {
+          var s = lireStockage('cieljo-solo');
+          if (s && s.phase !== 'finPartie') etatSolo = s;
+          else return this.nouveauSolo();
+          this.lancerSolo();
+        },
+        nouveauSolo: function() {
+          etatSolo = CJ.nouvellePartie([this.moi].concat(nomsOrdis(this.nbOrdis, [this.moi])));
+          etatSolo.partieId = nouvelId();
+          this.lancerSolo();
+        },
+        lancerSolo: function() {
+          this.solo = true;
+          this.majSolo(true);
+          this.onglet = 'play';
+          this.tourOrdi();
+        },
+        majSolo: function(debut) {
+          var ancien = this.pub;
+          this.pub = { phase: 'jeu', ordre: etatSolo.joueurs, robots: [], partieId: etatSolo.partieId, e: CJ.vuePour(etatSolo) };
+          if (!debut && ancien) this.reagir(ancien, this.pub);
+          ecrireStockage('cieljo-solo', etatSolo);
+          this.majSoloEnCours();
+        },
+        quitterSolo: function() { clearTimeout(this._timerOrdi); this.solo = false; this.pub = null; etatSolo = null; this.onglet = 'config'; this.majSoloEnCours(); },
+        // Les ordinateurs retournent leurs 2 cartes d'un coup au début de la manche, puis jouent étape par étape
+        ordiAFaire: function(e) {
+          if (e.phase === 'depart') return e.joueurs.some(j => estOrdi(j) && CJ.nbVisibles(e.grilles[j]) < 2);
+          return e.phase === 'jeu' && estOrdi(e.joueurs[e.tour]);
+        },
+        faireOrdi: function(e) {
+          if (e.phase === 'depart') {
+            e.joueurs.filter(estOrdi).forEach(j => { while (e.phase === 'depart' && CJ.nbVisibles(e.grilles[j]) < 2) CJ.appliquer(e, j, CJ.ordinateur(e, j)); });
+          } else { var j = e.joueurs[e.tour]; CJ.appliquer(e, j, CJ.ordinateur(e, j)); }
+        },
+        tourOrdi: function() {
+          clearTimeout(this._timerOrdi);
+          var e = etatSolo;
+          if (!this.solo || !e || !this.ordiAFaire(e)) return;
+          this._timerOrdi = setTimeout(() => {
+            if (!this.solo || etatSolo !== e || !this.ordiAFaire(e)) return;
+            this.faireOrdi(e);
+            this.majSolo();
+            this.tourOrdi();
+          }, e.phase === 'depart' ? 250 : 600 + Math.random() * 300);
+        },
+
+        // ================== ACTIONS DU JOUEUR ==================
+        touchable: function(k) {
+          var x = this.maGrille[k];
+          if (!x) return false;
+          if (this.aRetourner) return !x.vis;
+          if (!this.monTour) return false;
+          if (this.e.etape === 'placer') return true;
+          return this.e.etape === 'retourner' && !x.vis;
+        },
+        toucherCase: function(k) {
+          if (!this.touchable(k)) return this.vibre(40);
+          if (this.aRetourner || this.e.etape === 'retourner') return this.agir({ type: 'retourner', pos: k });
+          this.agir({ type: 'placer', pos: k });
+        },
+        prendre: function(source) {
+          if (!this.peutPrendre) return;
+          this.agir({ type: 'piocher', source: source });
+        },
+        toucherDefausse: function() {
+          if (this.peutJeter) return this.agir({ type: 'jeter' });
+          if (this.peutPrendre && this.e.haut !== null) this.prendre('defausse');
+        },
+        agir: function(action) {
+          if (this.solo) {
+            if (CJ.appliquer(etatSolo, etatSolo.joueurs[0], action)) return this.vibre(60);
+            this.majSolo();
+            return this.tourOrdi();
+          }
+          this.envoyerJeu({ type: 'ACTION', partieId: this.pub.partieId, action: action });
+        },
+        mancheSuivante: function() {
+          if (this.solo) { CJ.nouvelleManche(etatSolo); this.majSolo(); return this.tourOrdi(); }
+          this.envoyerJeu({ type: 'MANCHE' });
+        },
+        nouvellePartie: function() {
+          if (this.solo) {
+            var joueurs = etatSolo.joueurs.slice();
+            etatSolo = CJ.nouvellePartie(joueurs);
+            etatSolo.partieId = nouvelId();
+            this.majSolo(true);
+            return this.tourOrdi();
+          }
+          this.envoyerJeu({ type: 'NOUVELLE' });
+        },
+        envoyerJeu: function(m) {
+          if (this.role === 'hote') return this.traiterJeu(monPseudo, m);
+          if (this.connexion !== 'ok') return;
+          this.envoyerHote({ action: 'JEU', m: m });
+        },
+
+        // ================== HÔTE : il arbitre et garde les cartes cachées ==================
+        estConnecte: function(p) { return p === monPseudo || !!(salle.infos[p] && salle.infos[p].connecte); },
+        traiterJeu: function(p, m) {
+          if (!pubHote) return;
+          var e = pubHote.etat, hote = p === monPseudo;
+          if (m.type === 'ROBOT') {
+            if (!hote || pubHote.phase !== 'attente') return;
+            var rs = pubHote.robots = pubHote.robots || [];
+            if (!m.ajouter) pubHote.robots = rs.filter(r => r !== m.nom);
+            else if (rs.length < MAX_JOUEURS - 1) rs.push(nomsOrdis(1, rs.concat(pubHote.ordre))[0]);
+          } else if (m.type === 'COMMENCER') {
+            if (!hote || pubHote.phase !== 'attente') return;
+            var joueurs = pubHote.ordre.filter(x => this.estConnecte(x)).slice(0, MAX_JOUEURS);
+            joueurs = joueurs.concat((pubHote.robots || []).slice(0, MAX_JOUEURS - joueurs.length));
+            if (joueurs.length < 2) return;
+            pubHote.etat = CJ.nouvellePartie(joueurs);
+            pubHote.partieId = pubHote.etat.partieId = nouvelId();
+            pubHote.phase = 'jeu';
+          } else if (m.type === 'ACTION') {
+            if (!e || m.partieId !== pubHote.partieId || !m.action) return;
+            if (CJ.appliquer(e, p, m.action)) return;
+          } else if (m.type === 'REMPLACER') {
+            // Joueur absent : l'hôte fait jouer l'ordinateur à sa place (ses 2 cartes de départ, ou tout son tour)
+            if (!hote || !e) return;
+            if (e.phase === 'depart') {
+              e.joueurs.filter(j => !this.estConnecte(j) && !estOrdi(j)).forEach(j => { while (e.phase === 'depart' && CJ.nbVisibles(e.grilles[j]) < 2) CJ.appliquer(e, j, CJ.ordinateur(e, j)); });
+            } else if (e.phase === 'jeu') {
+              var j = e.joueurs[e.tour], m0 = e.manche;
+              if (this.estConnecte(j) || estOrdi(j)) return;
+              while (e.phase === 'jeu' && e.manche === m0 && e.joueurs[e.tour] === j) CJ.appliquer(e, j, CJ.ordinateur(e, j));
+            } else return;
+          } else if (m.type === 'MANCHE') {
+            if (!e || e.phase !== 'finManche' || e.joueurs.indexOf(p) === -1) return;
+            CJ.nouvelleManche(e);
+          } else if (m.type === 'NOUVELLE') {
+            if (!e || e.phase !== 'finPartie' || e.joueurs.indexOf(p) === -1) return;
+            pubHote.phase = 'attente'; pubHote.etat = null; pubHote.partieId = null;
+          } else if (m.type === 'ARRETER') {
+            if (!hote) return;
+            pubHote.phase = 'attente'; pubHote.etat = null; pubHote.partieId = null;
+          } else return;
+          this.publier();
+        },
+        // Ce que voit chaque téléphone : ni les cartes cachées, ni la pioche
+        etatPour: function() {
+          return { ordre: pubHote.ordre.slice(), robots: (pubHote.robots || []).slice(), phase: pubHote.phase, partieId: pubHote.partieId,
+                   e: pubHote.etat ? CJ.vuePour(pubHote.etat) : null };
+        },
+        // C'est le téléphone de l'hôte qui fait jouer les ordinateurs du salon
+        tourRobot: function() {
+          clearTimeout(this._timerRobot);
+          var e = pubHote && pubHote.etat;
+          if (this.role !== 'hote' || !e || !this.ordiAFaire(e)) return;
+          this._timerRobot = setTimeout(() => {
+            var f = pubHote && pubHote.etat;
+            if (this.role !== 'hote' || f !== e || !this.ordiAFaire(e)) return;
+            this.faireOrdi(e);
+            this.publier();
+          }, e.phase === 'depart' ? 250 : 600 + Math.random() * 300);
+        },
+
+        // ================== RÉCEPTION DE L'ÉTAT ==================
+        appliquerPub: function(pub) {
+          var ancien = this.pub;
+          this.pub = pub;
+          if (ancien && !this._restauration && !this.solo) this.reagir(ancien, pub);
+          this.sauvegarder();
+        },
+        reagir: function(a, p) {
+          var ea = a && a.e, e = p.e, moi = this.moiJ;
+          if (!e) return;
+          if (ea && ea.manche === e.manche && ea.nbDefausse !== e.nbDefausse) { this.son('toc'); this.vibre(15); }
+          // Une colonne vient de partir
+          var d = e.dernier;
+          if (ea && d && d.colonnes && d.colonnes.length && JSON.stringify(ea.dernier) !== JSON.stringify(d)) { setTimeout(() => this.son('toc'), 120); this.vibre([40, 40, 40]); }
+          if (e.phase === 'jeu' && e.joueurs[e.tour] === moi && (!ea || ea.phase !== 'jeu' || ea.tour !== e.tour || ea.manche !== e.manche)) this.vibre([30, 40, 30]);
+          var finie = e.phase === 'finManche' || e.phase === 'finPartie', finieAvant = ea && (ea.phase === 'finManche' || ea.phase === 'finPartie');
+          if (finie && !finieAvant && e.resultat && e.resultat.finisseur === moi && !e.resultat.details[moi].double) { setTimeout(() => this.son('victoire'), 300); this.vibre([100, 60, 100]); }
+          // Fin de partie : les étoiles du compagnon (une seule fois par partie)
+          if (e.phase === 'finPartie' && (!ea || ea.phase !== 'finPartie') && e.joueurs.indexOf(moi) !== -1) {
+            var gagne = e.vainqueurs.indexOf(moi) !== -1;
+            Etoiles.finDePartie(NOM_JEU, gagne, !this.solo && e.joueurs.filter(x => !estOrdi(x)).length > 1, p.partieId, { joueurs: e.joueurs.length });
+            if (this.solo) Etoiles.serie('cieljo', gagne, NOM_JEU);
+          }
+        },
+        publier: function() {
+          this.diffuser();
+          this.appliquerPub(this.etatPour());
+          this.tourRobot();
+        },
+        // ---------- Liste des salons ----------
+        estSalonSaisi: function(nom) { return ACCES.simplifier(nom) === ACCES.simplifier(this.channelInput); },
+        retenirSalon: function(nom) {
+          var cle = ACCES.simplifier(nom);
+          this.salonsConnus = [nom].concat((lireStockage('brillant-salons') || this.salonsConnus).filter(n => ACCES.simplifier(n) !== cle)).slice(0, MAX_SALONS);
+          ecrireStockage('brillant-salons', this.salonsConnus);
+          ecrireStockage('cieljo-dernier-salon', nom);
+        },
+        oublierSalon: function(nom) {
+          var cle = ACCES.simplifier(nom);
+          this.salonsConnus = this.salonsConnus.filter(n => ACCES.simplifier(n) !== cle);
+          ecrireStockage('brillant-salons', this.salonsConnus);
+          if (ACCES.simplifier(this.channelInput) === cle) this.channelInput = this.salonsConnus[0] || '';
+        },
+
+        // ---------- Sauvegarde ----------
+        sauvegarder: function() {
+          if (this._restauration) return;
+          ecrireStockage(CLE_SAUVEGARDE, {
+            t: Date.now(), fini: !!(this.pub && this.pub.e && this.pub.e.phase === 'finPartie'),   // salon oublié au retour s'il est fini (30 min) ou laissé 6 h (salonPerime)
+            pseudo: this.pseudoInput, role: this.role, salon: this.roomCode, pub: this.role ? this.pub : null,
+            pubHote: this.role === 'hote' ? pubHote : null, salle: this.role === 'hote' ? salle : null
+          });
+        },
+        restaurer: function() {
+          var sv = lireStockage(CLE_SAUVEGARDE);
+          monPseudo = this.moi;
+          if (!sv) return;
+          if (sv.role && sv.salon && sv.pub) {
+            this.role = sv.role;
+            this.roomCode = sv.salon;
+            this.onglet = 'play';
+            this.connexion = 'perdue';
+            this._restauration = true;
+            this.appliquerPub(sv.pub);
+            this._restauration = false;
+            if (sv.role === 'hote') {
+              pubHote = sv.pubHote || copie(sv.pub);
+              salle = sv.salle || { infos: {} };
+              Object.values(salle.infos).forEach(i => { i.connecte = false; });
+              this.creerPartie(true);
+            } else this.rejoindrePartie(true);
+          }
+        },
+
+        // ---------- Entrée dans un salon ----------
+        validerPseudo: function() {
+          monPseudo = this.pseudoInput.trim();
+          if (!monPseudo) { ouvrirProfilPortail(true); return false; }
+          return true;
+        },
+        entrerSalon: function() {
+          if (this.role || this._entree) return;
+          if (this.solo) this.quitterSolo();
+          if (!this.validerPseudo()) return;
+          if (!this.channelInput.trim()) { alert('Saisis un nom de salon.'); return; }
+          fermerAutresSalons('cieljo');   // un seul salon à la fois sur ce téléphone
+          this._entree = { essais: 0 };
+          this.entreeEnCours = true;
+          this.creerPartie(false);
+        },
+        finEntree: function(reussie, message) {
+          var e = this._entree;
+          this._entree = null;
+          this.entreeEnCours = false;
+          if (reussie) this.retenirSalon(this.roomCode);
+          else if (e && message) alert(message);
+        },
+        suiteEntree: function() {
+          var e = this._entree;
+          if (!e) return;
+          this.reinitialiserPeer(false);
+          if (++e.essais >= 4) return this.finEntree(false, 'Impossible d\'entrer dans le salon pour le moment.\n\nSi vous êtes sur le même Wi-Fi (location, hôtel, Wi-Fi invité…), il empêche souvent les téléphones de se parler : passe l\'un des deux en 4G/5G (Wi-Fi coupé), puis réessaie.');
+          this.entreeEnCours = e.essais + 1;   // « essai 2/4 » sur le bouton
+          setTimeout(() => { if (this._entree === e && !this.role) this.creerPartie(false); }, 1200);
+        },
+        quitterSalon: function() {
+          if (!confirm('Quitter le salon ?')) return;
+          if (this.role === 'client' && peer) {
+            this.envoyerHote({ action: 'DEPART' });
+            var ancienPeer = peer;
+            peer = null;
+            setTimeout(() => { try { ancienPeer.destroy(); } catch (e) {} }, 400);
+          }
+          this.reinitialiserPeer(false);
+          pubHote = null;
+          salle = { infos: {} };
+          this.pub = null;
+          this.ajouterLog('Tu as quitté le salon.', true);
+          this.sauvegarder();
+        },
+        reinitialiserPeer: function(garder) {
+          clearTimeout(this._timerReco);
+          var ancien = peer;
+          peer = null;
+          connections = [];
+          connParPseudo = {};
+          hostConn = null;
+          if (ancien) { try { ancien.destroy(); } catch (e) {} }
+          if (!garder) { this.role = null; this.joueurs = []; this.roomCode = ''; this.connexion = 'aucune'; }
+        },
+        planifierReconnexion: function(delai) {
+          clearTimeout(this._timerReco);
+          this._timerReco = setTimeout(() => {
+            if (!this.role || this.connexion === 'ok') return;
+            if (this.role === 'hote') return this.creerPartie(true);
+            this._echecsClient = (this._echecsClient || 0) + 1;
+            if (this._echecsClient >= 4 && this.pub) { this._echecsClient = 0; return this.reprendreLeSalon(); }
+            this.rejoindrePartie(true);
+          }, delai || 3000);
+        },
+        // L'hôte ne répond plus : on rouvre le salon. Les mains des autres étaient chez lui : la partie en cours s'arrête
+        // (retour à la salle d'attente, on relance une partie).
+        reprendreLeSalon: function() {
+          pubHote = { ordre: this.pub.ordre.slice(), robots: (this.pub.robots || []).slice(), phase: 'attente', partieId: null, etat: null };
+          salle = { infos: {} };
+          pubHote.ordre.forEach(p => { if (p !== monPseudo) salle.infos[p] = { connecte: false, clientId: null }; });
+          this._repriseParClient = true;
+          this.role = 'hote';
+          this.ajouterLog('L\'hôte ne répond plus : tu rouvres le salon.', true);
+          this.creerPartie(true);
+        },
+
+        // ---------- Hôte ----------
+        creerPartie: function(reprise) {
+          var nom = reprise ? this.roomCode : this.channelInput.trim();
+          this.reinitialiserPeer(!!reprise);
+          this.connexion = reprise ? 'perdue' : 'connexion';
+          var monPeer = peer = creerPeer(ACCES.idSalon(nom, JEU_RESEAU));
+          veillerOuverture(monPeer);
+          monPeer.on('open', () => {
+            if (peer !== monPeer) return;
+            // PeerJS redit « open » après une coupure du serveur (reconnect) : le salon continue tel quel (avant : une nouvelle partie repartait de zéro)
+            if (monPeer._ouvert) { if (this.role === 'hote') this.connexion = 'ok'; return; }
+            monPeer._ouvert = true;
+            this.role = 'hote';
+            this.connexion = 'ok';
+            this.roomCode = nom;
+            this._echecsReprise = 0;
+            if (reprise) {
+              this._repriseParClient = false;
+              this.ajouterLog('Salon récupéré, les autres joueurs vont se reconnecter.', true);
+            } else {
+              this.onglet = 'play';
+              this.finEntree(true);
+              salle = { infos: {} };
+              pubHote = { ordre: [monPseudo], robots: [], phase: 'attente', partieId: null, etat: null };
+              this.ajouterLog(monPseudo + ' a ouvert le salon.', true);
+            }
+            this.publier();
+          });
+          monPeer.on('connection', (conn) => this.brancherClient(conn));
+          monPeer.on('disconnected', () => {
+            if (peer === monPeer && !monPeer.destroyed) setTimeout(() => { try { if (monPeer.disconnected && !monPeer.destroyed) monPeer.reconnect(); } catch (e) {} }, 1000);
+          });
+          monPeer.on('error', (err) => {
+            if (peer !== monPeer) return;
+            if (reprise || this.role === 'hote') {
+              if (err.type === 'peer-unavailable') return;
+              this.connexion = 'perdue';
+              var seuil = this._repriseParClient ? 1 : 5;
+              if (err.type === 'unavailable-id' && (this._echecsReprise = (this._echecsReprise || 0) + 1) >= seuil) {
+                this._echecsReprise = 0;
+                this._repriseParClient = false;
+                this.role = 'client';
+                pubHote = null;
+                salle = { infos: {} };
+                this.ajouterLog('Le salon est tenu par un autre joueur : tu le rejoins.', true);
+                return this.rejoindrePartie(true);
+              }
+              this.planifierReconnexion(3000);
+              return;
+            }
+            if (this._entree && err.type === 'unavailable-id') return this.rejoindrePartie(false);
+            if (this._entree) return this.suiteEntree();
+            this.reinitialiserPeer(false);
+            alert('Erreur : ' + err.message);
+          });
+        },
+        brancherClient: function(conn) {
+          connections.push(conn);
+          conn.dernierMsg = Date.now();
+          conn.on('data', (data) => { conn.dernierMsg = Date.now(); this.recevoirDeClient(conn, data); });
+          conn.on('close', () => this.perteClient(conn));
+          conn.on('error', () => this.perteClient(conn));
+        },
+        majJoueurs: function() {
+          if (this.role !== 'hote' || !pubHote) return;
+          this.joueurs = pubHote.ordre.map(p => ({ pseudo: p, hote: p === monPseudo, connecte: this.estConnecte(p) }));
+        },
+        // Chaque téléphone reçoit l'état avec sa propre main seulement
+        diffuser: function() {
+          this.majJoueurs();
+          connections.forEach(c => { try { if (c.open) c.send({ action: 'ETAT', pub: this.etatPour(), joueurs: this.joueurs }); } catch (e) {} });
+        },
+        recevoirDeClient: function(conn, data) {
+          var p = conn.joueurPseudo;
+          switch (data.action) {
+            case 'PING': break;
+            case 'REJOINDRE': {
+              var pseudo = String(data.pseudo || '').trim().slice(0, 20);
+              var existant = salle.infos[pseudo];
+              if (!pseudo || pseudo === monPseudo || (existant && existant.connecte && existant.clientId !== data.clientId && connParPseudo[pseudo] && connParPseudo[pseudo] !== conn)) {
+                try { conn.send({ action: 'REFUS', fatal: true, message: 'Ce pseudo est déjà utilisé dans ce salon.' }); } catch (e) {}
+                setTimeout(() => { try { conn.close(); } catch (e) {} }, 500);
+                return;
+              }
+              var ancienne = connParPseudo[pseudo];
+              if (ancienne && ancienne !== conn) { ancienne._remplacee = true; connections = connections.filter(c => c !== ancienne); try { ancienne.close(); } catch (e) {} }
+              conn.joueurPseudo = pseudo;
+              connParPseudo[pseudo] = conn;
+              salle.infos[pseudo] = { connecte: true, clientId: data.clientId };
+              if (pubHote.ordre.indexOf(pseudo) !== -1) this.ajouterLog(pseudo + ' est revenu.', true);
+              else {
+                pubHote.ordre.push(pseudo);
+                this.ajouterLog(pseudo + ' a rejoint le salon.', true);
+              }
+              this.publier();
+              break;
+            }
+            case 'DEPART':
+              if (!p) return;
+              delete connParPseudo[p];
+              delete salle.infos[p];
+              pubHote.ordre = pubHote.ordre.filter(x => x !== p);
+              this.ajouterLog(p + ' a quitté le salon.', true);
+              // S'il était dans la partie, elle continue : l'hôte peut jouer à sa place
+              this.publier();
+              break;
+            case 'JEU':
+              if (!p) return;
+              this.traiterJeu(p, data.m || {});
+              break;
+          }
+        },
+        perteClient: function(conn) {
+          if (conn._perdue) return;
+          conn._perdue = true;
+          connections = connections.filter(c => c !== conn);
+          var p = conn.joueurPseudo;
+          if (!p || conn._remplacee || connParPseudo[p] !== conn) return;
+          delete connParPseudo[p];
+          if (salle.infos[p]) salle.infos[p].connecte = false;
+          this.ajouterLog(p + ' s\'est déconnecté (il peut revenir).', true);
+          this.publier();
+          this.sauvegarder();
+        },
+
+        // ---------- Client ----------
+        rejoindrePartie: function(reprise) {
+          var nom = reprise ? this.roomCode : this.channelInput.trim();
+          this.reinitialiserPeer(!!reprise);
+          this.connexion = reprise ? 'perdue' : 'connexion';
+          var monPeer = peer = creerPeer();
+          veillerOuverture(monPeer);
+          monPeer.on('open', () => {
+            if (peer !== monPeer) return;
+            // PeerJS redit « open » après une coupure du serveur (reconnect) : le salon continue tel quel (avant : une nouvelle partie repartait de zéro)
+            if (monPeer._ouvert) { if (this.role === 'hote') this.connexion = 'ok'; return; }
+            monPeer._ouvert = true;
+            var conn = hostConn = monPeer.connect(ACCES.idSalon(nom, JEU_RESEAU), { reliable: true });
+            var delai = setTimeout(() => {
+              if (hostConn !== conn || this.connexion === 'ok') return;
+              if (this.role) this.planifierReconnexion();
+              else if (this._entree) this.suiteEntree();
+              else this.reinitialiserPeer(false);
+            }, 10000);
+            conn.on('open', () => {
+              if (hostConn !== conn) return;
+              clearTimeout(delai);
+              dernierMsgHote = Date.now();
+              this.connexion = 'ok';
+              this.role = 'client';
+              this.roomCode = nom;
+              this._echecsClient = 0;
+              if (!reprise) { this.onglet = 'play'; this.finEntree(true); }
+              conn.send({ action: 'REJOINDRE', pseudo: monPseudo, clientId: clientId });
+            });
+            conn.on('data', (data) => { if (hostConn !== conn) return; dernierMsgHote = Date.now(); this.recevoirDeHote(data); });
+            conn.on('close', () => { if (hostConn === conn) this.perteHote(); });
+            conn.on('error', () => { if (hostConn === conn) this.perteHote(); });
+          });
+          monPeer.on('disconnected', () => { if (peer === monPeer && !monPeer.destroyed) { try { monPeer.reconnect(); } catch (e) {} } });
+          monPeer.on('error', () => {
+            if (peer !== monPeer) return;
+            if (this.role) { this.connexion = 'perdue'; this.planifierReconnexion(); }
+            else if (this._entree) this.suiteEntree();
+            else { this.reinitialiserPeer(false); alert('Impossible de joindre ce salon.\n\nSur un même Wi-Fi (location, hôtel, Wi-Fi invité…), passe l\'un des téléphones en 4G/5G puis réessaie.'); }
+          });
+        },
+        perteHote: function() {
+          if (this.connexion === 'perdue' && this._timerReco) return;
+          if (this.connexion === 'ok') this.ajouterLog('Connexion à l\'hôte perdue, reconnexion…', true);
+          var c = hostConn;
+          hostConn = null;
+          if (c) { try { c.close(); } catch (e) {} }
+          this.connexion = 'perdue';
+          this.planifierReconnexion(1500);
+        },
+        envoyerHote: function(data) { if (hostConn && hostConn.open && this.connexion === 'ok') { try { hostConn.send(data); } catch (e) {} } },
+        recevoirDeHote: function(data) {
+          switch (data.action) {
+            case 'PING': break;
+            case 'ETAT':
+              this.joueurs = data.joueurs || [];
+              if (data.pub) this.appliquerPub(data.pub);
+              break;
+            case 'REFUS':
+              if (data.fatal) { alert(data.message); this.reinitialiserPeer(false); this.pub = null; this.sauvegarder(); }
+              break;
+          }
+        },
+
+        // ---------- Surveillance de la connexion ----------
+        battement: function() {
+          var maintenant = Date.now();
+          if (this.role === 'hote' && peer) {
+            connections.slice().forEach(c => {
+              try { if (c.open) c.send({ action: 'PING' }); } catch (e) {}
+              if (maintenant - (c.dernierMsg || maintenant) > DELAI_SILENCE) { try { c.close(); } catch (e) {} this.perteClient(c); }
+            });
+            if (peer.destroyed) this.planifierReconnexion(500);
+            else if (peer.disconnected) { try { peer.reconnect(); } catch (e) {} }
+          } else if (this.role === 'client' && this.connexion === 'ok') {
+            this.envoyerHote({ action: 'PING' });
+            if (maintenant - dernierMsgHote > DELAI_SILENCE) this.perteHote();
+          }
+        },
+        auRetourPremierPlan: function() {
+          this.majVeille();
+          if (document.visibilityState === 'hidden' || !this.role) return;
+          if (this.role === 'hote') {
+            if (!peer || peer.destroyed) this.creerPartie(true);
+            else if (peer.disconnected) { try { peer.reconnect(); } catch (e) {} }
+          } else if (this.connexion !== 'ok' || Date.now() - dernierMsgHote > 8000) {
+            this.connexion = 'perdue';
+            this.rejoindrePartie(true);
+          }
+        },
+
+        // ---------- Écran toujours allumé ----------
+        veilleVoulue: function() {
+          return this.veilleSupportee && this.garderEcran && document.visibilityState === 'visible' && !!this.role;
+        },
+        majVeille: function() {
+          if (!this.veilleSupportee) return;
+          if (this.veilleVoulue()) {
+            if (this._verrou || this._demandeVerrou) return;
+            this._demandeVerrou = true;
+            navigator.wakeLock.request('screen').then(verrou => {
+              this._demandeVerrou = false;
+              if (!this.veilleVoulue()) { verrou.release(); return; }
+              this._verrou = verrou;
+              this.veilleActive = true;
+              verrou.addEventListener('release', () => { if (this._verrou === verrou) { this._verrou = null; this.veilleActive = false; } });
+            }).catch(() => { this._demandeVerrou = false; });
+          } else if (this._verrou) {
+            var v = this._verrou;
+            this._verrou = null;
+            this.veilleActive = false;
+            v.release().catch(() => {});
+          }
+        }
+      }
+    });
+  </script>
+  <script src="salon-global.js" data-jeu="cieljo"></script>
+</body>
+</html>

@@ -12,7 +12,7 @@ var IconesJeux = (function () {
     brilliant: ['#9775fa', '#6741d9'], yams: ['#ff6b6b', '#e03131'], backgammon: ['#e8a061', '#a8591f'],
     assaut: ['#94b04a', '#55701c'], bataille: ['#4dabf7', '#1864ab'], gribouille: ['#f783ac', '#d6336c'],
     petitbac: ['#3bc9db', '#0c8599'], agents: ['#68727c', '#25292e'], quatre: ['#748ffc', '#3b5bdb'],
-    domino: ['#51cf66', '#2b8a3e'], lettres: ['#ffa94d', '#e8590c'], expedition: ['#da77f2', '#9c36b5'], donjon: ['#ffa94d', '#a8590f'], joyaux: ['#38d9a9', '#087f5b'], dix: ['#fcc419', '#e67700'], chinchon: ['#f06595', '#a61e4d']
+    domino: ['#51cf66', '#2b8a3e'], lettres: ['#ffa94d', '#e8590c'], expedition: ['#da77f2', '#9c36b5'], donjon: ['#ffa94d', '#a8590f'], joyaux: ['#38d9a9', '#087f5b'], dix: ['#fcc419', '#e67700'], chinchon: ['#f06595', '#a61e4d'], cieljo: ['#74c0fc', '#1971c2']
   };
   var B = '#fff';   // couleur du dessin (blanc sur fond plein, couleur du jeu sur fond clair) ; c[1] = touche d'accent
   function pips(cx, cy, s, n, c) {   // points d'un dé de côté s centré en cx, cy
@@ -85,6 +85,12 @@ var IconesJeux = (function () {
         s += '<circle cx="' + (16.5 + x * 7.7) + '" cy="' + (17.5 + y * 7.2) + '" r="2.9" fill="' + (aligne ? '#fcc419' : rouge ? '#f03e3e' : c[1]) + '" opacity="' + (aligne || rouge ? 1 : 0.22) + '"/>';
       }
       return s;
+    },
+    // Cieljo : une grille de cartes, un nuage par-dessus
+    cieljo: function (c) {
+      var s = '';
+      for (var y = 0; y < 2; y++) for (var x = 0; x < 3; x++) s += '<rect x="' + (11 + x * 12) + '" y="' + (11 + y * 16) + '" width="10" height="14" rx="2" fill="' + B + '"' + ((x + y) % 2 ? ' opacity="0.6"' : '') + '/>';
+      return s + '<path d="M22 44 a5.5 5.5 0 0 1 0.6 -11 a7.5 7.5 0 0 1 14 -1 a6 6 0 0 1 2 12 Z" fill="' + c[1] + '" stroke="#fff" stroke-width="2"/>';
     },
     // Chinchón : deux cartes en éventail, une pièce sur celle du dessus
     chinchon: function (c) {
