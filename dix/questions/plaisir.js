@@ -826,4 +826,59 @@ Quel film raconte son histoire ? | Le Fondateur
 En quelle année a ouvert le premier McDonald's français ? | En 1979
 Dans quelle ville ? | Strasbourg
 Comment Pulp Fiction dit-il que les Français appellent le Quarter Pounder ? | Royale with Cheese
+# Le Fabuleux Destin d'Amélie Poulain
+Quelle actrice joue Amélie ? | Audrey Tautou
+Dans quel quartier de Paris vit-elle ? | Montmartre
+Quel dessert aime-t-elle casser à la cuillère ? | La crème brûlée
+Quel objet de jardin envoie-t-on en voyage ? | Un nain de jardin
+Quel acteur joue Nino ? | Mathieu Kassovitz
+Qui réalise le film ? | Jean-Pierre Jeunet
+En quelle année sort-il ? | En 2001
+Qui a composé sa musique ? | Yann Tiersen
+Comment s'appelle le café où travaille Amélie ? | Les Deux Moulins
+Que collectionne Nino ? | Les photos d'identité jetées
+# Astérix et Obélix : Mission Cléopâtre
+Quel monument Cléopâtre veut-elle voir construit en trois mois ? | Un palais
+Quel acteur joue Astérix ? | Christian Clavier
+Quel acteur joue Obélix ? | Gérard Depardieu
+Qui réalise le film ? | Alain Chabat
+En quelle année sort-il ? | En 2002
+Quel humoriste joue Numérobis ? | Jamel Debbouze
+Quelle actrice joue Cléopâtre ? | Monica Bellucci
+Quel acteur joue Otis, le scribe qui parle de « bonne ou mauvaise situation » ? | Édouard Baer
+Quel acteur joue Panoramix ? | Claude Rich
+Quel acteur joue l'architecte rival Amonbofis ? | Gérard Darmon
+# Uno
+Combien de cartes reste-t-il quand on crie « Uno » ? | Une
+Que coûte l'oubli de ce cri, si on se fait prendre ? | Deux cartes à piocher
+Quelle carte oblige le voisin à piocher quatre cartes ? | Le +4
+Combien de couleurs compte le jeu ? | Quatre
+Que signifie Uno ? | Un, en italien et en espagnol
+Combien de cartes comptait le paquet d'origine ? | 108
+Quelle entreprise américaine édite le jeu aujourd'hui ? | Mattel
+Quel coiffeur a inventé le jeu ? | Merle Robbins
+Dans quel État américain a-t-il inventé le jeu ? | L'Ohio
+En quelle année l'a-t-il créé ? | En 1971
+# Nutella
+Que tartine-t-on sur le pain le matin ? | Du Nutella
+Quel gros fruit à coque en est l'ingrédient vedette ? | La noisette
+De quel pays vient la marque ? | L'Italie
+Quelle famille l'a créée ? | Ferrero
+Quelle huile controversée en contient-il ? | L'huile de palme
+En quelle année sort le premier pot de Nutella ? | En 1964
+Quelle ville du Piémont abrite Ferrero ? | Alba
+Quelle pâte à base de noisettes et de chocolat a-t-il repris ? | Le gianduja
+Quel magasin français a déclenché des bagarres en 2018 à cause d'une promotion ? | Intermarché
+Quelle réduction a provoqué ces bagarres ? | 70 %
+# Mario Kart
+Quel fruit fait déraper sur la piste ? | La peau de banane
+Quelle carapace vous cherche partout ? | La carapace rouge
+Quel personnage vient vous repêcher, sur un nuage ? | Lakitu
+Quelle carapace vise toujours le premier ? | La carapace bleue
+Quelle piste sans barrière termine les coupes, en couleurs ? | La route arc-en-ciel
+Sur quelle console est sorti le premier jeu ? | La Super Nintendo
+En quelle année ? | En 1992
+Combien de personnages jouables comptait le premier jeu ? | Huit
+Quel Japonais a dirigé le développement du premier jeu ? | Hideki Konno
+Combien de coupes comptait le premier jeu ? | Quatre
 `;

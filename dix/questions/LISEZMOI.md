@@ -29,3 +29,4 @@ Renommer un sujet le fait seulement redevenir « jamais vu ». Interdits dans le
 - Une question à réponse courte et vérifiable, jugée à voix haute par l'équipe qui lit. Pas d'ambiguïté, pas de donnée qui se périme vite.
 - Dans le doute sur un fait, changer de question. Questions maison uniquement, jamais celles de la boîte du jeu d'origine.
 - Pas de contenu qui vise une personne privée.
+- Écrire par lots de 15 à 20 sujets au plus, et contrôler sur le web les faits risqués avant de publier.

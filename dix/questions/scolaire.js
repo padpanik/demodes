@@ -617,4 +617,37 @@ En quelle année a-t-elle reçu le second ? | En 1911
 Quel est son nom de naissance ? | Maria Skłodowska
 Quelle fille a aussi eu le Nobel ? | Irène Joliot-Curie
 Dans quel lieu a-t-elle été inhumée en 1995 ? | Au Panthéon
+# Les triangles
+Combien de côtés a un triangle ? | Trois
+Quel célèbre triangle fait disparaître les avions ? | Celui des Bermudes
+Comment s'appelle un triangle à deux côtés égaux ? | Isocèle
+Comment s'appelle un triangle à trois côtés égaux ? | Équilatéral
+Quelle est la somme de ses angles ? | 180 degrés
+Comment s'appelle le côté opposé à l'angle droit ? | L'hypoténuse
+Comment s'appelle un triangle sans côtés égaux ? | Scalène
+Quelle formule donne son aire ? | Base × hauteur ÷ 2
+Quel point est l'intersection des médianes ? | Le centre de gravité
+Quel point est l'intersection des hauteurs ? | L'orthocentre
+# Charles Darwin
+De quel pays vient-il ? | Le Royaume-Uni
+De quel animal est-on accusé de descendre, à cause de lui ? | Le singe
+Sur quel bateau a-t-il fait le tour du monde ? | Le Beagle
+Quel livre publie-t-il en 1859 ? | De l'origine des espèces
+Quel archipel lui a inspiré ses réflexions ? | Les Galápagos
+Quels oiseaux y sont célèbres ? | Les pinsons
+Quel mécanisme a-t-il proposé ? | La sélection naturelle
+Quel naturaliste a eu la même idée en même temps ? | Alfred Russel Wallace
+Dans quelle abbaye est-il enterré ? | Westminster
+Quel défenseur a été surnommé le « bouledogue de Darwin » ? | Thomas Huxley
+# La Déclaration de 1789
+Que sont les hommes, à la naissance, selon son article premier ? | Libres et égaux en droits
+Quelle période de l'histoire de France l'a produite ? | La Révolution française
+Quel mois de 1789 a-t-elle été adoptée ? | Août
+Quelle assemblée l'a adoptée ? | L'Assemblée nationale constituante
+Combien d'articles compte-t-elle ? | 17
+Quel général, héros d'Amérique, a proposé un premier projet ? | La Fayette
+Quelle femme a écrit la Déclaration des droits de la femme ? | Olympe de Gouges
+En quelle année ? | En 1791
+Dans quel préambule de 1958 est-elle citée ? | Celui de la Constitution de la Ve République
+Quelle institution lui a donné valeur juridique en 1971 ? | Le Conseil constitutionnel
 `;

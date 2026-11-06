@@ -727,4 +727,48 @@ Quelle Américaine l'a breveté en 1886 ? | Josephine Cochrane
 Dans quel État américain ? | L'Illinois
 À quelle exposition de 1893 a-t-elle présenté sa machine ? | L'Exposition universelle de Chicago
 Quelle marque allemande a lancé un modèle européen dès 1929 ? | Miele
+# Le thé
+Combien de temps laisse-t-on infuser un sachet qu'on a oublié ? | Trop longtemps
+À quelle heure les Britanniques le boivent-ils, par tradition ? | Cinq heures
+Quel thé noir est parfumé à la bergamote ? | L'Earl Grey
+De quel pays vient la boisson ? | La Chine
+Quel thé vert en poudre est à la mode ? | Le matcha
+Comment appelle-t-on le thé épicé d'Inde ? | Le chai
+Quelle région indienne du nord du pays a donné son nom à un thé ? | Le Darjeeling
+Quelle révolte américaine a jeté du thé à l'eau, en 1773 ? | La Boston Tea Party
+Comment s'appelle la cérémonie du thé japonaise ? | Le chanoyu
+Quelle plante produit tous ces thés ? | Camellia sinensis
+# Les lunettes de soleil
+Qui les porte encore la nuit ? | Les stars
+Quels rayons bloquent-elles ? | Les ultraviolets
+Quelle marque américaine est la plus connue ? | Ray-Ban
+Quel modèle porte Tom Cruise dans Top Gun ? | L'Aviator
+Quel modèle portent les Blues Brothers ? | La Wayfarer
+Pour qui Ray-Ban a-t-il conçu ses premières lunettes ? | Les pilotes américains
+En quelle année a été lancée la marque ? | En 1937
+Quelle entreprise américaine l'a créée ? | Bausch & Lomb
+Quel groupe italien l'a rachetée en 1999 ? | Luxottica
+De combien à combien sont notées leurs catégories de protection ? | De 0 à 4
+# Le camembert
+Qu'est-ce qu'il fait au frigo dès qu'on l'y laisse ouvert ? | Il sent fort
+Dans quelle région naît-il ? | La Normandie
+De quoi est faite sa boîte ronde ? | De bois
+De quel lait est-il fait ? | Du lait de vache
+À quel jeu de société donne-t-il son nom aux parts de score ? | Trivial Pursuit
+Quelle mention protège le « camembert de Normandie » ? | L'AOP
+Quelle fermière est associée à sa naissance ? | Marie Harel
+Vers quelle année, selon la légende ? | Vers 1791
+Quel ingénieur a inventé la boîte en bois, en 1890 ? | Ridel
+Quel peintre dit s'être inspiré d'un camembert coulant pour ses montres molles ? | Salvador Dalí
+# La moutarde
+Que monte-t-elle au nez ? | La moutarde
+Quelle ville française en est célèbre ? | Dijon
+Quelle marque dijonnaise vend sa moutarde dans des verres à boire ? | Amora
+Quelle couleur a la moutarde de Dijon ? | Jaune pâle
+De quelle famille de plantes fait-elle partie, avec le chou ? | Les crucifères
+De quel pays vient la grande majorité des graines de la moutarde de Dijon ? | Le Canada
+Quelle grande maison dijonnaise a été fondée au XVIIIe siècle ? | Maille
+Pourquoi manquait-elle en France en 2022 ? | Sécheresse au Canada
+Par quoi le Dijonnais Jean Naigeon a-t-il remplacé le vinaigre ? | Le verjus
+En quelle année a-t-il fait ce changement ? | En 1856
 `;

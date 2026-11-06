@@ -1211,4 +1211,59 @@ Quel auteur des « Choses » en composait pour Le Point ? | Georges Perec
 Comment appelle-t-on un auteur de mots croisés ? | Un verbicruciste
 Quel verbicruciste français a signé dans Le Nouvel Observateur ? | Robert Scipion
 Quelle forme avait la première grille ? | Un losange
+# Les bouteilles à la mer
+Que glisse-t-on dans la bouteille avant de la jeter ? | Un message
+Où se trouve celui qui l'envoie, dans les dessins humoristiques ? | Sur une île déserte
+Quel groupe de Sting chante « Message in a Bottle » ? | The Police
+En quelle année sort cette chanson ? | En 1979
+Quel acteur américain joue dans le film « Une bouteille à la mer », en 1999 ? | Kevin Costner
+Quel bouchon faut-il pour qu'elle tienne le coup ? | Un bouchon bien étanche, souvent de liège
+Quel pays en lâchait pour étudier les courants, au XIXe siècle ? | L'Allemagne
+Sur quelle côte a-t-on trouvé la plus vieille bouteille à message connue, en 2018 ? | L'Australie
+De quelle année date cette bouteille ? | De 1886
+Combien d'années sépare son lancer de sa découverte ? | 132 ans, à peu près
+# Les boîtes de conserve
+Quel outil oublie-t-on toujours en camping ? | L'ouvre-boîte
+Quel plat en boîte réchauffe l'étudiant fauché ? | Le cassoulet ou les raviolis
+Quel petit poisson y est serré, au point de donner une expression ? | La sardine
+Quel artiste américain a peint les soupes Campbell ? | Andy Warhol
+Quel Français a inventé la conservation par la chaleur ? | Nicolas Appert
+Pour qui Appert cherchait-il à conserver la nourriture, selon la tradition ? | Pour l'armée et la marine
+Quel métal a remplacé le verre d'Appert, chez les Anglais ? | Le fer-blanc
+Quel Anglais a déposé le brevet de la boîte métallique en 1810 ? | Peter Durand
+Avant l'ouvre-boîte, avec quoi ouvrait-on les boîtes ? | Au marteau et au burin
+Quel Américain a breveté un ouvre-boîte en 1858 ? | Ezra Warner
+# Les trous du fromage
+Que dit-on, à tort, du gruyère ? | Qu'il a des trous
+Quel fromage suisse a réellement de gros trous ? | L'emmental
+Quel animal de dessin animé attend le fromage à trous ? | La souris
+Comment appelle-t-on ces trous en fromagerie ? | Les yeux
+Quel organisme vivant fabrique le gaz des trous ? | Une bactérie
+Quel gaz les forme ? | Le dioxyde de carbone
+Le gruyère suisse a-t-il des trous, en principe ? | Non, ou très peu
+Quel institut suisse a étudié la disparition de ces trous en 2015 ? | Agroscope
+Quel phénomène cherchaient-ils à expliquer ? | La disparition des trous
+Quelles minuscules particules favorisent les trous, d'après eux ? | Des particules de foin
+# Les cerfs-volants
+Qu'est-ce qu'il lui faut pour décoller ? | Du vent
+Où finit-il souvent ? | Dans un arbre
+Quel film de Disney finit par une chanson pour aller en faire voler un ? | Mary Poppins
+Quel roman de Khaled Hosseini a pour décor Kaboul ? | Les Cerfs-volants de Kaboul
+De quel pays viendrait-il, à l'origine ? | La Chine
+Quel savant américain en aurait lancé un sous l'orage, en 1752 ? | Benjamin Franklin
+Que cherchait à montrer Franklin ? | Que la foudre est de l'électricité
+Quelle ville normande accueille un grand festival international ? | Dieppe
+Quel Américain a fabriqué des cerfs-volants pour l'armée britannique, au début du XXe siècle ? | Samuel Cody
+Quel inventeur du téléphone a fait voler de grands cerfs-volants tétraédriques ? | Alexander Graham Bell
+# Les igloos
+De quoi est fait un igloo ? | De blocs de neige
+Fait-il chaud ou froid dedans, comparé au dehors ? | Bien moins froid
+Quel peuple de l'Arctique les construit ? | Les Inuits
+Que veut dire le mot iglu, dans leur langue ? | Maison
+Pourquoi le trou d'entrée est-il plus bas que l'intérieur ? | Pour retenir l'air chaud
+Quelle forme a sa structure ? | Une spirale de blocs en dôme
+Quel film de 1922 montre la construction d'un igloo ? | Nanouk l'Esquimau
+Quel réalisateur américain l'a tourné ? | Robert Flaherty
+Dans quelle province canadienne l'a-t-il tourné ? | Le Québec
+Quel dialecte inuit a donné le mot ? | L'inuktitut
 `;
