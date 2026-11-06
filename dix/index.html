@@ -86,6 +86,8 @@
     .vf-dx li.coche .case-dx { background: #1e7a45; color: #fff; }
     .vf-dx b.vrai { color: #1e7a45; }
     .vf-dx b.faux { color: #e03131; }
+    .vf-dx .cor-dx { font-weight: 500; color: #5b6b78; }
+    .annuler-dx { display: block; margin: 6px auto 0; border: 1px solid #ccd5dc; background: #fff; border-radius: 16px; padding: 5px 12px; font: inherit; font-size: 0.82em; font-weight: 700; color: #3b4b57; cursor: pointer; }
     .ecoute-dx { text-align: center; font-size: 1.12em; font-weight: 800; color: var(--c); background: var(--cl); border-radius: 14px; padding: 18px 12px; margin: 10px 0; line-height: 1.4; }
     .reponse-cachee { background: #eef0f2; border-radius: 12px; padding: 10px 12px; font-size: 0.92em; font-weight: 700; color: #6b7a86; margin: 8px 0; text-align: center; }
     .attente-dx { text-align: center; color: #5b6b78; font-weight: 700; margin: 12px 0 6px; }
@@ -339,7 +341,7 @@
               <template v-if="monRole !== 'joue'">
                 <div class="question-dx" :class="{ petite: challenge.vf }">{{ challenge.texte }}</div>
                 <ol class="vf-dx" v-if="challenge.vf">
-                  <li v-for="(v, k) in challenge.vf" :key="k" :class="{ cochable: peut('challenge'), coche: cochesCh[k] }" @click="peut('challenge') && cocher(k)"><span v-if="peut('challenge')" class="case-dx">{{ cochesCh[k] ? '✓' : '' }}</span>{{ v[0] }} <b v-if="monRole === 'lecteur' || voirReponse" :class="v[1] ? 'vrai' : 'faux'">{{ v[1] ? 'Vrai' : 'Faux' }}</b></li>
+                  <li v-for="(v, k) in challenge.vf" :key="k" :class="{ cochable: peut('challenge'), coche: cochesCh[k] }" @click="peut('challenge') && cocher(k)"><span v-if="peut('challenge')" class="case-dx">{{ cochesCh[k] ? '✓' : '' }}</span><span>{{ v[0] }} <b v-if="monRole === 'lecteur' || voirReponse" :class="v[1] ? 'vrai' : 'faux'">{{ v[1] ? 'Vrai' : 'Faux' }}</b><span v-if="v[2] && (monRole === 'lecteur' || voirReponse)" class="cor-dx"> {{ v[2] }}</span></span></li>
                 </ol>
               </template>
               <div class="ecoute-dx" v-else>🎧 Écoutez bien :<br>les {{ lecteur.nom }} vous lisent le challenge.</div>
@@ -355,7 +357,7 @@
                 <button v-if="challenge.vf && monRole !== 'lecteur' && !voirReponse" class="lien-discret" @click="voirReponse = true">Voir les réponses</button>
                 <div class="aide" v-if="!challenge.vf" style="text-align:center;margin:4px 0 2px">Un point coché par bonne réponse</div>
                 <div class="points-dx" v-if="!challenge.vf"><button v-for="k in challenge.max" :key="k" :class="{ coche: cochesCh[k - 1] }" @click="cocher(k - 1)">{{ cochesCh[k - 1] ? '✓' : k }}</button></div>
-                <button class="btn vert" style="width:100%;margin-top:4px;padding-top:9px;padding-bottom:9px" @click="jouer({ type: 'challenge', n: nbCoches })">{{ nbCoches ? '✓ Valider : ' + nbCoches + (nbCoches > 1 ? ' bonnes réponses, +' + nbCoches + ' cases' : ' bonne réponse, +1 case') : 'Valider : aucune bonne réponse' }}</button>
+                <button class="btn vert" style="width:100%;margin-top:4px;padding-top:9px;padding-bottom:9px" @click="validerChallenge">{{ nbCoches ? '✓ Valider : ' + nbCoches + (nbCoches > 1 ? ' bonnes réponses, +' + nbCoches + ' cases' : ' bonne réponse, +1 case') : 'Valider : aucune bonne réponse' }}</button>
               </template>
               <div v-else class="reponse-cachee">{{ lecteur.nom }} jugent le challenge.</div>
             </template>
@@ -372,13 +374,15 @@
               <button v-else-if="peut('surprise')" class="btn principal" style="width:100%;margin-top:8px" @click="jouer({ type: 'surprise' })">OK</button>
             </template>
             <div class="journal-dx">{{ e.journal }}</div>
-            <div class="derniere-dx" v-if="e.derniere && e.phase === 'theme'"><div v-if="e.derniere.q" style="margin-bottom:2px">{{ e.derniere.q }}</div><template v-if="e.derniere.challenge">{{ e.derniere.n }} bonne{{ e.derniere.n > 1 ? 's' : '' }} réponse{{ e.derniere.n > 1 ? 's' : '' }}<template v-if="e.derniere.r"> · <b>{{ e.derniere.r }}</b></template></template><template v-else>{{ e.derniere.ok ? '✓' : '✗' }} Réponse : <b>{{ e.derniere.r || '—' }}</b></template><button class="lien-discret" @click="noterDoute">{{ douteNote ? '✓ Notée dans Réglages' : '⚠️ Question douteuse' }}</button></div>
+            <button v-if="e.avant && peut('annuler')" class="annuler-dx" @click="jouer({ type: 'annuler' })">↩ Annuler le jugement</button>
+            <div class="derniere-dx" v-if="e.derniere && e.phase === 'theme'"><div v-if="e.derniere.q" style="margin-bottom:2px">{{ e.derniere.q }}</div><template v-if="e.derniere.challenge">{{ e.derniere.n }} bonne{{ e.derniere.n > 1 ? 's' : '' }} réponse{{ e.derniere.n > 1 ? 's' : '' }}<template v-if="e.derniere.r"> · <b>{{ e.derniere.r }}</b></template><div v-for="(c, k) in e.derniere.cor" :key="k" style="margin-top:2px">{{ c }}</div></template><template v-else>{{ e.derniere.ok ? '✓' : '✗' }} Réponse : <b>{{ e.derniere.r || '—' }}</b></template><button class="lien-discret" @click="noterDoute">{{ douteNote ? '✓ Notée dans Réglages' : '⚠️ Question douteuse' }}</button></div>
           </div>
 
           <!-- Fin -->
           <div class="carte-dx" v-else :style="{ '--c': gagnant.couleur }">
             <div class="gagnant-dx" :style="{ color: gagnant.couleur }">🏆 {{ gagnant.nom }} gagnent !</div>
             <div class="aide" style="text-align:center">{{ e.journal }}</div>
+            <button v-if="e.avant && peut('annuler')" class="annuler-dx" @click="jouer({ type: 'annuler' })">↩ Annuler le jugement</button>
             <button v-if="!estSalon" class="btn principal" style="width:100%;margin-top:8px" @click="rejouerTest">Nouvelle partie (mêmes équipes)</button>
             <button v-else-if="estHote" class="btn principal" style="width:100%;margin-top:8px" @click="envoyerJeu({ type: 'NOUVELLE' })">Nouvelle partie (salle d'attente)</button>
             <div v-else class="aide" style="text-align:center">L'hôte peut lancer une nouvelle partie.</div>
@@ -420,6 +424,8 @@
             <li><span style="color:#f59f00;font-weight:800">⚡ Challenge</span> : citer des choses, ou une série de vrai ou faux : on avance d'une case par bonne réponse. Elle est lue à voix haute : en salon, l'équipe qui joue ne la voit pas sur son écran.</li>
             <li><strong>🎲 Superbe ou aïe</strong> : un bonus ou un malus, appliqué tout de suite. La carte déplace toujours le pion : on ne reste jamais sur cette case.</li>
             <li>Atteindre l'<strong>arrivée</strong> ne suffit pas : il faut encore répondre juste à une <strong>question finale</strong> de niveau 6 ou 7, au hasard. Raté : on retente au tour suivant.</li>
+            <li>Une mise de 3 cache parfois un piège : une fois sur trois au hasard, la question est plus difficile, pour les mêmes 3 cases.</li>
+            <li>Erreur de jugement ? L'équipe qui a jugé peut toucher <strong>↩ Annuler le jugement</strong>, tant que le tour suivant n'a pas tiré sa carte.</li>
             <li>Le pion d'une équipe est le compagnon de son premier joueur qui en a un, posé sur un socle à la couleur de l'équipe.</li>
             <li>Une équipe sans personne de connecté : les autres peuvent jouer à sa place (lire, juger, miser).</li>
             <li>Questions maison, écrites pour Désdale.</li>
@@ -530,7 +536,7 @@
           return DX.THEMES[k] || { nom: 'Arrivée', couleur: '#1d2b36', clair: '#eef0f2', ico: '🏆', desc: '' };
         },
         sujetCourant: function() { return this.e.carte && DX.sujet(this.e.carte.sujet) || { nom: '', q: [] }; },
-        questionCourante: function() { return this.sujetCourant.q[(this.e.carte.niveau || 1) - 1] || ['', '']; },
+        questionCourante: function() { return this.sujetCourant.q[(this.e.carte.niveauQ || this.e.carte.niveau || 1) - 1] || ['', '']; },
         challenge: function() { return DX.CHALLENGES[this.e.carte.challenge] || {}; },
         douteNote: function() { var d = this.e && this.e.derniere; return !!d && this.doutes.some(x => x.q === d.q); },
         nbCoches: function() { return Object.keys(this.cochesCh).filter(k => this.cochesCh[k]).length; },
@@ -620,6 +626,7 @@
         ajouterLog: function(m, systeme) { this.historique.push({ m: m, s: !!systeme }); if (this.historique.length > 100) this.historique.splice(0, this.historique.length - 100); },
         retenirReglage: function() { ecrireStockage('dix-reglage', { nb: this.nbEquipes, noms: this.reglage.map(q => q.nom), moi: this.monEquipe, longueur: this.longueur }); },
         nomEquipeSalon: function(k) { var e = this.pub && this.pub.e; return e ? (e.equipes[k] || {}).nom : NOMS[k]; },
+        validerChallenge: function() { this._cochesAvant = Object.assign({}, this.cochesCh); this.jouer({ type: 'challenge', n: this.nbCoches }); },
         cocher: function(k) { this.$set(this.cochesCh, k, !this.cochesCh[k]); this.vibre(15); },
         // Le pion d'une équipe : le compagnon de son premier membre qui en a un (le même sur tous les téléphones), sinon la quille
         majPions: function() {
@@ -666,6 +673,12 @@
         autorise: function(pub, p, type, connecte) {
           var e = pub.e, qui = DX.QUI[type];
           if (!e || qui === 'tous') return true;
+          // Annuler un jugement : l'équipe qui a jugé, ou n'importe qui si elle n'a plus personne de connecté
+          if (qui === 'juge') {
+            if (!e.avant) return false;
+            var J = e.avant.lecteur;
+            return pub.membres[p] === J || !Object.keys(pub.membres).some(x => pub.membres[x] === J && pub.ordre.indexOf(x) !== -1 && connecte(x));
+          }
           var k = pub.membres[p], L = DX.lecteur(e), A = e.tour;
           var present = (eq) => Object.keys(pub.membres).some(x => pub.membres[x] === eq && pub.ordre.indexOf(x) !== -1 && connecte(x));
           var okL = k === L || !present(L), okA = k === A || !present(A);
@@ -696,6 +709,8 @@
           if (!a || !x || a.id !== x.id || a.n === x.n) return;
           if (!x.carte || !a.carte || x.carte.challenge !== a.carte.challenge || x.carte.sujet !== a.carte.sujet) { this.voirReponse = false; this.cochesCh = {}; }
           if (a.phase === 'theme' && x.phase !== 'theme') this.son('toc');
+          // Jugement annulé : le challenge revient avec les points que j'avais cochés
+          if (a.avant && !x.avant && x.phase === 'challenge' && this._cochesAvant) this.cochesCh = this._cochesAvant;
           var juge = ['question', 'reponse', 'challenge'].indexOf(a.phase) !== -1 && x.phase !== a.phase && x.phase !== 'fin' && x.derniere;
           if (juge) { if (x.derniere.ok) this.son('zone'); else this.vibre(80); }
           if (this.role && x.phase === 'theme' && x.tour !== a.tour && this.monEquipeSalon === x.tour) this.vibre([30, 40, 30]);

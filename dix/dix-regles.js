@@ -54,85 +54,85 @@ var DX = (function () {
     { titre: 'Citez !', texte: 'Citez les membres des Beatles.', max: 4, reponse: 'John Lennon, Paul McCartney, George Harrison, Ringo Starr' },
     { titre: 'Citez !', texte: 'Citez des signes du zodiaque.', max: 6, reponse: 'Bélier, Taureau, Gémeaux, Cancer, Lion, Vierge, Balance, Scorpion, Sagittaire, Capricorne, Verseau, Poissons' },
     { titre: 'Vrai ou faux', texte: 'Cinq affirmations, vrai ou faux ?', max: 5, vf: [
-      ['On voit la Grande Muraille de Chine depuis la Lune, à l\'œil nu.', false],
+      ['On voit la Grande Muraille de Chine depuis la Lune, à l\'œil nu.', false, 'Elle est bien trop étroite pour être vue de si loin.'],
       ['La tour Eiffel est un peu plus haute en été qu\'en hiver.', true],
-      ['La foudre ne frappe jamais deux fois au même endroit.', false],
+      ['La foudre ne frappe jamais deux fois au même endroit.', false, 'Elle frappe souvent les mêmes endroits : la tour Eiffel la reçoit chaque année.'],
       ['Pour les botanistes, la banane est une baie.', true],
-      ['L\'autruche enfouit sa tête dans le sable quand elle a peur.', false]
+      ['L\'autruche enfouit sa tête dans le sable quand elle a peur.', false, 'Elle s\'enfuit, ou se plaque au sol, le cou allongé.']
     ] },
     { titre: 'Vrai ou faux', texte: 'Cinq affirmations, vrai ou faux ?', max: 5, vf: [
       ['La pieuvre a trois cœurs.', true],
-      ['Le poisson rouge a une mémoire de trois secondes.', false],
-      ['Les chauves-souris sont aveugles.', false],
+      ['Le poisson rouge a une mémoire de trois secondes.', false, 'Il retient des informations pendant des semaines, voire des mois.'],
+      ['Les chauves-souris sont aveugles.', false, 'Toutes voient ; beaucoup s\'orientent aussi par écholocation.'],
       ['Le dauphin est un mammifère.', true],
-      ['Le koala est un ours.', false]
+      ['Le koala est un ours.', false, 'C\'est un marsupial.']
     ] },
     { titre: 'Vrai ou faux', texte: 'Cinq affirmations, vrai ou faux ?', max: 5, vf: [
-      ['Napoléon était particulièrement petit pour son époque.', false],
-      ['Les Vikings portaient des casques à cornes au combat.', false],
+      ['Napoléon était particulièrement petit pour son époque.', false, 'Environ 1,68 m : une taille normale à son époque.'],
+      ['Les Vikings portaient des casques à cornes au combat.', false, 'Aucun casque à cornes de combat n\'a été retrouvé : l\'image date du XIXe siècle.'],
       ['Cléopâtre a vécu plus près de nous que de la construction de la grande pyramide de Gizeh.', true],
-      ['La guerre de Cent Ans a duré exactement cent ans.', false],
+      ['La guerre de Cent Ans a duré exactement cent ans.', false, 'Elle a duré 116 ans, de 1337 à 1453.'],
       ['Louis XIV a régné plus de 70 ans.', true]
     ] },
     { titre: 'Vrai ou faux', texte: 'Cinq affirmations, vrai ou faux ?', max: 5, vf: [
-      ['On n\'utilise que 10 % de son cerveau.', false],
-      ['Les ongles continuent de pousser après la mort.', false],
+      ['On n\'utilise que 10 % de son cerveau.', false, 'On utilise tout son cerveau, même si tout n\'est pas actif en même temps.'],
+      ['Les ongles continuent de pousser après la mort.', false, 'La peau se rétracte en séchant : ils paraissent seulement plus longs.'],
       ['Le squelette d\'un adulte compte 206 os.', true],
       ['Le cœur humain a quatre cavités.', true],
-      ['Le sang pauvre en oxygène est bleu dans le corps.', false]
+      ['Le sang pauvre en oxygène est bleu dans le corps.', false, 'Il reste rouge, plus sombre ; les veines paraissent bleues à travers la peau.']
     ] },
     { titre: 'Vrai ou faux', texte: 'Cinq affirmations, vrai ou faux ?', max: 5, vf: [
-      ['Sydney est la capitale de l\'Australie.', false],
+      ['Sydney est la capitale de l\'Australie.', false, 'C\'est Canberra.'],
       ['La Russie s\'étend sur plus de dix fuseaux horaires.', true],
-      ['Le Sahara est le plus grand désert du monde, déserts froids compris.', false],
+      ['Le Sahara est le plus grand désert du monde, déserts froids compris.', false, 'C\'est l\'Antarctique ; le Sahara est le plus grand désert chaud.'],
       ['Istanbul est à cheval sur deux continents.', true],
       ['La France a une frontière avec le Brésil.', true]
     ] },
     { titre: 'Vrai ou faux', texte: 'Cinq affirmations, vrai ou faux ?', max: 5, vf: [
-      ['Le son se propage dans le vide.', false],
+      ['Le son se propage dans le vide.', false, 'Il lui faut un milieu, comme l\'air ou l\'eau.'],
       ['L\'eau bout à plus basse température en altitude.', true],
       ['Le diamant est composé de carbone.', true],
-      ['La face cachée de la Lune n\'est jamais éclairée par le Soleil.', false],
-      ['Les saisons viennent de la distance entre la Terre et le Soleil.', false]
+      ['La face cachée de la Lune n\'est jamais éclairée par le Soleil.', false, 'Elle est éclairée comme l\'autre ; on ne la voit simplement pas depuis la Terre.'],
+      ['Les saisons viennent de la distance entre la Terre et le Soleil.', false, 'Elles viennent de l\'inclinaison de l\'axe de la Terre.']
     ] },
     { titre: 'Vrai ou faux', texte: 'Cinq affirmations, vrai ou faux ?', max: 5, vf: [
-      ['Dans la version originale, Dark Vador dit exactement « Luke, je suis ton père ».', false],
+      ['Dans la version originale, Dark Vador dit exactement « Luke, je suis ton père ».', false, 'Il dit « No, I am your father » : « Non, je suis ton père ».'],
       ['« Titanic » a remporté 11 Oscars.', true],
       ['Mickey apparaît pour la première fois au public en 1928.', true],
-      ['Sherlock Holmes dit « Élémentaire, mon cher Watson » dans les romans de Conan Doyle.', false],
-      ['Dans le roman de Mary Shelley, Frankenstein est le nom du monstre.', false]
+      ['Sherlock Holmes dit « Élémentaire, mon cher Watson » dans les romans de Conan Doyle.', false, 'Cette formule exacte n\'apparaît dans aucun récit de Conan Doyle.'],
+      ['Dans le roman de Mary Shelley, Frankenstein est le nom du monstre.', false, 'C\'est le nom de son créateur, Victor Frankenstein ; le monstre n\'a pas de nom.']
     ] },
     { titre: 'Vrai ou faux', texte: 'Cinq affirmations, vrai ou faux ?', max: 5, vf: [
       ['La tomate est un fruit pour les botanistes.', true],
       ['Un miel bien conservé peut se garder des siècles.', true],
-      ['La cacahuète est une noix, au sens botanique.', false],
-      ['L\'eau est ce qui calme le mieux la brûlure du piment.', false],
+      ['La cacahuète est une noix, au sens botanique.', false, 'C\'est une légumineuse, comme le pois.'],
+      ['L\'eau est ce qui calme le mieux la brûlure du piment.', false, 'Le lait ou le yaourt la calment mieux : le piquant se dissout dans le gras.'],
       ['Le chocolat blanc contient du beurre de cacao.', true]
     ] },
     { titre: 'Vrai ou faux', texte: 'Cinq affirmations, vrai ou faux ?', max: 5, vf: [
       ['Le mot « oiseau » contient les cinq voyelles a, e, i, o, u.', true],
-      ['Le pluriel de « bal » est « baux ».', false],
+      ['Le pluriel de « bal » est « baux ».', false, 'C\'est « bals ».'],
       ['« Après que » se construit avec l\'indicatif.', true],
-      ['Le mot « autoroute » est masculin.', false],
+      ['Le mot « autoroute » est masculin.', false, 'Il est féminin : une autoroute.'],
       ['Le mot « squelette » est masculin.', true]
     ] },
     { titre: 'Vrai ou faux', texte: 'Cinq affirmations, vrai ou faux ?', max: 5, vf: [
       ['Un marathon mesure 42,195 km.', true],
       ['Un match de football dure 90 minutes en temps réglementaire.', true],
-      ['Les premiers Jeux olympiques modernes ont eu lieu à Paris.', false],
-      ['Au tennis, on compte 15, 30, 45.', false],
+      ['Les premiers Jeux olympiques modernes ont eu lieu à Paris.', false, 'Ils ont eu lieu à Athènes, en 1896.'],
+      ['Au tennis, on compte 15, 30, 45.', false, 'On compte 15, 30, 40.'],
       ['Au rugby, un essai vaut 5 points.', true]
     ] },
     { titre: 'Vrai ou faux', texte: 'Cinq affirmations, vrai ou faux ?', max: 5, vf: [
       ['Vénus est plus chaude que Mercure.', true],
       ['Sur Vénus, un jour est plus long qu\'une année.', true],
       ['Le Soleil est une étoile.', true],
-      ['Pluton est toujours officiellement une planète.', false],
-      ['Neil Armstrong a marché sur la Lune avec la mission Apollo 13.', false]
+      ['Pluton est toujours officiellement une planète.', false, 'Depuis 2006, c\'est une planète naine.'],
+      ['Neil Armstrong a marché sur la Lune avec la mission Apollo 13.', false, 'C\'était Apollo 11, en 1969 ; Apollo 13 n\'a pas pu se poser.']
     ] },
     { titre: 'Vrai ou faux', texte: 'Cinq affirmations, vrai ou faux ?', max: 5, vf: [
       ['Marseille est la deuxième ville de France par sa population.', true],
-      ['« La Marseillaise » a été écrite à Marseille.', false],
+      ['« La Marseillaise » a été écrite à Marseille.', false, 'Elle a été écrite à Strasbourg, en 1792, par Rouget de Lisle.'],
       ['Le Louvre a d\'abord été un palais royal.', true],
       ['La tour Eiffel a été construite pour l\'Exposition universelle de 1889.', true],
       ['Le mont Blanc est le plus haut sommet d\'Europe occidentale.', true]
@@ -183,6 +183,7 @@ var DX = (function () {
     l.push('arrivee');
     return l;
   }
+  var PART_NIVEAU3_DUR = 1 / 3;   // mise de 3 : une fois sur trois au hasard, la question du niveau 4, toujours pour 3 cases
   var NIVEAUX_FINALE = [6, 7];   // question de la case Arrivée : niveau 6 ou 7 au hasard, d'un sujet tiré au hasard
 
   function melanger(t, h) { h = h || Math.random; t = t.slice(); for (var i = t.length - 1; i > 0; i--) { var j = Math.floor(h() * (i + 1)), x = t[i]; t[i] = t[j]; t[j] = x; } return t; }
@@ -225,9 +226,9 @@ var DX = (function () {
     if (c === 'arrivee') return 'arrivee';
     return !q.joues || c === 'depart' ? 'improbable' : c;
   }
-  function question(e) { var s = e.carte && sujet(e.carte.sujet); return s && e.carte.niveau ? s.q[e.carte.niveau - 1] : null; }
+  function question(e) { var s = e.carte && sujet(e.carte.sujet); return s && e.carte.niveau ? s.q[(e.carte.niveauQ || e.carte.niveau) - 1] : null; }
   // Qui peut faire quoi : 'lecteur' (tirer, autre sujet, chrono, voir la réponse, juger), 'joue' (miser, choisir la cible), 'tous'
-  var QUI = { commencer: 'tous', tirer: 'lecteur', autre: 'les2', chrono: 'lecteur', voir: 'lecteur', juger: 'lecteur', challenge: 'lecteur',
+  var QUI = { commencer: 'tous', tirer: 'lecteur', autre: 'les2', chrono: 'lecteur', voir: 'lecteur', juger: 'lecteur', challenge: 'lecteur', annuler: 'juge',
               miser: 'joue', surprise: 'les2', nouvelle: 'tous' };
 
   function deplacer(e, i, n) { var q = e.equipes[i]; q.pos = Math.max(0, Math.min(e.cases.length - 1, q.pos + n)); }
@@ -247,6 +248,13 @@ var DX = (function () {
     }
     e.phase = 'theme';
   }
+  // Avant un jugement : de quoi revenir en arrière si l'équipe qui lit s'est trompée de bouton
+  function garderAvant(e) {
+    var a = JSON.parse(JSON.stringify(e));
+    delete a.avant; delete a.n;
+    a.lecteur = lecteur(e);
+    return a;
+  }
   // Une action ; ctx = { vus (sujets déjà vus), h (hasard), maintenant } ; renvoie un message d'erreur ou null.
   // Le sujet tiré est rendu dans ctx.tire (à retenir comme « vu »).
   function agir(e, a, ctx) {
@@ -259,7 +267,7 @@ var DX = (function () {
         break;
       case 'tirer': {
         if (e.phase !== 'theme') return 'Pas maintenant.';
-        var t = themeTour(e); e.chrono = null; e.derniere = null;
+        var t = themeTour(e); e.chrono = null; e.derniere = null; delete e.avant;
         if (t === 'arrivee') {
           var s = tirerSujet(null, ctx.vus, h); ctx.tire = s.id;
           e.carte = { theme: s.theme, sujet: s.id, niveau: NIVEAUX_FINALE[tirer(NIVEAUX_FINALE, h)], finale: true }; e.phase = 'question';
@@ -276,6 +284,7 @@ var DX = (function () {
       case 'miser':
         if (e.phase !== 'mise' || !(a.n >= 1 && a.n <= 10)) return 'Pas maintenant.';
         c.niveau = Math.round(a.n); e.phase = 'question'; e.chrono = null;
+        if (c.niveau === 3 && h() < PART_NIVEAU3_DUR) c.niveauQ = 4;
         e.journal = q.nom + ' se met ' + c.niveau + ' sur 10.';
         break;
       case 'chrono':
@@ -288,8 +297,9 @@ var DX = (function () {
         break;
       case 'juger': {
         if (e.phase !== 'question' && e.phase !== 'reponse') return 'Pas maintenant.';
+        e.avant = garderAvant(e);
         var qr = question(e), n = c.niveau;
-        e.derniere = { q: qr[0], r: qr[1], ok: !!a.ok, equipe: e.tour, s: sujet(c.sujet).nom, nv: n };
+        e.derniere = { q: qr[0], r: qr[1], ok: !!a.ok, equipe: e.tour, s: sujet(c.sujet).nom, nv: c.niveauQ || n };
         if (c.finale) {
           if (a.ok) { e.gagnant = e.tour; e.phase = 'fin'; e.carte = null; e.chrono = null; e.journal = q.nom + ' a répondu juste à la question finale !'; break; }
           e.journal = q.nom + ' rate la question finale : on retentera au prochain tour.';
@@ -300,11 +310,21 @@ var DX = (function () {
       }
       case 'challenge': {
         if (e.phase !== 'challenge') return 'Pas maintenant.';
+        e.avant = garderAvant(e);
         var ch = CHALLENGES[c.challenge], nb = Math.max(0, Math.min(ch.max || 0, Math.round(a.n) || 0));
-        e.derniere = { q: ch.texte, r: ch.vf ? ch.vf.map(v => v[1] ? 'V' : 'F').join(' · ') : (ch.reponse || ''), n: nb, ok: nb > 0, equipe: e.tour, challenge: true, s: 'Challenge' };
+        e.derniere = { q: ch.texte, r: ch.vf ? ch.vf.map(v => v[1] ? 'V' : 'F').join(' · ') : (ch.reponse || ''), n: nb, ok: nb > 0, equipe: e.tour, challenge: true, s: 'Challenge', cor: ch.vf ? ch.vf.map((v, i) => v[2] ? (i + 1) + '. ' + v[2] : '').filter(Boolean) : [] };
         if (nb) { e.journal = 'Challenge : ' + nb + (nb > 1 ? ' bonnes réponses' : ' bonne réponse') + ', ' + q.nom + ' avance de ' + cases(nb) + '.'; deplacer(e, e.tour, nb); }
         else e.journal = 'Challenge : aucune bonne réponse pour ' + q.nom + '.';
         suivant(e);
+        break;
+      }
+      case 'annuler': {
+        var av = e.avant;
+        if (!av) return 'Rien à annuler.';
+        Object.keys(e).forEach(k => { if (k !== 'n') delete e[k]; });
+        delete av.lecteur;
+        Object.assign(e, av);
+        e.journal = 'Jugement annulé : on recommence.';
         break;
       }
       case 'surprise': {
