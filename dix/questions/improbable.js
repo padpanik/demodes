@@ -1266,4 +1266,48 @@ Quel film de 1922 montre la construction d'un igloo ? | Nanouk l'Esquimau
 Quel réalisateur américain l'a tourné ? | Robert Flaherty
 Dans quelle province canadienne l'a-t-il tourné ? | Le Québec
 Quel dialecte inuit a donné le mot ? | L'inuktitut
+# Les feux d'artifice
+Que crie la foule quand c'est beau ? | Oooh !
+Quel jour de juillet en tire-t-on en France ? | Le 14 juillet
+Que doit-on faire avec une fusée qui n'est pas partie ? | Ne surtout pas s'en approcher
+De quel pays viennent-ils ? | La Chine
+Quelle poudre les propulse ? | La poudre noire
+Quel compositeur a écrit une Musique pour les feux d'artifice royaux ? | Haendel
+En quelle année a-t-elle été jouée à Londres ? | En 1749
+Quel métal donne une couleur rouge ? | Le strontium
+Quel métal donne une couleur verte ? | Le baryum
+Quel métal donne une couleur bleue ? | Le cuivre
+# Les montgolfières
+Qu'est-ce qui les fait monter ? | De l'air chaud
+Dans quoi les passagers prennent-ils place ? | Une nacelle
+Quels frères les ont inventées ? | Les frères Montgolfier
+Dans quelle ville d'Ardèche ont-ils fait leur première démonstration ? | Annonay
+En quelle année ? | En 1783
+Quels animaux ont d'abord voyagé à Versailles ? | Un mouton, un coq et un canard
+Qui ont été les deux premiers hommes en vol libre ? | Pilâtre de Rozier et le marquis d'Arlandes
+Quel roman de Jules Verne se fait en ballon ? | Cinq semaines en ballon
+Quel Suisse a fait le tour du monde en ballon sans escale en 1999 ? | Bertrand Piccard
+Quel Britannique l'a accompagné ? | Brian Jones
+# Les cartes à jouer
+Combien y a-t-il de cartes dans un jeu classique ? | 52
+Quelle carte vaut souvent le plus, malgré son chiffre 1 ? | L'as
+Quel roi est le seul sans moustache ? | Le roi de cœur
+Quelles sont les quatre couleurs ? | Cœur, carreau, trèfle, pique
+Quelle carte en plus est un fou qui rit ? | Le joker
+Quel roi biblique est le roi de pique, dans le jeu français ? | David
+Quel roi est le roi de trèfle ? | Alexandre
+Quel roi est le roi de carreau ? | César
+Quel roi est le roi de cœur ? | Charlemagne
+Quelle déesse est la dame de pique ? | Pallas
+# Les dés
+Combien de faces a un dé classique ? | Six
+Comment appelle-t-on un dé truqué ? | Un dé pipé
+Combien de dés lance-t-on au Yams ? | Cinq
+Quelle est la somme de deux faces opposées ? | Sept
+Quel total de points porte un dé entier ? | 21
+Qu'a dit César en franchissant le Rubicon, à propos des dés ? | Alea jacta est
+Que veut dire cette phrase latine ? | Le sort en est jeté
+Quel jeu de dés de casino se joue debout ? | Le craps
+Quel dé a vingt faces, dans les jeux de rôle ? | Le d20
+Comment s'appelle le polyèdre à vingt faces ? | L'icosaèdre
 `;

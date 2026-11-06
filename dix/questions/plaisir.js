@@ -881,4 +881,48 @@ En quelle année ? | En 1992
 Combien de personnages jouables comptait le premier jeu ? | Huit
 Quel Japonais a dirigé le développement du premier jeu ? | Hideki Konno
 Combien de coupes comptait le premier jeu ? | Quatre
+# Le Gendarme de Saint-Tropez
+Quelle ville du Var a des gendarmes célèbres ? | Saint-Tropez
+Quel acteur joue le maréchal des logis Cruchot ? | Louis de Funès
+Comment s'appelle sa fille ? | Nicole
+En quelle année sort le tout premier Gendarme ? | En 1964
+Quel acteur joue l'adjudant Gerber ? | Michel Galabru
+Qui réalise la série ? | Jean Girault
+Quel film envoie les gendarmes à New York ? | Le Gendarme à New York
+Quelle chanson accompagne la série, « Douliou douliou… » ? | Saint-Tropez
+Quels visiteurs arrivent en 1979 ? | Des extraterrestres
+Quel dernier film sort en 1982 ? | Le Gendarme et les Gendarmettes
+# Les Tontons flingueurs
+Qui réalise le film ? | Georges Lautner
+Qui en signe les dialogues ? | Michel Audiard
+Quel acteur joue Fernand Naudin ? | Lino Ventura
+En quelle année sort-il ? | En 1963
+Dans quelle pièce se passe la scène culte du « bizarre » ? | La cuisine
+Quel surnom porte l'alcool qu'on y boit ? | Le vitriol
+Quel acteur joue Raoul Volfoni ? | Bernard Blier
+Quel acteur joue Maître Folace, le notaire ? | Francis Blanche
+Quel acteur joue Paul Volfoni ? | Jean Lefebvre
+Quel acteur joue Jean le majordome ? | Robert Dalban
+# La Grande Vadrouille
+Quel duo la porte ? | Bourvil et Louis de Funès
+Pendant quelle guerre se déroule-t-elle ? | La Seconde Guerre mondiale
+Quel métier a Bourvil ? | Peintre en bâtiment
+Quel métier a De Funès ? | Chef d'orchestre
+Qui réalise le film ? | Gérard Oury
+En quelle année sort-il ? | En 1966
+Quel Anglais à moustache joue « Big Moustache » ? | Terry-Thomas
+Dans quels hospices bourguignons une scène se déroule-t-elle ? | Les Hospices de Beaune
+Quel mot de passe des pilotes siffle-t-on ? | Tea for Two
+Combien d'entrées a-t-il faites, à peu près ? | 17 millions
+# Gremlins
+Quel petit animal fait-on devenir méchant ? | Gizmo
+Pas de lumière, pas d'eau, et quelle troisième règle ? | Pas de nourriture après minuit
+Comment s'appelle cette espèce ? | Les mogwaïs
+Qui reçoit Gizmo en cadeau de Noël ? | Billy
+En quelle année sort le film ? | En 1984
+Qui le réalise ? | Joe Dante
+Qui le produit ? | Steven Spielberg
+Qui en a écrit le scénario ? | Chris Columbus
+Comment s'appelle le gremlin chef ? | Stripe
+Quel acteur joue Billy ? | Zach Galligan
 `;

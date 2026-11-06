@@ -650,4 +650,37 @@ Quelle femme a écrit la Déclaration des droits de la femme ? | Olympe de Gouge
 En quelle année ? | En 1791
 Dans quel préambule de 1958 est-elle citée ? | Celui de la Constitution de la Ve République
 Quelle institution lui a donné valeur juridique en 1971 ? | Le Conseil constitutionnel
+# Les pays baltes
+Combien sont-ils ? | Trois
+Sur quelle mer sont-ils ? | La Baltique
+Quels sont-ils ? | L'Estonie, la Lettonie, la Lituanie
+Quelle est la capitale de l'Estonie ? | Tallinn
+Quelle est la capitale de la Lettonie ? | Riga
+Quelle est la capitale de la Lituanie ? | Vilnius
+En quelle année ont-ils retrouvé leur indépendance ? | En 1991
+De quel grand ensemble se sont-ils séparés ? | L'URSS
+Comment s'appelle la chaîne humaine de 1989 ? | La Voie balte
+Dans quelle organisation européenne sont-ils entrés en 2004 ? | L'Union européenne
+# Isaac Newton
+Quel fruit lui serait tombé sur la tête ? | Une pomme
+De quel pays vient-il ? | L'Angleterre
+Quelle force a-t-il décrite ? | La gravitation
+Quelle unité de force porte son nom ? | Le newton
+Combien pèse une pomme, en newtons ? | Environ 1 newton
+Dans quelle université a-t-il enseigné ? | Cambridge
+Quel livre publie-t-il en 1687 ? | Les Principia
+Que décompose-t-il avec un prisme ? | La lumière blanche
+Quel objet a-t-il perfectionné avec un miroir ? | Le télescope
+Avec quel mathématicien allemand s'est-il disputé le calcul différentiel ? | Leibniz
+# L'alphabet grec
+Quelle est sa première lettre ? | Alpha
+Quelle est la dernière ? | Oméga
+Quelle lettre désigne 3,14 ? | Pi
+Quelle lettre désigne la différence, un triangle en majuscule ? | Delta
+Combien de lettres compte-t-il ? | 24
+Quelle lettre désigne une somme, en mathématiques ? | Sigma
+Quelle lettre désigne souvent un angle ? | Thêta
+Quelle lettre désigne le micro ? | Mu
+Quelle lettre désigne la longueur d'onde ? | Lambda
+Quelle lettre désigne le nombre d'or ? | Phi
 `;

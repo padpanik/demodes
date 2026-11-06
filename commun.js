@@ -3,12 +3,13 @@
 // Les clés de stockage gardent l'ancien préfixe "brillant-" : les réglages déjà faits sont conservés.
 
 // Numéro de version affiché (à augmenter à chaque mise en ligne, avec brilliant/index.html et sw.js)
-const VERSION = '3.08';
+const VERSION = '3.09';
 
 // ---------- Nouveautés (2.87, demandé par l'utilisateur) ----------
 // Une ligne très brève par mise en ligne (la plus récente en haut) : l'accueil les montre une seule fois, dans une petite fenêtre,
 // à qui n'a pas encore vu cette version. [version, jeu ou partie de l'appli, ce qui change]
 const NOUVEAUTES = [
+  ['3.09', 'Combien sur 10 ?', '15 nouveaux sujets : 3 390 questions.'],
   ['3.08', 'Combien sur 10 ?', '17 nouveaux sujets : 3 240 questions.'],
   ['3.07', 'Combien sur 10 ?', '20 nouveaux sujets : 3 070 questions.'],
   ['3.06', 'Combien sur 10 ?', '41 nouveaux sujets : 2 870 questions.'],

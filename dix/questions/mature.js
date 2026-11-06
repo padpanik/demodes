@@ -771,4 +771,48 @@ Quelle grande maison dijonnaise a été fondée au XVIIIe siècle ? | Maille
 Pourquoi manquait-elle en France en 2022 ? | Sécheresse au Canada
 Par quoi le Dijonnais Jean Naigeon a-t-il remplacé le vinaigre ? | Le verjus
 En quelle année a-t-il fait ce changement ? | En 1856
+# La Sécurité sociale
+Quelle carte verte présente-t-on chez le médecin ? | La carte Vitale
+Sur quel site va-t-on voir ses remboursements ? | Ameli
+En quelle année la Sécurité sociale a-t-elle été créée ? | En 1945
+Comment appelle-t-on son déficit, familièrement ? | Le trou de la Sécu
+Combien de chiffres compte le numéro de sécurité sociale, clé comprise ? | 15
+Quel chiffre commence le numéro pour un homme ? | 1
+Quel ministre communiste a mis en place le régime général ? | Ambroise Croizat
+Quel haut fonctionnaire est son autre père fondateur ? | Pierre Laroque
+En quelle année la carte Vitale est-elle arrivée ? | En 1998
+Quel organisme national porte le sigle CNAM ? | La Caisse nationale de l'Assurance maladie
+# Le beaujolais nouveau
+Quel jour arrive-t-il ? | Le troisième jeudi de novembre
+Quelle phrase est écrite dans les bars ce jour-là ? | Le beaujolais nouveau est arrivé
+Quel cépage le compose ? | Le gamay
+De quelle couleur est-il ? | Rouge
+Quel arôme lui reproche-t-on souvent, plutôt fruité ? | La banane
+Quelle ville est sa grande capitale commerciale, au sud du vignoble ? | Lyon
+Quel négociant a fait sa réputation mondiale ? | Georges Duboeuf
+Depuis quelle décennie est-il officiellement fêté ? | Les années 1950
+Depuis quelle année la date du troisième jeudi est-elle fixée ? | Depuis 1985
+Quel procédé de cuve donne ce goût ? | La macération semi-carbonique
+# Les cartes bancaires
+Que perd-on toujours au pire moment ? | Sa carte
+Combien de chiffres a son numéro, le plus souvent ? | 16
+Quel paiement n'exige pas de taper le code ? | Le sans contact
+Quels sont les deux grands réseaux américains ? | Visa et Mastercard
+Quel sigle français est souvent inscrit ? | CB
+Comment s'appellent les trois chiffres au dos ? | Le cryptogramme
+Quel Français a inventé la carte à puce ? | Roland Moreno
+En quelle année a-t-il déposé son brevet ? | En 1974
+Quelle première carte de paiement américaine date de 1950 ? | Diners Club
+Quel Américain en aurait eu l'idée, son portefeuille oublié au restaurant ? | Frank McNamara
+# Le gin
+Quelle baie le parfume ? | Le genièvre
+Avec quoi le mélange-t-on le plus souvent ? | Du tonic
+Quel cocktail classique mêle gin et vermouth ? | Le dry martini
+Quel pays en a la réputation aujourd'hui ? | Le Royaume-Uni
+De quel pays vient son ancêtre, le genièvre ? | Les Pays-Bas
+Quelle molécule amère du tonic a servi à lutter contre le paludisme ? | La quinine
+Dans quel empire colonial le gin tonic a-t-il été popularisé ? | L'Empire britannique, en Inde
+Quel peintre a dessiné « La Rue du gin » ? | William Hogarth
+Dans quelle ville se passait cette folie du gin au XVIIIe siècle ? | Londres
+Quel style de gin sec porte le nom de cette ville ? | Le London Dry
 `;
