@@ -5,7 +5,7 @@
 //   version mise en ligne est donc visible dès le prochain lancement.
 // Pensez à changer VERSION à chaque mise en ligne (même numéro que dans commun.js et brilliant/index.html).
 
-const VERSION = '3.03';
+const VERSION = '3.04';
 const CACHE = 'desdale-' + VERSION;
 // Au-delà de ce délai sans réponse du réseau, on sert la copie gardée (réseau faible)
 const DELAI_RESEAU = 3000;
@@ -36,7 +36,7 @@ const FICHIERS = [
   './domino/',
   './domino/domino-regles.js',
   './dix/',
-  './dix/dix-questions.js', './dix/dix-regles.js',
+  './dix/questions/improbable.js', './dix/questions/plaisir.js', './dix/questions/mature.js', './dix/questions/scolaire.js', './dix/dix-regles.js',
   './joyaux/',
   './joyaux/joyaux-regles.js',
   './joyaux/joyaux-duel.js',

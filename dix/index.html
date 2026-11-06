@@ -440,7 +440,10 @@
   <script src="joueur.js"></script>
   <script src="commun.js"></script>
   <script src="etoiles.js"></script>
-  <script src="dix/dix-questions.js"></script>
+  <script src="dix/questions/improbable.js"></script>
+  <script src="dix/questions/plaisir.js"></script>
+  <script src="dix/questions/mature.js"></script>
+  <script src="dix/questions/scolaire.js"></script>
   <script src="dix/dix-regles.js"></script>
   <script>
     if (!ACCES.memorise()) location.replace('index.html');
@@ -721,7 +724,7 @@
           }
         },
         vus: function() { return lireStockage('dix-vus') || []; },
-        retenirVu: function(id) { var v = this.vus().filter(x => x !== id); v.push(id); ecrireStockage('dix-vus', v.slice(-200)); },
+        retenirVu: function(id) { var v = this.vus().filter(x => x !== id); v.push(id); ecrireStockage('dix-vus', v.slice(-500)); },
 
         // ================== MODE TEST (un seul téléphone) ==================
         sauverTest: function() { if (this.eTest) this.eTest.t = Date.now(); ecrireStockage(CLE_TEST, this.eTest); },

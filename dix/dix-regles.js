@@ -15,22 +15,22 @@ var DX = (function () {
   };
   var ORDRE_THEMES = ['improbable', 'plaisir', 'mature', 'scolaire'];
 
-  // Lit dix-questions.js : « # thème | nom », puis « question | réponse » par ligne
-  function lireSujets(texte) {
+  // Questions : dix/questions/<thème>.js (format : dix/questions/LISEZMOI.md). « # nom », puis « question | réponse » par ligne
+  if (typeof require !== 'undefined' && typeof globalThis.DX_Q === 'undefined') ORDRE_THEMES.forEach(function (t) { require('./questions/' + t + '.js'); });
+  function idSujet(nom) { return nom.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''); }
+  function lireSujets(theme) {
     var l = [], s = null;
-    texte.split('\n').forEach(function (x) {
+    ((globalThis.DX_Q || {})[theme] || '').split('\n').forEach(function (x) {
       x = x.trim();
       if (!x) return;
-      var p = x.replace(/^# /, '').split(' | ');
-      if (x.charAt(0) === '#') { s = [p[0], p[1], []]; l.push(s); }
-      else if (s) s[2].push([p[0], p[1]]);
+      if (x.charAt(0) === '#') { s = { id: idSujet(x.slice(2)), theme: theme, nom: x.slice(2), q: [] }; l.push(s); }
+      else if (s) s.q.push(x.split(' | '));
     });
     return l;
   }
 
-  // Sujets : [thème, nom, [[question, réponse], … niveaux 1 à 10]]
-  var SUJETS = [].concat(lireSujets(typeof DX_QUESTIONS !== 'undefined' ? DX_QUESTIONS : (typeof require !== 'undefined' ? require('./dix-questions.js') : '')))
-   .map(function (s, i) { return { id: s[0] + '-' + i, theme: s[0], nom: s[1], q: s[2] }; });
+  // Sujets : { id, theme, nom, q: [[question, réponse], … niveaux 1 à 10] }
+  var SUJETS = ORDRE_THEMES.reduce(function (l, t) { return l.concat(lireSujets(t)); }, []);
 
   // Challenges : épreuves originales, jugées par l'équipe qui lit. gain = cases gagnées si réussi
   // Challenge : on cite des choses, ou une série de vrai ou faux ; on avance d'autant de cases que de bonnes réponses (max au plus)

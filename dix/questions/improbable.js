@@ -1,0 +1,554 @@
+// « Combien sur 10 ? », thème Improbable. Format et règles d'écriture : dix/questions/LISEZMOI.md
+// Un sujet : « # nom », puis 10 lignes « question | réponse », du niveau 1 au niveau 10.
+(globalThis.DX_Q = globalThis.DX_Q || {}).improbable = `
+# Le petit coin
+Que cherche-t-on désespérément quand le rouleau est vide ? | Du papier toilette
+Dans quelle pièce peut-on lire tranquille tant que personne ne frappe à la porte ? | Les toilettes
+Que tire-t-on (normalement) avant de sortir ? | La chasse d'eau
+Quel mois a lieu la Journée mondiale des toilettes décrétée par l'ONU ? | Novembre
+Quel pays est célèbre pour ses toilettes chauffantes à télécommande ? | Le Japon
+Comment appelle-t-on les anciens urinoirs publics, du nom d'un empereur romain ? | Les vespasiennes
+Quel empereur romain aurait dit « l'argent n'a pas d'odeur » à propos d'une taxe sur l'urine ? | Vespasien
+Quel plombier anglais, au nom prédestiné, a popularisé la chasse d'eau au XIXe siècle ? | Thomas Crapper
+Quel filleul d'Élisabeth Ire a conçu une chasse d'eau dès 1596 ? | John Harington
+Quel préfet a donné son nom aux colonnes-urinoirs installées à Paris dans les années 1830 ? | Le comte de Rambuteau
+# Les morts insolites
+Quel objet tombe toujours sur la tête de Vil Coyote ? | Une enclume
+Quel fruit empoisonné envoie Blanche-Neige au tapis ? | Une pomme
+Quel chanteur français a voulu redresser une applique sous sa douche, en 1978 ? | Claude François
+Quel roi de France a été mortellement blessé lors d'un tournoi, en 1559 ? | Henri II
+Sur quelle scène Molière a-t-il eu son dernier malaise, le soir de sa mort ? | Au théâtre, en jouant « Le Malade imaginaire »
+Quel président français est mort à l'Élysée en 1899, en galante compagnie ? | Félix Faure
+Quelle danseuse a été étranglée par son écharpe prise dans une roue de voiture, à Nice ? | Isadora Duncan
+Quel dramaturge grec aurait été tué par une tortue lâchée par un aigle ? | Eschyle
+Quel savant aurait pris froid en farcissant un poulet de neige pour le conserver ? | Francis Bacon
+Quel astronome danois serait mort d'une vessie éclatée, par politesse à un banquet ? | Tycho Brahe
+# Les jurons du capitaine Haddock
+Quelle boisson le capitaine préfère-t-il nettement à l'eau ? | Le whisky
+« Tonnerre de… » quoi ? | Brest
+« Mille… » quoi ? | Sabords
+« Ectoplasme à… » quoi ? | Roulettes
+Dans quel château le capitaine finit-il par s'installer ? | Moulinsart
+Quelle est sa marque de whisky préférée ? | Loch Lomond
+Qu'était à l'origine un bachi-bouzouk ? | Un soldat irrégulier de l'Empire ottoman
+Qu'est-ce qu'un sabord, exactement ? | Une ouverture dans le flanc d'un navire, pour les canons
+Qu'est-ce qu'une anacoluthe, que le capitaine prend pour une injure ? | Une rupture de construction dans une phrase
+Quelle dispute de marché, avec l'injure « espèce de… », aurait donné à Hergé l'idée de ces jurons ? | « Espèce de Pacte à quatre ! »
+# Les communes au drôle de nom
+Quelle commune de la Somme tient en une seule lettre ? | Y
+Quelle ancienne commune du Loir-et-Cher promet une fin de soirée difficile ? | Bourré
+Quelle ville du Nord a servi de décor à « Bienvenue chez les Ch'tis » ? | Bergues
+Dans quel département se trouve Montcuq, chère à Daniel Prévost ? | Le Lot
+Quelle ville du Gers a un nom qui fait sourire les Anglais ? | Condom
+Dans quel département se trouve Sexey-les-Bois ? | La Meurthe-et-Moselle
+Quelle commune de la Marne, composée, a l'un des plus longs noms de France ? | Saint-Remy-en-Bouzemont-Saint-Genest-et-Isson
+Quelle commune de la Drôme est souvent citée comme la moins peuplée de France ? | Rochefourchat
+Quelle commune de la Meuse, détruite en 1916, n'a plus d'habitants mais garde un maire ? | Fleury-devant-Douaumont
+Quel département compte le plus de communes en France ? | Le Pas-de-Calais
+# Les bêtes moches
+Quel animal verdâtre attend un baiser de princesse ? | Le crapaud
+Quel poisson gélatineux a été élu animal le plus moche du monde ? | Le blobfish
+Quel petit mammifère aveugle creuse des galeries sous votre pelouse ? | La taupe
+Quel oiseau charognard a le cou déplumé ? | Le vautour
+Quel animal a un nez en forme de petite trompe et vit en Amazonie ? | Le tapir
+Quel singe d'Asie a un énorme nez pendant ? | Le nasique
+Sur quelle île vit l'aye-aye ? | Madagascar
+À quoi sert le long doigt majeur de l'aye-aye ? | À sonder et extraire les larves dans le bois
+Quel rongeur africain, presque sans poils, vit en colonie autour d'une seule reine ? | Le rat-taupe nu
+Quel est le nom scientifique du blobfish ? | Psychrolutes marcidus
+# Les sports bizarres
+Quel sport fait balayer de la glace avec acharnement ? | Le curling
+Dans quel sport des géants en petite tenue se poussent-ils hors d'un cercle ? | Le sumo
+Quel sport de Harry Potter se joue pour de vrai, un balai entre les jambes ? | Le quidditch
+Quel sport alterne rounds d'échecs et rounds de boxe ? | Le chess-boxing (ou échecs-boxe)
+Quel produit laitier poursuit-on en dévalant une colline à Gloucester ? | Un fromage (le double gloucester)
+Quel pays organise le championnat du monde de porter de femme ? | La Finlande
+Quelle épreuve de force par équipes a été olympique jusqu'en 1920 ? | Le tir à la corde
+Quel sport d'Asie du Sud-Est ressemble à du volley joué avec les pieds ? | Le sepak takraw
+Dans quel pays le hurling est-il un sport national ? | L'Irlande
+Dans quelle ville de l'Hérault la joute nautique est-elle une tradition depuis 1666 ? | Sète
+# La nourriture douteuse
+Quel animal français mange-t-on au beurre persillé, coquille comprise dans l'assiette ? | L'escargot
+Quelles cuisses les Anglais nous reprochent-ils de manger ? | Les cuisses de grenouille
+Quelle charcuterie à l'odeur intense est faite de tripes ? | L'andouillette
+Quelle pâte à tartiner salée divise tous les Britanniques ? | La Marmite
+Quelle panse de brebis farcie est le plat national écossais ? | Le haggis
+De quel pays viennent les graines de soja fermentées et gluantes, le natto ? | Le Japon
+Dans quel pays mange-t-on le balut, un œuf de cane couvé ? | Les Philippines
+De quelle île vient le casu marzu, fromage aux asticots vivants ? | La Sardaigne
+Quel animal de compagnie chez nous est un plat traditionnel au Pérou, sous le nom de cuy ? | Le cochon d'Inde
+Quel poison rend le fugu mortel s'il est mal préparé ? | La tétrodotoxine
+# Les trombones de bureau
+Un trombone de bureau sert-il surtout à jouer dans une fanfare ? | Non, à tenir des feuilles
+Quel instrument à coulisse porte le même nom ? | Le trombone
+Quelle petite trappe de téléphone ouvre-t-on avec un trombone déplié ? | Le tiroir de la carte SIM
+En quel métal est fait un trombone classique ? | L'acier
+Comment s'appelait le trombone à gros yeux qui proposait son aide dans Word ? | Clippy
+Dans quelle suite de logiciels sévissait-il ? | Microsoft Office
+Dans quel pays des gens ont-ils porté un trombone au revers de leur veste pour narguer l'occupant, en 1940 ? | La Norvège
+Quel Norvégien est souvent présenté, à tort, comme l'inventeur du trombone ? | Johan Vaaler
+Quel Canadien a échangé un trombone rouge, de troc en troc, jusqu'à obtenir une maison ? | Kyle MacDonald
+Quelle entreprise britannique a donné son nom au modèle classique à double boucle ? | Gem
+# Les chaussettes
+Combien de chaussettes met-on en général à chaque pied ? | Une
+Quel appareil ménager est soupçonné d'en manger une sur deux ? | Le lave-linge
+Avec quelles chaussures le port de chaussettes déclenche-t-il des moqueries ? | Les sandales
+Où les enfants suspendent-ils de grandes chaussettes à Noël, dans les films américains ? | À la cheminée
+Quel elfe de maison est libéré grâce à une chaussette ? | Dobby
+Que veut dire « laisser tomber comme une vieille chaussette » ? | Abandonner sans égards
+Quelle ville française est la capitale historique de la bonneterie ? | Troyes
+Quelle fibre synthétique lancée par DuPont a fait fureur dans les bas à partir de 1939 ? | Le nylon
+Quel pasteur anglais a inventé le métier à tricoter les bas, en 1589 ? | William Lee
+Combien mesure un point de pointure française ? | Deux tiers de centimètre (6,67 mm)
+# Le ruban adhésif
+Peut-on réparer un avion de ligne uniquement avec du scotch de bureau ? | Non
+Comment appelle-t-on familièrement le ruban adhésif transparent en France ? | Le scotch
+Que cherche-t-on à l'ongle pendant dix minutes sur un rouleau neuf ? | Le début du ruban
+Quel ruban gris répare tout selon les bricoleurs ? | Le duct tape (ou ruban gris)
+Quelle entreprise américaine fabrique le Scotch ? | 3M
+Quel autre petit papier collant célèbre vient de la même entreprise ? | Le Post-it
+Pour quelle mission Apollo un garde-boue de rover lunaire a-t-il été réparé au ruban adhésif ? | Apollo 17
+Quel ingénieur de 3M a inventé le ruban adhésif de masquage, en 1925 ? | Richard Drew
+Quel chimiste de 3M a mis au point par accident la colle du Post-it ? | Spencer Silver
+Quel collègue a eu l'idée de s'en servir comme marque-page dans son livre de chant ? | Art Fry
+# Les bouchons de liège
+Trouve-t-on des bouchons de liège dans les canalisations de vin de Bordeaux ? | Non, dans les bouteilles
+Avec quel objet retire-t-on le bouchon ? | Un tire-bouchon
+Quel défaut donne un goût de moisi au vin ? | Le goût de bouchon
+Sur quel arbre récolte-t-on le liège ? | Le chêne-liège
+Quel pays est le premier producteur mondial de liège ? | Le Portugal
+Comment s'appelle l'opération de récolte de l'écorce ? | Le démasclage
+Tous les combien d'années environ récolte-t-on l'écorce d'un chêne-liège ? | Tous les 9 ans
+Quelle molécule est responsable du goût de bouchon ? | Le TCA (trichloroanisole)
+Comment appelle-t-on la première récolte de liège, de mauvaise qualité ? | Le liège mâle
+Quel est le nom scientifique du chêne-liège ? | Quercus suber
+# Les ronds-points
+Un rond-point sert-il à jouer aux billes ? | Non, à gérer la circulation
+Dans quel sens tourne-t-on sur un rond-point français ? | Dans le sens inverse des aiguilles d'une montre
+Quel ornement absurde trône souvent au milieu d'un rond-point français ? | Une sculpture (ou tout objet local)
+Qui est prioritaire dans un carrefour à sens giratoire ? | Celui qui circule déjà sur l'anneau
+Quel célèbre rond-point parisien entoure l'Arc de triomphe ? | La place de l'Étoile (Charles-de-Gaulle)
+Quel pays compte le plus de ronds-points d'Europe, souvent cité avec plus de 30 000 ? | La France
+Dans quel sens tourne-t-on sur un rond-point britannique ? | Dans le sens des aiguilles d'une montre
+Dans quelle ville anglaise se trouve le rond-point géant à cinq petits ronds-points ? | Swindon (le Magic Roundabout)
+Quel architecte français a théorisé le carrefour giratoire vers 1906 ? | Eugène Hénard
+Sur combien d'avenues donne la place de l'Étoile ? | 12
+# La poule et l'œuf
+Une poule peut-elle pondre un œuf au plat directement ? | Non
+Quel est le mâle de la poule ? | Le coq
+Comment s'appelle le petit de la poule ? | Le poussin
+Combien de temps cuit un œuf dur, environ ? | 9 à 10 minutes
+Que veut dire le code 0 imprimé sur un œuf ? | Poule élevée en bio
+Que veut dire le code 3 ? | Poule élevée en cage
+Combien de jours faut-il pour couver un œuf de poule ? | 21 jours
+Quelle partie de l'œuf contient le plus de protéines par rapport au gras ? | Le blanc
+Comment s'appelle le cordon qui maintient le jaune au centre de l'œuf ? | Les chalazes
+Quel est l'ancêtre sauvage principal de la poule, en Asie ? | Le coq bankiva
+# Les aspirateurs
+L'aspirateur sert-il à souffler les bougies ? | Non
+Que faut-il changer ou vider quand il est plein ? | Le sac (ou le bac)
+Quel robot aspirateur américain rond porte un nom de maison ? | Roomba
+Quelle marque britannique a popularisé l'aspirateur sans sac ? | Dyson
+Que veut dire le mot anglais « to hoover » ? | Passer l'aspirateur
+Dans quel pays le mot « hoover » désigne-t-il l'aspirateur ? | Au Royaume-Uni
+De quelle société vient le Roomba ? | iRobot
+Combien de prototypes James Dyson dit-il avoir construits ? | 5 127
+Quel Anglais a inventé en 1901 un grand aspirateur à moteur tiré par des chevaux ? | Hubert Cecil Booth
+Quel concierge américain asthmatique a inventé le modèle vendu ensuite à Hoover ? | James Murray Spangler
+# Les petits suisses et yaourts
+Un petit-suisse est-il un habitant de Genève de moins d'un mètre ? | Non, un fromage frais
+Combien de pots de yaourt y a-t-il souvent dans un pack ? | 4 (ou 8, 12, 16 selon l'emballage)
+Avec quel ustensile mange-t-on un yaourt ? | Une petite cuillère
+Quelle marque de yaourts porte le diminutif catalan du prénom Daniel ? | Danone
+Quel sucre du lait les bactéries transforment-elles ? | Le lactose
+Quel pays est associé au bacille du yaourt ? | La Bulgarie
+Quel acide donne son goût au yaourt ? | L'acide lactique
+Quelle bactérie vient s'associer au Lactobacillus bulgaricus dans le yaourt ? | Streptococcus thermophilus
+Dans quelle ville Danone a-t-il été créé, en 1919 ? | Barcelone
+Quel savant russe de l'Institut Pasteur a popularisé le yaourt pour sa longévité ? | Élie Metchnikoff
+# Le camping
+Faut-il planter des pommes de terre pour tenir sa tente ? | Non, des sardines
+Quel film a rendu célèbre Patrick Chirac ? | Camping
+Quel acteur joue Patrick Chirac ? | Franck Dubosc
+Quel petit piquet sert à fixer la tente ? | La sardine
+En quelle année est sorti le film « Camping » ? | 2006
+Quelle loi de 1936 a lancé les vacances en tente et à vélo ? | Celle des congés payés
+Combien d'étoiles peut avoir un camping au maximum en France ? | 5
+Comment s'appelle le camping du film ? | Les Flots bleus
+Dans quelle commune se trouve-t-il dans le film ? | Arcachon (Pyla-sur-Mer)
+Quel Britannique, tailleur, a fondé le premier club de camping en 1901 ? | Thomas Hiram Holding
+# Les éternuements
+Sort-il de la lave quand on éternue ? | Non
+Que dit-on poliment à quelqu'un qui éternue ? | À tes souhaits (ou À vos souhaits)
+Dans quoi éternue-t-on de préférence, selon les affiches ? | Dans son coude
+Que dit-on au deuxième éternuement, selon la blague ? | « À tes amours »
+Que veut dire « Gesundheit », que disent les Allemands après un éternuement ? | Santé
+Qu'est-ce que le rhume des foins ? | Une allergie aux pollens
+Comment s'appelle le réflexe d'éternuer en regardant le soleil ? | Le réflexe photique (ou ACHOO)
+Quel est le mot savant pour désigner l'éternuement ? | La sternutation
+Quelle Anglaise détient le record d'éternuements, près de 1 000 jours d'affilée ? | Donna Griffiths
+Quel nerf crânien déclenche le réflexe ? | Le nerf trijumeau
+# Les parapluies
+Que fait un parapluie au premier coup de vent ? | Il se retourne
+Quelle nounou anglaise s'envole avec le sien ? | Mary Poppins
+Où dit-on que l'ouvrir porte malheur ? | Dans une maison
+Comment s'appelle son cousin qui protège du soleil ? | L'ombrelle
+Quelle actrice chante dans « Les Parapluies de Cherbourg » ? | Catherine Deneuve
+Quelle ville du Cantal en est la capitale française ? | Aurillac
+Comment appelle-t-on un petit parapluie pliant, du nom d'un personnage minuscule ? | Un tom-pouce
+Quel Anglais a été moqué pour avoir osé en porter un à Londres au XVIIIe siècle ? | Jonas Hanway
+Quel dissident bulgare a été assassiné à Londres, en 1978, d'un coup de parapluie empoisonné ? | Gueorgui Markov
+Quel fabricant britannique a fourni la reine Élisabeth II en parapluies transparents ? | Fulton
+# Les moustaches
+Où pousse une moustache, en général ? | Sous le nez
+Quel plombier à moustache sauve la princesse ? | Mario
+Quel détective belge est très fier de la sienne ? | Hercule Poirot
+Quel petit Gaulois moustachu porte un casque ailé ? | Astérix
+Quel peintre espagnol portait la sienne en pointes vers le ciel ? | Salvador Dalí
+Comment appelle-t-on le mois où l'on se laisse pousser la moustache pour la santé des hommes ? | Movember
+Quel acteur à moustache joue le détective Magnum ? | Tom Selleck
+Quel acteur à fine moustache joue Rhett Butler dans « Autant en emporte le vent » ? | Clark Gable
+Comment s'appelle la moustache qui descend de chaque côté de la bouche ? | La moustache en fer à cheval
+Dans quel pays a eu lieu le premier championnat du monde de barbe et moustache, en 1990 ? | L'Allemagne (à Höfen-Enz)
+# Les pingouins et manchots
+Quel vêtement chic le manchot semble-t-il porter ? | Un smoking (ou une queue-de-pie)
+Sur quel continent vit le manchot empereur ? | L'Antarctique
+Quel documentaire de Luc Jacquet suit des manchots ? | La Marche de l'empereur
+Comment s'appelle le manchot mascotte de Linux ? | Tux
+Lequel des deux peut voler : le manchot ou le pingouin ? | Le pingouin
+Chez le manchot empereur, qui couve l'œuf ? | Le mâle
+Combien mesure environ un manchot empereur adulte ? | 1,20 m
+Dans quel hémisphère vivent les pingouins ? | L'hémisphère Nord
+Quel oiseau incapable de voler a disparu vers 1844 ? | Le grand pingouin
+Sur quelle île islandaise ont été tués les derniers connus ? | Eldey
+# Les vampires
+Un vampire choisit-il plutôt une salade de quinoa ou le cou de sa voisine ? | Le cou de sa voisine
+Quel condiment lui gâche le repas ? | L'ail
+Que ne lui renvoie jamais un miroir ? | Son reflet
+Qui a écrit le roman « Dracula » ? | Bram Stoker
+Quel vampire joue Tom Cruise dans « Entretien avec un vampire » ? | Lestat
+Quel prince valaque a inspiré Dracula ? | Vlad III l'Empaleur
+Quel film muet allemand de 1922 met en scène le comte Orlok ? | Nosferatu
+Quel professeur chasse Dracula dans le roman ? | Abraham Van Helsing
+Dans quel port anglais Dracula débarque-t-il ? | Whitby
+Quel médecin de Lord Byron a publié « Le Vampire » en 1819 ? | John Polidori
+# Les zombies
+Pour son déjeuner, un zombie préfère-t-il le quinoa ou les cerveaux ? | Les cerveaux
+Où vise-t-on pour s'en débarrasser ? | La tête
+Quel clip de Michael Jackson en est rempli ? | Thriller
+De quelle île des Caraïbes vient le mythe ? | Haïti
+Comment appelle-t-on les zombies dans la série « The Walking Dead », en français ? | Les rôdeurs
+Quel film de George Romero, en 1968, a fondé le genre moderne ? | La Nuit des morts-vivants
+Dans quel lieu se réfugient les héros de « Zombie », en 1978 ? | Un centre commercial
+Dans quel pub Shaun veut-il se réfugier, dans « Shaun of the Dead » ? | Le Winchester
+Comment s'appelle le virus de « 28 jours plus tard » ? | La Fureur (« Rage » en anglais)
+Quel anthropologue canadien a enquêté sur la poudre zombie, dans « Le Serpent et l'Arc-en-ciel » ? | Wade Davis
+# Les ovnis
+Où E.T. veut-il téléphoner ? | Maison
+Que veut dire « ovni » ? | Objet volant non identifié
+Quelle zone militaire américaine fait fantasmer ? | La Zone 51
+Dans quel État américain se trouve Roswell ? | Le Nouveau-Mexique
+Quelle agente sceptique fait équipe avec Fox Mulder ? | Dana Scully
+Quel réalisateur français joue dans « Rencontres du troisième type » ? | François Truffaut
+Quel service français étudie les ovnis ? | Le GEIPAN
+Quel pilote américain a lancé le mot « soucoupes volantes », en 1947 ? | Kenneth Arnold
+Dans quel village du Var un agriculteur a-t-il vu un engin se poser, en 1981 ? | Trans-en-Provence
+Quel astronome, conseiller du projet Blue Book, a classé les « rencontres » en types ? | J. Allen Hynek
+# Les saints bizarres
+Quel bon roi a mis sa culotte à l'envers, selon la chanson ? | Dagobert
+Qui garde les clés du paradis ? | Saint Pierre
+Quel saint est fêté le 14 février ? | Saint Valentin
+Quel saint aurait marché sa tête à la main ? | Saint Denis
+Quelle sainte protège les pompiers et les mineurs ? | Sainte Barbe
+Quel saint, patron des chasseurs, a vu un cerf portant une croix ? | Saint Hubert
+Quel saint de glace est fêté le 12 mai ? | Saint Pancrace
+Quel saint a été martyrisé sur un gril ? | Saint Laurent
+Quel saint des causes urgentes est très vénéré à La Réunion ? | Saint Expédit
+Citez les trois saints de glace. | Mamert, Pancrace et Servais
+# Les pommes de terre
+Que devient une pomme de terre dans la friteuse ? | Une frite
+Quel pays dispute à la France l'invention de la frite ? | La Belgique
+Quel pharmacien l'a popularisée en France ? | Antoine Parmentier
+Dans quelle cordillère a-t-elle été domestiquée ? | Les Andes
+Quel pays connaît une terrible famine à partir de 1845, à cause d'elle ? | L'Irlande
+Quelle maladie de la plante a causé cette famine ? | Le mildiou
+Quel pays en produit le plus au monde ? | La Chine
+Quel roi a porté sa fleur à la boutonnière pour la faire aimer ? | Louis XVI
+Quelle île française a la seule pomme de terre primeur en AOP ? | L'île de Ré
+Comment s'appelle la pomme de terre séchée au gel des Andes ? | Le chuño
+# Les nains de jardin
+Que porte le nain de jardin classique sur la tête ? | Un bonnet pointu
+Où vit-il, comme son nom l'indique ? | Au jardin
+Dans quel film français un nain de jardin envoie-t-il des photos de voyage à son propriétaire ? | Le Fabuleux Destin d'Amélie Poulain
+Comment dit-on « nain de jardin » en anglais ? | Garden gnome
+Quel film d'animation de 2011 fait rejouer Shakespeare à des nains de jardin ? | Gnomeo et Juliette
+Comment s'appelle le mouvement français qui « libère » les nains de jardin ? | Le Front de libération des nains de jardin
+De quel pays le nain de jardin en terre cuite est-il originaire ? | L'Allemagne
+Dans quelle région d'Allemagne sont nées les premières fabriques ? | La Thuringe
+Quel fabricant de Gräfenroda passe pour le père du nain de jardin ? | Philipp Griebel
+Quel baronnet anglais en a installé à Lamport Hall au XIXe siècle ? | Sir Charles Isham
+# Le papier bulle
+Quel bruit fait une bulle qu'on écrase ? | Pop !
+Qu'y a-t-il dans une bulle ? | De l'air
+À quoi sert vraiment le papier bulle, à part nous calmer ? | À protéger les objets fragiles
+De quelle matière est-il fait ? | Du plastique
+Quel est le nom de marque du papier bulle, en anglais ? | Bubble Wrap
+Quel objet de décoration ses inventeurs voulaient-ils créer au départ ? | Un papier peint texturé
+Dans quelle décennie a-t-il été inventé ? | Les années 1950
+Quel géant de l'informatique s'en est servi tôt pour expédier ses machines ? | IBM
+Quelle entreprise américaine ses inventeurs ont-ils fondée ? | Sealed Air
+Comment s'appellent ses deux inventeurs ? | Alfred Fielding et Marc Chavannes
+# Les boules à neige
+Que faut-il faire pour qu'il neige dedans ? | La secouer
+Quel liquide y a-t-il dedans ? | De l'eau
+Quel monument y voit-on le plus souvent en souvenir de Paris ? | La tour Eiffel
+Quel film d'Orson Welles s'ouvre sur une boule à neige qui se brise ? | Citizen Kane
+Quel mot le héros murmure-t-il en la lâchant ? | Rosebud
+Quelle ville d'Autriche est le berceau de la boule à neige moderne ? | Vienne
+Quelle exposition de 1889 a popularisé les premières boules à neige, avec la tour Eiffel dedans ? | L'Exposition universelle de Paris
+Quel aliment l'inventeur viennois a-t-il utilisé comme première neige ? | De la semoule
+Quel objet essayait-il d'améliorer quand il a eu l'idée ? | L'ampoule électrique
+Comment s'appelle cet inventeur viennois ? | Erwin Perzy
+# Les caddies de supermarché
+Quelle roue pose toujours problème ? | Celle qui part de travers
+Que glisse-t-on dans la fente pour le décrocher ? | Une pièce ou un jeton
+Comment appelle-t-on aussi la personne qui porte les clubs au golf ? | Un caddie
+Que faut-il faire du caddie pour récupérer sa pièce ? | Le raccrocher aux autres
+Quel mot a remplacé « caddie » dans les textes officiels, car c'est une marque ? | Chariot
+Quelle ville française a donné naissance à la marque Caddie ? | Strasbourg
+De quel pays vient le chariot de supermarché ? | Les États-Unis
+En quelle décennie a-t-il été inventé ? | Les années 1930
+Comment s'appelle son inventeur, épicier dans l'Oklahoma ? | Sylvan Goldman
+Quel meuble lui a servi de base pour son prototype ? | Une chaise pliante
+# Les distributeurs de billets
+Quel code faut-il taper ? | Le code secret
+Que faut-il surtout ne pas oublier dans la machine après le retrait ? | Sa carte
+Combien de chiffres compte un code de carte bleue ? | Quatre
+Que veut dire DAB ? | Distributeur automatique de billets
+Combien d'essais a-t-on avant que la carte se bloque ? | Trois
+Dans quel pays a été installé le premier grand distributeur moderne, en 1967 ? | Le Royaume-Uni
+Dans quelle banque ? | La Barclays
+Quel acteur de la série « On the Buses » a retiré le premier billet ? | Reg Varney
+Comment s'appelle l'ingénieur écossais à qui l'on attribue l'invention ? | John Shepherd-Barron
+Pourquoi le code de 6 chiffres a-t-il été ramené à 4, selon lui ? | Sa femme ne pouvait en retenir que 4
+# Les cabines téléphoniques
+Quel super-héros s'y change ? | Superman
+Quel livre très épais y pendait au bout d'une chaîne ? | L'annuaire
+Quelle couleur a la cabine londonienne ? | Rouge
+Quel voyageur du temps britannique a une cabine de police bleue ? | Doctor Who
+Comment s'appelle ce vaisseau ? | Le Tardis
+Quelle carte glissait-on dedans dans les années 1990 ? | Une télécarte
+Quel opérateur français a retiré les dernières cabines ? | Orange
+En quelle année a pris fin l'obligation d'en entretenir en France ? | En 2017
+Quel architecte a dessiné la cabine rouge britannique ? | Sir Giles Gilbert Scott
+Quel monument funéraire l'a inspiré ? | Le tombeau de la famille de John Soane, à St Pancras
+# Les pigeons
+Sur quoi le pigeon aime-t-il se poser, en ville ? | Sur les statues
+Quand on s'est fait avoir, on s'est fait… ? | Pigeonner
+Quelle place de Venise est célèbre pour eux ? | La place Saint-Marc
+Quel pigeon sait rentrer chez lui ? | Le pigeon voyageur
+Comment s'appelle le pigeon que Satanas et Diabolo poursuivent ? | Zéphyrin
+Quel pigeon français a été décoré après Verdun ? | Le Vaillant
+De quel fort assiégé est-il parti en 1916 ? | Le fort de Vaux
+Quelle pigeonne américaine a sauvé un bataillon perdu en 1918 ? | Cher Ami
+Dans quel célèbre musée américain est-elle naturalisée ? | Le Smithsonian (National Museum of American History)
+Comment s'appelle la médaille britannique des animaux héroïques, reçue par plusieurs pigeons ? | La médaille Dickin
+# Les crottes de chien
+Sur quoi faut-il éviter de marcher ? | Une crotte
+Quel pied porte bonheur, paraît-il ? | Le pied gauche
+Que doit faire le maître, sachet à la main ? | Ramasser
+Comment s'appelaient les motos vertes de Paris qui les aspiraient ? | Les motocrottes
+Quel maire de Paris les a lancées ? | Jacques Chirac
+Quel était leur nom officiel ? | Les caninettes
+Dans quelle décennie ont-elles disparu ? | Les années 2000
+Quelle ville espagnole a renvoyé leurs crottes à leurs propriétaires par colis ? | Brunete
+Comment fait une société américaine pour retrouver le chien coupable ? | Un test ADN
+Comment s'appelle cette société ? | PooPrints
+# Les autocollants de fruits
+Où se cache l'autocollant sur une pomme ? | Sur sa peau
+Que doit-on enlever avant de croquer ? | L'autocollant
+Quel fruit porte souvent le nom Chiquita ? | La banane
+Quelle variété de pomme porte le nom « Pink… » ? | Pink Lady
+Quelle est la nationalité de la pomme Granny Smith ? | Australienne
+Comment appelle-t-on le code à chiffres sur l'autocollant ? | Le code PLU
+Que veut dire PLU ? | Price Look-Up
+Combien de chiffres compte généralement ce code ? | Quatre ou cinq
+Quel chiffre placé devant indique un fruit bio ? | Le 9
+Quel est le code de la banane ordinaire ? | 4011
+# Les inventions par accident
+Quel petit papier jaune repositionnable vient d'une colle ratée ? | Le Post-it
+Quelle boisson un pharmacien d'Atlanta a-t-il créée en cherchant un remède ? | Le Coca-Cola
+Quel biscuit américain est né parce que le chocolat n'a pas fondu ? | Le cookie aux pépites de chocolat
+Quel médicament vient d'une boîte de Petri oubliée ? | La pénicilline
+Qui l'a découverte ? | Alexander Fleming
+Quel appareil de cuisine doit son idée à une barre chocolatée fondue dans une poche ? | Le four à micro-ondes
+Quel médicament testé contre l'angine de poitrine a eu un effet secondaire célèbre ? | Le Viagra
+Quel ingénieur a découvert le principe du micro-ondes près d'un magnétron ? | Percy Spencer
+Quel chimiste de 3M a mis au point la colle du Post-it ? | Spencer Silver
+Quel collègue a eu l'idée de marque-page pour son livre de chants ? | Art Fry
+# Les canulars historiques
+Quel jour fait-on des blagues ? | Le 1er avril
+Que colle-t-on dans le dos ce jour-là ? | Un poisson
+Quelle tour un escroc a-t-il vendue deux fois à des ferrailleurs ? | La tour Eiffel
+Comment s'appelait cet escroc ? | Victor Lustig
+Quelle radio de 1938 a effrayé l'Amérique avec « La Guerre des mondes » ? | L'émission d'Orson Welles, sur CBS
+Quel faux journal intime a piégé le magazine Stern en 1983 ? | Les carnets d'Hitler
+Quelle récolte la BBC a-t-elle montrée en 1957 dans un reportage du 1er avril ? | Des spaghettis poussant sur des arbres, en Suisse
+Quel faux chaînon manquant anglais n'a été démasqué qu'en 1953 ? | L'homme de Piltdown
+Quel chirurgien aurait photographié le monstre du Loch Ness, en 1934 ? | Robert Kenneth Wilson (la photo dite « du chirurgien »)
+Quelle grande découverte le New York Sun a-t-il inventée en 1835, sur la Lune ? | Des hommes chauves-souris
+# Les arrêtés et lois absurdes
+Un maire interdit de mourir dans sa commune : que risque le contrevenant ? | Pas grand-chose, il est mort
+Quelle friandise collante Singapour interdit-elle de vendre ? | Le chewing-gum
+Quel vêtement était officiellement interdit aux Parisiennes ? | Le pantalon
+Dans quelle décennie cette ordonnance a-t-elle enfin été abrogée ? | Les années 2010 (en 2013)
+De quelle année datait cette ordonnance parisienne ? | 1800
+Quelle commune du Var a interdit de mourir en 2000, faute de place au cimetière ? | Le Lavandou
+Quelle commune des Pyrénées-Atlantiques a fait de même en 2008 ? | Sarpourenx
+En quelle année Singapour a-t-elle interdit le chewing-gum ? | En 1992
+Quel Premier ministre gouvernait alors Singapour ? | Goh Chok Tong
+Quel usage du chewing-gum Singapour a-t-elle autorisé en 2004 ? | L'usage thérapeutique (nicotine, soins dentaires)
+# Les prix Ig Nobel
+Quel sentiment doivent d'abord inspirer les recherches primées ? | Le rire
+Quel prix sérieux ces récompenses parodient-elles ? | Le prix Nobel
+Dans quel pays sont-ils remis ? | Aux États-Unis
+Dans quelle université ? | À Harvard
+Que lance-t-on sur la scène pendant la cérémonie ? | Des avions en papier
+Quel magazine organise le prix ? | Annals of Improbable Research
+Que répète la petite fille qui fait taire les orateurs trop longs ? | « Please stop, I'm bored »
+Quel animal lévitant a valu à Andre Geim un Ig Nobel en 2000 ? | Une grenouille
+Quel autre prix Andre Geim a-t-il aussi reçu en 2010 ? | Le Nobel de physique
+Pourquoi les wombats font-ils des crottes cubiques ? (Ig Nobel 2019) | À cause de l'élasticité variable de leur intestin
+# Les micronations
+Comment appelle-t-on un pays qui s'invente tout seul ? | Une micronation
+Qu'imprime-t-on en premier quand on est un petit pays ? | Des passeports
+Sur quoi la Principauté de Sealand est-elle installée ? | Sur une ancienne plateforme militaire en mer du Nord
+Au large de quel pays se trouve Sealand ? | Le Royaume-Uni
+Quel pays sur le Danube s'est proclamé en 2015 entre la Croatie et la Serbie ? | Le Liberland
+Quelle commune de Ligurie prétend être une principauté avec son « prince » ? | Seborga
+Quel quartier de Copenhague se dit ville libre depuis 1971 ? | Christiania
+Quel Australien a fondé la principauté de Hutt River en 1970 ? | Leonard Casley
+Quel militaire britannique a pris Sealand en 1967 ? | Paddy Roy Bates
+Quelle ville de Floride s'est proclamée « Conch Republic » en 1982 ? | Key West
+# Les frontières absurdes
+Comment s'appelle le service qui contrôle les marchandises à une frontière ? | La douane
+Quel pays entoure entièrement Saint-Marin ? | L'Italie
+Quel pays entoure le Lesotho ? | L'Afrique du Sud
+Quelle ville espagnole est entourée par la France dans les Pyrénées-Orientales ? | Llívia
+Quel petit pays est coincé entre la France et l'Espagne ? | Andorre
+Quelle petite île change de pays tous les six mois, entre France et Espagne ? | L'île des Faisans
+Sur quelle rivière se trouve cette île ? | La Bidassoa
+Quelle ville belgo-néerlandaise a des maisons à cheval sur la frontière ? | Baarle
+Quel pays, presque entièrement enclavé dans le Sénégal, le coupe en deux ? | La Gambie
+Quelle zone désertique, entre Égypte et Soudan, n'est réclamée par personne ? | Bir Tawil
+# Le Loch Ness
+Quel monstre vit-on chercher dans un lac écossais ? | Nessie
+Dans quel pays ? | L'Écosse
+Quel animal disparu lui ressemblerait, selon les croyants ? | Le plésiosaure
+Comment s'appelle cette étude des bêtes cachées ? | La cryptozoologie
+Quel canal relie le Loch Ness à la mer ? | Le canal Calédonien
+Quelle photo de 1934 s'est révélée être un trucage ? | La photo du chirurgien
+Quelle était cette photo en réalité ? | Un jouet sous-marin avec une tête ajoutée
+Quelle grande ville est la plus proche ? | Inverness
+Quel saint aurait vu le monstre au VIe siècle ? | Saint Colomba
+Quel animal une grande étude ADN du lac, en 2018, a-t-elle proposé comme explication ? | L'anguille
+# Les yétis et autres bêtes velues
+Dans quelles montagnes vit le yéti ? | L'Himalaya
+Quel surnom français ? | L'abominable homme des neiges
+Quel album de Tintin en parle ? | Tintin au Tibet
+Quel cousin américain laisse de grandes empreintes ? | Bigfoot (ou Sasquatch)
+Quel alpiniste italien a cherché le yéti et écrit dessus ? | Reinhold Messner
+Quel conquérant de l'Everest a mené une expédition à la recherche du yéti en 1960 ? | Edmund Hillary
+Quel film amateur de 1967 montre un Bigfoot marchant ? | Le film de Patterson-Gimlin
+Quel alpiniste britannique a photographié une empreinte en 1951 ? | Eric Shipton
+Comment s'appelle le cousin australien du yéti ? | Le yowie
+Quel animal l'étude ADN de 2014 de Bryan Sykes a-t-elle proposé comme origine ? | Un ours polaire ancien
+# Les licornes
+Combien de cornes a-t-elle ? | Une seule
+Comment s'appelle un cheval normal, sans corne ? | Un cheval
+De quelle couleur est l'arc-en-ciel qu'elle laisse derrière elle ? | De toutes les couleurs
+Quel pays l'a pour animal national ? | L'Écosse
+Quel animal réel a une « corne » longtemps vendue comme licorne ? | Le narval
+Quelle tapisserie du musée de Cluny la montre avec une dame ? | La Dame à la licorne
+Combien de tapisseries compte cette tenture ? | Six
+Comment appelle-t-on une start-up valant plus d'un milliard de dollars ? | Une licorne
+Quel investisseur a inventé ce terme en 2013 ? | Aileen Lee
+Quelle devise est inscrite sur la sixième tapisserie ? | À mon seul désir
+# Les sirènes
+Avec quoi remplacent-elles leurs jambes ? | Une queue de poisson
+Quelle Ariel en porte une ? | La Petite Sirène
+Quel auteur danois a écrit le conte ? | Andersen
+Dans quelle ville se trouve la statue de la Petite Sirène ? | Copenhague
+Quel héros grec s'attache au mât pour les écouter ? | Ulysse
+Quel animal marin ont confondu les marins avec des sirènes ? | Le lamantin
+Quel explorateur en a noté trois moches en 1493 ? | Christophe Colomb
+Chez les Grecs anciens, quel animal formait la moitié du corps des sirènes ? | L'oiseau
+Quelle chaîne de cafés affiche une sirène à deux queues ? | Starbucks
+Quel musicien a couvert leur chant pour sauver les Argonautes ? | Orphée
+# Le Triangle des Bermudes
+Combien de côtés a ce triangle ? | Trois
+Que font les bateaux, d'après la légende ? | Ils disparaissent
+Dans quel océan se trouve-t-il ? | L'Atlantique
+Quelles villes ou territoires forment ses sommets ? | Bermudes, Miami, Porto Rico
+Quel vol militaire américain y aurait disparu en 1945 ? | Le vol 19
+Combien d'avions comptait ce vol ? | Cinq
+Quel journaliste a donné son nom au triangle en 1964 ? | Vincent Gaddis
+Quel livre de Charles Berlitz a popularisé la légende en 1974 ? | The Bermuda Triangle
+Quel bibliothécaire américain a démonté le mythe en 1975 ? | Larry Kusche
+Quel navire de charbon américain y a disparu en 1918 ? | L'USS Cyclops
+# Le ketchup
+De quelle couleur est-il ? | Rouge
+Que fait-on à la bouteille en verre quand rien ne sort ? | On tape dessous
+Quel légume-fruit en est la base ? | La tomate
+Quelle marque américaine domine le marché ? | Heinz
+Combien de variétés annonçait le slogan historique de Heinz ? | 57
+De quel continent vient le mot ketchup, à l'origine une sauce de poisson ? | L'Asie
+Dans quelles cantines françaises le ketchup a-t-il été limité par un arrêté de 2011 ? | Les cantines scolaires
+Comment dit-on d'un fluide comme le ketchup, qui devient liquide quand on le secoue ? | Non newtonien (rhéofluidifiant)
+Dans quelle ville américaine Henry Heinz a-t-il fondé sa marque ? | Pittsburgh
+En quelle année Heinz a-t-il lancé son ketchup ? | En 1876
+# Les chewing-gums
+Où ne faut-il pas le coller, sous peine d'être grondé ? | Sous la table
+Qu'est-ce qu'on fait avec, à part mâcher ? | Une bulle
+Quel chewing-gum français cache un tatouage dans son emballage ? | Malabar
+Quelle armée a popularisé le chewing-gum en Europe en 1944 ? | L'armée américaine
+Quelle marque française vantait « la fraîcheur de vivre » ? | Hollywood
+Quelle résine d'arbre d'Amérique centrale servait de base ? | Le chiclé
+Quel général mexicain a tenté de vendre le chiclé à un inventeur américain ? | Santa Anna
+Quel inventeur américain a fait le premier chewing-gum à partir de chiclé ? | Thomas Adams
+Quel fabricant américain a imposé la gomme Juicy Fruit et Spearmint ? | William Wrigley Jr.
+Dans quelle ville américaine Wrigley est-il établi, avec son célèbre stade ? | Chicago
+# Les épouvantails
+Qui effraie-t-il ? | Les oiseaux
+Sur quoi est-il planté ? | Dans un champ
+Dans quel film veut-il un cerveau ? | Le Magicien d'Oz
+Qui le rencontre sur la route de brique jaune ? | Dorothy
+Quel ennemi de Batman se fait appeler l'Épouvantail ? | Scarecrow
+Quel vêtement est le plus souvent mis sur ses bras écartés ? | Une vieille veste
+Quel acteur irlandais joue l'Épouvantail dans la trilogie de Nolan ? | Cillian Murphy
+Quel acteur de 1939 joue l'Épouvantail du Magicien d'Oz ? | Ray Bolger
+Quel écrivain américain a créé le personnage dans un roman de 1900 ? | L. Frank Baum
+Quel personnage des champs anglais est un épouvantail qui parle, dans une série d'enfants de Barbara Euphan Todd ? | Worzel Gummidge
+# Les hoquets
+Que boit-on, paraît-il la tête à l'envers, pour le faire passer ? | Un verre d'eau
+Que fait-on à quelqu'un pour le lui faire passer ? | Une grosse peur
+Quel muscle en est responsable ? | Le diaphragme
+Quel mot le désigne en médecine : singultus ou stridor ? | Singultus
+Quelle partie du larynx, en se fermant, produit le « hic » ? | La glotte
+Quel nerf est le principal en cause ? | Le nerf phrénique
+Peut-on avoir le hoquet avant de naître ? | Oui, le fœtus en a
+Quel Américain détient le record du hoquet, 68 ans durant ? | Charles Osborne
+Dans quel État américain vivait-il ? | L'Iowa
+Combien de temps a-t-il duré, de quelle année à quelle année ? | De 1922 à 1990
+# Les paresseux
+Quelle vitesse a le paresseux ? | Très lente
+Où passe-t-il sa vie ? | Dans les arbres
+Dans quel film Disney un paresseux tient-il un guichet de permis ? | Zootopie
+Comment distingue-t-on les deux grandes familles de paresseux ? | À deux doigts et à trois doigts
+Sur quel continent vit-il ? | En Amérique (centrale et du Sud)
+Tête en bas, que fait-il presque toute la journée ? | Il dort
+À quelle fréquence descend-il pour faire ses besoins ? | Environ une fois par semaine
+Quelle plante pousse sur son pelage et le rend verdâtre ? | Des algues
+De quel arbre mange-t-il surtout les feuilles ? | Le cecropia
+Quel papillon de nuit vit dans son pelage ? | Cryptoses choloepi
+`;
