@@ -92,7 +92,7 @@ Pas d'étape de construction, pas de dépendance à ajouter.
    rien à la première installation ; un téléphone déjà utilisé sans cette clé voit les 5 dernières) ; 2.88 : la fenêtre annonce aussi, une fois par période,
    l'ouverture d'une **boutique de fête** du compagnon (`annonceFete` dans `index.html` : `CP.feteDu`, clé `desdale-fete-annoncee` = `<fête>-<année>`, seulement si l'on a un compagnon).
 2. Nouveau fichier servi ? L'ajouter à `FICHIERS` dans `sw.js` (avec son dossier : `'./yams/'`, `'./lettres/lettres-regles.js'`).
-3. Nouveau jeu ? Son dossier (`jeu/index.html` avec `<base href="../">`, copier `lettres/index.html`), puis l'ajouter à la liste `jeux` d'`index.html` (avec la clé de sa sauvegarde pour le badge « partie en cours »).
+3. Nouveau jeu ? Son dossier (`jeu/index.html` avec `<base href="../">`, copier `lettres/index.html`), puis l'ajouter à la liste `jeux` d'`index.html` (avec la clé de sa sauvegarde pour le badge « partie en cours », et `nouveau: true` : badge « Nouveau » pendant 10 jours après son premier affichage sur chaque téléphone, 3.02, demandé par l'utilisateur ; `estNouveau`, clé `desdale-nouveaux-vus`, gardée dans la sauvegarde ; retirer `nouveau: true` quand le jeu n'est plus récent, sinon un nouveau téléphone le verrait encore). Porteurs actuels : Chinchón, Combien sur 10 ?.
 4. Vérifier la syntaxe des scripts (`node --check`) et l'absence d'échappements doublés (`\\'`) après une modification par script.
 5. Tester (voir plus bas), puis commit + push sur `main`. Cloudflare (et GitHub Pages tant que le dépôt est public) met 1 à 2 minutes à publier.
 
@@ -208,7 +208,7 @@ en bas de l'accueil. `Sauvegarde.creer()` (commun.js) met dans un fichier JSON `
 confirmation, puis remplacement des données de ce téléphone (`Sauvegarde.restaurer`) et retour à l'accueil. Nouvelle clé = l'ajouter à `NOTRES` si son préfixe est nouveau.
 
 Communs : `brillant-acces`, `brillant-client-id` (ce téléphone), `desdale-joueur-id` (la personne, sauvegardée), `desdale-noms` (carnet id → pseudo), `brillant-son`, `brillant-vibration`, `brillant-voix`,
-`brillant-garder-ecran`, `brillant-entree-auto` (plus utilisé), `brillant-salons` (liste des salons, partagée), `desdale-dernier-jeu`, `desdale-ordre-jeux` (ordre des fiches de l'accueil, trié par appui long), `desdale-favoris` (jeux marqués d'une étoile sur leur fiche, affichés en tête de liste).
+`brillant-garder-ecran`, `brillant-entree-auto` (plus utilisé), `brillant-salons` (liste des salons, partagée), `desdale-dernier-jeu`, `desdale-ordre-jeux` (ordre des fiches de l'accueil, trié par appui long), `desdale-favoris` (jeux marqués d'une étoile sur leur fiche, affichés en tête de liste), `desdale-nouveaux-vus` (jeu → première fois où son badge « Nouveau » a été vu).
 Statistiques : `desdale-stats` (toutes les parties terminées). Salon global : `desdale-profil` (pseudo, couleur, émoji, photo), `desdale-chat`, `desdale-chat-lus`, `desdale-bulle-y`.
 Brilliant : `brillant-sauvegarde-v1`, `brillant-dernier-salon`, `brillant-records(-dates)`, `brillant-classements`, `brillant-rejoindre-auto`.
 Yams : `yams-sauvegarde`, `yams-dernier-salon`, `yams2-record`, `yams2-classements` (le « 2 » : barème maison).
@@ -565,7 +565,7 @@ Bataille navale : `bataille-boss` (partie contre un boss d'expédition), `batail
   `compagnon/`, au salon, où il raconte l'aventure (fenêtre « Retour d'expédition » : lieu, bonnes réponses, poussières, étoiles, souvenirs ;
   `expedition-retour`), avec un bouton OK. Étoiles par `Etoiles.recompenseJeu` (plafond du jour),
   `Etoiles.evenement('Expédition', …)` pour les défis ; la balade fait baisser Repas et Eau de 15. Difficultés : Balade / Aventure.
-- Accueil : l'Expédition est **tout en haut de la liste, même devant les favoris**, avec un badge « Nouveau » (`tete`, `nouveau` dans `jeux`) ;
+- Accueil : l'Expédition est **tout en haut de la liste, même devant les favoris**, sans badge « Nouveau » depuis 3.02 (`tete` dans `jeux`) ;
   badge « Expédition en cours » (sans bouton Quitter, et la page ne se rouvre pas toute seule : `solo: true`).
 
 ### Donjon des compagnons (première version)

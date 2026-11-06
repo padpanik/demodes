@@ -240,7 +240,7 @@
           <!-- Icône du jeu (icones-jeux.js) -->
           <span class="ico-neuve" v-html="icone(j.id)"></span>
           <div>
-            <div class="nom">{{ j.nom }}<span v-if="j.nouveau" class="nouveau">Nouveau</span></div>
+            <div class="nom">{{ j.nom }}<span v-if="estNouveau(j)" class="nouveau">Nouveau</span></div>
             <div class="desc">{{ j.desc }}</div>
             <div class="nb-parties" v-if="nbParties[j.id]">{{ nbParties[j.id] }} partie{{ nbParties[j.id] > 1 ? 's' : '' }} jouée{{ nbParties[j.id] > 1 ? 's' : '' }}</div>
             <span class="badge" v-if="j.enCours">{{ j.enCours }}<button v-if="!j.solo" class="badge-quitter" @click.prevent.stop="quitter(j)" aria-label="Quitter ce salon">✕ Quitter</button></span>
@@ -387,6 +387,7 @@
     const B = '#5dc1ec', V = '#7fcc8f', J = '#f7d24a', R = '#ee7163', M = '#b39ddb', O = '#f9a15a';
 
     // Partie en cours dans un jeu ? (pour l'afficher, et y retourner tout seul au lancement)
+    const DUREE_NOUVEAU = 10 * 24 * 3600 * 1000;   // durée du badge « Nouveau » d'un jeu
     function etatJeu(cle) {
       var sv = lireStockage(cle);
       if (!sv) return null;
@@ -399,6 +400,7 @@
       data: {
         version: VERSION,
         accesOk: false,
+        nouveauxVus: lireStockage('desdale-nouveaux-vus') || {},   // jeu → heure où son badge « Nouveau » a été vu la première fois sur ce téléphone
         codeSaisi: '',
         accesErreur: '',
         accesEnCours: false,
@@ -509,13 +511,16 @@
             { id: 'agents', nom: 'Agents secrets', page: 'agents/', desc: 'Deux équipes, un mot et un nombre pour tout dire.', enCours: ag && ag.texte },
             { id: 'quatre', nom: 'Quatre en ligne', page: 'quatre/', desc: 'Aligne 4 jetons : seul contre l\'ordinateur ou à deux.', enCours: ql && ql.texte },
             { id: 'domino', nom: 'Dominos', page: 'domino/', desc: 'Dominos ou triominos, seul ou de 2 à 4.', enCours: dm && dm.texte },
-            { id: 'chinchon', nom: 'Chinchón', page: 'chinchon/', desc: 'Le jeu de cartes espagnol, seul ou de 2 à 4.', enCours: cc && cc.texte },
+            { id: 'chinchon', nom: 'Chinchón', page: 'chinchon/', desc: 'Le jeu de cartes espagnol, seul ou de 2 à 4.', enCours: cc && cc.texte, nouveau: true },
             { id: 'lettres', nom: 'Lettres croisées', page: 'lettres/', desc: 'Des mots sur la grille, seul ou de 2 à 4.', enCours: lc && lc.texte },
             { id: 'dix', nom: 'Combien sur 10 ?', page: 'dix/', desc: 'Quiz en équipes, chacun sur son téléphone : annonce de 1 à 10 combien tu t\'y connais.', enCours: dxs ? dxs.texte : dx && dx.phase !== 'fin' ? '● Partie en cours (mode test)' : '', solo: !dxs, nouveau: true },
-            { id: 'joyaux', nom: '7 piliers', page: 'joyaux/', desc: 'Bâtis ta cité en trois âges, seul ou entre amis.', enCours: jx && jx.texte, nouveau: true },
-            { id: 'expedition', nom: 'Expédition', page: 'expedition/', desc: 'Balade avec ton compagnon : questions, coffres et boss.', enCours: ex && !ex.fin ? '● Expédition en cours' : '', solo: true, nouveau: true, tete: true }
+            { id: 'joyaux', nom: '7 piliers', page: 'joyaux/', desc: 'Bâtis ta cité en trois âges, seul ou entre amis.', enCours: jx && jx.texte },
+            { id: 'expedition', nom: 'Expédition', page: 'expedition/', desc: 'Balade avec ton compagnon : questions, coffres et boss.', enCours: ex && !ex.fin ? '● Expédition en cours' : '', solo: true, tete: true }
           ];
         }
+      },
+      watch: {
+        accesOk: function(ok) { if (ok) this.noterNouveaux(); }
       },
       created: function() {
         setInterval(() => { this.maj++; }, 30000);   // humeur du compagnon et étoiles à jour
@@ -537,6 +542,16 @@
       methods: {
         icoCompte: icoCompte,
         icoTrait: icoTrait,
+        // Badge « Nouveau » : 10 jours après son premier affichage sur ce téléphone
+        noterNouveaux: function() {
+          var vus = this.nouveauxVus, change = false;
+          this.jeux.forEach(j => { if (j.nouveau && !vus[j.id]) { this.$set(vus, j.id, Date.now()); change = true; } });
+          if (change) ecrireStockage('desdale-nouveaux-vus', vus);
+        },
+        estNouveau: function(j) {
+          var t = this.nouveauxVus[j.id];
+          return !!j.nouveau && (!t || Date.now() - t < DUREE_NOUVEAU);
+        },
         fermerNouveautes: function() {
           nouveautesVues();
           var f = this.nouveautes.find(n => n[0] === 'fete');
