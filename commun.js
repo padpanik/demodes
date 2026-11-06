@@ -3,12 +3,13 @@
 // Les clés de stockage gardent l'ancien préfixe "brillant-" : les réglages déjà faits sont conservés.
 
 // Numéro de version affiché (à augmenter à chaque mise en ligne, avec brilliant/index.html et sw.js)
-const VERSION = '2.93';
+const VERSION = '2.94';
 
 // ---------- Nouveautés (2.87, demandé par l'utilisateur) ----------
 // Une ligne très brève par mise en ligne (la plus récente en haut) : l'accueil les montre une seule fois, dans une petite fenêtre,
 // à qui n'a pas encore vu cette version. [version, jeu ou partie de l'appli, ce qui change]
 const NOUVEAUTES = [
+  ['2.94', 'Combien sur 10 ?', 'Niveaux 8 à 10 bien plus durs et 18 sujets rigolos en plus.'],
   ['2.93', 'Combien sur 10 ?', 'Challenges : on avance d\'une case par bonne réponse. Plateau sans route noire.'],
   ['2.92', 'Combien sur 10 ?', 'Nouveau plateau, deux fois plus de sujets, niveaux 8 à 10 plus durs, challenges lus à voix haute.'],
   ['2.91', 'Combien sur 10 ?', 'Nouveau plateau de nuit, et l\'équipe qui joue écoute la question sans la lire.'],

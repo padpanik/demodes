@@ -15,6 +15,19 @@ var DX = (function () {
   };
   var ORDRE_THEMES = ['improbable', 'plaisir', 'mature', 'scolaire'];
 
+  // Lit dix-questions.js : « # thème | nom », puis « question | réponse » par ligne
+  function lireSujets(texte) {
+    var l = [], s = null;
+    texte.split('\n').forEach(function (x) {
+      x = x.trim();
+      if (!x) return;
+      var p = x.replace(/^# /, '').split(' | ');
+      if (x.charAt(0) === '#') { s = [p[0], p[1], []]; l.push(s); }
+      else if (s) s[2].push([p[0], p[1]]);
+    });
+    return l;
+  }
+
   // Sujets : [thème, nom, [[question, réponse], … niveaux 1 à 10]]
   var SUJETS = [
     // ---------------- IMPROBABLE ----------------
@@ -26,9 +39,9 @@ var DX = (function () {
       ['De quelle couleur est la pâte de la mimolette ?', 'Orange'],
       ['Dans quel massif montagneux fabrique-t-on surtout le comté ?', 'Le Jura'],
       ['Quel fromage fut sacré « roi des fromages » au congrès de Vienne en 1815 ?', 'Le brie (de Meaux)'],
-      ['Dans quel éboulis rocheux de l\'Aveyron s\'affine le roquefort ?', 'Le Combalou (à Roquefort-sur-Soulzon)'],
-      ['Quelles bactéries creusent les trous de l\'emmental en dégageant du gaz carbonique ?', 'Les bactéries propioniques (Propionibacterium)'],
-      ['Quelle bactérie donne sa croûte orangée au munster ?', 'Brevibacterium linens (le « ferment du rouge »)']
+      ['Quel fromage corse au petit-lait entre dans le fiadone ?', 'Le brocciu'],
+      ['Quelle enzyme de la présure fait cailler le lait ?', 'La chymosine'],
+      ['Quelle bactérie donne sa croûte orangée au munster ?', 'Brevibacterium linens']
     ]],
     ['improbable', 'Les dinosaures', [
       ['Quel dinosaure géant aux minuscules bras ne peut même pas applaudir à la fin d\'un spectacle ?', 'Le tyrannosaure (T-Rex)'],
@@ -38,9 +51,9 @@ var DX = (function () {
       ['Quels animaux d\'aujourd\'hui descendent directement des dinosaures ?', 'Les oiseaux'],
       ['Il y a environ combien de millions d\'années les grands dinosaures ont-ils disparu ?', '66 millions d\'années'],
       ['Quelle période géologique vient juste avant le Crétacé ?', 'Le Jurassique'],
-      ['Comment s\'appelle le cratère laissé au Mexique par la météorite qui a contribué à leur disparition ?', 'Chicxulub (dans le Yucatán)'],
-      ['Quel savant britannique a inventé le mot « dinosaure » en 1842 ?', 'Richard Owen'],
-      ['Quel élément rare, trouvé en excès dans une couche géologique par Luis et Walter Alvarez en 1980, a appuyé la thèse de la météorite ?', 'L\'iridium']
+      ['Quel dinosaure a été le premier à recevoir un nom scientifique, en 1824 ?', 'Megalosaurus'],
+      ['Quelle Anglaise a découvert le premier squelette complet de plésiosaure ?', 'Mary Anning'],
+      ['Quels sont les deux grands ordres de dinosaures, selon la forme du bassin ?', 'Saurischiens et ornithischiens']
     ]],
     ['improbable', 'Les phobies', [
       ['Comment s\'appelle la peur qui fait grimper sur une chaise en hurlant pour une bestiole à huit pattes de 2 mm ?', 'L\'arachnophobie'],
@@ -50,9 +63,9 @@ var DX = (function () {
       ['L\'agoraphobie, c\'est la peur de quoi ?', 'Des espaces publics, de la foule, des lieux d\'où l\'on ne peut pas sortir facilement'],
       ['La coulrophobie, c\'est la peur de quoi ?', 'Des clowns'],
       ['Comment appelle-t-on la peur des serpents ?', 'L\'ophiophobie'],
-      ['Comment appelle-t-on la peur du nombre 13 ?', 'La triskaïdékaphobie'],
+      ['Comment appelle-t-on la peur des clowns ?', 'La coulrophobie'],
       ['Comment appelle-t-on la peur du vendredi 13 ?', 'La paraskevidékatriaphobie'],
-      ['Comment appelle-t-on (avec humour) la peur des mots trop longs ?', 'L\'hippopotomonstrosesquippedaliophobie']
+      ['Comment appelle-t-on la peur d\'avoir du beurre de cacahuète collé au palais ?', 'L\'arachibutyrophobie']
     ]],
     ['improbable', 'Les cris des animaux', [
       ['Votre voisin fait « meuh » tous les matins au réveil. Quel animal imite-t-il ?', 'La vache (elle meugle)'],
@@ -62,7 +75,7 @@ var DX = (function () {
       ['Que fait la grenouille ?', 'Elle coasse'],
       ['Que fait le corbeau ?', 'Il croasse'],
       ['Que fait l\'éléphant ?', 'Il barrit'],
-      ['Que fait le chameau ?', 'Il blatère'],
+      ['Que fait le geai ?', 'Il cajole'],
       ['Que fait la cigogne ?', 'Elle craquette (ou claquette)'],
       ['Que fait la perdrix ?', 'Elle cacabe']
     ]],
@@ -74,9 +87,9 @@ var DX = (function () {
       ['Que veut dire « avoir le cafard » ?', 'Être triste, déprimé'],
       ['Que veut dire « faire chou blanc » ?', 'Échouer, ne rien obtenir'],
       ['Que veut dire « être dans de beaux draps » ?', 'Être dans une situation difficile'],
-      ['Que veut dire « avoir maille à partir » avec quelqu\'un ?', 'Avoir un différend, une dispute avec lui'],
-      ['Dans « avoir maille à partir », que désignait la maille ?', 'Une petite monnaie du Moyen Âge, impossible à partager (« partir » = partager)'],
-      ['Dans « à la queue leu leu », que désigne le mot « leu » ?', 'Le loup (ancienne forme du mot)']
+      ['Dans « avoir maille à partir », que désignait la maille ?', 'Une petite monnaie du Moyen Âge, impossible à partager'],
+      ['Dans « à la queue leu leu », que désigne le mot « leu » ?', 'Le loup'],
+      ['De quel roman vient l\'expression « fier comme Artaban » ?', 'Cléopâtre, de La Calprenède']
     ]],
     ['improbable', 'Les inventions', [
       ['Quelle invention en caoutchouc permet d\'effacer ses fautes… et de la mâchouiller pendant les contrôles ?', 'La gomme'],
@@ -86,9 +99,9 @@ var DX = (function () {
       ['Qu\'a inventé László Bíró ?', 'Le stylo à bille'],
       ['Quel appareil Percy Spencer a-t-il inventé après qu\'une barre chocolatée a fondu dans sa poche ?', 'Le four à micro-ondes'],
       ['Quel Français a inventé une machine à calculer en 1642 ?', 'Blaise Pascal (la Pascaline)'],
-      ['Quel médecin français a inventé le stéthoscope, en 1816 ?', 'René Laennec'],
+      ['Quel Suisse a inventé le Velcro ?', 'George de Mestral'],
       ['Quel Français a construit en 1769 le premier véhicule à vapeur, le fardier ?', 'Joseph Cugnot'],
-      ['Quel ingénieur a inventé le Velcro en observant des bardanes, et de quelle nationalité était-il ?', 'George de Mestral, suisse']
+      ['Quel Français a enregistré le premier son connu, avec son phonautographe ?', 'Édouard-Léon Scott de Martinville']
     ]],
     ['improbable', 'Les créatures légendaires', [
       ['Quel cheval blanc magique a une corne sur le front et des paillettes sur tous les cahiers d\'écolier ?', 'La licorne'],
@@ -98,7 +111,7 @@ var DX = (function () {
       ['Quel oiseau renaît de ses cendres ?', 'Le phénix'],
       ['Quel monstre à tête de taureau était enfermé dans le labyrinthe ?', 'Le Minotaure'],
       ['Dans quel pays vivrait le monstre du Loch Ness ?', 'L\'Écosse'],
-      ['Quel monstre grec a une tête de lion, un corps de chèvre et une queue de serpent ?', 'La Chimère'],
+      ['Comment s\'appelle le serpent géant de la mythologie nordique qui entoure le monde ?', 'Jörmungandr'],
       ['Quel héros grec a vaincu la Chimère, monté sur Pégase ?', 'Bellérophon'],
       ['Quel monstre de Provence aurait été dompté par sainte Marthe ?', 'La Tarasque']
     ]],
@@ -110,9 +123,9 @@ var DX = (function () {
       ['Combien de cœurs a une pieuvre ?', 'Trois'],
       ['De quelle couleur est la peau de l\'ours polaire, sous sa fourrure ?', 'Noire'],
       ['Quel minuscule animal peut survivre au vide de l\'espace ?', 'Le tardigrade'],
-      ['Quel animal a des empreintes digitales presque identiques aux nôtres ?', 'Le koala'],
-      ['Quel requin de l\'Atlantique Nord peut vivre plusieurs siècles, un record chez les vertébrés ?', 'Le requin du Groenland'],
-      ['Quelle méduse est surnommée « immortelle » parce qu\'elle peut rajeunir ?', 'Turritopsis dohrnii']
+      ['Quel requin de l\'Atlantique Nord peut vivre plusieurs siècles ?', 'Le requin du Groenland'],
+      ['Quelle méduse est surnommée « immortelle » ?', 'Turritopsis dohrnii'],
+      ['Quelle crevette assomme ses proies avec une bulle créée en claquant sa pince ?', 'La crevette-pistolet']
     ]],
 
     // ---------------- PLAISIR ----------------
@@ -124,9 +137,9 @@ var DX = (function () {
       ['Comment s\'appelle le chat qui poursuit Titi ?', 'Grosminet'],
       ['Dans quelle ville vit la famille Simpson ?', 'Springfield'],
       ['Quel studio japonais a réalisé « Mon voisin Totoro » ?', 'Le studio Ghibli'],
-      ['Dans « Il était une fois… la Vie », comment s\'appelle le vieux savant à barbe blanche ?', 'Maestro'],
+      ['Qui a réalisé « Les Aventures du prince Ahmed » (1926) ?', 'Lotte Reiniger'],
       ['Qui a réalisé « Le Roi et l\'Oiseau » (1980) ?', 'Paul Grimault'],
-      ['Quelle Allemande a réalisé « Les Aventures du prince Ahmed » (1926), l\'un des plus anciens longs métrages d\'animation conservés ?', 'Lotte Reiniger']
+      ['Quel Français a réalisé « Fantasmagorie » (1908), souvent cité comme premier dessin animé ?', 'Émile Cohl']
     ]],
     ['plaisir', 'Les jeux vidéo', [
       ['Quel est le métier de Mario, qui passe pourtant plus de temps à sauter sur des champignons qu\'à réparer des fuites ?', 'Plombier'],
@@ -136,7 +149,7 @@ var DX = (function () {
       ['Comment s\'appelle la princesse que Mario doit souvent sauver ?', 'Peach'],
       ['Quel jeu de construction en blocs cubiques est le plus vendu de l\'histoire ?', 'Minecraft'],
       ['Comment s\'appelle le héros de « The Legend of Zelda » ?', 'Link'],
-      ['Quel Français a créé le personnage de Rayman ?', 'Michel Ancel'],
+      ['Quel a été le premier jeu d\'arcade vendu en série, en 1971 ?', 'Computer Space'],
       ['Citez les quatre fantômes de Pac-Man sous leurs noms américains.', 'Blinky, Pinky, Inky et Clyde'],
       ['Quel ingénieur a conçu « Pong » chez Atari, en 1972 ?', 'Allan Alcorn']
     ]],
@@ -148,9 +161,9 @@ var DX = (function () {
       ['Qui chante « Les Champs-Élysées » ?', 'Joe Dassin'],
       ['Quel groupe chante « L\'Aventurier » ?', 'Indochine'],
       ['Quel chanteur a sorti l\'album « Histoire de Melody Nelson » ?', 'Serge Gainsbourg'],
-      ['Qui a composé « Comme d\'habitude », devenue « My Way » ?', 'Claude François et Jacques Revaux'],
-      ['Qui a écrit les paroles de « La Bohème » de Charles Aznavour ?', 'Jacques Plante'],
-      ['Quelle compositrice a écrit la musique de « L\'Hymne à l\'amour » d\'Édith Piaf ?', 'Marguerite Monnot']
+      ['Qui a écrit les paroles de « La Bohème » d\'Aznavour ?', 'Jacques Plante'],
+      ['Qui a composé « L\'Hymne à l\'amour » d\'Édith Piaf ?', 'Marguerite Monnot'],
+      ['Qui a composé « La Mer » avec Charles Trenet ?', 'Léo Chauliac']
     ]],
     ['plaisir', 'Le cinéma', [
       ['Quel petit extraterrestre au long cou passe tout le film à vouloir « téléphoner maison » ?', 'E.T.'],
@@ -160,9 +173,9 @@ var DX = (function () {
       ['Combien de films compte la saga Harry Potter ?', 'Huit'],
       ['Dans quel quartier de Paris vit Amélie Poulain ?', 'Montmartre'],
       ['Dans « Bienvenue chez les Ch\'tis », dans quelle ville est muté Philippe ?', 'Bergues'],
-      ['Quel est le titre du premier film projeté par les frères Lumière, en 1895 ?', 'La Sortie de l\'usine Lumière à Lyon'],
+      ['Quel film a reçu la première Palme d\'or, en 1955 ?', 'Marty'],
       ['Quel film a remporté le premier Oscar du meilleur film, en 1929 ?', 'Les Ailes (Wings)'],
-      ['Quel film américain a reçu la toute première Palme d\'or, en 1955 ?', 'Marty (de Delbert Mann)']
+      ['Quelle pionnière a réalisé « La Fée aux choux » vers 1896 ?', 'Alice Guy']
     ]],
     ['plaisir', 'Le chocolat et les desserts', [
       ['Quel dessert italien au café et au mascarpone signifie à peu près « remonte-moi le moral » ?', 'Le tiramisu'],
@@ -172,9 +185,9 @@ var DX = (function () {
       ['Comment s\'appelle la pyramide de choux servie aux mariages ?', 'La pièce montée (le croquembouche)'],
       ['Quel ingrédient du cacao est à la base du chocolat blanc ?', 'Le beurre de cacao'],
       ['Quel pays est le premier producteur mondial de cacao ?', 'La Côte d\'Ivoire'],
-      ['Quel pâtissier a créé l\'Ispahan (rose, litchi, framboise) ?', 'Pierre Hermé'],
+      ['Quel Suisse a inventé le conchage, en 1879 ?', 'Rodolphe Lindt'],
       ['Quel Suisse a mis au point le chocolat au lait, en 1875 ?', 'Daniel Peter'],
-      ['Quel chocolatier suisse a inventé le conchage, en 1879 ?', 'Rodolphe Lindt']
+      ['Quel chimiste néerlandais a mis au point la presse à cacao vers 1828 ?', 'Coenraad van Houten']
     ]],
     ['plaisir', 'Le football', [
       ['Combien de joueurs d\'une équipe ont le droit de toucher le ballon avec les mains, sans recevoir de carton ?', 'Un seul : le gardien (dans sa surface)'],
@@ -184,9 +197,9 @@ var DX = (function () {
       ['Quel pays a gagné le plus de Coupes du monde ?', 'Le Brésil (5)'],
       ['En quelle année la France a-t-elle gagné sa première Coupe du monde ?', '1998'],
       ['Quel club joue au Parc des Princes ?', 'Le Paris Saint-Germain'],
-      ['Quel est le seul gardien de but à avoir remporté le Ballon d\'or ?', 'Lev Yachine (1963)'],
-      ['Quel joueur détient le record de buts sur une seule Coupe du monde, avec 13 buts ?', 'Just Fontaine (1958)'],
-      ['Quel Français a marqué le tout premier but de l\'histoire de la Coupe du monde, en 1930 ?', 'Lucien Laurent']
+      ['Quel joueur a marqué 13 buts sur une seule Coupe du monde ?', 'Just Fontaine'],
+      ['Qui a marqué le premier but de l\'histoire de la Coupe du monde ?', 'Lucien Laurent'],
+      ['Quel journaliste français est à l\'origine de la Coupe d\'Europe des clubs ?', 'Gabriel Hanot']
     ]],
     ['plaisir', 'Les séries', [
       ['Dans quelle série d\'animation une famille toute jaune regarde-t-elle la télé sur un canapé depuis plus de 30 ans ?', 'Les Simpson'],
@@ -196,8 +209,8 @@ var DX = (function () {
       ['Qui a créé « Kaamelott » et y joue le roi Arthur ?', 'Alexandre Astier'],
       ['Dans « Friends », comment s\'appelle le café où se retrouvent les amis ?', 'Le Central Perk'],
       ['Quel est le prénom du professeur de chimie de « Breaking Bad » ?', 'Walter (White)'],
-      ['Qui a créé la série « Breaking Bad » ?', 'Vince Gilligan'],
-      ['Qui a créé la série « Les Soprano » ?', 'David Chase'],
+      ['Qui a créé « Les Soprano » ?', 'David Chase'],
+      ['Quel acteur joue Omar Little dans « The Wire » ?', 'Michael K. Williams'],
       ['Qui a créé « Twin Peaks » avec David Lynch ?', 'Mark Frost']
     ]],
     ['plaisir', 'La cuisine du monde', [
@@ -208,9 +221,9 @@ var DX = (function () {
       ['De quelle région du monde le couscous est-il originaire ?', 'Du Maghreb (Afrique du Nord)'],
       ['Quelle soupe froide espagnole se fait à base de tomate ?', 'Le gaspacho'],
       ['De quel pays vient le kimchi ?', 'La Corée'],
-      ['Comment s\'appelle la grande galette éthiopienne faite de teff ?', 'L\'injera'],
-      ['Qu\'était le garum, très apprécié des Romains ?', 'Une sauce de poisson fermenté'],
-      ['Quel ferment, à base du champignon Aspergillus oryzae, sert à faire le miso et la sauce soja ?', 'Le koji']
+      ['Qu\'était le garum des Romains ?', 'Une sauce de poisson fermenté'],
+      ['Quel ferment sert à faire le miso et la sauce soja ?', 'Le koji'],
+      ['Comment s\'appelle le requin fermenté islandais ?', 'Le hákarl']
     ]],
 
     // ---------------- MATURE ----------------
@@ -222,9 +235,9 @@ var DX = (function () {
       ['Dans quelle grande région viticole produit-on le sauternes ?', 'Le Bordelais (Bordeaux)'],
       ['Comment s\'appelle la science du vin ?', 'L\'œnologie'],
       ['Comment s\'appelle une bouteille de 1,5 litre ?', 'Un magnum'],
-      ['Quel insecte a ravagé les vignes françaises au XIXe siècle ?', 'Le phylloxéra'],
-      ['Combien de litres contient un nabuchodonosor de champagne ?', '15 litres (20 bouteilles)'],
-      ['Quel château est le seul à avoir été promu « premier cru » du classement de 1855, en 1973 ?', 'Château Mouton Rothschild']
+      ['Combien de litres contient un nabuchodonosor ?', '15 litres'],
+      ['Quel château est devenu premier cru classé en 1973 ?', 'Mouton Rothschild'],
+      ['Quel cépage bordelais a été retrouvé au Chili, confondu avec le merlot ?', 'Le carménère']
     ]],
     ['mature', 'L\'argent et les impôts', [
       ['Quelle monnaie a remplacé le franc… et fait dire à nos grands-parents « ça fait combien en francs ? »', 'L\'euro'],
@@ -234,9 +247,9 @@ var DX = (function () {
       ['En quelle année les pièces et billets en euros sont-ils arrivés ?', '2002'],
       ['Que veut dire le sigle SMIC ?', 'Salaire minimum interprofessionnel de croissance'],
       ['Combien de francs valait un euro (au centime près) ?', '6,56 francs (6,55957)'],
-      ['Quel impôt a remplacé l\'ISF en 2018 ?', 'L\'impôt sur la fortune immobilière (IFI)'],
-      ['Quel économiste a donné son nom à la courbe résumée par « trop d\'impôt tue l\'impôt » ?', 'Arthur Laffer'],
-      ['Quel homme politique a fait adopter l\'impôt sur le revenu en France, voté en 1914 ?', 'Joseph Caillaux']
+      ['Quel économiste a donné son nom à la courbe « trop d\'impôt tue l\'impôt » ?', 'Arthur Laffer'],
+      ['Qui a fait adopter l\'impôt sur le revenu en 1914 ?', 'Joseph Caillaux'],
+      ['Quel financier écossais a ruiné la Régence avec son système, en 1720 ?', 'John Law']
     ]],
     ['mature', 'La voiture', [
       ['De quelle couleur est le feu où tout le monde accélère en disant « il était encore orange » ?', 'Orange (il faut s\'arrêter, sauf si c\'est dangereux)'],
@@ -246,9 +259,9 @@ var DX = (function () {
       ['Combien de points compte un permis de conduire définitif ?', '12 points'],
       ['Avec combien de points démarre un permis probatoire ?', '6 points'],
       ['Quel est le taux d\'alcool maximal pour un conducteur confirmé, en grammes par litre de sang ?', '0,5 g/l'],
-      ['Quel ingénieur allemand a breveté en 1886 la première automobile à moteur à essence ?', 'Carl Benz'],
-      ['Quel designer italien a dessiné la Citroën DS ?', 'Flaminio Bertoni'],
-      ['Quel Français a décrit le principe du moteur à quatre temps en 1862 ?', 'Alphonse Beau de Rochas']
+      ['Qui a dessiné la Citroën DS ?', 'Flaminio Bertoni'],
+      ['Quel Français a décrit le moteur à quatre temps en 1862 ?', 'Alphonse Beau de Rochas'],
+      ['Quelle marque française a gagné les premières 24 Heures du Mans, en 1923 ?', 'Chenard et Walcker']
     ]],
     ['mature', 'La maison et le bricolage', [
       ['Avec quel outil se tape-t-on le plus souvent sur les doigts en voulant planter un clou ?', 'Un marteau'],
@@ -258,9 +271,9 @@ var DX = (function () {
       ['Quelle scie électrique permet de découper le bois en courbe ?', 'La scie sauteuse'],
       ['Que veut dire DPE, dans une annonce immobilière ?', 'Diagnostic de performance énergétique'],
       ['Quelle est la tension du courant électrique dans une maison en France ?', '230 volts'],
-      ['Quelle section de fil faut-il pour un circuit de prises 16 A, selon la norme française ?', '2,5 mm²'],
-      ['Quelle sensibilité doit avoir un différentiel qui protège les personnes dans un logement ?', '30 mA'],
-      ['Comment s\'appelle la poutre horizontale qui relie le pied des arbalétriers dans une ferme de charpente ?', 'L\'entrait']
+      ['Quelle poutre horizontale porte les chevrons d\'une charpente ?', 'La panne'],
+      ['Comment s\'appelle la poutre qui relie le pied des arbalétriers ?', 'L\'entrait'],
+      ['Comment s\'appelle la pièce à la rencontre de deux pans de toit formant un angle saillant ?', 'L\'arêtier']
     ]],
     ['mature', 'Le mariage et la vie à deux', [
       ['Où se dit-on « oui » pour un mariage civil, devant un monsieur ou une dame avec une écharpe tricolore ?', 'À la mairie (devant le maire ou un adjoint)'],
@@ -270,9 +283,9 @@ var DX = (function () {
       ['Comment appelle-t-on les 50 ans de mariage ?', 'Les noces d\'or'],
       ['Comment appelle-t-on la première année de mariage ?', 'Les noces de coton'],
       ['En quelle année le PACS a-t-il été créé ?', '1999'],
-      ['Quelle ministre a donné son nom à la loi de 2013 ouvrant le mariage aux couples de même sexe ?', 'Christiane Taubira'],
-      ['Combien de jours au moins doit durer la publication des bans avant un mariage ?', 'Dix jours'],
-      ['À combien d\'années de mariage correspondent les noces de vermeil ?', '45 ans']
+      ['Combien de jours doit durer la publication des bans ?', 'Dix jours'],
+      ['À combien d\'années correspondent les noces de vermeil ?', '45 ans'],
+      ['Quel article du Code civil, lu en mairie, parle de respect, fidélité, secours et assistance ?', 'L\'article 212']
     ]],
     ['mature', 'Le travail', [
       ['Quel jour de la semaine est le plus détesté des travailleurs, au point d\'avoir son propre « blues » ?', 'Le lundi'],
@@ -282,9 +295,9 @@ var DX = (function () {
       ['Que veut dire RTT ?', 'Réduction du temps de travail'],
       ['Quelle fête célèbre-t-on le 1er mai ?', 'La fête du Travail'],
       ['Quel nom Pôle emploi a-t-il pris en 2024 ?', 'France Travail'],
-      ['Quelle est la durée maximale de la période d\'essai d\'un cadre en CDI, sans renouvellement ?', 'Quatre mois'],
+      ['En quelle année a paru le premier livre du Code du travail ?', '1910'],
       ['En quelle année le SMIC a-t-il remplacé le SMIG ?', '1970'],
-      ['En quelle année a paru le premier livre du Code du travail français ?', '1910']
+      ['Quelle loi de 1884 a légalisé les syndicats ?', 'La loi Waldeck-Rousseau']
     ]],
     ['mature', 'L\'apéro et les cocktails', [
       ['Quel cocktail cubain au rhum oblige le barman à écraser de la menthe avec un bâton ?', 'Le mojito'],
@@ -294,9 +307,9 @@ var DX = (function () {
       ['Quel apéritif orange est le plus utilisé dans le spritz ?', 'L\'Apérol'],
       ['Le Bloody Mary, c\'est de la vodka et du jus de… ?', 'Tomate'],
       ['Dans le kir royal, par quoi remplace-t-on le vin blanc ?', 'Par du champagne'],
-      ['Le daïquiri porte le nom d\'un lieu de quel pays ?', 'Cuba'],
-      ['Quels sont les trois ingrédients du negroni ?', 'Gin, vermouth rouge et Campari'],
-      ['Quel barman français est crédité du Bloody Mary, au Harry\'s Bar de Paris ?', 'Fernand Petiot']
+      ['Quels sont les trois ingrédients du negroni ?', 'Gin, vermouth rouge, Campari'],
+      ['Quel barman français est crédité du Bloody Mary ?', 'Fernand Petiot'],
+      ['Quel amiral britannique a donné son surnom au grog ?', 'Edward Vernon']
     ]],
     ['mature', 'Les papiers et démarches', [
       ['Sur quel papier officiel, à montrer à la douane, est-on toujours moins beau qu\'en vrai ?', 'La carte d\'identité (ou le passeport)'],
@@ -306,9 +319,9 @@ var DX = (function () {
       ['Combien de temps est valable le passeport d\'un adulte ?', '10 ans'],
       ['Que donne le premier chiffre d\'un numéro de sécurité sociale ?', 'Le sexe (1 pour un homme, 2 pour une femme)'],
       ['À partir de quel âge le recensement citoyen est-il obligatoire ?', '16 ans'],
-      ['Dans quel délai faut-il déclarer une naissance en France ?', '5 jours'],
+      ['Que représentent les 6e et 7e chiffres du numéro de sécurité sociale ?', 'Le département de naissance'],
       ['Que veut dire URSSAF ?', 'Union de recouvrement des cotisations de sécurité sociale et d\'allocations familiales'],
-      ['Dans un numéro de sécurité sociale, que représentent les 6e et 7e chiffres ?', 'Le département de naissance']
+      ['Que veut dire Cerfa ?', 'Centre d\'enregistrement et de révision des formulaires administratifs']
     ]],
 
     // ---------------- SCOLAIRE ----------------
@@ -320,8 +333,8 @@ var DX = (function () {
       ['Quel roi a été guillotiné en 1793 ?', 'Louis XVI'],
       ['Quelle héroïne a délivré Orléans en 1429 ?', 'Jeanne d\'Arc'],
       ['Quelle bataille est associée à l\'année 1515 ?', 'Marignan'],
-      ['Quel traité partage l\'empire de Charlemagne en 843 ?', 'Le traité de Verdun'],
-      ['En quelle année l\'ordonnance de Villers-Cotterêts a-t-elle imposé le français dans les actes officiels ?', '1539'],
+      ['En quelle année l\'ordonnance de Villers-Cotterêts impose-t-elle le français ?', '1539'],
+      ['Quel traité de 1360 cède à l\'Angleterre un grand tiers de la France ?', 'Le traité de Brétigny'],
       ['Quel traité de 1475 met un terme à la guerre de Cent Ans ?', 'Le traité de Picquigny']
     ]],
     ['scolaire', 'La géographie', [
@@ -332,9 +345,9 @@ var DX = (function () {
       ['Quel est le plus petit pays du monde ?', 'Le Vatican'],
       ['Quelle est la capitale du Canada ?', 'Ottawa'],
       ['Quelle est la capitale de l\'Australie ?', 'Canberra'],
-      ['Quelle est la capitale du Kazakhstan ?', 'Astana'],
+      ['Quelle est la plus grande île lacustre du monde ?', 'L\'île Manitoulin'],
       ['Quelle est la capitale de la Birmanie ?', 'Naypyidaw'],
-      ['Quelle est la plus grande île lacustre du monde, dans le lac Huron ?', 'L\'île Manitoulin']
+      ['Quelle est la capitale des Palaos ?', 'Ngerulmud']
     ]],
     ['scolaire', 'La langue française', [
       ['Combien de lettres compte l\'alphabet français ? (Les gribouillis du docteur ne comptent pas.)', '26'],
@@ -344,9 +357,9 @@ var DX = (function () {
       ['Comment s\'appelle le petit signe sous le c de « ç » ?', 'La cédille'],
       ['Quel est le participe passé de « résoudre » ?', 'Résolu'],
       ['Comment appelle-t-on un mot qui se lit pareil dans les deux sens, comme « radar » ?', 'Un palindrome'],
-      ['Conjuguez « croire » au subjonctif présent, avec « nous ».', 'Que nous croyions'],
+      ['Comment appelle-t-on un texte qui s\'interdit une lettre ?', 'Un lipogramme'],
       ['Quel est le féminin de l\'adjectif « hébreu » ?', 'Hébraïque'],
-      ['Comment appelle-t-on un texte qui s\'interdit une lettre, comme « La Disparition » de Perec ?', 'Un lipogramme']
+      ['Comment appelle-t-on un mot qui n\'apparaît qu\'une fois dans un corpus ?', 'Un hapax']
     ]],
     ['scolaire', 'Les mathématiques', [
       ['Combien font 2 + 2 ? (Oui, c\'est vraiment la question.)', '4'],
@@ -356,9 +369,9 @@ var DX = (function () {
       ['Combien vaut la somme des angles d\'un triangle ?', '180 degrés'],
       ['Quel théorème dit que, dans un triangle rectangle, a² + b² = c² ?', 'Le théorème de Pythagore'],
       ['Combien vaut π, arrondi au centième ?', '3,14'],
-      ['Combien vaut « factorielle zéro » (0!) ?', '1'],
-      ['Combien vaut la somme de tous les entiers de 1 à 100 ?', '5 050'],
-      ['Quelle est la valeur du nombre d\'or, au millième près ?', '1,618']
+      ['Quelle est la somme des entiers de 1 à 100 ?', '5 050'],
+      ['Quelle est la valeur du nombre d\'or, au millième ?', '1,618'],
+      ['Quelle conjecture Grigori Perelman a-t-il démontrée ?', 'La conjecture de Poincaré']
     ]],
     ['scolaire', 'Le corps humain', [
       ['Quel organe bat plus vite quand on croise son amoureux… ou son banquier ?', 'Le cœur'],
@@ -368,9 +381,9 @@ var DX = (function () {
       ['Quelles cellules du sang transportent l\'oxygène ?', 'Les globules rouges (hématies)'],
       ['Combien de litres de sang un adulte a-t-il environ ?', 'Environ 5 litres'],
       ['Quel groupe sanguin est « donneur universel » ?', 'O négatif'],
-      ['Comment s\'appelle le plus petit os du corps, dans l\'oreille ?', 'L\'étrier'],
-      ['Comment s\'appelle la valve entre l\'oreillette gauche et le ventricule gauche ?', 'La valve mitrale'],
-      ['Comment s\'appelle le plus petit muscle du corps humain ?', 'Le muscle stapédien (ou muscle de l\'étrier)']
+      ['Quelle valve sépare l\'oreillette et le ventricule gauches ?', 'La valve mitrale'],
+      ['Quel est le plus petit muscle du corps ?', 'Le muscle stapédien'],
+      ['Comment s\'appelle le dixième nerf crânien ?', 'Le nerf vague']
     ]],
     ['scolaire', 'Les sciences', [
       ['Quelle est la formule chimique de l\'eau, que les savants aiment dire pour avoir l\'air savant ?', 'H₂O'],
@@ -380,9 +393,9 @@ var DX = (function () {
       ['Quelle est la planète la plus proche du Soleil ?', 'Mercure'],
       ['Quel est le symbole chimique de l\'or ?', 'Au'],
       ['Qui a découvert la pénicilline ?', 'Alexander Fleming'],
-      ['Combien d\'éléments compte le tableau périodique aujourd\'hui ?', '118'],
+      ['Que vaut environ le nombre d\'Avogadro ?', '6,02 × 10²³'],
       ['Quel est le symbole chimique du tungstène ?', 'W'],
-      ['Que vaut environ le nombre d\'Avogadro ?', '6,02 × 10²³ par mole']
+      ['Que vaut environ la constante de Planck ?', '6,63 × 10⁻³⁴ J·s']
     ]],
     ['scolaire', 'La littérature', [
       ['Quel jeune sorcier à lunettes et à cicatrice dort dans un placard sous l\'escalier ?', 'Harry Potter'],
@@ -392,9 +405,9 @@ var DX = (function () {
       ['Qui a écrit « Le Tour du monde en quatre-vingts jours » ?', 'Jules Verne'],
       ['Qui a écrit « Les Trois Mousquetaires » ?', 'Alexandre Dumas'],
       ['Quel était le vrai nom de Molière ?', 'Jean-Baptiste Poquelin'],
-      ['Qui a écrit « Les Liaisons dangereuses » ?', 'Choderlos de Laclos'],
+      ['Qui a écrit « Les Chants de Maldoror » ?', 'Lautréamont'],
       ['Quel écrivain a reçu un second Goncourt sous le nom d\'Émile Ajar ?', 'Romain Gary'],
-      ['Qui a écrit « Les Chants de Maldoror » ?', 'Lautréamont (Isidore Ducasse)']
+      ['Quel écrivain a refusé le Goncourt en 1951 ?', 'Julien Gracq']
     ]],
     ['scolaire', 'L\'anglais', [
       ['Que veut dire « hello » ? (Indice : on le dit en décrochant, même en France.)', 'Bonjour'],
@@ -404,9 +417,9 @@ var DX = (function () {
       ['Comment dit-on « mercredi » en anglais ?', 'Wednesday'],
       ['Quel est le prétérit de « to go » ?', 'Went'],
       ['Que veut dire « butterfly » ?', 'Papillon'],
-      ['Que veut dire « thimble » ?', 'Dé à coudre'],
+      ['Que veut dire « kerfuffle » ?', 'Remue-ménage'],
       ['Que veut dire « wheelbarrow » ?', 'Brouette'],
-      ['Que veut dire « kerfuffle » ?', 'Remue-ménage, agitation']
+      ['Que veut dire « sesquipedalian » ?', 'Qui emploie de très longs mots']
     ]],
     // ---------------- Sujets ajoutés en 2.92 (à la fin : les identifiants dépendent de la position) ----------------
     ['improbable', 'Les pirates', [
@@ -417,9 +430,9 @@ var DX = (function () {
       ['Qui a écrit « L\'Île au trésor » ?', 'Robert Louis Stevenson'],
       ['Comment s\'appelle le cuisinier à la jambe de bois de « L\'Île au trésor » ?', 'Long John Silver'],
       ['Quelle île au large d\'Haïti était le repaire des flibustiers au XVIIe siècle ?', 'L\'île de la Tortue'],
-      ['Quel était le vrai nom de Barbe Noire ?', 'Edward Teach (ou Thatch)'],
+      ['Quelle Anglaise a navigué avec Anne Bonny, déguisée en homme ?', 'Mary Read'],
       ['Quel corsaire de Dunkerque a été anobli par Louis XIV ?', 'Jean Bart'],
-      ['Quelle Anglaise, déguisée en homme, a navigué avec Anne Bonny sur le navire de Calico Jack ?', 'Mary Read']
+      ['Comment s\'appelait le navire de Barbe Noire ?', 'Le Queen Anne\'s Revenge']
     ]],
     ['improbable', 'L\'espace', [
       ['Quelle planète porte le même nom qu\'une célèbre barre chocolatée ?', 'Mars'],
@@ -429,9 +442,9 @@ var DX = (function () {
       ['Comment s\'appelle notre galaxie ?', 'La Voie lactée'],
       ['Qui a été le premier homme dans l\'espace, en 1961 ?', 'Youri Gagarine'],
       ['Comment s\'appelle le premier satellite artificiel, lancé en 1957 ?', 'Spoutnik 1'],
-      ['Quel Français a été le premier spationaute de son pays, en 1982 ?', 'Jean-Loup Chrétien'],
-      ['Quelle est la plus grande lune du système solaire ?', 'Ganymède (autour de Jupiter)'],
-      ['Comment s\'appelle la frontière conventionnelle de l\'espace, à 100 km d\'altitude ?', 'La ligne de Kármán']
+      ['Quelle est la plus grande lune du système solaire ?', 'Ganymède'],
+      ['Comment s\'appelle la limite de l\'espace, à 100 km d\'altitude ?', 'La ligne de Kármán'],
+      ['Quelle sonde européenne s\'est posée sur Titan en 2005 ?', 'Huygens']
     ]],
     ['improbable', 'Les superstitions', [
       ['Quel animal noir est accusé de porter malheur alors qu\'il voulait juste traverser ?', 'Le chat noir'],
@@ -441,9 +454,9 @@ var DX = (function () {
       ['Qu\'est-on censé jeter par-dessus son épaule après en avoir renversé ?', 'Du sel'],
       ['Que touche-t-on pour conjurer le mauvais sort ?', 'Du bois'],
       ['Quel aliment ne faut-il pas poser à l\'envers sur la table, selon une vieille superstition ?', 'Le pain'],
-      ['Quel animal ne faut-il jamais nommer sur un bateau ?', 'Le lapin'],
+      ['Quelle pièce ne faut-il pas nommer dans un théâtre anglais ?', 'Macbeth'],
       ['Quel mot ne faut-il jamais prononcer dans un théâtre ?', 'Corde'],
-      ['Quelle pièce de Shakespeare ne faut-il pas nommer dans un théâtre anglais ?', 'Macbeth']
+      ['Dans quel pays le vendredi 17 porte-t-il malheur ?', 'L\'Italie']
     ]],
     ['improbable', 'Les abeilles et le miel', [
       ['Quel ours en peluche est prêt à tout pour un pot de miel ?', 'Winnie l\'ourson'],
@@ -453,9 +466,9 @@ var DX = (function () {
       ['Comment s\'appelle le mâle de l\'abeille ?', 'Le faux-bourdon'],
       ['Combien de pattes a une abeille ?', 'Six'],
       ['Quelle forme ont les alvéoles d\'une ruche ?', 'Hexagonale'],
-      ['Comment s\'appelle la résine récoltée par les abeilles pour colmater la ruche ?', 'La propolis'],
-      ['Quel est le nom scientifique du frelon asiatique, arrivé en France vers 2004 ?', 'Vespa velutina'],
-      ['Quel savant a décodé la danse des abeilles, ce qui lui a valu un prix Nobel en 1973 ?', 'Karl von Frisch']
+      ['Quel acarien parasite décime les ruches ?', 'Le varroa'],
+      ['Quel est le nom scientifique du frelon asiatique ?', 'Vespa velutina'],
+      ['Quel savant a décodé la danse des abeilles ?', 'Karl von Frisch']
     ]],
     ['improbable', 'Les trains', [
       ['Comment s\'appelle la petite locomotive bleue qui parle, dans les émissions pour enfants ?', 'Thomas'],
@@ -465,9 +478,9 @@ var DX = (function () {
       ['En quelle année le TGV a-t-il été mis en service entre Paris et Lyon ?', '1981'],
       ['Quel train de luxe reliait Paris à Istanbul ?', 'L\'Orient-Express'],
       ['En quelle année le tunnel sous la Manche a-t-il été inauguré ?', '1994'],
-      ['Quel record de vitesse a établi un TGV en 2007 ?', '574,8 km/h'],
+      ['Qui a construit la « Rocket » en 1829 ?', 'Robert Stephenson'],
       ['Quel est l\'écartement standard des rails ?', '1,435 m'],
-      ['Quel ingénieur britannique a construit la locomotive « Rocket », en 1829 ?', 'Robert Stephenson']
+      ['Quelle a été la première ligne de chemin de fer française, en 1827 ?', 'Saint-Étienne – Andrézieux']
     ]],
     ['improbable', 'Les records', [
       ['Quel félin est l\'animal terrestre le plus rapide, et sans baskets ?', 'Le guépard'],
@@ -477,9 +490,9 @@ var DX = (function () {
       ['Quel Jamaïcain détient le record du monde du 100 m ?', 'Usain Bolt'],
       ['Quel est le plus grand océan du monde ?', 'Le Pacifique'],
       ['Quel est le record du monde masculin du 100 m ?', '9,58 secondes'],
-      ['Quelle Française a vécu 122 ans, un record officiel de longévité ?', 'Jeanne Calment'],
-      ['De quelle altitude, environ, Felix Baumgartner a-t-il sauté en 2012 ?', 'Environ 39 km'],
-      ['Comment s\'appelle le point le plus profond connu des océans ?', 'Le Challenger Deep (fosse des Mariannes)']
+      ['De quelle altitude Felix Baumgartner a-t-il sauté en 2012 ?', 'Environ 39 km'],
+      ['Comment s\'appelle le point le plus profond des océans ?', 'Le Challenger Deep'],
+      ['Comment s\'appelle le plus haut arbre connu ?', 'Hyperion']
     ]],
     ['improbable', 'Les chats', [
       ['Quel chat orange adore les lasagnes et déteste les lundis ?', 'Garfield'],
@@ -489,8 +502,8 @@ var DX = (function () {
       ['Comment s\'appelle la race de chat sans poils ?', 'Le sphynx'],
       ['Quelle déesse égyptienne avait une tête de chat ?', 'Bastet'],
       ['Quelle grande race de chat vient de l\'État américain du Maine ?', 'Le maine coon'],
-      ['Quel physicien a imaginé un chat à la fois vivant et mort ?', 'Erwin Schrödinger'],
-      ['Comment s\'appelle la chatte française envoyée dans l\'espace en 1963 ?', 'Félicette'],
+      ['Comment s\'appelle la chatte française envoyée dans l\'espace ?', 'Félicette'],
+      ['Comment appelle-t-on un chat qui a des doigts en trop ?', 'Un chat polydactyle'],
       ['Quel est le nom scientifique du chat domestique ?', 'Felis catus']
     ]],
     ['improbable', 'Les marques', [
@@ -501,9 +514,9 @@ var DX = (function () {
       ['De quel pays vient Samsung ?', 'La Corée du Sud'],
       ['Quel animal figure sur le logo de Peugeot ?', 'Le lion'],
       ['Dans quelle ville le Coca-Cola a-t-il été inventé ?', 'Atlanta'],
-      ['Que veut dire BMW ?', 'Bayerische Motoren Werke (Manufacture bavaroise de moteurs)'],
-      ['D\'où vient le nom Adidas ?', 'De son fondateur, Adi Dassler'],
-      ['Comment s\'appelait Google à ses débuts, en 1996 ?', 'BackRub']
+      ['D\'où vient le nom Adidas ?', 'D\'Adi Dassler'],
+      ['Comment s\'appelait Google en 1996 ?', 'BackRub'],
+      ['Que signifie chaque lettre d\'Ikea ?', 'Ingvar Kamprad, Elmtaryd, Agunnaryd']
     ]],
     ['plaisir', 'Le rock', [
       ['Quels quatre garçons de Liverpool ont fait crier toute une génération ?', 'Les Beatles'],
@@ -513,9 +526,9 @@ var DX = (function () {
       ['Qui était le chanteur de Nirvana ?', 'Kurt Cobain'],
       ['Quel groupe a sorti l\'album « The Dark Side of the Moon » ?', 'Pink Floyd'],
       ['Quel groupe a écrit « Stairway to Heaven » ?', 'Led Zeppelin'],
-      ['Quel guitariste de Queen est aussi docteur en astrophysique ?', 'Brian May'],
-      ['Quel est le vrai nom de Bono, le chanteur de U2 ?', 'Paul Hewson'],
-      ['Quel guitariste joue le solo, non crédité, de « While My Guitar Gently Weeps » des Beatles ?', 'Eric Clapton']
+      ['Quel est le vrai nom de Bono ?', 'Paul Hewson'],
+      ['Qui joue le solo de « While My Guitar Gently Weeps » ?', 'Eric Clapton'],
+      ['Quel pianiste est surnommé le sixième Rolling Stone ?', 'Ian Stewart']
     ]],
     ['plaisir', 'Les super-héros', [
       ['Quel héros en collant rouge et bleu se déplace en lançant des toiles ?', 'Spider-Man'],
@@ -525,9 +538,9 @@ var DX = (function () {
       ['Quel est le vrai nom d\'Iron Man ?', 'Tony Stark'],
       ['De quelle planète vient Superman ?', 'Krypton'],
       ['En quel métal est fait le bouclier de Captain America ?', 'Le vibranium'],
-      ['Quel scénariste de Marvel, célèbre pour ses apparitions dans les films, a cocréé Spider-Man ?', 'Stan Lee'],
-      ['En quelle année Superman apparaît-il pour la première fois en bande dessinée ?', '1938'],
-      ['Quel dessinateur a créé Spider-Man avec Stan Lee ?', 'Steve Ditko']
+      ['En quelle année Superman apparaît-il ?', '1938'],
+      ['Qui a créé Spider-Man avec Stan Lee ?', 'Steve Ditko'],
+      ['Quel scénariste, longtemps oublié, a cocréé Batman ?', 'Bill Finger']
     ]],
     ['plaisir', 'La bande dessinée', [
       ['Quel petit Gaulois doit sa force à une potion magique ?', 'Astérix'],
@@ -537,9 +550,9 @@ var DX = (function () {
       ['Quel cow-boy tire plus vite que son ombre ?', 'Lucky Luke'],
       ['Qui a écrit les premiers scénarios d\'Astérix ?', 'René Goscinny'],
       ['Quel est le vrai nom d\'Hergé ?', 'Georges Remi'],
-      ['Quel auteur a créé Gaston Lagaffe ?', 'André Franquin'],
-      ['Dans quel journal belge Tintin paraît-il pour la première fois, en 1929 ?', 'Le Petit Vingtième'],
-      ['Comment s\'appelle l\'ancêtre du capitaine Haddock, dans « Le Secret de La Licorne » ?', 'Le chevalier François de Hadoque']
+      ['Dans quel journal Tintin paraît-il en 1929 ?', 'Le Petit Vingtième'],
+      ['Comment s\'appelle l\'ancêtre du capitaine Haddock ?', 'François de Hadoque'],
+      ['Qui a créé Zig et Puce ?', 'Alain Saint-Ogan']
     ]],
     ['plaisir', 'Star Wars', [
       ['Quel méchant à casque noir annonce à Luke qu\'il est son père ?', 'Dark Vador'],
@@ -549,9 +562,9 @@ var DX = (function () {
       ['Qui a créé Star Wars ?', 'George Lucas'],
       ['En quelle année le premier film est-il sorti ?', '1977'],
       ['Sur quelle planète désertique Luke a-t-il grandi ?', 'Tatooine'],
-      ['Quel compositeur a écrit la musique de la saga ?', 'John Williams'],
-      ['Quel acteur prête sa voix originale à Dark Vador ?', 'James Earl Jones'],
-      ['Quel acteur britannique portait le costume de Dark Vador dans la première trilogie ?', 'David Prowse']
+      ['Qui prête sa voix originale à Dark Vador ?', 'James Earl Jones'],
+      ['Qui portait le costume de Vador ?', 'David Prowse'],
+      ['Qui a réalisé « L\'Empire contre-attaque » ?', 'Irvin Kershner']
     ]],
     ['plaisir', 'Le tennis', [
       ['Sur quelle surface joue-t-on à Roland-Garros, au grand désespoir des chaussettes blanches ?', 'La terre battue'],
@@ -561,9 +574,9 @@ var DX = (function () {
       ['Quel tournoi impose une tenue blanche à ses joueurs ?', 'Wimbledon'],
       ['Combien y a-t-il de tournois du Grand Chelem ?', 'Quatre'],
       ['Quel est le dernier Français à avoir gagné Roland-Garros en simple messieurs ?', 'Yannick Noah (1983)'],
-      ['Citez deux des quatre « Mousquetaires » du tennis français.', 'Lacoste, Borotra, Cochet, Brugnon'],
-      ['Quelle est la dernière Française à avoir gagné Roland-Garros en simple dames ?', 'Mary Pierce (2000)'],
-      ['Quel joueur a réussi le Grand Chelem sur une année en 1969 ?', 'Rod Laver']
+      ['Quelle est la dernière Française à avoir gagné Roland-Garros ?', 'Mary Pierce'],
+      ['Qui a réussi le Grand Chelem en 1969 ?', 'Rod Laver'],
+      ['Quel officier britannique a breveté le tennis sur gazon en 1874 ?', 'Walter Wingfield']
     ]],
     ['plaisir', 'Le Tour de France', [
       ['De quelle couleur est le maillot du leader, aussi visible qu\'un poussin ?', 'Jaune'],
@@ -573,9 +586,9 @@ var DX = (function () {
       ['Quel sommet de Provence est surnommé le « Géant » ?', 'Le mont Ventoux'],
       ['Quel est le dernier Français à avoir gagné le Tour ?', 'Bernard Hinault (1985)'],
       ['En quelle année a eu lieu le premier Tour de France ?', '1903'],
-      ['Qui a gagné le premier Tour de France ?', 'Maurice Garin'],
-      ['Citez les quatre coureurs qui ont gagné cinq Tours.', 'Anquetil, Merckx, Hinault, Indurain'],
-      ['Avec combien de secondes d\'écart Greg LeMond a-t-il battu Laurent Fignon en 1989 ?', '8 secondes']
+      ['Qui a gagné le premier Tour ?', 'Maurice Garin'],
+      ['Quel écart sépare LeMond de Fignon en 1989 ?', '8 secondes'],
+      ['Quel journaliste a eu l\'idée du Tour ?', 'Géo Lefèvre']
     ]],
     ['plaisir', 'Les jeux de société', [
       ['Quel jeu de plateau ruine les amitiés à coups de loyers rue de la Paix ?', 'Le Monopoly'],
@@ -585,9 +598,9 @@ var DX = (function () {
       ['Dans quel jeu cherche-t-on qui a tué, avec quelle arme et dans quelle pièce ?', 'Le Cluedo'],
       ['Quelle est la case la plus chère du Monopoly français ?', 'La rue de la Paix'],
       ['Combien de cases compte un échiquier ?', '64'],
-      ['Quel champion a perdu en 1997 contre l\'ordinateur Deep Blue ?', 'Garry Kasparov'],
-      ['Quel Allemand a créé « Les Colons de Catane » ?', 'Klaus Teuber'],
-      ['Combien d\'intersections compte un plateau de go classique ?', '361 (19 × 19)']
+      ['Qui a créé « Les Colons de Catane » ?', 'Klaus Teuber'],
+      ['Combien d\'intersections compte un plateau de go ?', '361'],
+      ['Quelle Américaine a inventé l\'ancêtre du Monopoly ?', 'Elizabeth Magie']
     ]],
     ['plaisir', 'Harry Potter', [
       ['Quelle forme a la cicatrice de Harry, sans doute très pratique pour se faire reconnaître ?', 'Un éclair'],
@@ -597,8 +610,8 @@ var DX = (function () {
       ['Dans quelle maison est Harry ?', 'Gryffondor'],
       ['Comment s\'appelle la chouette de Harry ?', 'Hedwige'],
       ['De quelle voie part le train pour l\'école, à la gare de King\'s Cross ?', 'La voie 9 ¾'],
-      ['Quel est le vrai nom de Voldemort en français ?', 'Tom Elvis Jedusor'],
-      ['En quel bois est la baguette de Harry, et que contient-elle ?', 'En houx, avec une plume de phénix'],
+      ['En quoi est la baguette de Harry ?', 'Houx et plume de phénix'],
+      ['Quel est le nom complet de Dumbledore ?', 'Albus Perceval Wulfric Brian Dumbledore'],
       ['Qui a traduit la saga en français ?', 'Jean-François Ménard']
     ]],
     ['mature', 'Le café', [
@@ -609,9 +622,9 @@ var DX = (function () {
       ['Quelles sont les deux grandes espèces de café ?', 'L\'arabica et le robusta'],
       ['Quelle substance du café nous tient éveillés ?', 'La caféine'],
       ['De quel pays africain le café serait-il originaire ?', 'L\'Éthiopie'],
-      ['Quel est le plus ancien café de Paris encore ouvert ?', 'Le Procope'],
-      ['Quel café d\'Indonésie est récolté dans les excréments de la civette ?', 'Le kopi luwak'],
-      ['Quel Italien a breveté la première machine à expresso, en 1884 ?', 'Angelo Moriondo']
+      ['Quel café est récolté dans les excréments de la civette ?', 'Le kopi luwak'],
+      ['Qui a breveté la machine à expresso en 1884 ?', 'Angelo Moriondo'],
+      ['Quel chimiste allemand a isolé la caféine en 1819 ?', 'Friedlieb Ferdinand Runge']
     ]],
     ['mature', 'La bière', [
       ['Quel papa jaune de Springfield ne jure que par sa Duff ?', 'Homer Simpson'],
@@ -621,9 +634,9 @@ var DX = (function () {
       ['Que veut dire IPA ?', 'India Pale Ale'],
       ['Comment s\'appelle la bière brassée dans certaines abbayes de moines ?', 'La trappiste'],
       ['Quel micro-organisme transforme le sucre en alcool ?', 'La levure'],
-      ['Comment s\'appelle la loi allemande de pureté de la bière de 1516 ?', 'Le Reinheitsgebot'],
-      ['Quelle bière belge est obtenue par fermentation spontanée ?', 'Le lambic'],
-      ['Quelle bière trappiste belge est surtout vendue à la porte de son abbaye ?', 'La Westvleteren']
+      ['Quelle bière belge fermente spontanément ?', 'Le lambic'],
+      ['Quelle trappiste se vend surtout à la porte de l\'abbaye ?', 'La Westvleteren'],
+      ['Quelle levure sert aux bières de fermentation basse ?', 'Saccharomyces pastorianus']
     ]],
     ['mature', 'Le jardinage', [
       ['Quel petit personnage à bonnet rouge surveille les pelouses sans jamais les tondre ?', 'Le nain de jardin'],
@@ -633,9 +646,9 @@ var DX = (function () {
       ['Quel insecte à points noirs mange les pucerons ?', 'La coccinelle'],
       ['À quelle saison plante-t-on les bulbes de tulipes ?', 'L\'automne'],
       ['Comment appelle-t-on une plante qui fait tout son cycle en un an ?', 'Une plante annuelle'],
-      ['De quoi est faite la bouillie bordelaise ?', 'De sulfate de cuivre et de chaux'],
-      ['Comment s\'appellent les trois saints de glace ?', 'Mamert, Pancrace et Servais'],
-      ['Comment appelle-t-on l\'association entre un champignon et les racines d\'une plante ?', 'Une mycorhize']
+      ['Comment s\'appellent les saints de glace ?', 'Mamert, Pancrace, Servais'],
+      ['Comment appelle-t-on l\'association champignon-racine ?', 'Une mycorhize'],
+      ['Quelles bactéries fixent l\'azote dans les racines des légumineuses ?', 'Les Rhizobium']
     ]],
     ['mature', 'Les voyages', [
       ['Qu\'envoie-t-on à ses proches pour montrer qu\'on s\'amuse mieux qu\'eux ?', 'Une carte postale'],
@@ -645,9 +658,9 @@ var DX = (function () {
       ['Quel est le pays le plus visité au monde ?', 'La France'],
       ['Quelle contenance maximale peut avoir un flacon de liquide en cabine ?', '100 ml'],
       ['Quel est le code de l\'aéroport de Roissy ?', 'CDG'],
-      ['Que veut dire ESTA, l\'autorisation pour les États-Unis ?', 'Electronic System for Travel Authorization'],
-      ['Combien de mètres vaut un mille nautique ?', '1 852 mètres'],
-      ['Quel Belge a fondé le Club Méditerranée, en 1950 ?', 'Gérard Blitz']
+      ['Combien de mètres vaut un mille nautique ?', '1 852 m'],
+      ['Quel Belge a fondé le Club Méditerranée ?', 'Gérard Blitz'],
+      ['Quel est l\'aéroport civil le plus haut du monde ?', 'Daocheng Yading (Chine)']
     ]],
     ['mature', 'L\'immobilier', [
       ['Qui vous dit « c\'est très lumineux » dans un sous-sol ?', 'L\'agent immobilier'],
@@ -657,8 +670,8 @@ var DX = (function () {
       ['Quelle est la meilleure lettre sur un DPE ?', 'A'],
       ['Combien de mois de loyer peut atteindre le dépôt de garantie pour une location vide ?', 'Un mois, hors charges'],
       ['Quelle est la durée d\'un bail de location vide signé avec un particulier ?', 'Trois ans'],
-      ['Quelles sont les dates de la trêve hivernale des expulsions ?', 'Du 1er novembre au 31 mars'],
-      ['De combien de jours dispose l\'acheteur pour se rétracter après la signature d\'un compromis ?', '10 jours'],
+      ['Quelles sont les dates de la trêve hivernale ?', 'Du 1er novembre au 31 mars'],
+      ['En quelle année la grande loi sur la copropriété a-t-elle été votée ?', '1965'],
       ['Quelle loi de 2014 a instauré l\'encadrement des loyers ?', 'La loi ALUR']
     ]],
     ['mature', 'La santé au quotidien', [
@@ -669,9 +682,9 @@ var DX = (function () {
       ['Quel est le numéro d\'appel d\'urgence européen ?', 'Le 112'],
       ['Quelle vitamine fabrique-t-on grâce au soleil ?', 'La vitamine D'],
       ['En quelle unité mesure-t-on la tension artérielle, en France, au quotidien ?', 'En centimètres de mercure (13/8 par exemple)'],
-      ['Comment calcule-t-on l\'indice de masse corporelle ?', 'Poids en kg divisé par la taille en mètres au carré'],
-      ['Quelle moyenne l\'hémoglobine glyquée (HbA1c) mesure-t-elle ?', 'La glycémie moyenne des 2 à 3 derniers mois'],
-      ['Quel chimiste de Bayer a mis au point l\'aspirine, en 1897 ?', 'Felix Hoffmann']
+      ['Que mesure l\'hémoglobine glyquée ?', 'La glycémie moyenne des derniers mois'],
+      ['Quel chimiste de Bayer a mis au point l\'aspirine ?', 'Felix Hoffmann'],
+      ['Quel médecin hongrois a imposé le lavage des mains en 1847 ?', 'Ignace Semmelweis']
     ]],
     ['mature', 'Les institutions françaises', [
       ['Dans quel palais le président français a-t-il son bureau ?', 'L\'Élysée'],
@@ -681,8 +694,8 @@ var DX = (function () {
       ['Dans quelle assemblée siègent les députés ?', 'L\'Assemblée nationale'],
       ['Combien y a-t-il de députés ?', '577'],
       ['Combien y a-t-il de sénateurs ?', '348'],
-      ['Quel article de la Constitution permet de faire adopter un texte sans vote ?', 'L\'article 49.3 (49, alinéa 3)'],
-      ['Quel président de la Ve République est mort en fonction, en 1974 ?', 'Georges Pompidou'],
+      ['Quel président est mort en fonction en 1974 ?', 'Georges Pompidou'],
+      ['Quel article de la Constitution donne des pouvoirs exceptionnels au président ?', 'L\'article 16'],
       ['Qui fut le premier président de la IIIe République ?', 'Adolphe Thiers']
     ]],
     ['mature', 'La cuisine maison', [
@@ -693,9 +706,9 @@ var DX = (function () {
       ['Quelle sauce blanche contient du beurre, de la farine et du lait ?', 'La béchamel'],
       ['Que veut dire « blanchir » un légume ?', 'Le plonger brièvement dans l\'eau bouillante'],
       ['Quel genre de mélange est une mayonnaise ?', 'Une émulsion'],
-      ['Comment s\'appelle la réaction qui fait dorer et brunir la viande à la cuisson ?', 'La réaction de Maillard'],
-      ['Pour quelle cantatrice Escoffier a-t-il créé un célèbre dessert aux pêches ?', 'Nellie Melba (la pêche Melba)'],
-      ['Citez les cinq sauces mères de la cuisine française, selon Escoffier.', 'Béchamel, velouté, espagnole, hollandaise, tomate']
+      ['Pour quelle cantatrice Escoffier a-t-il créé sa pêche ?', 'Nellie Melba'],
+      ['Citez les cinq sauces mères d\'Escoffier.', 'Béchamel, velouté, espagnole, hollandaise, tomate'],
+      ['Quel cuisinier a écrit « Le Cuisinier françois » en 1651 ?', 'La Varenne']
     ]],
     ['scolaire', 'La mythologie grecque', [
       ['Quel roi des dieux règle ses problèmes à coups de foudre ?', 'Zeus'],
@@ -705,7 +718,7 @@ var DX = (function () {
       ['Quelle est la déesse de l\'amour ?', 'Aphrodite'],
       ['Qui a eu l\'idée du cheval de Troie ?', 'Ulysse'],
       ['Quel fleuve fallait-il traverser pour atteindre les Enfers ?', 'Le Styx'],
-      ['Qui est l\'épouse d\'Hadès ?', 'Perséphone'],
+      ['Quel Titan, frère de Prométhée, a épousé Pandore ?', 'Épiméthée'],
       ['Comment s\'appelle le passeur des Enfers ?', 'Charon'],
       ['Quelle titanide est la mère de Zeus ?', 'Rhéa']
     ]],
@@ -717,9 +730,9 @@ var DX = (function () {
       ['Quelle langue parlait-on à Rome ?', 'Le latin'],
       ['Qui fut le premier empereur romain ?', 'Auguste'],
       ['En quelle année Rome aurait-elle été fondée ?', '753 av. J.-C.'],
-      ['À quelle date César a-t-il été assassiné ?', 'Aux ides de mars, le 15 mars 44 av. J.-C.'],
+      ['Qui fut le dernier empereur d\'Occident ?', 'Romulus Augustule'],
       ['Quel empereur aurait voulu nommer son cheval consul ?', 'Caligula'],
-      ['Qui fut le dernier empereur romain d\'Occident, déposé en 476 ?', 'Romulus Augustule']
+      ['Quel édit de 212 donne la citoyenneté aux hommes libres de l\'Empire ?', 'L\'édit de Caracalla']
     ]],
     ['scolaire', 'La Seconde Guerre mondiale', [
       ['Qui a lancé l\'appel du 18 juin 1940 depuis Londres ?', 'Le général de Gaulle'],
@@ -729,9 +742,9 @@ var DX = (function () {
       ['En quelle année s\'est-elle terminée ?', '1945'],
       ['Sur quelles villes japonaises les bombes atomiques ont-elles été larguées ?', 'Hiroshima et Nagasaki'],
       ['Quel était le nom de code du débarquement en Normandie ?', 'Overlord'],
-      ['Qui a unifié la Résistance intérieure française pour de Gaulle ?', 'Jean Moulin'],
-      ['Citez les cinq plages du Débarquement.', 'Utah, Omaha, Gold, Juno et Sword'],
-      ['Quel général allemand n\'a pas exécuté l\'ordre de détruire Paris en 1944 ?', 'Dietrich von Choltitz']
+      ['Citez les cinq plages du Débarquement.', 'Utah, Omaha, Gold, Juno, Sword'],
+      ['Quel général allemand n\'a pas détruit Paris en 1944 ?', 'Dietrich von Choltitz'],
+      ['Quel est le vrai nom du général Leclerc ?', 'Philippe de Hauteclocque']
     ]],
     ['scolaire', 'La peinture', [
       ['Qui a peint la Joconde, sans jamais lui demander de vraiment sourire ?', 'Léonard de Vinci'],
@@ -741,9 +754,9 @@ var DX = (function () {
       ['Qui a peint les « Nymphéas » ?', 'Claude Monet'],
       ['Qui a peint « Le Cri » ?', 'Edvard Munch'],
       ['Qui a peint le plafond de la chapelle Sixtine ?', 'Michel-Ange'],
-      ['Qui a peint « Le Radeau de la Méduse » ?', 'Théodore Géricault'],
+      ['Qui a volé la Joconde en 1911 ?', 'Vincenzo Peruggia'],
       ['Qui a peint « Les Ménines » ?', 'Diego Velázquez'],
-      ['Qui a volé la Joconde au Louvre, en 1911 ?', 'Vincenzo Peruggia']
+      ['Quel peintre vénitien a peint « La Tempête » ?', 'Giorgione']
     ]],
     ['scolaire', 'La musique classique', [
       ['Quel grand compositeur a continué d\'écrire de la musique après être devenu sourd ?', 'Ludwig van Beethoven'],
@@ -754,8 +767,8 @@ var DX = (function () {
       ['Qui a composé le « Boléro » ?', 'Maurice Ravel'],
       ['Combien de symphonies Beethoven a-t-il écrites ?', 'Neuf'],
       ['Qui a composé « Pierre et le Loup » ?', 'Sergueï Prokofiev'],
-      ['Quel élève a achevé le « Requiem » de Mozart ?', 'Franz Xaver Süssmayr'],
-      ['Quel chef a dirigé la création du « Sacre du printemps », en 1913 ?', 'Pierre Monteux']
+      ['Qui a achevé le « Requiem » de Mozart ?', 'Franz Xaver Süssmayr'],
+      ['Qui a dirigé la création du « Sacre du printemps » ?', 'Pierre Monteux']
     ]],
     ['scolaire', 'Les drapeaux', [
       ['Quel pays a une feuille d\'érable sur son drapeau ?', 'Le Canada'],
@@ -765,9 +778,9 @@ var DX = (function () {
       ['Quel pays d\'Europe a un drapeau carré à croix blanche ?', 'La Suisse'],
       ['Quel pays a un drapeau qui n\'est ni carré ni rectangulaire ?', 'Le Népal'],
       ['Combien de bandes compte le drapeau américain ?', '13'],
-      ['Quel animal, qui dévore un serpent, figure sur le drapeau du Mexique ?', 'Un aigle'],
+      ['Quel pays a le plus ancien drapeau encore en usage ?', 'Le Danemark'],
       ['Quel monument figure sur le drapeau du Cambodge ?', 'Angkor Vat'],
-      ['Quel pays a le plus ancien drapeau national encore en usage ?', 'Le Danemark (le Dannebrog)']
+      ['Quel pays a un drapeau différent sur ses deux faces ?', 'Le Paraguay']
     ]],
     ['scolaire', 'La philosophie', [
       ['Quel philosophe français a dit « Je pense, donc je suis » ?', 'René Descartes'],
@@ -777,7 +790,7 @@ var DX = (function () {
       ['Quel philosophe grec fut l\'élève de Platon ?', 'Aristote'],
       ['Quel Français a incarné l\'existentialisme avec « L\'Être et le Néant » ?', 'Jean-Paul Sartre'],
       ['Qui a écrit « Ainsi parlait Zarathoustra » ?', 'Friedrich Nietzsche'],
-      ['Qui a écrit la « Critique de la raison pure » ?', 'Emmanuel Kant'],
+      ['Qui a écrit la « Monadologie » ?', 'Leibniz'],
       ['Qui a écrit « Léviathan » ?', 'Thomas Hobbes'],
       ['Qui a écrit « Être et Temps » ?', 'Martin Heidegger']
     ]],
@@ -789,11 +802,12 @@ var DX = (function () {
       ['Quelle chaîne de montagnes sépare la France de l\'Espagne ?', 'Les Pyrénées'],
       ['Quel fleuve traverse la grande forêt d\'Amérique du Sud ?', 'L\'Amazone'],
       ['Quel est le plus haut sommet d\'Afrique ?', 'Le Kilimandjaro'],
-      ['Sur quel plateau la Seine prend-elle sa source ?', 'Le plateau de Langres'],
+      ['Quel fleuve traverse le plus de pays ?', 'Le Danube'],
       ['Quel est le plus haut sommet d\'Amérique du Sud ?', 'L\'Aconcagua'],
-      ['Quel fleuve traverse le plus de pays au monde ?', 'Le Danube (dix pays)']
+      ['Quel est le plus haut sommet d\'Océanie ?', 'Le Puncak Jaya']
     ]]
-  ].map(function (s, i) { return { id: s[0] + '-' + i, theme: s[0], nom: s[1], q: s[2] }; });
+  ].concat(lireSujets(typeof DX_QUESTIONS !== 'undefined' ? DX_QUESTIONS : (typeof require !== 'undefined' ? require('./dix-questions.js') : '')))
+   .map(function (s, i) { return { id: s[0] + '-' + i, theme: s[0], nom: s[1], q: s[2] }; });
 
   // Challenges : épreuves originales, jugées par l'équipe qui lit. gain = cases gagnées si réussi
   // Challenge : on cite des choses, ou une série de vrai ou faux ; on avance d'autant de cases que de bonnes réponses (max au plus)
