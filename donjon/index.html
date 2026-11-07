@@ -226,12 +226,89 @@
     .perils button.actif { border-color: #e8590c; background: #fff4e6; color: #c2410c; }
     .classe-dj { display: inline-block; background: #f3f0ff; color: #5f3dc4; border-radius: 999px; padding: 2px 10px; font-weight: 800; font-size: 0.85em; margin: 2px 0; }
 
-    .voile-dj { position: fixed; inset: 0; background: rgba(20,14,10,0.6); display: flex; align-items: center; justify-content: center; z-index: 50; padding: 16px; }
-    .boite-dj { background: #fff; border-radius: 18px; padding: 18px; width: 100%; max-width: 360px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+
+    /* ================== Habillage du donjon (3.14) : pierre sombre, or et parchemin ================== */
+    .jeu-dj { background: radial-gradient(ellipse at 50% 0%, #2c211a 0%, #17110d 70%); border-radius: 16px; padding: 8px 6px 10px; color: #f1e6d6; box-shadow: inset 0 0 0 1px #3d2e23; }
+    .tete-dj { background: linear-gradient(#3a2c22, #261c15); border: 1px solid #5c4532; border-radius: 12px; padding: 6px; box-shadow: inset 0 1px 0 rgba(255,255,255,0.06), 0 3px 8px rgba(0,0,0,0.4); }
+    .etage-dj { background: #1b130e; color: #ffd8a8; border: 1px solid #8d6a3f; }
+    .pv-dj { background: #4a2020; box-shadow: inset 0 1px 3px rgba(0,0,0,0.6); border: 1px solid #120c09; }
+    .pv-dj i { background: linear-gradient(#ff8787, #c92a2a 70%, #a61e1e); }
+    .or-dj { color: #ffd43b; }
+    .objets-dj button { background: #3f3026; color: #f1e6d6; border: 1px solid #5c4532; box-shadow: none; }
+    .objets-dj .fiole-vide { border-color: #6b5644; }
+    .objets-dj .petit { color: #e9dcc8; }
+    .carte-mini span.vue { background: #8d7b68; }
+    .carte-mini span.ici { background: #ffa94d; box-shadow: 0 0 4px #ffa94d; }
+    .quitter-dj { background: #3a1d1d; color: #ffa8a8; border-color: #e03131; }
+    .salle-dj { border: 2px solid #4b3a2c; box-shadow: 0 6px 16px rgba(0,0,0,0.55); }
+    .annonces-dj div { background: rgba(28,20,15,0.92); color: #ffe8cc; border: 1px solid #8d6a3f; }
+    .annonces-dj div.perso { background: rgba(92,56,20,0.94); }
+    .equipe-dj span { background: #3a2c22; color: #f1e6d6; box-shadow: none; }
+    .dernier-combat { background: #2a1f18; color: #e9dcc8; border: 1px solid #5c4532; box-shadow: none; }
+    .pad { background: radial-gradient(circle at 50% 40%, #3f3026, #241a14); box-shadow: inset 0 3px 10px rgba(0,0,0,0.6), 0 0 0 2px #4b3a2c; }
+    .pad span { background: linear-gradient(#6b4f36, #4b3a2c); color: #ffd8a8; box-shadow: 0 3px 0 #120c09; }
+    .pad span.actif { background: linear-gradient(#e8590c, #b8541a); color: #fff; }
+    .milieu-dj { color: #c9b8a6; }
+    .milieu-dj .aide { color: #a8957f; }
+    .inverser-dj { background: #3a2c22; color: #ffd8a8; }
+    .ent.monstre .sp .gl svg { overflow: visible; }
+
+    .combat-dj { border: 2px solid #4b3a2c; box-shadow: inset 0 0 30px rgba(0,0,0,0.6); }
+    .scene-c { position: relative; padding: 4px 0 2px; }
+    .scene-c:after { content: ''; position: absolute; left: 4%; right: 4%; bottom: 40px; height: 18px; border-radius: 50%; background: radial-gradient(ellipse, rgba(0,0,0,0.45), transparent 70%); pointer-events: none; }
+    .mc { background: transparent; border-color: transparent; }
+    .mc.ciblable { background: rgba(255,212,59,0.08); }
+    .mc-des { width: 62px; height: 62px; }
+    .mc.gros .mc-des { width: 92px; height: 92px; margin-top: 8px; }
+    .mc-des .gl svg { width: 100%; height: 100%; overflow: visible; filter: drop-shadow(0 2px 2px rgba(0,0,0,0.4)); }
+    .intention { background: #fff8ee; border: 1.5px solid #6b4f36; box-shadow: 0 2px 0 rgba(0,0,0,0.4); }
+    .mc-nom { color: #ffe8cc; text-shadow: 0 1px 2px #000; }
+    .mc-pv { background: #3a1616; border: 1px solid #120c09; }
+    .mc-pv i { background: linear-gradient(#f783ac, #c2255c); }
+    .journal-c { background: rgba(0,0,0,0.3); border: 1px solid rgba(141,106,63,0.35); color: #e9dcc8; }
+    .moi-c { background: linear-gradient(#3f3026, #2e231b); border: 1px solid #5c4532; }
+    .moi-av { flex: none; width: 40px; height: 40px; }
+    .moi-c .pv-dj { display: block; }
+    .moi-c { padding: 3px 6px; margin-bottom: 4px; }
+    .journal-c { height: 46px; }
+    .scene-c .intention-nom { margin-bottom: -2px; }
+    .moi-av svg { width: 100%; height: 100%; }
+    .desc-c { background: #fbf0dc; border: 1px solid #c9a66b; }
+    .fin-tour { background: linear-gradient(#ff922b, #e8590c); box-shadow: 0 3px 0 #8a3a0a; border: 1px solid #ffc078; }
+    .pied-c button.fiole-c { background: #3f3026; border: 1px solid #5c4532; }
+
+    /* Cartes en parchemin : bord à la couleur du type, médaillon, coût en pierre d'or */
+    .carte-c { background: linear-gradient(#fffaf0, #f1dfbf); border: 2px solid #8d6a3f; border-top-width: 2px; color: #3b2a1e; box-shadow: 0 3px 0 #1b130e, inset 0 0 0 2px rgba(255,255,255,0.5); }
+    .carte-c.t-attaque { border-color: #c2410c; } .carte-c.t-defense { border-color: #1864ab; } .carte-c.t-competence { border-color: #2b8a3e; }
+    .carte-c.t-pouvoir { border-color: #862e9c; background: linear-gradient(#fdf5ff, #ead3f2); } .carte-c.t-malediction { border-color: #343a40; background: linear-gradient(#e9ecef, #ced4da); }
+    .carte-c.r-u, .carte-c.r-r { outline: none; }
+    .carte-c.r-u .cc-ico { box-shadow: 0 0 0 2px #74c0fc; } .carte-c.r-r .cc-ico { box-shadow: 0 0 0 2px #fab005, 0 0 8px rgba(250,176,5,0.8); }
+    .cc-ico { width: 1.55em; height: 1.55em; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: #ffe8cc; border: 2px solid #c2410c; line-height: 1; margin-bottom: 2px; }
+    .main-c .cc-ico { font-size: 20px; } .grande .cc-ico { font-size: 22px; } .paquet-grille .cc-ico { font-size: 18px; }
+    .t-defense .cc-ico { background: #d0ebff; border-color: #1864ab; } .t-competence .cc-ico { background: #d3f9d8; border-color: #2b8a3e; }
+    .t-pouvoir .cc-ico { background: #f3d9fa; border-color: #862e9c; } .t-malediction .cc-ico { background: #dee2e6; border-color: #343a40; }
+    .cc-nom { color: #3b2a1e; } .cc-txt { color: #6b5644; }
+    .cc-cout { background: radial-gradient(circle at 35% 30%, #fff3bf, #fab005 55%, #e67700); border: 1.5px solid #5c3a00; color: #3b2a1e; }
+    .carte-c.plus .cc-nom { color: #2b8a3e; }
+
+    /* Fenêtres en parchemin */
+    .voile-dj { background: rgba(10,6,4,0.72); }
+    .boite-dj { background: linear-gradient(#fdf4e3, #ecd6b0); border: 3px solid #6b4f36; color: #3b2a1e; box-shadow: 0 0 0 2px #2a1f18, 0 12px 30px rgba(0,0,0,0.6); }
+    .boite-dj .titre { color: #3b2a1e; font-family: Georgia, 'Times New Roman', serif; }
+    .boite-dj .aide { color: #7a6550; }
+    .boite-dj ul { color: #3b2a1e; }
+    .boite-dj .btn { background: #fff8ee; border: 1.5px solid #c9b08f; color: #3b2a1e; }
+    .boite-dj .btn.principal { background: linear-gradient(#c2410c, #9a3412); border-color: #7c2d12; color: #fff; }
+    .boite-dj .btn:disabled { opacity: 0.5; }
+    .butin-l span, .ligne-achat { background: rgba(107,79,54,0.1); color: #3b2a1e; }
+    .or-menu { color: #a8590f; }
+    .voile-dj { position: fixed; inset: 0; background: rgba(10,6,4,0.72); display: flex; align-items: center; justify-content: center; z-index: 50; padding: 16px; }
+    .boite-dj { background: linear-gradient(#fdf4e3, #ecd6b0); border-radius: 18px; padding: 18px; width: 100%; max-width: 360px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
     .boite-dj .grand { font-size: 3em; line-height: 1.1; }
-    .boite-dj .titre { font-weight: 900; font-size: 1.25em; margin: 6px 0; }
-    .boite-dj ul { text-align: left; font-size: 0.9em; padding-left: 20px; line-height: 1.5; color: #3b4b57; }
-    .boite-dj .btn { width: 100%; margin-top: 8px; }
+    .boite-dj .titre { font-weight: 900; font-size: 1.25em; margin: 6px 0; color: #3b2a1e; font-family: Georgia, 'Times New Roman', serif; }
+    .boite-dj ul { text-align: left; font-size: 0.9em; padding-left: 20px; line-height: 1.5; color: #3b2a1e; }
+    .boite-dj .btn { width: 100%; margin-top: 8px; background: #fff8ee; border: 1.5px solid #c9b08f; color: #3b2a1e; }
+    .boite-dj .btn.principal { background: linear-gradient(#c2410c, #9a3412); border-color: #7c2d12; color: #fff; }
   </style>
 </head>
 <body>
@@ -349,9 +426,9 @@
           </div>
 
           <!-- COMBAT AUX CARTES, à la place de la pièce -->
-          <div v-if="combat" class="combat-dj">
+          <div v-if="combat" class="combat-dj" :style="fondCombat">
             <div class="tete-combat"><span>{{ combat.rang === 'boss' ? '👑 Boss' : combat.rang === 'elite' ? '⭐ Élite' : '⚔️ Combat' }} · tour {{ combat.tour }}</span><span class="aide-combat">{{ aideCombat }}</span></div>
-            <div class="monstres-c">
+            <div class="scene-c"><div class="monstres-c">
               <button v-for="m in monstresCombat" :key="'mc' + m.id" class="mc" :class="{ ciblable: cibleAttendue === 'monstre', gros: grosM(m) }" @click="choisirMonstre(m.id)">
                 <span class="intention" :class="intentionClasse(m)">{{ intentionCourte(m) }}</span>
                 <span class="intention-nom">{{ m.intention ? m.intention.nom : '' }}</span>
@@ -361,7 +438,7 @@
                 <span class="mc-pv"><i :style="{ width: pct(m.pv, m.pvMax) }"></i><b>{{ Math.max(0, m.pv) }} / {{ m.pvMax }}</b></span>
                 <span class="etats-c"><span v-for="(n, et) in m.etats" :key="et" @click.stop="infoEtat(et, n)">{{ D.ETATS[et] ? D.ETATS[et].ico : '' }}{{ n }}</span></span>
               </button>
-            </div>
+            </div></div>
             <div class="journal-c" ref="journal"><div v-if="!combat.journal.length" class="vide">Chaque monstre annonce son prochain coup (en haut). Joue tes cartes, puis « Fin du tour ».</div><div v-for="(l, k) in combat.journal" :key="combat.id + '-' + k + l">{{ l }}</div></div>
             <div class="equipe-c" v-if="equipeCombat.length > 1">
               <button v-for="p in equipeCombat" :key="'ec' + p.nom" class="membre-c" :class="{ ciblable: cibleAttendue === 'joueur' && (!p.fantome || selSoigne), fantome: p.fantome }" @click="choisirMembre(p.nom)">
@@ -373,6 +450,7 @@
             <template v-if="jeJoue">
               <div class="moi-c" :class="{ ciblable: cibleAttendue === 'joueur' }" @click="choisirMembre(moi)">
                 <span class="nrj" :class="{ vide: !monJ.energie }">{{ monJ.energie }}<small>⚡</small></span>
+                <span class="moi-av" v-if="monJ.cp" v-html="dessinSvg(monJ.cp)"></span>
                 <div class="corps">
                   <span class="pv-dj"><i :style="{ width: pct(monJ.pv, monJ.pvMax) }"></i><b>❤️ {{ monJ.pv }} / {{ monJ.pvMax }}</b></span>
                   <span class="etats-c"><span v-if="monJ.armure" class="armure-m">🛡️ {{ monJ.armure }}</span><span v-for="(n, et) in monJ.etats" :key="et" @click.stop="infoEtat(et, n)">{{ D.ETATS[et] ? D.ETATS[et].ico : '' }}{{ n }}</span></span>
@@ -614,6 +692,7 @@
   <script src="compagnon/compagnon-commun.js"></script>
   <script src="expedition/expedition-regles.js"></script>
   <script src="donjon/donjon-donnees.js"></script>
+  <script src="donjon/donjon-dessins.js"></script>
   <script src="donjon/donjon-regles.js"></script>
   <script>
     if (!ACCES.memorise()) location.replace('index.html');
@@ -778,6 +857,10 @@
           var d = this.degatsAnnonces, a = this.monJ.armure;
           return d ? '⚔️ ' + d + ' annoncé' + (d > 1 ? 's' : '') + (a ? ' · 🛡️ ' + a : '') : 'Aucun coup annoncé sur toi';
         },
+        fondCombat: function() {
+          var E = this.partie && DJ.D.ETAGES[this.partie.etage - 1];
+          return E ? { background: 'radial-gradient(ellipse at 50% 28%, ' + E.sol[1] + ' 0%, ' + E.mur[0] + ' 62%, #0b0806 100%)' } : {};
+        },
         etageIco: function() { var E = this.partie && DJ.D.ETAGES[this.partie.etage - 1]; return E ? E.ico : '🗝️'; },
         etageInfo: function() { var p = this.partie, E = p && DJ.D.ETAGES[p.etage - 1]; return E ? E.ico + ' Étage ' + p.etage + ' sur ' + DJ.NB_ETAGES + ' : ' + E.nom + (p.peril ? ' · péril ' + p.peril : '') : ''; },
         objectif: function() {
@@ -864,7 +947,7 @@
         grosM: function(m) { return (DJ.MONSTRES[m.type].taille || 1) > 1; },
         spriteMonstre: function(m) {
           var M = DJ.MONSTRES[m.type];
-          return (M.dessin ? '<span class="gl">' + gluantSvg(M.dessin === 'roi') + '</span>' : '<span class="emo">' + M.ico + '</span>') + (M.couronne ? '<span class="cour">👑</span>' : '');
+          return '<span class="gl">' + DJS.monstre(m.type) + '</span>';
         },
         // L'intention d'un monstre en raccourci : ⚔️ 12×2, 🛡️ 10, 💪+2, états…
         intentionCourte: function(m) {
@@ -1493,7 +1576,9 @@
       joueurs.forEach(p => { if (!p.fantome) sur[p.x + ',' + p.y] = 1; });
       s += '<defs><pattern id="dj-sol" width="64" height="64" patternUnits="userSpaceOnUse"><rect width="64" height="64" fill="' + so[0] + '"/>' +
            '<rect width="32" height="32" fill="' + so[1] + '"/><rect x="32" y="32" width="32" height="32" fill="' + so[1] + '"/>' +
-           '<path d="M0 0 H64 M0 32 H64 M0 0 V64 M32 0 V64" stroke="' + so[2] + '" stroke-width="1.5"/></pattern></defs>';
+           '<path d="M0 0 H64 M0 32 H64 M0 0 V64 M32 0 V64" stroke="' + so[2] + '" stroke-width="1.5"/></pattern>' +
+           '<radialGradient id="dj-vig" cx="50%" cy="55%" r="72%"><stop offset="55%" stop-color="#000" stop-opacity="0"/><stop offset="100%" stop-color="#000" stop-opacity="0.62"/></radialGradient>' +
+           '<radialGradient id="dj-lueur"><stop offset="0%" stop-color="#ffb347" stop-opacity="0.5"/><stop offset="100%" stop-color="#ff922b" stop-opacity="0"/></radialGradient></defs>';
       s += '<rect x="0" y="0" width="352" height="288" fill="url(#dj-sol)"/>';
       for (var y = 0; y < H; y++) for (var x = 0; x < W; x++) {
         var c = S.t[y * W + x], X = x * T, Y = y * T;
@@ -1568,6 +1653,31 @@
           }
         }
       }
+      // Détails du sol, toujours les mêmes pour une pièce : fissures, cailloux, et selon l'étage mousse, os ou braises
+      var g = 7; for (var i = 0; i < S.id.length; i++) g = (g * 31 + S.id.charCodeAt(i)) & 0x7fffffff;
+      g = (g + (etage || 1) * 7919) & 0x7fffffff;
+      var alea = function() { g = (g * 1103515245 + 12345) & 0x7fffffff; return g / 0x7fffffff; };
+      for (var y2 = 1; y2 < H - 1; y2++) for (var x2 = 1; x2 < W - 1; x2++) {
+        var q = alea(), k = alea();
+        if (S.t[y2 * W + x2] !== '.' || q > 0.17) continue;
+        var X2 = x2 * T + 4 + k * 12, Y2 = y2 * T + 4 + (1 - k) * 12;
+        if (q < 0.06) s += '<path d="M' + X2 + ' ' + Y2 + ' l5 4 l-2 5 l6 3" fill="none" stroke="' + so[2] + '" stroke-width="1.6" stroke-linecap="round"/>';
+        else if (q < 0.11) s += '<ellipse cx="' + X2 + '" cy="' + Y2 + '" rx="3" ry="2" fill="' + mu[1] + '"/><ellipse cx="' + (X2 + 6) + '" cy="' + (Y2 + 3) + '" rx="2" ry="1.4" fill="' + mu[1] + '"/>';
+        else if (etage === 2) s += '<path d="M' + X2 + ' ' + Y2 + ' l9 4" stroke="#e9e2d0" stroke-width="2.4" stroke-linecap="round"/><circle cx="' + X2 + '" cy="' + Y2 + '" r="1.8" fill="#e9e2d0"/><circle cx="' + (X2 + 9) + '" cy="' + (Y2 + 4) + '" r="1.8" fill="#e9e2d0"/>';
+        else if (etage === 3) s += '<circle cx="' + X2 + '" cy="' + Y2 + '" r="2.2" fill="#ff6b3d" opacity="0.8"/><circle cx="' + X2 + '" cy="' + Y2 + '" r="5" fill="#ff6b3d" opacity="0.15"/>';
+        else s += '<circle cx="' + X2 + '" cy="' + Y2 + '" r="2.6" fill="#5c7a3a" opacity="0.75"/><circle cx="' + (X2 + 4) + '" cy="' + (Y2 - 2) + '" r="1.8" fill="#6f8f45" opacity="0.75"/>';
+      }
+      // Bannières (Forteresse) et torches sur le mur du haut
+      if (etage === 3) [3, 7].forEach(tx => { if (S.t[tx] === '#') s += '<path d="M' + (tx * T + 7) + ' 2 h18 v22 l-9 -5 l-9 5 Z" fill="#a61e1e" stroke="#fab005" stroke-width="1.5"/><circle cx="' + (tx * T + 16) + '" cy="11" r="3" fill="#fab005"/>'; });
+      [2, 8].forEach(tx => {
+        if (S.t[tx] !== '#') return;
+        var cx = tx * T + 16;
+        s += '<circle cx="' + cx + '" cy="22" r="48" fill="url(#dj-lueur)"/>' +
+             '<rect x="' + (cx - 2.5) + '" y="15" width="5" height="12" rx="1.5" fill="#5d3a18" stroke="#2a1a0c" stroke-width="1"/><rect x="' + (cx - 5) + '" y="13" width="10" height="4" rx="1.5" fill="#868e96" stroke="#2a1a0c" stroke-width="1"/>' +
+             '<path class="flamme" d="M' + cx + ' 1 C' + (cx + 6) + ' 6 ' + (cx + 5) + ' 13 ' + cx + ' 13 C' + (cx - 5) + ' 13 ' + (cx - 6) + ' 6 ' + cx + ' 1 Z" fill="#ff922b"/>' +
+             '<path class="flamme" d="M' + cx + ' 5 C' + (cx + 3) + ' 8 ' + (cx + 3) + ' 12 ' + cx + ' 12.5 C' + (cx - 3) + ' 12 ' + (cx - 3) + ' 8 ' + cx + ' 5 Z" fill="#ffe066"/>';
+      });
+      s += '<rect width="352" height="288" fill="url(#dj-vig)"/>';
       if (S.boss) s += '<circle cx="176" cy="144" r="70" fill="#9c36b5" opacity="0.12"/>';
       return s + '<style>.scintille{animation:sc 1s ease-in-out infinite alternate}.fleche-dj{animation:sc .8s ease-in-out infinite alternate}.flamme{animation:fl .35s ease-in-out infinite alternate;transform-box:fill-box;transform-origin:50% 100%}@keyframes fl{to{transform:scale(1.08,.9)}}@keyframes sc{from{opacity:.35}to{opacity:1}}</style>';
     }

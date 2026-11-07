@@ -5,7 +5,7 @@
 //   version mise en ligne est donc visible dès le prochain lancement.
 // Pensez à changer VERSION à chaque mise en ligne (même numéro que dans commun.js et brilliant/index.html).
 
-const VERSION = '3.13';
+const VERSION = '3.14';
 const CACHE = 'desdale-' + VERSION;
 // Au-delà de ce délai sans réponse du réseau, on sert la copie gardée (réseau faible)
 const DELAI_RESEAU = 3000;
@@ -50,6 +50,7 @@ const FICHIERS = [
   './expedition/expedition-regles.js',
   './donjon/',
   './donjon/donjon-donnees.js',
+  './donjon/donjon-dessins.js',
   './donjon/donjon-regles.js',
   './compagnon/',
   './compagnon/compagnon-commun.js',
