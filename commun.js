@@ -3,12 +3,13 @@
 // Les clés de stockage gardent l'ancien préfixe "brillant-" : les réglages déjà faits sont conservés.
 
 // Numéro de version affiché (à augmenter à chaque mise en ligne, avec brilliant/index.html et sw.js)
-const VERSION = '3.12';
+const VERSION = '3.13';
 
 // ---------- Nouveautés (2.87, demandé par l'utilisateur) ----------
 // Une ligne très brève par mise en ligne (la plus récente en haut) : l'accueil les montre une seule fois, dans une petite fenêtre,
 // à qui n'a pas encore vu cette version. [version, jeu ou partie de l'appli, ce qui change]
 const NOUVEAUTES = [
+  ['3.13', 'Donjon', 'Nouveau donjon : 3 étages, combats de cartes à énergie, butin, marchand et périls.'],
   ['3.12', 'Cieljo', 'Fin de manche : on voit d\'abord les grilles dévoilées, puis les scores.'],
   ['3.11', 'Cieljo', 'Une colonne identique révélée en fin de manche part aussi.'],
   ['3.10', 'Cieljo', 'Nouveau jeu de cartes : le plus petit total gagne, seul ou de 2 à 8.'],

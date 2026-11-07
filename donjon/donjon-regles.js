@@ -1,23 +1,29 @@
-// ================== DONJON DES COMPAGNONS : CARTE, POUVOIRS, SIMULATION ==================
-// Un donjon vu de dessus, pièce par pièce (façon jeu d'aventure des années 80), exploré seul ou à plusieurs en temps réel « doux ».
-// Chaque compagnon a un pouvoir selon son espèce (débroussailler, force, bond, flair) : le donjon est tiré au hasard
-// pour que les pouvoirs du groupe suffisent toujours. Clés, porte verrouillée, grille à deux dalles (à plusieurs),
-// monstres lents, grande clé et boss. Un joueur sans cœur devient un petit fantôme qu'un ami ranime en restant à côté.
+// ================== DONJON DES COMPAGNONS : CARTE, POUVOIRS, COMBAT, SIMULATION ==================
+// Un donjon de 3 étages vu de dessus, pièce par pièce, exploré seul ou à plusieurs en temps réel « doux ».
+// Chaque compagnon a un pouvoir selon son espèce (débroussailler, force, bond, flair) : il ouvre les obstacles
+// et donne sa classe de cartes. Chaque étage : clés, portes, salles spéciales (feu de camp, marchand, autel),
+// un élite qui garde la grande clé et un boss ; l'escalier mène à l'étage suivant.
+// Combat aux cartes à énergie (façon « roguelike de cartes ») : les chiffres sont dans donjon-donnees.js.
 // Chez l'hôte (ou en solo), la page appelle DJ.tick(e, maintenant) dix fois par seconde ; l'état est ensuite diffusé.
 // Utilisé par donjon/index.html ; testable avec Node (module.exports en bas).
 
 var DJ = (function () {
+  var D = typeof DJD !== 'undefined' ? DJD : require('./donjon-donnees.js');
   var W = 11, H = 9;                       // une pièce : 11 × 9 cases (bords compris)
-  var GX = 4, GY = 4;                      // le plan du donjon : 4 × 4 pièces au plus
+  var GX = 4, GY = 4;                      // le plan d'un étage : 4 × 4 pièces au plus
   var PAS = 200;                           // un pas toutes les 0,2 s quand on garde le doigt sur la croix
   var REANIMATION = 2000;
+  var NB_ETAGES = 3;
+  var MAIN = 5, MAIN_MAX = 10, ENERGIE = 3;
   var DX = { h: [0, -1], b: [0, 1], g: [-1, 0], d: [1, 0] };
   var OPP = { h: 'b', b: 'h', g: 'd', d: 'g' };
   var PORTE = { h: [5, 0], b: [5, 8], g: [0, 4], d: [10, 4] };   // l'ouverture de chaque côté d'une pièce
+  var CENTRE = [5, 4];
 
   // Cases (une lettre par case, 99 lettres par pièce)
   //  . sol   # mur   O pilier   r ronces   R rocher   v trou   = planche   s mur secret
   //  L porte verrouillée   B porte du boss   G grille   _ dalle   C coffre   c coffre ouvert
+  //  F feu de camp   M marchand   A autel   E escalier
   var MARCHABLE = { '.': 1, '=': 1, '_': 1 };
 
   // ---------- Pouvoirs des compagnons ----------
@@ -43,37 +49,7 @@ var DJ = (function () {
     raton: { pouvoir: 'flair', action: 'trouve un passage secret' }
   };
   function pouvoirDe(cp) { var x = cp && ESPECES[cp.e]; return x ? x.pouvoir : null; }
-
-  // ---------- Monstres ----------
-  var MONSTRES = {
-    slime: { nom: 'Gluant', pv: 2, vitesse: 850 },
-    chauve: { nom: 'Chauve-souris', pv: 2, vitesse: 520, vole: true, esquive: true },
-    squelette: { nom: 'Squelette', pv: 3, vitesse: 760, chasse: true },
-    boss: { nom: 'Le Roi Gluant', pv: 10, vitesse: 700, chasse: true }
-  };
-
-  // ---------- Cartes de combat (un jour à collectionner : chaque carte a son identifiant) ----------
-  // cible : 'monstre' (un monstre du combat), 'ami' (un autre joueur du combat), 'joueur' (soi ou un ami, même KO), null (aucune)
-  var CARTES = {
-    griffe: { nom: 'Coup de griffe', ico: '🐾', type: 'attaque', cible: 'monstre', texte: '1 à 3 dégâts selon le dé' },
-    bouclier: { nom: 'Bouclier', ico: '🛡️', type: 'defense', cible: null, texte: 'Aucun dégât pour toi ce tour' },
-    proteger: { nom: 'Protéger', ico: '🤝', type: 'defense', cible: 'ami', texte: 'Tu prends les coups d\'un ami à sa place' },
-    trefle: { nom: 'Trèfle', ico: '🍀', type: 'soin', cible: 'joueur', texte: '+1 cœur, ou ranime un ami KO' },
-    feu: { nom: 'Souffle de feu', ico: '🔥', type: 'pouvoir', cible: null, texte: '1 dégât à tous les monstres (2 sur un 6)' },
-    grandcoup: { nom: 'Grand coup', ico: '💥', type: 'pouvoir', cible: 'monstre', texte: '2 à 4 dégâts selon le dé' },
-    bond: { nom: 'Bond', ico: '💨', type: 'pouvoir', cible: 'monstre', texte: 'Tu esquives tout et tu frappes (1 à 3)' },
-    pointfaible: { nom: 'Point faible', ico: '🎯', type: 'pouvoir', cible: 'monstre', texte: 'Ce monstre prend +1 à chaque coup du tour' }
-  };
-  var CARTE_POUVOIR = { ronces: 'feu', force: 'grandcoup', bond: 'bond', flair: 'pointfaible' };
-  var MAIN = 3;   // cartes piochées à chaque tour
-  function paquetDe(p, aPlusieurs) {
-    var l = ['griffe', 'griffe', 'griffe', 'bouclier', 'bouclier', 'trefle'];
-    if (aPlusieurs) l.push('proteger');
-    var pw = CARTE_POUVOIR[p.pouvoir];
-    if (pw) l.push(pw, pw); else l.push('griffe');
-    return l;
-  }
-  function degats(d) { return d === 6 ? 3 : d >= 4 ? 2 : 1; }
+  var MONSTRES = D.MONSTRES, CARTES = D.CARTES, ETATS = D.ETATS, RELIQUES = D.RELIQUES, FIOLES = D.FIOLES, CLASSES = D.CLASSES;
 
   // ---------- Hasard reproductible ----------
   function hasard(graine) {
@@ -86,15 +62,61 @@ var DJ = (function () {
   }
   function entier(h, n) { return Math.floor(h() * n); }
   function melanger(l, h) { l = l.slice(); for (var i = l.length - 1; i > 0; i--) { var j = entier(h, i + 1), x = l[i]; l[i] = l[j]; l[j] = x; } return l; }
+  function auHasard(l, h) { return l[entier(h, l.length)]; }
 
-  // ---------- Plan : un arbre de pièces qui part du bas ----------
+  // ================== CARTES ==================
+  // Une carte améliorée a l'identifiant « griffe+ »
+  var cacheCartes = {};
+  function carte(id) {
+    if (cacheCartes[id]) return cacheCartes[id];
+    var plus = /\+$/.test(id), b = CARTES[plus ? id.slice(0, -1) : id];
+    if (!b) return null;
+    var c = Object.assign({}, b, { id: id, base: b.id, plus: plus });
+    if (plus) {
+      var p = b.plus || {};
+      c.nom = b.nom + '+';
+      if (p.cout !== undefined) c.cout = p.cout;
+      if (p.fx) c.fx = p.fx;
+      if (p.epuise !== undefined) c.epuise = p.epuise;
+      if (p.texte) c.texte = p.texte;
+    }
+    c.texte = texteCarte(c);
+    return (cacheCartes[id] = c);
+  }
+  function ameliorable(id) { var c = carte(id); return !!(c && !c.plus && c.type !== 'malediction'); }
+  var NOM_ETAT = function (e) { return ETATS[e] ? ETATS[e].nom : e; };
+  function texteFx(f) {
+    if (f.special) return null;
+    var tous = f.tous ? ' à tous' : '';
+    if (f.deg !== undefined) return (f.x > 1 ? f.deg + ' dégâts ×' + f.x : f.deg + ' dégâts') + tous;
+    if (f.armure) return '+' + f.armure + ' armure';
+    if (f.pioche) return 'Pioche ' + f.pioche;
+    if (f.energie) return '+' + f.energie + ' ⚡';
+    if (f.etat) return NOM_ETAT(f.etat) + ' ' + f.n + tous;
+    if (f.buff) return ETATS[f.buff] ? ETATS[f.buff].texte.replace('{n}', f.n).replace(' tour·s', '') : f.buff;
+    if (f.soin) return 'Soigne ' + f.soin + ' PV';
+    return '';
+  }
+  function texteCarte(c) {
+    var t;
+    if (c.texte && c.fx.some(f => f.special)) {
+      var sp = c.fx.find(f => f.special);
+      t = c.texte.replace('{n}', sp.n).replace('{x}', sp.x);
+    } else t = c.texte || c.fx.map(texteFx).filter(Boolean).join(', ');
+    if (c.type === 'pouvoir') t += ' (tout le combat)';
+    if (c.cible === 'joueur') t += ' (toi ou un ami)';
+    if (c.epuise) t += '. Épuisée';
+    return t;
+  }
+
+  // ================== PLAN D'UN ÉTAGE ==================
   function plan(h, n) {
     var x0 = entier(h, GX), depart = x0 + ',' + (GY - 1), salles = {};
     salles[depart] = { id: depart, x: x0, y: GY - 1, parent: null, prof: 0, portes: {} };
     var liste = [depart], essais = 0;
-    while (liste.length < n && essais++ < 600) {
+    while (liste.length < n && essais++ < 900) {
       // on pousse plutôt depuis les dernières pièces : des couloirs qui s'enfoncent, avec quelques embranchements
-      var base = salles[liste[liste.length - 1 - entier(h, Math.min(3, liste.length))]];
+      var base = salles[liste[liste.length - 1 - entier(h, Math.min(4, liste.length))]];
       var d = ['h', 'b', 'g', 'd'][entier(h, 4)], v = DX[d], x = base.x + v[0], y = base.y + v[1], id = x + ',' + y;
       if (x < 0 || y < 0 || x >= GX || y >= GY || salles[id]) continue;
       salles[id] = { id: id, x: x, y: y, parent: base.id, prof: base.prof + 1, portes: {} };
@@ -120,19 +142,22 @@ var DJ = (function () {
   function poser(S, x, y, c) { var i = idx(x, y); S.t = S.t.slice(0, i) + c + S.t.slice(i + 1); }
   function pres(a, x, y, d) { return Math.abs(a[0] - x) <= d && Math.abs(a[1] - y) <= d; }
 
-  // ---------- Génération : le donjon dépend des pouvoirs présents dans le groupe ----------
-  function generer(graine, pouvoirs, humains) {
+  // ---------- Génération : l'étage dépend des pouvoirs présents dans le groupe ----------
+  // Pièces : départ, boss (au plus profond), feu de camp (juste avant le boss), élite (gardien de la grande clé),
+  // marchand, autel, et des pièces de combat.
+  function generer(graine, pouvoirs, humains, etage) {
     pouvoirs = (pouvoirs || []).filter((p, i, l) => POUVOIRS[p] && l.indexOf(p) === i);
-    for (var k = 0; k < 60; k++) {
-      var h = hasard((graine >>> 0) + k * 7919), n = humains >= 3 ? 8 : 7, p = plan(h, n);
+    etage = etage || 1;
+    for (var k = 0; k < 80; k++) {
+      var h = hasard((graine >>> 0) + k * 7919 + etage * 104729), n = humains >= 3 ? 10 : 9, p = plan(h, n);
       if (p.liste.length < n) continue;
       var boss = p.liste.reduce((a, b) => p.salles[b].prof > p.salles[a].prof ? b : a, p.depart);
       if (p.salles[boss].prof < 3) continue;
-      return construire(h, p, boss, pouvoirs, humains || 1);
+      return construire(h, p, boss, pouvoirs, humains || 1, etage);
     }
     throw new Error('Donjon impossible à générer');
   }
-  function construire(h, p, boss, pouvoirs, humains) {
+  function construire(h, p, boss, pouvoirs, humains, etage) {
     var S = p.salles, enfants = p.liste.filter(id => id !== p.depart), porte = {};
     enfants.forEach(id => { porte[id] = ''; });
     porte[boss] = 'B';
@@ -143,22 +168,38 @@ var DJ = (function () {
     if (humains >= 2 && k < autres.length) porte[autres[k++]] = 'G';
     if (pouvoirs.length && k < autres.length && h() < 0.6) porte[autres[k++]] = POUVOIRS[pouvoirs[entier(h, pouvoirs.length)]].obstacle;
 
-    // Coffres : la petite clé avant sa porte, la grande clé au plus loin, quelques poussières d'étoile
+    // Rôle des pièces
+    var role = {};
+    p.liste.forEach(id => { role[id] = 'combat'; });
+    role[p.depart] = 'depart'; role[boss] = 'boss';
+    var feu = S[boss].parent;
+    if (feu !== p.depart) role[feu] = 'feu';
+    var loin = p.liste.filter(id => role[id] === 'combat').sort((a, b) => S[b].prof - S[a].prof);
+    var elite = loin[0];
+    role[elite] = 'elite';
+    var reste = melanger(p.liste.filter(id => role[id] === 'combat'), h);
+    if (reste.length > 2) role[reste.shift()] = 'marchand';
+    if (reste.length > 2) role[reste.shift()] = 'autel';
+    if (role[feu] !== 'feu' && reste.length > 2) role[reste.shift()] = 'feu';
+    var combats = p.liste.filter(id => role[id] === 'combat').sort((a, b) => S[a].prof - S[b].prof);
+
+    // Coffres : la petite clé avant sa porte, la grande clé chez l'élite, un trésor (relique), de l'or et des poussières
     var coffres = {};   // pièce -> [contenu…]
-    function mettre(id, c) { (coffres[id] = coffres[id] || []).push(c); }
+    function mettre(id, c) { if ((coffres[id] = coffres[id] || []).length < 4) coffres[id].push(c); }
     Object.keys(porte).forEach(id => { if (porte[id] === 'L') { var a = ancetres(S, S[id].parent); mettre(a[entier(h, a.length)], 'cle'); } });
-    var loin = p.liste.filter(id => id !== boss && id !== p.depart && id !== S[boss].parent).sort((a, b) => S[b].prof - S[a].prof);
-    if (!loin.length) loin = [S[boss].parent];
-    mettre(loin[0], 'grandecle');
-    melanger(p.liste.filter(id => id !== boss && id !== p.depart), h).slice(0, 2).forEach((id, i) => mettre(id, i ? 'coeur' : 'poussiere'));
+    mettre(elite, 'grandecle');
+    if (combats.length) mettre(combats[combats.length - 1], 'relique');
+    melanger(combats, h).slice(0, 2).forEach((id, i) => mettre(id, i ? 'or' : 'poussiere'));
+    var etg = D.ETAGES[etage - 1];
 
     var ennemis = [], num = 0;
     p.liste.forEach(id => {
       var s = S[id], aGrille = Object.keys(s.portes).some(d => S[s.portes[d]].parent === id && porte[s.portes[d]] === 'G');
-      var modele = id === p.depart || id === boss ? [] : MODELES[aGrille ? entier(h, 2) : entier(h, MODELES.length)];
+      var vide = role[id] !== 'combat';
+      var modele = vide ? [] : MODELES[aGrille ? entier(h, 2) : entier(h, MODELES.length)];
       var t = '';
       for (var y = 0; y < H; y++) for (var x = 0; x < W; x++) t += (x === 0 || y === 0 || x === W - 1 || y === H - 1) ? '#' : '.';
-      s.t = t; s.coffres = {}; s.dalles = []; s.boss = id === boss;
+      s.t = t; s.coffres = {}; s.dalles = []; s.boss = id === boss; s.role = role[id];
       modele.forEach(c => poser(s, c[0], c[1], 'O'));
       Object.keys(s.portes).forEach(d => {
         var voisin = s.portes[d], P = PORTE[d], g = S[voisin].parent === id ? porte[voisin] : '';
@@ -166,52 +207,92 @@ var DJ = (function () {
         if (g === 'G') DALLES.forEach(c => { poser(s, c[0], c[1], '_'); s.dalles.push(c); });
       });
       (coffres[id] || []).forEach((c, i) => { var co = COINS[i]; poser(s, co[0], co[1], 'C'); s.coffres[idx(co[0], co[1])] = c; });
-      // Monstres : plus nombreux et plus coriaces au fond du donjon ; jamais près des portes
-      if (id === boss) { ennemis.push({ id: ++num, type: 'boss', salle: id, x: 5, y: 3, pv: MONSTRES.boss.pv + 4 * (humains - 1), pvMax: MONSTRES.boss.pv + 4 * (humains - 1), pas: 0, dir: 'b' }); return; }
-      if (id === p.depart) return;
-      var nb = 1 + (s.prof >= 2 ? 1 : 0) + (h() < 0.4 ? 1 : 0) + (humains >= 3 ? 1 : 0);
-      var types = s.prof >= 2 ? ['slime', 'chauve', 'squelette'] : ['slime', 'chauve'];
+      if (role[id] === 'feu') poser(s, CENTRE[0], CENTRE[1], 'F');
+      if (role[id] === 'marchand') poser(s, CENTRE[0], CENTRE[1] - 1, 'M');
+      if (role[id] === 'autel') { poser(s, CENTRE[0], CENTRE[1] - 1, 'A'); s.evenement = auHasard(Object.keys(D.EVENEMENTS), h); }
+      // Monstres : une rencontre par pièce de combat (la plus proche du départ est facile), l'élite, le boss
+      var groupe = null;
+      if (role[id] === 'boss') groupe = [etg.boss];
+      else if (role[id] === 'elite') groupe = [auHasard(etg.elites, h)];
+      else if (role[id] === 'combat') groupe = auHasard(id === combats[0] ? etg.faciles : etg.rencontres, h).slice();
+      if (!groupe) return;
+      if (groupe.length === 1 && (MONSTRES[groupe[0]].taille || 1) > 1) { ennemis.push({ type: groupe[0], salle: id, x: 5, y: 3 }); return; }
       var libres = [];
       for (var yy = 2; yy <= 6; yy++) for (var xx = 2; xx <= 8; xx++) {
         if (tuile(s, xx, yy) !== '.' || Object.keys(PORTE).some(d => s.portes[d] && pres(PORTE[d], xx, yy, 2))) continue;
         libres.push([xx, yy]);
       }
-      melanger(libres, h).slice(0, nb).forEach(c => {
-        var ty = types[entier(h, types.length)];
-        ennemis.push({ id: ++num, type: ty, salle: id, x: c[0], y: c[1], pv: MONSTRES[ty].pv, pvMax: MONSTRES[ty].pv, pas: 0, dir: 'b' });
-      });
+      melanger(libres, h).slice(0, groupe.length).forEach((c, i) => { ennemis.push({ type: groupe[i], salle: id, x: c[0], y: c[1] }); });
     });
     var salles = {};
-    p.liste.forEach(id => { var s = S[id]; salles[id] = { id: id, x: s.x, y: s.y, prof: s.prof, portes: s.portes, t: s.t, coffres: s.coffres, dalles: s.dalles, boss: s.boss }; });
-    return { salles: salles, depart: p.depart, boss: boss, ennemis: ennemis, num: num };
+    p.liste.forEach(id => { var s = S[id]; salles[id] = { id: id, x: s.x, y: s.y, prof: s.prof, portes: s.portes, t: s.t, coffres: s.coffres, dalles: s.dalles, boss: s.boss, role: s.role, evenement: s.evenement || null }; });
+    return { salles: salles, depart: p.depart, boss: boss, ennemis: ennemis, h: h };
   }
 
-  // ---------- Partie ----------
-  // joueurs : { pseudo: résumé du compagnon ({ e, c, n, p }) ou null }
-  function nouvelle(graine, joueurs, id) {
+  // ---------- Monstres ----------
+  function creerMonstre(e, type, salle, x, y, h) {
+    var M = MONSTRES[type], r = M.rang || 'normal';
+    var pv = M.pv[0] + entier(h, M.pv[1] - M.pv[0] + 1);
+    if (e.peril >= 1 && r === 'normal') pv *= 1.1;
+    if (e.peril >= 2 && r !== 'normal') pv *= 1.1;
+    pv = Math.round(pv * (1 + 0.9 * Math.max(0, (e.nbJ || 1) - 1)));
+    var m = { id: ++e.seq, type: type, salle: salle, x: x, y: y, pv: pv, pvMax: pv, pas: 0, dir: 'b', armure: 0, etats: {}, k: 0, mem: {}, intention: null, cible: null };
+    e.ennemis.push(m);
+    return m;
+  }
+
+  // ================== PARTIE ==================
+  // joueurs : { pseudo: résumé du compagnon ({ e, c, n, p }) ou null } ; options : { peril }
+  var FORMAT = 3;
+  function nouvelle(graine, joueurs, id, options) {
+    options = options || {};
     var noms = Object.keys(joueurs), pouvoirs = noms.map(n => pouvoirDe(joueurs[n])).filter(Boolean);
-    var c = generer(graine, pouvoirs, noms.length);
-    var e = { id: id || String(graine), graine: graine, phase: 'jeu', salles: c.salles, depart: c.depart, bossSalle: c.boss, carteV: 1,
-              ennemis: c.ennemis, seq: c.num, joueurs: {}, cles: 0, grandeCle: false, poussiere: 0, objets: [], effets: [], annonces: [],
-              vues: {}, fin: null, debut: 0, maintenant: 0, pouvoirs: pouvoirs, combats: {}, format: FORMAT };
-    e.vues[c.depart] = 1;
+    var e = { id: id || String(graine), graine: graine, phase: 'jeu', format: FORMAT, etage: 0, peril: Math.max(0, Math.min(D.PERILS.length - 1, options.peril | 0)),
+              nbJ: noms.length, salles: {}, depart: null, bossSalle: null, carteV: 1, ennemis: [], seq: 0, joueurs: {}, cles: 0, grandeCle: false,
+              poussiere: 0, objets: [], effets: [], annonces: [], vues: {}, fin: null, debut: 0, maintenant: 0, pouvoirs: pouvoirs, combats: {} };
     noms.forEach(n => ajouterJoueur(e, n, joueurs[n]));
+    etageSuivant(e);
     return e;
   }
-  // Format d'une partie enregistrée : une sauvegarde d'une version plus ancienne (avant le combat aux cartes, 2.44) ne peut pas être reprise
-  var FORMAT = 2;
+  function etageSuivant(e) {
+    e.etage++;
+    var c = generer(e.graine, e.pouvoirs, e.nbJ, e.etage);
+    e.salles = c.salles; e.depart = c.depart; e.bossSalle = c.boss; e.carteV++;
+    e.ennemis = []; e.cles = 0; e.grandeCle = false; e.objets = []; e.vues = {}; e.combats = {};
+    c.ennemis.forEach(m => creerMonstre(e, m.type, m.salle, m.x, m.y, c.h));
+    e.vues[c.depart] = 1;
+    Object.values(e.joueurs).forEach((p, i) => {
+      var d = DEPARTS[i % DEPARTS.length];
+      p.salle = e.depart; p.x = d[0]; p.y = d[1]; p.d = null; p.unPas = null;
+      p.armure = 0; p.etats = {}; p.main = []; p.pioche = []; p.defausse = []; p.epuisees = []; p.energie = 0; p.tourCombat = 0;
+      p.menus = (p.menus || []).filter(m => m.type === 'butin' || m.type === 'reliqueBoss' || m.type === 'choix');
+      if (e.etage > 1) {
+        if (p.fantome) { p.fantome = false; p.pv = 1; }
+        p.pv += Math.floor((p.pvMax - p.pv) / 2);
+      }
+    });
+    if (e.etage > 1) annonce(e, D.ETAGES[e.etage - 1].ico + ' Étage ' + e.etage + ' : ' + D.ETAGES[e.etage - 1].nom + '. Le repos du voyage rend la moitié des PV perdus.');
+  }
   function compatible(e) {
-    return !!(e && e.salles && e.joueurs && e.combats && Array.isArray(e.ennemis) && (e.format || 0) <= FORMAT &&
-      Object.values(e.joueurs).every(p => p && Array.isArray(p.main) && Array.isArray(p.defausse || [])));
+    return !!(e && e.format === FORMAT && e.salles && e.joueurs && e.combats && Array.isArray(e.ennemis) &&
+      Object.values(e.joueurs).every(p => p && Array.isArray(p.paquet) && Array.isArray(p.menus)));
   }
   var DEPARTS = [[5, 6], [4, 6], [6, 6], [5, 5], [4, 5], [6, 5], [3, 6], [7, 6]];
+  function paquetDepart(classe, peril) {
+    var l = ['griffe', 'griffe', 'griffe', 'griffe', 'bouclier', 'bouclier', 'bouclier', 'bouclier'].concat(CLASSES[classe].base);
+    if (peril >= 5) l.push('blessure');
+    return l;
+  }
   function ajouterJoueur(e, nom, cp) {
     if (e.joueurs[nom]) { if (cp) { e.joueurs[nom].cp = cp; } return e.joueurs[nom]; }
-    var n = Object.keys(e.joueurs).length, d = DEPARTS[n % DEPARTS.length];
-    return (e.joueurs[nom] = { nom: nom, ordre: n, salle: e.depart, x: d[0], y: d[1], dir: 'h', coeurs: 3, max: 3, fantome: false, reanim: 0,
-                                cp: cp || null, pouvoir: pouvoirDe(cp), inv: 0, pas: 0, d: null, unPas: null, aideT: 0, pioche: null, defausse: [], main: [] });
+    var n = Object.keys(e.joueurs).length, d = DEPARTS[n % DEPARTS.length], pw = pouvoirDe(cp), classe = pw || 'aucune';
+    var pv = Math.round(CLASSES[classe].pv * (e.peril >= 5 ? 0.9 : 1));
+    return (e.joueurs[nom] = { nom: nom, ordre: n, salle: e.depart, x: d[0], y: d[1], dir: 'h', fantome: false, reanim: 0,
+      cp: cp || null, pouvoir: pw, classe: classe, pas: 0, d: null, unPas: null, aideT: 0,
+      pv: pv, pvMax: pv, or: 40, paquet: paquetDepart(classe, e.peril), reliques: [], fioles: [], fiolesMax: 2, menus: [], faits: {}, boutiques: {}, retraits: 0,
+      pioche: [], main: [], defausse: [], epuisees: [], armure: 0, etats: {}, energie: 0, joues: 0, jouesTotal: 0 });
   }
-  // Commandes reçues : direction tenue (ou null au lâcher), coup
+  // Commandes reçues : direction tenue (ou null au lâcher)
   function entree(e, nom, d) {
     var p = e.joueurs[nom];
     if (!p) return;
@@ -230,40 +311,207 @@ var DJ = (function () {
     p.aideT = e.maintenant + 3000;
     annonce(e, txt, p.nom);
   }
-  function blesser(e, p, n) {
-    if (p.fantome) return;
-    p.coeurs -= n || 1;
-    effet(e, p.salle, p.x, p.y, 'aie');
-    if (p.coeurs <= 0) {
-      p.coeurs = 0; p.fantome = true; p.reanim = 0; p.d = null;
-      annonce(e, '👻 ' + nomCp(p) + ' est KO' + (Object.keys(e.joueurs).length > 1 ? ' : un Trèfle ou un ami à côté de lui le ranime !' : '…'));
-    }
+  function a(p, id) { return p.reliques.indexOf(id) >= 0; }
+  function soigner(p, n) { if (p.fantome) return 0; var av = p.pv; p.pv = Math.min(p.pvMax, p.pv + n); return p.pv - av; }
+
+  // ---------- Butin ----------
+  function donnerOr(e, p, n) { p.or += n; }
+  function donnerFiole(e, p, id, h) {
+    id = id || auHasard(Object.keys(FIOLES), h);
+    if (p.fioles.length >= p.fiolesMax) return null;
+    p.fioles.push(id);
+    return id;
   }
-  function ramasser(e, p) {
-    for (var i = e.objets.length - 1; i >= 0; i--) {
-      var o = e.objets[i];
-      if (o.salle !== p.salle || o.x !== p.x || o.y !== p.y) continue;
-      if (o.type === 'coeur') { if (p.coeurs >= p.max) continue; p.coeurs++; }
-      else if (o.type === 'poussiere') e.poussiere++;
-      e.objets.splice(i, 1);
-      effet(e, p.salle, p.x, p.y, o.type);
+  function donnerRelique(e, p, id, h, rar) {
+    if (!id) {
+      var l = Object.keys(RELIQUES).filter(r => RELIQUES[r].rar !== 'boss' && !a(p, r) && (!rar || RELIQUES[r].rar === rar));
+      if (!l.length) l = Object.keys(RELIQUES).filter(r => RELIQUES[r].rar !== 'boss' && !a(p, r));
+      if (!l.length) return null;
+      id = auHasard(l, h);
     }
+    if (a(p, id)) return null;
+    p.reliques.push(id);
+    if (id === 'pomme') { p.pvMax += 8; p.pv += 8; }
+    if (id === 'calice') { p.pvMax += 20; p.pv = p.pvMax; }
+    if (id === 'ceinture') p.fiolesMax++;
+    if (id === 'grimoire') p.paquet.push('blessure');
+    return id;
   }
-  function ouvrirCoffre(e, S, x, y, p) {
+  // Trois cartes au choix : surtout de la classe du compagnon ; les élites et les boss donnent des cartes plus rares
+  var CHANCES = { normal: { c: 0.6, u: 0.33 }, elite: { c: 0.35, u: 0.45 }, boss: { c: 0, u: 0 }, grimoire: { c: 0, u: 0.7 } };
+  function tirerCartes(p, n, rang, h) {
+    var ch = CHANCES[rang] || CHANCES.normal, l = [];
+    for (var essai = 0; l.length < n && essai < 60; essai++) {
+      var r = h(), rar = r < ch.c ? 'c' : r < ch.c + ch.u ? 'u' : 'r';
+      var classe = p.classe !== 'aucune' && h() < 0.7 ? p.classe : null;
+      var pool = Object.keys(CARTES).filter(id => CARTES[id].rar === rar && CARTES[id].cl === classe && l.indexOf(id) < 0);
+      if (!pool.length) continue;
+      l.push(auHasard(pool, h));
+    }
+    return l;
+  }
+
+  // ---------- Coffres ----------
+  function ouvrirCoffre(e, S, x, y, p, h) {
+    if (e.ennemis.some(m => m.salle === S.id)) { aide(e, p, '🔒 Le coffre est gardé : battez d\'abord les monstres de la pièce.'); return; }
     var c = S.coffres[idx(x, y)];
     poser(S, x, y, 'c'); e.carteV++;
     effet(e, S.id, x, y, 'coffre');
+    var ici = Object.values(e.joueurs).filter(q => q.salle === S.id && !q.fantome);
     if (c === 'cle') { e.cles++; annonce(e, '🗝️ ' + nomCp(p) + ' trouve une petite clé !'); }
     else if (c === 'grandecle') { e.grandeCle = true; annonce(e, '🔑 ' + nomCp(p) + ' trouve la grande clé du boss !'); }
-    else if (c === 'coeur') { Object.values(e.joueurs).forEach(q => { if (q.salle === S.id && !q.fantome) q.coeurs = q.max; }); annonce(e, '❤️ Un coffre de soin : cœurs remplis dans la pièce !'); }
-    else { e.poussiere += 3; annonce(e, '✨ ' + nomCp(p) + ' trouve 3 poussières d\'étoile !'); }
+    else if (c === 'relique') {
+      ici.forEach(q => { var r = donnerRelique(e, q, null, h); if (r) annonce(e, RELIQUES[r].ico + ' Trésor ! ' + nomCp(q) + ' trouve : ' + RELIQUES[r].nom + '. ' + RELIQUES[r].texte + '.'); });
+    } else if (c === 'or') {
+      var n = 25 + entier(h, 16);
+      ici.forEach(q => donnerOr(e, q, n));
+      annonce(e, '🪙 Un coffre plein d\'or : +' + n + ' or' + (ici.length > 1 ? ' chacun' : '') + ' !');
+    } else { e.poussiere += 3; annonce(e, '✨ ' + nomCp(p) + ' trouve 3 poussières d\'étoile !'); }
   }
 
-  function bougerJoueur(e, p) {
+  // ---------- Salles spéciales : feu de camp, marchand, autel, escalier ----------
+  function interagir(e, p, S, t, h) {
+    if (t === 'F') {
+      if (p.faits[S.id]) { aide(e, p, '🔥 Tu t\'es déjà reposé à ce feu.'); return; }
+      p.menus.push({ type: 'feu', salle: S.id });
+    } else if (t === 'M') {
+      if (!p.boutiques[S.id]) p.boutiques[S.id] = creerBoutique(e, p, h);
+      p.menus.push({ type: 'marchand', salle: S.id });
+    } else if (t === 'A') {
+      if (p.faits[S.id]) { aide(e, p, '❓ Il n\'y a plus rien ici.'); return; }
+      p.menus.push({ type: 'evenement', salle: S.id, id: S.evenement || 'fontaine' });
+    } else if (t === 'E') {
+      if (Object.keys(e.combats).length) { aide(e, p, '🪜 Attendez que tout le monde ait fini son combat.'); return; }
+      annonce(e, '🪜 ' + nomCp(p) + ' descend l\'escalier : tout le groupe le suit !');
+      etageSuivant(e);
+    }
+  }
+  function creerBoutique(e, p, h) {
+    var cartes = tirerCartes(p, 5, 'elite', h).map(id => ({ id: id, prix: Math.round(D.PRIX[CARTES[id].rar] * (0.9 + h() * 0.2)), vendu: false }));
+    var fioles = melanger(Object.keys(FIOLES), h).slice(0, 2).map(id => ({ id: id, prix: D.PRIX.fiole, vendu: false }));
+    var rl = Object.keys(RELIQUES).filter(r => RELIQUES[r].rar !== 'boss' && !a(p, r));
+    return { cartes: cartes, fioles: fioles, relique: rl.length ? { id: auHasard(rl, h), prix: D.PRIX.relique, vendu: false } : null };
+  }
+  function prixRetrait(p) { return D.PRIX.retrait + 25 * (p.retraits || 0); }
+  function soinFeu(e, p) { if (a(p, 'lampe')) return 0; return Math.round(p.pvMax * (e.peril >= 3 ? 0.25 : 0.3)) + (a(p, 'carte') ? 15 : 0); }
+
+  // Choix dans la fenêtre ouverte du joueur (butin, feu de camp, marchand, autel, paquet)
+  function choisir(e, nom, action, arg, h) {
+    h = h || Math.random;
+    var p = e.joueurs[nom], m = p && p.menus[0];
+    if (!m) return 'Rien à choisir';
+    arg = arg === undefined || arg === null ? null : +arg;
+    function fermer() { p.menus.shift(); }
+    function remplacer(n) { p.menus[0] = n; }
+    if (m.type === 'butin' || m.type === 'choix') {
+      if (action === 'prendre' && m.cartes[arg]) { p.paquet.push(m.cartes[arg]); fermer(); return null; }
+      if (action === 'passer') { if (m.type === 'choix' && m.ensuite) { remplacer(m.ensuite); return null; } fermer(); return null; }
+      return 'Choix inconnu';
+    }
+    if (m.type === 'reliqueBoss') {
+      if (action === 'prendre' && m.choix[arg]) { donnerRelique(e, p, m.choix[arg], h); fermer(); return null; }
+      return 'Choix inconnu';
+    }
+    if (m.type === 'feu') {
+      if (action === 'repos') { var n = soigner(p, soinFeu(e, p)); p.faits[m.salle] = 1; fermer(); annonce(e, '🔥 ' + nomCp(p) + ' se repose au coin du feu (+' + n + ' PV).'); return null; }
+      if (action === 'aiguiser') { if (!p.paquet.some(ameliorable)) return 'Rien à améliorer'; remplacer({ type: 'paquet', mode: 'ameliorer', salle: m.salle, retour: m }); return null; }
+      if (action === 'partir') { fermer(); return null; }
+      return 'Choix inconnu';
+    }
+    if (m.type === 'marchand') {
+      var b = p.boutiques[m.salle];
+      if (action === 'carte' && b.cartes[arg] && !b.cartes[arg].vendu) {
+        var o = b.cartes[arg]; if (p.or < o.prix) return 'Pas assez d\'or';
+        p.or -= o.prix; o.vendu = true; p.paquet.push(o.id); return null;
+      }
+      if (action === 'fiole' && b.fioles[arg] && !b.fioles[arg].vendu) {
+        var f = b.fioles[arg]; if (p.or < f.prix) return 'Pas assez d\'or';
+        if (p.fioles.length >= p.fiolesMax) return 'Plus de place pour une fiole';
+        p.or -= f.prix; f.vendu = true; p.fioles.push(f.id); return null;
+      }
+      if (action === 'relique' && b.relique && !b.relique.vendu) {
+        if (p.or < b.relique.prix) return 'Pas assez d\'or';
+        p.or -= b.relique.prix; b.relique.vendu = true; donnerRelique(e, p, b.relique.id, h); return null;
+      }
+      if (action === 'retrait') { if (p.or < prixRetrait(p)) return 'Pas assez d\'or'; remplacer({ type: 'paquet', mode: 'retirer', prix: prixRetrait(p), retour: m }); return null; }
+      if (action === 'partir') { fermer(); return null; }
+      return 'Choix inconnu';
+    }
+    if (m.type === 'paquet') {
+      if (action === 'annuler') { if (m.retour) remplacer(m.retour); else fermer(); return null; }
+      if (action !== 'carte' || !p.paquet[arg]) return 'Choix inconnu';
+      var id = p.paquet[arg];
+      if (m.mode === 'ameliorer') {
+        if (!ameliorable(id)) return 'Cette carte ne peut pas être améliorée';
+        p.paquet[arg] = id + '+';
+        if (m.salle) p.faits[m.salle] = 1;
+        if (m.retour && m.retour.type === 'feu') annonce(e, '⚒️ ' + nomCp(p) + ' améliore ' + carte(id).nom + '.');
+        fermer(); return null;
+      }
+      if (m.mode === 'retirer') {
+        if (m.prix) { if (p.or < m.prix) return 'Pas assez d\'or'; p.or -= m.prix; p.retraits = (p.retraits || 0) + 1; }
+        p.paquet.splice(arg, 1);
+        if (m.retour) remplacer(m.retour); else fermer();
+        return null;
+      }
+      if (m.mode === 'copier') { if (carte(id).type === 'malediction') return 'Pas une malédiction !'; p.paquet.push(id); fermer(); return null; }
+    }
+    if (m.type === 'evenement') {
+      if (action !== 'choix' || (arg !== 0 && arg !== 1)) return 'Choix inconnu';
+      var err = evenement(e, p, m, arg, h);
+      if (err) return err;
+      p.faits[m.salle] = 1;
+      return null;
+    }
+    return 'Choix inconnu';
+  }
+  function evenement(e, p, m, i, h) {
+    var E = D.EVENEMENTS[m.id], dire = t => annonce(e, E.ico + ' ' + nomCp(p) + ' : ' + t, p.nom);
+    function fermer() { p.menus.shift(); }
+    switch (m.id) {
+      case 'fontaine':
+        if (i === 0) dire('+' + soigner(p, Math.round(p.pvMax * 0.25)) + ' PV.');
+        else { if (!donnerFiole(e, p, 'soin', h)) return 'Plus de place pour une fiole'; dire('une Fiole de soin.'); }
+        fermer(); return null;
+      case 'autel':
+        if (i === 0) { p.pv = Math.max(1, p.pv - 9); var r = donnerRelique(e, p, null, h); dire(r ? RELIQUES[r].ico + ' ' + RELIQUES[r].nom + ' (' + RELIQUES[r].texte + ').' : 'l\'autel reste vide.'); }
+        fermer(); return null;
+      case 'grimoires':
+        if (i === 0) { p.menus[0] = { type: 'choix', titre: 'Vieux grimoires : une carte', cartes: tirerCartes(p, 4, 'grimoire', h) }; return null; }
+        p.menus[0] = { type: 'paquet', mode: 'retirer' }; return null;
+      case 'enclume':
+        if (i === 0) {
+          var l = melanger(p.paquet.map((id, k) => k).filter(k => ameliorable(p.paquet[k])), h).slice(0, 2);
+          l.forEach(k => { p.paquet[k] += '+'; });
+          dire(l.length ? l.map(k => carte(p.paquet[k]).nom).join(' et ') + '.' : 'rien à forger.');
+        } else { donnerOr(e, p, 45); dire('+45 or.'); }
+        fermer(); return null;
+      case 'coffre':
+        if (i === 0) { donnerOr(e, p, 80); p.paquet.push('blessure'); dire('+80 or… et une Blessure.'); }
+        fermer(); return null;
+      case 'miroir':
+        if (i === 0) { p.menus[0] = { type: 'paquet', mode: 'copier' }; return null; }
+        p.pvMax += 5; p.pv += 5; dire('+5 PV max.'); fermer(); return null;
+      case 'des':
+        if (i === 0) {
+          if (p.or < 30) return 'Pas assez d\'or';
+          if (h() < 0.5) { p.or += 45; dire('🎲 gagné ! +45 or.'); } else { p.or -= 30; dire('🎲 perdu… −30 or.'); }
+        }
+        fermer(); return null;
+      case 'champignons':
+        if (i === 0) { p.pvMax += 6; p.pv = Math.max(1, p.pv + 1); dire('+6 PV max, mais un peu mal au ventre.'); }
+        else { var f = donnerFiole(e, p, null, h); if (!f) return 'Plus de place pour une fiole'; dire(FIOLES[f].ico + ' ' + FIOLES[f].nom + '.'); }
+        fermer(); return null;
+    }
+    fermer(); return null;
+  }
+
+  // ================== DÉPLACEMENTS ==================
+  function bougerJoueur(e, p, h) {
     var now = e.maintenant, d = p.d || p.unPas;
     if (!d || now < p.pas) return;
     var c = e.combats[p.salle];
-    if (c && c.joueurs.indexOf(p.nom) >= 0) { p.unPas = null; return; }   // en plein combat : on ne bouge pas
+    if ((c && c.joueurs.indexOf(p.nom) >= 0) || p.menus.length) { p.unPas = null; return; }   // en combat ou devant une fenêtre : on ne bouge pas
     p.unPas = null; p.dir = d; p.pas = now + PAS;
     var v = DX[d], nx = p.x + v[0], ny = p.y + v[1], S = e.salles[p.salle];
     // On sort par une ouverture : pièce voisine
@@ -274,14 +522,18 @@ var DJ = (function () {
       p.salle = voisin; p.x = P[0]; p.y = P[1];
       if (!e.vues[voisin]) {
         e.vues[voisin] = 1;
-        if (e.salles[voisin].boss) annonce(e, '👑 ' + nomCp(p) + ' entre dans l\'antre du Roi Gluant !');
+        var V = e.salles[voisin];
+        if (V.boss) annonce(e, '👑 ' + nomCp(p) + ' entre dans l\'antre de ' + MONSTRES[D.ETAGES[e.etage - 1].boss].nom + ' !');
+        else if (V.role === 'elite') annonce(e, '⭐ Un élite garde cette pièce…');
+        else if (V.role === 'feu') annonce(e, '🔥 Un feu de camp : on peut s\'y reposer.');
+        else if (V.role === 'marchand') annonce(e, '🛒 Un marchand ambulant !');
       }
       if (p.pouvoir === 'flair' && e.salles[voisin].t.indexOf('s') >= 0 && !p.fantome) aide(e, p, '👃 ' + nomCp(p) + ' renifle… il y a un passage secret dans cette pièce !');
       return;
     }
     var t = tuile(S, nx, ny);
     if (MARCHABLE[t]) {
-      if (!p.fantome && ennemiEn(e, p.salle, nx, ny)) { demarrerCombat(e, p.salle); return; }
+      if (!p.fantome && ennemiEn(e, p.salle, nx, ny)) { demarrerCombat(e, p.salle, h); return; }
       p.x = nx; p.y = ny;
       if (!p.fantome) ramasser(e, p);
       return;
@@ -301,12 +553,21 @@ var DJ = (function () {
       else aide(e, p, '🔒 Porte fermée : il faut une petite clé (cherchez les coffres).');
     } else if (t === 'B') {
       if (e.grandeCle) { poser(S, nx, ny, '.'); e.carteV++; effet(e, p.salle, nx, ny, 'porte'); annonce(e, '🔑 La porte du boss s\'ouvre…'); }
-      else aide(e, p, '👑 La porte du boss : il faut la grande clé.');
+      else aide(e, p, '👑 La porte du boss : il faut la grande clé (l\'élite ⭐ la garde).');
     } else if (t === 'G') {
       aide(e, p, Object.keys(e.joueurs).length > 1 ? '⛓️ Une grille : tenez-vous à deux sur les dalles en même temps pour l\'ouvrir.' : '⛓️ Une grille bien fermée…');
-    } else if (t === 'C') ouvrirCoffre(e, S, nx, ny, p);
+    } else if (t === 'C') ouvrirCoffre(e, S, nx, ny, p, h);
+    else if (t === 'F' || t === 'M' || t === 'A' || t === 'E') interagir(e, p, S, t, h);
   }
-
+  function ramasser(e, p) {
+    for (var i = e.objets.length - 1; i >= 0; i--) {
+      var o = e.objets[i];
+      if (o.salle !== p.salle || o.x !== p.x || o.y !== p.y) continue;
+      if (o.type === 'poussiere') e.poussiere++;
+      e.objets.splice(i, 1);
+      effet(e, p.salle, p.x, p.y, o.type);
+    }
+  }
   function marchableEnnemi(e, m, x, y) {
     if (x < 1 || y < 1 || x > W - 2 || y > H - 2) return false;
     var t = tuile(e.salles[m.salle], x, y);
@@ -315,7 +576,8 @@ var DJ = (function () {
   }
   function choisirDir(e, m, h) {
     var info = MONSTRES[m.type], dirs = ['h', 'b', 'g', 'd'];
-    if (m.type === 'slime' && h() < 0.3) return null;
+    if ((info.taille || 1) > 1 && h() < 0.6) return null;   // les gros bougent peu
+    if (h() < 0.3 && !info.chasse) return null;
     if (info.chasse && h() < 0.7) {
       var cible = null, dist = 1e9;
       Object.values(e.joueurs).forEach(p => {
@@ -334,163 +596,356 @@ var DJ = (function () {
     return dirs[Math.floor(h() * 4)];
   }
 
-  // ================== COMBAT AUX CARTES (tour par tour) ==================
-  // Tous les joueurs vivants de la pièce contre tous les monstres de la pièce. Chaque tour : les monstres annoncent ce qu'ils vont
-  // faire (intentions), chacun pioche 3 cartes et en choisit une (on attend tout le monde ; un joueur déconnecté se protège tout seul),
-  // puis tout se résout : défenses et soins, attaques des joueurs (au dé), puis les monstres.
-  function piocher(e, p, h) {
-    if (!p.pioche) { p.pioche = melanger(paquetDe(p, Object.keys(e.joueurs).length > 1), h); p.defausse = []; }
-    while (p.main.length < MAIN) {
-      if (!p.pioche.length) { if (!p.defausse.length) break; p.pioche = melanger(p.defausse, h); p.defausse = []; }
+  // ================== COMBAT AUX CARTES ==================
+  // Tous les joueurs vivants de la pièce contre tous ses monstres. À chaque tour : les monstres annoncent leur intention,
+  // chaque joueur a 3 ⚡ et pioche 5 cartes, les joue quand il veut (effet immédiat) puis touche « Fin du tour ».
+  // Quand tout le monde a fini (un absent finit tout seul), les monstres agissent, puis nouveau tour.
+  function vivantsDe(e, c) { return c.joueurs.map(n => e.joueurs[n]).filter(p => p && !p.fantome && p.salle === c.salle); }
+  function monstresDe(e, c) { return e.ennemis.filter(m => m.salle === c.salle); }
+  function journal(c, t) { c.journal.push(t); if (c.journal.length > 14) c.journal.shift(); }
+  function fx(e, c, qui, v, cl) { c.fx.push({ id: ++e.seq, qui: qui, v: v, cl: cl || 'mal', t: e.maintenant }); if (c.fx.length > 24) c.fx.shift(); }
+  function nomMonstre(m) { return MONSTRES[m.type].nom; }
+  function ajouterEtat(cible, et, n) { cible.etats[et] = (cible.etats[et] || 0) + n; if (cible.etats[et] <= 0) delete cible.etats[et]; }
+
+  function demarrerCombat(e, salle, h) {
+    h = h || Math.random;
+    if (e.combats[salle] || !e.ennemis.some(m => m.salle === salle)) return;
+    var ms = e.ennemis.filter(m => m.salle === salle);
+    var rang = ms.some(m => MONSTRES[m.type].rang === 'boss') ? 'boss' : ms.some(m => MONSTRES[m.type].rang === 'elite') ? 'elite' : 'normal';
+    var c = e.combats[salle] = { id: ++e.seq, salle: salle, tour: 0, joueurs: [], fini: {}, journal: [], fx: [], pret: 0, rang: rang, poussiere: 0 };
+    ms.forEach(m => { m.armure = 0; m.etats = {}; m.k = 0; m.mem = m.mem || {}; m.intention = null; });
+    var noms = ms.map(nomMonstre);
+    annonce(e, (rang === 'boss' ? '👑 ' : rang === 'elite' ? '⭐ ' : '⚔️ ') + 'Combat ! ' + noms.filter((n, i) => noms.indexOf(n) === i).join(', ') + ' !');
+    nouveauTour(e, c, h);
+  }
+  function entrerEnCombat(e, c, p, h) {
+    c.joueurs.push(p.nom); p.d = null; p.unPas = null;
+    p.pioche = melanger(p.paquet, h); p.main = []; p.defausse = []; p.epuisees = []; p.armure = 0; p.etats = {}; p.joues = 0; p.tourCombat = 0;
+    if (a(p, 'gant')) ajouterEtat(p, 'force', 1);
+    if (a(p, 'collier')) ajouterEtat(p, 'epines', 3);
+    monstresDe(e, c).forEach(m => {
+      if (a(p, 'monocle') && !m.etats.vuln) ajouterEtat(m, 'vuln', 1);
+      if (a(p, 'clochette') && !m.etats.faible) ajouterEtat(m, 'faible', 1);
+    });
+  }
+  function piocher(e, p, n, h) {
+    for (var i = 0; i < n; i++) {
+      if (p.main.length >= MAIN_MAX) return;
+      if (!p.pioche.length) { if (!p.defausse.length) return; p.pioche = melanger(p.defausse, h); p.defausse = []; }
       p.main.push(p.pioche.pop());
     }
   }
-  function defausser(p) { p.defausse = (p.defausse || []).concat(p.main); p.main = []; }
-  function vivantsDe(e, c) { return c.joueurs.map(n => e.joueurs[n]).filter(p => p && !p.fantome && p.salle === c.salle); }
-  function monstresDe(e, c) { return e.ennemis.filter(m => m.salle === c.salle); }
-  function demarrerCombat(e, salle, h) {
-    if (e.combats[salle] || !e.ennemis.some(m => m.salle === salle)) return;
-    var c = e.combats[salle] = { id: ++e.seq, salle: salle, tour: 0, joueurs: [], choix: {}, intentions: {}, journal: [], coups: [], pret: 0 };
-    var noms = monstresDe(e, c).map(m => MONSTRES[m.type].nom);
-    annonce(e, '⚔️ Combat ! ' + noms.filter((n, i) => noms.indexOf(n) === i).join(', ') + ' !');
-    nouveauTour(e, c, h || Math.random);
-  }
   function nouveauTour(e, c, h) {
-    c.tour++; c.choix = {}; c.pret = 0; c.intentions = {};
+    c.tour++; c.fini = {}; c.pret = 0;
     // Les joueurs vivants arrivés dans la pièce rejoignent le combat
-    Object.values(e.joueurs).forEach(p => { if (p.salle === c.salle && !p.fantome && c.joueurs.indexOf(p.nom) < 0) { c.joueurs.push(p.nom); p.d = null; p.unPas = null; } });
+    Object.values(e.joueurs).forEach(p => { if (p.salle === c.salle && !p.fantome && c.joueurs.indexOf(p.nom) < 0) entrerEnCombat(e, c, p, h); });
     c.joueurs = c.joueurs.filter(n => e.joueurs[n] && e.joueurs[n].salle === c.salle);
-    vivantsDe(e, c).forEach(p => piocher(e, p, h));
-    var cibles = vivantsDe(e, c), nbMonstres = monstresDe(e, c).length;
+    // Intentions des monstres (annoncées avant que les joueurs jouent)
+    var cibles = vivantsDe(e, c);
     monstresDe(e, c).forEach(m => {
-      var cible = cibles.length ? cibles[Math.floor(h() * cibles.length)].nom : null, i;
-      if (m.type === 'slime') i = h() < 0.75 ? { t: 'attaque', cible: cible } : { t: 'rien' };
-      else if (m.type === 'chauve') i = { t: 'attaque', cible: cible };
-      else if (m.type === 'squelette') i = (m.garde = !m.garde) ? { t: 'attaque', cible: cible } : { t: 'garde' };
-      else {
-        m.preps = m.preps || 0;
-        if (m.prep === 1) { m.prep = 0; i = { t: 'ecrase' }; }
-        else if (m.prep === 2) { m.prep = 1; i = { t: 'prepare', n: 1 }; }
-        else if ((m.pv * 2 <= m.pvMax && m.preps < 1) || (m.pv * 4 <= m.pvMax && m.preps < 2)) { m.preps++; m.prep = 2; i = { t: 'prepare', n: 2 }; }
-        else if (c.tour % 3 === 0 && nbMonstres < 4) i = { t: 'appel' };
-        else i = { t: 'attaque', cible: cible };
-      }
-      c.intentions[m.id] = i;
+      var M = MONSTRES[m.type];
+      m.intention = M.ia(m, { k: m.k, h: h, nb: monstresDe(e, c).length, dernier: m.mem.dernier });
+      m.cible = cibles.length ? auHasard(cibles, h).nom : null;
+    });
+    vivantsDe(e, c).forEach(p => debutTour(e, c, p, h));
+    verifierFin(e, c, h);
+  }
+  function debutTour(e, c, p, h) {
+    p.tourCombat = (p.tourCombat || 0) + 1;
+    var premier = p.tourCombat === 1;
+    if (!p.etats.carapace) p.armure = 0;
+    tickDot(e, c, p);
+    if (p.fantome) return;
+    var en = ENERGIE + (p.etats.accel || 0) + (a(p, 'couronne') ? 1 : 0) + (a(p, 'lampe') ? 1 : 0) + (a(p, 'grimoire') ? 1 : 0);
+    if (premier && a(p, 'lanterne')) en++;
+    if (a(p, 'sablier') && p.tourCombat % 3 === 0) en++;
+    p.energie = en; p.joues = 0;
+    if (premier && a(p, 'ancre')) p.armure += 10;
+    var n = MAIN + (a(p, 'sceptre') ? 1 : 0) - (a(p, 'couronne') ? 1 : 0) + (premier && a(p, 'sac') ? 2 : 0);
+    piocher(e, p, n, h);
+    if (p.etats.brasier) { monstresDe(e, c).forEach(m => infliger(e, c, m, p.etats.brasier, null)); }
+    if (p.etats.fleau) { monstresDe(e, c).forEach(m => ajouterEtat(m, 'poison', p.etats.fleau)); }
+  }
+  // Poison et brûlure au début du tour de qui les porte
+  function tickDot(e, c, x) {
+    var estJ = !!x.paquet;
+    if (x.etats.poison) { perdrePv(e, c, x, x.etats.poison, '☠️'); ajouterEtat(x, 'poison', -1); }
+    if (x.etats.brule && (estJ ? !x.fantome : x.pv > 0)) { perdrePv(e, c, x, x.etats.brule, '🔥'); x.etats.brule = Math.floor(x.etats.brule / 2); if (!x.etats.brule) delete x.etats.brule; }
+  }
+  function perdrePv(e, c, x, n, ico) {
+    x.pv -= n;
+    fx(e, c, x.paquet ? x.nom : x.id, '−' + n + ' ' + ico);
+    if (x.paquet) verifierKo(e, c, x); else if (x.pv <= 0) mortMonstre(e, c, x);
+  }
+  // Dégâts d'une attaque : force et faiblesse de qui frappe, vulnérabilité de la cible
+  function calculer(source, cible, n, fixe) {
+    if (!fixe && source) { n += source.etats.force || 0; if (source.etats.faible) n *= 0.75; }
+    if (cible.etats.vuln) n *= 1.5;
+    return Math.max(0, Math.floor(n));
+  }
+  // Inflige n dégâts déjà calculés : l'armure prend d'abord
+  function infliger(e, c, cible, n, source, attaque) {
+    if (cible.paquet ? cible.fantome : cible.pv <= 0) return 0;
+    var bloque = Math.min(cible.armure || 0, n), reste = n - bloque;
+    cible.armure -= bloque;
+    cible.pv -= reste;
+    var qui = cible.paquet ? cible.nom : cible.id;
+    fx(e, c, qui, reste ? '−' + reste : bloque ? '🛡️' + bloque : '0', reste ? 'mal' : 'neutre');
+    if (attaque && source && cible.etats.epines) infliger(e, c, source, cible.etats.epines, null, false);
+    if (attaque && source && source.paquet && reste > 0 && source.etats.venin && cible.pv > 0) ajouterEtat(cible, 'poison', source.etats.venin);
+    if (cible.paquet) verifierKo(e, c, cible);
+    else if (cible.pv <= 0) mortMonstre(e, c, cible);
+    return reste;
+  }
+  function verifierKo(e, c, p) {
+    if (p.pv > 0 || p.fantome) return;
+    if (a(p, 'trefle4') && !p.trefleUtilise) { p.trefleUtilise = true; p.pv = Math.max(1, Math.round(p.pvMax * 0.3)); journal(c, '☘️ Le trèfle à quatre feuilles sauve ' + nomCp(p) + ' !'); return; }
+    p.pv = 0; p.fantome = true; p.reanim = 0; p.d = null; p.armure = 0;
+    defausserTout(p);
+    journal(c, '👻 ' + nomCp(p) + ' est KO !');
+    annonce(e, '👻 ' + nomCp(p) + ' est KO' + (Object.keys(e.joueurs).length > 1 ? ' : un Trèfle ou un ami à côté de lui hors combat le ranime !' : '…'));
+  }
+  function mortMonstre(e, c, m) {
+    if (e.ennemis.indexOf(m) < 0) return;
+    e.ennemis = e.ennemis.filter(x => x !== m);
+    effet(e, m.salle, m.x, m.y, 'pouf');
+    journal(c, '💨 ' + nomMonstre(m) + ' est vaincu !');
+    var M = MONSTRES[m.type];
+    // Le gobelin rend ce qu'il a volé
+    Object.keys(m.mem.vol || {}).forEach(n => { var q = e.joueurs[n]; if (q) { q.or += m.mem.vol[n]; journal(c, '🪙 ' + nomCp(q) + ' récupère ' + m.mem.vol[n] + ' or.'); } });
+    c.poussiere += M.rang === 'boss' ? 4 + e.etage : M.rang === 'elite' ? 2 : 1;
+  }
+  function defausserTout(p) { p.defausse = p.defausse.concat(p.main); p.main = []; }
+
+  // ---------- Effets d'une carte ou d'une fiole ----------
+  function cibleMonstre(e, c, id, h) {
+    var l = monstresDe(e, c);
+    return l.find(m => m.id === id) || null;
+  }
+  function appliquer(e, c, p, fxs, cible, h, fiole) {
+    var ms = () => monstresDe(e, c);
+    fxs.forEach(f => {
+      if (f.deg !== undefined) {
+        for (var i = 0; i < (f.x || 1); i++) {
+          var l = f.tous ? ms() : [cible].filter(m => m && e.ennemis.indexOf(m) >= 0);
+          l.forEach(m => infliger(e, c, m, calculer(p, m, f.deg, f.fixe), p, !fiole));
+        }
+      } else if (f.armure) {
+        var qui = cible && cible.paquet ? cible : p, n = p.etats.fragile ? Math.floor(f.armure * 0.75) : f.armure;
+        qui.armure += n; fx(e, c, qui.nom, '+' + n + ' 🛡️', 'bouclier');
+      } else if (f.pioche) piocher(e, p, f.pioche, h);
+      else if (f.energie) p.energie += f.energie;
+      else if (f.etat) {
+        (f.tous ? ms() : [cible].filter(m => m && !m.paquet && e.ennemis.indexOf(m) >= 0)).forEach(m => {
+          var n = f.n + (f.etat === 'brule' && p.etats.foyer ? p.etats.foyer : 0);
+          ajouterEtat(m, f.etat, n); fx(e, c, m.id, ETATS[f.etat].ico + n, 'etat');
+        });
+      } else if (f.buff) { ajouterEtat(p, f.buff, f.n); fx(e, c, p.nom, ETATS[f.buff].ico + '+' + f.n, 'etat'); }
+      else if (f.soin) {
+        var q = cible && cible.paquet ? cible : p;
+        if (q.fantome) { q.fantome = false; q.pv = 0; journal(c, '✨ ' + nomCp(q) + ' est ranimé !'); }
+        var g = soigner(q, f.soin); fx(e, c, q.nom, '+' + g + ' ❤️', 'soin');
+      } else if (f.special) special(e, c, p, f, cible, h);
     });
   }
-  // Un joueur choisit une carte de sa main (il peut changer d'avis tant que le tour n'est pas joué)
-  function jouerCarte(e, nom, i, cible) {
+  function special(e, c, p, f, m, h) {
+    var vivant = x => x && e.ennemis.indexOf(x) >= 0;
+    switch (f.special) {
+      case 'attiser': if (vivant(m) && m.etats.brule) { m.etats.brule *= 2; fx(e, c, m.id, '🔥' + m.etats.brule, 'etat'); } break;
+      case 'explosion': monstresDe(e, c).forEach(x => infliger(e, c, x, calculer(p, x, f.n) + (x.etats.brule || 0), p, true)); break;
+      case 'armuredeg':
+        (f.tous ? monstresDe(e, c) : [m].filter(vivant)).forEach(x => infliger(e, c, x, calculer(p, x, p.armure), p, true)); break;
+      case 'doublearmure': p.armure *= 2; fx(e, c, p.nom, '🛡️' + p.armure, 'bouclier'); break;
+      case 'ricochet':
+        for (var i = 0; i < f.x; i++) { var l = monstresDe(e, c); if (!l.length) break; var x = auHasard(l, h); infliger(e, c, x, calculer(p, x, f.n), p, true); }
+        break;
+      case 'danse': if (vivant(m)) infliger(e, c, m, calculer(p, m, f.n * p.joues), p, true); break;
+      case 'traque': if (vivant(m)) { if (m.etats.vuln) p.energie++; infliger(e, c, m, calculer(p, m, f.n), p, true); } break;
+      case 'embuscade': if (vivant(m)) infliger(e, c, m, calculer(p, m, m.etats.poison ? f.n * 2 : f.n), p, true); break;
+      case 'catalyse': if (vivant(m) && m.etats.poison) { m.etats.poison *= f.n; fx(e, c, m.id, '☠️' + m.etats.poison, 'etat'); } break;
+    }
+  }
+
+  // Un joueur joue la carte n° i de sa main (effet immédiat)
+  function jouerCarte(e, nom, i, cibleId, h) {
+    h = h || Math.random;
     var p = e.joueurs[nom], c = p && e.combats[p.salle];
     if (!c || p.fantome || c.joueurs.indexOf(nom) < 0) return 'Pas de combat';
-    var id = p.main[i], k = CARTES[id];
+    if (c.fini[nom] || c.pret) return 'Tour fini';
+    var id = p.main[i], k = id && carte(id);
     if (!k) return 'Carte inconnue';
-    var monstres = monstresDe(e, c), amis = vivantsDe(e, c).filter(q => q.nom !== nom);
+    if (k.injouable) return 'Cette carte ne se joue pas';
+    if (k.cout > p.energie) return 'Pas assez d\'énergie';
+    var cible = null, ms = monstresDe(e, c);
     if (k.cible === 'monstre') {
-      if (!monstres.some(m => m.id === cible)) { if (monstres.length === 1) cible = monstres[0].id; else return 'Choisis un monstre'; }
-    } else if (k.cible === 'ami') {
-      if (!amis.some(q => q.nom === cible)) { if (amis.length === 1) cible = amis[0].nom; else return amis.length ? 'Choisis un ami' : 'Personne à protéger'; }
+      cible = ms.find(m => m.id === cibleId) || (ms.length === 1 ? ms[0] : null);
+      if (!cible) return 'Choisis un monstre';
     } else if (k.cible === 'joueur') {
-      if (!(c.joueurs.indexOf(cible) >= 0 && e.joueurs[cible])) cible = nom;
-    } else cible = null;
-    c.choix[nom] = { i: i, carte: id, cible: cible };
-    c.pret = 0;
+      var q = e.joueurs[cibleId], ranime = k.fx.some(f => f.soin);
+      cible = q && c.joueurs.indexOf(q.nom) >= 0 && (!q.fantome || ranime) ? q : p;
+    }
+    p.energie -= k.cout;
+    p.main.splice(i, 1);
+    // Rage : une carte qui n'est pas une attaque met les monstres enragés en colère
+    if (k.type !== 'attaque') ms.forEach(m => { if (m.etats.rage) { ajouterEtat(m, 'force', m.etats.rage); fx(e, c, m.id, '😡+' + m.etats.rage, 'etat'); } });
+    journal(c, k.ico + ' ' + nomCp(p) + ' : ' + k.nom + (cible && !cible.paquet ? ' → ' + nomMonstre(cible) : cible && cible !== p ? ' → ' + nomCp(cible) : ''));
+    appliquer(e, c, p, k.fx, cible, h, false);
+    p.joues++; p.jouesTotal = (p.jouesTotal || 0) + 1;
+    if (p.etats.rythme && p.joues >= 4) { var l = monstresDe(e, c); if (l.length) { var x = auHasard(l, h); infliger(e, c, x, p.etats.rythme, null, false); } }
+    if (a(p, 'plume') && p.jouesTotal % 10 === 0) p.energie++;
+    if (k.epuise || k.type === 'pouvoir') p.epuisees.push(id); else p.defausse.push(id);
+    verifierFin(e, c, h);
     return null;
   }
-  function annulerCarte(e, nom) { var p = e.joueurs[nom], c = p && e.combats[p.salle]; if (c) { delete c.choix[nom]; c.pret = 0; } }
-  // On attend tout le monde : quand tous les vivants ont choisi (les absents se protègent tout seuls), le tour se joue 0,6 s plus tard
+  // Une fiole : à tout moment de son tour (la Fiole de soin aussi hors combat)
+  function utiliserFiole(e, nom, i, cibleId, h) {
+    h = h || Math.random;
+    var p = e.joueurs[nom], id = p && p.fioles[i], F = id && FIOLES[id];
+    if (!F || p.fantome) return 'Pas de fiole';
+    var c = e.combats[p.salle];
+    var enCombat = c && c.joueurs.indexOf(nom) >= 0;
+    if (!enCombat) {
+      if (!F.dehors) return 'Seulement en combat';
+      var q = e.joueurs[cibleId];
+      if (!q || q.fantome || q.salle !== p.salle) q = p;
+      p.fioles.splice(i, 1);
+      var g = soigner(q, F.fx[0].soin);
+      annonce(e, F.ico + ' ' + nomCp(p) + ' boit une fiole : +' + g + ' PV' + (q !== p ? ' pour ' + nomCp(q) : '') + '.');
+      return null;
+    }
+    if (c.fini[nom] || c.pret) return 'Tour fini';
+    var cible = null, ms = monstresDe(e, c);
+    if (F.cible === 'monstre') { cible = ms.find(m => m.id === cibleId) || (ms.length === 1 ? ms[0] : null); if (!cible) return 'Choisis un monstre'; }
+    else if (F.cible === 'joueur') { var r = e.joueurs[cibleId]; cible = r && !r.fantome && c.joueurs.indexOf(r.nom) >= 0 ? r : p; }
+    p.fioles.splice(i, 1);
+    journal(c, F.ico + ' ' + nomCp(p) + ' : ' + F.nom);
+    appliquer(e, c, p, F.fx, cible, h, true);
+    verifierFin(e, c, h);
+    return null;
+  }
+  function jeterFiole(e, nom, i) { var p = e.joueurs[nom]; if (p && p.fioles[i]) p.fioles.splice(i, 1); }
+
+  // Fin du tour d'un joueur : effets de fin de tour, la main part à la défausse
+  function finTour(e, nom, h) {
+    var p = e.joueurs[nom], c = p && e.combats[p.salle];
+    if (!c || c.joueurs.indexOf(nom) < 0 || c.fini[nom] || p.fantome) return;
+    if (p.etats.metal) { p.armure += p.etats.metal; fx(e, c, p.nom, '+' + p.etats.metal + ' 🛡️', 'bouclier'); }
+    if (a(p, 'coeurpierre') && !p.armure) { p.armure += 6; fx(e, c, p.nom, '+6 🛡️', 'bouclier'); }
+    if (p.etats.regen) soigner(p, p.etats.regen);
+    defausserTout(p);
+    c.fini[nom] = 1;
+  }
+  // On attend tout le monde : quand tous les vivants ont fini (les absents finissent tout seuls), les monstres jouent 0,6 s plus tard
   function avancerCombat(e, c, h, absents) {
-    if (!monstresDe(e, c).length) { delete e.combats[c.salle]; return; }
+    if (!monstresDe(e, c).length) return finCombat(e, c, true, h);
     var vivants = vivantsDe(e, c);
-    if (!vivants.length) { finCombat(e, c, false); return; }
-    var prets = vivants.every(p => c.choix[p.nom] || absents[p.nom]);
-    if (!prets) { c.pret = 0; return; }
-    if (!c.pret) { c.pret = e.maintenant; return; }
+    if (!vivants.length) return finCombat(e, c, false, h);
+    vivants.forEach(p => { if (absents[p.nom]) finTour(e, p.nom, h); });
+    if (!vivants.every(p => c.fini[p.nom])) { c.pret = 0; return; }
+    if (!c.pret) { c.pret = e.maintenant || 1; return; }
     if (e.maintenant - c.pret < 600) return;
-    vivants.forEach(p => {
-      if (c.choix[p.nom] || !absents[p.nom]) return;
-      var b = p.main.indexOf('bouclier');
-      c.choix[p.nom] = b >= 0 ? { i: b, carte: 'bouclier', cible: null } : null;
-    });
-    resoudre(e, c, h);
+    tourMonstres(e, c, h);
   }
-  function nomMonstre(m) { return MONSTRES[m.type].nom; }
-  function resoudre(e, c, h) {
-    var J = vivantsDe(e, c), journal = [], coups = [], bouclier = {}, protege = {}, esquive = {}, faible = {};
-    var tous = c.joueurs.map(n => e.joueurs[n]).filter(Boolean);
-    // 1. Défenses, soins, point faible
-    J.forEach(p => {
-      var ch = c.choix[p.nom];
-      if (!ch) return;
-      if (ch.carte === 'bouclier') { bouclier[p.nom] = 1; journal.push('🛡️ ' + nomCp(p) + ' se protège.'); }
-      else if (ch.carte === 'proteger') { var a = e.joueurs[ch.cible]; if (a && !a.fantome) { protege[a.nom] = p.nom; journal.push('🤝 ' + nomCp(p) + ' protège ' + nomCp(a) + '.'); } }
-      else if (ch.carte === 'bond') esquive[p.nom] = 1;
-      else if (ch.carte === 'pointfaible') { var m = e.ennemis.find(x => x.id === ch.cible); if (m) { faible[m.id] = 1; journal.push('🎯 ' + nomCp(p) + ' trouve le point faible de ' + nomMonstre(m) + ' !'); } }
-      else if (ch.carte === 'trefle') {
-        var q = e.joueurs[ch.cible] || p;
-        if (q.fantome) { q.fantome = false; q.coeurs = 1; journal.push('🍀 ' + nomCp(p) + ' ranime ' + nomCp(q) + ' !'); if (c.joueurs.indexOf(q.nom) < 0) c.joueurs.push(q.nom); }
-        else if (q.coeurs < q.max) { q.coeurs++; journal.push('🍀 ' + nomCp(p) + ' soigne ' + (q === p ? '' : nomCp(q) + ' ') + '(+1 ❤️).'); }
-        else journal.push('🍀 ' + nomCp(q) + ' a déjà tous ses cœurs.');
-        coups.push({ qui: q.nom, v: '+1' });
+  function tourMonstres(e, c, h) {
+    c.pret = 0;
+    var bonus = e.peril >= 4 ? 1 : 0;
+    monstresDe(e, c).slice().forEach(m => {
+      if (e.ennemis.indexOf(m) < 0) return;
+      m.armure = 0;
+      tickDot(e, c, m);
+      if (e.ennemis.indexOf(m) < 0) return;
+      var i = m.intention || { nom: '…' }, vivants = vivantsDe(e, c);
+      if (!vivants.length) return;
+      var cible = e.joueurs[m.cible];
+      if (!cible || cible.fantome || cible.salle !== c.salle || c.joueurs.indexOf(cible.nom) < 0) cible = auHasard(vivants, h);
+      var cibles = i.tous ? vivants : [cible];
+      journal(c, (MONSTRES[m.type].ico || '🟢') + ' ' + nomMonstre(m) + ' : ' + i.nom);
+      if (i.divise) {
+        m.mem.divise = 1;
+        var pv = Math.max(1, Math.floor(m.pv / 2)), pos = [[m.x - 1, m.y], [m.x + 1, m.y]];
+        e.ennemis = e.ennemis.filter(x => x !== m);
+        pos.forEach(q => { var n = creerMonstre(e, 'gluantmoyen', m.salle, q[0], q[1], h); n.pv = n.pvMax = pv; n.k = 0; n.intention = null; });
+        return;
       }
-    });
-    // 2. Attaques des joueurs, au dé
-    function frapper(p, m, base, d, sansEsquive) {
-      if (!m || m.pv <= 0) { var autres = monstresDe(e, c).filter(x => x.pv > 0); m = autres[Math.floor(h() * autres.length)]; if (!m) return; }
-      if (MONSTRES[m.type].esquive && !sansEsquive && d <= 2) { journal.push('🎲' + d + ' ' + nomMonstre(m) + ' esquive ' + nomCp(p) + ' !'); coups.push({ qui: m.id, v: 'raté', de: d }); return; }
-      var n = Math.max(0, base + (faible[m.id] ? 1 : 0) - (c.intentions[m.id] && c.intentions[m.id].t === 'garde' ? 1 : 0));
-      m.pv -= n;
-      journal.push('🎲' + d + ' ' + nomCp(p) + ' → ' + nomMonstre(m) + ' : −' + n);
-      coups.push({ qui: m.id, v: -n, de: d });
-    }
-    J.forEach(p => {
-      var ch = c.choix[p.nom];
-      if (!ch) return;
-      var m = e.ennemis.find(x => x.id === ch.cible), d = 1 + Math.floor(h() * 6);
-      if (ch.carte === 'griffe' || ch.carte === 'bond') frapper(p, m, degats(d), d);
-      else if (ch.carte === 'grandcoup') frapper(p, m, 1 + degats(d), d);
-      else if (ch.carte === 'feu') { journal.push('🔥 ' + nomCp(p) + ' crache du feu !'); monstresDe(e, c).forEach(x => frapper(p, x, d === 6 ? 2 : 1, d, true)); }
-    });
-    // Monstres vaincus
-    monstresDe(e, c).forEach(m => {
-      if (m.pv > 0) return;
-      e.ennemis = e.ennemis.filter(x => x !== m);
-      effet(e, m.salle, m.x, m.y, 'pouf');
-      journal.push('💨 ' + nomMonstre(m) + ' est vaincu !');
-      if (m.type === 'boss') { e.poussiere += 5; e.phase = 'fin'; e.fin = { gagne: true, t: e.maintenant }; annonce(e, '🎉 Le Roi Gluant est vaincu ! Le trésor est à vous !'); }
-      else if (h() < 0.6) e.poussiere++;
-    });
-    // 3. Les monstres encore debout
-    function coup(m, cibleNom) {
-      var q = e.joueurs[cibleNom];
-      if (!q || q.fantome || q.salle !== c.salle) { var l = vivantsDe(e, c); q = l[Math.floor(h() * l.length)]; if (!q) return; }
-      if (protege[q.nom] && e.joueurs[protege[q.nom]] && !e.joueurs[protege[q.nom]].fantome) q = e.joueurs[protege[q.nom]];
-      if (bouclier[q.nom] || esquive[q.nom]) { journal.push((esquive[q.nom] ? '💨 ' : '🛡️ ') + nomCp(q) + ' évite le coup de ' + nomMonstre(m) + '.'); coups.push({ qui: q.nom, v: 'paré' }); return; }
-      blesser(e, q, 1);
-      journal.push('💢 ' + nomMonstre(m) + ' frappe ' + nomCp(q) + ' : −1 ❤️');
-      coups.push({ qui: q.nom, v: -1 });
-    }
-    if (e.phase === 'jeu') monstresDe(e, c).forEach(m => {
-      var i = c.intentions[m.id] || { t: 'rien' };
-      if (i.t === 'attaque') coup(m, i.cible);
-      else if (i.t === 'ecrase') { journal.push('💥 Le Roi Gluant écrase tout le monde !'); vivantsDe(e, c).forEach(q => coup(m, q.nom)); }
-      else if (i.t === 'appel') {
-        var place = [[3, 3], [7, 3], [3, 5], [7, 5], [5, 2], [5, 6]].find(p => !e.ennemis.some(x => x.salle === c.salle && x.x === p[0] && x.y === p[1]));
-        if (place) { e.ennemis.push({ id: ++e.seq, type: 'slime', salle: c.salle, x: place[0], y: place[1], pv: 2, pvMax: 2, pas: 0, dir: 'b' }); journal.push('🟢 Le Roi Gluant appelle un gluant !'); }
+      if (i.armure) m.armure += i.armure;
+      if (i.force) ajouterEtat(m, 'force', i.force);
+      if (i.buffE) ajouterEtat(m, i.buffE, i.buffN);
+      if (i.fureur) m.mem.fureur = 1;
+      if (i.soin) m.pv = Math.min(m.pvMax, m.pv + i.soin);
+      if (i.att) {
+        for (var x = 0; x < (i.x || 1); x++) cibles.forEach(q => {
+          if (q.fantome || e.ennemis.indexOf(m) < 0) return;
+          infliger(e, c, q, calculer(m, q, i.att + bonus), m, true);
+        });
       }
-      else if (i.t === 'prepare') journal.push('😤 Le Roi Gluant prend son élan…');
+      if (i.vol) cibles.forEach(q => { var n = Math.min(q.or, i.vol); if (!n) return; q.or -= n; m.mem.vol = m.mem.vol || {}; m.mem.vol[q.nom] = (m.mem.vol[q.nom] || 0) + n; fx(e, c, q.nom, '−' + n + ' 🪙', 'neutre'); });
+      [i.deb, i.deb2].forEach(d => {
+        if (!d) return;
+        (d.tous ? vivantsDe(e, c) : [cible]).forEach(q => { if (!q.fantome) { ajouterEtat(q, d.e, d.n); fx(e, c, q.nom, ETATS[d.e].ico + d.n, 'etat'); } });
+      });
+      if (i.maudit) (i.tous ? vivantsDe(e, c) : [cible]).forEach(q => { for (var k = 0; k < i.maudit; k++) q.defausse.push('blessure'); fx(e, c, q.nom, '🩹+' + i.maudit, 'etat'); });
+      if (i.appel) {
+        var places = [[3, 3], [7, 3], [3, 5], [7, 5], [5, 6], [2, 4], [8, 4]];
+        for (var k2 = 0; k2 < i.appel.n; k2++) {
+          if (monstresDe(e, c).length >= 5) break;
+          var pl = places.find(q => !e.ennemis.some(x => x.salle === c.salle && x.x === q[0] && x.y === q[1]));
+          if (!pl) break;
+          var nv = creerMonstre(e, i.appel.type, c.salle, pl[0], pl[1], h);
+          nv.intention = null;
+        }
+      }
+      m.k++; m.mem.dernier = i.nom;
     });
-    tous.forEach(p => defausser(p));
-    c.journal = journal.slice(-8); c.coups = coups; c.resolu = ++e.seq;
-    if (e.phase !== 'jeu') { delete e.combats[c.salle]; return; }
-    if (!monstresDe(e, c).length) return finCombat(e, c, true);
-    if (!vivantsDe(e, c).length) return finCombat(e, c, false);
-    nouveauTour(e, c, h);
+    // Fin du tour : les états qui durent baissent de 1
+    var tous = monstresDe(e, c).concat(c.joueurs.map(n => e.joueurs[n]).filter(Boolean));
+    tous.forEach(x => Object.keys(x.etats).forEach(et => { if (ETATS[et] && ETATS[et].dure) ajouterEtat(x, et, -1); }));
+    if (!verifierFin(e, c, h)) nouveauTour(e, c, h);
   }
-  function finCombat(e, c, gagne) {
-    c.joueurs.forEach(n => { var p = e.joueurs[n]; if (p) defausser(p); });
+  // Victoire, défaite : renvoie vrai si le combat est fini
+  function verifierFin(e, c, h) {
+    if (!e.combats[c.salle]) return true;
+    if (!monstresDe(e, c).length) { finCombat(e, c, true, h); return true; }
+    if (!vivantsDe(e, c).length) { finCombat(e, c, false, h); return true; }
+    return false;
+  }
+  function finCombat(e, c, gagne, h) {
+    if (!e.combats[c.salle]) return;
+    h = h || Math.random;
     delete e.combats[c.salle];
-    annonce(e, gagne ? '🎉 Victoire ! La pièce est libre.' : '👻 Le groupe est KO dans cette pièce… les monstres restent là.');
-    e.dernierCombat = { salle: c.salle, gagne: gagne, journal: c.journal, t: e.maintenant, id: c.id };
+    var joueurs = c.joueurs.map(n => e.joueurs[n]).filter(Boolean);
+    joueurs.forEach(p => { p.armure = 0; p.etats = {}; p.main = []; p.pioche = []; p.defausse = []; p.epuisees = []; p.energie = 0; p.tourCombat = 0; });
+    e.dernierCombat = { salle: c.salle, gagne: gagne, journal: c.journal.slice(-4), t: e.maintenant, id: c.id };
+    if (!gagne) {
+      monstresDe(e, c).forEach(m => { m.armure = 0; m.etats = {}; m.intention = null; });
+      annonce(e, '👻 Le groupe est KO dans cette pièce… les monstres restent là.');
+      return;
+    }
+    e.poussiere += c.poussiere;
+    var rang = c.rang;
+    joueurs.forEach(p => {
+      if (p.fantome) { p.fantome = false; p.pv = Math.max(1, Math.round(p.pvMax / 4)); }
+      if (a(p, 'bandage')) soigner(p, 4);
+      var or = rang === 'boss' ? 55 + entier(h, 11) : rang === 'elite' ? 28 + entier(h, 9) : 12 + entier(h, 9);
+      if (a(p, 'piece')) or += 12;
+      donnerOr(e, p, or);
+      var fiole = rang !== 'boss' && h() < (rang === 'elite' ? 0.5 : 0.35) ? donnerFiole(e, p, null, h) : null;
+      var relique = rang === 'elite' ? donnerRelique(e, p, null, h) : null;
+      if (rang === 'boss' && e.etage < NB_ETAGES) {
+        var bl = melanger(Object.keys(RELIQUES).filter(r => RELIQUES[r].rar === 'boss' && !a(p, r)), h).slice(0, 3);
+        if (bl.length) p.menus.push({ type: 'reliqueBoss', choix: bl });
+      }
+      if (!(rang === 'boss' && e.etage >= NB_ETAGES)) p.menus.push({ type: 'butin', rang: rang, or: or, fiole: fiole, relique: relique, cartes: tirerCartes(p, 3, rang, h) });
+    });
+    if (rang === 'boss') {
+      if (e.etage >= NB_ETAGES) {
+        e.phase = 'fin'; e.fin = { gagne: true, t: e.maintenant, etage: e.etage };
+        annonce(e, '🎉 ' + MONSTRES[D.ETAGES[e.etage - 1].boss].nom + ' est vaincue ! Le donjon est à vous !');
+      } else {
+        var S = e.salles[c.salle];
+        poser(S, CENTRE[0], CENTRE[1], 'E'); e.carteV++;
+        annonce(e, '🎉 ' + MONSTRES[D.ETAGES[e.etage - 1].boss].nom + ' est vaincu ! Un escalier 🪜 descend vers l\'étage ' + (e.etage + 1) + '.');
+      }
+    } else annonce(e, rang === 'elite' ? '⭐ L\'élite est vaincu !' : '🎉 Victoire ! La pièce est libre.');
   }
 
   // ---------- Un pas de simulation (dix fois par seconde) ----------
@@ -501,7 +956,7 @@ var DJ = (function () {
     e.maintenant = maintenant;
     if (!e.debut) e.debut = maintenant;
     var joueurs = Object.values(e.joueurs);
-    joueurs.forEach(p => bougerJoueur(e, p));
+    joueurs.forEach(p => bougerJoueur(e, p, h));
     // Monstres : ils ne bougent que dans les pièces où quelqu'un est en vie
     var occupees = {};
     joueurs.forEach(p => { if (!p.fantome) occupees[p.salle] = true; });
@@ -513,12 +968,12 @@ var DJ = (function () {
       var v = DX[d];
       if (marchableEnnemi(e, m, m.x + v[0], m.y + v[1])) { m.x += v[0]; m.y += v[1]; m.dir = d; }
     });
-    // Au contact (même case ou une des 8 cases autour) d'un monstre : combat au tour par tour dans la pièce
+    // Au contact (même case ou une des 8 cases autour) d'un monstre : combat dans la pièce
     joueurs.forEach(p => {
-      if (p.fantome || e.combats[p.salle]) return;
-      if (e.ennemis.some(m => m.salle === p.salle && Math.abs(m.x - p.x) <= 1 && Math.abs(m.y - p.y) <= 1)) demarrerCombat(e, p.salle, h);
+      if (p.fantome || e.combats[p.salle] || p.menus.length) return;
+      if (e.ennemis.some(m => m.salle === p.salle && Math.max(Math.abs(m.x - p.x), Math.abs(m.y - p.y)) <= ((MONSTRES[m.type].taille || 1) > 1 ? 2 : 1))) demarrerCombat(e, p.salle, h);
     });
-    Object.keys(e.combats).forEach(id => avancerCombat(e, e.combats[id], h, absents || {}));
+    Object.keys(e.combats).forEach(id => { if (e.combats[id]) avancerCombat(e, e.combats[id], h, absents || {}); });
     if (e.phase !== 'jeu') return;
     // Grilles : toutes les dalles de la pièce occupées en même temps
     Object.values(e.salles).forEach(S => {
@@ -533,14 +988,14 @@ var DJ = (function () {
       var ami = !e.combats[f.salle] && joueurs.some(p => !p.fantome && p.salle === f.salle && Math.abs(p.x - f.x) <= 1 && Math.abs(p.y - f.y) <= 1);
       f.reanim = ami ? f.reanim + dt : 0;
       if (f.reanim >= REANIMATION) {
-        f.fantome = false; f.coeurs = 1; f.reanim = 0;
+        f.fantome = false; f.pv = Math.max(1, Math.round(f.pvMax / 4)); f.reanim = 0;
         annonce(e, '✨ ' + nomCp(f) + ' est ranimé !');
       }
     });
     // Tout le monde KO : fin
-    if (joueurs.length && joueurs.every(p => p.fantome)) { e.phase = 'fin'; e.fin = { gagne: false, t: maintenant }; annonce(e, 'Tout le groupe est KO…'); }
+    if (joueurs.length && joueurs.every(p => p.fantome)) { e.phase = 'fin'; e.fin = { gagne: false, t: maintenant, etage: e.etage }; annonce(e, 'Tout le groupe est KO…'); }
     e.effets = e.effets.filter(f => maintenant - f.t < 600);
-    e.annonces = e.annonces.filter(a => maintenant - a.t < 4500);
+    e.annonces = e.annonces.filter(a => maintenant - a.t < 5000);
   }
 
   // Ce qui change à chaque instant (sans les pièces, envoyées seulement quand elles changent)
@@ -550,10 +1005,25 @@ var DJ = (function () {
     return r;
   }
   function pieces(e) { return e.salles; }
+  // Ce que fera vraiment l'intention d'un monstre contre ce joueur (force, faiblesse, vulnérabilité, péril)
+  function degatsIntention(e, m, p) {
+    var i = m.intention;
+    if (!i || !i.att) return 0;
+    return calculer(m, p || { etats: {} }, i.att + (e.peril >= 4 ? 1 : 0));
+  }
+  // Dégâts qu'une carte d'attaque simple ferait sur ce monstre (affichage)
+  function degatsCarte(p, id, m) {
+    var k = carte(id), f = k && k.fx.find(x => x.deg !== undefined);
+    if (!f) return null;
+    return calculer(p, m || { etats: {} }, f.deg);
+  }
 
   return { W: W, H: H, GX: GX, GY: GY, PAS: PAS, DX: DX, PORTE: PORTE, MARCHABLE: MARCHABLE, POUVOIRS: POUVOIRS, ESPECES: ESPECES, MONSTRES: MONSTRES,
+           D: D, NB_ETAGES: NB_ETAGES, carte: carte, ameliorable: ameliorable, prixRetrait: prixRetrait, soinFeu: soinFeu,
            pouvoirDe: pouvoirDe, hasard: hasard, generer: generer, nouvelle: nouvelle, ajouterJoueur: ajouterJoueur, entree: entree,
-           CARTES: CARTES, CARTE_POUVOIR: CARTE_POUVOIR, jouerCarte: jouerCarte, annulerCarte: annulerCarte, demarrerCombat: demarrerCombat,
+           jouerCarte: jouerCarte, finTour: finTour, utiliserFiole: utiliserFiole, jeterFiole: jeterFiole, choisir: choisir, demarrerCombat: demarrerCombat,
+           interagir: interagir, ouvrirCoffre: ouvrirCoffre, tourMonstres: tourMonstres, etageSuivant: etageSuivant, tirerCartes: tirerCartes, donnerRelique: donnerRelique,
+           degatsIntention: degatsIntention, degatsCarte: degatsCarte, calculer: calculer,
            tick: tick, tuile: tuile, compatible: compatible, FORMAT: FORMAT, idx: idx, etatMobile: etatMobile, pieces: pieces };
 })();
 if (typeof module !== 'undefined') module.exports = DJ;

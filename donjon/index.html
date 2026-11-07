@@ -38,11 +38,7 @@
 
     /* ---------- Écran de jeu ---------- */
     .jeu-dj { user-select: none; -webkit-user-select: none; }
-    .barre-dj { display: flex; align-items: center; gap: 8px; margin: 2px 0 6px; font-weight: 800; }
-    .barre-dj .coeurs { font-size: 1.15em; letter-spacing: -2px; white-space: nowrap; }
-    .barre-dj .inv { font-size: 0.92em; white-space: nowrap; }
-    .barre-dj .espace { flex: 1; }
-    .quitter-dj { flex: none; border: 1.5px solid #e03131; background: #fff5f5; color: #c92a2a; font: inherit; font-weight: 800; font-size: 0.8em; border-radius: 10px; padding: 4px 7px; cursor: pointer; }
+    .quitter-dj { flex: none; border: 1.5px solid #e03131; background: #fff5f5; color: #c92a2a; font: inherit; font-weight: 800; font-size: 0.72em; line-height: 1.15; border-radius: 10px; padding: 3px 6px; cursor: pointer; }
     .carte-mini { display: grid; gap: 2px; }
     .carte-mini span { width: 11px; height: 9px; border-radius: 2px; background: transparent; position: relative; }
     .carte-mini span.vue { background: #c9b8a6; }
@@ -67,14 +63,20 @@
     .ent .nom-j { position: absolute; left: 50%; top: -62%; transform: translateX(-50%); font-size: 9px; font-weight: 800; color: #fff; background: rgba(0,0,0,0.45); border-radius: 6px; padding: 0 4px; white-space: nowrap; }
     .ent .anneau { position: absolute; inset: -10%; border-radius: 50%; border: 2px dashed #ffd43b; animation: tourne 2s linear infinite; }
     @keyframes tourne { to { transform: rotate(360deg); } }
-    .ent.monstre .emo { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 22px; line-height: 1; }
-    .ent.monstre.touche .sp, .ent.monstre.touche .emo { filter: brightness(2.2) saturate(0.2); }
-    .ent.monstre.chauve .emo { animation: battre 0.35s ease-in-out infinite alternate; }
+    .ent.monstre .sp { display: flex; align-items: flex-end; justify-content: center; }
+    .ent.monstre .sp > span { display: flex; align-items: flex-end; justify-content: center; width: 100%; height: 100%; }
+    .ent.monstre .sp .emo { font-size: 22px; line-height: 1; }
+    .ent.monstre .sp .gl svg { width: 100%; height: 100%; }
+    .ent.monstre .sp .cour { position: absolute; top: 4%; left: 50%; transform: translateX(-50%); font-size: 12px; }
+    .ent.monstre.chauve .sp, .ent.monstre.fantome .sp { animation: battre 0.35s ease-in-out infinite alternate; }
     @keyframes battre { to { transform: translateY(-3px) scale(1.08); } }
-    .ent.monstre.slime .sp, .ent.monstre.boss .sp { animation: gluer 0.8s ease-in-out infinite alternate; transform-origin: 50% 100%; }
+    .ent.monstre.gluant .sp { animation: gluer 0.8s ease-in-out infinite alternate; transform-origin: 50% 100%; }
     @keyframes gluer { to { transform: scale(1.08, 0.92); } }
-    .ent.monstre.boss .sp { left: -60%; width: 220%; height: 220%; }
-    .ent.monstre.boss .pv { top: -150%; }
+    .ent.monstre.gros .sp { left: -60%; width: 220%; height: 220%; }
+    .ent.monstre.gros .sp .emo { font-size: 38px; }
+    .ent.monstre.gros .sp .cour { font-size: 18px; top: 10%; }
+    .ent.monstre .rang { position: absolute; left: 50%; top: -75%; transform: translateX(-50%); font-size: 11px; }
+    .ent.monstre.gros .rang { top: -140%; }
     .ent .pv { position: absolute; left: -40%; right: -40%; top: -55%; height: 5px; border-radius: 3px; background: rgba(0,0,0,0.5); overflow: hidden; }
     .ent .pv i { display: block; height: 100%; background: #e64980; }
     .ent.objet .emo { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 17px; animation: flotter 0.9s ease-in-out infinite alternate; }
@@ -103,48 +105,126 @@
     .milieu-dj .pouvoir { font-size: 1em; padding: 2px 6px; white-space: normal; display: inline-block; }
     .dernier-combat { background: #fff; border-radius: 12px; padding: 6px 10px; margin-top: 6px; font-size: 0.78em; color: #3b4b57; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
     .dernier-combat span { display: block; }
+    /* Barre du haut : étage, PV, or, objets */
+    .tete-dj { display: flex; align-items: center; gap: 6px; margin: 2px 0 6px; }
+    .tete-dj .gauche { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+    .ligne-dj { display: flex; align-items: center; gap: 6px; min-width: 0; font-weight: 800; font-size: 0.85em; }
+    .etage-dj { flex: none; background: #2a211b; color: #ffd8a8; border-radius: 8px; padding: 1px 6px; font-size: 0.85em; border: none; font: inherit; font-weight: 900; }
+    .pv-dj { position: relative; flex: 1; min-width: 70px; height: 18px; border-radius: 9px; background: #f1d5d5; overflow: hidden; }
+    .pv-dj i { position: absolute; left: 0; top: 0; bottom: 0; background: linear-gradient(#ff8787, #e03131); transition: width 0.3s; }
+    .pv-dj b { position: relative; display: block; text-align: center; font-size: 0.78em; line-height: 18px; color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.6); }
+    .or-dj { flex: none; white-space: nowrap; }
+    .objets-dj { display: flex; align-items: center; gap: 3px; min-width: 0; overflow-x: auto; scrollbar-width: none; }
+    .objets-dj::-webkit-scrollbar { display: none; }
+    .objets-dj button { flex: none; border: none; background: #fff; border-radius: 8px; padding: 1px 3px; font: inherit; font-size: 0.9em; box-shadow: 0 1px 2px rgba(0,0,0,0.12); cursor: pointer; }
+    .objets-dj .fiole-vide { flex: none; width: 18px; height: 20px; border-radius: 6px; border: 1.5px dashed #c3ccd3; }
+    .objets-dj .petit { font-size: 0.82em; white-space: nowrap; }
+    .info-dj { background: #2a211b; color: #fff; border-radius: 10px; padding: 6px 10px; font-size: 0.8em; font-weight: 600; margin-bottom: 6px; }
+    .info-dj button { border: none; background: #ffd43b; color: #2a211b; font: inherit; font-weight: 800; border-radius: 8px; padding: 3px 8px; margin: 4px 6px 0 0; cursor: pointer; }
+
     /* Combat aux cartes */
-    .combat-dj { background: #2a211b; border-radius: 14px; padding: 8px; color: #fff; }
-    .tete-combat { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-weight: 900; font-size: 0.95em; margin-bottom: 6px; }
-    .aide-combat { font-weight: 700; font-size: 0.78em; color: #ffd43b; text-align: right; }
-    .monstres-c { display: flex; justify-content: center; gap: 6px; flex-wrap: wrap; }
-    .mc { position: relative; flex: 1; min-width: 74px; max-width: 150px; border: 2px solid transparent; background: #3a2e26; border-radius: 12px; padding: 4px 4px 6px; color: #fff; font: inherit; display: flex; flex-direction: column; align-items: center; cursor: default; }
-    .mc.boss { max-width: 160px; }
+    .combat-dj { background: #2a211b; border-radius: 14px; padding: 6px; color: #fff; }
+    .tete-combat { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-weight: 900; font-size: 0.85em; margin-bottom: 4px; }
+    .aide-combat { font-weight: 700; font-size: 0.85em; color: #ffd43b; text-align: right; }
+    .monstres-c { display: flex; justify-content: center; gap: 4px; }
+    .mc { position: relative; flex: 1; min-width: 0; max-width: 130px; border: 2px solid transparent; background: #3a2e26; border-radius: 12px; padding: 3px 3px 4px; color: #fff; font: inherit; display: flex; flex-direction: column; align-items: center; cursor: default; }
+    .mc.gros { max-width: 170px; flex: 1.4; }
     .mc.ciblable { border-color: #ffd43b; cursor: pointer; animation: appel-c 0.8s ease-in-out infinite alternate; }
     @keyframes appel-c { to { box-shadow: 0 0 12px rgba(255,212,59,0.7); } }
-    .mc.vise { border-color: #ff922b; }
-    .intention { font-size: 0.68em; font-weight: 800; background: #fff; color: #c92a2a; border-radius: 8px; padding: 1px 6px; white-space: nowrap; max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
-    .mc-des { position: relative; width: 58px; height: 58px; display: flex; align-items: center; justify-content: center; }
-    .mc.boss .mc-des { width: 84px; height: 84px; }
-    .mc-des .emo { font-size: 40px; }
-    .mc-des .gl { width: 100%; height: 100%; }
-    .mc-des .gl svg { width: 100%; height: 100%; }
-    .mc-nom { font-size: 0.72em; font-weight: 800; white-space: nowrap; }
-    .mc-pv { width: 90%; height: 6px; border-radius: 3px; background: rgba(255,255,255,0.2); overflow: hidden; margin-top: 2px; }
-    .mc-pv i { display: block; height: 100%; background: #e64980; transition: width 0.4s; }
-    .mc-pvt { font-size: 0.65em; opacity: 0.8; }
-    .coup-flottant { position: absolute; left: 50%; top: 10%; transform: translateX(-50%); font-weight: 900; font-size: 1.3em; text-shadow: 0 2px 3px rgba(0,0,0,0.6); animation: flotte-c 1.6s ease-out forwards; pointer-events: none; white-space: nowrap; }
-    .coup-flottant.mal { color: #ff6b6b; } .coup-flottant.soin { color: #8ce99a; } .coup-flottant.neutre { color: #e9ecef; font-size: 0.95em; }
-    @keyframes flotte-c { from { opacity: 1; transform: translate(-50%, 0) scale(1.3); } to { opacity: 0; transform: translate(-50%, -28px) scale(1); } }
-    .journal-c { background: rgba(255,255,255,0.08); border-radius: 10px; padding: 4px 8px; margin: 6px 0; font-size: 0.72em; line-height: 1.35; max-height: 92px; overflow-y: auto; }
-    .equipe-c { display: flex; justify-content: center; gap: 6px; flex-wrap: wrap; margin: 4px 0 6px; }
-    .membre-c { position: relative; border: 2px solid transparent; background: #3a2e26; border-radius: 12px; padding: 3px 6px; color: #fff; font: inherit; display: flex; flex-direction: column; align-items: center; min-width: 64px; cursor: default; }
-    .membre-c.moi { background: #4a3a22; }
+    .intention { font-size: 0.78em; font-weight: 900; background: #fff; color: #2c3e50; border-radius: 8px; padding: 1px 6px; white-space: nowrap; max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
+    .intention.att { color: #c92a2a; }
+    .intention.danger { background: #ffe3e3; animation: appel-c 0.6s ease-in-out infinite alternate; }
+    .intention-nom { font-size: 0.6em; opacity: 0.85; white-space: nowrap; max-width: 100%; overflow: hidden; text-overflow: ellipsis; margin-top: 1px; }
+    .mc-des { position: relative; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; }
+    .mc.gros .mc-des { width: 66px; height: 66px; }
+    .mc-des .emo { font-size: 36px; line-height: 1; }
+    .mc.gros .mc-des .emo { font-size: 50px; }
+    .mc-des .gl, .mc-des .gl svg, .mc-des > span:first-child { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
+    .mc-des .cour { position: absolute; top: -8px; left: 50%; transform: translateX(-50%); font-size: 18px; }
+    .armure-b { position: absolute; right: -6px; bottom: -2px; background: #1c7ed6; color: #fff; border-radius: 8px; font-size: 0.7em; font-weight: 900; padding: 0 4px; }
+    .mc-nom { font-size: 0.68em; font-weight: 800; white-space: nowrap; max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
+    .mc-pv { position: relative; width: 94%; height: 12px; border-radius: 6px; background: rgba(255,255,255,0.18); overflow: hidden; margin-top: 2px; }
+    .mc-pv i { position: absolute; left: 0; top: 0; bottom: 0; background: #e64980; transition: width 0.4s; }
+    .mc-pv b { position: relative; display: block; text-align: center; font-size: 0.6em; line-height: 12px; }
+    .etats-c { display: flex; flex-wrap: wrap; justify-content: center; gap: 2px; min-height: 14px; margin-top: 2px; }
+    .etats-c span { font-size: 0.62em; font-weight: 800; background: rgba(255,255,255,0.14); border-radius: 6px; padding: 0 3px; cursor: pointer; }
+    .coup-flottant { position: absolute; left: 50%; top: 10%; transform: translateX(-50%); font-weight: 900; font-size: 1.15em; text-shadow: 0 2px 3px rgba(0,0,0,0.7); animation: flotte-c 1.3s ease-out forwards; pointer-events: none; white-space: nowrap; z-index: 3; }
+    .coup-flottant.mal { color: #ff6b6b; } .coup-flottant.soin { color: #8ce99a; } .coup-flottant.neutre { color: #e9ecef; font-size: 0.9em; }
+    .coup-flottant.bouclier { color: #74c0fc; font-size: 0.9em; } .coup-flottant.etat { color: #ffd43b; font-size: 0.85em; }
+    @keyframes flotte-c { from { opacity: 1; transform: translate(-50%, 0) scale(1.3); } to { opacity: 0; transform: translate(-50%, -26px) scale(1); } }
+    .journal-c { background: rgba(255,255,255,0.08); border-radius: 10px; padding: 3px 8px; margin: 5px 0; font-size: 0.7em; line-height: 1.35; height: 62px; overflow-y: auto; }
+    .journal-c .vide { opacity: 0.6; font-style: italic; }
+    .equipe-c { display: flex; justify-content: center; gap: 4px; flex-wrap: wrap; margin-bottom: 4px; }
+    .membre-c { position: relative; border: 2px solid transparent; background: #3a2e26; border-radius: 10px; padding: 2px 6px; color: #fff; font: inherit; font-size: 0.7em; font-weight: 800; display: flex; align-items: center; gap: 4px; cursor: default; }
     .membre-c.fantome { opacity: 0.55; }
     .membre-c.ciblable { border-color: #8ce99a; cursor: pointer; animation: appel-c 0.8s ease-in-out infinite alternate; }
-    .mc-cp { position: relative; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; font-size: 26px; }
+    .mc-cp { position: relative; width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
     .mc-cp > span:first-child, .mc-cp svg { width: 100%; height: 100%; }
-    .mc-c { font-size: 0.7em; letter-spacing: -1px; }
-    .mc-etat { font-size: 0.62em; opacity: 0.85; }
-    .main-c { display: flex; gap: 6px; justify-content: center; }
-    .carte-c { flex: 1; max-width: 112px; min-height: 132px; border: none; border-radius: 12px; background: #fff; color: #1d2b36; font: inherit; padding: 6px 5px; display: flex; flex-direction: column; align-items: center; gap: 2px; cursor: pointer;
-               box-shadow: 0 3px 0 rgba(0,0,0,0.35); border-top: 8px solid #868e96; transition: transform 0.15s; }
-    .carte-c.t-attaque { border-top-color: #e8590c; } .carte-c.t-defense { border-top-color: #1c7ed6; } .carte-c.t-soin { border-top-color: #2f9e44; } .carte-c.t-pouvoir { border-top-color: #9c36b5; background: #fbf4ff; }
-    .carte-c.enCours { transform: translateY(-10px); box-shadow: 0 0 0 3px #ffd43b, 0 6px 10px rgba(0,0,0,0.4); }
-    .carte-c.choisie { transform: translateY(-6px); box-shadow: 0 0 0 3px #51cf66, 0 6px 10px rgba(0,0,0,0.4); }
-    .cc-ico { font-size: 30px; line-height: 1.1; }
-    .cc-nom { font-weight: 900; font-size: 0.78em; text-align: center; line-height: 1.1; }
-    .cc-txt { font-size: 0.66em; color: #5b6b78; text-align: center; line-height: 1.2; }
+    .moi-c { position: relative; display: flex; align-items: center; gap: 8px; background: #3a2e26; border-radius: 12px; padding: 4px 6px; margin-bottom: 5px; border: 2px solid transparent; }
+    .moi-c.ciblable { border-color: #8ce99a; cursor: pointer; }
+    .nrj { flex: none; width: 40px; height: 40px; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #ffe066, #f08c00); color: #2a211b; font-weight: 900; font-size: 1.3em; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 10px rgba(255,212,59,0.5); }
+    .nrj small { font-size: 0.55em; margin-left: 1px; }
+    .nrj.vide { background: #5c4a3d; color: #b9a99a; box-shadow: none; }
+    .moi-c .corps { flex: 1; min-width: 0; }
+    .moi-c .pv-dj { height: 16px; }
+    .moi-c .pv-dj b { line-height: 16px; }
+    .moi-c .armure-m { flex: none; background: #1c7ed6; border-radius: 8px; padding: 0 5px; font-weight: 900; font-size: 0.8em; }
+    .moi-c .etats-c { justify-content: flex-start; }
+    .main-c { display: flex; flex-wrap: wrap; gap: 4px; justify-content: center; }
+    .main-c .carte-c { width: calc((100% - 16px) / 5); min-height: 124px; }
+    .main-c .cc-ico { font-size: 26px; } .main-c .cc-nom { font-size: 0.68em; } .main-c .cc-txt { font-size: 0.6em; }
+    .main-c .carte-c.choisie { transform: translateY(-8px); box-shadow: 0 0 0 3px #ffd43b, 0 6px 10px rgba(0,0,0,0.4); }
+    .main-c .carte-c.chere { opacity: 0.5; }
+    .desc-c { background: #fff4e6; color: #2a211b; border-radius: 10px; padding: 4px 8px; font-size: 0.78em; font-weight: 700; margin-top: 6px; min-height: 20px; }
+    .pied-c { display: flex; align-items: center; gap: 6px; margin-top: 6px; }
+    .pied-c .piles { flex: 1; font-size: 0.72em; opacity: 0.85; }
+    .pied-c button.fiole-c { border: none; background: #4a3a2e; border-radius: 10px; font-size: 1.15em; padding: 3px 6px; cursor: pointer; }
+    .pied-c button.fiole-c.choisie { box-shadow: 0 0 0 3px #ffd43b; }
+    .fin-tour { border: none; background: #ff922b; color: #fff; font: inherit; font-weight: 900; border-radius: 12px; padding: 9px 12px; cursor: pointer; box-shadow: 0 3px 0 #c75f00; }
+    .fin-tour:disabled { background: #6b5a4c; box-shadow: none; }
+    .fin-tour.pousse { animation: appel-c 0.7s ease-in-out infinite alternate; }
+
+    /* Une carte (main, butin, marchand, paquet) */
+    .carte-c { position: relative; border: none; border-radius: 10px; background: #fff; color: #1d2b36; font: inherit; padding: 13px 3px 4px; display: flex; flex-direction: column; align-items: center; gap: 1px; cursor: pointer;
+               box-shadow: 0 3px 0 rgba(0,0,0,0.35); border-top: 6px solid #868e96; transition: transform 0.15s; box-sizing: border-box; }
+    .carte-c.t-attaque { border-top-color: #e8590c; } .carte-c.t-defense { border-top-color: #1c7ed6; } .carte-c.t-competence { border-top-color: #2f9e44; }
+    .carte-c.t-pouvoir { border-top-color: #9c36b5; background: #fbf4ff; } .carte-c.t-malediction { border-top-color: #212529; background: #e9ecef; }
+    .carte-c.r-u { outline: 2px solid #74c0fc; outline-offset: -2px; } .carte-c.r-r { outline: 2px solid #fab005; outline-offset: -2px; }
+    .carte-c.plus .cc-nom { color: #2b8a3e; }
+    .cc-cout { position: absolute; left: -3px; top: -9px; width: 22px; height: 22px; border-radius: 50%; background: #ffd43b; color: #2a211b; font-weight: 900; font-size: 0.85em; display: flex; align-items: center; justify-content: center; box-shadow: 0 1px 3px rgba(0,0,0,0.4); }
+    .cc-ico { font-size: 22px; line-height: 1.05; }
+    .cc-nom { font-weight: 900; font-size: 0.64em; text-align: center; line-height: 1.1; }
+    .cc-txt { font-size: 0.56em; color: #5b6b78; text-align: center; line-height: 1.15; }
+    .cc-badge { position: absolute; right: -3px; top: -9px; background: #e03131; color: #fff; border-radius: 8px; font-size: 0.68em; font-weight: 900; padding: 1px 4px; }
+    .cc-prix { font-weight: 900; font-size: 0.72em; color: #a8590f; margin-top: auto; }
+    .grande .carte-c, .carte-c.grande { min-height: 128px; padding-top: 15px; }
+    .grande .cc-ico { font-size: 28px; } .grande .cc-nom { font-size: 0.78em; } .grande .cc-txt { font-size: 0.66em; }
+
+    /* Fenêtres : butin, feu de camp, marchand, autel, paquet */
+    .boite-menu { max-height: calc(100vh - 40px); overflow-y: auto; padding: 14px 12px; }
+    .choix-cartes { display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; margin: 10px 0 6px; }
+    .choix-cartes .carte-c { width: calc((100% - 12px) / 3); }
+    .choix-cartes.quatre .carte-c { width: calc((100% - 18px) / 4); }
+    .choix-cartes .carte-c.choisie { transform: translateY(-6px); box-shadow: 0 0 0 3px #ff922b, 0 6px 10px rgba(0,0,0,0.25); }
+    .choix-cartes .carte-c.vendu { opacity: 0.3; pointer-events: none; }
+    .butin-l { display: flex; flex-direction: column; gap: 4px; margin: 8px 0; font-weight: 700; font-size: 0.88em; color: #3b4b57; text-align: left; }
+    .butin-l span { background: #f6f8fa; border-radius: 10px; padding: 5px 8px; }
+    .ligne-achat { display: flex; align-items: center; gap: 8px; background: #f6f8fa; border-radius: 10px; padding: 6px 8px; margin-top: 6px; text-align: left; font-size: 0.85em; }
+    .ligne-achat .ico { font-size: 1.5em; }
+    .ligne-achat .txt { flex: 1; min-width: 0; }
+    .ligne-achat button { border: none; background: #ffd43b; color: #2a211b; font: inherit; font-weight: 900; border-radius: 9px; padding: 5px 8px; cursor: pointer; white-space: nowrap; }
+    .ligne-achat button:disabled { background: #e3e8ec; color: #98a3ab; }
+    .ligne-achat.vendu { opacity: 0.4; }
+    .paquet-grille { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px 5px; margin: 14px 0 6px; }
+    .paquet-grille .carte-c { min-height: 100px; }
+    .paquet-grille .carte-c.choisie { box-shadow: 0 0 0 3px #ff922b; transform: translateY(-4px); }
+    .apercu-plus { display: flex; align-items: center; justify-content: center; gap: 8px; margin: 10px 0; }
+    .apercu-plus .carte-c { width: 40%; }
+    .or-menu { font-weight: 900; color: #a8590f; }
+    .perils { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 6px; }
+    .perils button { border: 2px solid #e3e8ec; background: #fff; font: inherit; font-weight: 900; border-radius: 10px; padding: 4px 10px; cursor: pointer; }
+    .perils button.actif { border-color: #e8590c; background: #fff4e6; color: #c2410c; }
+    .classe-dj { display: inline-block; background: #f3f0ff; color: #5f3dc4; border-radius: 999px; padding: 2px 10px; font-weight: 800; font-size: 0.85em; margin: 2px 0; }
 
     .voile-dj { position: fixed; inset: 0; background: rgba(20,14,10,0.6); display: flex; align-items: center; justify-content: center; z-index: 50; padding: 16px; }
     .boite-dj { background: #fff; border-radius: 18px; padding: 18px; width: 100%; max-width: 360px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
@@ -167,9 +247,10 @@
           <div class="moi-cp" v-if="monCp">
             <svg viewBox="0 -6 200 216" v-html="dessin(monCp, 'moi')"></svg>
             <div><b>{{ monCp.n }}</b><br><span class="pouvoir">{{ POUVOIRS[monPouvoir].ico }} {{ POUVOIRS[monPouvoir].nom }}</span>
-              <div class="aide" style="margin-top:2px">{{ monCp.n }} {{ ESPECES[monCp.e].action }} : fonce dedans pour t'en servir.</div></div>
+              <span class="classe-dj">{{ D.CLASSES[monPouvoir].ico }} {{ D.CLASSES[monPouvoir].nom }} · {{ D.CLASSES[monPouvoir].pv }} PV</span>
+              <div class="aide" style="margin-top:2px">{{ monCp.n }} {{ ESPECES[monCp.e].action }}. En combat : {{ D.CLASSES[monPouvoir].texte.toLowerCase() }}.</div></div>
           </div>
-          <div v-else class="aide" style="margin-top:0">Sans compagnon, tu explores sans pouvoir. <a href="compagnon/">Adopter un compagnon</a></div>
+          <div v-else class="aide" style="margin-top:0">Sans compagnon, tu explores sans pouvoir, avec les cartes de base ({{ D.CLASSES.aucune.pv }} PV). <a href="compagnon/">Adopter un compagnon</a></div>
         </section>
 
         <section class="carte salon-actif" v-if="role">
@@ -204,9 +285,14 @@
           </section>
           <section class="carte">
             <div class="titre-carte">Seul</div>
-            <button class="btn principal" style="width:100%" @click="demarrerSolo">🗝️ {{ soloEnCours ? 'Reprendre mon exploration' : 'Explorer seul' }}</button>
+            <template v-if="!soloEnCours && perilMax > 0">
+              <div class="aide" style="margin-top:0">Péril (difficulté) : {{ D.PERILS[peril] }}{{ peril > 1 ? ' (et les niveaux d\'avant)' : '' }}</div>
+              <div class="perils"><button v-for="n in perilMax + 1" :key="n" :class="{ actif: peril === n - 1 }" @click="peril = n - 1">{{ n - 1 }}</button></div>
+            </template>
+            <button class="btn principal" style="width:100%;margin-top:8px" @click="demarrerSolo">🗝️ {{ soloEnCours ? 'Reprendre mon exploration' : 'Explorer seul' }}</button>
             <button v-if="soloEnCours" class="btn" style="width:100%;margin-top:8px" @click="demandeAbandon = true">🔄 Abandonner et recommencer à zéro</button>
-            <div class="aide" v-if="stats.parties">Donjons : {{ stats.gagnes }} vaincu{{ stats.gagnes > 1 ? 's' : '' }} sur {{ stats.parties }}.</div>
+            <div class="aide" v-if="stats.parties">Donjons : {{ stats.gagnes }} vaincu{{ stats.gagnes > 1 ? 's' : '' }} sur {{ stats.parties }}<template v-if="stats.record">, record : étage {{ stats.record }}</template>.</div>
+            <div class="aide" v-else>3 étages, un paquet de cartes qui se construit en chemin : il faut souvent plusieurs essais pour vaincre la Liche.</div>
           </section>
         </template>
         <a class="lien-exp" href="expedition/">🧭 Retour à l'expédition</a>
@@ -228,70 +314,93 @@
             <div v-for="(m, k) in groupe" :key="m.nom" class="membre" :class="{ absent: !m.connecte }">
               <svg v-if="m.cp" viewBox="0 -6 200 216" v-html="dessin(m.cp, 'g' + k)"></svg><span v-else class="sans">🧭</span>
               <div><b>{{ m.nom }}{{ m.nom === moi ? ' (moi)' : '' }}</b>
-                <span v-if="m.pouvoir" class="pouvoir">{{ POUVOIRS[m.pouvoir].ico }} {{ POUVOIRS[m.pouvoir].nom }}</span><span v-else class="aide">sans pouvoir</span></div>
+                <span v-if="m.pouvoir" class="pouvoir">{{ POUVOIRS[m.pouvoir].ico }} {{ POUVOIRS[m.pouvoir].nom }}</span><span v-else class="aide">sans pouvoir</span>
+                <span class="classe-dj">{{ D.CLASSES[m.pouvoir || 'aucune'].ico }} {{ D.CLASSES[m.pouvoir || 'aucune'].nom }}</span></div>
             </div>
           </div>
           <button v-if="role === 'hote'" class="btn principal" style="width:100%;margin-top:12px" @click="envoyerJeu({ type: 'COMMENCER' })">🗝️ Entrer dans le donjon ({{ groupe.length }} joueur{{ groupe.length > 1 ? 's' : '' }})</button>
           <div v-else class="aide">L'hôte lance l'exploration quand tout le monde est là.</div>
-          <div class="aide">Le donjon est tiré au hasard selon les pouvoirs du groupe : il y aura toujours de quoi passer.</div>
+          <div class="aide">Le donjon est tiré au hasard selon les pouvoirs du groupe : il y aura toujours de quoi passer. Les monstres ont plus de PV à plusieurs.</div>
+          <div class="aide" v-if="role === 'hote' && peril">Péril {{ peril }} : {{ D.PERILS[peril] }}.</div>
         </section>
 
         <div v-else class="jeu-dj" @contextmenu.prevent>
-          <div class="barre-dj">
-            <span class="coeurs" v-if="monJ">{{ monJ.fantome ? '👻' : '' }}<template v-for="i in monJ.max">{{ i <= monJ.coeurs ? '❤️' : '🤍' }}</template></span>
-            <span class="inv">🗝️{{ partie.cles }}<span v-if="partie.grandeCle"> 🔑</span> ✨{{ partie.poussiere }}</span>
-            <span class="espace"></span>
+          <div class="tete-dj">
+            <div class="gauche">
+              <div class="ligne-dj">
+                <button class="etage-dj" @click="info(etageInfo)">{{ etageIco }} {{ partie.etage }}/{{ DJ.NB_ETAGES }}</button>
+                <span class="pv-dj" v-if="monJ"><i :style="{ width: pct(monJ.pv, monJ.pvMax) }"></i><b>{{ monJ.fantome ? '👻 KO' : '❤️ ' + monJ.pv + ' / ' + monJ.pvMax }}</b></span>
+                <span class="or-dj" v-if="monJ">🪙{{ monJ.or }}</span>
+              </div>
+              <div class="objets-dj" v-if="monJ">
+                <button @click="voirPaquet = true" aria-label="Mon paquet">🃏{{ monJ.paquet.length }}</button>
+                <button v-for="(f, i) in monJ.fioles" :key="'f' + i + f" @click="toucherFiole(i)">{{ D.FIOLES[f].ico }}</button><span v-for="i in Math.max(0, monJ.fiolesMax - monJ.fioles.length)" :key="'fv' + i" class="fiole-vide"></span>
+                <button v-for="r in monJ.reliques" :key="'r' + r" @click="info(D.RELIQUES[r].ico + ' ' + D.RELIQUES[r].nom + ' : ' + D.RELIQUES[r].texte)">{{ D.RELIQUES[r].ico }}</button>
+                <span class="petit">🗝️{{ partie.cles }}<template v-if="partie.grandeCle">🔑</template> ✨{{ partie.poussiere }}</span>
+              </div>
+            </div>
             <div class="carte-mini" :style="{ gridTemplateColumns: 'repeat(' + DJ.GX + ', 11px)' }">
               <span v-for="c in carteMini" :key="c.id" :class="c.cl"><i v-for="(p, k) in c.amis" :key="k" :style="{ background: p, left: (2 + k * 3) + 'px' }"></i></span>
             </div>
-            <button class="quitter-dj" @click="demandeQuitter = true" aria-label="Quitter le donjon">🏳️ Quitter</button>
+            <button class="quitter-dj" @click="demandeQuitter = true" aria-label="Quitter le donjon">🏳️<br>Quitter</button>
+          </div>
+          <div class="info-dj" v-if="infoTxt" @click="infoTxt = ''">{{ infoTxt }}
+            <div v-if="infoFiole !== null && monJ && monJ.fioles[infoFiole]"><button v-if="D.FIOLES[monJ.fioles[infoFiole]].dehors && !combat" @click.stop="boireFiole">Boire</button><button @click.stop="jeterFiole">Jeter</button></div>
           </div>
 
-          <!-- COMBAT AUX CARTES (tour par tour), à la place de la pièce -->
+          <!-- COMBAT AUX CARTES, à la place de la pièce -->
           <div v-if="combat" class="combat-dj">
-            <div class="tete-combat"><span>⚔️ Combat · tour {{ combat.tour }}</span><span class="aide-combat">{{ aideCombat }}</span></div>
+            <div class="tete-combat"><span>{{ combat.rang === 'boss' ? '👑 Boss' : combat.rang === 'elite' ? '⭐ Élite' : '⚔️ Combat' }} · tour {{ combat.tour }}</span><span class="aide-combat">{{ aideCombat }}</span></div>
             <div class="monstres-c">
-              <button v-for="m in monstresCombat" :key="'mc' + m.id" class="mc" :class="{ ciblable: cibleAttendue === 'monstre', vise: monChoix && monChoix.cible === m.id, boss: m.type === 'boss' }" @click="choisirMonstre(m.id)">
-                <span class="intention">{{ intentionTexte(m) }}</span>
-                <span class="mc-des">
-                  <span v-if="m.type === 'chauve'" class="emo">🦇</span><span v-else-if="m.type === 'squelette'" class="emo">💀</span>
-                  <span v-else class="gl" v-html="dessinGluant(m.type === 'boss')"></span>
-                  <span v-for="(k, j) in coupsSur(m.id)" :key="combat.resolu + '-' + m.id + '-' + j" class="coup-flottant" :class="k.cl">{{ k.txt }}</span>
-                </span>
+              <button v-for="m in monstresCombat" :key="'mc' + m.id" class="mc" :class="{ ciblable: cibleAttendue === 'monstre', gros: grosM(m) }" @click="choisirMonstre(m.id)">
+                <span class="intention" :class="intentionClasse(m)">{{ intentionCourte(m) }}</span>
+                <span class="intention-nom">{{ m.intention ? m.intention.nom : '' }}</span>
+                <span class="mc-des"><span v-html="spriteMonstre(m)"></span><span v-if="m.armure" class="armure-b">🛡️{{ m.armure }}</span>
+                  <span v-for="k in fxSur(m.id)" :key="'x' + k.id" class="coup-flottant" :class="k.cl">{{ k.v }}</span></span>
                 <span class="mc-nom">{{ MONSTRES[m.type].nom }}</span>
-                <span class="mc-pv"><i :style="{ width: (100 * Math.max(0, m.pv) / m.pvMax) + '%' }"></i></span>
-                <span class="mc-pvt">{{ Math.max(0, m.pv) }} / {{ m.pvMax }}</span>
+                <span class="mc-pv"><i :style="{ width: pct(m.pv, m.pvMax) }"></i><b>{{ Math.max(0, m.pv) }} / {{ m.pvMax }}</b></span>
+                <span class="etats-c"><span v-for="(n, et) in m.etats" :key="et" @click.stop="infoEtat(et, n)">{{ D.ETATS[et] ? D.ETATS[et].ico : '' }}{{ n }}</span></span>
               </button>
             </div>
-            <div class="journal-c" v-if="combat.journal.length"><div v-for="(l, k) in combat.journal" :key="combat.resolu + 'j' + k">{{ l }}</div></div>
-            <div class="equipe-c">
-              <button v-for="p in equipeCombat" :key="'ec' + p.nom" class="membre-c" :class="{ ciblable: cibleAttendue === 'ami' && p.nom !== moi && !p.fantome || cibleAttendue === 'joueur', fantome: p.fantome, moi: p.nom === moi }" @click="choisirMembre(p.nom)">
+            <div class="journal-c" ref="journal"><div v-if="!combat.journal.length" class="vide">Chaque monstre annonce son prochain coup (en haut). Joue tes cartes, puis « Fin du tour ».</div><div v-for="(l, k) in combat.journal" :key="combat.id + '-' + k + l">{{ l }}</div></div>
+            <div class="equipe-c" v-if="equipeCombat.length > 1">
+              <button v-for="p in equipeCombat" :key="'ec' + p.nom" class="membre-c" :class="{ ciblable: cibleAttendue === 'joueur' && (!p.fantome || selSoigne), fantome: p.fantome }" @click="choisirMembre(p.nom)">
                 <span class="mc-cp"><span v-if="p.cp" v-html="dessinSvg(p.cp)"></span><span v-else>🧭</span>
-                  <span v-for="(k, j) in coupsSur(p.nom)" :key="combat.resolu + '-' + p.nom + '-' + j" class="coup-flottant" :class="k.cl">{{ k.txt }}</span></span>
-                <span class="mc-nom">{{ p.nom === moi ? 'Moi' : p.nom }}</span>
-                <span class="mc-c">{{ p.fantome ? '👻' : '❤️'.repeat(p.coeurs) }}</span>
-                <span class="mc-etat">{{ p.fantome ? 'KO' : combat.choix[p.nom] ? '✓ prêt' : 'choisit…' }}</span>
+                  <span v-for="k in fxSur(p.nom)" :key="'x' + k.id" class="coup-flottant" :class="k.cl">{{ k.v }}</span></span>
+                {{ p.nom === moi ? 'Moi' : p.nom }} {{ p.fantome ? '👻' : '❤️' + p.pv }}<template v-if="p.armure"> 🛡️{{ p.armure }}</template> {{ combat.fini[p.nom] ? '✓' : '…' }}
               </button>
             </div>
-            <div class="main-c" v-if="jeJoue">
-              <button v-for="(id, i) in monJ.main" :key="combat.tour + '-' + i + id" class="carte-c" :class="['t-' + CARTES[id].type, { choisie: monChoix && monChoix.i === i, enCours: carteEnCours === i }]" @click="toucherCarte(i)">
-                <span class="cc-ico">{{ CARTES[id].ico }}</span><span class="cc-nom">{{ CARTES[id].nom }}</span><span class="cc-txt">{{ CARTES[id].texte }}</span>
-              </button>
-            </div>
-            <div v-else class="aide" style="text-align:center">{{ monJ && monJ.fantome ? '👻 Tu es KO : un ami peut te ranimer avec un Trèfle.' : 'Tu regardes le combat.' }}</div>
+            <template v-if="jeJoue">
+              <div class="moi-c" :class="{ ciblable: cibleAttendue === 'joueur' }" @click="choisirMembre(moi)">
+                <span class="nrj" :class="{ vide: !monJ.energie }">{{ monJ.energie }}<small>⚡</small></span>
+                <div class="corps">
+                  <span class="pv-dj"><i :style="{ width: pct(monJ.pv, monJ.pvMax) }"></i><b>❤️ {{ monJ.pv }} / {{ monJ.pvMax }}</b></span>
+                  <span class="etats-c"><span v-if="monJ.armure" class="armure-m">🛡️ {{ monJ.armure }}</span><span v-for="(n, et) in monJ.etats" :key="et" @click.stop="infoEtat(et, n)">{{ D.ETATS[et] ? D.ETATS[et].ico : '' }}{{ n }}</span></span>
+                </div>
+                <span v-for="k in fxSur(moi)" :key="'x' + k.id" class="coup-flottant" :class="k.cl">{{ k.v }}</span>
+              </div>
+              <div class="main-c">
+                <carte-dj v-for="(id, i) in monJ.main" :key="combat.tour + '-' + i + id" :id="id" :badge="badgeCarte(id)" :class="{ choisie: sel && sel.k === 'carte' && sel.i === i, chere: !jouable(id) }" @click.native="toucherCarte(i)"></carte-dj>
+              </div>
+              <div class="desc-c">{{ descSel }}</div>
+              <div class="pied-c">
+                <span class="piles">🂠 {{ monJ.pioche.length }} à piocher<br>♻️ {{ monJ.defausse.length }} défaussée{{ monJ.defausse.length > 1 ? 's' : '' }}</span>
+                <button v-for="(f, i) in monJ.fioles" :key="'fc' + i + f" class="fiole-c" :class="{ choisie: sel && sel.k === 'fiole' && sel.i === i }" @click="toucherFioleCombat(i)">{{ D.FIOLES[f].ico }}</button>
+                <button class="fin-tour" :class="{ pousse: !combat.fini[moi] && !rienAJouer }" :disabled="!!combat.fini[moi]" @click="finirTour">{{ combat.fini[moi] ? '✓ On attend…' : 'Fin du tour ▶' }}</button>
+              </div>
+            </template>
+            <div v-else class="aide" style="text-align:center;color:#ffd8a8">{{ monJ && monJ.fantome ? '👻 Tu es KO : un ami peut te ranimer avec un Trèfle.' : 'Tu regardes le combat.' }}</div>
           </div>
 
           <template v-else>
           <div class="salle-dj" ref="salle">
             <svg class="fond" viewBox="0 0 352 288" preserveAspectRatio="none" v-html="salleSvg"></svg>
-            <div v-for="o in objetsIci" :key="'o' + o.id" class="ent objet" :style="pos(o)"><span class="emo">{{ o.type === 'coeur' ? '❤️' : '✨' }}</span></div>
-            <div v-for="m in monstresIci" :key="'m' + m.id" class="ent monstre" :class="[m.type, { touche: partie.maintenant - (m.touche || 0) < 250, gauche: m.dir === 'g' }]" :style="pos(m)">
-              <span v-if="m.type === 'chauve'" class="emo">🦇</span>
-              <span v-else-if="m.type === 'squelette'" class="emo">💀</span>
-              <span v-else class="sp" v-html="dessinGluant(m.type === 'boss')"></span>
-              <span v-if="m.type === 'boss' || m.pvMax > 1" class="pv"><i :style="{ width: (100 * m.pv / m.pvMax) + '%' }"></i></span>
+            <div v-for="o in objetsIci" :key="'o' + o.id" class="ent objet" :style="pos(o)"><span class="emo">✨</span></div>
+            <div v-for="m in monstresIci" :key="'m' + m.id" class="ent monstre" :class="[m.type, { gros: grosM(m), gauche: m.dir === 'g', gluant: !!MONSTRES[m.type].dessin }]" :style="pos(m)">
+              <span class="sp" v-html="spriteMonstre(m)"></span>
+              <span v-if="MONSTRES[m.type].rang" class="rang">{{ MONSTRES[m.type].rang === 'boss' ? '👑' : '⭐' }}</span>
             </div>
-            <div v-for="p in joueursIci" :key="'j' + p.nom + p.salle" class="ent joueur" :class="{ moi: p.nom === moi, fantome: p.fantome, blesse: !p.fantome && p.inv > partie.maintenant, gauche: p.dir === 'g' }" :style="pos(p)">
+            <div v-for="p in joueursIci" :key="'j' + p.nom + p.salle" class="ent joueur" :class="{ moi: p.nom === moi, fantome: p.fantome, gauche: p.dir === 'g' }" :style="pos(p)">
               <span class="sp" v-if="p.cp" v-html="dessinSvg(p.cp)"></span>
               <span class="sp" v-else style="display:flex;align-items:flex-end;justify-content:center;font-size:20px">🧭</span>
               <span v-if="p.fantome" class="fant">👻</span>
@@ -303,10 +412,10 @@
           </div>
 
           <div class="equipe-dj" v-if="nbJoueurs > 1">
-            <span v-for="p in equipe" :key="p.nom" :class="{ loin: p.salle !== monJ.salle }">{{ p.nom === moi ? 'Moi' : p.nom }} {{ p.fantome ? '👻' : '❤️'.repeat(p.coeurs) }}<template v-if="p.salle !== monJ.salle"> · ailleurs</template></span>
+            <span v-for="p in equipe" :key="p.nom" :class="{ loin: p.salle !== monJ.salle }">{{ p.nom === moi ? 'Moi' : p.nom }} {{ p.fantome ? '👻' : '❤️' + p.pv }}<template v-if="p.salle !== monJ.salle"> · ailleurs</template></span>
           </div>
 
-          <div class="dernier-combat" v-if="dernierCombatVu" @click="vuCombat = partie.dernierCombat.id"><b>{{ partie.dernierCombat.gagne ? '🎉 Victoire !' : '👻 Défaite…' }}</b> <span v-for="(l, k) in partie.dernierCombat.journal.slice(-3)" :key="k">{{ l }}</span></div>
+          <div class="dernier-combat" v-if="dernierCombatVu" @click="vuCombat = partie.dernierCombat.id"><b>{{ partie.dernierCombat.gagne ? '🎉 Victoire !' : '👻 Défaite…' }}</b> <span v-for="(l, k) in partie.dernierCombat.journal.slice(-2)" :key="k">{{ l }}</span></div>
           <div class="commandes-dj" :class="{ inverse: inverse }">
             <div class="pad" @pointerdown="padDebut" @pointermove="padBouger" @pointerup="padFin" @pointercancel="padFin" @lostpointercapture="padFin">
               <span class="h" :class="{ actif: dirCourante === 'h' }">▲</span><span class="b" :class="{ actif: dirCourante === 'b' }">▼</span>
@@ -316,7 +425,7 @@
               <template v-if="monJ && monJ.fantome">👻 Tu es KO.<br>{{ nbJoueurs > 1 ? 'Va près d\'un ami : il te ranime en restant à côté de toi.' : '' }}</template>
               <template v-else-if="monPouvoir"><span class="pouvoir">{{ POUVOIRS[monPouvoir].ico }} {{ POUVOIRS[monPouvoir].nom }}</span><br>fonce dans {{ POUVOIRS[monPouvoir].quoi }}</template>
               <template v-else>Sans pouvoir : explore et trouve les coffres.</template>
-              <div class="aide" style="margin-top:4px">Touche un monstre pour le combattre aux cartes.</div>
+              <div class="aide" style="margin-top:4px">{{ objectif }}</div>
               <button class="inverser-dj" @click="inverse = !inverse" aria-label="Mettre la croix de l'autre côté">⇄</button>
             </div>
           </div>
@@ -362,15 +471,96 @@
           </div>
         </div>
 
+        <!-- Fenêtres du donjon : butin, relique de boss, feu de camp, marchand, autel, choix dans le paquet -->
+        <div class="voile-dj" v-if="menu && onglet === 'play' && !(partie && partie.phase === 'fin')">
+          <div class="boite-dj boite-menu">
+            <template v-if="menu.type === 'butin' || menu.type === 'choix'">
+              <div class="titre">{{ menu.type === 'choix' ? '📚 ' + menu.titre : menu.rang === 'boss' ? '👑 Boss vaincu !' : menu.rang === 'elite' ? '⭐ Élite vaincu !' : '🎉 Victoire !' }}</div>
+              <div class="butin-l" v-if="menu.type === 'butin'">
+                <span>🪙 +{{ menu.or }} or</span>
+                <span v-if="menu.fiole">{{ D.FIOLES[menu.fiole].ico }} {{ D.FIOLES[menu.fiole].nom }}</span>
+                <span v-if="menu.relique">{{ D.RELIQUES[menu.relique].ico }} <b>{{ D.RELIQUES[menu.relique].nom }}</b> : {{ D.RELIQUES[menu.relique].texte }}</span>
+              </div>
+              <div class="aide" style="margin-top:0">Ajoute une carte à ton paquet :</div>
+              <div class="choix-cartes grande" :class="{ quatre: menu.cartes.length > 3 }">
+                <carte-dj v-for="(id, i) in menu.cartes" :key="'b' + i + id" :id="id" :class="{ choisie: choixMenu === i }" @click.native="choixMenu = i"></carte-dj>
+              </div>
+              <button class="btn principal" :disabled="choixMenu === null" @click="menuAction('prendre', choixMenu)">{{ choixMenu === null ? 'Touche une carte' : 'Prendre « ' + carte(menu.cartes[choixMenu]).nom + ' »' }}</button>
+              <button class="btn" @click="menuAction('passer')">Passer (garder un paquet léger)</button>
+            </template>
+
+            <template v-else-if="menu.type === 'reliqueBoss'">
+              <div class="grand">👑</div>
+              <div class="titre">Le trésor du boss</div>
+              <div class="aide">Choisis une relique : puissante, mais avec un prix.</div>
+              <div v-for="(r, i) in menu.choix" :key="r" class="ligne-achat"><span class="ico">{{ D.RELIQUES[r].ico }}</span><span class="txt"><b>{{ D.RELIQUES[r].nom }}</b><br>{{ D.RELIQUES[r].texte }}</span><button @click="menuAction('prendre', i)">Prendre</button></div>
+            </template>
+
+            <template v-else-if="menu.type === 'feu'">
+              <div class="grand">🔥</div>
+              <div class="titre">Feu de camp</div>
+              <div class="aide">Une seule chose avant de repartir.</div>
+              <button class="btn principal" @click="menuAction('repos')" :disabled="!soinFeu">😴 Se reposer (+{{ Math.min(soinFeu, monJ.pvMax - monJ.pv) }} PV)</button>
+              <button class="btn principal" @click="menuAction('aiguiser')">⚒️ Améliorer une carte</button>
+              <button class="btn" @click="menuAction('partir')">Plus tard</button>
+            </template>
+
+            <template v-else-if="menu.type === 'marchand'">
+              <div class="titre">🛒 Le marchand <span class="or-menu">🪙 {{ monJ.or }}</span></div>
+              <div class="choix-cartes grande">
+                <carte-dj v-for="(o, i) in boutique.cartes" :key="'m' + i" :id="o.id" :prix="o.vendu ? null : o.prix" :class="{ vendu: o.vendu, choisie: choixMenu === i }" @click.native="choixMenu = i"></carte-dj>
+              </div>
+              <button v-if="choixMenu !== null && boutique.cartes[choixMenu] && !boutique.cartes[choixMenu].vendu" class="btn principal" :disabled="monJ.or < boutique.cartes[choixMenu].prix" @click="acheterCarte">Acheter « {{ carte(boutique.cartes[choixMenu].id).nom }} » ({{ boutique.cartes[choixMenu].prix }} or)</button>
+              <div v-for="(o, i) in boutique.fioles" :key="'mf' + i" class="ligne-achat" :class="{ vendu: o.vendu }"><span class="ico">{{ D.FIOLES[o.id].ico }}</span><span class="txt"><b>{{ D.FIOLES[o.id].nom }}</b></span><button :disabled="o.vendu || monJ.or < o.prix || monJ.fioles.length >= monJ.fiolesMax" @click="menuAction('fiole', i)">{{ o.vendu ? 'Vendue' : '🪙 ' + o.prix }}</button></div>
+              <div v-if="boutique.relique" class="ligne-achat" :class="{ vendu: boutique.relique.vendu }"><span class="ico">{{ D.RELIQUES[boutique.relique.id].ico }}</span><span class="txt"><b>{{ D.RELIQUES[boutique.relique.id].nom }}</b><br>{{ D.RELIQUES[boutique.relique.id].texte }}</span><button :disabled="boutique.relique.vendu || monJ.or < boutique.relique.prix" @click="menuAction('relique')">{{ boutique.relique.vendu ? 'Vendue' : '🪙 ' + boutique.relique.prix }}</button></div>
+              <div class="ligne-achat"><span class="ico">✂️</span><span class="txt"><b>Retirer une carte</b><br>Un paquet plus léger pioche plus souvent tes meilleures cartes.</span><button :disabled="monJ.or < DJ.prixRetrait(monJ)" @click="menuAction('retrait')">🪙 {{ DJ.prixRetrait(monJ) }}</button></div>
+              <button class="btn" @click="menuAction('partir')">Partir</button>
+            </template>
+
+            <template v-else-if="menu.type === 'evenement'">
+              <div class="grand">{{ D.EVENEMENTS[menu.id].ico }}</div>
+              <div class="titre">{{ D.EVENEMENTS[menu.id].titre }}</div>
+              <div class="aide">{{ D.EVENEMENTS[menu.id].texte }}</div>
+              <button v-for="(t, i) in D.EVENEMENTS[menu.id].choix" :key="i" class="btn" :class="{ principal: i === 0 }" @click="menuAction('choix', i)">{{ t }}</button>
+            </template>
+
+            <template v-else-if="menu.type === 'paquet'">
+              <div class="titre">{{ { ameliorer: '⚒️ Améliorer une carte', retirer: '✂️ Retirer une carte', copier: '🪞 Copier une carte' }[menu.mode] }}</div>
+              <div class="apercu-plus grande" v-if="menu.mode === 'ameliorer' && choixMenu !== null && monJ.paquet[choixMenu]">
+                <carte-dj :id="monJ.paquet[choixMenu]"></carte-dj><b>→</b><carte-dj :id="monJ.paquet[choixMenu] + '+'" class="plus"></carte-dj>
+              </div>
+              <button class="btn principal" :disabled="choixMenu === null || !choixPaquetPossible" @click="menuAction('carte', choixMenu)">{{ choixMenu === null ? 'Touche une carte' : { ameliorer: 'Améliorer', retirer: 'Retirer', copier: 'Copier' }[menu.mode] + ' « ' + carte(monJ.paquet[choixMenu]).nom + ' »' + (menu.prix ? ' (' + menu.prix + ' or)' : '') }}</button>
+              <button class="btn" @click="menuAction('annuler')">↩ Annuler</button>
+              <div class="paquet-grille">
+                <carte-dj v-for="x in paquetTrie" :key="'pq' + x.i" :id="x.id" :class="{ choisie: choixMenu === x.i, vendu: !possiblePaquet(x.id) }" :style="{ opacity: possiblePaquet(x.id) ? 1 : 0.35 }" @click.native="choisirPaquet(x)"></carte-dj>
+              </div>
+            </template>
+          </div>
+        </div>
+
+        <!-- Mon paquet (consultation) -->
+        <div class="voile-dj" v-if="voirPaquet && monJ" @click.self="voirPaquet = false">
+          <div class="boite-dj boite-menu">
+            <div class="titre">🃏 Mon paquet ({{ monJ.paquet.length }} cartes)</div>
+            <div class="aide" style="margin-top:0"><span class="classe-dj">{{ D.CLASSES[monJ.classe].ico }} {{ D.CLASSES[monJ.classe].nom }}</span> · cartes améliorées en vert (+)</div>
+            <button class="btn" @click="voirPaquet = false">Fermer</button>
+            <div class="paquet-grille">
+              <carte-dj v-for="x in paquetTrie" :key="'v' + x.i" :id="x.id"></carte-dj>
+            </div>
+          </div>
+        </div>
+
         <!-- Fin -->
         <div class="voile-dj" v-if="partie && partie.phase === 'fin' && gains">
           <div class="boite-dj">
             <div class="grand">{{ partie.fin.gagne ? '🏆' : '👻' }}</div>
-            <div class="titre">{{ partie.fin.gagne ? 'Le Roi Gluant est vaincu !' : 'Tout le groupe est KO…' }}</div>
+            <div class="titre">{{ partie.fin.gagne ? 'Le donjon est vaincu !' : 'Tout le groupe est KO…' }}</div>
+            <div class="aide" v-if="!partie.fin.gagne">Arrivé à l'étage {{ partie.fin.etage || partie.etage }} : {{ D.ETAGES[(partie.fin.etage || partie.etage) - 1].nom }}.</div>
             <ul>
               <li>✨ {{ partie.poussiere }} poussière{{ partie.poussiere > 1 ? 's' : '' }} d'étoile<span v-if="gains.etoiles"> → +{{ gains.etoilesDonnees }} ⭐</span> (en réserve : {{ gains.reste }} / 5)</li>
               <li v-if="gains.partie">⭐ {{ gains.partie }}</li>
               <li v-if="gains.souvenir">{{ gains.souvenir.ico }} Souvenir : {{ gains.souvenir.nom }} (dans la maison de {{ monCp.n }})</li>
+              <li v-if="gains.peril">🔥 Nouveau niveau de péril débloqué : {{ gains.peril }} ({{ D.PERILS[gains.peril] }})</li>
             </ul>
             <button v-if="!solo && role === 'hote'" class="btn principal" @click="envoyerJeu({ type: 'NOUVELLE' })">🔁 Nouveau donjon</button>
             <button v-if="solo" class="btn principal" @click="nouveauSolo">🔁 Nouveau donjon</button>
@@ -394,25 +584,22 @@
         <section class="carte regles">
           <div class="titre-carte">Règles</div>
           <ul>
-            <li>Explorez le donjon pièce par pièce : on passe d'une pièce à l'autre par les ouvertures des murs. La petite carte en haut à droite montre les pièces vues (👑 en violet : l'antre du boss).</li>
+            <li>Le donjon a <strong>3 étages</strong> : 🕳️ les Caves, ⚰️ les Catacombes, 🏰 la Forteresse. Chaque étage se visite pièce par pièce (la petite carte en haut à droite montre les pièces vues). Un <strong>élite ⭐</strong> garde la grande clé 🔑 qui ouvre la porte du <strong>boss 👑</strong> ; le boss vaincu, un escalier 🪜 descend à l'étage suivant (la moitié des PV perdus revient). Vaincre la Liche, au fond de la Forteresse, gagne le donjon.</li>
             <li>La croix fait avancer ton compagnon (garde le doigt pour marcher). Le bouton ⇄ la met de l'autre côté.</li>
-            <li><strong>Combat aux cartes</strong> : au contact d'un monstre, tous les joueurs vivants de la pièce affrontent tous ses monstres, tour par tour.
-              Chaque monstre annonce ce qu'il va faire (⚔️ qui il vise, 🛡️ garde, 💥 grosse attaque…). Chacun pioche <strong>3 cartes</strong> et en joue une ;
-              on attend que tout le monde ait choisi, puis tout se joue : défenses et soins, vos attaques (au dé 🎲), puis les monstres.
-              Cartes : 🐾 Coup de griffe (1 à 3 dégâts), 🛡️ Bouclier, 🤝 Protéger un ami, 🍀 Trèfle (+1 cœur ou ranime), et la carte du pouvoir de ton compagnon :
-              🔥 Souffle de feu (tous les monstres), 💥 Grand coup, 💨 Bond (esquive + coup), 🎯 Point faible (+1 à chaque coup sur ce monstre).
-              La chauve-souris esquive les petits dés (1 ou 2), le squelette se met en garde un tour sur deux.</li>
-            <li><strong>Chaque compagnon a un pouvoir</strong> : fonce dans l'obstacle pour t'en servir.
-              🔥 <strong>Débroussailler</strong> (dragon, chat, oie) : les ronces ·
-              💪 <strong>Force</strong> (panda, tortue, chèvre) : les rochers ·
-              🦘 <strong>Bond</strong> (lapin, écureuil, singe) : les trous (il pose une planche pour les autres) ·
-              👃 <strong>Flair</strong> (chien, renard, raton laveur) : les passages secrets, qui brillent quand il est dans la pièce.</li>
-            <li>Le donjon est tiré au hasard d'après les pouvoirs du groupe : il y a toujours de quoi passer.</li>
-            <li>Les coffres cachent une petite clé (pour la porte 🔒), la grande clé du boss 🔑, des poussières d'étoile ✨ ou de quoi se soigner ❤️. Clés et poussières sont à tout le groupe.</li>
-            <li>À plusieurs : une grille ⛓️ s'ouvre quand deux joueurs se tiennent en même temps sur les deux dalles de la pièce.</li>
-            <li>3 cœurs chacun. Sans cœur, on devient un petit fantôme 👻 : un Trèfle le ranime en combat, ou un ami vivant en restant 2 secondes juste à côté de lui. Tout le groupe KO : fin de l'exploration.</li>
-            <li>Au fond, le <strong>Roi Gluant</strong> 👑 appelle des gluants et, quand il faiblit, prépare un écrasement annoncé 2 tours à l'avance : sortez les boucliers !</li>
-            <li>À la fin, chacun garde les poussières d'étoile (5 poussières = 1 ⭐, comme en expédition). Boss vaincu : un souvenir du donjon pour la maison de ton compagnon.</li>
+            <li><strong>Chaque compagnon a un pouvoir</strong>, qui ouvre un obstacle (fonce dedans) et donne sa <strong>classe de cartes</strong> :
+              🔥 <strong>Feu</strong> (dragon, chat, oie : ronces) brûle tous les monstres ·
+              💪 <strong>Carapace</strong> (panda, tortue, chèvre : rochers) armure, épines et gros coups ·
+              🦘 <strong>Vivacité</strong> (lapin, écureuil, singe : trous) cartes à 0 ⚡, coups multiples ·
+              👃 <strong>Ruse</strong> (chien, renard, raton laveur : passages secrets) poison et points faibles.</li>
+            <li><strong>Combat</strong> : au contact d'un monstre. À chaque tour, tu as <strong>3 ⚡</strong> et tu pioches <strong>5 cartes</strong> ; joue-les dans l'ordre que tu veux (le chiffre jaune = son coût), puis « Fin du tour ». Les cartes non jouées partent à la défausse ; la pioche vide, la défausse est remélangée.</li>
+            <li>Chaque monstre <strong>annonce ce qu'il va faire</strong> : ⚔️ 12 = 12 dégâts, ×2 = deux coups, 🛡️ armure, 💪 force, 😤 grosse attaque au prochain tour… Lis-les pour choisir entre attaquer et te protéger.</li>
+            <li><strong>Armure 🛡️</strong> : elle prend les coups avant tes PV, puis disparaît au début de ton tour. États : 🎯 Vulnérable (+50 % de dégâts reçus), 🥀 Faible (−25 % de dégâts), 🧊 Fragile (−25 % d'armure), ☠️ Poison et 🔥 Brûlure (PV perdus au début du tour), 💪 Force (+dégâts à chaque coup). Touche un état pour le relire.</li>
+            <li>Après chaque combat : de l'or 🪙, parfois une fiole, et <strong>une carte au choix parmi 3</strong> (ou passer : un paquet léger pioche plus souvent tes meilleures cartes). Les élites donnent une <strong>relique</strong> (effet permanent), les boss une relique puissante au choix.</li>
+            <li><strong>Salles</strong> : 🔥 feu de camp (se reposer ou améliorer une carte), 🛒 marchand (cartes, fioles, relique, retrait d'une carte), ❓ autel (un choix, parfois risqué). Les coffres sont gardés tant que les monstres de la pièce sont là.</li>
+            <li><strong>Fioles</strong> (2 emplacements) : à boire pendant ton tour ; la fiole de soin se boit aussi hors combat.</li>
+            <li>À plusieurs : chacun a ses cartes, son or et ses reliques ; les monstres ont plus de PV. Une grille ⛓️ s'ouvre à deux sur les dalles. Un ami KO revient en fin de combat gagné, avec un Trèfle, ou si un ami reste 2 s à côté de lui. Tout le groupe KO : fin.</li>
+            <li><strong>Péril</strong> : gagner le donjon en solo débloque un niveau de difficulté de plus (jusqu'à 5).</li>
+            <li>À la fin, chacun garde les poussières d'étoile (5 poussières = 1 ⭐, comme en expédition). Donjon vaincu : un souvenir pour la maison de ton compagnon.</li>
           </ul>
         </section>
       </template>
@@ -426,6 +613,7 @@
   <script src="etoiles.js"></script>
   <script src="compagnon/compagnon-commun.js"></script>
   <script src="expedition/expedition-regles.js"></script>
+  <script src="donjon/donjon-donnees.js"></script>
   <script src="donjon/donjon-regles.js"></script>
   <script>
     if (!ACCES.memorise()) location.replace('index.html');
@@ -467,6 +655,17 @@
     let salle = { infos: {} };
     var cacheDessins = {};
 
+    // Une carte du donjon (main, butin, marchand, paquet)
+    Vue.component('carte-dj', {
+      props: { id: String, badge: [Number, String], prix: Number },
+      computed: { k: function() { return DJ.carte(this.id) || { nom: this.id, type: 'competence', texte: '' }; } },
+      template: '<div class="carte-c" :class="[\'t-\' + k.type, \'r-\' + k.rar, { plus: k.plus }]">' +
+        '<span class="cc-cout" v-if="k.cout !== null && k.cout !== undefined">{{ k.cout }}</span>' +
+        '<span class="cc-badge" v-if="badge !== null && badge !== undefined">{{ badge }}</span>' +
+        '<span class="cc-ico">{{ k.ico }}</span><span class="cc-nom">{{ k.nom }}</span><span class="cc-txt">{{ k.texte }}</span>' +
+        '<span class="cc-prix" v-if="prix">🪙 {{ prix }}</span></div>'
+    });
+
     new Vue({
       el: '#app',
       data: {
@@ -482,9 +681,14 @@
         monCp: nettoyerCp(monCompagnon()),
         stats: lireStockage('donjon-stats') || { parties: 0, gagnes: 0 },
         dirCourante: null,
-        carteEnCours: null,   // carte touchée qui attend sa cible (monstre ou ami)
+        sel: null,            // carte ou fiole touchée : { k: 'carte' | 'fiole', i } (un second toucher la joue)
+        choixMenu: null,      // carte choisie dans une fenêtre (butin, marchand, paquet)
+        voirPaquet: false,
+        infoTxt: '', infoFiole: null,
+        peril: Math.min(lireStockage('donjon-peril-choisi') || 0, lireStockage('donjon-peril') || 0),
+        perilMax: lireStockage('donjon-peril') || 0,   // niveau de péril débloqué (gagner en solo débloque le suivant)
         vuCombat: null,
-        CARTES: DJ.CARTES, MONSTRES: DJ.MONSTRES,
+        D: DJ.D, MONSTRES: DJ.MONSTRES,
         inverse: lireStockage('donjon-inverse') === true,   // croix à droite (sur ce téléphone)
         coupActif: false,
         demandeQuitter: false,
@@ -525,21 +729,67 @@
         jeJoue: function() { return !!(this.combat && this.monJ && !this.monJ.fantome && this.combat.joueurs.indexOf(this.moi) >= 0); },
         monstresCombat: function() { var c = this.combat; return c ? this.partie.ennemis.filter(m => m.salle === c.salle) : []; },
         equipeCombat: function() { var c = this.combat; return c ? Object.values(this.partie.joueurs).filter(p => p.salle === c.salle && (c.joueurs.indexOf(p.nom) >= 0 || p.fantome)).sort((a, b) => a.ordre - b.ordre) : []; },
-        monChoix: function() { return this.combat ? this.combat.choix[this.moi] || null : null; },
-        cibleAttendue: function() { var id = this.carteEnCours !== null && this.monJ && this.monJ.main[this.carteEnCours]; return id ? DJ.CARTES[id].cible : null; },
+        menu: function() { return this.monJ && this.monJ.menus ? this.monJ.menus[0] || null : null; },
+        menuCle: function() { var m = this.menu; return m ? m.type + (m.salle || '') + (m.mode || '') + (m.cartes || m.choix || []).join() + this.monJ.menus.length : ''; },
+        boutique: function() { var m = this.menu; return m && m.type === 'marchand' ? (this.monJ.boutiques || {})[m.salle] || { cartes: [], fioles: [], relique: null } : null; },
+        soinFeu: function() { return this.monJ && this.partie ? DJ.soinFeu(this.partie, this.monJ) : 0; },
+        paquetTrie: function() {
+          var ordre = { attaque: 0, defense: 1, competence: 2, pouvoir: 3, malediction: 4 };
+          return this.monJ ? this.monJ.paquet.map((id, i) => ({ id: id, i: i, k: DJ.carte(id) || {} })).sort((a, b) => (ordre[a.k.type] - ordre[b.k.type]) || String(a.k.nom).localeCompare(b.k.nom)) : [];
+        },
+        choixPaquetPossible: function() { return this.choixMenu !== null && this.monJ && this.monJ.paquet[this.choixMenu] !== undefined && this.possiblePaquet(this.monJ.paquet[this.choixMenu]); },
+        // La carte ou la fiole touchée en combat
+        selDef: function() {
+          var s = this.sel;
+          if (!s || !this.monJ) return null;
+          if (s.k === 'carte') { var id = this.monJ.main[s.i]; return id ? DJ.carte(id) : null; }
+          var f = this.monJ.fioles[s.i], F = f && DJ.D.FIOLES[f];
+          return F ? { fiole: true, id: f, cout: 0, ico: F.ico, nom: F.nom, texte: F.texte, cible: F.cible, fx: F.fx } : null;
+        },
+        selSoigne: function() { var k = this.selDef; return !!(k && k.fx && k.fx.some(f => f.soin)); },
+        cibleAttendue: function() {
+          var k = this.selDef;
+          if (!k || !this.jeJoue) return null;
+          if (k.cible === 'monstre' && this.monstresCombat.length > 1) return 'monstre';
+          if (k.cible === 'joueur' && this.equipeCombat.some(p => p.nom !== this.moi && (!p.fantome || this.selSoigne))) return 'joueur';
+          return null;
+        },
+        descSel: function() {
+          var k = this.selDef;
+          if (!k) return 'Touche une carte pour la lire, encore une fois pour la jouer.';
+          var t = k.ico + ' ' + k.nom + (k.fiole ? '' : ' (' + k.cout + ' ⚡)') + ' : ' + k.texte;
+          if (!k.fiole && !this.jouable(k.id)) return t + ' · pas assez de ⚡';
+          if (this.cibleAttendue === 'monstre') return t + ' · 👆 touche un monstre';
+          if (this.cibleAttendue === 'joueur') return t + ' · 👆 touche toi ou un ami';
+          return t + ' · touche encore pour jouer';
+        },
+        rienAJouer: function() { return !this.monJ || !this.monJ.main.some(id => this.jouable(id)); },
+        degatsAnnonces: function() {
+          var p = this.monJ;
+          return this.monstresCombat.reduce((s, m) => { var i = m.intention; return i && i.att && (i.tous || m.cible === this.moi) ? s + DJ.degatsIntention(this.partie, m, p) * (i.x || 1) : s; }, 0);
+        },
         aideCombat: function() {
           var c = this.combat;
           if (!this.jeJoue) return '';
-          if (this.cibleAttendue === 'monstre') return '👆 Touche le monstre à viser';
-          if (this.cibleAttendue === 'ami') return '👆 Touche l\'ami à protéger';
-          if (this.cibleAttendue === 'joueur') return '👆 Touche qui soigner';
-          if (!this.monChoix) return 'Choisis une carte';
-          var attente = c.joueurs.filter(n => { var p = this.partie.joueurs[n]; return p && !p.fantome && !c.choix[n]; });
-          return attente.length ? '✓ En attente de ' + attente.join(', ') : '✓ C\'est parti !';
+          if (c.fini[this.moi]) {
+            var att = c.joueurs.filter(n => { var p = this.partie.joueurs[n]; return p && !p.fantome && !c.fini[n]; });
+            return att.length ? 'En attente de ' + att.join(', ') : 'Les monstres jouent…';
+          }
+          var d = this.degatsAnnonces, a = this.monJ.armure;
+          return d ? '⚔️ ' + d + ' annoncé' + (d > 1 ? 's' : '') + (a ? ' · 🛡️ ' + a : '') : 'Aucun coup annoncé sur toi';
+        },
+        etageIco: function() { var E = this.partie && DJ.D.ETAGES[this.partie.etage - 1]; return E ? E.ico : '🗝️'; },
+        etageInfo: function() { var p = this.partie, E = p && DJ.D.ETAGES[p.etage - 1]; return E ? E.ico + ' Étage ' + p.etage + ' sur ' + DJ.NB_ETAGES + ' : ' + E.nom + (p.peril ? ' · péril ' + p.peril : '') : ''; },
+        objectif: function() {
+          var p = this.partie;
+          if (!p) return '';
+          if (Object.values(this.salles || {}).some(s => s.t.indexOf('E') >= 0)) return '🪜 L\'escalier attend dans l\'antre du boss.';
+          if (!p.grandeCle) return '⭐ L\'élite garde la grande clé 🔑 du boss.';
+          return '👑 La grande clé ouvre la porte du boss.';
         },
         dernierCombatVu: function() { var d = this.partie && this.partie.dernierCombat; return !!(d && !this.combat && this.monJ && d.salle === this.monJ.salle && this.partie.maintenant - d.t < 6000 && this.vuCombat !== d.id); },
         flairIci: function() { return this.joueursIci.some(p => p.pouvoir === 'flair' && !p.fantome); },
-        salleSvg: function() { return this.salleIci ? dessinerSalle(this.salleIci, this.flairIci, this.joueursIci) : ''; },
+        salleSvg: function() { return this.salleIci ? dessinerSalle(this.salleIci, this.flairIci, this.joueursIci, this.partie.etage) : ''; },
         carteMini: function() {
           var l = [], p = this.partie, S = this.salles || {};
           for (var y = 0; y < DJ.GY; y++) for (var x = 0; x < DJ.GX; x++) {
@@ -554,7 +804,9 @@
         sonActif: function(v) { ecrireStockage('brillant-son', v); },
         inverse: function(v) { ecrireStockage('donjon-inverse', v); },
         vibrationActive: function(v) { ecrireStockage('brillant-vibration', v); if (v) vibrer(40); },
-        pseudoInput: function() { this.sauvegarder(); }
+        pseudoInput: function() { this.sauvegarder(); },
+        menuCle: function() { this.choixMenu = null; },
+        peril: function(v) { ecrireStockage('donjon-peril-choisi', v); }
       },
       created: function() {
         window.addEventListener('desdale-profil', () => { if (!this.role) this.pseudoInput = pseudoPortail(); });
@@ -607,32 +859,86 @@
         },
         padFin: function() { this._pad = null; this.direction(null); },
         // ---------- Combat aux cartes ----------
-        intentionTexte: function(m) {
-          var i = this.combat.intentions[m.id] || { t: 'rien' }, nom = n => { var p = this.partie.joueurs[n]; return n === this.moi ? 'toi' : p && p.cp && p.cp.n ? p.cp.n : n; };
-          return { attaque: '⚔️ 1 → ' + nom(i.cible), garde: '🛡️ en garde (−1)', rien: '💤 se tortille', prepare: '😤 💥 dans ' + i.n + ' tour' + (i.n > 1 ? 's' : ''), ecrase: '💥 frappe tout le monde !', appel: '📣 appelle un gluant' }[i.t] || '';
+        pct: function(a, b) { return Math.max(0, Math.min(100, 100 * a / Math.max(1, b))) + '%'; },
+        carte: function(id) { return DJ.carte(id) || { nom: id }; },
+        grosM: function(m) { return (DJ.MONSTRES[m.type].taille || 1) > 1; },
+        spriteMonstre: function(m) {
+          var M = DJ.MONSTRES[m.type];
+          return (M.dessin ? '<span class="gl">' + gluantSvg(M.dessin === 'roi') + '</span>' : '<span class="emo">' + M.ico + '</span>') + (M.couronne ? '<span class="cour">👑</span>' : '');
         },
-        coupsSur: function(qui) {
-          return (this.combat.coups || []).filter(k => k.qui === qui).map(k => ({ txt: typeof k.v === 'number' ? (k.v < 0 ? String(k.v) : '+' + k.v) : k.v === '+1' ? '+1 ❤️' : k.v, cl: k.v === 'raté' || k.v === 'paré' ? 'neutre' : k.v === '+1' ? 'soin' : 'mal' }));
+        // L'intention d'un monstre en raccourci : ⚔️ 12×2, 🛡️ 10, 💪+2, états…
+        intentionCourte: function(m) {
+          var i = m.intention, l = [], E = DJ.D.ETATS;
+          if (!i) return '…';
+          if (i.att) l.push('⚔️' + DJ.degatsIntention(this.partie, m, this.monJ) + (i.x > 1 ? '×' + i.x : '') + (i.tous ? ' tous' : this.nbJoueurs > 1 && m.cible ? ' → ' + (m.cible === this.moi ? 'toi' : m.cible) : ''));
+          if (i.armure) l.push('🛡️' + i.armure);
+          if (i.force) l.push('💪+' + i.force);
+          if (i.buffE) l.push(E[i.buffE].ico + i.buffN);
+          [i.deb, i.deb2].forEach(d => { if (d) l.push(E[d.e].ico + d.n); });
+          if (i.appel) l.push('📣'); if (i.prep) l.push('😤'); if (i.divise) l.push('✂️');
+          if (i.maudit) l.push('🩹' + i.maudit); if (i.vol) l.push('🪙'); if (i.soin) l.push('💚');
+          return l.join(' ') || '💤';
         },
+        intentionClasse: function(m) { var i = m.intention || {}; return { att: !!i.att, danger: !!i.att && DJ.degatsIntention(this.partie, m, this.monJ) * (i.x || 1) >= 20 }; },
+        fxSur: function(qui) { var c = this.combat, t = this.partie.maintenant; return c && c.fx ? c.fx.filter(k => k.qui === qui && t - k.t < 1300) : []; },
+        info: function(t) { this.infoTxt = t; this.infoFiole = null; clearTimeout(this._info); this._info = setTimeout(() => { this.infoTxt = ''; this.infoFiole = null; }, 5000); },
+        infoEtat: function(et, n) { var E = DJ.D.ETATS[et]; if (E) this.info(E.ico + ' ' + E.nom + ' ' + n + ' : ' + E.texte.replace('{n}', n).replace('tour·s', n > 1 ? 'tours' : 'tour') + '.'); },
+        jouable: function(id) { var k = DJ.carte(id); return !!(k && !k.injouable && this.monJ && k.cout <= this.monJ.energie && this.combat && !this.combat.fini[this.moi]); },
+        // Dégâts réels d'une attaque (force, faiblesse, vulnérabilité du seul monstre) quand ils diffèrent de la carte
+        badgeCarte: function(id) {
+          var k = DJ.carte(id), f = k && k.fx.find(x => x.deg !== undefined && !x.fixe);
+          if (!f || !this.monJ) return null;
+          var m = this.monstresCombat.length === 1 ? this.monstresCombat[0] : null, d = DJ.calculer(this.monJ, m || { etats: {} }, f.deg);
+          return d !== f.deg ? d : null;
+        },
+        // ---------- Combat : toucher une carte la montre, la toucher encore la joue (ou toucher sa cible) ----------
         toucherCarte: function(i) {
-          var id = this.monJ.main[i], k = DJ.CARTES[id];
-          if (this.carteEnCours === i) { this.carteEnCours = null; return; }
-          var amis = this.equipeCombat.filter(p => p.nom !== this.moi && !p.fantome);
-          var choixUnique = k.cible === null || (k.cible === 'monstre' && this.monstresCombat.length === 1) || (k.cible === 'ami' && amis.length === 1) || (k.cible === 'joueur' && this.equipeCombat.length === 1);
-          if (k.cible === 'ami' && !amis.length) { this.vibre(60); return; }
-          if (choixUnique) { this.carteEnCours = null; this.envoyerJeu({ type: 'CARTE', i: i, cible: null }); this.vibre(15); this.son('toc'); }
-          else this.carteEnCours = i;
+          if (!this.jeJoue || this.combat.fini[this.moi]) return;
+          var s = this.sel;
+          if (s && s.k === 'carte' && s.i === i) {
+            if (!this.jouable(this.monJ.main[i])) { this.vibre(60); return; }
+            if (this.cibleAttendue === 'monstre') { this.vibre(30); return; }
+            this.jouerSel(null);
+            return;
+          }
+          this.sel = { k: 'carte', i: i };
         },
-        choisirMonstre: function(id) {
-          if (this.cibleAttendue !== 'monstre') return;
-          this.envoyerJeu({ type: 'CARTE', i: this.carteEnCours, cible: id }); this.carteEnCours = null; this.vibre(15); this.son('toc');
+        toucherFioleCombat: function(i) {
+          if (!this.jeJoue || this.combat.fini[this.moi]) return;
+          var s = this.sel;
+          if (s && s.k === 'fiole' && s.i === i) { if (this.cibleAttendue === 'monstre') { this.vibre(30); return; } this.jouerSel(null); return; }
+          this.sel = { k: 'fiole', i: i };
         },
-        choisirMembre: function(nom) {
-          var c = this.cibleAttendue;
-          if (c !== 'ami' && c !== 'joueur') return;
-          if (c === 'ami' && nom === this.moi) return;
-          this.envoyerJeu({ type: 'CARTE', i: this.carteEnCours, cible: nom }); this.carteEnCours = null; this.vibre(15); this.son('toc');
+        jouerSel: function(cible) {
+          var s = this.sel;
+          if (!s) return;
+          this.sel = null;
+          this.envoyerJeu({ type: s.k === 'carte' ? 'CARTE' : 'FIOLE', i: s.i, cible: cible });
+          this.vibre(15); this.son('toc');
         },
+        choisirMonstre: function(id) { if (this.cibleAttendue === 'monstre') this.jouerSel(id); },
+        choisirMembre: function(nom) { var k = this.selDef; if (k && k.cible === 'joueur') this.jouerSel(nom); },
+        finirTour: function() { this.sel = null; this.envoyerJeu({ type: 'FIN' }); this.son('toc'); },
+        // Fioles hors combat : la lire, boire une fiole de soin ou la jeter
+        toucherFiole: function(i) {
+          if (this.jeJoue) return this.toucherFioleCombat(i);
+          var F = DJ.D.FIOLES[this.monJ.fioles[i]];
+          this.info(F.ico + ' ' + F.nom + ' : ' + F.texte + '.');
+          this.infoFiole = i;
+        },
+        boireFiole: function() { this.envoyerJeu({ type: 'FIOLE', i: this.infoFiole, cible: null }); this.infoTxt = ''; this.infoFiole = null; this.son('toc'); },
+        jeterFiole: function() { this.envoyerJeu({ type: 'JETER', i: this.infoFiole }); this.infoTxt = ''; this.infoFiole = null; },
+        // ---------- Fenêtres : butin, feu de camp, marchand, autel, paquet ----------
+        menuAction: function(a, x) { this.envoyerJeu({ type: 'MENU', a: a, x: x === undefined ? null : x }); this.choixMenu = null; this.son('toc'); },
+        acheterCarte: function() { this.menuAction('carte', this.choixMenu); },
+        possiblePaquet: function(id) {
+          var m = this.menu;
+          if (!m || m.type !== 'paquet') return true;
+          if (m.mode === 'ameliorer') return DJ.ameliorable(id);
+          if (m.mode === 'copier') return (DJ.carte(id) || {}).type !== 'malediction';
+          return true;
+        },
+        choisirPaquet: function(x) { if (this.possiblePaquet(x.id)) this.choixMenu = x.i; },
         clavier: function(ev, bas) {
           if (!this.partie || this.onglet !== 'play' || /INPUT|TEXTAREA/.test((ev.target && ev.target.tagName) || '')) return;
           var t = { ArrowUp: 'h', ArrowDown: 'b', ArrowLeft: 'g', ArrowRight: 'd', z: 'h', s: 'b', q: 'g', d: 'd', w: 'h', a: 'g' }[ev.key];
@@ -645,8 +951,9 @@
           this.solo = true; this.gains = null;
           this.panne = false; this._erreurs = 0;
           if (s && !DJ.compatible(s)) { ecrireStockage(CLE_SOLO, null); s = null; }   // exploration d'une ancienne version : on repart de zéro
-          partieHote = s && s.phase === 'jeu' ? s : DJ.nouvelle(Math.floor(Math.random() * 1e9), { Moi: this.monCp }, nouvelId());
-          if (partieHote.joueurs.Moi) { partieHote.joueurs.Moi.cp = this.monCp; partieHote.joueurs.Moi.pouvoir = DJ.pouvoirDe(this.monCp); partieHote.joueurs.Moi.surnom = 'L\'explorateur'; }
+          partieHote = s && s.phase === 'jeu' ? s : DJ.nouvelle(Math.floor(Math.random() * 1e9), { Moi: this.monCp }, nouvelId(), { peril: this.peril });
+          if (partieHote.joueurs.Moi) { partieHote.joueurs.Moi.cp = this.monCp; partieHote.joueurs.Moi.surnom = 'L\'explorateur'; }
+          this.sel = null;
           partieHote.maintenant = 0;   // l'horloge repart (l'exploration a pu être reprise plus tard)
           Object.values(partieHote.joueurs).forEach(p => { p.pas = 0; p.inv = 0; p.attProchaine = 0; p.d = null; });
           partieHote.ennemis.forEach(m => { m.pas = 0; });
@@ -698,15 +1005,16 @@
           this.partie = p;
           if (!p) return;
           var moi = p.joueurs[this.moi], avant = a && a.joueurs[this.moi];
-          if (moi && avant && moi.coeurs < avant.coeurs) { this.son('choc'); this.vibre([60, 40, 60]); }
+          if (moi && avant && moi.pv < avant.pv) { this.son('choc'); this.vibre([60, 40, 60]); }
           if (a && p.annonces.length && (!a.annonces.length || p.annonces[p.annonces.length - 1].id !== a.annonces[a.annonces.length - 1].id)) {
             var der = p.annonces[p.annonces.length - 1];
             if (!der.pour || der.pour === this.moi) this.son('toc');
           }
           var cA = a && moi && a.combats && a.combats[moi.salle], cP = moi && p.combats && p.combats[moi.salle];
           if (cP && !cA) { this.son('choc'); this.vibre([40, 40, 40]); this.direction(null); }
-          if (cP && cA && cP.resolu !== cA.resolu) { this.son('des', 3); this.carteEnCours = null; }
-          if (!cP) this.carteEnCours = null;
+          if (cP && cA && cP.tour !== cA.tour) { this.son('des', 3); this.sel = null; }
+          if (!cP) this.sel = null;
+          if (cP && (!cA || cP.journal.length !== cA.journal.length || cP.journal[cP.journal.length - 1] !== cA.journal[cA.journal.length - 1])) this.$nextTick(() => { var j = this.$refs.journal; if (j) j.scrollTop = j.scrollHeight; });
           // Doigt toujours sur la croix mais direction oubliée par le donjon (après un combat, une reprise) : on la redonne
           if (this.dirCourante && moi && !moi.d && !cP && !moi.fantome && p.phase === 'jeu' && Date.now() - (this._redir || 0) > 500) {
             this._redir = Date.now(); this.envoyerJeu({ type: 'DIR', d: this.dirCourante });
@@ -726,7 +1034,11 @@
           Etoiles.recompenseJeu(conv.etoiles, 'Donjon des compagnons · poussières d\'étoile');
           var donnees = Etoiles.gagneesAujourdhui() - avant;
           Etoiles.finDePartie('Donjon', gagne, multi, p.id, { lieu: 'donjon' });
-          var g = { etoiles: conv.etoiles, etoilesDonnees: donnees, reste: conv.reste, partie: multi ? (gagne ? 'Victoire entre amis' : 'Partie entre amis') : (gagne ? 'Victoire en solo' : ''), souvenir: null };
+          var g = { etoiles: conv.etoiles, etoilesDonnees: donnees, reste: conv.reste, partie: multi ? (gagne ? 'Victoire entre amis' : 'Partie entre amis') : (gagne ? 'Victoire en solo' : ''), souvenir: null, peril: 0 };
+          // Victoire en solo au plus haut péril débloqué : le niveau suivant s'ouvre
+          if (gagne && this.solo && (p.peril || 0) >= this.perilMax && this.perilMax < DJ.D.PERILS.length - 1) {
+            this.perilMax++; ecrireStockage('donjon-peril', this.perilMax); g.peril = this.perilMax;
+          }
           // Souvenir du donjon (boss vaincu) et un peu de faim et de soif pour le compagnon
           var animal = lireStockage('compagnon-animal');
           if (animal && animal.espece && typeof CP !== 'undefined') {
@@ -743,9 +1055,9 @@
             ['repas', 'eau'].forEach(id => { animal.besoins[id] = { v: Math.max(0, n[id] - 15), t: t }; });
             ecrireStockage('compagnon-animal', animal);
             ecrireStockage('expedition-retour', { lieu: 'Donjon des compagnons', ico: '🗝️', gagne: gagne, abandon: false, bonnes: 0, questions: 0,
-              gain: conv.etoiles, donne: donnees, poussiere: p.poussiere || 0, souvenirs: g.souvenir ? [g.souvenir] : [], boss: 'Le Roi Gluant', h: Date.now() });
+              gain: conv.etoiles, donne: donnees, poussiere: p.poussiere || 0, souvenirs: g.souvenir ? [g.souvenir] : [], boss: DJ.MONSTRES[DJ.D.ETAGES[Math.max(0, (p.etage || 1) - 1)].boss].nom, h: Date.now() });
           }
-          this.stats = { parties: this.stats.parties + 1, gagnes: this.stats.gagnes + (gagne ? 1 : 0) };
+          this.stats = { parties: this.stats.parties + 1, gagnes: this.stats.gagnes + (gagne ? 1 : 0), record: Math.max(this.stats.record || 0, gagne ? DJ.NB_ETAGES : p.etage || 1) };
           ecrireStockage('donjon-stats', this.stats);
           ecrireStockage('donjon-recompense', { id: p.id, gains: g });
           this.gains = g;
@@ -776,13 +1088,25 @@
         estConnecte: function(p) { return p === monPseudo || !!(salle.infos[p] && salle.infos[p].connecte); },
         traiterJeu: function(p, m) {
           if (m.type === 'DIR') { if (partieHote && partieHote.phase === 'jeu') DJ.entree(partieHote, p, m.d); return; }
-          if (m.type === 'CARTE') { if (partieHote && partieHote.phase === 'jeu') DJ.jouerCarte(partieHote, p, +m.i, m.cible); return; }
+          var jeu = { CARTE: 1, FIN: 1, FIOLE: 1, JETER: 1, MENU: 1 };
+          if (jeu[m.type]) {
+            if (!partieHote || partieHote.phase !== 'jeu') return;
+            var err = null, e = partieHote;
+            if (m.type === 'CARTE') err = DJ.jouerCarte(e, p, +m.i, m.cible);
+            else if (m.type === 'FIN') DJ.finTour(e, p);
+            else if (m.type === 'FIOLE') err = DJ.utiliserFiole(e, p, +m.i, m.cible);
+            else if (m.type === 'JETER') DJ.jeterFiole(e, p, +m.i);
+            else err = DJ.choisir(e, p, String(m.a || ''), m.x);
+            if (err && (p === monPseudo || this.solo)) this.info('⚠️ ' + err);
+            if (p === monPseudo || this.solo) this.montrerPartie(false);
+            return;
+          }
           if (this.solo || p !== monPseudo || !pubHote) return;
           if (m.type === 'COMMENCER' && pubHote.phase === 'attente') {
             var presents = {};
             pubHote.ordre.filter(n => this.estConnecte(n)).forEach(n => { presents[n] = pubHote.cps[n] || null; });
             pubHote.partieId = nouvelId();
-            partieHote = DJ.nouvelle(Math.floor(Math.random() * 1e9), presents, pubHote.partieId);
+            partieHote = DJ.nouvelle(Math.floor(Math.random() * 1e9), presents, pubHote.partieId, { peril: this.peril });
             pubHote.phase = 'jeu';
             this.carteV = 0;
             this.publier();
@@ -1163,19 +1487,19 @@
     });
 
     // ================== DESSIN D'UNE PIÈCE (SVG, cases de 32) ==================
-    function dessinerSalle(S, flair, joueurs) {
-      var T = 32, s = '', W = DJ.W, H = DJ.H;
+    function dessinerSalle(S, flair, joueurs, etage) {
+      var T = 32, s = '', W = DJ.W, H = DJ.H, E = DJ.D.ETAGES[(etage || 1) - 1] || DJ.D.ETAGES[0], so = E.sol, mu = E.mur;
       var sur = {};
       joueurs.forEach(p => { if (!p.fantome) sur[p.x + ',' + p.y] = 1; });
-      s += '<defs><pattern id="dj-sol" width="64" height="64" patternUnits="userSpaceOnUse"><rect width="64" height="64" fill="#5d4c3e"/>' +
-           '<rect width="32" height="32" fill="#65533f"/><rect x="32" y="32" width="32" height="32" fill="#65533f"/>' +
-           '<path d="M0 0 H64 M0 32 H64 M0 0 V64 M32 0 V64" stroke="#4e3f33" stroke-width="1.5"/></pattern></defs>';
+      s += '<defs><pattern id="dj-sol" width="64" height="64" patternUnits="userSpaceOnUse"><rect width="64" height="64" fill="' + so[0] + '"/>' +
+           '<rect width="32" height="32" fill="' + so[1] + '"/><rect x="32" y="32" width="32" height="32" fill="' + so[1] + '"/>' +
+           '<path d="M0 0 H64 M0 32 H64 M0 0 V64 M32 0 V64" stroke="' + so[2] + '" stroke-width="1.5"/></pattern></defs>';
       s += '<rect x="0" y="0" width="352" height="288" fill="url(#dj-sol)"/>';
       for (var y = 0; y < H; y++) for (var x = 0; x < W; x++) {
         var c = S.t[y * W + x], X = x * T, Y = y * T;
         if (c === '#' || c === 's') {
-          s += '<rect x="' + X + '" y="' + Y + '" width="32" height="32" fill="#3a2e26"/><rect x="' + X + '" y="' + Y + '" width="32" height="8" fill="#4b3c31"/>' +
-               '<path d="M' + X + ' ' + (Y + 20) + ' H' + (X + 32) + ' M' + (X + 16) + ' ' + (Y + 8) + ' V' + (Y + 20) + '" stroke="#2c231d" stroke-width="1.5"/>';
+          s += '<rect x="' + X + '" y="' + Y + '" width="32" height="32" fill="' + mu[0] + '"/><rect x="' + X + '" y="' + Y + '" width="32" height="8" fill="' + mu[1] + '"/>' +
+               '<path d="M' + X + ' ' + (Y + 20) + ' H' + (X + 32) + ' M' + (X + 16) + ' ' + (Y + 8) + ' V' + (Y + 20) + '" stroke="' + mu[2] + '" stroke-width="1.5"/>';
           if (c === 's' && flair) s += '<text x="' + (X + 16) + '" y="' + (Y + 23) + '" text-anchor="middle" font-size="18" class="scintille">✨</text>' +
                                         '<path d="M' + (X + 10) + ' ' + (Y + 6) + ' l6 10 l-4 6 l8 8" stroke="#ffd43b" stroke-width="2" fill="none"/>';
         } else if (c === 'O') {
@@ -1205,6 +1529,26 @@
           var on = sur[x + ',' + y];
           s += '<rect x="' + (X + 3) + '" y="' + (Y + 3) + '" width="26" height="26" rx="4" fill="' + (on ? '#fab005' : '#b08d57') + '" stroke="#6d5432" stroke-width="2"/>' +
                '<rect x="' + (X + 9) + '" y="' + (Y + 9) + '" width="14" height="14" rx="2" fill="' + (on ? '#ffe066' : '#c9a66b') + '"/>';
+        } else if (c === 'F') {
+          // Feu de camp : bûches et flammes
+          s += '<ellipse cx="' + (X + 16) + '" cy="' + (Y + 26) + '" rx="14" ry="4" fill="rgba(0,0,0,.35)"/><rect x="' + (X + 3) + '" y="' + (Y + 20) + '" width="26" height="6" rx="3" fill="#7a4a1f" transform="rotate(-14 ' + (X + 16) + ' ' + (Y + 23) + ')"/>' +
+               '<rect x="' + (X + 3) + '" y="' + (Y + 20) + '" width="26" height="6" rx="3" fill="#8d5a2b" transform="rotate(14 ' + (X + 16) + ' ' + (Y + 23) + ')"/>' +
+               '<path class="flamme" d="M' + (X + 16) + ' ' + (Y + 2) + ' C' + (X + 24) + ' ' + (Y + 11) + ' ' + (X + 24) + ' ' + (Y + 21) + ' ' + (X + 16) + ' ' + (Y + 22) + ' C' + (X + 8) + ' ' + (Y + 21) + ' ' + (X + 8) + ' ' + (Y + 12) + ' ' + (X + 16) + ' ' + (Y + 2) + ' Z" fill="#ff922b"/>' +
+               '<path class="flamme" d="M' + (X + 16) + ' ' + (Y + 9) + ' C' + (X + 20) + ' ' + (Y + 14) + ' ' + (X + 20) + ' ' + (Y + 20) + ' ' + (X + 16) + ' ' + (Y + 21) + ' C' + (X + 12) + ' ' + (Y + 20) + ' ' + (X + 12) + ' ' + (Y + 15) + ' ' + (X + 16) + ' ' + (Y + 9) + ' Z" fill="#ffe066"/>' +
+               '<circle cx="' + (X + 16) + '" cy="' + (Y + 16) + '" r="40" fill="#ff922b" opacity="0.10"/>';
+        } else if (c === 'M') {
+          // Marchand : un étal sous un auvent rayé
+          s += '<rect x="' + (X - 10) + '" y="' + (Y + 14) + '" width="52" height="16" rx="2" fill="#8d5a2b" stroke="#5d3a18" stroke-width="2"/>' +
+               [0, 1, 2, 3].map(k => '<rect x="' + (X - 12 + k * 14) + '" y="' + (Y - 2) + '" width="14" height="12" fill="' + (k % 2 ? '#fff' : '#e03131') + '"/>').join('') +
+               '<text x="' + (X + 16) + '" y="' + (Y + 28) + '" text-anchor="middle" font-size="14">🛒</text>';
+        } else if (c === 'A') {
+          // Autel mystérieux
+          s += '<rect x="' + (X + 2) + '" y="' + (Y + 12) + '" width="28" height="18" rx="3" fill="#868e96" stroke="#495057" stroke-width="2"/><rect x="' + X + '" y="' + (Y + 9) + '" width="32" height="6" rx="2" fill="#adb5bd"/>' +
+               '<text x="' + (X + 16) + '" y="' + (Y + 7) + '" text-anchor="middle" font-size="15" class="scintille">❓</text>';
+        } else if (c === 'E') {
+          // Escalier qui descend
+          s += '<rect x="' + (X + 1) + '" y="' + (Y + 1) + '" width="30" height="30" rx="3" fill="#120d0a"/>' + [0, 1, 2, 3].map(k => '<rect x="' + (X + 3 + k * 3) + '" y="' + (Y + 4 + k * 7) + '" width="' + (26 - k * 6) + '" height="5" fill="' + ['#bfa27a', '#9a7f5f', '#76603f', '#4e3f33'][k] + '"/>').join('') +
+               '<circle cx="' + (X + 16) + '" cy="' + (Y + 16) + '" r="22" fill="none" stroke="#ffe066" stroke-width="3" class="scintille"/>';
         } else if (c === 'C' || c === 'c') {
           var ouvert = c === 'c';
           s += '<rect x="' + (X + 4) + '" y="' + (Y + 12) + '" width="24" height="16" rx="3" fill="#a0612b" stroke="#5d3a18" stroke-width="2"/>' +
@@ -1225,7 +1569,7 @@
         }
       }
       if (S.boss) s += '<circle cx="176" cy="144" r="70" fill="#9c36b5" opacity="0.12"/>';
-      return s + '<style>.scintille{animation:sc 1s ease-in-out infinite alternate}.fleche-dj{animation:sc .8s ease-in-out infinite alternate}@keyframes sc{from{opacity:.35}to{opacity:1}}</style>';
+      return s + '<style>.scintille{animation:sc 1s ease-in-out infinite alternate}.fleche-dj{animation:sc .8s ease-in-out infinite alternate}.flamme{animation:fl .35s ease-in-out infinite alternate;transform-box:fill-box;transform-origin:50% 100%}@keyframes fl{to{transform:scale(1.08,.9)}}@keyframes sc{from{opacity:.35}to{opacity:1}}</style>';
     }
     // Les gluants (et leur roi) : dessinés par le code
     function gluantSvg(roi) {
