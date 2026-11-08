@@ -231,7 +231,7 @@ Mon compagnon : `compagnon-animal` (espèce, nom, couleur, besoins, objets poss�
 `compagnon-reglages`, `compagnon-veille`, `compagnon-series` (séries de victoires solo), `compagnon-evenements` (parties terminées), `compagnon-defis`, `compagnon-trophees`, `compagnon-maison`, `compagnon-anniv` (année du dernier cadeau d'anniversaire), `compagnon-penalite` (jauge vide), `compagnon-fete-essai` (admin).
 Expédition : `expedition-partie` (expédition en cours), `expedition-depart` (heure du dernier départ), `expedition-poussiere` (réserve),
 `expedition-boss` / `expedition-boss-resultat` (défi envoyé au jeu du boss et son issue), `expedition-retour` (résumé pour le compagnon), `expedition-vues` (40 dernières questions posées), `expedition-stats`, `expedition-lieu`, `expedition-difficulte`.
-Donjon : `donjon-inverse` (croix à droite), `donjon-sauvegarde` (salon ; chez l'hôte, le donjon en cours), `donjon-solo`, `donjon-dernier-salon`, `donjon-stats` (avec `record`), `donjon-recompense` (dernier donjon récompensé, pour ne pas compter deux fois), `donjon-peril` (niveau de péril débloqué), `donjon-peril-choisi`.
+Donjon : `donjon-inverse` (croix à droite), `donjon-sauvegarde` (salon ; chez l'hôte, le donjon en cours), `donjon-solo`, `donjon-dernier-salon`, `donjon-stats` (avec `record`), `donjon-recompense` (dernier donjon récompensé, pour ne pas compter deux fois), `donjon-peril` (niveau de péril débloqué), `donjon-peril-choisi`, `donjon-plein-ecran`.
 Bataille navale : `bataille-boss` (partie contre un boss d'expédition), `bataille-sauvegarde`, `bataille-prive` (ma flotte en salon), `bataille-dernier-salon`, `bataille-stats`, `bataille-colles`, `bataille-rejouer`, `bataille-niveau`, `bataille-style`.
 
 ## Règles des jeux (choix de l'utilisateur, à ne pas changer sans lui)
@@ -617,6 +617,14 @@ les changer = en parler à l'utilisateur.
   ombre sur les bords, détails du sol par étage (mousse, os, braises ; bannières dans la Forteresse ; tirés d'après l'identifiant de la pièce), scène de combat
   aux couleurs de l'étage (`fondCombat`) avec mon compagnon dans ma ligne, **cartes en parchemin** (bord à la couleur du type, médaillon, coût en pierre d'or,
   halo bleu / doré pour les peu communes / rares), fenêtres en parchemin (titres en Georgia). L'onglet Partie garde le style clair de l'appli.
+- **Plein écran** (3.15, demandé par l'utilisateur : « une interface plein écran pour l'immersion ») : pendant l'exploration (onglet Jouer avec un donjon en cours),
+  le bloc `.jeu-dj` devient `.immersif` (fixé sur tout l'écran, z-index 40 sous les fenêtres `.voile-dj` à 50, marges `safe-area`) : plus d'onglets, bulle 💬 du salon
+  global cachée (`body.dj-immersif`), et le navigateur cache ses barres (`requestFullscreen`, demandé au lancement ou au premier toucher : Android oui, iPhone non).
+  Exploration : **grand plan de l'étage** au-dessus de la pièce (`planSvg` : pièces vues, couloirs, pièces voisines en « ? », icônes 🔥 🛒 ❓ ⭐ 👑 ⚔️, amis en points ;
+  cadré sur les pièces montrées ; la petite carte de la barre est alors cachée), pièce pleine largeur, croix agrandie, poussière qui flotte et fondu au noir à chaque
+  changement de pièce. Combat : la scène prend la hauteur libre, monstres plus grands (`min(…, vh)`), cartes plus hautes. **Bouton ☰** dans la barre (pastille rouge =
+  messages non lus, `SalonGlobal.nonLus`, nouveau dans l'API) : Continuer, Discuter (`SalonGlobal.ouvrir`), son, côté de la croix, quitter / remettre le plein écran,
+  Règles, Quitter le donjon. Choix par téléphone `donjon-plein-ecran` (activé par défaut), aussi dans Réglages. Le bouton « 🏳️ Quitter » reste dans la barre.
 - **Écran** : barre (étage, PV, or, 🃏 paquet, fioles, reliques, clés, poussières, petite carte, « 🏳️ Quitter »), toucher une relique, un état ou une fiole
   l'explique (`info`). Combat : monstres (intention chiffrée avec force / faiblesse / vulnérabilité, PV, armure, états), journal, ma ligne (⚡, PV, armure,
   états), la main (composant `<carte-dj>`, badge rouge = dégâts réels s'ils diffèrent), description de la carte touchée, pioche / défausse, fioles,
@@ -780,7 +788,7 @@ Rappel pour un jeu du commerce : version maison, sans le nom de la marque ni ses
 - Mon compagnon : lui apprendre sa langue pas à pas ; redessiner les autres animaux comme le renard et le dragon.
 - Compagnons en jeu (`compagnons-jeu.js`) : seulement dans Lettres croisées pour l'instant, à poser dans les autres jeux à plusieurs.
 - Hébergement : porte Cloudflare Access ; après le déménagement, retirer la carte « Désdale déménage », l'origine GitHub Pages et rendre les icônes crème définitives.
-- Bulle 💬 du salon global : la faire passer sous les fenêtres ouvertes (proposé, pas encore demandé).
+- Bulle 💬 du salon global : la faire passer sous les fenêtres ouvertes (proposé, pas encore demandé ; dans le donjon en plein écran, elle est cachée et passe par le menu ☰).
 
 ## Tester
 

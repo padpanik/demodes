@@ -302,6 +302,51 @@
     .boite-dj .btn:disabled { opacity: 0.5; }
     .butin-l span, .ligne-achat { background: rgba(107,79,54,0.1); color: #3b2a1e; }
     .or-menu { color: #a8590f; }
+
+    /* ================== Plein écran (3.15) : le donjon prend tout l'écran, sans onglets ================== */
+    body.dj-immersif { overflow: hidden; overscroll-behavior: none; }
+    body.dj-immersif #sg-bulle { display: none !important; }
+    .jeu-dj.immersif { position: fixed; inset: 0; z-index: 40; border-radius: 0; box-shadow: none; display: flex; flex-direction: column; overflow: hidden;
+      padding: max(8px, env(safe-area-inset-top)) 8px max(10px, env(safe-area-inset-bottom)); }
+    .jeu-dj.immersif .tete-dj { flex: none; }
+    .jeu-dj.immersif .info-dj { position: absolute; left: 12px; right: 12px; top: calc(max(8px, env(safe-area-inset-top)) + 76px); z-index: 8; box-shadow: 0 6px 16px rgba(0,0,0,0.6); border: 1px solid #8d6a3f; }
+    .jeu-dj.immersif .zone-explo { flex: 1; min-height: 0; display: flex; flex-direction: column; justify-content: flex-end; }
+    .jeu-dj.immersif .salle-dj { margin: 0 -4px; width: calc(100% + 8px); }
+    .jeu-dj.immersif .commandes-dj { flex: none; margin-top: 6px; }
+    .jeu-dj.immersif .pad { width: 158px; height: 158px; }
+    .jeu-dj.immersif .pad span { width: 52px; height: 52px; font-size: 22px; }
+    .jeu-dj.immersif .pad .h { left: 53px; top: 4px; } .jeu-dj.immersif .pad .b { left: 53px; bottom: 4px; }
+    .jeu-dj.immersif .pad .g { left: 4px; top: 53px; } .jeu-dj.immersif .pad .d { right: 4px; top: 53px; }
+    .jeu-dj.immersif .combat-dj { flex: 1; min-height: 0; display: flex; flex-direction: column; margin-top: 2px; }
+    .jeu-dj.immersif .scene-c { flex: 1; min-height: 0; display: flex; flex-direction: column; justify-content: center; }
+    .jeu-dj.immersif .mc-des { width: min(96px, 12vh); height: min(96px, 12vh); }
+    .jeu-dj.immersif .mc.gros .mc-des { width: min(160px, 20vh); height: min(160px, 20vh); margin-top: 16px; }
+    .jeu-dj.immersif .journal-c { flex: none; height: 58px; }
+    .jeu-dj.immersif .main-c .carte-c { min-height: 138px; }
+    .jeu-dj.immersif .main-c .cc-ico { font-size: 23px; }
+    .jeu-dj.immersif .pied-c { flex: none; }
+    /* Poussière qui flotte dans la lumière des torches */
+    .poussiere-dj { position: absolute; inset: 0; pointer-events: none; overflow: hidden; z-index: 4; }
+    .poussiere-dj i { position: absolute; bottom: -6px; width: 3px; height: 3px; border-radius: 50%; background: #ffd8a8; opacity: 0; animation: flotte-dj linear infinite; }
+    @keyframes flotte-dj { 0% { opacity: 0; transform: translate(0, 0); } 15% { opacity: 0.55; } 85% { opacity: 0.3; } 100% { opacity: 0; transform: translate(18px, -260px); } }
+    /* Fondu au noir quand on change de pièce */
+    .fondu-dj { position: absolute; inset: 0; background: #000; pointer-events: none; z-index: 7; animation: fondu-dj 0.45s ease-out forwards; }
+    @keyframes fondu-dj { from { opacity: 0.85; } to { opacity: 0; } }
+    .jeu-dj.immersif .tete-dj .carte-mini { display: none; }
+    .plan-dj { flex: 1; min-height: 0; max-height: 160px; display: flex; flex-direction: column; align-items: center; justify-content: center; margin: 4px 0 8px; }
+    .plan-titre { font-family: Georgia, 'Times New Roman', serif; font-weight: 700; color: #ffd8a8; font-size: 1.05em; text-shadow: 0 1px 3px #000; margin-bottom: 4px; }
+    .plan-titre small { font-family: inherit; font-weight: 400; color: #a8957f; font-size: 0.75em; margin-left: 4px; }
+    .plan-svg { width: 100%; display: flex; justify-content: center; }
+    .plan-svg svg { max-height: 132px; width: auto; max-width: 100%; }
+    .jeu-dj:not(.immersif) .pv-dj { min-width: 46px; }
+    .jeu-dj:not(.immersif) .gauche { overflow: hidden; }
+    .jeu-dj:not(.immersif) .menu-dj { width: 30px; font-size: 17px; }
+    .menu-dj { flex: none; position: relative; width: 38px; height: 38px; border-radius: 10px; border: 1px solid #8d6a3f; background: #1b130e; color: #ffd8a8; font-size: 20px; line-height: 1; cursor: pointer; }
+    .menu-dj b { position: absolute; right: -5px; top: -5px; min-width: 16px; height: 16px; border-radius: 8px; background: #e03131; color: #fff; font-size: 10px; line-height: 16px; padding: 0 3px; }
+    .menu-liste { display: flex; flex-direction: column; gap: 0; margin-top: 6px; }
+    .menu-liste .btn { text-align: left; display: flex; align-items: center; gap: 10px; }
+    .menu-liste .btn .pastille { margin-left: auto; background: #e03131; color: #fff; border-radius: 9px; font-size: 0.8em; padding: 0 7px; }
+    @media (prefers-reduced-motion: reduce) { .poussiere-dj, .fondu-dj { display: none; } }
     .voile-dj { position: fixed; inset: 0; background: rgba(10,6,4,0.72); display: flex; align-items: center; justify-content: center; z-index: 50; padding: 16px; }
     .boite-dj { background: linear-gradient(#fdf4e3, #ecd6b0); border-radius: 18px; padding: 18px; width: 100%; max-width: 360px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
     .boite-dj .grand { font-size: 3em; line-height: 1.1; }
@@ -395,13 +440,13 @@
                 <span class="classe-dj">{{ D.CLASSES[m.pouvoir || 'aucune'].ico }} {{ D.CLASSES[m.pouvoir || 'aucune'].nom }}</span></div>
             </div>
           </div>
-          <button v-if="role === 'hote'" class="btn principal" style="width:100%;margin-top:12px" @click="envoyerJeu({ type: 'COMMENCER' })">🗝️ Entrer dans le donjon ({{ groupe.length }} joueur{{ groupe.length > 1 ? 's' : '' }})</button>
+          <button v-if="role === 'hote'" class="btn principal" style="width:100%;margin-top:12px" @click="lancerSalon">🗝️ Entrer dans le donjon ({{ groupe.length }} joueur{{ groupe.length > 1 ? 's' : '' }})</button>
           <div v-else class="aide">L'hôte lance l'exploration quand tout le monde est là.</div>
           <div class="aide">Le donjon est tiré au hasard selon les pouvoirs du groupe : il y aura toujours de quoi passer. Les monstres ont plus de PV à plusieurs.</div>
           <div class="aide" v-if="role === 'hote' && peril">Péril {{ peril }} : {{ D.PERILS[peril] }}.</div>
         </section>
 
-        <div v-else class="jeu-dj" @contextmenu.prevent>
+        <div v-else class="jeu-dj" :class="{ immersif: immersif }" @contextmenu.prevent @pointerdown="reprendrePleinEcran">
           <div class="tete-dj">
             <div class="gauche">
               <div class="ligne-dj">
@@ -419,6 +464,7 @@
             <div class="carte-mini" :style="{ gridTemplateColumns: 'repeat(' + DJ.GX + ', 11px)' }">
               <span v-for="c in carteMini" :key="c.id" :class="c.cl"><i v-for="(p, k) in c.amis" :key="k" :style="{ background: p, left: (2 + k * 3) + 'px' }"></i></span>
             </div>
+            <button class="menu-dj" @click="menuJeu = true" aria-label="Menu">☰<b v-if="chatNonLus">{{ chatNonLus }}</b></button>
             <button class="quitter-dj" @click="demandeQuitter = true" aria-label="Quitter le donjon">🏳️<br>Quitter</button>
           </div>
           <div class="info-dj" v-if="infoTxt" @click="infoTxt = ''">{{ infoTxt }}
@@ -471,8 +517,15 @@
           </div>
 
           <template v-else>
+          <div class="zone-explo">
+          <div class="plan-dj" v-if="immersif" @click="info(etageInfo)">
+            <div class="plan-titre">{{ etageIco }} {{ D.ETAGES[partie.etage - 1].nom }} <small>étage {{ partie.etage }}/{{ DJ.NB_ETAGES }}</small></div>
+            <div class="plan-svg" v-html="planSvg"></div>
+          </div>
           <div class="salle-dj" ref="salle">
             <svg class="fond" viewBox="0 0 352 288" preserveAspectRatio="none" v-html="salleSvg"></svg>
+            <div class="poussiere-dj"><i v-for="k in 9" :key="'pd' + k" :style="grain(k)"></i></div>
+            <div class="fondu-dj" :key="'fd' + (monJ ? monJ.salle : '') + '-' + partie.etage"></div>
             <div v-for="o in objetsIci" :key="'o' + o.id" class="ent objet" :style="pos(o)"><span class="emo">✨</span></div>
             <div v-for="m in monstresIci" :key="'m' + m.id" class="ent monstre" :class="[m.type, { gros: grosM(m), gauche: m.dir === 'g', gluant: !!MONSTRES[m.type].dessin }]" :style="pos(m)">
               <span class="sp" v-html="spriteMonstre(m)"></span>
@@ -494,6 +547,7 @@
           </div>
 
           <div class="dernier-combat" v-if="dernierCombatVu" @click="vuCombat = partie.dernierCombat.id"><b>{{ partie.dernierCombat.gagne ? '🎉 Victoire !' : '👻 Défaite…' }}</b> <span v-for="(l, k) in partie.dernierCombat.journal.slice(-2)" :key="k">{{ l }}</span></div>
+          </div>
           <div class="commandes-dj" :class="{ inverse: inverse }">
             <div class="pad" @pointerdown="padDebut" @pointermove="padBouger" @pointerup="padFin" @pointercancel="padFin" @lostpointercapture="padFin">
               <span class="h" :class="{ actif: dirCourante === 'h' }">▲</span><span class="b" :class="{ actif: dirCourante === 'b' }">▼</span>
@@ -530,6 +584,22 @@
             <button class="btn" @click="abandonnerSolo(true)">🧭 Retour à l'expédition</button>
           </div>
         </div>
+        <!-- Menu du donjon (bouton ☰) -->
+        <div class="voile-dj" v-if="menuJeu" @click.self="menuJeu = false">
+          <div class="boite-dj">
+            <div class="titre">☰ Menu</div>
+            <div class="menu-liste">
+              <button class="btn" @click="menuJeu = false">▶ Continuer</button>
+              <button class="btn" @click="ouvrirChat">💬 Discuter avec les amis<span v-if="chatNonLus" class="pastille">{{ chatNonLus }}</span></button>
+              <button class="btn" @click="sonActif = !sonActif">{{ sonActif ? '🔊 Son activé' : '🔇 Son coupé' }}</button>
+              <button class="btn" @click="inverse = !inverse">⇄ Mettre la croix {{ inverse ? 'à gauche' : 'à droite' }}</button>
+              <button class="btn" @click="basculerPleinEcran">{{ immersionVoulue ? '🗗 Quitter le plein écran' : '⛶ Plein écran' }}</button>
+              <button class="btn" @click="menuJeu = false; onglet = 'regles'">📖 Règles du donjon</button>
+              <button class="btn" @click="menuJeu = false; demandeQuitter = true">🏳️ Quitter le donjon</button>
+            </div>
+          </div>
+        </div>
+
         <!-- Abandon -->
         <div class="voile-dj" v-if="demandeQuitter" @click.self="demandeQuitter = false">
           <div class="boite-dj">
@@ -653,7 +723,8 @@
         <section class="carte reglages">
           <div class="titre-carte">Réglages</div>
           <reglages-base :son.sync="sonActif" :vibration.sync="vibrationActive"></reglages-base>
-          <label class="option-dj">Croix à droite, ⚔️ à gauche (gaucher)<input type="checkbox" v-model="inverse"></label>
+          <label class="option-dj">Croix à droite (gaucher)<input type="checkbox" v-model="inverse"></label>
+          <label class="option-dj">Plein écran pendant l'exploration<input type="checkbox" :checked="immersionVoulue" @change="basculerPleinEcran"></label>
         </section>
       </template>
 
@@ -771,6 +842,9 @@
         inverse: lireStockage('donjon-inverse') === true,   // croix à droite (sur ce téléphone)
         coupActif: false,
         demandeQuitter: false,
+        immersionVoulue: lireStockage('donjon-plein-ecran') !== false,   // plein écran pendant l'exploration (par téléphone)
+        menuJeu: false,
+        chatNonLus: 0,
         demandeAbandon: false,
         panne: false,
         soloV: 0,
@@ -857,6 +931,7 @@
           var d = this.degatsAnnonces, a = this.monJ.armure;
           return d ? '⚔️ ' + d + ' annoncé' + (d > 1 ? 's' : '') + (a ? ' · 🛡️ ' + a : '') : 'Aucun coup annoncé sur toi';
         },
+        immersif: function() { return this.immersionVoulue && this.onglet === 'play' && !!this.partie; },
         fondCombat: function() {
           var E = this.partie && DJ.D.ETAGES[this.partie.etage - 1];
           return E ? { background: 'radial-gradient(ellipse at 50% 28%, ' + E.sol[1] + ' 0%, ' + E.mur[0] + ' 62%, #0b0806 100%)' } : {};
@@ -873,6 +948,39 @@
         dernierCombatVu: function() { var d = this.partie && this.partie.dernierCombat; return !!(d && !this.combat && this.monJ && d.salle === this.monJ.salle && this.partie.maintenant - d.t < 6000 && this.vuCombat !== d.id); },
         flairIci: function() { return this.joueursIci.some(p => p.pouvoir === 'flair' && !p.fantome); },
         salleSvg: function() { return this.salleIci ? dessinerSalle(this.salleIci, this.flairIci, this.joueursIci, this.partie.etage) : ''; },
+        // Plan de l'étage en grand (plein écran) : pièces vues, couloirs, rôle des pièces, où sont les amis
+        planSvg: function() {
+          var p = this.partie, S = this.salles || {}, CW = 46, CH = 30, o = '', ICO = { feu: '🔥', marchand: '🛒', autel: '❓', elite: '⭐', boss: '👑', depart: '🚪' };
+          if (!p) return '';
+          var cx = s => s.x * CW + CW / 2, cy = s => s.y * CH + CH / 2, vu = id => !!p.vues[id];
+          Object.values(S).forEach(s => {
+            if (!vu(s.id)) return;
+            Object.keys(s.portes).forEach(d => {
+              var v = S[s.portes[d]];
+              if (!v || (vu(v.id) && v.id < s.id)) return;
+              o += '<line x1="' + cx(s) + '" y1="' + cy(s) + '" x2="' + cx(v) + '" y2="' + cy(v) + '" stroke="#8d6a3f" stroke-width="4"' + (vu(v.id) ? '' : ' stroke-dasharray="3 3" opacity=".7"') + '/>';
+            });
+          });
+          var x0 = 99, y0 = 99, x1 = -1, y1 = -1;   // cadre : seulement les pièces montrées
+          Object.values(S).forEach(s => {
+            if (!vu(s.id) && !Object.values(s.portes).some(vu)) return;
+            x0 = Math.min(x0, s.x); y0 = Math.min(y0, s.y); x1 = Math.max(x1, s.x); y1 = Math.max(y1, s.y);
+          });
+          Object.values(S).forEach(s => {
+            var x = s.x * CW + 5, y = s.y * CH + 4, w = CW - 10, h = CH - 8;
+            var voisinVu = Object.values(s.portes).some(vu);
+            if (!vu(s.id)) { if (voisinVu) o += '<rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" rx="4" fill="#120d0a" stroke="#6b5644" stroke-dasharray="3 3"/><text x="' + cx(s) + '" y="' + (cy(s) + 4) + '" text-anchor="middle" font-size="11" fill="#6b5644">?</text>'; return; }
+            var ici = this.monJ && this.monJ.salle === s.id, propre = !p.ennemis || !p.ennemis.some(m => m.salle === s.id);
+            o += '<rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" rx="4" fill="' + (ici ? '#e8590c' : s.boss ? '#5f3dc4' : '#4b3a2c') + '" stroke="' + (ici ? '#ffd8a8' : '#8d6a3f') + '" stroke-width="1.5"/>';
+            var ico = ICO[s.role] || (propre ? '' : '⚔️');
+            if (ico) o += '<text x="' + cx(s) + '" y="' + (cy(s) + 4.5) + '" text-anchor="middle" font-size="12">' + ico + '</text>';
+            Object.values(p.joueurs).filter(j => j.salle === s.id && j.nom !== this.moi).slice(0, 3).forEach((j, k) => {
+              o += '<circle cx="' + (x + 6 + k * 7) + '" cy="' + (y + h - 5) + '" r="3" fill="' + COULEURS_J[j.ordre % COULEURS_J.length] + '" stroke="#000" stroke-width=".8"/>';
+            });
+          });
+          if (x1 < 0) return '';
+          return '<svg viewBox="' + (x0 * CW) + ' ' + (y0 * CH) + ' ' + ((x1 - x0 + 1) * CW) + ' ' + ((y1 - y0 + 1) * CH) + '" style="height:' + ((y1 - y0 + 1) * CH * 1.15) + 'px">' + o + '</svg>';
+        },
         carteMini: function() {
           var l = [], p = this.partie, S = this.salles || {};
           for (var y = 0; y < DJ.GY; y++) for (var x = 0; x < DJ.GX; x++) {
@@ -889,7 +997,11 @@
         vibrationActive: function(v) { ecrireStockage('brillant-vibration', v); if (v) vibrer(40); },
         pseudoInput: function() { this.sauvegarder(); },
         menuCle: function() { this.choixMenu = null; },
-        peril: function(v) { ecrireStockage('donjon-peril-choisi', v); }
+        peril: function(v) { ecrireStockage('donjon-peril-choisi', v); },
+        immersif: { immediate: true, handler: function(v) {
+          document.body.classList.toggle('dj-immersif', v);
+          if (!v && this.onglet !== 'play') this.sortirPleinEcranNavigateur();
+        } }
       },
       created: function() {
         window.addEventListener('desdale-profil', () => { if (!this.role) this.pseudoInput = pseudoPortail(); });
@@ -898,6 +1010,7 @@
         setInterval(() => this.battement(), 4000);
         setInterval(() => this.boucle(), 100);
         setInterval(() => this.sauvegarderPartie(), 2000);
+        setInterval(() => { this.chatNonLus = window.SalonGlobal && SalonGlobal.nonLus ? SalonGlobal.nonLus() : 0; }, 1500);
         document.addEventListener('visibilitychange', () => this.auRetourPremierPlan());
         window.addEventListener('online', () => this.auRetourPremierPlan());
         window.addEventListener('pageshow', () => this.auRetourPremierPlan());
@@ -1029,7 +1142,39 @@
         },
 
         // ================== SOLO ==================
+        // ---------- Plein écran ----------
+        // Le donjon couvre l'écran (CSS) ; en plus, on demande au navigateur de cacher ses barres (Android ; pas sur iPhone)
+        pleinEcranNavigateur: function() {
+          var d = document.documentElement, f = d.requestFullscreen || d.webkitRequestFullscreen;
+          if (!f || document.fullscreenElement || document.webkitFullscreenElement) return;
+          try { var p = f.call(d, { navigationUI: 'hide' }); if (p && p.catch) p.catch(() => {}); } catch (e) {}
+        },
+        sortirPleinEcranNavigateur: function() {
+          var f = document.exitFullscreen || document.webkitExitFullscreen;
+          if (f && (document.fullscreenElement || document.webkitFullscreenElement)) try { var p = f.call(document); if (p && p.catch) p.catch(() => {}); } catch (e) {}
+        },
+        // Premier toucher dans le donjon (ex. un ami arrivé par le salon, ou après une reprise) : on passe en plein écran une fois
+        reprendrePleinEcran: function() {
+          if (!this.immersif || this._fsDemande) return;
+          this._fsDemande = true;
+          this.pleinEcranNavigateur();
+        },
+        basculerPleinEcran: function() {
+          this.immersionVoulue = !this.immersionVoulue;
+          ecrireStockage('donjon-plein-ecran', this.immersionVoulue);
+          this.menuJeu = false;
+          if (this.immersionVoulue) { this._fsDemande = true; this.pleinEcranNavigateur(); } else this.sortirPleinEcranNavigateur();
+        },
+        lancerSalon: function() {
+          if (this.immersionVoulue) { this._fsDemande = true; this.pleinEcranNavigateur(); }
+          this.envoyerJeu({ type: 'COMMENCER' });
+        },
+        ouvrirChat: function() { this.menuJeu = false; if (window.SalonGlobal && SalonGlobal.ouvrir) SalonGlobal.ouvrir(); },
+        // Grains de poussière : position et rythme fixes pour chaque grain
+        grain: function(k) { return { left: (k * 37 % 100) + '%', animationDuration: (7 + k * 1.3 % 5) + 's', animationDelay: (-k * 1.7) + 's' }; },
+
         demarrerSolo: function() {
+          if (this.immersionVoulue) { this._fsDemande = true; this.pleinEcranNavigateur(); }
           var s = lireStockage(CLE_SOLO);
           this.solo = true; this.gains = null;
           this.panne = false; this._erreurs = 0;

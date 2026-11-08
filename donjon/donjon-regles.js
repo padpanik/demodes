@@ -912,7 +912,7 @@ var DJ = (function () {
     if (!e.combats[c.salle]) return;
     h = h || Math.random;
     delete e.combats[c.salle];
-    var joueurs = c.joueurs.map(n => e.joueurs[n]).filter(Boolean);
+    var joueurs = c.joueurs.map(n => e.joueurs[n]).filter(p => p && p.salle === c.salle && !(e.combats[p.salle] && e.combats[p.salle] !== c));
     joueurs.forEach(p => { p.armure = 0; p.etats = {}; p.main = []; p.pioche = []; p.defausse = []; p.epuisees = []; p.energie = 0; p.tourCombat = 0; });
     e.dernierCombat = { salle: c.salle, gagne: gagne, journal: c.journal.slice(-4), t: e.maintenant, id: c.id };
     if (!gagne) {

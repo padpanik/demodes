@@ -763,6 +763,6 @@ var SalonGlobal = (function () {
   var script = document.currentScript;
   if (script && script.dataset.jeu) demarrer(script.dataset.jeu);
 
-  return { demarrer: demarrer, ouvrir: ouvrir_panneau, pret: () => !!role, membre: id => membres[id] || null, demander: demander, envoyerA: envoyerA,
+  return { demarrer: demarrer, ouvrir: ouvrir_panneau, nonLus: () => { try { return nonLus(); } catch (e) { return 0; } }, pret: () => !!role, membre: id => membres[id] || null, demander: demander, envoyerA: envoyerA,
            membresDuSalon: membresDuSalon, emote: emote, reserverBas: reserverBas, dessinCompagnon: dessinCompagnon, _etat: () => ({ role: role, membres: membres, messages: messages, ou: ou() }) };
 })();
