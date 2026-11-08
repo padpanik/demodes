@@ -230,12 +230,19 @@ var DJ = (function () {
   }
 
   // ---------- Monstres ----------
+  // Taille du groupe pour renforcer les monstres : joueurs au départ, ou plus si des amis sont arrivés depuis
+  function nbGroupe(e) { return Math.max(e.nbJ || 1, Object.keys(e.joueurs || {}).length); }
+  // Dégâts de base d'une attaque de monstre (péril 4 : +1 ; à plusieurs : renforcés selon le nombre de joueurs du combat)
+  function attaqueMonstre(e, i, nbCombat) {
+    var n = i.att + (e.peril >= 4 ? 1 : 0);
+    return n * (1 + D.GROUPE.deg * Math.max(0, (nbCombat || 1) - 1));
+  }
   function creerMonstre(e, type, salle, x, y, h) {
     var M = MONSTRES[type], r = M.rang || 'normal';
     var pv = M.pv[0] + entier(h, M.pv[1] - M.pv[0] + 1);
     if (e.peril >= 1 && r === 'normal') pv *= 1.1;
     if (e.peril >= 2 && r !== 'normal') pv *= 1.1;
-    pv = Math.round(pv * (1 + 0.9 * Math.max(0, (e.nbJ || 1) - 1)));
+    pv = Math.round(pv * (1 + D.GROUPE.pv * Math.max(0, nbGroupe(e) - 1)));
     var m = { id: ++e.seq, type: type, salle: salle, x: x, y: y, pv: pv, pvMax: pv, pas: 0, dir: 'b', armure: 0, etats: {}, k: 0, mem: {}, intention: null, cible: null };
     e.ennemis.push(m);
     return m;
@@ -848,7 +855,6 @@ var DJ = (function () {
   }
   function tourMonstres(e, c, h) {
     c.pret = 0;
-    var bonus = e.peril >= 4 ? 1 : 0;
     monstresDe(e, c).slice().forEach(m => {
       if (e.ennemis.indexOf(m) < 0) return;
       m.armure = 0;
@@ -875,7 +881,7 @@ var DJ = (function () {
       if (i.att) {
         for (var x = 0; x < (i.x || 1); x++) cibles.forEach(q => {
           if (q.fantome || e.ennemis.indexOf(m) < 0) return;
-          infliger(e, c, q, calculer(m, q, i.att + bonus), m, true);
+          infliger(e, c, q, calculer(m, q, attaqueMonstre(e, i, c.joueurs.length)), m, true);
         });
       }
       if (i.vol) cibles.forEach(q => { var n = Math.min(q.or, i.vol); if (!n) return; q.or -= n; m.mem.vol = m.mem.vol || {}; m.mem.vol[q.nom] = (m.mem.vol[q.nom] || 0) + n; fx(e, c, q.nom, '−' + n + ' 🪙', 'neutre'); });
@@ -1009,7 +1015,8 @@ var DJ = (function () {
   function degatsIntention(e, m, p) {
     var i = m.intention;
     if (!i || !i.att) return 0;
-    return calculer(m, p || { etats: {} }, i.att + (e.peril >= 4 ? 1 : 0));
+    var c = p && e.combats && e.combats[p.salle];
+    return calculer(m, p || { etats: {} }, attaqueMonstre(e, i, c ? c.joueurs.length : 1));
   }
   // Dégâts qu'une carte d'attaque simple ferait sur ce monstre (affichage)
   function degatsCarte(p, id, m) {

@@ -512,7 +512,7 @@
           </div>
           <button v-if="role === 'hote'" class="btn principal" style="width:100%;margin-top:12px" @click="lancerSalon">🗝️ Entrer dans le donjon ({{ groupe.length }} joueur{{ groupe.length > 1 ? 's' : '' }})</button>
           <div v-else class="aide">L'hôte lance l'exploration quand tout le monde est là.</div>
-          <div class="aide">Le donjon est tiré au hasard selon les pouvoirs du groupe : il y aura toujours de quoi passer. Les monstres ont plus de PV à plusieurs.</div>
+          <div class="aide">Le donjon est tiré au hasard selon les pouvoirs du groupe : il y aura toujours de quoi passer. Les monstres ont plus de PV et frappent plus fort à plusieurs.</div>
           <div class="aide" v-if="role === 'hote' && peril">Péril {{ peril }} : {{ D.PERILS[peril] }}.</div>
         </section>
 
@@ -858,7 +858,7 @@
             <li>Après chaque combat : de l'or 🪙, parfois une fiole, et <strong>une carte au choix parmi 3</strong> (ou passer : un paquet léger pioche plus souvent tes meilleures cartes). Les élites donnent une <strong>relique</strong> (effet permanent), les boss une relique puissante au choix.</li>
             <li><strong>Salles</strong> : 🔥 feu de camp (se reposer ou améliorer une carte), 🛒 marchand (cartes, fioles, relique, retrait d'une carte), ❓ autel (un choix, parfois risqué). Les coffres sont gardés tant que les monstres de la pièce sont là.</li>
             <li><strong>Fioles</strong> (2 emplacements) : à boire pendant ton tour ; la fiole de soin se boit aussi hors combat.</li>
-            <li>À plusieurs : chacun a ses cartes, son or et ses reliques ; les monstres ont plus de PV. Une grille ⛓️ s'ouvre à deux sur les dalles. Un ami KO revient en fin de combat gagné, avec un Trèfle, ou si un ami reste 2 s à côté de lui. Tout le groupe KO : fin.</li>
+            <li>À plusieurs : chacun a ses cartes, son or et ses reliques ; les monstres ont plus de PV (+120 % par joueur en plus) et frappent plus fort (+70 %). Une grille ⛓️ s'ouvre à deux sur les dalles. Un ami KO revient en fin de combat gagné, avec un Trèfle, ou si un ami reste 2 s à côté de lui. Tout le groupe KO : fin.</li>
             <li><strong>Péril</strong> : gagner le donjon en solo débloque un niveau de difficulté de plus (jusqu'à 5).</li>
             <li>À la fin, chacun garde les poussières d'étoile (5 poussières = 1 ⭐, comme en expédition). Donjon vaincu : un souvenir pour la maison de ton compagnon.</li>
           </ul>

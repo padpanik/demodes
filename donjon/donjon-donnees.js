@@ -290,6 +290,10 @@ var DJD = (function () {
   ];
 
   // ---------- Périls (niveaux de difficulté débloqués en gagnant) ----------
+  // ---------- À plusieurs : les monstres se renforcent (par joueur en plus) ----------
+  // pv : PV des monstres ; deg : dégâts de leurs attaques. Réglé avec la simulation à 2 joueurs (3.22, signalé par l'utilisateur : « à 2, pas assez dur »).
+  var GROUPE = { pv: 1.2, deg: 0.7 };
+
   var PERILS = [
     'Le donjon tel quel',
     'Monstres ordinaires : +10 % de PV',
@@ -323,6 +327,6 @@ var DJD = (function () {
   var PRIX = { c: 45, u: 70, r: 120, fiole: 40, relique: 150, retrait: 70 };
 
   return { ETATS: ETATS, CLASSES: CLASSES, CARTES: CARTES, FIOLES: FIOLES, RELIQUES: RELIQUES, MONSTRES: MONSTRES,
-           ETAGES: ETAGES, PERILS: PERILS, EVENEMENTS: EVENEMENTS, PRIX: PRIX };
+           ETAGES: ETAGES, PERILS: PERILS, GROUPE: GROUPE, EVENEMENTS: EVENEMENTS, PRIX: PRIX };
 })();
 if (typeof module !== 'undefined') module.exports = DJD;

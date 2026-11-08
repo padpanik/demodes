@@ -1,6 +1,6 @@
 // ================== DONJON : SIMULATION D'ÉQUILIBRAGE (Node seulement, pas servi par le site) ==================
 // Un joueur automatique raisonnable traverse des donjons complets (3 étages) : combats, butin, feu de camp, marchand, autel.
-// node donjon/donjon-simulation.js [parties par classe] [péril]
+// node donjon/donjon-simulation.js [parties par classe] [péril] [joueurs]
 // Repère : un humain attentif joue mieux que ce joueur automatique (il lit mieux les intentions et construit son paquet).
 
 var DJ = require('./donjon-regles.js');
@@ -118,39 +118,52 @@ function gererMenus(e, p, h) {
   }
 }
 
-// ---------- Une partie complète ----------
+// ---------- Une partie complète (1 à 4 joueurs automatiques qui avancent ensemble) ----------
 var ESPECE = { ronces: 'dragon', force: 'panda', bond: 'lapin', flair: 'renard', aucune: null };
-function partie(classe, graine, peril) {
-  var h = DJ.hasard(graine * 31 + 7);
-  var cp = ESPECE[classe] ? { e: ESPECE[classe], c: '#c8915a', n: 'Bot', p: {} } : null;
-  var e = DJ.nouvelle(graine, { Bot: cp }, 'sim' + graine, { peril: peril });
-  var p = e.joueurs.Bot, combats = 0;
+function partie(classe, graine, peril, nb) {
+  nb = nb || 1;
+  var h = DJ.hasard(graine * 31 + 7), classes = Array.isArray(classe) ? classe : [classe], js = {};
+  for (var j = 0; j < nb; j++) {
+    var cl = classes[j % classes.length], nom = j ? 'Bot' + (j + 1) : 'Bot';
+    js[nom] = ESPECE[cl] ? { e: ESPECE[cl], c: '#c8915a', n: nom, p: {} } : null;
+  }
+  var e = DJ.nouvelle(graine, js, 'sim' + graine, { peril: peril });
+  var ps = Object.keys(e.joueurs).map(n => e.joueurs[n]), p = ps[0], combats = 0;
+  var resultat = (g, mort) => ({ gagne: g, etage: e.etage, combats: combats, pv: ps.reduce((t, q) => t + (q.fantome ? 0 : q.pv), 0) / nb, paquet: p.paquet.length, mort: mort });
   for (var et = 1; et <= DJ.NB_ETAGES; et++) {
     var ordre = Object.keys(e.salles).sort((a, b) => e.salles[a].prof - e.salles[b].prof || (e.salles[a].boss ? 1 : 0) - (e.salles[b].boss ? 1 : 0));
     for (var i = 0; i < ordre.length; i++) {
       var S = e.salles[ordre[i]];
-      p.salle = S.id;
+      ps.forEach(q => { q.salle = S.id; });
       if (e.ennemis.some(m => m.salle === S.id)) {
         combats++;
-        if (!combat(e, p, h)) return { gagne: false, etage: e.etage, combats: combats, pv: 0, paquet: p.paquet.length, mort: S.role };
+        DJ.demarrerCombat(e, S.id, h);
+        for (var t = 0; t < 80 && e.combats[S.id]; t++) {
+          ps.forEach(q => { if (e.combats[S.id] && !q.fantome) jouerTour(e, q, h); });
+          if (e.combats[S.id]) DJ.tourMonstres(e, e.combats[S.id], h);
+        }
+        if (e.combats[S.id] || ps.every(q => q.fantome)) return resultat(false, S.role);
       }
-      gererMenus(e, p, h);
+      ps.forEach(q => gererMenus(e, q, h));
       Object.keys(S.coffres).forEach(k => { if (S.t[+k] === 'C') DJ.ouvrirCoffre(e, S, +k % DJ.W, Math.floor(+k / DJ.W), p, h); });
-      ['F', 'M', 'A'].forEach(t => { if (S.t.indexOf(t) >= 0) { DJ.interagir(e, p, S, t, h); gererMenus(e, p, h); } });
+      ['F', 'M', 'A'].forEach(tt => { if (S.t.indexOf(tt) >= 0) ps.forEach(q => { DJ.interagir(e, q, S, tt, h); gererMenus(e, q, h); }); });
     }
-    gererMenus(e, p, h);
-    if (e.phase === 'fin') return { gagne: true, etage: e.etage, combats: combats, pv: p.pv, paquet: p.paquet.length };
+    ps.forEach(q => gererMenus(e, q, h));
+    if (e.phase === 'fin') return resultat(true);
     DJ.etageSuivant(e);
   }
-  return { gagne: e.phase === 'fin' && e.fin.gagne, etage: e.etage, combats: combats, pv: p.pv, paquet: p.paquet.length };
+  return resultat(e.phase === 'fin' && e.fin.gagne);
 }
 
 if (require.main === module) {
-  var n = +process.argv[2] || 200, peril = +process.argv[3] || 0;
+  // 3e argument facultatif : nombre de joueurs (même classe pour tous, ou duo mixte avec « mixte »)
+  if (process.argv[5]) D.GROUPE.pv = +process.argv[5];
+  if (process.argv[6]) D.GROUPE.deg = +process.argv[6];
+  var n = +process.argv[2] || 200, peril = +process.argv[3] || 0, nb = +process.argv[4] || 1;
   ['ronces', 'force', 'bond', 'flair', 'aucune'].forEach(cl => {
     var g = 0, et = [0, 0, 0, 0], morts = {}, pv = 0;
     for (var i = 0; i < n; i++) {
-      var r = partie(cl, 1000 + i, peril);
+      var r = partie(cl, 1000 + i, peril, nb);
       if (r.gagne) { g++; pv += r.pv; } else { et[r.etage]++; morts[r.mort] = (morts[r.mort] || 0) + 1; }
     }
     console.log(cl.padEnd(7), 'gagnées', (100 * g / n).toFixed(0) + ' %', '| mortes aux étages 1/2/3 :', et.slice(1).join('/'), '| où :', JSON.stringify(morts), '| PV restants', g ? Math.round(pv / g) : '-');
