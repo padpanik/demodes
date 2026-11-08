@@ -82,8 +82,9 @@
     @keyframes flotter { to { transform: translateY(-3px); } }
     .ent.effet .emo { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 22px; animation: effet-dj 0.55s ease-out forwards; }
     @keyframes effet-dj { from { transform: scale(0.6); opacity: 1; } to { transform: scale(1.5) translateY(-6px); opacity: 0; } }
-    .annonces-dj { position: absolute; left: 6px; right: 6px; top: 6px; display: flex; flex-direction: column; gap: 4px; pointer-events: none; z-index: 5; }
-    .annonces-dj div { background: rgba(255,255,255,0.93); color: #2c3e50; border-radius: 10px; padding: 5px 9px; font-size: 0.8em; font-weight: 700; box-shadow: 0 2px 8px rgba(0,0,0,0.25); animation: arrive-dj 0.25s ease-out; }
+    .annonces-dj { align-self: stretch; display: flex; flex-direction: column; gap: 4px; pointer-events: none; text-align: left; }
+    .annonces-dj div { background: rgba(255,255,255,0.93); color: #2c3e50; border-radius: 10px; padding: 5px 8px; font-size: 1.05em; font-weight: 700; line-height: 1.25; animation: arrive-dj 0.25s ease-out; }
+    .annonces-dj div:not(:last-child) { opacity: 0.7; font-size: 0.95em; }
     .annonces-dj div.perso { background: #fff4e6; }
     @keyframes arrive-dj { from { transform: translateY(-6px); opacity: 0; } }
 
@@ -621,7 +622,6 @@
               <span v-if="nbJoueurs > 1" class="nom-j">{{ p.nom }}</span>
             </div>
             <div v-for="f in effetsIci" :key="'f' + f.id" class="ent effet" :style="pos(f)"><span class="emo">{{ EFFETS[f.k] || '✨' }}</span></div>
-            <div class="annonces-dj"><div v-for="a in annoncesVues" :key="a.id" :class="{ perso: a.pour }">{{ a.txt }}</div></div>
           </div>
 
           <div class="equipe-dj" v-if="nbJoueurs > 1">
@@ -636,7 +636,9 @@
               <span class="g" :class="{ actif: dirCourante === 'g' }">◀</span><span class="d" :class="{ actif: dirCourante === 'd' }">▶</span>
             </div>
             <div class="milieu-dj">
-              <template v-if="monJ && monJ.fantome">👻 Tu es KO.<br>{{ nbJoueurs > 1 ? 'Va près d\'un ami : il te ranime en restant à côté de toi.' : '' }}</template>
+              <!-- Annonces (butin, clés, portes…) : ici, à côté de la croix, jamais sur la pièce ni sur le plan (3.21, demandé par l'utilisateur) -->
+              <div v-if="annoncesVues.length" class="annonces-dj"><div v-for="a in annoncesVues" :key="a.id" :class="{ perso: a.pour }">{{ a.txt }}</div></div>
+              <template v-else-if="monJ && monJ.fantome">👻 Tu es KO.<br>{{ nbJoueurs > 1 ? 'Va près d\'un ami : il te ranime en restant à côté de toi.' : '' }}</template>
               <template v-else-if="monPouvoir"><span class="pouvoir">{{ POUVOIRS[monPouvoir].ico }} {{ POUVOIRS[monPouvoir].nom }}</span><br>fonce dans {{ POUVOIRS[monPouvoir].quoi }}</template>
               <template v-else>Sans pouvoir : explore et trouve les coffres.</template>
               <div class="aide objectif-dj" style="margin-top:4px">{{ objectif }}</div>

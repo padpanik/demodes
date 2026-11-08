@@ -3,12 +3,13 @@
 // Les clés de stockage gardent l'ancien préfixe "brillant-" : les réglages déjà faits sont conservés.
 
 // Numéro de version affiché (à augmenter à chaque mise en ligne, avec brilliant/index.html et sw.js)
-const VERSION = '3.20';
+const VERSION = '3.21';
 
 // ---------- Nouveautés (2.87, demandé par l'utilisateur) ----------
 // Une ligne très brève par mise en ligne (la plus récente en haut) : l'accueil les montre une seule fois, dans une petite fenêtre,
 // à qui n'a pas encore vu cette version. [version, jeu ou partie de l'appli, ce qui change]
 const NOUVEAUTES = [
+  ['3.21', 'Donjon', 'Butin, clés et portes s\'annoncent à côté de la croix, plus sur la carte.'],
   ['3.20', 'Accueil', 'Le donjon a son entrée sous ton compagnon ; l\'Expédition se range comme les autres jeux.'],
   ['3.19', 'Donjon', 'Le bouton Quitter passe dans le menu ☰.'],
   ['3.18', 'Donjon', 'Le coup annoncé du boss n\'est plus coupé en haut de l\'écran.'],

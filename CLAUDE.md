@@ -631,6 +631,7 @@ les changer = en parler à l'utilisateur.
   avec emplacements vides, reliques en tuiles dorées, roses pour les reliques de boss), jamais de défilement ; toucher une tuile l'explique (bulle `info` posée
   sous la fiche). En combat, fiche resserrée (`.en-combat` : sans puces ni fioles, déjà en bas ; reliques en petit). **« 🎒 Tout voir »** ouvre **Mon sac** (`voirSac`) :
   compagnon, classe et son texte, chiffres, fioles (Boire / Jeter), reliques sur deux colonnes avec leur effet, « Voir mon paquet ».
+  **Annonces du moteur** (butin, clés, portes, feu, marchand… `annoncesVues`, 4,5 s, 2 au plus) : **dans le panneau à côté de la croix** (`.milieu-dj`, à la place du pouvoir le temps qu'elles durent), **jamais sur la pièce ni sur le plan** (3.21, demandé par l'utilisateur).
   **Main en éventail** : au-delà de 5 cartes, une seule rangée où les cartes se chevauchent (`styleMain`, `--ml`), au lieu d'une 2e rangée qui cassait l'écran.
 - **Écran** : barre (voir la fiche ci-dessus), toucher une relique, un état ou une fiole
   l'explique (`info`). Combat : monstres (intention chiffrée avec force / faiblesse / vulnérabilité, PV, armure, états), journal, ma ligne (⚡, PV, armure,
