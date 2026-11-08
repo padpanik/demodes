@@ -170,8 +170,10 @@
     .moi-c .pv-dj b { line-height: 16px; }
     .moi-c .armure-m { flex: none; background: #1c7ed6; border-radius: 8px; padding: 0 5px; font-weight: 900; font-size: 0.8em; }
     .moi-c .etats-c { justify-content: flex-start; }
-    .main-c { display: flex; flex-wrap: wrap; gap: 4px; justify-content: center; }
-    .main-c .carte-c { width: calc((100% - 16px) / 5); min-height: 124px; }
+    .main-c { display: flex; flex-wrap: nowrap; justify-content: center; padding-top: 10px; }
+    .main-c .carte-c { flex: 0 0 19.2%; width: auto; min-height: 124px; }
+    .main-c .carte-c + .carte-c { margin-left: var(--ml, 1%); }
+    .main-c .carte-c.choisie { z-index: 5; }
     .main-c .cc-ico { font-size: 26px; } .main-c .cc-nom { font-size: 0.68em; } .main-c .cc-txt { font-size: 0.6em; }
     .main-c .carte-c.choisie { transform: translateY(-8px); box-shadow: 0 0 0 3px #ffd43b, 0 6px 10px rgba(0,0,0,0.4); }
     .main-c .carte-c.chere { opacity: 0.5; }
@@ -309,7 +311,7 @@
     .jeu-dj.immersif { position: fixed; inset: 0; z-index: 40; border-radius: 0; box-shadow: none; display: flex; flex-direction: column; overflow: hidden;
       padding: max(8px, env(safe-area-inset-top)) 8px max(10px, env(safe-area-inset-bottom)); }
     .jeu-dj.immersif .tete-dj { flex: none; }
-    .jeu-dj.immersif .info-dj { position: absolute; left: 12px; right: 12px; top: calc(max(8px, env(safe-area-inset-top)) + 76px); z-index: 8; box-shadow: 0 6px 16px rgba(0,0,0,0.6); border: 1px solid #8d6a3f; }
+    .jeu-dj.immersif .ancienne-info-dj { position: absolute; left: 12px; right: 12px; top: calc(max(8px, env(safe-area-inset-top)) + 76px); z-index: 8; box-shadow: 0 6px 16px rgba(0,0,0,0.6); border: 1px solid #8d6a3f; }
     .jeu-dj.immersif .zone-explo { flex: 1; min-height: 0; display: flex; flex-direction: column; justify-content: flex-end; }
     .jeu-dj.immersif .salle-dj { margin: 0 -4px; width: calc(100% + 8px); }
     .jeu-dj.immersif .commandes-dj { flex: none; margin-top: 6px; }
@@ -332,7 +334,6 @@
     /* Fondu au noir quand on change de pièce */
     .fondu-dj { position: absolute; inset: 0; background: #000; pointer-events: none; z-index: 7; animation: fondu-dj 0.45s ease-out forwards; }
     @keyframes fondu-dj { from { opacity: 0.85; } to { opacity: 0; } }
-    .jeu-dj.immersif .tete-dj .carte-mini { display: none; }
     .plan-dj { flex: 1; min-height: 0; max-height: 160px; display: flex; flex-direction: column; align-items: center; justify-content: center; margin: 4px 0 8px; }
     .plan-titre { font-family: Georgia, 'Times New Roman', serif; font-weight: 700; color: #ffd8a8; font-size: 1.05em; text-shadow: 0 1px 3px #000; margin-bottom: 4px; }
     .plan-titre small { font-family: inherit; font-weight: 400; color: #a8957f; font-size: 0.75em; margin-left: 4px; }
@@ -347,6 +348,62 @@
     .menu-liste .btn { text-align: left; display: flex; align-items: center; gap: 10px; }
     .menu-liste .btn .pastille { margin-left: auto; background: #e03131; color: #fff; border-radius: 9px; font-size: 0.8em; padding: 0 7px; }
     @media (prefers-reduced-motion: reduce) { .poussiere-dj, .fondu-dj { display: none; } }
+
+    /* ================== Fiche du compagnon (3.16) ================== */
+    .fiche-dj { display: block; position: relative; padding: 6px 7px; margin: 2px 0 6px; }
+    .fiche-l1 { display: flex; align-items: center; gap: 7px; }
+    .portrait-dj { flex: none; position: relative; width: 48px; height: 48px; border-radius: 50%; padding: 0; cursor: pointer;
+      background: radial-gradient(circle at 50% 35%, #6b4f36, #241a14); border: 2px solid #c9a66b; box-shadow: 0 0 0 2px #1b130e, 0 2px 6px rgba(0,0,0,0.5); overflow: hidden; }
+    .portrait-dj > span { position: absolute; left: 2px; right: 2px; top: 3px; bottom: -3px; display: flex; align-items: center; justify-content: center; }
+    .portrait-dj > span svg { width: 100%; height: 100%; }
+    .portrait-dj .sans { font-size: 26px; }
+    .portrait-dj.ko > span { filter: grayscale(1) opacity(0.5); }
+    .portrait-dj i { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-style: normal; font-size: 24px; }
+    .fiche-id { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+    .fiche-nom { display: flex; align-items: baseline; gap: 6px; min-width: 0; white-space: nowrap; }
+    .fiche-nom b { font-family: Georgia, 'Times New Roman', serif; font-size: 1.05em; color: #ffe8cc; overflow: hidden; text-overflow: ellipsis; }
+    .fiche-nom span { font-size: 0.72em; font-weight: 800; color: #e9c46a; }
+    .fiche-dj .pv-dj { display: block; width: 100%; min-width: 0; height: 20px; border-radius: 10px; }
+    .fiche-dj .pv-dj b { line-height: 20px; font-size: 0.82em; }
+    .fiche-l2 { display: flex; align-items: center; gap: 4px; margin-top: 6px; }
+    .puce-dj { flex: none; border: 1px solid #5c4532; background: #1b130e; color: #f1e6d6; font: inherit; font-weight: 800; font-size: 0.8em; border-radius: 9px; padding: 2px 6px; cursor: pointer; white-space: nowrap; }
+    .puce-dj.or { color: #ffd43b; }
+    .fiche-l2 .carte-mini { margin-left: auto; }
+    .fiche-l3 { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; margin-top: 6px; }
+    .objet-dj { flex: none; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; font: inherit; font-size: 17px; line-height: 1; padding: 0; cursor: pointer; box-sizing: border-box; }
+    .objet-dj.fiole { border-radius: 10px 10px 14px 14px; background: radial-gradient(circle at 50% 70%, #1c3a52, #12202c); border: 1.5px solid #4dabf7; }
+    .objet-dj.fiole.vide { border: 1.5px dashed #6b5644; background: transparent; cursor: default; }
+    .objet-dj.relique { border-radius: 7px; background: radial-gradient(circle at 50% 40%, #4a3a1a, #241a0c); border: 1.5px solid #c9a66b; }
+    .objet-dj.relique.boss { border-color: #e599f7; box-shadow: 0 0 6px rgba(229,153,247,0.6); }
+    .sep-dj { width: 1px; height: 22px; background: #5c4532; margin: 0 2px; }
+    .aucune-dj { font-size: 0.72em; color: #8d7b68; font-style: italic; }
+    .sac-dj { margin-left: auto; flex: none; border: 1px solid #8d6a3f; background: #3f3026; color: #ffd8a8; font: inherit; font-weight: 800; font-size: 0.75em; border-radius: 9px; padding: 4px 7px; cursor: pointer; }
+    .fiche-dj .info-dj { position: absolute; left: 4px; right: 4px; top: calc(100% + 4px); z-index: 8; margin: 0; box-shadow: 0 6px 16px rgba(0,0,0,0.6); border: 1px solid #8d6a3f; }
+    .jeu-dj.immersif .fiche-l2 .carte-mini { display: none; }
+    .fiche-dj.en-combat { padding: 5px 7px; }
+    .fiche-dj.en-combat .fiche-l2, .fiche-dj.en-combat .objet-dj.fiole, .fiche-dj.en-combat .sep-dj, .fiche-dj.en-combat .aucune-dj { display: none; }
+    .fiche-dj.en-combat .portrait-dj { width: 40px; height: 40px; }
+    .fiche-dj.en-combat .fiche-l3 { margin-top: 4px; gap: 3px; }
+    .fiche-dj.en-combat .objet-dj { width: 24px; height: 24px; font-size: 13px; }
+    .fiche-dj.en-combat .sac-dj { padding: 1px 5px; }
+    .fiche-dj.en-combat .sac-txt { display: none; }
+    .combat-dj .scene-c { overflow: hidden; }
+    /* Fenêtre « Mon sac » */
+    .sac-tete { display: flex; align-items: center; gap: 10px; text-align: left; }
+    .sac-tete .portrait-dj { width: 60px; height: 60px; }
+    .boite-dj .sac-ligne .txt { font-size: 0.95em; }
+    .sac-chiffres { display: flex; flex-wrap: wrap; gap: 5px; margin: 8px 0 2px; justify-content: center; }
+    .sac-chiffres span { background: rgba(107,79,54,0.12); border-radius: 9px; padding: 2px 7px; font-weight: 800; font-size: 0.78em; }
+    .sac-titre { text-align: left; font-weight: 900; margin: 8px 0 3px; font-size: 0.86em; color: #6b4f36; }
+    .sac-fiole { font-size: 0.76em !important; padding: 4px 7px !important; }
+    .sac-ligne { display: flex; align-items: center; gap: 8px; background: rgba(107,79,54,0.1); border-radius: 10px; padding: 5px 8px; margin-top: 4px; text-align: left; font-size: 0.84em; }
+    .sac-ligne .ico { font-size: 1.5em; flex: none; }
+    .sac-ligne .txt { flex: 1; min-width: 0; }
+    .sac-ligne button { flex: none; border: none; background: #ffd43b; color: #2a211b; font: inherit; font-weight: 900; border-radius: 9px; padding: 4px 8px; cursor: pointer; }
+    .sac-ligne button.jeter { background: #e9ecef; }
+    .sac-grille { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
+    .sac-grille .sac-ligne { margin-top: 0; padding: 4px 6px; gap: 5px; font-size: 0.72em; line-height: 1.2; align-items: flex-start; }
+    .sac-grille .sac-ligne .ico { font-size: 1.6em; }
     .voile-dj { position: fixed; inset: 0; background: rgba(10,6,4,0.72); display: flex; align-items: center; justify-content: center; z-index: 50; padding: 16px; }
     .boite-dj { background: linear-gradient(#fdf4e3, #ecd6b0); border-radius: 18px; padding: 18px; width: 100%; max-width: 360px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
     .boite-dj .grand { font-size: 3em; line-height: 1.1; }
@@ -447,28 +504,41 @@
         </section>
 
         <div v-else class="jeu-dj" :class="{ immersif: immersif }" @contextmenu.prevent @pointerdown="reprendrePleinEcran">
-          <div class="tete-dj">
-            <div class="gauche">
-              <div class="ligne-dj">
-                <button class="etage-dj" @click="info(etageInfo)">{{ etageIco }} {{ partie.etage }}/{{ DJ.NB_ETAGES }}</button>
-                <span class="pv-dj" v-if="monJ"><i :style="{ width: pct(monJ.pv, monJ.pvMax) }"></i><b>{{ monJ.fantome ? '👻 KO' : '❤️ ' + monJ.pv + ' / ' + monJ.pvMax }}</b></span>
-                <span class="or-dj" v-if="monJ">🪙{{ monJ.or }}</span>
+          <!-- Fiche du compagnon : qui, PV, ressources, et tous les objets d'un coup (rien ne défile) -->
+          <div class="tete-dj fiche-dj" :class="{ 'en-combat': !!combat }" v-if="monJ">
+            <div class="fiche-l1">
+              <button class="portrait-dj" :class="{ ko: monJ.fantome }" @click="voirSac = true" aria-label="Mon sac">
+                <span v-if="monJ.cp" v-html="dessinSvg(monJ.cp)"></span><span v-else class="sans">🧭</span>
+                <i v-if="monJ.fantome">👻</i>
+              </button>
+              <div class="fiche-id">
+                <div class="fiche-nom"><b>{{ monJ.cp && monJ.cp.n ? monJ.cp.n : 'Explorateur' }}</b><span>{{ D.CLASSES[monJ.classe].ico }} {{ D.CLASSES[monJ.classe].nom }}</span></div>
+                <span class="pv-dj"><i :style="{ width: pct(monJ.pv, monJ.pvMax) }"></i><b>{{ monJ.fantome ? '👻 KO' : '❤️ ' + monJ.pv + ' / ' + monJ.pvMax }}</b></span>
               </div>
-              <div class="objets-dj" v-if="monJ">
-                <button @click="voirPaquet = true" aria-label="Mon paquet">🃏{{ monJ.paquet.length }}</button>
-                <button v-for="(f, i) in monJ.fioles" :key="'f' + i + f" @click="toucherFiole(i)">{{ D.FIOLES[f].ico }}</button><span v-for="i in Math.max(0, monJ.fiolesMax - monJ.fioles.length)" :key="'fv' + i" class="fiole-vide"></span>
-                <button v-for="r in monJ.reliques" :key="'r' + r" @click="info(D.RELIQUES[r].ico + ' ' + D.RELIQUES[r].nom + ' : ' + D.RELIQUES[r].texte)">{{ D.RELIQUES[r].ico }}</button>
-                <span class="petit">🗝️{{ partie.cles }}<template v-if="partie.grandeCle">🔑</template> ✨{{ partie.poussiere }}</span>
+              <button class="menu-dj" @click="menuJeu = true" aria-label="Menu">☰<b v-if="chatNonLus">{{ chatNonLus }}</b></button>
+              <button class="quitter-dj" @click="demandeQuitter = true" aria-label="Quitter le donjon">🏳️<br>Quitter</button>
+            </div>
+            <div class="fiche-l2">
+              <button class="puce-dj" @click="info(etageInfo)">{{ etageIco }} {{ partie.etage }}/{{ DJ.NB_ETAGES }}</button>
+              <button class="puce-dj or" @click="info('🪙 Or : pour le marchand (cartes, fioles, reliques, retirer une carte).')">🪙 {{ monJ.or }}</button>
+              <button class="puce-dj" @click="info('🗝️ Petites clés : ouvrent les portes 🔒. ' + (partie.grandeCle ? '🔑 Tu as la grande clé du boss !' : '🔑 La grande clé du boss est chez l\'élite ⭐.'))">🗝️ {{ partie.cles }}<template v-if="partie.grandeCle"> 🔑</template></button>
+              <button class="puce-dj" @click="info('✨ Poussières d\'étoile : 5 = 1 ⭐ à la fin du donjon.')">✨ {{ partie.poussiere }}</button>
+              <button class="puce-dj" @click="voirPaquet = true">🃏 {{ monJ.paquet.length }}</button>
+              <div class="carte-mini" :style="{ gridTemplateColumns: 'repeat(' + DJ.GX + ', 11px)' }">
+                <span v-for="c in carteMini" :key="c.id" :class="c.cl"><i v-for="(p, k) in c.amis" :key="k" :style="{ background: p, left: (2 + k * 3) + 'px' }"></i></span>
               </div>
             </div>
-            <div class="carte-mini" :style="{ gridTemplateColumns: 'repeat(' + DJ.GX + ', 11px)' }">
-              <span v-for="c in carteMini" :key="c.id" :class="c.cl"><i v-for="(p, k) in c.amis" :key="k" :style="{ background: p, left: (2 + k * 3) + 'px' }"></i></span>
+            <div class="fiche-l3">
+              <button v-for="(f, i) in monJ.fioles" :key="'f' + i + f" class="objet-dj fiole" @click="toucherFiole(i)">{{ D.FIOLES[f].ico }}</button>
+              <span v-for="i in Math.max(0, monJ.fiolesMax - monJ.fioles.length)" :key="'fv' + i" class="objet-dj fiole vide"></span>
+              <span class="sep-dj"></span>
+              <button v-for="r in monJ.reliques" :key="'r' + r" class="objet-dj relique" :class="{ boss: D.RELIQUES[r].rar === 'boss' }" @click="info(D.RELIQUES[r].ico + ' ' + D.RELIQUES[r].nom + ' : ' + D.RELIQUES[r].texte + '.')">{{ D.RELIQUES[r].ico }}</button>
+              <span v-if="!monJ.reliques.length" class="aucune-dj">pas encore de relique</span>
+              <button class="sac-dj" @click="voirSac = true">🎒<span class="sac-txt"> Tout voir</span></button>
             </div>
-            <button class="menu-dj" @click="menuJeu = true" aria-label="Menu">☰<b v-if="chatNonLus">{{ chatNonLus }}</b></button>
-            <button class="quitter-dj" @click="demandeQuitter = true" aria-label="Quitter le donjon">🏳️<br>Quitter</button>
-          </div>
-          <div class="info-dj" v-if="infoTxt" @click="infoTxt = ''">{{ infoTxt }}
-            <div v-if="infoFiole !== null && monJ && monJ.fioles[infoFiole]"><button v-if="D.FIOLES[monJ.fioles[infoFiole]].dehors && !combat" @click.stop="boireFiole">Boire</button><button @click.stop="jeterFiole">Jeter</button></div>
+            <div class="info-dj" v-if="infoTxt" @click="infoTxt = ''">{{ infoTxt }}
+              <div v-if="infoFiole !== null && monJ && monJ.fioles[infoFiole]"><button v-if="D.FIOLES[monJ.fioles[infoFiole]].dehors && !combat" @click.stop="boireFiole">Boire</button><button @click.stop="jeterFiole">Jeter</button></div>
+            </div>
           </div>
 
           <!-- COMBAT AUX CARTES, à la place de la pièce -->
@@ -503,7 +573,7 @@
                 </div>
                 <span v-for="k in fxSur(moi)" :key="'x' + k.id" class="coup-flottant" :class="k.cl">{{ k.v }}</span>
               </div>
-              <div class="main-c">
+              <div class="main-c" :style="styleMain">
                 <carte-dj v-for="(id, i) in monJ.main" :key="combat.tour + '-' + i + id" :id="id" :badge="badgeCarte(id)" :class="{ choisie: sel && sel.k === 'carte' && sel.i === i, chere: !jouable(id) }" @click.native="toucherCarte(i)"></carte-dj>
               </div>
               <div class="desc-c">{{ descSel }}</div>
@@ -686,6 +756,34 @@
           </div>
         </div>
 
+        <!-- Mon sac : le compagnon et tous ses objets, avec leur effet -->
+        <div class="voile-dj" v-if="voirSac && monJ" @click.self="voirSac = false">
+          <div class="boite-dj boite-menu">
+            <div class="sac-tete">
+              <span class="portrait-dj" :class="{ ko: monJ.fantome }"><span v-if="monJ.cp" v-html="dessinSvg(monJ.cp)"></span><span v-else class="sans">🧭</span></span>
+              <div><div class="titre" style="margin:0">{{ monJ.cp && monJ.cp.n ? monJ.cp.n : 'Explorateur' }}</div>
+                <span class="classe-dj">{{ D.CLASSES[monJ.classe].ico }} {{ D.CLASSES[monJ.classe].nom }}</span>
+                <div class="aide" style="margin:2px 0 0">{{ D.CLASSES[monJ.classe].texte }}</div></div>
+            </div>
+            <div class="sac-chiffres">
+              <span>❤️ {{ monJ.pv }} / {{ monJ.pvMax }}</span><span>🪙 {{ monJ.or }}</span><span>🗝️ {{ partie.cles }}{{ partie.grandeCle ? ' + 🔑' : '' }}</span>
+              <span>✨ {{ partie.poussiere }}</span><span>{{ etageIco }} étage {{ partie.etage }}/{{ DJ.NB_ETAGES }}</span>
+            </div>
+            <div class="sac-titre">Fioles ({{ monJ.fioles.length }} / {{ monJ.fiolesMax }})</div>
+            <div v-for="(f, i) in monJ.fioles" :key="'sf' + i + f" class="sac-ligne sac-fiole"><span class="ico">{{ D.FIOLES[f].ico }}</span>
+              <span class="txt"><b>{{ D.FIOLES[f].nom }}</b> · {{ D.FIOLES[f].texte }}{{ D.FIOLES[f].dehors ? '' : ' (en combat)' }}</span>
+              <button v-if="D.FIOLES[f].dehors && !combat" @click="infoFiole = i; boireFiole()">Boire</button>
+              <button class="jeter" @click="infoFiole = i; jeterFiole()">Jeter</button></div>
+            <div v-if="!monJ.fioles.length" class="aide" style="text-align:left;margin-top:2px">Aucune fiole : on en trouve après les combats, chez le marchand ou à l'autel.</div>
+            <div class="sac-titre">Reliques ({{ monJ.reliques.length }})</div>
+            <div class="sac-grille"><div v-for="r in monJ.reliques" :key="'sr' + r" class="sac-ligne"><span class="ico">{{ D.RELIQUES[r].ico }}</span>
+              <span class="txt"><b>{{ D.RELIQUES[r].nom }}</b><br>{{ D.RELIQUES[r].texte }}</span></div></div>
+            <div v-if="!monJ.reliques.length" class="aide" style="text-align:left;margin-top:2px">Aucune relique : les élites ⭐, le trésor de l'étage et le marchand en donnent.</div>
+            <button class="btn principal" style="margin-top:10px" @click="voirSac = false; voirPaquet = true">🃏 Voir mon paquet ({{ monJ.paquet.length }} cartes)</button>
+            <button class="btn" @click="voirSac = false">Fermer</button>
+          </div>
+        </div>
+
         <!-- Mon paquet (consultation) -->
         <div class="voile-dj" v-if="voirPaquet && monJ" @click.self="voirPaquet = false">
           <div class="boite-dj boite-menu">
@@ -844,6 +942,7 @@
         demandeQuitter: false,
         immersionVoulue: lireStockage('donjon-plein-ecran') !== false,   // plein écran pendant l'exploration (par téléphone)
         menuJeu: false,
+        voirSac: false,
         chatNonLus: 0,
         demandeAbandon: false,
         panne: false,
@@ -915,6 +1014,11 @@
           if (this.cibleAttendue === 'monstre') return t + ' · 👆 touche un monstre';
           if (this.cibleAttendue === 'joueur') return t + ' · 👆 touche toi ou un ami';
           return t + ' · touche encore pour jouer';
+        },
+        // Plus de 5 cartes en main : elles se chevauchent (une seule rangée, comme une main tenue en éventail)
+        styleMain: function() {
+          var n = this.monJ ? this.monJ.main.length : 0;
+          return { '--ml': n <= 5 ? '1%' : 'calc((100% - ' + n + ' * 19.2%) / ' + (n - 1) + ')' };
         },
         rienAJouer: function() { return !this.monJ || !this.monJ.main.some(id => this.jouable(id)); },
         degatsAnnonces: function() {

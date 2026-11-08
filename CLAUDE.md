@@ -625,7 +625,14 @@ les changer = en parler à l'utilisateur.
   changement de pièce. Combat : la scène prend la hauteur libre, monstres plus grands (`min(…, vh)`), cartes plus hautes. **Bouton ☰** dans la barre (pastille rouge =
   messages non lus, `SalonGlobal.nonLus`, nouveau dans l'API) : Continuer, Discuter (`SalonGlobal.ouvrir`), son, côté de la croix, quitter / remettre le plein écran,
   Règles, Quitter le donjon. Choix par téléphone `donjon-plein-ecran` (activé par défaut), aussi dans Réglages. Le bouton « 🏳️ Quitter » reste dans la barre.
-- **Écran** : barre (étage, PV, or, 🃏 paquet, fioles, reliques, clés, poussières, petite carte, « 🏳️ Quitter »), toucher une relique, un état ou une fiole
+- **Fiche du compagnon** (3.16, demandé par l'utilisateur : « rendre plus clair les infos du compagnon, voir la totalité des objets sans défiler ») : la barre du haut
+  devient une fiche (`.fiche-dj`) : portrait rond du compagnon (toucher = « Mon sac »), nom, classe, grande barre de PV, ☰ et « 🏳️ Quitter » ; puis des puces
+  (étage, or, petites clés + 🔑, poussières, paquet, petite carte hors plein écran) ; puis **tous les objets en tuiles qui passent à la ligne** (fioles en flacons bleus
+  avec emplacements vides, reliques en tuiles dorées, roses pour les reliques de boss), jamais de défilement ; toucher une tuile l'explique (bulle `info` posée
+  sous la fiche). En combat, fiche resserrée (`.en-combat` : sans puces ni fioles, déjà en bas ; reliques en petit). **« 🎒 Tout voir »** ouvre **Mon sac** (`voirSac`) :
+  compagnon, classe et son texte, chiffres, fioles (Boire / Jeter), reliques sur deux colonnes avec leur effet, « Voir mon paquet ».
+  **Main en éventail** : au-delà de 5 cartes, une seule rangée où les cartes se chevauchent (`styleMain`, `--ml`), au lieu d'une 2e rangée qui cassait l'écran.
+- **Écran** : barre (voir la fiche ci-dessus), toucher une relique, un état ou une fiole
   l'explique (`info`). Combat : monstres (intention chiffrée avec force / faiblesse / vulnérabilité, PV, armure, états), journal, ma ligne (⚡, PV, armure,
   états), la main (composant `<carte-dj>`, badge rouge = dégâts réels s'ils diffèrent), description de la carte touchée, pioche / défausse, fioles,
   « Fin du tour ». **Toucher une carte la montre, la toucher encore la joue** (ou toucher le monstre / l'ami visé). Fenêtres : butin, relique de boss,
