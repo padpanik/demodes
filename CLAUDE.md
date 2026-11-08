@@ -621,7 +621,7 @@ les changer = en parler à l'utilisateur.
   le bloc `.jeu-dj` devient `.immersif` (fixé sur tout l'écran, z-index 40 sous les fenêtres `.voile-dj` à 50, marges `safe-area`) : plus d'onglets, bulle 💬 du salon
   global cachée (`body.dj-immersif`), et le navigateur cache ses barres (`requestFullscreen`, demandé au lancement ou au premier toucher : Android oui, iPhone non).
   Exploration : **grand plan de l'étage** au-dessus de la pièce (`planSvg` : pièces vues, couloirs, pièces voisines en « ? », icônes 🔥 🛒 ❓ ⭐ 👑 ⚔️, amis en points ;
-  cadré sur les pièces montrées ; la petite carte de la barre est alors cachée), pièce pleine largeur, croix agrandie, poussière qui flotte et fondu au noir à chaque
+  cadré sur les pièces montrées, au moins 3 × 3 pièces ; la petite carte de la barre est alors cachée ; **3.17** (demandé par l'utilisateur : le plan était « mangé en haut et en bas ») : plan dans un cadre `.plan-dj` qui prend toute la hauteur libre, titre de l'étage et objectif posés dessus, couloirs doubles, pièce actuelle qui palpite ; croix réduite (128 px) à côté d'un panneau `.milieu-dj`), pièce pleine largeur, croix agrandie, poussière qui flotte et fondu au noir à chaque
   changement de pièce. Combat : la scène prend la hauteur libre, monstres plus grands (`min(…, vh)`), cartes plus hautes. **Bouton ☰** dans la barre (pastille rouge =
   messages non lus, `SalonGlobal.nonLus`, nouveau dans l'API) : Continuer, Discuter (`SalonGlobal.ouvrir`), son, côté de la croix, quitter / remettre le plein écran,
   Règles, Quitter le donjon. Choix par téléphone `donjon-plein-ecran` (activé par défaut), aussi dans Réglages. Le bouton « 🏳️ Quitter » reste dans la barre.

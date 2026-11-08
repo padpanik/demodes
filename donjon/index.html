@@ -312,13 +312,18 @@
       padding: max(8px, env(safe-area-inset-top)) 8px max(10px, env(safe-area-inset-bottom)); }
     .jeu-dj.immersif .tete-dj { flex: none; }
     .jeu-dj.immersif .ancienne-info-dj { position: absolute; left: 12px; right: 12px; top: calc(max(8px, env(safe-area-inset-top)) + 76px); z-index: 8; box-shadow: 0 6px 16px rgba(0,0,0,0.6); border: 1px solid #8d6a3f; }
-    .jeu-dj.immersif .zone-explo { flex: 1; min-height: 0; display: flex; flex-direction: column; justify-content: flex-end; }
-    .jeu-dj.immersif .salle-dj { margin: 0 -4px; width: calc(100% + 8px); }
-    .jeu-dj.immersif .commandes-dj { flex: none; margin-top: 6px; }
-    .jeu-dj.immersif .pad { width: 158px; height: 158px; }
-    .jeu-dj.immersif .pad span { width: 52px; height: 52px; font-size: 22px; }
-    .jeu-dj.immersif .pad .h { left: 53px; top: 4px; } .jeu-dj.immersif .pad .b { left: 53px; bottom: 4px; }
-    .jeu-dj.immersif .pad .g { left: 4px; top: 53px; } .jeu-dj.immersif .pad .d { right: 4px; top: 53px; }
+    .jeu-dj.immersif .zone-explo { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 6px; }
+    .jeu-dj.immersif .salle-dj { flex: none; margin: 0 -4px; width: calc(100% + 8px); }
+    /* Croix compacte et panneau à côté (pouvoir, côté de la croix) : le plan garde la place */
+    .jeu-dj.immersif .commandes-dj { flex: none; margin-top: 6px; gap: 8px; }
+    .jeu-dj.immersif .pad { width: 128px; height: 128px; }
+    .jeu-dj.immersif .pad span { width: 42px; height: 42px; font-size: 17px; border-radius: 11px; }
+    .jeu-dj.immersif .pad .h { left: 43px; top: 3px; } .jeu-dj.immersif .pad .b { left: 43px; bottom: 3px; }
+    .jeu-dj.immersif .pad .g { left: 3px; top: 43px; } .jeu-dj.immersif .pad .d { right: 3px; top: 43px; }
+    .jeu-dj.immersif .milieu-dj { align-self: stretch; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
+      background: linear-gradient(#2e231b, #1f1712); border: 1px solid #4b3a2c; border-radius: 14px; padding: 8px; font-size: 0.78em; }
+    .jeu-dj.immersif .milieu-dj .objectif-dj { display: none; }
+    .jeu-dj.immersif .inverser-dj { margin: 0; padding: 3px 12px; }
     .jeu-dj.immersif .combat-dj { flex: 1; min-height: 0; display: flex; flex-direction: column; margin-top: 2px; }
     .jeu-dj.immersif .scene-c { flex: 1; min-height: 0; display: flex; flex-direction: column; justify-content: center; }
     .jeu-dj.immersif .mc-des { width: min(96px, 12vh); height: min(96px, 12vh); }
@@ -334,11 +339,19 @@
     /* Fondu au noir quand on change de pièce */
     .fondu-dj { position: absolute; inset: 0; background: #000; pointer-events: none; z-index: 7; animation: fondu-dj 0.45s ease-out forwards; }
     @keyframes fondu-dj { from { opacity: 0.85; } to { opacity: 0; } }
-    .plan-dj { flex: 1; min-height: 0; max-height: 160px; display: flex; flex-direction: column; align-items: center; justify-content: center; margin: 4px 0 8px; }
-    .plan-titre { font-family: Georgia, 'Times New Roman', serif; font-weight: 700; color: #ffd8a8; font-size: 1.05em; text-shadow: 0 1px 3px #000; margin-bottom: 4px; }
-    .plan-titre small { font-family: inherit; font-weight: 400; color: #a8957f; font-size: 0.75em; margin-left: 4px; }
-    .plan-svg { width: 100%; display: flex; justify-content: center; }
-    .plan-svg svg { max-height: 132px; width: auto; max-width: 100%; }
+    /* Plan de l'étage : un cadre de carte qui prend toute la place libre */
+    .plan-dj { flex: 1; min-height: 70px; position: relative; border-radius: 14px; overflow: hidden; cursor: pointer;
+      background: radial-gradient(ellipse at 50% 45%, #2b2019 0%, #17110d 75%), #17110d; border: 1px solid #5c4532;
+      box-shadow: inset 0 0 24px rgba(0,0,0,0.7), 0 2px 8px rgba(0,0,0,0.4); }
+    .plan-dj:before { content: ''; position: absolute; inset: 0; opacity: 0.22; pointer-events: none;
+      background-image: radial-gradient(circle, #8d6a3f 1px, transparent 1.2px); background-size: 14px 14px; }
+    .plan-titre { position: absolute; left: 10px; top: 6px; right: 10px; display: flex; align-items: baseline; gap: 6px; z-index: 1;
+      font-family: Georgia, 'Times New Roman', serif; font-weight: 700; color: #ffd8a8; font-size: 0.95em; text-shadow: 0 1px 3px #000; }
+    .plan-titre small { font-family: inherit; font-weight: 400; color: #a8957f; font-size: 0.78em; margin-left: auto; }
+    .plan-svg { position: absolute; left: 6px; right: 6px; top: 28px; bottom: 24px; }
+    .plan-svg svg { display: block; width: 100%; height: 100%; }
+    .plan-objectif { position: absolute; left: 8px; right: 8px; bottom: 5px; text-align: center; font-size: 0.72em; color: #c9b8a6; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .sac-tuile { margin-left: auto; border-radius: 9px; background: #3f3026; border: 1.5px solid #8d6a3f; }
     .jeu-dj:not(.immersif) .pv-dj { min-width: 46px; }
     .jeu-dj:not(.immersif) .gauche { overflow: hidden; }
     .jeu-dj:not(.immersif) .menu-dj { width: 30px; font-size: 17px; }
@@ -534,7 +547,7 @@
               <span class="sep-dj"></span>
               <button v-for="r in monJ.reliques" :key="'r' + r" class="objet-dj relique" :class="{ boss: D.RELIQUES[r].rar === 'boss' }" @click="info(D.RELIQUES[r].ico + ' ' + D.RELIQUES[r].nom + ' : ' + D.RELIQUES[r].texte + '.')">{{ D.RELIQUES[r].ico }}</button>
               <span v-if="!monJ.reliques.length" class="aucune-dj">pas encore de relique</span>
-              <button class="sac-dj" @click="voirSac = true">🎒<span class="sac-txt"> Tout voir</span></button>
+              <button class="objet-dj sac-tuile" @click="voirSac = true" aria-label="Tout voir">🎒</button>
             </div>
             <div class="info-dj" v-if="infoTxt" @click="infoTxt = ''">{{ infoTxt }}
               <div v-if="infoFiole !== null && monJ && monJ.fioles[infoFiole]"><button v-if="D.FIOLES[monJ.fioles[infoFiole]].dehors && !combat" @click.stop="boireFiole">Boire</button><button @click.stop="jeterFiole">Jeter</button></div>
@@ -588,9 +601,10 @@
 
           <template v-else>
           <div class="zone-explo">
-          <div class="plan-dj" v-if="immersif" @click="info(etageInfo)">
-            <div class="plan-titre">{{ etageIco }} {{ D.ETAGES[partie.etage - 1].nom }} <small>étage {{ partie.etage }}/{{ DJ.NB_ETAGES }}</small></div>
+          <div class="plan-dj" v-if="immersif" @click="info(etageInfo + ' · ' + objectif)">
+            <div class="plan-titre">{{ etageIco }} {{ D.ETAGES[partie.etage - 1].nom }}<small>étage {{ partie.etage }} / {{ DJ.NB_ETAGES }}</small></div>
             <div class="plan-svg" v-html="planSvg"></div>
+            <div class="plan-objectif">{{ objectif }}</div>
           </div>
           <div class="salle-dj" ref="salle">
             <svg class="fond" viewBox="0 0 352 288" preserveAspectRatio="none" v-html="salleSvg"></svg>
@@ -627,7 +641,7 @@
               <template v-if="monJ && monJ.fantome">👻 Tu es KO.<br>{{ nbJoueurs > 1 ? 'Va près d\'un ami : il te ranime en restant à côté de toi.' : '' }}</template>
               <template v-else-if="monPouvoir"><span class="pouvoir">{{ POUVOIRS[monPouvoir].ico }} {{ POUVOIRS[monPouvoir].nom }}</span><br>fonce dans {{ POUVOIRS[monPouvoir].quoi }}</template>
               <template v-else>Sans pouvoir : explore et trouve les coffres.</template>
-              <div class="aide" style="margin-top:4px">{{ objectif }}</div>
+              <div class="aide objectif-dj" style="margin-top:4px">{{ objectif }}</div>
               <button class="inverser-dj" @click="inverse = !inverse" aria-label="Mettre la croix de l'autre côté">⇄</button>
             </div>
           </div>
@@ -1053,37 +1067,48 @@
         flairIci: function() { return this.joueursIci.some(p => p.pouvoir === 'flair' && !p.fantome); },
         salleSvg: function() { return this.salleIci ? dessinerSalle(this.salleIci, this.flairIci, this.joueursIci, this.partie.etage) : ''; },
         // Plan de l'étage en grand (plein écran) : pièces vues, couloirs, rôle des pièces, où sont les amis
+        // Plan de l'étage (plein écran) : il remplit la place libre entre la fiche et la pièce, mis à l'échelle (preserveAspectRatio)
         planSvg: function() {
-          var p = this.partie, S = this.salles || {}, CW = 46, CH = 30, o = '', ICO = { feu: '🔥', marchand: '🛒', autel: '❓', elite: '⭐', boss: '👑', depart: '🚪' };
+          var p = this.partie, S = this.salles || {}, CW = 50, CH = 34, o = '', moi = this.monJ;
+          var ICO = { feu: '🔥', marchand: '🛒', autel: '❓', elite: '⭐', boss: '👑', depart: '🚪' };
           if (!p) return '';
           var cx = s => s.x * CW + CW / 2, cy = s => s.y * CH + CH / 2, vu = id => !!p.vues[id];
+          var montre = s => vu(s.id) || Object.values(s.portes).some(vu);
+          var x0 = 99, y0 = 99, x1 = -1, y1 = -1;
+          Object.values(S).forEach(s => { if (!montre(s)) return; x0 = Math.min(x0, s.x); y0 = Math.min(y0, s.y); x1 = Math.max(x1, s.x); y1 = Math.max(y1, s.y); });
+          if (x1 < 0) return '';
+          // Couloirs : un trait sombre, un trait clair dedans (pointillés vers une pièce encore inconnue)
           Object.values(S).forEach(s => {
             if (!vu(s.id)) return;
             Object.keys(s.portes).forEach(d => {
               var v = S[s.portes[d]];
               if (!v || (vu(v.id) && v.id < s.id)) return;
-              o += '<line x1="' + cx(s) + '" y1="' + cy(s) + '" x2="' + cx(v) + '" y2="' + cy(v) + '" stroke="#8d6a3f" stroke-width="4"' + (vu(v.id) ? '' : ' stroke-dasharray="3 3" opacity=".7"') + '/>';
+              var l = 'x1="' + cx(s) + '" y1="' + cy(s) + '" x2="' + cx(v) + '" y2="' + cy(v) + '"';
+              o += '<line ' + l + ' stroke="#120c09" stroke-width="9" stroke-linecap="round"/>' +
+                   '<line ' + l + ' stroke="' + (vu(v.id) ? '#b08a57' : '#6b5644') + '" stroke-width="3.5" stroke-linecap="round"' + (vu(v.id) ? '' : ' stroke-dasharray="2 4"') + '/>';
             });
           });
-          var x0 = 99, y0 = 99, x1 = -1, y1 = -1;   // cadre : seulement les pièces montrées
           Object.values(S).forEach(s => {
-            if (!vu(s.id) && !Object.values(s.portes).some(vu)) return;
-            x0 = Math.min(x0, s.x); y0 = Math.min(y0, s.y); x1 = Math.max(x1, s.x); y1 = Math.max(y1, s.y);
-          });
-          Object.values(S).forEach(s => {
-            var x = s.x * CW + 5, y = s.y * CH + 4, w = CW - 10, h = CH - 8;
-            var voisinVu = Object.values(s.portes).some(vu);
-            if (!vu(s.id)) { if (voisinVu) o += '<rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" rx="4" fill="#120d0a" stroke="#6b5644" stroke-dasharray="3 3"/><text x="' + cx(s) + '" y="' + (cy(s) + 4) + '" text-anchor="middle" font-size="11" fill="#6b5644">?</text>'; return; }
-            var ici = this.monJ && this.monJ.salle === s.id, propre = !p.ennemis || !p.ennemis.some(m => m.salle === s.id);
-            o += '<rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" rx="4" fill="' + (ici ? '#e8590c' : s.boss ? '#5f3dc4' : '#4b3a2c') + '" stroke="' + (ici ? '#ffd8a8' : '#8d6a3f') + '" stroke-width="1.5"/>';
-            var ico = ICO[s.role] || (propre ? '' : '⚔️');
-            if (ico) o += '<text x="' + cx(s) + '" y="' + (cy(s) + 4.5) + '" text-anchor="middle" font-size="12">' + ico + '</text>';
+            if (!montre(s)) return;
+            var x = s.x * CW + 6, y = s.y * CH + 5, w = CW - 12, h = CH - 10, rect = 'x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" rx="6"';
+            if (!vu(s.id)) { o += '<rect ' + rect + ' fill="#120d0a" stroke="#6b5644" stroke-width="1.4" stroke-dasharray="3 3"/><text x="' + cx(s) + '" y="' + (cy(s) + 4.5) + '" text-anchor="middle" font-size="12" font-weight="700" fill="#8d7b68">?</text>'; return; }
+            var ici = moi && moi.salle === s.id, combat = p.ennemis && p.ennemis.some(m => m.salle === s.id);
+            var fond = ici ? '#d9480f' : s.boss ? '#4c2a85' : s.role === 'elite' ? '#5c3d12' : '#3b2d22';
+            if (ici) o += '<rect x="' + (x - 4) + '" y="' + (y - 4) + '" width="' + (w + 8) + '" height="' + (h + 8) + '" rx="9" fill="none" stroke="#ffa94d" stroke-width="2" class="pl-pouls"/>';
+            o += '<rect ' + rect + ' fill="#000" opacity=".45" transform="translate(0 2)"/>' +
+                 '<rect ' + rect + ' fill="' + fond + '" stroke="' + (ici ? '#ffe8cc' : '#8d6a3f') + '" stroke-width="1.6"/>' +
+                 '<rect x="' + (x + 2) + '" y="' + (y + 2) + '" width="' + (w - 4) + '" height="' + (h / 2 - 2) + '" rx="4" fill="#fff" opacity=".07"/>';
+            var ico = ICO[s.role] || (combat ? '⚔️' : '');
+            if (ico) o += '<text x="' + cx(s) + '" y="' + (cy(s) + 5) + '" text-anchor="middle" font-size="14">' + ico + '</text>';
             Object.values(p.joueurs).filter(j => j.salle === s.id && j.nom !== this.moi).slice(0, 3).forEach((j, k) => {
-              o += '<circle cx="' + (x + 6 + k * 7) + '" cy="' + (y + h - 5) + '" r="3" fill="' + COULEURS_J[j.ordre % COULEURS_J.length] + '" stroke="#000" stroke-width=".8"/>';
+              o += '<circle cx="' + (x + w - 5 - k * 7) + '" cy="' + (y + 5) + '" r="3.2" fill="' + COULEURS_J[j.ordre % COULEURS_J.length] + '" stroke="#000" stroke-width=".9"/>';
             });
           });
-          if (x1 < 0) return '';
-          return '<svg viewBox="' + (x0 * CW) + ' ' + (y0 * CH) + ' ' + ((x1 - x0 + 1) * CW) + ' ' + ((y1 - y0 + 1) * CH) + '" style="height:' + ((y1 - y0 + 1) * CH * 1.15) + 'px">' + o + '</svg>';
+          // Cadrage sur les pièces montrées, mais jamais plus petit que 3 × 3 pièces (sinon deux pièces rempliraient tout le cadre)
+          var m = 4, lw = Math.max(x1 - x0 + 1, 3) * CW, lh = Math.max(y1 - y0 + 1, 3) * CH;
+          var vb = [(x0 + x1 + 1) * CW / 2 - lw / 2 - m, (y0 + y1 + 1) * CH / 2 - lh / 2 - m, lw + 2 * m, lh + 2 * m];
+          return '<svg viewBox="' + vb.join(' ') + '" preserveAspectRatio="xMidYMid meet">' +
+            '<style>.pl-pouls{animation:pl 1.4s ease-in-out infinite}@keyframes pl{0%,100%{opacity:.25}50%{opacity:1}}</style>' + o + '</svg>';
         },
         carteMini: function() {
           var l = [], p = this.partie, S = this.salles || {};
