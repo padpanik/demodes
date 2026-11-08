@@ -486,7 +486,7 @@
             <div class="aide" v-else>3 étages, un paquet de cartes qui se construit en chemin : il faut souvent plusieurs essais pour vaincre la Liche.</div>
           </section>
         </template>
-        <a class="lien-exp" href="expedition/">🧭 Retour à l'expédition</a>
+        <a class="lien-exp" href="index.html?choix">🏠 Retour à l'accueil</a>
         <p class="version">Désdale · Donjon des compagnons · version {{ version }}</p>
       </template>
 
@@ -663,7 +663,7 @@
             <div class="titre">Ce donjon s'est bloqué</div>
             <div class="aide" style="font-size:0.9em">Désolé ! Ton exploration ne peut pas continuer. Tu peux en commencer une nouvelle.</div>
             <button class="btn principal" @click="abandonnerSolo">🔄 Commencer un nouveau donjon</button>
-            <button class="btn" @click="abandonnerSolo(true)">🧭 Retour à l'expédition</button>
+            <button class="btn" @click="abandonnerSolo(true)">🏠 Retour à l'accueil</button>
           </div>
         </div>
         <!-- Menu du donjon (bouton ☰) -->
@@ -695,7 +695,7 @@
             </template>
             <template v-else>
               <div class="aide" style="font-size:0.9em">Tu quittes le salon ; les autres continuent sans toi.</div>
-              <button class="btn principal" @click="quitterDonjon">Quitter et revenir à l'expédition</button>
+              <button class="btn principal" @click="quitterDonjon">Quitter et revenir à l'accueil</button>
             </template>
             <button class="btn" @click="demandeQuitter = false">↩ Continuer l'exploration</button>
           </div>
@@ -823,7 +823,7 @@
             <button v-if="!solo && role === 'hote'" class="btn principal" @click="envoyerJeu({ type: 'NOUVELLE' })">🔁 Nouveau donjon</button>
             <button v-if="solo" class="btn principal" @click="nouveauSolo">🔁 Nouveau donjon</button>
             <div v-if="!solo && role !== 'hote'" class="aide">L'hôte peut relancer un nouveau donjon.</div>
-            <button class="btn" @click="rentrer">{{ monCp ? '🏠 Rentrer à la maison' : '🧭 Retour à l\'expédition' }}</button>
+            <button class="btn" @click="rentrer">{{ monCp ? '🏠 Rentrer à la maison' : '🏠 Retour à l\'accueil' }}</button>
           </div>
         </div>
       </template>
@@ -1317,12 +1317,12 @@
           this.sauvegarderPartie();
         },
         // Abandon de l'exploration en solo : rien n'est gagné, on peut repartir de zéro
-        abandonnerSolo: function(versExpedition) {
+        abandonnerSolo: function(versAccueil) {
           this.demandeQuitter = false; this.demandeAbandon = false; this.panne = false;
           ecrireStockage(CLE_SOLO, null); partieHote = null;
           this.solo = false; this.partie = null; this.gains = null; this.direction(null);
           this.soloV++;
-          if (versExpedition === true) { location.href = 'expedition/'; return; }
+          if (versAccueil === true) { location.href = 'index.html?choix'; return; }
           this.onglet = 'config';
         },
         nouveauSolo: function() { ecrireStockage(CLE_SOLO, null); partieHote = null; this.demarrerSolo(); },
@@ -1423,13 +1423,13 @@
         rentrer: function() {
           if (this.solo) { ecrireStockage(CLE_SOLO, null); partieHote = null; }
           else if (this.role) this.sortirDuSalon();
-          setTimeout(() => { location.href = this.monCp ? 'compagnon/' : 'expedition/'; }, this.role === null ? 450 : 0);
+          setTimeout(() => { location.href = this.monCp ? 'compagnon/' : 'index.html?choix'; }, this.role === null ? 450 : 0);
         },
         quitterDonjon: function() {
           this.demandeQuitter = false;
-          if (this.solo) { this.sauvegarderPartie(); location.href = 'expedition/'; return; }
+          if (this.solo) { this.sauvegarderPartie(); location.href = 'index.html?choix'; return; }
           this.sortirDuSalon();
-          location.href = 'expedition/';
+          location.href = 'index.html?choix';
         },
 
         envoyerJeu: function(m) {

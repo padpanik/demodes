@@ -138,6 +138,27 @@
     .lien-sauvegarde .fl { margin-left: auto; color: #9aa7b2; font-size: 1.3em; }
     .separateur-sv { margin: 14px 0 8px; font-size: 0.8em; font-weight: 800; color: #8a97a1; text-transform: uppercase; letter-spacing: 0.5px; }
     .erreur-sv { margin-top: 10px; color: #c0392b; font-weight: 700; font-size: 0.88em; }
+    /* Entrée du Donjon des compagnons, juste sous « Mon compagnon » (3.20) : scène dessinée (mur, porte, torches, monstres, mon compagnon) */
+    .entree-donjon { position: relative; display: block; overflow: hidden; height: 132px; border-radius: 18px; margin: 2px 0 14px; text-decoration: none; color: #fff;
+                     background: #231c36; box-shadow: 0 2px 4px rgba(20,12,40,0.25), 0 8px 22px rgba(35,28,54,0.28); }
+    .entree-donjon:active { transform: scale(0.985); }
+    .entree-donjon .scene-dj { position: absolute; right: 0; top: 0; height: 100%; width: auto; aspect-ratio: 158 / 116; }
+    .entree-donjon .texte-dj { position: relative; display: flex; flex-direction: column; gap: 3px; height: 100%; justify-content: center; padding: 10px 148px 10px 14px; }
+    .entree-donjon .surtitre-dj { font-size: 0.6em; font-weight: 900; letter-spacing: 0.8px; white-space: nowrap; text-transform: uppercase; color: #ffc46b; }
+    .entree-donjon .accroche-dj { font-size: 1.08em; text-shadow: 0 1px 6px #231c36; font-weight: 900; line-height: 1.15; }
+    .entree-donjon .sous-dj { font-size: 0.8em; color: #c9c0e6; line-height: 1.25; white-space: nowrap; }
+    .entree-donjon .pastille-dj { align-self: flex-start; margin-top: 4px; white-space: nowrap; font-size: 0.78em; font-weight: 800; border-radius: 10px; padding: 3px 10px;
+                                  background: #ffb347; color: #3a1d00; }
+    .entree-donjon .pastille-dj.calme { background: rgba(255,255,255,0.12); color: #ffd99a; }
+    .scene-dj .flamme { transform-box: fill-box; transform-origin: 50% 100%; animation: flammeDj 0.8s ease-in-out infinite alternate; }
+    .scene-dj .flamme.b { animation-duration: 1.05s; animation-delay: -0.4s; }
+    .scene-dj .halo { animation: haloDj 1.2s ease-in-out infinite alternate; }
+    .scene-dj .yeux { animation: yeuxDj 4.5s infinite; }
+    .scene-dj .yeux.b { animation-delay: -2.1s; animation-duration: 5.3s; }
+    @keyframes flammeDj { 0% { transform: scale(1, 1) skewX(0deg); } 50% { transform: scale(0.9, 1.1) skewX(4deg); } 100% { transform: scale(1.06, 0.92) skewX(-4deg); } }
+    @keyframes haloDj { from { opacity: 0.65; } to { opacity: 1; } }
+    @keyframes yeuxDj { 0%, 44%, 52%, 100% { opacity: 1; } 47%, 49% { opacity: 0; } }
+    @media (prefers-reduced-motion: reduce) { .scene-dj .flamme, .scene-dj .halo, .scene-dj .yeux { animation: none; } }
     .titre-section { font-weight: 700; color: #5b6b78; margin: 4px 4px 10px; }
   </style>
 </head>
@@ -228,6 +249,17 @@
           <span class="etoiles-cp"><span v-html="etoile"></span> {{ compagnon ? compagnon.etoiles : etoiles }}</span>
         </a>
       </div>
+
+      <!-- Le Donjon des compagnons a son entrée à lui, sous « Mon compagnon » (3.20, demandé par l'utilisateur : donner envie d'y emmener son compagnon) -->
+      <a class="entree-donjon" href="donjon/" @click="retenir('donjon')">
+        <svg class="scene-dj" viewBox="0 0 158 116" preserveAspectRatio="xMaxYMax slice" aria-hidden="true" v-html="donjonAccueil.scene"></svg>
+        <span class="texte-dj">
+          <span class="surtitre-dj">Donjon des compagnons</span>
+          <span class="accroche-dj">{{ donjonAccueil.accroche }}</span>
+          <span class="sous-dj">{{ donjonAccueil.sous }}</span>
+          <span class="pastille-dj" :class="{ calme: !donjonAccueil.enCours }">{{ donjonAccueil.pastille }}</span>
+        </span>
+      </a>
 
       <div class="titre-section">Choisis ton jeu<span class="astuce-tri">{{ glisse ? 'glisse puis lâche' : 'appui long pour trier' }}</span></div>
       <!-- Ordre propre à chaque téléphone : appui long sur une fiche, puis la faire glisser -->
@@ -349,6 +381,58 @@
   <script src="etoiles.js"></script>
   <script src="compagnon/compagnon-commun.js"></script>
   <script src="icones-jeux.js"></script>
+  <script src="donjon/donjon-dessins.js"></script>
+  <script>
+    // ---------- Entrée du donjon sur l'accueil ----------
+    // Pouvoir de chaque espèce dans le donjon (même table que ESPECES dans donjon/donjon-regles.js, à tenir ensemble)
+    var POUVOIR_ESPECE = { dragon: 'ronces', chat: 'ronces', oie: 'ronces', panda: 'force', tortue: 'force', chevre: 'force',
+                           lapin: 'bond', ecureuil: 'bond', singe: 'bond', chien: 'flair', renard: 'flair', raton: 'flair' };
+    // Classe de cartes donnée par le pouvoir (DJD.CLASSES dans donjon/donjon-donnees.js)
+    var CLASSES_DONJON = { ronces: '🔥 Feu', force: '💪 Carapace', bond: '🦘 Vivacité', flair: '👃 Ruse' };
+    // Scène dessinée : mur de briques, porte voûtée dans le noir, deux torches, des yeux qui brillent, un gluant qui sort, mon compagnon devant
+    function sceneDonjon(dessinCp) {
+      var t = [], y, x, k = 0;
+      t.push('<defs><radialGradient id="djb-halo"><stop offset="0" stop-color="#ffcf70" stop-opacity=".75"/><stop offset="1" stop-color="#ff8a00" stop-opacity="0"/></radialGradient>',
+             '<radialGradient id="djb-sol" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#ffb347" stop-opacity=".45"/><stop offset="1" stop-color="#ffb347" stop-opacity="0"/></radialGradient>',
+             '<linearGradient id="djb-porte" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#050309"/><stop offset=".75" stop-color="#140c18"/><stop offset="1" stop-color="#3a2416"/></linearGradient>',
+             '<linearGradient id="djb-fondu" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#231c36"/><stop offset="1" stop-color="#231c36" stop-opacity="0"/></linearGradient></defs>');
+      // Mur
+      t.push('<rect width="158" height="116" fill="#2b2344"/>');
+      for (y = 0; y < 104; y += 9) {
+        for (x = (y / 9) % 2 ? -9 : 0; x < 158; x += 18) {
+          k++;
+          t.push('<rect x="' + (x + 0.6) + '" y="' + (y + 0.6) + '" width="16.8" height="7.8" rx="1.2" fill="' + ['#352c52', '#30284b', '#3a3058', '#2f2748'][k % 4] + '"/>');
+        }
+      }
+      // Sol dallé
+      t.push('<rect y="102" width="158" height="14" fill="#1a1427"/><path d="M0 108H158M20 102L14 116M58 102L56 116M100 102L102 116M140 102L146 116" stroke="#120e1c" stroke-width="1.2"/>');
+      // Porte voûtée : noir profond, lueur au sol
+      t.push('<path d="M60 102V58A28 28 0 0 1 116 58V102Z" fill="url(#djb-porte)"/>',
+             '<path d="M60 102V58A28 28 0 0 1 116 58V102" fill="none" stroke="#6d6290" stroke-width="7" stroke-dasharray="9 1.6"/>',
+             '<path d="M84 27h8l-1 8h-6z" fill="#8a7fb0" stroke="#4a4066" stroke-width="1"/>',
+             '<ellipse cx="88" cy="103" rx="40" ry="7" fill="url(#djb-sol)"/>');
+      // Des yeux dans le noir
+      t.push('<g class="yeux"><circle cx="84" cy="52" r="1.7" fill="#ffe066"/><circle cx="91" cy="52" r="1.7" fill="#ffe066"/></g>',
+             '<g class="yeux b"><circle cx="102" cy="64" r="1.3" fill="#ff6b6b"/><circle cx="107" cy="64" r="1.3" fill="#ff6b6b"/></g>');
+      // Un gluant qui sort de la porte
+      if (typeof DJS !== 'undefined') t.push(DJS.monstre('gluant').replace('<svg ', '<svg x="92" y="76" width="28" height="28" '));
+      // Torches
+      [[42, ''], [136, ' b']].forEach(function(p) {
+        var c = p[0];
+        t.push('<circle cx="' + c + '" cy="50" r="20" fill="url(#djb-halo)" class="halo"/>',
+               '<path d="M' + (c - 4) + ' 58h8l-2.5 14h-3z" fill="#5a3b22" stroke="#24160c" stroke-width="1"/>',
+               '<rect x="' + (c - 6) + '" y="56" width="12" height="3.5" rx="1" fill="#8a8aa0" stroke="#3a3a4a" stroke-width=".8"/>',
+               '<path class="flamme' + p[1] + '" d="M' + c + ' 38C' + (c + 5) + ' 45 ' + (c + 6) + ' 49 ' + (c + 4) + ' 53C' + (c + 2) + ' 56 ' + (c - 2) + ' 56 ' + (c - 4) + ' 53C' + (c - 6) + ' 49 ' + (c - 3) + ' 46 ' + c + ' 38Z" fill="#ff9f1c"/>',
+               '<path class="flamme' + p[1] + '" d="M' + c + ' 45C' + (c + 2.5) + ' 49 ' + (c + 3) + ' 51 ' + (c + 2) + ' 53C' + (c + 1) + ' 55 ' + (c - 1) + ' 55 ' + (c - 2) + ' 53C' + (c - 3) + ' 51 ' + (c - 1.5) + ' 49 ' + c + ' 45Z" fill="#ffe08a"/>');
+      });
+      // Mon compagnon devant la porte, ou une grande clé
+      if (dessinCp) t.push('<ellipse cx="72" cy="103" rx="15" ry="2.6" fill="rgba(0,0,0,.4)"/><svg x="50" y="57" width="44" height="47" viewBox="0 -6 200 216">' + dessinCp + '</svg>');
+      else t.push('<g transform="translate(70 92) rotate(-20)"><circle cx="0" cy="0" r="6" fill="none" stroke="#f5c542" stroke-width="3"/><path d="M6 0H26M20 0V5M24 0V4" stroke="#f5c542" stroke-width="3" stroke-linecap="round"/></g>');
+      // Fondu vers le texte, à gauche
+      t.push('<rect width="40" height="116" fill="url(#djb-fondu)"/>');
+      return t.join('');
+    }
+  </script>
   <script src="qr.js"></script>
   <script>
     // Icônes du menu « Mon compte » : dessin au trait de la couleur, sur une pastille teintée (même esprit que les onglets du compagnon)
@@ -429,8 +513,8 @@
         // Jeux dans l'ordre choisi sur ce téléphone, favoris d'abord (les jeux inconnus de l'ordre gardent leur place par défaut, à la fin)
         jeuxTries: function() {
           var o = this.ordre, f = this.favoris, rang = (j) => { var i = o.indexOf(j.id); return i < 0 ? 100 : i; }, fav = (j) => f.includes(j.id) ? 0 : 1;
-          // L'Expédition (tete) reste juste sous le compagnon ; puis les jeux au badge « Nouveau », même devant les favoris
-          var tete = (j) => j.tete ? 0 : this.estNouveau(j) ? 1 : 2;
+          // Les jeux au badge « Nouveau » d'abord, même devant les favoris (l'Expédition est un jeu comme les autres depuis 3.20)
+          var tete = (j) => this.estNouveau(j) ? 0 : 1;
           return this.jeux.map((j, k) => ({ j: j, k: k })).sort((a, b) => (tete(a.j) - tete(b.j)) || (fav(a.j) - fav(b.j)) || (rang(a.j) - rang(b.j)) || (a.k - b.k)).map(x => x.j);
         },
         etoiles: function() { this.maj; return Etoiles.solde(); },
@@ -497,6 +581,21 @@
           return { nom: a.nom, age: CP.age(a.ne), dessin: CP.dessin(a, h, nuit), etoiles: Etoiles.solde(), defis: d.length ? d.filter(x => x.fait).length + '/3' : '',
                    etat: bas.length ? '😟 ' + bas.join(', ') : nuit ? '😴 Dort paisiblement' : h === 'content' ? '😊 Très heureux' : '🙂 Va bien' };
         },
+        // Entrée du donjon : texte selon mon compagnon (son pouvoir = sa classe de cartes), mon exploration en cours et mon record
+        donjonAccueil: function() {
+          this.maj;
+          var a = lireStockage('compagnon-animal'), s = lireStockage('donjon-solo'), st = lireStockage('donjon-stats') || {};
+          var cl = a ? CLASSES_DONJON[POUVOIR_ESPECE[a.espece]] : null, nom = a ? a.nom : '';
+          var enCours = !!(s && s.phase === 'jeu'), etage = enCours ? (s.etage | 0) + 1 : 0, r = {};
+          if (enCours) r.accroche = a ? nom + ' t\'attend à l\'étage ' + etage : 'Ton exploration t\'attend';
+          else r.accroche = a ? nom + ' veut y entrer !' : 'Oseras-tu entrer ?';
+          r.sous = cl ? 'Son pouvoir : ' + cl : a ? '3 étages, la Liche au fond' : 'Adopte un compagnon !';
+          r.pastille = enCours ? '● Reprendre ›' : st.gagnes ? '🏆 ' + st.gagnes + ' vaincu' + (st.gagnes > 1 ? 's' : '') + ' · Entrer ›'
+                     : st.record ? 'Record : étage ' + st.record + ' ›' : 'Entrer ›';
+          r.enCours = enCours;
+          r.scene = sceneDonjon(a && typeof CP !== 'undefined' ? CP.dessin(a, 'content', false) : '');
+          return r;
+        },
         jeux: function() {
           this.maj;   // recalcul après « Quitter »
           var b = etatJeu('brillant-sauvegarde-v1'), y = etatJeu('yams-sauvegarde'), g = etatJeu('bg-sauvegarde'), a = etatJeu('assaut-sauvegarde'), n = etatJeu('bataille-sauvegarde'), d = etatJeu('gribouille-sauvegarde'), pb = etatJeu('petitbac-sauvegarde'), ag = etatJeu('agents-sauvegarde'), ql = etatJeu('quatre-sauvegarde'), dm = etatJeu('domino-sauvegarde'), lc = etatJeu('lettres-sauvegarde'), jx = etatJeu('joyaux-sauvegarde'), cc = etatJeu('chinchon-sauvegarde'), cj = etatJeu('cieljo-sauvegarde'); var ex = lireStockage('expedition-partie'); var dx = lireStockage('dix-partie'), dxs = etatJeu('dix-sauvegarde');
@@ -516,7 +615,7 @@
             { id: 'lettres', nom: 'Lettres croisées', page: 'lettres/', desc: 'Des mots sur la grille, seul ou de 2 à 4.', enCours: lc && lc.texte },
             { id: 'dix', nom: 'Combien sur 10 ?', page: 'dix/', desc: 'Quiz en équipes, chacun sur son téléphone : annonce de 1 à 10 combien tu t\'y connais.', enCours: dxs ? dxs.texte : dx && dx.phase !== 'fin' ? '● Partie en cours (mode test)' : '', solo: !dxs, nouveau: true },
             { id: 'joyaux', nom: '7 piliers', page: 'joyaux/', desc: 'Bâtis ta cité en trois âges, seul ou entre amis.', enCours: jx && jx.texte },
-            { id: 'expedition', nom: 'Expédition', page: 'expedition/', desc: 'Balade avec ton compagnon : questions, coffres et boss.', enCours: ex && !ex.fin ? '● Expédition en cours' : '', solo: true, tete: true }
+            { id: 'expedition', nom: 'Expédition', page: 'expedition/', desc: 'Balade avec ton compagnon : questions, coffres et boss.', enCours: ex && !ex.fin ? '● Expédition en cours' : '', solo: true }
           ];
         }
       },
