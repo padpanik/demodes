@@ -325,9 +325,10 @@
     .jeu-dj.immersif .milieu-dj .objectif-dj { display: none; }
     .jeu-dj.immersif .inverser-dj { margin: 0; padding: 3px 12px; }
     .jeu-dj.immersif .combat-dj { flex: 1; min-height: 0; display: flex; flex-direction: column; margin-top: 2px; }
-    .jeu-dj.immersif .scene-c { flex: 1; min-height: 0; display: flex; flex-direction: column; justify-content: center; }
-    .jeu-dj.immersif .mc-des { width: min(96px, 12vh); height: min(96px, 12vh); }
-    .jeu-dj.immersif .mc.gros .mc-des { width: min(160px, 20vh); height: min(160px, 20vh); margin-top: 16px; }
+    /* La taille des monstres suit la hauteur réelle de la scène (unités cqh) : l'annonce du coup, le nom et les PV restent toujours visibles */
+    .jeu-dj.immersif .scene-c { flex: 1; min-height: 0; display: flex; flex-direction: column; justify-content: safe center; container-type: size; }
+    .jeu-dj.immersif .mc-des { width: clamp(44px, calc(100cqh - 96px), 96px); height: clamp(44px, calc(100cqh - 96px), 96px); }
+    .jeu-dj.immersif .mc.gros .mc-des { width: clamp(56px, calc(100cqh - 112px), 160px); height: clamp(56px, calc(100cqh - 112px), 160px); margin-top: 12px; }
     .jeu-dj.immersif .journal-c { flex: none; height: 58px; }
     .jeu-dj.immersif .main-c .carte-c { min-height: 138px; }
     .jeu-dj.immersif .main-c .cc-ico { font-size: 23px; }
