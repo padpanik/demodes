@@ -624,9 +624,9 @@ les changer = en parler à l'utilisateur.
   cadré sur les pièces montrées, au moins 3 × 3 pièces ; la petite carte de la barre est alors cachée ; **3.17** (demandé par l'utilisateur : le plan était « mangé en haut et en bas ») : plan dans un cadre `.plan-dj` qui prend toute la hauteur libre, titre de l'étage et objectif posés dessus, couloirs doubles, pièce actuelle qui palpite ; croix réduite (128 px) à côté d'un panneau `.milieu-dj`), pièce pleine largeur, croix agrandie, poussière qui flotte et fondu au noir à chaque
   changement de pièce. Combat : la scène prend la hauteur libre, monstres plus grands, **taille réglée sur la hauteur réelle de la scène** (3.18, signalé par l'utilisateur : le coup annoncé du boss était coupé ; `container-type: size` + `calc(100cqh − …)`, `justify-content: safe center`), cartes plus hautes. **Bouton ☰** dans la barre (pastille rouge =
   messages non lus, `SalonGlobal.nonLus`, nouveau dans l'API) : Continuer, Discuter (`SalonGlobal.ouvrir`), son, côté de la croix, quitter / remettre le plein écran,
-  Règles, Quitter le donjon. Choix par téléphone `donjon-plein-ecran` (activé par défaut), aussi dans Réglages. Le bouton « 🏳️ Quitter » reste dans la barre.
+  Règles, Quitter le donjon (en rouge, en bas). Choix par téléphone `donjon-plein-ecran` (activé par défaut), aussi dans Réglages. **3.19** (demandé par l'utilisateur) : plus de bouton « 🏳️ Quitter » dans la fiche, on quitte par le menu ☰.
 - **Fiche du compagnon** (3.16, demandé par l'utilisateur : « rendre plus clair les infos du compagnon, voir la totalité des objets sans défiler ») : la barre du haut
-  devient une fiche (`.fiche-dj`) : portrait rond du compagnon (toucher = « Mon sac »), nom, classe, grande barre de PV, ☰ et « 🏳️ Quitter » ; puis des puces
+  devient une fiche (`.fiche-dj`) : portrait rond du compagnon (toucher = « Mon sac »), nom, classe, grande barre de PV et ☰ ; puis des puces
   (étage, or, petites clés + 🔑, poussières, paquet, petite carte hors plein écran) ; puis **tous les objets en tuiles qui passent à la ligne** (fioles en flacons bleus
   avec emplacements vides, reliques en tuiles dorées, roses pour les reliques de boss), jamais de défilement ; toucher une tuile l'explique (bulle `info` posée
   sous la fiche). En combat, fiche resserrée (`.en-combat` : sans puces ni fioles, déjà en bas ; reliques en petit). **« 🎒 Tout voir »** ouvre **Mon sac** (`voirSac`) :
@@ -655,7 +655,7 @@ Toujours valables depuis la première version :
   **Donjon fini = on quitte le salon** (demandé par l'utilisateur) : « 🏠 Rentrer à la maison » / « 🧭 Retour à l'expédition » fait sortir du salon
   (`rentrer` → `sortirDuSalon`) ; au retour sur la page, un salon dont le donjon est fini (`fini` dans la sauvegarde, ou `pub.phase === 'fin'`)
   ou laissé depuis plus de 6 h (`t`) n'est pas repris : on retrouve le choix « À plusieurs » / « Seul ».
-- **Sortir du donjon** (demandé par l'utilisateur, bloqué dans une exploration solo) : bouton « 🏳️ Quitter » bien visible (bordure rouge) dans la barre.
+- **Sortir du donjon** (demandé par l'utilisateur, bloqué dans une exploration solo) : « 🏳️ Quitter le donjon » en rouge dans le menu ☰ (3.19 ; avant : bouton dans la barre).
   En solo, deux choix : « ⏸️ Quitter, je reprendrai plus tard » (gardé dans `donjon-solo`) ou « 🔄 Abandonner ce donjon » (`abandonnerSolo` : progression perdue,
   retour à l'onglet Partie) ; l'onglet Partie propose aussi « 🔄 Abandonner et recommencer à zéro » sous « Reprendre mon exploration ».
   **Sauvegardes anciennes** : `DJ.compatible(e)` / `DJ.FORMAT` (une exploration d'avant 2.44, sans `combats`, faisait planter chaque `tick` : personnage figé) ;

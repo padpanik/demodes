@@ -38,7 +38,6 @@
 
     /* ---------- Écran de jeu ---------- */
     .jeu-dj { user-select: none; -webkit-user-select: none; }
-    .quitter-dj { flex: none; border: 1.5px solid #e03131; background: #fff5f5; color: #c92a2a; font: inherit; font-weight: 800; font-size: 0.72em; line-height: 1.15; border-radius: 10px; padding: 3px 6px; cursor: pointer; }
     .carte-mini { display: grid; gap: 2px; }
     .carte-mini span { width: 11px; height: 9px; border-radius: 2px; background: transparent; position: relative; }
     .carte-mini span.vue { background: #c9b8a6; }
@@ -241,7 +240,6 @@
     .objets-dj .petit { color: #e9dcc8; }
     .carte-mini span.vue { background: #8d7b68; }
     .carte-mini span.ici { background: #ffa94d; box-shadow: 0 0 4px #ffa94d; }
-    .quitter-dj { background: #3a1d1d; color: #ffa8a8; border-color: #e03131; }
     .salle-dj { border: 2px solid #4b3a2c; box-shadow: 0 6px 16px rgba(0,0,0,0.55); }
     .annonces-dj div { background: rgba(28,20,15,0.92); color: #ffe8cc; border: 1px solid #8d6a3f; }
     .annonces-dj div.perso { background: rgba(92,56,20,0.94); }
@@ -302,6 +300,7 @@
     .boite-dj .btn { background: #fff8ee; border: 1.5px solid #c9b08f; color: #3b2a1e; }
     .boite-dj .btn.principal { background: linear-gradient(#c2410c, #9a3412); border-color: #7c2d12; color: #fff; }
     .boite-dj .btn:disabled { opacity: 0.5; }
+    .boite-dj .btn.quitter-menu { background: #fff5f5; border-color: #e03131; color: #c92a2a; margin-top: 14px; }
     .butin-l span, .ligne-achat { background: rgba(107,79,54,0.1); color: #3b2a1e; }
     .or-menu { color: #a8590f; }
 
@@ -355,7 +354,6 @@
     .sac-tuile { margin-left: auto; border-radius: 9px; background: #3f3026; border: 1.5px solid #8d6a3f; }
     .jeu-dj:not(.immersif) .pv-dj { min-width: 46px; }
     .jeu-dj:not(.immersif) .gauche { overflow: hidden; }
-    .jeu-dj:not(.immersif) .menu-dj { width: 30px; font-size: 17px; }
     .menu-dj { flex: none; position: relative; width: 38px; height: 38px; border-radius: 10px; border: 1px solid #8d6a3f; background: #1b130e; color: #ffd8a8; font-size: 20px; line-height: 1; cursor: pointer; }
     .menu-dj b { position: absolute; right: -5px; top: -5px; min-width: 16px; height: 16px; border-radius: 8px; background: #e03131; color: #fff; font-size: 10px; line-height: 16px; padding: 0 3px; }
     .menu-liste { display: flex; flex-direction: column; gap: 0; margin-top: 6px; }
@@ -530,7 +528,6 @@
                 <span class="pv-dj"><i :style="{ width: pct(monJ.pv, monJ.pvMax) }"></i><b>{{ monJ.fantome ? '👻 KO' : '❤️ ' + monJ.pv + ' / ' + monJ.pvMax }}</b></span>
               </div>
               <button class="menu-dj" @click="menuJeu = true" aria-label="Menu">☰<b v-if="chatNonLus">{{ chatNonLus }}</b></button>
-              <button class="quitter-dj" @click="demandeQuitter = true" aria-label="Quitter le donjon">🏳️<br>Quitter</button>
             </div>
             <div class="fiche-l2">
               <button class="puce-dj" @click="info(etageInfo)">{{ etageIco }} {{ partie.etage }}/{{ DJ.NB_ETAGES }}</button>
@@ -680,7 +677,7 @@
               <button class="btn" @click="inverse = !inverse">⇄ Mettre la croix {{ inverse ? 'à gauche' : 'à droite' }}</button>
               <button class="btn" @click="basculerPleinEcran">{{ immersionVoulue ? '🗗 Quitter le plein écran' : '⛶ Plein écran' }}</button>
               <button class="btn" @click="menuJeu = false; onglet = 'regles'">📖 Règles du donjon</button>
-              <button class="btn" @click="menuJeu = false; demandeQuitter = true">🏳️ Quitter le donjon</button>
+              <button class="btn quitter-menu" @click="menuJeu = false; demandeQuitter = true">🏳️ Quitter le donjon</button>
             </div>
           </div>
         </div>
