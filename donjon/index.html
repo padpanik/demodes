@@ -318,6 +318,9 @@
     /* ================== Plein écran (3.15) : le donjon prend tout l'écran, sans onglets ================== */
     body.dj-immersif { overflow: hidden; overscroll-behavior: none; }
     body.dj-immersif #sg-bulle { display: none !important; }
+    /* Pendant le jeu : pas de sélection de texte ni de menu au doigt appuyé (sinon « Toucher pour rechercher » de Google s'ouvre en bas, 3.28) */
+    body.dj-jeu, body.dj-jeu * { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent; }
+    body.dj-jeu input, body.dj-jeu textarea { -webkit-user-select: text; user-select: text; }
     .jeu-dj.immersif { position: fixed; inset: 0; z-index: 40; border-radius: 0; box-shadow: none; display: flex; flex-direction: column; overflow: hidden;
       padding: max(8px, env(safe-area-inset-top)) 8px max(10px, env(safe-area-inset-bottom)); }
     .jeu-dj.immersif .tete-dj { flex: none; }
@@ -724,6 +727,7 @@
               <button class="btn" @click="sonActif = !sonActif">{{ sonActif ? '🔊 Son activé' : '🔇 Son coupé' }}</button>
               <button class="btn" @click="inverse = !inverse">⇄ Mettre la croix {{ inverse ? 'à gauche' : 'à droite' }}</button>
               <button class="btn" @click="basculerPleinEcran">{{ immersionVoulue ? '🗗 Quitter le plein écran' : '⛶ Plein écran' }}</button>
+              <button class="btn" v-if="immersionVoulue" @click="basculerBarres">{{ barresCachees ? '📱 Montrer les barres du tél.' : '📱 Cacher les barres du tél.' }}</button>
               <button class="btn" @click="menuJeu = false; onglet = 'regles'">📖 Règles du donjon</button>
               <button class="btn quitter-menu" @click="menuJeu = false; demandeQuitter = true">🏳️ Quitter le donjon</button>
             </div>
@@ -883,6 +887,8 @@
           <reglages-base :son.sync="sonActif" :vibration.sync="vibrationActive"></reglages-base>
           <label class="option-dj">Croix à droite (gaucher)<input type="checkbox" v-model="inverse"></label>
           <label class="option-dj">Plein écran pendant l'exploration<input type="checkbox" :checked="immersionVoulue" @change="basculerPleinEcran"></label>
+          <label class="option-dj" v-if="immersionVoulue">Cacher aussi les barres du téléphone<input type="checkbox" :checked="barresCachees" @change="basculerBarres"></label>
+          <p class="aide-dj" v-if="immersionVoulue" style="margin:4px 0 0;font-size:13px;color:#666">Avec les barres cachées, le téléphone affiche quelques secondes son message « faites glisser pour quitter le plein écran » : une page web ne peut pas l'empêcher. Barres visibles : plus de message.</p>
         </section>
       </template>
 
@@ -1003,6 +1009,7 @@
         coupActif: false,
         demandeQuitter: false,
         immersionVoulue: lireStockage('donjon-plein-ecran') !== false,   // plein écran pendant l'exploration (par téléphone)
+        barresCachees: lireStockage('donjon-barres') !== false,   // en plein écran, cacher aussi les barres du téléphone (le navigateur affiche alors son message pour sortir)
         menuJeu: false,
         voirSac: false,
         chatNonLus: 0,
@@ -1105,6 +1112,7 @@
           return d ? '⚔️ ' + d + ' annoncé' + (d > 1 ? 's' : '') + (a ? ' · 🛡️ ' + a : '') : 'Aucun coup annoncé sur toi';
         },
         immersif: function() { return this.immersionVoulue && this.onglet === 'play' && !!this.partie; },
+        enJeu: function() { return this.onglet === 'play' && !!this.partie; },
         fondCombat: function() {
           var E = this.partie && DJ.D.ETAGES[this.partie.etage - 1];
           return E ? { background: 'radial-gradient(ellipse at 50% 28%, ' + E.sol[1] + ' 0%, ' + E.mur[0] + ' 62%, #0b0806 100%)' } : {};
@@ -1189,6 +1197,7 @@
           ecrireStockage('donjon-difficulte', v);
           if (this.role === 'hote' && pubHote && pubHote.phase === 'attente') { pubHote.difficulte = v; this.publier(); }
         },
+        enJeu: { immediate: true, handler: function(v) { document.body.classList.toggle('dj-jeu', v); } },
         immersif: { immediate: true, handler: function(v) {
           document.body.classList.toggle('dj-immersif', v);
           if (!v && this.onglet !== 'play') this.sortirPleinEcranNavigateur();
@@ -1205,6 +1214,8 @@
         document.addEventListener('visibilitychange', () => this.auRetourPremierPlan());
         window.addEventListener('online', () => this.auRetourPremierPlan());
         window.addEventListener('pageshow', () => this.auRetourPremierPlan());
+        // Doigt appuyé pendant le jeu (fenêtres comprises) : pas de menu ni de recherche Google
+        document.addEventListener('contextmenu', (ev) => { if (this.enJeu && !/INPUT|TEXTAREA/.test((ev.target && ev.target.tagName) || '')) ev.preventDefault(); });
         window.addEventListener('keydown', ev => this.clavier(ev, true));
         window.addEventListener('keyup', ev => this.clavier(ev, false));
       },
@@ -1343,7 +1354,7 @@
         // Le donjon couvre l'écran (CSS) ; en plus, on demande au navigateur de cacher ses barres (Android ; pas sur iPhone)
         pleinEcranNavigateur: function() {
           var d = document.documentElement, f = d.requestFullscreen || d.webkitRequestFullscreen;
-          if (!f || document.fullscreenElement || document.webkitFullscreenElement) return;
+          if (!f || !this.barresCachees || document.fullscreenElement || document.webkitFullscreenElement) return;
           try { var p = f.call(d, { navigationUI: 'hide' }); if (p && p.catch) p.catch(() => {}); } catch (e) {}
         },
         sortirPleinEcranNavigateur: function() {
@@ -1355,6 +1366,12 @@
           if (!this.immersif || this._fsDemande) return;
           this._fsDemande = true;
           this.pleinEcranNavigateur();
+        },
+        basculerBarres: function() {
+          this.barresCachees = !this.barresCachees;
+          ecrireStockage('donjon-barres', this.barresCachees);
+          this.menuJeu = false;
+          if (this.barresCachees) { if (this.immersif) { this._fsDemande = true; this.pleinEcranNavigateur(); } } else this.sortirPleinEcranNavigateur();
         },
         basculerPleinEcran: function() {
           this.immersionVoulue = !this.immersionVoulue;
@@ -1687,6 +1704,7 @@
         planifierReconnexion: function(delai) {
           clearTimeout(this._timerReco);
           this._timerReco = setTimeout(() => {
+            this._timerReco = null;   // (avant : l'identifiant restait, et perteHote croyait un nouvel essai déjà prévu)
             if (!this.role || this.connexion === 'ok') return;
             if (this.role === 'hote') return this.creerPartie(true);
             this._echecsClient = (this._echecsClient || 0) + 1;
@@ -1711,6 +1729,7 @@
           var nom = reprise ? this.roomCode : this.channelInput.trim();
           this.reinitialiserPeer(!!reprise);
           this.connexion = reprise ? 'perdue' : 'connexion';
+          this._dernierEssai = Date.now();
           var monPeer = peer = creerPeer(ACCES.idSalon(nom, JEU_RESEAU));
           veillerOuverture(monPeer);
           monPeer.on('open', () => {
@@ -1825,6 +1844,7 @@
           var nom = reprise ? this.roomCode : this.channelInput.trim();
           this.reinitialiserPeer(!!reprise);
           this.connexion = reprise ? 'perdue' : 'connexion';
+          this._dernierEssai = Date.now();
           var monPeer = peer = creerPeer();
           veillerOuverture(monPeer);
           monPeer.on('open', () => {
@@ -1890,6 +1910,13 @@
         // ---------- Surveillance de la connexion ----------
         battement: function() {
           var maintenant = Date.now();
+          // Filet de sécurité (3.28, signalé par l'utilisateur : après un passage dans une autre appli, les deux joueurs ne se retrouvaient jamais) :
+          // tant que la connexion n'est pas revenue, un nouvel essai au moins toutes les 20 s, quoi qu'il se soit passé
+          if (this.role && this.connexion !== 'ok' && !this._entree && maintenant - (this._dernierEssai || 0) > 20000 && document.visibilityState !== 'hidden') {
+            this._dernierEssai = maintenant;
+            if (this.role === 'hote') this.creerPartie(true); else this.planifierReconnexion(10);
+            return;
+          }
           if (this.role === 'hote' && peer) {
             connections.slice().forEach(c => {
               if (!partieHote || partieHote.phase !== 'jeu') { try { if (c.open) c.send({ action: 'PING' }); } catch (e) {} }
@@ -1906,8 +1933,11 @@
           if (document.visibilityState === 'hidden') { this.direction(null); return; }
           if (!this.role) return;
           if (this.role === 'hote') {
+            var ws = peer && peer.socket && peer.socket._socket;
             if (!peer || peer.destroyed) this.creerPartie(true);
             else if (peer.disconnected) { try { peer.reconnect(); } catch (e) {} }
+            // Ligne coupée pendant l'absence sans que PeerJS l'ait encore vu : on la relance tout de suite
+            else if (ws && ws.readyState > 1) { try { peer.disconnect(); } catch (e) {} setTimeout(() => { try { if (peer && peer.disconnected && !peer.destroyed) peer.reconnect(); } catch (e) {} }, 300); }
           } else if (this.connexion !== 'ok' || Date.now() - dernierMsgHote > 8000) {
             this.connexion = 'perdue';
             this.rejoindrePartie(true);
