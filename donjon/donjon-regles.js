@@ -235,19 +235,35 @@ var DJ = (function () {
   // Difficulté de la partie (une partie d'avant 3.23 n'en a pas : Héroïque, comme avant)
   function difficulte(e) { return D.DIFFICULTES[e.difficulte] || D.DIFFICULTES.heroique; }
   // Dégâts de base d'une attaque de monstre (péril 4 : +1 ; seul : selon la difficulté ; à plusieurs : selon le nombre de joueurs du combat)
+  // nbCombat = joueurs vivants du combat ; un coup de zone (i.tous) frappe déjà chacun : pas de bonus de groupe (3.26, l'Écrasement faisait 40 à chacun à deux)
   function attaqueMonstre(e, i, nbCombat) {
     var n = i.att + (e.peril >= 4 ? 1 : 0), d = difficulte(e);
     if (nbGroupe(e) <= 1) return n * d.solo.deg;
+    if (i.tous) return n;
     return n * (1 + d.groupe.deg * Math.max(0, (nbCombat || 1) - 1));
+  }
+  // Multiplicateur de PV des monstres pour n joueurs (seul : celui de la difficulté)
+  function facteurPv(e, n) { var d = difficulte(e); return n <= 1 ? d.solo.pv : 1 + d.groupe.pv * (n - 1); }
+  // Les PV suivent le nombre de joueurs qui combattent vraiment (3.26) : un joueur seul dans la pièce n'affronte pas des monstres taillés pour tout le groupe.
+  // On ne fait que monter (un ami KO ne rend pas les monstres plus faibles) ; les PV perdus gardent leur proportion.
+  function ajusterPv(e, c) {
+    var n = Math.max(1, c.joueurs.length);
+    monstresDe(e, c).forEach(m => {
+      if (m.f == null) { m.f = facteurPv(e, nbGroupe(e)); m.pvBase = m.pvMax / m.f; }
+      var f = facteurPv(e, n);
+      if (m.combatF != null && f <= m.combatF) return;
+      var max = Math.max(1, Math.round(m.pvBase * f));
+      m.pv = Math.max(1, Math.round(m.pv * max / m.pvMax)); m.pvMax = max; m.f = f; m.combatF = f;
+    });
   }
   function creerMonstre(e, type, salle, x, y, h) {
     var M = MONSTRES[type], r = M.rang || 'normal';
     var pv = M.pv[0] + entier(h, M.pv[1] - M.pv[0] + 1);
     if (e.peril >= 1 && r === 'normal') pv *= 1.1;
     if (e.peril >= 2 && r !== 'normal') pv *= 1.1;
-    var d = difficulte(e), n = nbGroupe(e);
-    pv = Math.round(pv * (n <= 1 ? d.solo.pv : 1 + d.groupe.pv * (n - 1)));
-    var m = { id: ++e.seq, type: type, salle: salle, x: x, y: y, pv: pv, pvMax: pv, pas: 0, dir: 'b', armure: 0, etats: {}, k: 0, mem: {}, intention: null, cible: null };
+    var f = facteurPv(e, nbGroupe(e)), base = pv;
+    pv = Math.round(base * f);
+    var m = { id: ++e.seq, type: type, salle: salle, x: x, y: y, pv: pv, pvMax: pv, pvBase: base, f: f, pas: 0, dir: 'b', armure: 0, etats: {}, k: 0, mem: {}, intention: null, cible: null };
     e.ennemis.push(m);
     return m;
   }
@@ -652,6 +668,7 @@ var DJ = (function () {
     // Les joueurs vivants arrivés dans la pièce rejoignent le combat
     Object.values(e.joueurs).forEach(p => { if (p.salle === c.salle && !p.fantome && c.joueurs.indexOf(p.nom) < 0) entrerEnCombat(e, c, p, h); });
     c.joueurs = c.joueurs.filter(n => e.joueurs[n] && e.joueurs[n].salle === c.salle);
+    ajusterPv(e, c);
     // Intentions des monstres (annoncées avant que les joueurs jouent)
     var cibles = vivantsDe(e, c);
     monstresDe(e, c).forEach(m => {
@@ -879,7 +896,7 @@ var DJ = (function () {
         m.mem.divise = 1;
         var pv = Math.max(1, Math.floor(m.pv / 2)), pos = [[m.x - 1, m.y], [m.x + 1, m.y]];
         e.ennemis = e.ennemis.filter(x => x !== m);
-        pos.forEach(q => { var n = creerMonstre(e, 'gluantmoyen', m.salle, q[0], q[1], h); n.pv = n.pvMax = pv; n.k = 0; n.intention = null; });
+        pos.forEach(q => { var n = creerMonstre(e, 'gluantmoyen', m.salle, q[0], q[1], h); n.pv = n.pvMax = pv; n.f = n.combatF = m.f; n.pvBase = pv / m.f; n.k = 0; n.intention = null; });
         return;
       }
       if (i.armure) m.armure += i.armure;
@@ -890,7 +907,7 @@ var DJ = (function () {
       if (i.att) {
         for (var x = 0; x < (i.x || 1); x++) cibles.forEach(q => {
           if (q.fantome || e.ennemis.indexOf(m) < 0) return;
-          infliger(e, c, q, calculer(m, q, attaqueMonstre(e, i, c.joueurs.length)), m, true);
+          infliger(e, c, q, calculer(m, q, attaqueMonstre(e, i, vivants.length)), m, true);
         });
       }
       if (i.vol) cibles.forEach(q => { var n = Math.min(q.or, i.vol); if (!n) return; q.or -= n; m.mem.vol = m.mem.vol || {}; m.mem.vol[q.nom] = (m.mem.vol[q.nom] || 0) + n; fx(e, c, q.nom, '−' + n + ' 🪙', 'neutre'); });
@@ -936,10 +953,11 @@ var DJ = (function () {
       return;
     }
     e.poussiere += c.poussiere;
-    var rang = c.rang;
+    var rang = c.rang, ensemble = joueurs.length > 1;
     joueurs.forEach(p => {
       if (p.fantome) { p.fantome = false; p.pv = Math.max(1, Math.round(p.pvMax / 4)); }
       if (a(p, 'bandage')) soigner(p, 4);
+      if (ensemble) soigner(p, Math.round(p.pvMax * D.SOIN_GROUPE));
       var or = rang === 'boss' ? 55 + entier(h, 11) : rang === 'elite' ? 28 + entier(h, 9) : 12 + entier(h, 9);
       if (a(p, 'piece')) or += 12;
       donnerOr(e, p, or);
@@ -951,6 +969,7 @@ var DJ = (function () {
       }
       if (!(rang === 'boss' && e.etage >= NB_ETAGES)) p.menus.push({ type: 'butin', rang: rang, or: or, fiole: fiole, relique: relique, cartes: tirerCartes(p, 3, rang, h) });
     });
+    if (ensemble) annonce(e, '❤️ Victoire à plusieurs : chacun reprend son souffle (+' + Math.round(D.SOIN_GROUPE * 100) + ' % des PV).');
     if (rang === 'boss') {
       if (e.etage >= NB_ETAGES) {
         e.phase = 'fin'; e.fin = { gagne: true, t: e.maintenant, etage: e.etage };
@@ -1025,7 +1044,7 @@ var DJ = (function () {
     var i = m.intention;
     if (!i || !i.att) return 0;
     var c = p && e.combats && e.combats[p.salle];
-    return calculer(m, p || { etats: {} }, attaqueMonstre(e, i, c ? c.joueurs.length : 1));
+    return calculer(m, p || { etats: {} }, attaqueMonstre(e, i, c ? vivantsDe(e, c).length : 1));
   }
   // Dégâts qu'une carte d'attaque simple ferait sur ce monstre (affichage)
   function degatsCarte(p, id, m) {

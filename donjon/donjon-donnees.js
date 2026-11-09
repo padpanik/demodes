@@ -292,16 +292,20 @@ var DJD = (function () {
   // ---------- Difficultés (3.23, demandé par l'utilisateur) : choisies avant d'entrer (seul, ou par l'hôte du salon) ----------
   // solo : PV et dégâts des monstres quand on joue seul ; groupe : renfort par joueur en plus (PV × (1 + pv × (n − 1)),
   // dégâts × (1 + deg × (joueurs du combat − 1))) ; poussieres : multiplicateur des poussières d'étoile à la fin du donjon.
-  // Héroïque = la difficulté d'avant 3.23 (solo inchangé, groupe de 3.22) ; Normal = le groupe d'avant 3.22, solo un peu plus doux.
+  // Héroïque = le solo d'avant 3.23 ; Normal = le groupe d'avant 3.22, solo un peu plus doux.
+  // Groupe refait en 3.26 (signalé par l'utilisateur : « à deux en Héroïque, aucune chance de passer le 1er étage, ça tape trop fort ») :
+  // plus de PV, coups moins forts, coups de zone sans bonus, PV selon les joueurs du combat, soin après un combat gagné ensemble.
   var DIFFICULTES = {
     normal:   { nom: 'Normal',    ico: '🛡️', solo: { pv: 1, deg: 0.95 },  groupe: { pv: 0.9, deg: 0 },    poussieres: 0.7, texte: 'Pour découvrir le donjon' },
-    heroique: { nom: 'Héroïque',  ico: '⚔️', solo: { pv: 1, deg: 1 },     groupe: { pv: 1.2, deg: 0.7 },  poussieres: 1,   texte: 'Le défi prévu' },
-    mythique: { nom: 'Mythique',  ico: '💀', solo: { pv: 1.05, deg: 1.05 }, groupe: { pv: 1.25, deg: 0.75 }, poussieres: 1.5, texte: 'Pour les plus aguerris' }
+    heroique: { nom: 'Héroïque',  ico: '⚔️', solo: { pv: 1, deg: 1 },     groupe: { pv: 2.2, deg: 0.5 },  poussieres: 1,   texte: 'Le défi prévu' },
+    mythique: { nom: 'Mythique',  ico: '💀', solo: { pv: 1.05, deg: 1.05 }, groupe: { pv: 2.4, deg: 0.6 }, poussieres: 1.5, texte: 'Pour les plus aguerris' }
   };
   var ORDRE_DIFFICULTES = ['normal', 'heroique', 'mythique'];
   // À plusieurs, le poison sur les monstres est réduit (3.24, demandé par l'utilisateur : la Ruse rendait les duos bien trop faciles,
   // son poison profitant des PV gonflés et des combats longs). 1 = comme seul.
-  var POISON_GROUPE = 0.5;
+  var POISON_GROUPE = 0.4;
+  // Après un combat gagné à plusieurs, chacun reprend un peu de souffle (part des PV max ; 3.26, demandé par l'utilisateur : « pas de solution de heal »).
+  var SOIN_GROUPE = 0.1;
 
   // ---------- Clés mythiques (ex « périls », 3.24, demandé par l'utilisateur : seulement en Mythique) ----------
   // Niveaux +0 à +5 débloqués en gagnant en Mythique à sa plus haute clé ; chaque clé ajoute une épreuve (elles se cumulent).
@@ -340,6 +344,6 @@ var DJD = (function () {
   var PRIX = { c: 45, u: 70, r: 120, fiole: 40, relique: 150, retrait: 70 };
 
   return { ETATS: ETATS, CLASSES: CLASSES, CARTES: CARTES, FIOLES: FIOLES, RELIQUES: RELIQUES, MONSTRES: MONSTRES,
-           ETAGES: ETAGES, PERILS: PERILS, DIFFICULTES: DIFFICULTES, ORDRE_DIFFICULTES: ORDRE_DIFFICULTES, POISON_GROUPE: POISON_GROUPE, EVENEMENTS: EVENEMENTS, PRIX: PRIX };
+           ETAGES: ETAGES, PERILS: PERILS, DIFFICULTES: DIFFICULTES, ORDRE_DIFFICULTES: ORDRE_DIFFICULTES, POISON_GROUPE: POISON_GROUPE, SOIN_GROUPE: SOIN_GROUPE, EVENEMENTS: EVENEMENTS, PRIX: PRIX };
 })();
 if (typeof module !== 'undefined') module.exports = DJD;
