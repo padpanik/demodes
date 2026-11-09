@@ -3,12 +3,13 @@
 // Les clés de stockage gardent l'ancien préfixe "brillant-" : les réglages déjà faits sont conservés.
 
 // Numéro de version affiché (à augmenter à chaque mise en ligne, avec brilliant/index.html et sw.js)
-const VERSION = '3.30';
+const VERSION = '3.31';
 
 // ---------- Nouveautés (2.87, demandé par l'utilisateur) ----------
 // Une ligne très brève par mise en ligne (la plus récente en haut) : l'accueil les montre une seule fois, dans une petite fenêtre,
 // à qui n'a pas encore vu cette version. [version, jeu ou partie de l'appli, ce qui change]
 const NOUVEAUTES = [
+  ['3.31', 'Donjon', 'Entrée en combat : une fenêtre à toucher avant de jouer, pour ne plus finir son tour par erreur avec le doigt encore sur la croix.'],
   ['3.30', 'Donjon', 'Le héros de la semaine : paquet, reliques et PV gardés d\'un donjon à l\'autre ; Héroïque et Mythique bien plus durs.'],
   ['3.29', 'Donjon', 'Ma semaine : difficultés à ouvrir, trophées et éclats gardés jusqu\'à dimanche.'],
   ['3.28', 'Donjon', 'Reconnexion plus sûre après un passage dans une autre appli ; plus de recherche Google au doigt appuyé.'],

@@ -446,6 +446,9 @@
     .boite-dj .btn { width: 100%; margin-top: 8px; background: #fff8ee; border: 1.5px solid #c9b08f; color: #3b2a1e; }
     .boite-dj .btn.principal { background: linear-gradient(#c2410c, #9a3412); border-color: #7c2d12; color: #fff; }
     .voile-dj .boite-dj { max-height: 100%; overflow-y: auto; }
+    .entree-combat { z-index: 60; }
+    .entree-combat .noms-combat { font-weight: 800; color: #7c2d12; margin: 2px 0 6px; }
+    .entree-combat .btn.principal { font-size: 1.15em; padding: 12px; }
     /* Ma semaine (3.29) */
     .semaine-dj .titre-carte small { font-weight: 700; color: #7f8c8d; font-size: 0.75em; margin-left: 6px; }
     .etapes-sem { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 4px; }
@@ -811,6 +814,18 @@
           </div>
         </div>
 
+        <!-- Entrée en combat (3.31, demandé par l'utilisateur : le doigt encore sur la croix touchait « Fin du tour ») :
+             il faut toucher « Au combat » pour voir les cartes ; le bouton ne répond qu'au bout de 0,6 s et le voile ne se ferme pas tout seul -->
+        <div class="voile-dj entree-combat" v-if="entreeCombat && combat && combat.id === entreeCombat.id">
+          <div class="boite-dj">
+            <div class="grand">{{ entreeCombat.rang === 'boss' ? '👑' : entreeCombat.rang === 'elite' ? '⭐' : '⚔️' }}</div>
+            <div class="titre">{{ entreeCombat.rang === 'boss' ? 'Le boss !' : entreeCombat.rang === 'elite' ? 'Un élite !' : 'Combat !' }}</div>
+            <div class="noms-combat">{{ entreeCombat.noms }}</div>
+            <div class="aide" style="font-size:0.9em">Joue tes cartes, puis touche « Fin du tour ».</div>
+            <button class="btn principal" @click="fermerEntreeCombat">⚔️ Au combat !</button>
+          </div>
+        </div>
+
         <!-- Abandon -->
         <div class="voile-dj" v-if="demandeQuitter" @click.self="demandeQuitter = false">
           <div class="boite-dj">
@@ -1110,6 +1125,7 @@
         inverse: lireStockage('donjon-inverse') === true,   // croix à droite (sur ce téléphone)
         coupActif: false,
         demandeQuitter: false,
+        entreeCombat: null,   // { id, rang, noms, t } : la fenêtre d'entrée en combat (3.31)
         immersionVoulue: lireStockage('donjon-plein-ecran') !== false,   // plein écran pendant l'exploration (par téléphone)
         barresCachees: lireStockage('donjon-barres') !== false,   // en plein écran, cacher aussi les barres du téléphone (le navigateur affiche alors son message pour sortir)
         menuJeu: false,
@@ -1443,6 +1459,10 @@
         },
         choisirMonstre: function(id) { if (this.cibleAttendue === 'monstre') this.jouerSel(id); },
         choisirMembre: function(nom) { var k = this.selDef; if (k && k.cible === 'joueur') this.jouerSel(nom); },
+        fermerEntreeCombat: function() {
+          if (this.entreeCombat && Date.now() - this.entreeCombat.t < 600) return;   // le doigt qui glissait encore de la croix
+          this.entreeCombat = null; this.son('toc');
+        },
         finirTour: function() { this.sel = null; this.envoyerJeu({ type: 'FIN' }); this.son('toc'); },
         // Fioles hors combat : la lire, boire une fiole de soin ou la jeter
         toucherFiole: function(i) {
@@ -1574,7 +1594,12 @@
             if (!der.pour || der.pour === this.moi) this.son('toc');
           }
           var cA = a && moi && a.combats && a.combats[moi.salle], cP = moi && p.combats && p.combats[moi.salle];
-          if (cP && !cA) { this.son('choc'); this.vibre([40, 40, 40]); this.direction(null); }
+          if (cP && !cA) {
+            this.son('choc'); this.vibre([40, 40, 40]); this.direction(null);
+            var noms = p.ennemis.filter(m => m.salle === cP.salle).map(m => (DJ.MONSTRES[m.type] || {}).nom).filter(Boolean);
+            this.entreeCombat = { id: cP.id, rang: cP.rang, noms: noms.filter((n, k) => noms.indexOf(n) === k).join(', '), t: Date.now() };
+          }
+          if (!cP) this.entreeCombat = null;
           if (cP && cA && cP.tour !== cA.tour) { this.son('des', 3); this.sel = null; }
           if (!cP) this.sel = null;
           if (cP && (!cA || cP.journal.length !== cA.journal.length || cP.journal[cP.journal.length - 1] !== cA.journal[cA.journal.length - 1])) this.$nextTick(() => { var j = this.$refs.journal; if (j) j.scrollTop = j.scrollHeight; });
