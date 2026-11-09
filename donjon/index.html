@@ -223,6 +223,14 @@
     .apercu-plus { display: flex; align-items: center; justify-content: center; gap: 8px; margin: 10px 0; }
     .apercu-plus .carte-c { width: 40%; }
     .or-menu { font-weight: 900; color: #a8590f; }
+    .diffs-dj { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 4px; }
+    .diffs-dj button { display: flex; flex-direction: column; align-items: center; gap: 1px; border: 2px solid #e3e8ec; background: #fff; font: inherit; border-radius: 12px; padding: 7px 4px; cursor: pointer; color: #2c3e50; }
+    .diffs-dj .ico { font-size: 1.35em; line-height: 1.1; }
+    .diffs-dj b { font-size: 0.9em; }
+    .diffs-dj small { font-size: 0.72em; color: #7f8c8d; font-weight: 700; }
+    .diffs-dj button.actif.d-normal { border-color: #2f9e44; background: #ebfbee; }
+    .diffs-dj button.actif.d-heroique { border-color: #e8590c; background: #fff4e6; }
+    .diffs-dj button.actif.d-mythique { border-color: #7048e8; background: #f3f0ff; }
     .perils { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 6px; }
     .perils button { border: 2px solid #e3e8ec; background: #fff; font: inherit; font-weight: 900; border-radius: 10px; padding: 4px 10px; cursor: pointer; }
     .perils button.actif { border-color: #e8590c; background: #fff4e6; color: #c2410c; }
@@ -459,6 +467,14 @@
           </div>
         </section>
 
+        <!-- Difficulté (3.23, demandé par l'utilisateur) : pour le solo et pour le salon (l'hôte choisit), au-dessus des deux blocs -->
+        <section class="carte" v-if="!role && !soloEnCours">
+          <div class="titre-carte">Difficulté</div>
+          <div class="diffs-dj"><button v-for="id in D.ORDRE_DIFFICULTES" :key="id" :class="['d-' + id, { actif: difficulte === id }]" @click="difficulte = id">
+              <span class="ico">{{ D.DIFFICULTES[id].ico }}</span><b>{{ D.DIFFICULTES[id].nom }}</b><small>✨ ×{{ String(D.DIFFICULTES[id].poussieres).replace('.', ',') }}</small></button></div>
+            <div class="aide">{{ D.DIFFICULTES[difficulte].texte }} · poussières d'étoile ×{{ String(D.DIFFICULTES[difficulte].poussieres).replace('.', ',') }} à la fin.</div>
+        </section>
+
         <template v-if="!role">
           <section class="carte">
             <div class="titre-carte">À plusieurs, chacun sur son téléphone</div>
@@ -483,7 +499,7 @@
             </template>
             <button class="btn principal" style="width:100%;margin-top:8px" @click="demarrerSolo">🗝️ {{ soloEnCours ? 'Reprendre mon exploration' : 'Explorer seul' }}</button>
             <button v-if="soloEnCours" class="btn" style="width:100%;margin-top:8px" @click="demandeAbandon = true">🔄 Abandonner et recommencer à zéro</button>
-            <div class="aide" v-if="stats.parties">Donjons : {{ stats.gagnes }} vaincu{{ stats.gagnes > 1 ? 's' : '' }} sur {{ stats.parties }}<template v-if="stats.record">, record : étage {{ stats.record }}</template>.</div>
+            <div class="aide" v-if="stats.parties">Donjons : {{ stats.gagnes }} vaincu{{ stats.gagnes > 1 ? 's' : '' }} sur {{ stats.parties }}<template v-if="stats.record">, record : étage {{ stats.record }}</template>.<template v-if="stats.parDiff && Object.keys(stats.parDiff).length"> Vaincus en <template v-for="(id, k) in D.ORDRE_DIFFICULTES.filter(x => stats.parDiff[x])">{{ k ? ', ' : '' }}{{ D.DIFFICULTES[id].nom }} : {{ stats.parDiff[id] }}</template>.</template></div>
             <div class="aide" v-else>3 étages, un paquet de cartes qui se construit en chemin : il faut souvent plusieurs essais pour vaincre la Liche.</div>
           </section>
         </template>
@@ -512,7 +528,12 @@
           </div>
           <button v-if="role === 'hote'" class="btn principal" style="width:100%;margin-top:12px" @click="lancerSalon">🗝️ Entrer dans le donjon ({{ groupe.length }} joueur{{ groupe.length > 1 ? 's' : '' }})</button>
           <div v-else class="aide">L'hôte lance l'exploration quand tout le monde est là.</div>
-          <div class="aide">Le donjon est tiré au hasard selon les pouvoirs du groupe : il y aura toujours de quoi passer. Les monstres ont plus de PV et frappent plus fort à plusieurs.</div>
+          <div class="aide">Le donjon est tiré au hasard selon les pouvoirs du groupe : il y aura toujours de quoi passer. Les monstres ont plus de PV et frappent plus fort à plusieurs, selon la difficulté.</div>
+          <div class="titre-carte" style="margin-top:12px">Difficulté</div>
+          <template v-if="role === 'hote'"><div class="diffs-dj"><button v-for="id in D.ORDRE_DIFFICULTES" :key="id" :class="['d-' + id, { actif: difficulte === id }]" @click="difficulte = id">
+              <span class="ico">{{ D.DIFFICULTES[id].ico }}</span><b>{{ D.DIFFICULTES[id].nom }}</b><small>✨ ×{{ String(D.DIFFICULTES[id].poussieres).replace('.', ',') }}</small></button></div>
+            <div class="aide">{{ D.DIFFICULTES[difficulte].texte }} · poussières d'étoile ×{{ String(D.DIFFICULTES[difficulte].poussieres).replace('.', ',') }} à la fin.</div></template>
+          <div v-else class="aide" style="margin-top:0">{{ D.DIFFICULTES[difficulteSalon].ico }} {{ D.DIFFICULTES[difficulteSalon].nom }} : {{ D.DIFFICULTES[difficulteSalon].texte.toLowerCase() }} (choisie par l'hôte).</div>
           <div class="aide" v-if="role === 'hote' && peril">Péril {{ peril }} : {{ D.PERILS[peril] }}.</div>
         </section>
 
@@ -817,7 +838,7 @@
             <div class="titre">{{ partie.fin.gagne ? 'Le donjon est vaincu !' : 'Tout le groupe est KO…' }}</div>
             <div class="aide" v-if="!partie.fin.gagne">Arrivé à l'étage {{ partie.fin.etage || partie.etage }} : {{ D.ETAGES[(partie.fin.etage || partie.etage) - 1].nom }}.</div>
             <ul>
-              <li>✨ {{ partie.poussiere }} poussière{{ partie.poussiere > 1 ? 's' : '' }} d'étoile<span v-if="gains.etoiles"> → +{{ gains.etoilesDonnees }} ⭐</span> (en réserve : {{ gains.reste }} / 5)</li>
+              <li>✨ {{ gains.poussieres != null ? gains.poussieres : partie.poussiere }} poussière{{ (gains.poussieres != null ? gains.poussieres : partie.poussiere) > 1 ? 's' : '' }} d'étoile<small v-if="gains.mult && gains.mult !== 1"> ({{ partie.poussiere }} × {{ String(gains.mult).replace('.', ',') }}, {{ D.DIFFICULTES[gains.difficulte].nom }})</small><span v-if="gains.etoiles"> → +{{ gains.etoilesDonnees }} ⭐</span> (en réserve : {{ gains.reste }} / 5)</li>
               <li v-if="gains.partie">⭐ {{ gains.partie }}</li>
               <li v-if="gains.souvenir">{{ gains.souvenir.ico }} Souvenir : {{ gains.souvenir.nom }} (dans la maison de {{ monCp.n }})</li>
               <li v-if="gains.peril">🔥 Nouveau niveau de péril débloqué : {{ gains.peril }} ({{ D.PERILS[gains.peril] }})</li>
@@ -858,7 +879,8 @@
             <li>Après chaque combat : de l'or 🪙, parfois une fiole, et <strong>une carte au choix parmi 3</strong> (ou passer : un paquet léger pioche plus souvent tes meilleures cartes). Les élites donnent une <strong>relique</strong> (effet permanent), les boss une relique puissante au choix.</li>
             <li><strong>Salles</strong> : 🔥 feu de camp (se reposer ou améliorer une carte), 🛒 marchand (cartes, fioles, relique, retrait d'une carte), ❓ autel (un choix, parfois risqué). Les coffres sont gardés tant que les monstres de la pièce sont là.</li>
             <li><strong>Fioles</strong> (2 emplacements) : à boire pendant ton tour ; la fiole de soin se boit aussi hors combat.</li>
-            <li>À plusieurs : chacun a ses cartes, son or et ses reliques ; les monstres ont plus de PV (+120 % par joueur en plus) et frappent plus fort (+70 %). Une grille ⛓️ s'ouvre à deux sur les dalles. Un ami KO revient en fin de combat gagné, avec un Trèfle, ou si un ami reste 2 s à côté de lui. Tout le groupe KO : fin.</li>
+            <li>Difficulté, choisie avant d'entrer (par l'hôte dans un salon) : 🛡️ Normal (monstres un peu plus doux ; poussières ×0,7), ⚔️ Héroïque (le défi prévu ; ×1), 💀 Mythique (monstres plus coriaces ; ×1,5). Le péril suivant ne s'ouvre qu'en gagnant seul en Héroïque ou Mythique.</li>
+            <li>À plusieurs : chacun a ses cartes, son or et ses reliques ; les monstres ont plus de PV et frappent plus fort, selon la difficulté. Une grille ⛓️ s'ouvre à deux sur les dalles. Un ami KO revient en fin de combat gagné, avec un Trèfle, ou si un ami reste 2 s à côté de lui. Tout le groupe KO : fin.</li>
             <li><strong>Péril</strong> : gagner le donjon en solo débloque un niveau de difficulté de plus (jusqu'à 5).</li>
             <li>À la fin, chacun garde les poussières d'étoile (5 poussières = 1 ⭐, comme en expédition). Donjon vaincu : un souvenir pour la maison de ton compagnon.</li>
           </ul>
@@ -942,6 +964,7 @@
         solo: false,
         monCp: nettoyerCp(monCompagnon()),
         stats: lireStockage('donjon-stats') || { parties: 0, gagnes: 0 },
+        difficulte: DJ.D.DIFFICULTES[lireStockage('donjon-difficulte')] ? lireStockage('donjon-difficulte') : 'heroique',
         dirCourante: null,
         sel: null,            // carte ou fiole touchée : { k: 'carte' | 'fiole', i } (un second toucher la joue)
         choixMenu: null,      // carte choisie dans une fenêtre (butin, marchand, paquet)
@@ -977,6 +1000,11 @@
         monPouvoir: function() { return DJ.pouvoirDe(this.monCp); },
         connexionTexte: function() { return { ok: 'en ligne', connexion: 'connexion…', perdue: 'reconnexion…', aucune: 'hors ligne' }[this.connexion]; },
         soloEnCours: function() { this.soloV; var s = lireStockage(CLE_SOLO); return !!(s && s.phase === 'jeu'); },
+        // Difficulté du salon (choisie par l'hôte) ; une partie lancée garde la sienne
+        difficulteSalon: function() {
+          var d = (this.partie && this.partie.difficulte) || (this.pub && this.pub.difficulte);
+          return DJ.D.DIFFICULTES[d] ? d : 'heroique';
+        },
         groupe: function() {
           var p = this.pub;
           if (!p) return [];
@@ -1055,7 +1083,7 @@
           return E ? { background: 'radial-gradient(ellipse at 50% 28%, ' + E.sol[1] + ' 0%, ' + E.mur[0] + ' 62%, #0b0806 100%)' } : {};
         },
         etageIco: function() { var E = this.partie && DJ.D.ETAGES[this.partie.etage - 1]; return E ? E.ico : '🗝️'; },
-        etageInfo: function() { var p = this.partie, E = p && DJ.D.ETAGES[p.etage - 1]; return E ? E.ico + ' Étage ' + p.etage + ' sur ' + DJ.NB_ETAGES + ' : ' + E.nom + (p.peril ? ' · péril ' + p.peril : '') : ''; },
+        etageInfo: function() { var p = this.partie, E = p && DJ.D.ETAGES[p.etage - 1]; return E ? E.ico + ' Étage ' + p.etage + ' sur ' + DJ.NB_ETAGES + ' : ' + E.nom + ' · ' + DJ.D.DIFFICULTES[DJ.D.DIFFICULTES[p.difficulte] ? p.difficulte : 'heroique'].nom + (p.peril ? ' · péril ' + p.peril : '') : ''; },
         objectif: function() {
           var p = this.partie;
           if (!p) return '';
@@ -1127,6 +1155,10 @@
         pseudoInput: function() { this.sauvegarder(); },
         menuCle: function() { this.choixMenu = null; },
         peril: function(v) { ecrireStockage('donjon-peril-choisi', v); },
+        difficulte: function(v) {
+          ecrireStockage('donjon-difficulte', v);
+          if (this.role === 'hote' && pubHote && pubHote.phase === 'attente') { pubHote.difficulte = v; this.publier(); }
+        },
         immersif: { immediate: true, handler: function(v) {
           document.body.classList.toggle('dj-immersif', v);
           if (!v && this.onglet !== 'play') this.sortirPleinEcranNavigateur();
@@ -1308,7 +1340,7 @@
           this.solo = true; this.gains = null;
           this.panne = false; this._erreurs = 0;
           if (s && !DJ.compatible(s)) { ecrireStockage(CLE_SOLO, null); s = null; }   // exploration d'une ancienne version : on repart de zéro
-          partieHote = s && s.phase === 'jeu' ? s : DJ.nouvelle(Math.floor(Math.random() * 1e9), { Moi: this.monCp }, nouvelId(), { peril: this.peril });
+          partieHote = s && s.phase === 'jeu' ? s : DJ.nouvelle(Math.floor(Math.random() * 1e9), { Moi: this.monCp }, nouvelId(), { peril: this.peril, difficulte: this.difficulte });
           if (partieHote.joueurs.Moi) { partieHote.joueurs.Moi.cp = this.monCp; partieHote.joueurs.Moi.surnom = 'L\'explorateur'; }
           this.sel = null;
           partieHote.maintenant = 0;   // l'horloge repart (l'exploration a pu être reprise plus tard)
@@ -1385,15 +1417,18 @@
           var gagne = !!(p.fin && p.fin.gagne), multi = !this.solo && Object.keys(p.joueurs).length > 1;
           var deja = lireStockage('donjon-recompense');
           if (deja && deja.id === p.id) { this.gains = deja.gains; return; }
-          var conv = EX.convertirPoussiere(lireStockage('expedition-poussiere'), p.poussiere || 0);
+          // Poussières d'étoile multipliées selon la difficulté (3.23)
+          var dif = DJ.D.DIFFICULTES[p.difficulte] ? p.difficulte : 'heroique', mult = DJ.D.DIFFICULTES[dif].poussieres;
+          var pous = Math.round((p.poussiere || 0) * mult);
+          var conv = EX.convertirPoussiere(lireStockage('expedition-poussiere'), pous);
           ecrireStockage('expedition-poussiere', conv.reste);
           var avant = Etoiles.gagneesAujourdhui();
           Etoiles.recompenseJeu(conv.etoiles, 'Donjon des compagnons · poussières d\'étoile');
           var donnees = Etoiles.gagneesAujourdhui() - avant;
           Etoiles.finDePartie('Donjon', gagne, multi, p.id, { lieu: 'donjon' });
-          var g = { etoiles: conv.etoiles, etoilesDonnees: donnees, reste: conv.reste, partie: multi ? (gagne ? 'Victoire entre amis' : 'Partie entre amis') : (gagne ? 'Victoire en solo' : ''), souvenir: null, peril: 0 };
+          var g = { etoiles: conv.etoiles, etoilesDonnees: donnees, reste: conv.reste, partie: multi ? (gagne ? 'Victoire entre amis' : 'Partie entre amis') : (gagne ? 'Victoire en solo' : ''), souvenir: null, peril: 0, poussieres: pous, mult: mult, difficulte: dif };
           // Victoire en solo au plus haut péril débloqué : le niveau suivant s'ouvre
-          if (gagne && this.solo && (p.peril || 0) >= this.perilMax && this.perilMax < DJ.D.PERILS.length - 1) {
+          if (gagne && this.solo && dif !== 'normal' && (p.peril || 0) >= this.perilMax && this.perilMax < DJ.D.PERILS.length - 1) {
             this.perilMax++; ecrireStockage('donjon-peril', this.perilMax); g.peril = this.perilMax;
           }
           // Souvenir du donjon (boss vaincu) et un peu de faim et de soif pour le compagnon
@@ -1412,9 +1447,11 @@
             ['repas', 'eau'].forEach(id => { animal.besoins[id] = { v: Math.max(0, n[id] - 15), t: t }; });
             ecrireStockage('compagnon-animal', animal);
             ecrireStockage('expedition-retour', { lieu: 'Donjon des compagnons', ico: '🗝️', gagne: gagne, abandon: false, bonnes: 0, questions: 0,
-              gain: conv.etoiles, donne: donnees, poussiere: p.poussiere || 0, souvenirs: g.souvenir ? [g.souvenir] : [], boss: DJ.MONSTRES[DJ.D.ETAGES[Math.max(0, (p.etage || 1) - 1)].boss].nom, h: Date.now() });
+              gain: conv.etoiles, donne: donnees, poussiere: pous, souvenirs: g.souvenir ? [g.souvenir] : [], boss: DJ.MONSTRES[DJ.D.ETAGES[Math.max(0, (p.etage || 1) - 1)].boss].nom, h: Date.now() });
           }
-          this.stats = { parties: this.stats.parties + 1, gagnes: this.stats.gagnes + (gagne ? 1 : 0), record: Math.max(this.stats.record || 0, gagne ? DJ.NB_ETAGES : p.etage || 1) };
+          var parDiff = Object.assign({}, this.stats.parDiff || {});
+          if (gagne) parDiff[dif] = (parDiff[dif] || 0) + 1;
+          this.stats = { parties: this.stats.parties + 1, gagnes: this.stats.gagnes + (gagne ? 1 : 0), record: Math.max(this.stats.record || 0, gagne ? DJ.NB_ETAGES : p.etage || 1), parDiff: parDiff };
           ecrireStockage('donjon-stats', this.stats);
           ecrireStockage('donjon-recompense', { id: p.id, gains: g });
           this.gains = g;
@@ -1463,7 +1500,7 @@
             var presents = {};
             pubHote.ordre.filter(n => this.estConnecte(n)).forEach(n => { presents[n] = pubHote.cps[n] || null; });
             pubHote.partieId = nouvelId();
-            partieHote = DJ.nouvelle(Math.floor(Math.random() * 1e9), presents, pubHote.partieId, { peril: this.peril });
+            partieHote = DJ.nouvelle(Math.floor(Math.random() * 1e9), presents, pubHote.partieId, { peril: this.peril, difficulte: pubHote.difficulte || this.difficulte });
             pubHote.phase = 'jeu';
             this.carteV = 0;
             this.publier();
@@ -1654,7 +1691,7 @@
               this.onglet = 'play';
               this.finEntree(true);
               salle = { infos: {} };
-              pubHote = { ordre: [monPseudo], cps: {}, phase: 'attente', partieId: null };
+              pubHote = { ordre: [monPseudo], cps: {}, phase: 'attente', partieId: null, difficulte: this.difficulte };
               partieHote = null;
             }
             pubHote.cps[monPseudo] = this.monCp;

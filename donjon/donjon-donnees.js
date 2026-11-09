@@ -289,10 +289,18 @@ var DJD = (function () {
       elites: ['minotaure', 'ombre'], boss: 'liche' }
   ];
 
+  // ---------- Difficultés (3.23, demandé par l'utilisateur) : choisies avant d'entrer (seul, ou par l'hôte du salon) ----------
+  // solo : PV et dégâts des monstres quand on joue seul ; groupe : renfort par joueur en plus (PV × (1 + pv × (n − 1)),
+  // dégâts × (1 + deg × (joueurs du combat − 1))) ; poussieres : multiplicateur des poussières d'étoile à la fin du donjon.
+  // Héroïque = la difficulté d'avant 3.23 (solo inchangé, groupe de 3.22) ; Normal = le groupe d'avant 3.22, solo un peu plus doux.
+  var DIFFICULTES = {
+    normal:   { nom: 'Normal',    ico: '🛡️', solo: { pv: 1, deg: 0.95 },  groupe: { pv: 0.9, deg: 0 },    poussieres: 0.7, texte: 'Pour découvrir le donjon' },
+    heroique: { nom: 'Héroïque',  ico: '⚔️', solo: { pv: 1, deg: 1 },     groupe: { pv: 1.2, deg: 0.7 },  poussieres: 1,   texte: 'Le défi prévu' },
+    mythique: { nom: 'Mythique',  ico: '💀', solo: { pv: 1.05, deg: 1.05 }, groupe: { pv: 1.25, deg: 0.75 }, poussieres: 1.5, texte: 'Pour les plus aguerris' }
+  };
+  var ORDRE_DIFFICULTES = ['normal', 'heroique', 'mythique'];
+
   // ---------- Périls (niveaux de difficulté débloqués en gagnant) ----------
-  // ---------- À plusieurs : les monstres se renforcent (par joueur en plus) ----------
-  // pv : PV des monstres ; deg : dégâts de leurs attaques. Réglé avec la simulation à 2 joueurs (3.22, signalé par l'utilisateur : « à 2, pas assez dur »).
-  var GROUPE = { pv: 1.2, deg: 0.7 };
 
   var PERILS = [
     'Le donjon tel quel',
@@ -327,6 +335,6 @@ var DJD = (function () {
   var PRIX = { c: 45, u: 70, r: 120, fiole: 40, relique: 150, retrait: 70 };
 
   return { ETATS: ETATS, CLASSES: CLASSES, CARTES: CARTES, FIOLES: FIOLES, RELIQUES: RELIQUES, MONSTRES: MONSTRES,
-           ETAGES: ETAGES, PERILS: PERILS, GROUPE: GROUPE, EVENEMENTS: EVENEMENTS, PRIX: PRIX };
+           ETAGES: ETAGES, PERILS: PERILS, DIFFICULTES: DIFFICULTES, ORDRE_DIFFICULTES: ORDRE_DIFFICULTES, EVENEMENTS: EVENEMENTS, PRIX: PRIX };
 })();
 if (typeof module !== 'undefined') module.exports = DJD;

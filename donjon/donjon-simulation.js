@@ -1,6 +1,6 @@
 // ================== DONJON : SIMULATION D'ÉQUILIBRAGE (Node seulement, pas servi par le site) ==================
 // Un joueur automatique raisonnable traverse des donjons complets (3 étages) : combats, butin, feu de camp, marchand, autel.
-// node donjon/donjon-simulation.js [parties par classe] [péril] [joueurs]
+// node donjon/donjon-simulation.js [parties par classe] [péril] [joueurs] [difficulté : normal | heroique | mythique]
 // Repère : un humain attentif joue mieux que ce joueur automatique (il lit mieux les intentions et construit son paquet).
 
 var DJ = require('./donjon-regles.js');
@@ -120,14 +120,14 @@ function gererMenus(e, p, h) {
 
 // ---------- Une partie complète (1 à 4 joueurs automatiques qui avancent ensemble) ----------
 var ESPECE = { ronces: 'dragon', force: 'panda', bond: 'lapin', flair: 'renard', aucune: null };
-function partie(classe, graine, peril, nb) {
+function partie(classe, graine, peril, nb, diff) {
   nb = nb || 1;
   var h = DJ.hasard(graine * 31 + 7), classes = Array.isArray(classe) ? classe : [classe], js = {};
   for (var j = 0; j < nb; j++) {
     var cl = classes[j % classes.length], nom = j ? 'Bot' + (j + 1) : 'Bot';
     js[nom] = ESPECE[cl] ? { e: ESPECE[cl], c: '#c8915a', n: nom, p: {} } : null;
   }
-  var e = DJ.nouvelle(graine, js, 'sim' + graine, { peril: peril });
+  var e = DJ.nouvelle(graine, js, 'sim' + graine, { peril: peril, difficulte: diff || 'heroique' });
   var ps = Object.keys(e.joueurs).map(n => e.joueurs[n]), p = ps[0], combats = 0;
   var resultat = (g, mort) => ({ gagne: g, etage: e.etage, combats: combats, pv: ps.reduce((t, q) => t + (q.fantome ? 0 : q.pv), 0) / nb, paquet: p.paquet.length, mort: mort });
   for (var et = 1; et <= DJ.NB_ETAGES; et++) {
@@ -157,13 +157,12 @@ function partie(classe, graine, peril, nb) {
 
 if (require.main === module) {
   // 3e argument facultatif : nombre de joueurs (même classe pour tous, ou duo mixte avec « mixte »)
-  if (process.argv[5]) D.GROUPE.pv = +process.argv[5];
-  if (process.argv[6]) D.GROUPE.deg = +process.argv[6];
-  var n = +process.argv[2] || 200, peril = +process.argv[3] || 0, nb = +process.argv[4] || 1;
+  // 4e argument : difficulté (normal, heroique, mythique ; héroïque par défaut)
+  var n = +process.argv[2] || 200, peril = +process.argv[3] || 0, nb = +process.argv[4] || 1, diff = process.argv[5] || 'heroique';
   ['ronces', 'force', 'bond', 'flair', 'aucune'].forEach(cl => {
     var g = 0, et = [0, 0, 0, 0], morts = {}, pv = 0;
     for (var i = 0; i < n; i++) {
-      var r = partie(cl, 1000 + i, peril, nb);
+      var r = partie(cl, 1000 + i, peril, nb, diff);
       if (r.gagne) { g++; pv += r.pv; } else { et[r.etage]++; morts[r.mort] = (morts[r.mort] || 0) + 1; }
     }
     console.log(cl.padEnd(7), 'gagnées', (100 * g / n).toFixed(0) + ' %', '| mortes aux étages 1/2/3 :', et.slice(1).join('/'), '| où :', JSON.stringify(morts), '| PV restants', g ? Math.round(pv / g) : '-');

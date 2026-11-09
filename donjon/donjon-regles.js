@@ -232,29 +232,34 @@ var DJ = (function () {
   // ---------- Monstres ----------
   // Taille du groupe pour renforcer les monstres : joueurs au départ, ou plus si des amis sont arrivés depuis
   function nbGroupe(e) { return Math.max(e.nbJ || 1, Object.keys(e.joueurs || {}).length); }
-  // Dégâts de base d'une attaque de monstre (péril 4 : +1 ; à plusieurs : renforcés selon le nombre de joueurs du combat)
+  // Difficulté de la partie (une partie d'avant 3.23 n'en a pas : Héroïque, comme avant)
+  function difficulte(e) { return D.DIFFICULTES[e.difficulte] || D.DIFFICULTES.heroique; }
+  // Dégâts de base d'une attaque de monstre (péril 4 : +1 ; seul : selon la difficulté ; à plusieurs : selon le nombre de joueurs du combat)
   function attaqueMonstre(e, i, nbCombat) {
-    var n = i.att + (e.peril >= 4 ? 1 : 0);
-    return n * (1 + D.GROUPE.deg * Math.max(0, (nbCombat || 1) - 1));
+    var n = i.att + (e.peril >= 4 ? 1 : 0), d = difficulte(e);
+    if (nbGroupe(e) <= 1) return n * d.solo.deg;
+    return n * (1 + d.groupe.deg * Math.max(0, (nbCombat || 1) - 1));
   }
   function creerMonstre(e, type, salle, x, y, h) {
     var M = MONSTRES[type], r = M.rang || 'normal';
     var pv = M.pv[0] + entier(h, M.pv[1] - M.pv[0] + 1);
     if (e.peril >= 1 && r === 'normal') pv *= 1.1;
     if (e.peril >= 2 && r !== 'normal') pv *= 1.1;
-    pv = Math.round(pv * (1 + D.GROUPE.pv * Math.max(0, nbGroupe(e) - 1)));
+    var d = difficulte(e), n = nbGroupe(e);
+    pv = Math.round(pv * (n <= 1 ? d.solo.pv : 1 + d.groupe.pv * (n - 1)));
     var m = { id: ++e.seq, type: type, salle: salle, x: x, y: y, pv: pv, pvMax: pv, pas: 0, dir: 'b', armure: 0, etats: {}, k: 0, mem: {}, intention: null, cible: null };
     e.ennemis.push(m);
     return m;
   }
 
   // ================== PARTIE ==================
-  // joueurs : { pseudo: résumé du compagnon ({ e, c, n, p }) ou null } ; options : { peril }
+  // joueurs : { pseudo: résumé du compagnon ({ e, c, n, p }) ou null } ; options : { peril, difficulte ('normal', 'heroique', 'mythique') }
   var FORMAT = 3;
   function nouvelle(graine, joueurs, id, options) {
     options = options || {};
     var noms = Object.keys(joueurs), pouvoirs = noms.map(n => pouvoirDe(joueurs[n])).filter(Boolean);
     var e = { id: id || String(graine), graine: graine, phase: 'jeu', format: FORMAT, etage: 0, peril: Math.max(0, Math.min(D.PERILS.length - 1, options.peril | 0)),
+              difficulte: D.DIFFICULTES[options.difficulte] ? options.difficulte : 'heroique',
               nbJ: noms.length, salles: {}, depart: null, bossSalle: null, carteV: 1, ennemis: [], seq: 0, joueurs: {}, cles: 0, grandeCle: false,
               poussiere: 0, objets: [], effets: [], annonces: [], vues: {}, fin: null, debut: 0, maintenant: 0, pouvoirs: pouvoirs, combats: {} };
     noms.forEach(n => ajouterJoueur(e, n, joueurs[n]));
