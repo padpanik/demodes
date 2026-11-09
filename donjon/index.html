@@ -1072,7 +1072,7 @@
       var a = lireStockage('compagnon-animal');
       if (!a || !a.espece) return null;
       var p = {};
-      Object.keys(a.porte || {}).forEach(k => { if (!/^(exp|fete|mur|lampe|plante|jouet|couchage|tableau|horloge)/.test(k)) p[k] = a.porte[k]; });
+      Object.keys(a.porte || {}).forEach(k => { if (!/^(exp|fete|mur|lampe|plante|jouet|couchage|tableau|horloge|fenetre|livres|radio|bocal)/.test(k)) p[k] = a.porte[k]; });
       return { e: a.espece, c: a.couleur, n: a.nom, p: p };
     }
     function nettoyerCp(c) {

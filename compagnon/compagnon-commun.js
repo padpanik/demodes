@@ -29,7 +29,7 @@ var CP = (function () {
   // ================== BOUTIQUE ==================
   // slot : où se porte ou se pose l'objet (un seul par emplacement) ; conso : se consomme (friandises)
   var RAYONS = [{ id: 'tete', nom: '🎩 Tête' }, { id: 'cou', nom: '🎀 Cou' }, { id: 'corps', nom: '🧥 Habits' },
-                  { id: 'maison', nom: '🛏️ Couchage' }, { id: 'deco', nom: '🪴 Déco' }, { id: 'gourmand', nom: '🍪 Friandises' }];
+                  { id: 'maison', nom: '🛏️ Couchage' }, { id: 'deco', nom: '🪴 Déco' }, { id: 'gourmand', nom: '🍪 Douceurs' }];
   var ARTICLES = [
     { id: 'bonnet', rayon: 'tete', slot: 'tete', nom: 'Bonnet de laine', desc: 'Bien au chaud en hiver', prix: 12, couleur: '#3a8fd8' },
     { id: 'chapeau', rayon: 'tete', slot: 'tete', nom: 'Chapeau melon', desc: 'Très distingué', prix: 25, couleur: '#2b2b2b' },
@@ -54,6 +54,36 @@ var CP = (function () {
     { id: 'rideaux', rayon: 'deco', slot: 'fenetre', nom: 'Rideaux', desc: 'Pour la fenêtre', prix: 14, place: true, ico: '🪟' },
     { id: 'balle', rayon: 'deco', slot: 'jouet', nom: 'Balle', desc: 'Pour jouer', prix: 5, ico: '⚽', place: true },
     { id: 'peluche', rayon: 'deco', slot: 'jouet', nom: 'Peluche', desc: 'Son doudou', prix: 12, ico: '🧸', place: true },
+    // ----- Nouveautés 3.35 (neuf : badge « Nouveau » en boutique) ; yeux : lunettes portées avec un chapeau -----
+    { id: 'casquette', neuf: true, rayon: 'tete', slot: 'tete', nom: 'Casquette', desc: 'Visière sur le côté', prix: 10, couleur: '#e03131' },
+    { id: 'beret', neuf: true, rayon: 'tete', slot: 'tete', nom: 'Béret', desc: 'Un petit air d\'artiste', prix: 14, couleur: '#1d3557' },
+    { id: 'couronne-fleurs', neuf: true, rayon: 'tete', slot: 'tete', nom: 'Couronne de fleurs', desc: 'Toute fleurie', prix: 20, couleur: '#f783ac' },
+    { id: 'cowboy', neuf: true, rayon: 'tete', slot: 'tete', nom: 'Chapeau de cow-boy', desc: 'Yee-haw !', prix: 28, couleur: '#a0673a' },
+    { id: 'pirate', neuf: true, rayon: 'tete', slot: 'tete', nom: 'Tricorne de pirate', desc: 'À l\'abordage !', prix: 32, couleur: '#2b2b2b' },
+    { id: 'lunettes-rondes', neuf: true, rayon: 'tete', slot: 'yeux', nom: 'Lunettes rondes', desc: 'Se portent avec un chapeau', prix: 12, couleur: '#7a4a2a' },
+    { id: 'lunettes-coeur', neuf: true, rayon: 'tete', slot: 'yeux', nom: 'Lunettes cœur', desc: 'Se portent avec un chapeau', prix: 14, couleur: '#e64980' },
+    { id: 'monocle', neuf: true, rayon: 'tete', slot: 'yeux', nom: 'Monocle', desc: 'Très, très distingué', prix: 22, couleur: '#c99a00' },
+    { id: 'bandana', neuf: true, rayon: 'cou', slot: 'cou', nom: 'Bandana', desc: 'À pois blancs', prix: 8, couleur: '#e03131' },
+    { id: 'cravate', neuf: true, rayon: 'cou', slot: 'cou', nom: 'Cravate', desc: 'Pour aller au bureau', prix: 16, couleur: '#1d3557' },
+    { id: 'medaille', neuf: true, rayon: 'cou', slot: 'cou', nom: 'Médaille d\'or', desc: 'Le champion, c\'est lui', prix: 30, couleur: '#f4c430' },
+    { id: 'perles', neuf: true, rayon: 'cou', slot: 'cou', nom: 'Collier de perles', desc: 'Pour les soirées chic', prix: 40, couleur: '#f8f9fa' },
+    { id: 'pyjama', neuf: true, rayon: 'corps', slot: 'corps', nom: 'Pyjama', desc: 'Doux, à pois', prix: 16, couleur: '#74c0fc' },
+    { id: 'tutu', neuf: true, rayon: 'corps', slot: 'corps', nom: 'Tutu', desc: 'Pour la danse', prix: 18, couleur: '#fcc2d7' },
+    { id: 'cire', neuf: true, rayon: 'corps', slot: 'corps', nom: 'Ciré jaune', desc: 'Il peut pleuvoir !', prix: 24, couleur: '#fcc419' },
+    { id: 'salopette', neuf: true, rayon: 'corps', slot: 'corps', nom: 'Salopette', desc: 'Pour jardiner', prix: 26, couleur: '#4c6ef5' },
+    { id: 'gilet', neuf: true, rayon: 'corps', slot: 'corps', nom: 'Gilet de costume', desc: 'Chemise blanche comprise', prix: 30, couleur: '#495057' },
+    { id: 'cactus', neuf: true, rayon: 'deco', slot: 'plante', nom: 'Cactus', desc: 'Ne pique que les curieux', prix: 8, ico: '🌵', place: true },
+    { id: 'tournesol', neuf: true, rayon: 'deco', slot: 'plante', nom: 'Tournesol', desc: 'Toujours vers le soleil', prix: 12, ico: '🌻', place: true },
+    { id: 'miroir', neuf: true, rayon: 'deco', slot: 'mur', nom: 'Miroir', desc: 'Pour admirer son look', prix: 18, ico: '🪞', place: true, phrase: 'Qui est le plus beau ? C\'est moi ! 🪞' },
+    { id: 'pelote', neuf: true, rayon: 'deco', slot: 'jouet', nom: 'Pelote de laine', desc: 'Ça roule, ça se défait…', prix: 6, ico: '🧶', place: true, phrase: 'Oups, tout est défait ! 🧶' },
+    { id: 'os', neuf: true, rayon: 'deco', slot: 'jouet', nom: 'Os à mâchouiller', desc: 'Un vrai délice', prix: 6, ico: '🦴', place: true, phrase: 'Miam, mon os ! 🦴' },
+    { id: 'livres', neuf: true, rayon: 'deco', slot: 'livres', nom: 'Pile de livres', desc: 'Pour les soirées lecture', prix: 14, ico: '📚', place: true, pos: 'left:4%;bottom:12px', x: 10, taille: 34, phrase: 'Il était une fois… 📖' },
+    { id: 'radio', neuf: true, rayon: 'deco', slot: 'radio', nom: 'Radio', desc: 'Un peu de musique', prix: 18, ico: '📻', place: true, pos: 'left:52%;top:30%', x: 56, taille: 30, phrase: 'J\'adore cette chanson ! 🎶' },
+    { id: 'bocal', neuf: true, rayon: 'deco', slot: 'bocal', nom: 'Bocal à poisson', desc: 'Un petit ami qui nage', prix: 24, ico: '🐠', place: true, pos: 'left:82%;top:34%', x: 86, taille: 32, phrase: 'Coucou le poisson ! 🫧' },
+    { id: 'pomme', neuf: true, rayon: 'gourmand', nom: 'Pomme', desc: 'Croquante et juteuse', prix: 2, ico: '🍎', conso: true, effets: { repas: 25, eau: 10 }, phrase: 'Croc ! Elle est juteuse ! 🍎' },
+    { id: 'lait', neuf: true, rayon: 'gourmand', nom: 'Bol de lait', desc: 'Remplit la gamelle d\'eau', prix: 3, ico: '🥛', conso: true, effets: { eau: 60, calin: 10 }, phrase: 'Slurp ! Une moustache de lait ! 🥛' },
+    { id: 'glace', neuf: true, rayon: 'gourmand', nom: 'Glace', desc: 'Un petit plaisir', prix: 6, ico: '🍦', conso: true, effets: { repas: 30, calin: 30 }, phrase: 'Brr, c\'est froid… mais c\'est bon ! 🍦' },
+    { id: 'savon', neuf: true, rayon: 'gourmand', nom: 'Bain moussant', desc: 'Toilette faite d\'un coup', prix: 4, ico: '🧼', conso: true, effets: { toilette: 100, calin: 10 }, phrase: 'Tout propre et tout doux ! 🫧' },
     { id: 'biscuit', rayon: 'gourmand', nom: 'Biscuit', desc: 'Remplit l\'assiette et fait plaisir', prix: 3, ico: '🍪', conso: true, effets: { repas: 40, calin: 15 } },
     { id: 'gateau', rayon: 'gourmand', nom: 'Gâteau de fête', desc: 'Un vrai festin', prix: 10, ico: '🎂', conso: true, effets: { repas: 100, calin: 40 } },
     // ----- Articles de saison (fete) : achetables seulement pendant la fête, gardés ensuite ; déco de fête : un emplacement par fête -----
@@ -469,6 +499,7 @@ var CP = (function () {
     // Reflets : lumière venant d'en haut à gauche (tête et ventre), sous les accessoires
     s += '<ellipse cx="80" cy="56" rx="20" ry="12" fill="#fff" opacity="0.28" transform="rotate(-25 80 56)"/>';
     if (p.cou) s += accessoireCou(p.cou);
+    if (p.yeux) s += chapeau(p.yeux);
     if (p.tete) s += chapeau(p.tete);
     s += '</g></g>';
     if (sg && sg.toilette) s += mouches();
@@ -507,11 +538,44 @@ var CP = (function () {
   function art(id) { return ARTICLES.find(a => a.id === id) || {}; }
   function habit(id, c) {
     var a = art(id), k = a.couleur;
-    if (id === 'cape') return '<path d="M56 132 Q100 120 144 132 L154 196 Q100 206 46 196 Z" fill="' + k + '"/><ellipse cx="100" cy="166" rx="32" ry="28" fill="' + nuance(c, 0.45) + '"/>';
+    // Agrafe dorée des capes : deux boutons reliés par une chaînette
+    var agrafe = '<path d="M80 129 Q100 138 120 129" stroke="#c99a00" stroke-width="2" fill="none"/><circle cx="80" cy="129" r="5" fill="#f4c430" stroke="#c99a00" stroke-width="1.5"/><circle cx="120" cy="129" r="5" fill="#f4c430" stroke="#c99a00" stroke-width="1.5"/>';
+    if (id === 'cape') return '<path d="M56 132 Q100 120 144 132 L154 196 Q100 206 46 196 Z" fill="' + k + '"/>' +
+      '<path d="M60 140 L52 194 M140 140 L148 194" stroke="' + nuance(k, -0.25) + '" stroke-width="3" fill="none" opacity="0.6"/>' +
+      '<ellipse cx="100" cy="166" rx="32" ry="28" fill="' + nuance(c, 0.45) + '"/>' + agrafe;
+    if (id === 'salopette') return '<path d="M54 156 Q100 164 146 156 L148 178 Q100 192 52 178 Z" fill="' + k + '"/>' +
+      '<path d="M80 136 L70 120 M120 136 L130 120" stroke="' + nuance(k, -0.15) + '" stroke-width="7" stroke-linecap="round"/>' +
+      '<rect x="78" y="132" width="44" height="32" rx="5" fill="' + k + '"/><rect x="91" y="140" width="18" height="12" rx="2" fill="none" stroke="' + nuance(k, 0.4) + '" stroke-width="1.6"/>' +
+      '<path d="M81 135 h38 v26 h-38 Z M56 160 Q100 168 144 160" stroke="' + nuance(k, 0.35) + '" stroke-width="1.2" stroke-dasharray="3 3" fill="none"/>' +
+      '<circle cx="83" cy="137" r="3.5" fill="#f4c430"/><circle cx="117" cy="137" r="3.5" fill="#f4c430"/>' +
+      '<path d="M52 178 Q100 192 148 178 L148 172 Q100 186 52 172 Z" fill="#000" opacity="0.1"/>';
+    if (id === 'tutu') {
+      var jupe = (y0, y1, f) => { var d = 'M48 ' + y0; for (var x = 48; x < 152; x += 13) d += ' Q' + (x + 6.5) + ' ' + y1 + ' ' + (x + 13) + ' ' + y0; return '<path d="' + d + ' Z" fill="' + f + '" stroke="' + nuance(k, -0.15) + '" stroke-width="1"/>'; };
+      return '<path d="M60 148 Q100 136 140 148 L142 164 Q100 170 58 164 Z" fill="' + nuance(k, -0.12) + '"/>' +
+        jupe(162, 190, nuance(k, 0.35)) + jupe(160, 182, k) + '<path d="M58 162 Q100 170 142 162" stroke="' + nuance(k, -0.3) + '" stroke-width="3" fill="none"/>' +
+        '<g fill="#fff" opacity="0.85"><circle cx="78" cy="152" r="1.6"/><circle cx="100" cy="148" r="1.6"/><circle cx="122" cy="152" r="1.6"/></g>';
+    }
+
     if (id === 'cape-vampire') return '<path d="M52 134 L36 92 L74 122 Z M148 134 L164 92 L126 122 Z" fill="#c92a2a"/>' +
       '<path d="M54 130 Q100 118 146 130 L156 198 Q100 208 44 198 Z" fill="' + k + '"/><path d="M54 130 L44 198 L56 197 L64 136 Z M146 130 L156 198 L144 197 L136 136 Z" fill="#c92a2a"/>' +
       '<ellipse cx="100" cy="166" rx="32" ry="28" fill="' + nuance(c, 0.45) + '"/>';
-    var r = '<path d="M50 150 Q52 120 100 118 Q148 120 150 150 L148 178 Q100 192 52 178 Z" fill="' + k + '"/>';
+    var r = id === 'cire' ? '<path d="M64 126 Q100 106 136 126 Q100 134 64 126 Z" fill="' + nuance(k, -0.15) + '"/>' : '';   // capuche du ciré dans le dos
+    r += '<path d="M50 150 Q52 120 100 118 Q148 120 150 150 L148 178 Q100 192 52 178 Z" fill="' + k + '"/>' +
+         // ombre douce en bas du vêtement
+         '<path d="M52 178 Q100 192 148 178 L149 168 Q100 184 51 168 Z" fill="#000" opacity="0.08"/>';
+    if (id === 'cire') r += '<path d="M100 120 V187" stroke="' + nuance(k, -0.4) + '" stroke-width="2.5"/>' +
+      '<g fill="#495057"><rect x="94" y="136" width="12" height="4" rx="2"/><rect x="94" y="152" width="12" height="4" rx="2"/><rect x="94" y="168" width="12" height="4" rx="2"/></g>' +
+      '<path d="M62 162 h22 M116 162 h22" stroke="' + nuance(k, -0.4) + '" stroke-width="3" stroke-linecap="round"/>';
+    if (id === 'gilet') r += '<path d="M82 119 L100 164 L118 119 Z" fill="#fff"/><path d="M92 122 L100 132 L108 122" stroke="#dee2e6" stroke-width="2" fill="none"/>' +
+      '<path d="M96 126 L88 120 L88 132 Z M104 126 L112 120 L112 132 Z" fill="#c92a2a"/><circle cx="100" cy="126" r="2.5" fill="#a61e1e"/>' +
+      '<path d="M82 119 L100 164 L118 119" stroke="' + nuance(k, -0.35) + '" stroke-width="2.5" fill="none"/>' +
+      '<g fill="' + nuance(k, 0.5) + '"><circle cx="106" cy="168" r="2.6"/><circle cx="106" cy="178" r="2.6"/></g>' +
+      '<path d="M62 150 h14 M124 150 h14" stroke="' + nuance(k, -0.35) + '" stroke-width="2.5" stroke-linecap="round"/>';
+    if (id === 'pyjama') {
+      r += '<path d="M80 121 L100 136 L120 121" stroke="' + nuance(k, -0.3) + '" stroke-width="4" fill="none" stroke-linejoin="round"/>';
+      [[66, 142], [86, 152], [118, 146], [136, 160], [72, 168], [100, 172], [126, 178], [110, 160]].forEach(q => { r += '<circle cx="' + q[0] + '" cy="' + q[1] + '" r="3.2" fill="#fff" opacity="0.85"/>'; });
+      r += '<g fill="' + nuance(k, -0.35) + '"><circle cx="100" cy="146" r="2.4"/><circle cx="100" cy="160" r="2.4"/></g>';
+    }
     if (id === 'manteau') r += '<path d="M100 120 L100 186" stroke="' + nuance(k, -0.3) + '" stroke-width="3"/><circle cx="108" cy="140" r="3.5" fill="#f4c430"/><circle cx="108" cy="158" r="3.5" fill="#f4c430"/><circle cx="108" cy="176" r="3.5" fill="#f4c430"/>' +
                              '<path d="M52 176 Q100 192 148 176" stroke="#fff" stroke-width="6" fill="none" opacity="0.9"/>';
     if (id === 'pull-noel') {
@@ -519,13 +583,40 @@ var CP = (function () {
       r += '<path d="' + z + '" stroke="#fff" stroke-width="3" fill="none" stroke-linejoin="round"/><path d="M54 164 Q100 176 146 164" stroke="#2b8a3e" stroke-width="7" fill="none"/>' +
            '<g stroke="#fff" stroke-width="2" stroke-linecap="round"><path d="M76 132 v10 M71 137 h10 M72.5 133.5 l7 7 M79.5 133.5 l-7 7"/><path d="M124 132 v10 M119 137 h10 M120.5 133.5 l7 7 M127.5 133.5 l-7 7"/></g>';
     }
-    if (id === 'pull') r += '<path d="M56 140 Q100 152 144 140 M54 160 Q100 172 146 160" stroke="' + nuance(k, 0.4) + '" stroke-width="5" fill="none"/>';
+    if (id === 'pull') r += '<path d="M56 140 Q100 152 144 140 M54 160 Q100 172 146 160" stroke="' + nuance(k, 0.4) + '" stroke-width="5" fill="none"/>' +
+      '<path d="M72 122 Q100 134 128 122" stroke="' + nuance(k, -0.2) + '" stroke-width="6" fill="none" stroke-linecap="round"/>' +
+      '<path d="M54 176 Q100 190 146 176" stroke="' + nuance(k, -0.2) + '" stroke-width="6" fill="none" stroke-dasharray="2 3"/>';
     return r;
   }
   function accessoireCou(id) {
     var k = art(id).couleur;
-    if (id === 'noeud' || id === 'noeud-dore' || id === 'noeud-vert') return '<path d="M100 128 L78 116 L78 140 Z M100 128 L122 116 L122 140 Z" fill="' + k + '"/><circle cx="100" cy="128" r="6" fill="' + nuance(k, -0.3) + '"/>';
-    if (id === 'echarpe') return '<path d="M60 118 Q100 136 140 118 L142 130 Q100 148 58 130 Z" fill="' + k + '"/><path d="M118 132 L126 172 L112 172 L108 136Z" fill="' + k + '"/>';
+    if (id === 'noeud' || id === 'noeud-dore' || id === 'noeud-vert') return '<path d="M100 128 L78 116 L78 140 Z M100 128 L122 116 L122 140 Z" fill="' + k + '"/>' +
+      '<path d="M84 122 L94 127 M84 134 L94 129 M116 122 L106 127 M116 134 L106 129" stroke="' + nuance(k, -0.3) + '" stroke-width="1.6" stroke-linecap="round"/>' +
+      '<path d="M80 119 L80 124" stroke="#fff" stroke-width="2" opacity="0.5" stroke-linecap="round"/><circle cx="100" cy="128" r="6" fill="' + nuance(k, -0.3) + '"/>';
+    if (id === 'echarpe') return '<path d="M60 118 Q100 136 140 118 L142 130 Q100 148 58 130 Z" fill="' + k + '"/><path d="M118 132 L126 172 L112 172 L108 136Z" fill="' + k + '"/>' +
+      '<path d="M110 146 L123 144 M111 157 L124 155" stroke="' + nuance(k, 0.45) + '" stroke-width="4"/><path d="M80 126 Q86 130 92 131 M100 134 L100 134" stroke="' + nuance(k, -0.25) + '" stroke-width="2" fill="none"/>' +
+      '<path d="M113.5 172 v6 M117.5 172 v7 M121.5 172 v6 M125 172 v5" stroke="' + k + '" stroke-width="2" stroke-linecap="round"/>';
+    if (id === 'bandana') {
+      var b = '<path d="M60 120 Q100 134 140 120 L100 160 Z" fill="' + k + '"/><path d="M60 120 Q100 134 140 120" stroke="' + nuance(k, -0.3) + '" stroke-width="3" fill="none"/>';
+      [[84, 132], [100, 138], [116, 132], [92, 146], [108, 146], [100, 153]].forEach(q => { b += '<circle cx="' + q[0] + '" cy="' + q[1] + '" r="2.3" fill="#fff"/>'; });
+      return b;
+    }
+    if (id === 'cravate') return '<path d="M76 118 L98 126 L88 138 Z M124 118 L102 126 L112 138 Z" fill="#fff" stroke="#dee2e6" stroke-width="1.2"/>' +
+      '<path d="M94 125 L106 125 L104 136 L96 136 Z" fill="' + nuance(k, -0.25) + '"/><path d="M96 136 L104 136 L111 170 L100 181 L89 170 Z" fill="' + k + '"/>' +
+      '<path d="M92 150 L106 140 M90 162 L109 148 M93 174 L110 162" stroke="#f4c430" stroke-width="2.2" opacity="0.7"/>';
+    if (id === 'medaille') return '<path d="M82 120 L100 148 L118 120" stroke="#1c7ed6" stroke-width="8" fill="none" stroke-linejoin="round"/>' +
+      '<path d="M82 120 L100 148 L118 120" stroke="#e03131" stroke-width="2.5" fill="none" stroke-linejoin="round"/>' +
+      '<circle cx="100" cy="155" r="12" fill="' + k + '" stroke="' + nuance(k, -0.35) + '" stroke-width="2"/>' +
+      '<path d="M100 147 L102.6 152.4 L108.4 153 L104 157 L105.2 162.8 L100 160 L94.8 162.8 L96 157 L91.6 153 L97.4 152.4 Z" fill="' + nuance(k, -0.3) + '"/>' +
+      '<path d="M93 150 Q95 146 99 145" stroke="#fff" stroke-width="2" opacity="0.6" fill="none" stroke-linecap="round"/>';
+    if (id === 'perles') {
+      var pl = '';
+      for (var i = 0; i <= 12; i++) {
+        var t = i / 12, x = (1 - t) * (1 - t) * 62 + 2 * (1 - t) * t * 100 + t * t * 138, y = (1 - t) * (1 - t) * 122 + 2 * (1 - t) * t * 140 + t * t * 122;
+        pl += '<circle cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="4.2" fill="' + k + '" stroke="#ced4da" stroke-width="1"/><circle cx="' + (x - 1.3).toFixed(1) + '" cy="' + (y - 1.4).toFixed(1) + '" r="1.3" fill="#fff"/>';
+      }
+      return pl + '<circle cx="100" cy="140" r="6" fill="#fcc2d7" stroke="#e599b9" stroke-width="1"/><circle cx="98" cy="138" r="1.8" fill="#fff"/>';
+    }
     if (id === 'collier-coeur') return '<path d="M62 122 Q100 140 138 122" stroke="' + k + '" stroke-width="7" fill="none" stroke-linecap="round"/>' + coeur(100, 140, 8, '#ff6b81') +
       '<circle cx="97" cy="136" r="2" fill="#fff" opacity="0.7"/>';
     var r = '<path d="M62 122 Q100 140 138 122" stroke="' + k + '" stroke-width="8" fill="none" stroke-linecap="round"/><circle cx="100" cy="134" r="5" fill="#f4c430"/>';
@@ -539,9 +630,55 @@ var CP = (function () {
   }
   function chapeau(id) {
     var k = art(id).couleur;
-    if (id === 'bonnet') return '<path d="M58 60 Q60 18 100 16 Q140 18 142 60 Z" fill="' + k + '"/><rect x="54" y="52" width="92" height="14" rx="7" fill="#fff"/><circle cx="100" cy="14" r="10" fill="#fff"/>';
-    if (id === 'chapeau') return '<ellipse cx="100" cy="42" rx="46" ry="9" fill="' + k + '"/><path d="M72 42 Q72 6 100 6 Q128 6 128 42Z" fill="' + k + '"/><rect x="72" y="30" width="56" height="7" fill="#c0392b"/>';
-    if (id === 'couronne') return '<path d="M68 44 L72 14 L86 30 L100 8 L114 30 L128 14 L132 44 Z" fill="' + k + '" stroke="#c99a00" stroke-width="2"/><circle cx="100" cy="30" r="4" fill="#e53935"/>';
+    if (id === 'bonnet') return '<path d="M58 60 Q60 18 100 16 Q140 18 142 60 Z" fill="' + k + '"/>' +
+      '<path d="M78 56 Q78 32 90 20 M100 56 V18 M122 56 Q122 32 110 20" stroke="' + nuance(k, -0.2) + '" stroke-width="3" fill="none" opacity="0.6"/>' +
+      '<path d="M74 30 Q80 22 90 20" stroke="#fff" stroke-width="3" fill="none" opacity="0.3" stroke-linecap="round"/>' +
+      '<rect x="54" y="52" width="92" height="14" rx="7" fill="#fff"/><path d="M60 59 H140" stroke="#dde3e8" stroke-width="10" stroke-dasharray="2 4"/>' +
+      '<circle cx="100" cy="14" r="10" fill="#fff"/><circle cx="94" cy="10" r="4" fill="#f1f3f5"/><circle cx="105" cy="17" r="3.5" fill="#e9ecef"/>';
+    if (id === 'chapeau') return '<ellipse cx="100" cy="42" rx="46" ry="9" fill="' + k + '"/><path d="M72 42 Q72 6 100 6 Q128 6 128 42Z" fill="' + k + '"/><rect x="72" y="30" width="56" height="7" fill="#c0392b"/>' +
+      '<path d="M80 28 Q80 12 96 9" stroke="#fff" stroke-width="3" fill="none" opacity="0.22" stroke-linecap="round"/><path d="M58 44 Q100 54 142 44" stroke="#fff" stroke-width="1.5" fill="none" opacity="0.18"/>';
+    if (id === 'couronne') return '<path d="M68 44 L72 14 L86 30 L100 8 L114 30 L128 14 L132 44 Z" fill="' + k + '" stroke="#c99a00" stroke-width="2" stroke-linejoin="round"/>' +
+      '<rect x="68" y="36" width="64" height="8" fill="' + nuance(k, -0.12) + '"/><path d="M76 22 L78 36" stroke="#fff" stroke-width="2.5" opacity="0.45" stroke-linecap="round"/>' +
+      '<circle cx="72" cy="14" r="3.5" fill="#fff"/><circle cx="100" cy="8" r="3.5" fill="#fff"/><circle cx="128" cy="14" r="3.5" fill="#fff"/>' +
+      '<circle cx="100" cy="28" r="4.5" fill="#e53935"/><circle cx="84" cy="40" r="3" fill="#1c7ed6"/><circle cx="100" cy="40" r="3" fill="#2f9e44"/><circle cx="116" cy="40" r="3" fill="#1c7ed6"/>';
+    if (id === 'casquette') return '<path d="M66 46 Q44 40 32 50 Q52 58 76 50 Z" fill="' + nuance(k, -0.25) + '"/>' +
+      '<path d="M64 48 Q62 14 100 13 Q138 14 136 48 Q100 54 64 48 Z" fill="' + k + '"/>' +
+      '<path d="M100 13 V50 M82 16 Q76 30 78 50 M118 16 Q124 30 122 50" stroke="' + nuance(k, -0.25) + '" stroke-width="1.6" fill="none"/>' +
+      '<circle cx="100" cy="13" r="4" fill="' + nuance(k, -0.25) + '"/><circle cx="111" cy="33" r="7" fill="#fff"/>' +
+      '<path d="M111 28 L112.5 31.5 L116 32 L113.4 34.3 L114.1 38 L111 36.2 L107.9 38 L108.6 34.3 L106 32 L109.5 31.5 Z" fill="' + k + '"/>';
+    if (id === 'beret') return '<path d="M96 18 l2 -8" stroke="' + k + '" stroke-width="4" stroke-linecap="round"/>' +
+      '<ellipse cx="96" cy="34" rx="46" ry="17" fill="' + k + '" transform="rotate(-8 96 34)"/>' +
+      '<path d="M60 44 Q100 52 136 38" stroke="' + nuance(k, -0.35) + '" stroke-width="5" fill="none" stroke-linecap="round"/>' +
+      '<path d="M70 28 Q84 20 100 20" stroke="#fff" stroke-width="3" fill="none" opacity="0.22" stroke-linecap="round"/>';
+    if (id === 'couronne-fleurs') {
+      var cf = '<path d="M58 54 Q100 22 142 54" stroke="#2f9e44" stroke-width="3" fill="none"/>', tons = [k, '#ffd43b', '#b197fc', '#ffa8a8'];
+      [[60, 52], [72, 41], [86, 34], [100, 31], [114, 34], [128, 41], [140, 52]].forEach((q, i) => {
+        cf += '<ellipse cx="' + (q[0] + 6) + '" cy="' + (q[1] + 2) + '" rx="5" ry="2.4" fill="#40c057" transform="rotate(25 ' + (q[0] + 6) + ' ' + (q[1] + 2) + ')"/>';
+        for (var j = 0; j < 5; j++) { var g = j * Math.PI * 0.4; cf += '<circle cx="' + (q[0] + 4.2 * Math.cos(g)).toFixed(1) + '" cy="' + (q[1] + 4.2 * Math.sin(g)).toFixed(1) + '" r="3.6" fill="' + tons[i % 4] + '"/>'; }
+        cf += '<circle cx="' + q[0] + '" cy="' + q[1] + '" r="2.6" fill="' + (i % 4 === 1 ? '#e8590c' : '#ffd43b') + '"/>';
+      });
+      return cf;
+    }
+    if (id === 'cowboy') return '<path d="M34 44 Q48 32 70 40 Q100 48 130 40 Q152 32 166 44 Q150 58 100 56 Q50 58 34 44 Z" fill="' + nuance(k, -0.12) + '"/>' +
+      '<path d="M70 42 Q66 12 84 9 Q92 16 100 12 Q108 16 116 9 Q134 12 130 42 Q100 48 70 42 Z" fill="' + k + '"/>' +
+      '<path d="M70 35 Q100 42 130 35 L130 41 Q100 48 70 41 Z" fill="#5c3d2e"/><path d="M100 14 Q98 26 100 36" stroke="' + nuance(k, -0.3) + '" stroke-width="2" fill="none"/>' +
+      '<path d="M100 34 L101.8 37.6 L105.8 38.2 L102.9 41 L103.6 45 L100 43.1 L96.4 45 L97.1 41 L94.2 38.2 L98.2 37.6 Z" fill="#f4c430"/>' +
+      '<path d="M78 30 Q78 18 86 14" stroke="#fff" stroke-width="2.5" fill="none" opacity="0.25" stroke-linecap="round"/>';
+    if (id === 'pirate') return '<path d="M38 48 Q58 12 100 10 Q142 12 162 48 Q132 36 100 42 Q68 36 38 48 Z" fill="' + k + '"/>' +
+      '<path d="M38 48 Q68 36 100 42 Q132 36 162 48" stroke="#f4c430" stroke-width="3" fill="none"/>' +
+      '<circle cx="100" cy="25" r="7.5" fill="#fff"/><rect x="96" y="29" width="8" height="5" rx="1.5" fill="#fff"/>' +
+      '<circle cx="97.2" cy="24.5" r="1.8" fill="' + k + '"/><circle cx="102.8" cy="24.5" r="1.8" fill="' + k + '"/>' +
+      '<path d="M88 31 L112 39 M112 31 L88 39" stroke="#fff" stroke-width="3" stroke-linecap="round"/>';
+    if (id === 'lunettes-rondes') return '<path d="M66 78 L46 72 M134 78 L154 72" stroke="' + k + '" stroke-width="3" stroke-linecap="round"/>' +
+      '<circle cx="79" cy="80" r="13" fill="#e7f5ff" fill-opacity="0.25" stroke="' + k + '" stroke-width="3.5"/><circle cx="121" cy="80" r="13" fill="#e7f5ff" fill-opacity="0.25" stroke="' + k + '" stroke-width="3.5"/>' +
+      '<path d="M92 79 Q100 74 108 79" stroke="' + k + '" stroke-width="3" fill="none"/>' +
+      '<path d="M71 75 Q74 71 78 70 M113 75 Q116 71 120 70" stroke="#fff" stroke-width="2" fill="none" opacity="0.8" stroke-linecap="round"/>';
+    if (id === 'lunettes-coeur') return '<path d="M64 78 L46 72 M136 78 L154 72" stroke="' + k + '" stroke-width="3" stroke-linecap="round"/>' +
+      coeur(79, 80, 10, k) + coeur(121, 80, 10, k) + '<path d="M90 78 Q100 73 110 78" stroke="' + k + '" stroke-width="3" fill="none"/>' +
+      '<path d="M71 74 Q73 71 76 71 M113 74 Q115 71 118 71" stroke="#fff" stroke-width="2.2" fill="none" opacity="0.75" stroke-linecap="round"/>';
+    if (id === 'monocle') return '<path d="M121 93 Q132 112 114 132" stroke="' + k + '" stroke-width="1.6" fill="none" stroke-dasharray="2.5 2"/>' +
+      '<circle cx="121" cy="80" r="13" fill="#e7f5ff" fill-opacity="0.25" stroke="' + k + '" stroke-width="3.5"/>' +
+      '<path d="M113 75 Q116 71 120 70" stroke="#fff" stroke-width="2" fill="none" opacity="0.8" stroke-linecap="round"/>';
     if (id === 'chapeau-sorciere') {
       // Chapeau de sorcière violet : pointe molle qui retombe et s'enroule en spirale, bord ondulé, toiles d'araignée et chauve-souris
       var o = '#2a1745', fonce = nuance(k, -0.3), toile = (cx, cy, r) => {

@@ -767,6 +767,15 @@ Toujours valables depuis la première version :
   Au choix d'une langue, il dit « Coucou » à voix haute dans cette langue (`CP.direEnLangue`). Le petit jeu de devinettes essayé en 2.35 a été retiré.
 - Accueil : carte « Mon compagnon » (son dessin, son humeur, les étoiles) fixée en haut avec « En ligne », au-dessus de la liste des jeux qui défile.
 - Boutique : tête, cou (dont laisse et laisse de grande marque), habits (manteau d'hiver…), couchage (coussin → château), déco, friandises.
+- **Boutique enrichie** (3.35, demandé par l'utilisateur : « ajouter du choix, repasse sur les looks ») : ~30 articles marqués `neuf` (badge « Nouveau » tant qu'on ne l'a pas) :
+  tête (casquette, béret, couronne de fleurs, cow-boy, tricorne), **emplacement `yeux`** (lunettes rondes, lunettes cœur, monocle : portées *avec* un chapeau,
+  dessinées avant `tete` dans `CP.dessin` ; les lunettes de soleil de l'été restent sur `tete`), cou (bandana, cravate, médaille, perles), habits (pyjama, tutu,
+  ciré, salopette, gilet), déco (cactus, tournesol, miroir, pelote, os ; livres, radio, bocal avec leur propre emplacement, `pos` / `x` / `taille` comme la déco de fête :
+  `artFete` prend tout article qui a un `pos`), douceurs (rayon renommé ; pomme, lait, glace, bain moussant : `phrase` dite en le donnant, compte pour la tâche repas ou eau).
+  Tout objet de déco qui a une `phrase` : il va le voir et la dit (`objetsDeLaPiece`). Dessins retouchés (bonnet côtelé, couronne à pierres, pull, écharpe à franges,
+  capes à agrafe, ombre en bas des habits). **Cabine d'essayage** en tête des rayons portés : son look actuel + les articles touchés (`essai` { emplacement: id },
+  `tenueEssai`), total à acheter, « Retirer l'essai » ; rien n'est acheté. Cartes : aperçu sur fond doux, prix en pastille dorée, « À toi », compteur « n / N à toi ».
+  Le donjon ignore les nouveaux emplacements de déco (expression dans `donjon/index.html`).
 - **Couchages = refuges** (2.86, demandé par l'utilisateur : « le panier et la niche sont minuscules, il ne peut pas aller dedans ») : coussin, panier, niche et château
   sont dessinés en SVG (`CP.REFUGES` dans `compagnon-commun.js` : calque `fond` derrière l'animal, calque `devant` par-dessus, `ech` = taille de l'animal dedans,
   `pied` = où il est posé ; `CP.refugePetit(id)` = le petit dessin à sa place dans la pièce, à la place de l'émoji). Bouton **« Au panier ! / À la niche ! / Sur ton coussin ! /

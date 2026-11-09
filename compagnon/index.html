@@ -298,21 +298,38 @@
     .rayons { display: flex; gap: 6px; overflow-x: auto; margin-bottom: 8px; padding-bottom: 2px; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
     .rayons::-webkit-scrollbar { display: none; }   /* on glisse au doigt, sans barre de défilement */
     .rayons button { flex-shrink: 0; border: 1.5px solid #c9d2d9; background: #fff; border-radius: 16px; padding: 7px 12px; font: inherit; font-size: 0.9em; font-weight: 700; color: #5b6b78; cursor: pointer; }
-    .rayons button.actif { background: #2c3e50; border-color: #2c3e50; color: #fff; }
+    .rayons button.actif { background: #1c7ed6; border-color: #1c7ed6; color: #fff; box-shadow: 0 2px 6px rgba(28,126,214,0.35); }
+    .compte-rayon { font-size: 0.8em; font-weight: 700; color: #6b7a86; margin: -2px 2px 8px; }
+    /* Cabine d'essayage (rayons portés) : son look actuel + les articles qu'on essaie, avant d'acheter */
+    .cabine { display: flex; align-items: center; gap: 10px; background: radial-gradient(circle at 30% 60%, #fff 0, #e7f1fb 55%, #d0e4f7 100%); border-radius: 18px; padding: 6px 10px 6px 4px; margin-bottom: 10px; box-shadow: inset 0 0 0 1.5px #c5dcf1; }
+    .cabine svg { width: 104px; height: 109px; flex-shrink: 0; filter: drop-shadow(0 3px 3px rgba(0,0,0,0.12)); }
+    .cabine .txt { flex: 1; min-width: 0; }
+    .cabine .titre-cab { font-weight: 900; font-size: 1.02em; color: #1d3557; }
+    .cabine .info-cab { font-size: 0.8em; color: #5b6b78; line-height: 1.3; margin: 2px 0 6px; }
+    .cabine .btn { padding: 6px 10px; font-size: 0.82em; }
     .articles { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-    .article { background: #fff; border-radius: 16px; padding: 10px; text-align: center; box-shadow: 0 1px 2px rgba(0,0,0,0.06); display: flex; flex-direction: column; gap: 4px; align-items: center; }
-    .article .ico { font-size: 2.2em; height: 46px; display: flex; align-items: center; }
-    .article .ico svg { width: 52px; height: 46px; }
+    .article { position: relative; background: #fff; border-radius: 16px; padding: 8px 8px 10px; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.08); display: flex; flex-direction: column; gap: 4px; align-items: center; }
+    .article .ico { font-size: 2.4em; width: 100%; height: 66px; display: flex; align-items: center; justify-content: center; border-radius: 12px;
+                    background: radial-gradient(ellipse at 50% 85%, #e9eef3 0, #f6f8fa 45%, #fff 75%); }
+    .article .ico svg { width: 70px; height: 64px; }
+    .article .ico.essayable { cursor: pointer; }
+    .article .ico.en-essai { background: radial-gradient(ellipse at 50% 85%, #d0e4f7 0, #e7f1fb 55%, #fff 80%); box-shadow: inset 0 0 0 2px #74b0e8; }
     .article .nom { font-weight: 800; font-size: 0.92em; line-height: 1.15; }
     .article .desc { font-size: 0.75em; color: #6b7a86; line-height: 1.2; min-height: 2.4em; }
     .article .btn { width: 100%; padding: 8px 4px; font-size: 0.9em; }
+    .article .btn.prix { background: #fff4c2; color: #6b4a00; border: 1.5px solid #f0c541; font-weight: 900; }
+    .article .btn.prix:disabled { background: #eef1f3; color: #a3aeb7; }
     .article.porte { box-shadow: 0 0 0 2.5px #2f8a5b; }
+    .article .pastille { position: absolute; top: 6px; left: 6px; z-index: 1; font-size: 0.66em; font-weight: 900; text-transform: uppercase; letter-spacing: 0.03em;
+                         padding: 2px 6px; border-radius: 8px; background: #e64980; color: #fff; white-space: nowrap; width: auto; max-width: none; line-height: 1.4; box-shadow: none; }
+    .article .pastille.a-toi { left: auto; right: 6px; background: #2f8a5b; }
 
     /* ---------- Confirmation d'achat ---------- */
     .voile-achat { position: fixed; inset: 0; z-index: 3000; background: rgba(15,25,35,0.45); display: flex; align-items: center; justify-content: center; padding: 16px; }
     .fenetre-achat { background: #fff; border-radius: 22px; padding: 18px; width: 100%; max-width: 320px; text-align: center; box-shadow: 0 12px 40px rgba(0,0,0,0.3); }
     .ico-achat { font-size: 56px; height: 76px; display: flex; align-items: center; justify-content: center; }
-    .ico-achat svg { width: 86px; height: 76px; }
+    .ico-achat svg { width: 110px; height: 96px; }
+    .ico-achat { border-radius: 16px; background: radial-gradient(ellipse at 50% 85%, #e9eef3 0, #f6f8fa 50%, #fff 80%); height: 100px; margin-bottom: 4px; }
     .titre-achat { font-weight: 900; font-size: 1.25em; margin: 4px 0 10px; }
     .phrase-retour { font-weight: 700; color: #5b4a2a; background: #fff8e7; border-radius: 12px; padding: 8px 10px; margin-bottom: 10px; font-size: 0.92em; line-height: 1.35; }
     .souvenirs-retour { font-weight: 700; margin-bottom: 12px; font-size: 0.92em; }
@@ -569,16 +586,29 @@
           <span class="ico">{{ fete.ico }}</span><span>Boutique {{ deFete(fete) }}<small>Ces articles ne se vendent que jusqu'au {{ dateFr(fete.fin) }}. Une fois achetés, ils sont à toi pour toujours.</small></span>
         </div>
         <div v-else-if="!fete && prochaine" class="prochaine-fete">{{ prochaine.ico }} Prochaine boutique de fête : {{ prochaine.nom }}, dès le {{ dateFr(prochaine.debut) }}</div>
+        <!-- Cabine d'essayage : on touche un article pour le voir sur lui, avec ce qu'il porte déjà -->
+        <div v-if="rayonPorte" class="cabine">
+          <svg viewBox="0 0 200 210" v-html="dessin({ espece: animal.espece, couleur: animal.couleur, porte: tenueEssai }, 'content')"></svg>
+          <div class="txt">
+            <div class="titre-cab">{{ essais.length ? '🪞 En essai' : '🪞 Son look' }}</div>
+            <div class="info-cab" v-if="!essais.length">Touche un article pour l'essayer sur {{ animal.nom }}.</div>
+            <div class="info-cab" v-else>{{ essais.map(a => a.nom).join(', ') }}<template v-if="prixEssais"><br>À acheter : ⭐ {{ prixEssais }}</template></div>
+            <button v-if="essais.length" class="btn" @click="essai = {}">Retirer l'essai</button>
+          </div>
+        </div>
+        <div class="compte-rayon" v-if="rayon !== 'saison' && rayon !== 'gourmand'">{{ possedesDuRayon }} / {{ articlesDuRayon.length }} à toi</div>
         <div class="articles">
           <div v-for="a in articlesDuRayon" :key="a.id" class="article" :class="{ porte: estPorte(a) }">
+            <span v-if="a.neuf && !possede(a)" class="pastille">Nouveau</span>
+            <span v-if="possede(a) && !a.conso" class="pastille a-toi">À toi</span>
             <div class="ico" v-if="a.ico">{{ a.ico }}</div>
-            <div class="ico" v-else><svg :view-box.camel="a.slot === 'corps' ? '0 0 200 210' : '30 0 140 150'" v-html="apercuAccessoire(a)"></svg></div>
+            <div class="ico essayable" v-else :class="{ 'en-essai': essai[a.slot] === a.id }" @click="essayer(a)"><svg :view-box.camel="a.slot === 'corps' ? '24 48 152 158' : '30 0 140 150'" v-html="apercuAccessoire(a)"></svg></div>
             <div class="nom">{{ a.nom }}</div>
             <div class="desc">{{ a.desc }}</div>
-            <button v-if="!possede(a)" class="btn principal" :disabled="etoiles < a.prix" @click="enAchat = a">⭐ {{ a.prix }}</button>
+            <button v-if="!possede(a)" class="btn prix" :disabled="etoiles < a.prix" @click="enAchat = a">⭐ {{ a.prix }}</button>
             <button v-else-if="a.conso" class="btn principal" @click="utiliser(a)">Donner ({{ stock(a) }})</button>
             <button v-else class="btn" @click="porter(a)">{{ estPorte(a) ? '✓ ' + (a.place ? 'En place' : 'Porté') : (a.place ? 'Installer' : 'Mettre') }}</button>
-            <button v-if="possede(a) && a.conso" class="btn" style="margin-top:2px" :disabled="etoiles < a.prix" @click="enAchat = a">+1 · ⭐ {{ a.prix }}</button>
+            <button v-if="possede(a) && a.conso" class="btn prix" style="margin-top:2px" :disabled="etoiles < a.prix" @click="enAchat = a">+1 · ⭐ {{ a.prix }}</button>
           </div>
         </div>
       </template>
@@ -772,8 +802,8 @@
     // Taille de chaque objet, et sa place (en % de la largeur) tant qu'on ne l'a pas déplacé
     const TAILLES = { couchage: 76, plante: 52, mur: 46, mur2: 34, lampe: 30, jouet: 30 };
     const X_DEFAUT = { couchage: 15, plante: 88, mur: 15, mur2: 45, lampe: 60, jouet: 72 };
-    // Déco de fête (emplacements « fete-… ») : sa place par défaut est donnée par l'article (x en %, taille en px)
-    function artFete(slot) { return /^(fete|exp)-/.test(slot) ? ARTICLES.find(a => a.slot === slot) : null; }   // déco de fête ou souvenir d'expédition
+    // Déco à emplacement propre (fête, souvenir d'expédition, livres, radio, bocal) : sa place par défaut est donnée par l'article (pos, x en %, taille en px)
+    function artFete(slot) { return ARTICLES.find(a => a.slot === slot && a.pos) || null; }
     function placeDe(slot) { var a = artFete(slot); return PLACES[slot] || (a ? a.pos + ';font-size:' + a.taille + 'px' : ''); }
     function tailleDe(slot) { var a = artFete(slot); return TAILLES[slot] || (a ? a.taille : 40); }
     function xDefaut(slot) { var a = artFete(slot); return X_DEFAUT[slot] || (a ? a.x : 50); }
@@ -817,6 +847,7 @@
         notifPossible: 'Notification' in window && 'serviceWorker' in navigator,
         notifPermise: 'Notification' in window ? Notification.permission : 'denied',          // article dont on confirme l'achat
         rayon: 'tete',
+        essai: {},              // cabine d'essayage : { emplacement: article essayé }
         maintenant: Date.now(),
         effets: [],
         message: '',
@@ -920,6 +951,17 @@
         },
         fete: function() { this.feteEssai; return CP.feteDu(this.maintenant, this.animal && this.animal.ne); },
         prochaine: function() { return CP.prochaineFete(this.maintenant, this.animal && this.animal.ne); },
+        // Cabine d'essayage : seulement dans les rayons qui se portent
+        rayonPorte: function() { return ['tete', 'cou', 'corps', 'saison'].includes(this.rayon) && this.articlesDuRayon.some(a => !a.place && !a.conso); },
+        essais: function() { return Object.keys(this.essai).map(k => CP.art(this.essai[k])).filter(a => a && a.id); },
+        prixEssais: function() { return this.essais.filter(a => !this.possede(a)).reduce((t, a) => t + a.prix, 0); },
+        // Ce qu'il porte (tête, yeux, cou, habit), et par-dessus les articles en essai
+        tenueEssai: function() {
+          var p = {}, porte = (this.animal && this.animal.porte) || {};
+          ['tete', 'yeux', 'cou', 'corps'].forEach(k => { if (porte[k]) p[k] = porte[k]; });
+          return Object.assign(p, this.essai);
+        },
+        possedesDuRayon: function() { return this.articlesDuRayon.filter(a => this.possede(a)).length; },
         rayons: function() { return this.fete ? [{ id: 'saison', nom: this.fete.ico + ' ' + this.fete.nom }].concat(RAYONS) : RAYONS; },
         // Guirlande propre à la fête (CP.guirlande) : citrouilles et chauves-souris, guirlande lumineuse, cœurs…
         guirlande: function() { return CP.guirlande(this.fete); },
@@ -973,6 +1015,10 @@
       methods: {
         // ---------- Dessin de l'animal (SVG fait par le code, dans compagnon-commun.js) ----------
         dessin: function(a, humeur) { return CP.dessin(a, humeur, this.animal === a && ((this.estNuit && humeur !== 'triste') || this.vie.sieste), this.maintenant); },
+        // Cabine d'essayage : toucher un article le met (ou le retire) en essai, sans rien acheter
+        essayer: function(a) {
+          if (this.essai[a.slot] === a.id) this.$delete(this.essai, a.slot); else this.$set(this.essai, a.slot, a.id);
+        },
         // Aperçu en boutique : l'animal ne porte que cet accessoire
         apercuAccessoire: function(a) {
           var porte = {}; porte[a.slot] = a.id;
@@ -1141,6 +1187,7 @@
           Etoiles.ajouter(-a.prix, 'Achat : ' + a.nom, true);
           this.$set(this.animal.possede, a.id, (this.animal.possede[a.id] || 0) + 1);
           if (!a.conso) this.porter(a, true);
+          if (this.essai[a.slot] === a.id) this.$delete(this.essai, a.slot);
           this.etoiles = Etoiles.solde(); this.majJournal();
           this.message = a.conso ? 'Oh, ' + a.nom.toLowerCase() + ' ! 😍' : 'Merci pour ' + (a.place ? 'ce cadeau' : 'ce bel accessoire') + ' ! 🥰';
           this.animer('✨', 3);
@@ -1155,9 +1202,10 @@
           if (!this.stock(a)) return;
           this.animal.possede[a.id]--;
           Object.keys(a.effets).forEach(k => this.changerBesoin(k, a.effets[k]));
-          this.compterTache('repas');
+          // compte pour la tâche du jour qui correspond (repas, eau)
+          if (a.effets.repas) this.compterTache('repas'); else if (a.effets.eau) this.compterTache('eau');
           this.animer(a.ico, 3);
-          this.message = 'Un régal ! 😋';
+          this.message = a.phrase || 'Un régal ! 😋';
           this.sauver();
         },
 
@@ -1245,8 +1293,9 @@
             if (d.slot === 'couchage') l.push(CP.REFUGES[d.id] ? { id: 'couchage', x: Math.max(32, Math.min(68, d.x)), dir: 1, action: 'refuge', deco: d } : { id: 'couchage', x: x, dir: dir, action: 'sieste' });
             if (d.id === 'balle') l.push({ id: 'jouet', x: x, dir: dir, action: 'balle' });
             if (d.id === 'peluche') l.push({ id: 'jouet', x: x, dir: dir, action: 'calin-objet' });
-            if (d.slot === 'plante') l.push({ id: 'plante', x: x, dir: dir, action: 'renifle', ico: '🌿' });
-            if (/^(fete|exp)-/.test(d.slot)) l.push({ id: d.slot, x: x, dir: dir, action: 'fete', ico: d.ico, phrase: (CP.art(d.id) || {}).phrase });
+            else if (d.slot === 'plante') l.push({ id: 'plante', x: x, dir: dir, action: 'renifle', ico: '🌿' });
+            // Tout autre objet qui a sa petite phrase (fête, souvenir, livres, radio, bocal, miroir, pelote, os) : il va le voir et la dit
+            else if (d.slot !== 'couchage' && d.slot !== 'plante' && (CP.art(d.id) || {}).phrase) l.push({ id: d.slot, x: x, dir: dir, action: 'fete', ico: d.ico, phrase: CP.art(d.id).phrase });
           });
           return l;
         },
