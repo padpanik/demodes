@@ -258,7 +258,7 @@ var DJ = (function () {
   function nouvelle(graine, joueurs, id, options) {
     options = options || {};
     var noms = Object.keys(joueurs), pouvoirs = noms.map(n => pouvoirDe(joueurs[n])).filter(Boolean);
-    var e = { id: id || String(graine), graine: graine, phase: 'jeu', format: FORMAT, etage: 0, peril: Math.max(0, Math.min(D.PERILS.length - 1, options.peril | 0)),
+    var e = { id: id || String(graine), graine: graine, phase: 'jeu', format: FORMAT, etage: 0, peril: options.difficulte === 'mythique' ? Math.max(0, Math.min(D.PERILS.length - 1, options.peril | 0)) : 0,   // clé mythique : seulement en Mythique
               difficulte: D.DIFFICULTES[options.difficulte] ? options.difficulte : 'heroique',
               nbJ: noms.length, salles: {}, depart: null, bossSalle: null, carteV: 1, ennemis: [], seq: 0, joueurs: {}, cles: 0, grandeCle: false,
               poussiere: 0, objets: [], effets: [], annonces: [], vues: {}, fin: null, debut: 0, maintenant: 0, pouvoirs: pouvoirs, combats: {} };
@@ -681,7 +681,11 @@ var DJ = (function () {
   // Poison et brûlure au début du tour de qui les porte
   function tickDot(e, c, x) {
     var estJ = !!x.paquet;
-    if (x.etats.poison) { perdrePv(e, c, x, x.etats.poison, '☠️'); ajouterEtat(x, 'poison', -1); }
+    if (x.etats.poison) {
+      // À plusieurs, un monstre empoisonné perd moins de PV (POISON_GROUPE) ; le compteur baisse comme d'habitude
+      var np = !estJ && nbGroupe(e) > 1 ? Math.max(1, Math.round(x.etats.poison * D.POISON_GROUPE)) : x.etats.poison;
+      perdrePv(e, c, x, np, '☠️'); ajouterEtat(x, 'poison', -1);
+    }
     if (x.etats.brule && (estJ ? !x.fantome : x.pv > 0)) { perdrePv(e, c, x, x.etats.brule, '🔥'); x.etats.brule = Math.floor(x.etats.brule / 2); if (!x.etats.brule) delete x.etats.brule; }
   }
   function perdrePv(e, c, x, n, ico) {

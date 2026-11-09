@@ -299,11 +299,16 @@ var DJD = (function () {
     mythique: { nom: 'Mythique',  ico: '💀', solo: { pv: 1.05, deg: 1.05 }, groupe: { pv: 1.25, deg: 0.75 }, poussieres: 1.5, texte: 'Pour les plus aguerris' }
   };
   var ORDRE_DIFFICULTES = ['normal', 'heroique', 'mythique'];
+  // À plusieurs, le poison sur les monstres est réduit (3.24, demandé par l'utilisateur : la Ruse rendait les duos bien trop faciles,
+  // son poison profitant des PV gonflés et des combats longs). 1 = comme seul.
+  var POISON_GROUPE = 0.5;
 
-  // ---------- Périls (niveaux de difficulté débloqués en gagnant) ----------
+  // ---------- Clés mythiques (ex « périls », 3.24, demandé par l'utilisateur : seulement en Mythique) ----------
+  // Niveaux +0 à +5 débloqués en gagnant en Mythique à sa plus haute clé ; chaque clé ajoute une épreuve (elles se cumulent).
+  // Noms internes inchangés : PERILS, e.peril, donjon-peril (clé débloquée), donjon-peril-choisi (clé choisie).
 
   var PERILS = [
-    'Le donjon tel quel',
+    'Le Mythique tel quel',
     'Monstres ordinaires : +10 % de PV',
     'Élites et boss : +10 % de PV',
     'Le feu de camp soigne moins (25 % au lieu de 30 %)',
@@ -335,6 +340,6 @@ var DJD = (function () {
   var PRIX = { c: 45, u: 70, r: 120, fiole: 40, relique: 150, retrait: 70 };
 
   return { ETATS: ETATS, CLASSES: CLASSES, CARTES: CARTES, FIOLES: FIOLES, RELIQUES: RELIQUES, MONSTRES: MONSTRES,
-           ETAGES: ETAGES, PERILS: PERILS, DIFFICULTES: DIFFICULTES, ORDRE_DIFFICULTES: ORDRE_DIFFICULTES, EVENEMENTS: EVENEMENTS, PRIX: PRIX };
+           ETAGES: ETAGES, PERILS: PERILS, DIFFICULTES: DIFFICULTES, ORDRE_DIFFICULTES: ORDRE_DIFFICULTES, POISON_GROUPE: POISON_GROUPE, EVENEMENTS: EVENEMENTS, PRIX: PRIX };
 })();
 if (typeof module !== 'undefined') module.exports = DJD;

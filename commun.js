@@ -3,12 +3,13 @@
 // Les clés de stockage gardent l'ancien préfixe "brillant-" : les réglages déjà faits sont conservés.
 
 // Numéro de version affiché (à augmenter à chaque mise en ligne, avec brilliant/index.html et sw.js)
-const VERSION = '3.23';
+const VERSION = '3.24';
 
 // ---------- Nouveautés (2.87, demandé par l'utilisateur) ----------
 // Une ligne très brève par mise en ligne (la plus récente en haut) : l'accueil les montre une seule fois, dans une petite fenêtre,
 // à qui n'a pas encore vu cette version. [version, jeu ou partie de l'appli, ce qui change]
 const NOUVEAUTES = [
+  ['3.24', 'Donjon', 'Le péril devient la clé mythique, en Mythique seulement ; la Ruse moins forte à plusieurs.'],
   ['3.23', 'Donjon', 'Trois difficultés : Normal, Héroïque, Mythique, avec plus de poussières d\'étoile quand c\'est dur.'],
   ['3.22', 'Donjon', 'À plusieurs, les monstres sont plus solides et frappent plus fort.'],
   ['3.21', 'Donjon', 'Butin, clés et portes s\'annoncent à côté de la croix, plus sur la carte.'],

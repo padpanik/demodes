@@ -231,9 +231,11 @@
     .diffs-dj button.actif.d-normal { border-color: #2f9e44; background: #ebfbee; }
     .diffs-dj button.actif.d-heroique { border-color: #e8590c; background: #fff4e6; }
     .diffs-dj button.actif.d-mythique { border-color: #7048e8; background: #f3f0ff; }
+    .cle-dj { margin-top: 10px; padding: 8px 10px; border-radius: 12px; background: #f3f0ff; border: 1px dashed #b197fc; }
+    .titre-cle { font-weight: 900; color: #5f3dc4; }
     .perils { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 6px; }
     .perils button { border: 2px solid #e3e8ec; background: #fff; font: inherit; font-weight: 900; border-radius: 10px; padding: 4px 10px; cursor: pointer; }
-    .perils button.actif { border-color: #e8590c; background: #fff4e6; color: #c2410c; }
+    .perils button.actif { border-color: #7048e8; background: #fff; color: #5f3dc4; }
     .classe-dj { display: inline-block; background: #f3f0ff; color: #5f3dc4; border-radius: 999px; padding: 2px 10px; font-weight: 800; font-size: 0.85em; margin: 2px 0; }
 
 
@@ -473,6 +475,15 @@
           <div class="diffs-dj"><button v-for="id in D.ORDRE_DIFFICULTES" :key="id" :class="['d-' + id, { actif: difficulte === id }]" @click="difficulte = id">
               <span class="ico">{{ D.DIFFICULTES[id].ico }}</span><b>{{ D.DIFFICULTES[id].nom }}</b><small>✨ ×{{ String(D.DIFFICULTES[id].poussieres).replace('.', ',') }}</small></button></div>
             <div class="aide">{{ D.DIFFICULTES[difficulte].texte }} · poussières d'étoile ×{{ String(D.DIFFICULTES[difficulte].poussieres).replace('.', ',') }} à la fin.</div>
+            <!-- Clé mythique (3.24) : seulement en Mythique, sous le choix de difficulté -->
+            <div v-if="difficulte === 'mythique'" class="cle-dj">
+              <div class="titre-cle">🗝️ Clé mythique</div>
+              <template v-if="perilMax > 0">
+                <div class="perils"><button v-for="n in perilMax + 1" :key="n" :class="{ actif: peril === n - 1 }" @click="peril = n - 1">+{{ n - 1 }}</button></div>
+                <div class="aide">{{ peril ? 'Clé +' + peril + ' : ' + D.PERILS[peril] + (peril > 1 ? ' (et les épreuves des clés d\'avant)' : '') + '.' : 'Clé +0 : le Mythique tel quel.' }}</div>
+              </template>
+              <div v-else class="aide" style="margin-top:2px">Gagne un donjon en Mythique pour obtenir la clé +1 : chaque clé ajoute une épreuve (jusqu'à +{{ D.PERILS.length - 1 }}).</div>
+            </div>
         </section>
 
         <template v-if="!role">
@@ -493,10 +504,6 @@
           </section>
           <section class="carte">
             <div class="titre-carte">Seul</div>
-            <template v-if="!soloEnCours && perilMax > 0">
-              <div class="aide" style="margin-top:0">Péril (difficulté) : {{ D.PERILS[peril] }}{{ peril > 1 ? ' (et les niveaux d\'avant)' : '' }}</div>
-              <div class="perils"><button v-for="n in perilMax + 1" :key="n" :class="{ actif: peril === n - 1 }" @click="peril = n - 1">{{ n - 1 }}</button></div>
-            </template>
             <button class="btn principal" style="width:100%;margin-top:8px" @click="demarrerSolo">🗝️ {{ soloEnCours ? 'Reprendre mon exploration' : 'Explorer seul' }}</button>
             <button v-if="soloEnCours" class="btn" style="width:100%;margin-top:8px" @click="demandeAbandon = true">🔄 Abandonner et recommencer à zéro</button>
             <div class="aide" v-if="stats.parties">Donjons : {{ stats.gagnes }} vaincu{{ stats.gagnes > 1 ? 's' : '' }} sur {{ stats.parties }}<template v-if="stats.record">, record : étage {{ stats.record }}</template>.<template v-if="stats.parDiff && Object.keys(stats.parDiff).length"> Vaincus en <template v-for="(id, k) in D.ORDRE_DIFFICULTES.filter(x => stats.parDiff[x])">{{ k ? ', ' : '' }}{{ D.DIFFICULTES[id].nom }} : {{ stats.parDiff[id] }}</template>.</template></div>
@@ -532,9 +539,18 @@
           <div class="titre-carte" style="margin-top:12px">Difficulté</div>
           <template v-if="role === 'hote'"><div class="diffs-dj"><button v-for="id in D.ORDRE_DIFFICULTES" :key="id" :class="['d-' + id, { actif: difficulte === id }]" @click="difficulte = id">
               <span class="ico">{{ D.DIFFICULTES[id].ico }}</span><b>{{ D.DIFFICULTES[id].nom }}</b><small>✨ ×{{ String(D.DIFFICULTES[id].poussieres).replace('.', ',') }}</small></button></div>
-            <div class="aide">{{ D.DIFFICULTES[difficulte].texte }} · poussières d'étoile ×{{ String(D.DIFFICULTES[difficulte].poussieres).replace('.', ',') }} à la fin.</div></template>
-          <div v-else class="aide" style="margin-top:0">{{ D.DIFFICULTES[difficulteSalon].ico }} {{ D.DIFFICULTES[difficulteSalon].nom }} : {{ D.DIFFICULTES[difficulteSalon].texte.toLowerCase() }} (choisie par l'hôte).</div>
-          <div class="aide" v-if="role === 'hote' && peril">Péril {{ peril }} : {{ D.PERILS[peril] }}.</div>
+            <div class="aide">{{ D.DIFFICULTES[difficulte].texte }} · poussières d'étoile ×{{ String(D.DIFFICULTES[difficulte].poussieres).replace('.', ',') }} à la fin.</div>
+            <!-- Clé mythique (3.24) : seulement en Mythique, sous le choix de difficulté -->
+            <div v-if="difficulte === 'mythique'" class="cle-dj">
+              <div class="titre-cle">🗝️ Clé mythique</div>
+              <template v-if="perilMax > 0">
+                <div class="perils"><button v-for="n in perilMax + 1" :key="n" :class="{ actif: peril === n - 1 }" @click="peril = n - 1">+{{ n - 1 }}</button></div>
+                <div class="aide">{{ peril ? 'Clé +' + peril + ' : ' + D.PERILS[peril] + (peril > 1 ? ' (et les épreuves des clés d\'avant)' : '') + '.' : 'Clé +0 : le Mythique tel quel.' }}</div>
+              </template>
+              <div v-else class="aide" style="margin-top:2px">Gagne un donjon en Mythique pour obtenir la clé +1 : chaque clé ajoute une épreuve (jusqu'à +{{ D.PERILS.length - 1 }}).</div>
+            </div></template>
+          <div v-else class="aide" style="margin-top:0">{{ D.DIFFICULTES[difficulteSalon].ico }} {{ D.DIFFICULTES[difficulteSalon].nom }}<template v-if="difficulteSalon === 'mythique' && cleSalon"> · 🗝️ clé +{{ cleSalon }}</template> : {{ D.DIFFICULTES[difficulteSalon].texte.toLowerCase() }} (choisie par l'hôte).</div>
+
         </section>
 
         <div v-else class="jeu-dj" :class="{ immersif: immersif }" @contextmenu.prevent @pointerdown="reprendrePleinEcran">
@@ -841,7 +857,7 @@
               <li>✨ {{ gains.poussieres != null ? gains.poussieres : partie.poussiere }} poussière{{ (gains.poussieres != null ? gains.poussieres : partie.poussiere) > 1 ? 's' : '' }} d'étoile<small v-if="gains.mult && gains.mult !== 1"> ({{ partie.poussiere }} × {{ String(gains.mult).replace('.', ',') }}, {{ D.DIFFICULTES[gains.difficulte].nom }})</small><span v-if="gains.etoiles"> → +{{ gains.etoilesDonnees }} ⭐</span> (en réserve : {{ gains.reste }} / 5)</li>
               <li v-if="gains.partie">⭐ {{ gains.partie }}</li>
               <li v-if="gains.souvenir">{{ gains.souvenir.ico }} Souvenir : {{ gains.souvenir.nom }} (dans la maison de {{ monCp.n }})</li>
-              <li v-if="gains.peril">🔥 Nouveau niveau de péril débloqué : {{ gains.peril }} ({{ D.PERILS[gains.peril] }})</li>
+              <li v-if="gains.peril">🗝️ Nouvelle clé mythique : +{{ gains.peril }} ({{ D.PERILS[gains.peril] }})</li>
             </ul>
             <button v-if="!solo && role === 'hote'" class="btn principal" @click="envoyerJeu({ type: 'NOUVELLE' })">🔁 Nouveau donjon</button>
             <button v-if="solo" class="btn principal" @click="nouveauSolo">🔁 Nouveau donjon</button>
@@ -879,9 +895,9 @@
             <li>Après chaque combat : de l'or 🪙, parfois une fiole, et <strong>une carte au choix parmi 3</strong> (ou passer : un paquet léger pioche plus souvent tes meilleures cartes). Les élites donnent une <strong>relique</strong> (effet permanent), les boss une relique puissante au choix.</li>
             <li><strong>Salles</strong> : 🔥 feu de camp (se reposer ou améliorer une carte), 🛒 marchand (cartes, fioles, relique, retrait d'une carte), ❓ autel (un choix, parfois risqué). Les coffres sont gardés tant que les monstres de la pièce sont là.</li>
             <li><strong>Fioles</strong> (2 emplacements) : à boire pendant ton tour ; la fiole de soin se boit aussi hors combat.</li>
-            <li>Difficulté, choisie avant d'entrer (par l'hôte dans un salon) : 🛡️ Normal (monstres un peu plus doux ; poussières ×0,7), ⚔️ Héroïque (le défi prévu ; ×1), 💀 Mythique (monstres plus coriaces ; ×1,5). Le péril suivant ne s'ouvre qu'en gagnant seul en Héroïque ou Mythique.</li>
-            <li>À plusieurs : chacun a ses cartes, son or et ses reliques ; les monstres ont plus de PV et frappent plus fort, selon la difficulté. Une grille ⛓️ s'ouvre à deux sur les dalles. Un ami KO revient en fin de combat gagné, avec un Trèfle, ou si un ami reste 2 s à côté de lui. Tout le groupe KO : fin.</li>
-            <li><strong>Péril</strong> : gagner le donjon en solo débloque un niveau de difficulté de plus (jusqu'à 5).</li>
+            <li>Difficulté, choisie avant d'entrer (par l'hôte dans un salon) : 🛡️ Normal (monstres un peu plus doux ; poussières ×0,7), ⚔️ Héroïque (le défi prévu ; ×1), 💀 Mythique (monstres plus coriaces ; ×1,5). En Mythique, on choisit aussi sa clé.</li>
+            <li>À plusieurs : chacun a ses cartes, son or et ses reliques ; les monstres ont plus de PV et frappent plus fort, selon la difficulté, et le poison les ronge moitié moins. Une grille ⛓️ s'ouvre à deux sur les dalles. Un ami KO revient en fin de combat gagné, avec un Trèfle, ou si un ami reste 2 s à côté de lui. Tout le groupe KO : fin.</li>
+            <li><strong>Clé mythique</strong> : gagner un donjon en Mythique avec sa plus haute clé donne la clé suivante (jusqu'à +{{ D.PERILS.length - 1 }}). Chaque clé ajoute une épreuve, et elles se cumulent : +1 monstres ordinaires +10 % de PV, +2 élites et boss +10 %, +3 feu de camp 25 %, +4 monstres +1 par coup, +5 une Blessure et −10 % de PV au départ.</li>
             <li>À la fin, chacun garde les poussières d'étoile (5 poussières = 1 ⭐, comme en expédition). Donjon vaincu : un souvenir pour la maison de ton compagnon.</li>
           </ul>
         </section>
@@ -1005,6 +1021,7 @@
           var d = (this.partie && this.partie.difficulte) || (this.pub && this.pub.difficulte);
           return DJ.D.DIFFICULTES[d] ? d : 'heroique';
         },
+        cleSalon: function() { return (this.partie ? this.partie.peril : this.pub && this.pub.peril) || 0; },
         groupe: function() {
           var p = this.pub;
           if (!p) return [];
@@ -1083,7 +1100,7 @@
           return E ? { background: 'radial-gradient(ellipse at 50% 28%, ' + E.sol[1] + ' 0%, ' + E.mur[0] + ' 62%, #0b0806 100%)' } : {};
         },
         etageIco: function() { var E = this.partie && DJ.D.ETAGES[this.partie.etage - 1]; return E ? E.ico : '🗝️'; },
-        etageInfo: function() { var p = this.partie, E = p && DJ.D.ETAGES[p.etage - 1]; return E ? E.ico + ' Étage ' + p.etage + ' sur ' + DJ.NB_ETAGES + ' : ' + E.nom + ' · ' + DJ.D.DIFFICULTES[DJ.D.DIFFICULTES[p.difficulte] ? p.difficulte : 'heroique'].nom + (p.peril ? ' · péril ' + p.peril : '') : ''; },
+        etageInfo: function() { var p = this.partie, E = p && DJ.D.ETAGES[p.etage - 1]; return E ? E.ico + ' Étage ' + p.etage + ' sur ' + DJ.NB_ETAGES + ' : ' + E.nom + ' · ' + DJ.D.DIFFICULTES[DJ.D.DIFFICULTES[p.difficulte] ? p.difficulte : 'heroique'].nom + (p.peril ? ' · clé +' + p.peril : '') : ''; },
         objectif: function() {
           var p = this.partie;
           if (!p) return '';
@@ -1154,7 +1171,10 @@
         vibrationActive: function(v) { ecrireStockage('brillant-vibration', v); if (v) vibrer(40); },
         pseudoInput: function() { this.sauvegarder(); },
         menuCle: function() { this.choixMenu = null; },
-        peril: function(v) { ecrireStockage('donjon-peril-choisi', v); },
+        peril: function(v) {
+          ecrireStockage('donjon-peril-choisi', v);
+          if (this.role === 'hote' && pubHote && pubHote.phase === 'attente') { pubHote.peril = v; this.publier(); }
+        },
         difficulte: function(v) {
           ecrireStockage('donjon-difficulte', v);
           if (this.role === 'hote' && pubHote && pubHote.phase === 'attente') { pubHote.difficulte = v; this.publier(); }
@@ -1427,8 +1447,8 @@
           var donnees = Etoiles.gagneesAujourdhui() - avant;
           Etoiles.finDePartie('Donjon', gagne, multi, p.id, { lieu: 'donjon' });
           var g = { etoiles: conv.etoiles, etoilesDonnees: donnees, reste: conv.reste, partie: multi ? (gagne ? 'Victoire entre amis' : 'Partie entre amis') : (gagne ? 'Victoire en solo' : ''), souvenir: null, peril: 0, poussieres: pous, mult: mult, difficulte: dif };
-          // Victoire en solo au plus haut péril débloqué : le niveau suivant s'ouvre
-          if (gagne && this.solo && dif !== 'normal' && (p.peril || 0) >= this.perilMax && this.perilMax < DJ.D.PERILS.length - 1) {
+          // Victoire en Mythique (seul ou entre amis) avec sa plus haute clé : la clé suivante s'obtient
+          if (gagne && dif === 'mythique' && (p.peril || 0) >= this.perilMax && this.perilMax < DJ.D.PERILS.length - 1) {
             this.perilMax++; ecrireStockage('donjon-peril', this.perilMax); g.peril = this.perilMax;
           }
           // Souvenir du donjon (boss vaincu) et un peu de faim et de soif pour le compagnon
@@ -1691,7 +1711,7 @@
               this.onglet = 'play';
               this.finEntree(true);
               salle = { infos: {} };
-              pubHote = { ordre: [monPseudo], cps: {}, phase: 'attente', partieId: null, difficulte: this.difficulte };
+              pubHote = { ordre: [monPseudo], cps: {}, phase: 'attente', partieId: null, difficulte: this.difficulte, peril: this.peril };
               partieHote = null;
             }
             pubHote.cps[monPseudo] = this.monCp;
