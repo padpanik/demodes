@@ -359,7 +359,15 @@
     .plan-titre { position: absolute; left: 10px; top: 6px; right: 10px; display: flex; align-items: baseline; gap: 6px; z-index: 1;
       font-family: Georgia, 'Times New Roman', serif; font-weight: 700; color: #ffd8a8; font-size: 0.95em; text-shadow: 0 1px 3px #000; }
     .plan-titre small { font-family: inherit; font-weight: 400; color: #a8957f; font-size: 0.78em; margin-left: auto; }
-    .plan-svg { position: absolute; left: 6px; right: 6px; top: 28px; bottom: 24px; }
+    /* Difficulté de la partie, toujours visible dans le donjon (3.25, demandé par l'utilisateur) */
+    .diff-dj { font-family: system-ui, sans-serif; font-weight: 800; font-size: 0.68em; border-radius: 9px; padding: 2px 7px; white-space: nowrap; text-shadow: none; align-self: center; }
+    .diff-dj.d-normal { background: #2b8a3e; color: #ebfbee; }
+    .diff-dj.d-heroique { background: #d9480f; color: #fff4e6; }
+    .diff-dj.d-mythique { background: #6741d9; color: #f3f0ff; }
+    .puce-dj.diff-dj { font-size: 0.8em; border: 0; }
+    .jeu-dj.immersif .puce-dj.diff-dj { display: none; }   /* en plein écran, elle est sur le plan */
+    .diff-dj.mini { font-style: normal; font-size: 0.85em; margin-left: 5px; padding: 1px 6px; }
+    .plan-svg { position: absolute; left: 6px; right: 6px; top: 28px; bottom: 6px; }
     .plan-svg svg { display: block; width: 100%; height: 100%; }
     .plan-objectif { position: absolute; left: 8px; right: 8px; bottom: 5px; text-align: center; font-size: 0.72em; color: #c9b8a6; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .sac-tuile { margin-left: auto; border-radius: 9px; background: #3f3026; border: 1.5px solid #8d6a3f; }
@@ -562,12 +570,13 @@
                 <i v-if="monJ.fantome">👻</i>
               </button>
               <div class="fiche-id">
-                <div class="fiche-nom"><b>{{ monJ.cp && monJ.cp.n ? monJ.cp.n : 'Explorateur' }}</b><span>{{ D.CLASSES[monJ.classe].ico }} {{ D.CLASSES[monJ.classe].nom }}</span></div>
+                <div class="fiche-nom"><b>{{ monJ.cp && monJ.cp.n ? monJ.cp.n : 'Explorateur' }}</b><span>{{ D.CLASSES[monJ.classe].ico }} {{ D.CLASSES[monJ.classe].nom }}<i v-if="combat" class="diff-dj mini" :class="'d-' + difPartie">{{ D.DIFFICULTES[difPartie].ico }} {{ D.DIFFICULTES[difPartie].nom }}<template v-if="partie.peril"> +{{ partie.peril }}</template></i></span></div>
                 <span class="pv-dj"><i :style="{ width: pct(monJ.pv, monJ.pvMax) }"></i><b>{{ monJ.fantome ? '👻 KO' : '❤️ ' + monJ.pv + ' / ' + monJ.pvMax }}</b></span>
               </div>
               <button class="menu-dj" @click="menuJeu = true" aria-label="Menu">☰<b v-if="chatNonLus">{{ chatNonLus }}</b></button>
             </div>
             <div class="fiche-l2">
+              <button class="puce-dj diff-dj" :class="'d-' + difPartie" @click="info(etageInfo)">{{ D.DIFFICULTES[difPartie].ico }}<template v-if="partie.peril"> +{{ partie.peril }}</template></button>
               <button class="puce-dj" @click="info(etageInfo)">{{ etageIco }} {{ partie.etage }}/{{ DJ.NB_ETAGES }}</button>
               <button class="puce-dj or" @click="info('🪙 Or : pour le marchand (cartes, fioles, reliques, retirer une carte).')">🪙 {{ monJ.or }}</button>
               <button class="puce-dj" @click="info('🗝️ Petites clés : ouvrent les portes 🔒. ' + (partie.grandeCle ? '🔑 Tu as la grande clé du boss !' : '🔑 La grande clé du boss est chez l\'élite ⭐.'))">🗝️ {{ partie.cles }}<template v-if="partie.grandeCle"> 🔑</template></button>
@@ -638,9 +647,9 @@
           <template v-else>
           <div class="zone-explo">
           <div class="plan-dj" v-if="immersif" @click="info(etageInfo + ' · ' + objectif)">
-            <div class="plan-titre">{{ etageIco }} {{ D.ETAGES[partie.etage - 1].nom }}<small>étage {{ partie.etage }} / {{ DJ.NB_ETAGES }}</small></div>
+            <div class="plan-titre">{{ etageIco }} {{ D.ETAGES[partie.etage - 1].nom }}<small>{{ partie.etage }} / {{ DJ.NB_ETAGES }}</small>
+              <span class="diff-dj" :class="'d-' + difPartie">{{ D.DIFFICULTES[difPartie].ico }} {{ D.DIFFICULTES[difPartie].nom }}<template v-if="partie.peril"> +{{ partie.peril }}</template></span></div>
             <div class="plan-svg" v-html="planSvg"></div>
-            <div class="plan-objectif">{{ objectif }}</div>
           </div>
           <div class="salle-dj" ref="salle">
             <svg class="fond" viewBox="0 0 352 288" preserveAspectRatio="none" v-html="salleSvg"></svg>
@@ -1021,6 +1030,7 @@
           var d = (this.partie && this.partie.difficulte) || (this.pub && this.pub.difficulte);
           return DJ.D.DIFFICULTES[d] ? d : 'heroique';
         },
+        difPartie: function() { var d = this.partie && this.partie.difficulte; return DJ.D.DIFFICULTES[d] ? d : 'heroique'; },
         cleSalon: function() { return (this.partie ? this.partie.peril : this.pub && this.pub.peril) || 0; },
         groupe: function() {
           var p = this.pub;
