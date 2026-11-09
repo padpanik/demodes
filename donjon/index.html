@@ -1257,7 +1257,7 @@
         intentionCourte: function(m) {
           var i = m.intention, l = [], E = DJ.D.ETATS;
           if (!i) return '…';
-          if (i.att) l.push('⚔️' + DJ.degatsIntention(this.partie, m, this.monJ) + (i.x > 1 ? '×' + i.x : '') + (i.tous ? ' tous' : this.nbJoueurs > 1 && m.cible ? ' → ' + (m.cible === this.moi ? 'toi' : m.cible) : ''));
+          if (i.att) l.push('⚔️' + this.degatsAff(m) + (i.x > 1 ? '×' + i.x : '') + (i.tous ? ' tous' : this.nbJoueurs > 1 && m.cible ? ' → ' + (m.cible === this.moi ? 'toi' : m.cible) : ''));
           if (i.armure) l.push('🛡️' + i.armure);
           if (i.force) l.push('💪+' + i.force);
           if (i.buffE) l.push(E[i.buffE].ico + i.buffN);
@@ -1266,7 +1266,13 @@
           if (i.maudit) l.push('🩹' + i.maudit); if (i.vol) l.push('🪙'); if (i.soin) l.push('💚');
           return l.join(' ') || '💤';
         },
-        intentionClasse: function(m) { var i = m.intention || {}; return { att: !!i.att, danger: !!i.att && DJ.degatsIntention(this.partie, m, this.monJ) * (i.x || 1) >= 20 }; },
+        intentionClasse: function(m) { var i = m.intention || {}; return { att: !!i.att, danger: !!i.att && this.degatsAff(m) * (i.x || 1) >= 20 }; },
+        // Dégâts annoncés : calculés contre la cible du monstre (sa vulnérabilité, son affaiblissement…), pour que tout le monde voie le même chiffre
+        // (3.27, signalé par l'utilisateur : « je vois attaque 20, mon co-joueur voit 13 ») ; un coup de zone : contre moi, puisqu'il me touche aussi.
+        degatsAff: function(m) {
+          var i = m.intention || {}, p = this.partie, cible = !i.tous && p && m.cible && p.joueurs[m.cible];
+          return DJ.degatsIntention(p, m, cible || this.monJ);
+        },
         fxSur: function(qui) { var c = this.combat, t = this.partie.maintenant; return c && c.fx ? c.fx.filter(k => k.qui === qui && t - k.t < 1300) : []; },
         info: function(t) { this.infoTxt = t; this.infoFiole = null; clearTimeout(this._info); this._info = setTimeout(() => { this.infoTxt = ''; this.infoFiole = null; }, 5000); },
         infoEtat: function(et, n) { var E = DJ.D.ETATS[et]; if (E) this.info(E.ico + ' ' + E.nom + ' ' + n + ' : ' + E.texte.replace('{n}', n).replace('tour·s', n > 1 ? 'tours' : 'tour') + '.'); },

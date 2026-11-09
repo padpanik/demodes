@@ -632,7 +632,7 @@ les changer = en parler à l'utilisateur.
   **Annonces du moteur** (butin, clés, portes, feu, marchand… `annoncesVues`, 4,5 s, 2 au plus) : **dans le panneau à côté de la croix** (`.milieu-dj`, à la place du pouvoir le temps qu'elles durent), **jamais sur la pièce ni sur le plan** (3.21, demandé par l'utilisateur).
   **Main en éventail** : au-delà de 5 cartes, une seule rangée où les cartes se chevauchent (`styleMain`, `--ml`), au lieu d'une 2e rangée qui cassait l'écran.
 - **Écran** : barre (voir la fiche ci-dessus), toucher une relique, un état ou une fiole
-  l'explique (`info`). Combat : monstres (intention chiffrée avec force / faiblesse / vulnérabilité, PV, armure, états), journal, ma ligne (⚡, PV, armure,
+  l'explique (`info`). Combat : monstres (intention chiffrée avec force / faiblesse / vulnérabilité, **calculée contre la cible du monstre** (`degatsAff`, 3.27, signalé par l'utilisateur : deux joueurs voyaient 20 et 13 quand l'un était vulnérable ; coup de zone : contre moi), PV, armure, états), journal, ma ligne (⚡, PV, armure,
   états), la main (composant `<carte-dj>`, badge rouge = dégâts réels s'ils diffèrent), description de la carte touchée, pioche / défausse, fioles,
   « Fin du tour ». **Toucher une carte la montre, la toucher encore la joue** (ou toucher le monstre / l'ami visé). Fenêtres : butin, relique de boss,
   feu, marchand, autel, choix dans le paquet (avec l'aperçu avant / après pour une amélioration), « Mon paquet ».
