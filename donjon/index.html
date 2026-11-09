@@ -447,6 +447,15 @@
     .boite-dj .btn.principal { background: linear-gradient(#c2410c, #9a3412); border-color: #7c2d12; color: #fff; }
     .voile-dj .boite-dj { max-height: 100%; overflow-y: auto; }
     .entree-combat { z-index: 60; }
+    .liaison-dj { display: inline-flex; align-items: center; gap: 4px; }
+    .liaison-dj i, .liaison-menu i { width: 9px; height: 9px; border-radius: 50%; background: #40c057; box-shadow: 0 0 5px #40c057; display: inline-block; flex: none; }
+    .liaison-dj.orange i, .liaison-menu.orange i { background: #fd7e14; box-shadow: 0 0 5px #fd7e14; }
+    .liaison-dj.rouge i, .liaison-menu.rouge i { background: #fa5252; box-shadow: 0 0 5px #fa5252; }
+    .liaison-dj.orange { border-color: #fd7e14; color: #ffc078; }
+    .liaison-dj.rouge { border-color: #fa5252; color: #ffa8a8; animation: appel-c 0.7s ease-in-out infinite alternate; }
+    .liaison-menu { text-align: left; background: #fff8ee; border: 1.5px solid #c9b08f; border-radius: 12px; padding: 8px 10px; margin-top: 8px; font-size: 0.85em; color: #3b2a1e; }
+    .liaison-menu b { display: flex; align-items: center; gap: 6px; margin-bottom: 3px; }
+    .liaison-menu span { display: block; line-height: 1.4; }
     .entree-combat .noms-combat { font-weight: 800; color: #7c2d12; margin: 2px 0 6px; }
     .entree-combat .btn.principal { font-size: 1.15em; padding: 12px; }
     /* Ma semaine (3.29) */
@@ -659,6 +668,7 @@
               <button class="menu-dj" @click="menuJeu = true" aria-label="Menu">☰<b v-if="chatNonLus">{{ chatNonLus }}</b></button>
             </div>
             <div class="fiche-l2">
+              <button v-if="liaison" class="puce-dj liaison-dj" :class="liaison.c" @click="info(liaison.detail)" aria-label="Liaison avec les amis"><i></i>{{ liaison.court }}</button>
               <button class="puce-dj diff-dj" :class="'d-' + difPartie" @click="info(etageInfo)">{{ D.DIFFICULTES[difPartie].ico }}<template v-if="partie.peril"> +{{ partie.peril }}</template></button>
               <button class="puce-dj" @click="info(etageInfo)">{{ etageIco }} {{ partie.etage }}/{{ DJ.NB_ETAGES }}</button>
               <button class="puce-dj or" @click="info('🪙 Or : pour le marchand (cartes, fioles, reliques, retirer une carte).')">🪙 {{ monJ.or }}</button>
@@ -803,6 +813,8 @@
             <div class="titre">☰ Menu</div>
             <div class="menu-liste">
               <button class="btn" @click="menuJeu = false">▶ Continuer</button>
+              <div v-if="liaison" class="liaison-menu" :class="liaison.c"><b>{{ liaison.titre }}</b><span v-for="(l, k) in liaison.lignes" :key="k">{{ l }}</span></div>
+              <button v-if="liaison" class="btn" @click="relancerLiaison">🔄 Relancer la liaison</button>
               <button class="btn" @click="ouvrirChat">💬 Discuter avec les amis<span v-if="chatNonLus" class="pastille">{{ chatNonLus }}</span></button>
               <button class="btn" @click="sonActif = !sonActif">{{ sonActif ? '🔊 Son activé' : '🔇 Son coupé' }}</button>
               <button class="btn" @click="inverse = !inverse">⇄ Mettre la croix {{ inverse ? 'à gauche' : 'à droite' }}</button>
@@ -1125,7 +1137,8 @@
         inverse: lireStockage('donjon-inverse') === true,   // croix à droite (sur ce téléphone)
         coupActif: false,
         demandeQuitter: false,
-        entreeCombat: null,   // { id, rang, noms, t } : la fenêtre d'entrée en combat (3.31)
+        entreeCombat: null,
+        diagT: 0,             // horloge du voyant de liaison (3.32), avancée chaque seconde à plusieurs   // { id, rang, noms, t } : la fenêtre d'entrée en combat (3.31)
         immersionVoulue: lireStockage('donjon-plein-ecran') !== false,   // plein écran pendant l'exploration (par téléphone)
         barresCachees: lireStockage('donjon-barres') !== false,   // en plein écran, cacher aussi les barres du téléphone (le navigateur affiche alors son message pour sortir)
         menuJeu: false,
@@ -1185,6 +1198,40 @@
         effetsIci: function() { var s = this.monJ && this.monJ.salle; return this.partie.effets.filter(f => f.salle === s); },
         annoncesVues: function() { var t = this.partie.maintenant; return this.partie.annonces.filter(a => (!a.pour || a.pour === this.moi) && t - a.t < 4500).slice(-2); },
         equipe: function() { return Object.values(this.partie.joueurs).sort((a, b) => a.ordre - b.ordre); },
+        // Voyant de liaison (3.32, demandé par l'utilisateur après « je vois l'autre mais il ne bouge plus ») : ce que CE téléphone sait de la liaison.
+        // Invité : ligne avec l'hôte, dernier message reçu, donjon qui avance ou non, ce que l'hôte dit de moi.
+        // Hôte : ligne avec le serveur, chaque ami (connecté selon le salon, dernier message reçu de lui), moteur en panne.
+        liaison: function() {
+          var now = this.diagT || Date.now(), sec = ms => (Math.max(0, ms) / 1000).toFixed(1).replace('.', ',') + ' s';
+          if (this.solo || !this.role || !this.partie) return null;
+          var lignes = [], pire = 0, court = '';
+          var noter = (niv, txt) => { if (niv > pire) { pire = niv; court = txt; } };
+          var fig = now - (this._majT || now);
+          if (this.role === 'client') {
+            var age = now - dernierMsgHote;
+            lignes.push('Toi : invité, ' + (this.connexion === 'ok' ? 'relié à l\'hôte' : 'liaison perdue, nouvel essai…'));
+            lignes.push('Dernier message de l\'hôte : il y a ' + sec(age));
+            if (this.partie.phase === 'jeu') lignes.push('Donjon mis à jour il y a ' + sec(fig));
+            var vu = this.joueurs.find(j => j.pseudo === monPseudo);
+            if (vu) lignes.push('L\'hôte te voit ' + (vu.connecte ? 'connecté' : 'déconnecté'));
+            if (this.connexion !== 'ok') noter(3, 'Déco');
+            else if (age > 4000) noter(2, 'Muet ' + Math.round(age / 1000) + ' s');
+            else if (this.partie.phase === 'jeu' && fig > 3000) noter(2, 'Figé ' + Math.round(fig / 1000) + ' s');
+            if (vu && !vu.connecte) noter(2, 'Hôte ?');
+          } else {
+            lignes.push('Toi : hôte, serveur ' + (this.connexion === 'ok' ? 'joint' : 'perdu (les amis déjà reliés continuent)'));
+            if (this.connexion !== 'ok') noter(1, 'Serveur');
+            (pubHote ? pubHote.ordre : []).filter(n => n !== monPseudo).forEach(n => {
+              var c = connParPseudo[n], ok = salle.infos[n] && salle.infos[n].connecte, ag = c && c.dernierMsg ? now - c.dernierMsg : null;
+              lignes.push(n + ' : ' + (ok ? 'connecté' : 'déconnecté') + (ok && ag !== null ? ', dernier message il y a ' + sec(ag) : ''));
+              if (!ok) noter(3, 'Déco');
+              else if (ag !== null && ag > 9000) noter(2, 'Muet ' + Math.round(ag / 1000) + ' s');
+            });
+            if (this._erreurs > 0) { lignes.push('⚠️ Le moteur du donjon plante (' + this._erreurs + ' fois de suite)'); noter(3, 'Panne'); }
+          }
+          var c = ['vert', 'orange', 'orange', 'rouge'][pire];
+          return { c: c, court: court || 'Lié', titre: ['🟢 Liaison bonne', '🟠 Liaison fragile', '🟠 Liaison fragile', '🔴 Liaison coupée'][pire], lignes: lignes, detail: lignes.join(' · ') };
+        },
         combat: function() { return this.partie && this.monJ && this.partie.combats ? this.partie.combats[this.monJ.salle] || null : null; },
         jeJoue: function() { return !!(this.combat && this.monJ && !this.monJ.fantome && this.combat.joueurs.indexOf(this.moi) >= 0); },
         monstresCombat: function() { var c = this.combat; return c ? this.partie.ennemis.filter(m => m.salle === c.salle) : []; },
@@ -1345,6 +1392,7 @@
         if (!ACCES.cleSalon) return;
         this.restaurer();
         setInterval(() => this.battement(), 4000);
+        setInterval(() => { if (!this.solo && this.role && this.partie) this.diagT = Date.now(); }, 1000);
         setInterval(() => this.boucle(), 100);
         setInterval(() => this.sauvegarderPartie(), 2000);
         setInterval(() => { this.chatNonLus = window.SalonGlobal && SalonGlobal.nonLus ? SalonGlobal.nonLus() : 0; }, 1500);
@@ -1459,6 +1507,13 @@
         },
         choisirMonstre: function(id) { if (this.cibleAttendue === 'monstre') this.jouerSel(id); },
         choisirMembre: function(nom) { var k = this.selDef; if (k && k.cible === 'joueur') this.jouerSel(nom); },
+        // Relance à la main (3.32) : l'invité refait sa liaison avec l'hôte ; l'hôte rouvre sa ligne (les amis se reconnectent seuls)
+        relancerLiaison: function() {
+          this.menuJeu = false;
+          if (this.role === 'client') { this.connexion = 'perdue'; this.rejoindrePartie(true); }
+          else if (this.role === 'hote') this.creerPartie(true);
+          this.info('🔄 Liaison relancée…');
+        },
         fermerEntreeCombat: function() {
           if (this.entreeCombat && Date.now() - this.entreeCombat.t < 600) return;   // le doigt qui glissait encore de la croix
           this.entreeCombat = null; this.son('toc');
@@ -1587,6 +1642,7 @@
           var a = this.partie;
           this.partie = p;
           if (!p) return;
+          if (!a || a.maintenant !== p.maintenant) this._majT = Date.now();   // le donjon avance (voyant de liaison)
           var moi = p.joueurs[this.moi], avant = a && a.joueurs[this.moi];
           if (moi && avant && moi.pv < avant.pv) { this.son('choc'); this.vibre([60, 40, 60]); }
           if (a && p.annonces.length && (!a.annonces.length || p.annonces[p.annonces.length - 1].id !== a.annonces[a.annonces.length - 1].id)) {
