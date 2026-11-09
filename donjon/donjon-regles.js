@@ -237,7 +237,7 @@ var DJ = (function () {
   // Dégâts de base d'une attaque de monstre (péril 4 : +1 ; seul : selon la difficulté ; à plusieurs : selon le nombre de joueurs du combat)
   // nbCombat = joueurs vivants du combat ; un coup de zone (i.tous) frappe déjà chacun : pas de bonus de groupe (3.26, l'Écrasement faisait 40 à chacun à deux)
   function attaqueMonstre(e, i, nbCombat) {
-    var n = i.att + (e.peril >= 3 ? 1 : 0) + (e.peril >= 5 ? 1 : 0), d = difficulte(e);
+    var d = difficulte(e), n = (i.att + (e.peril >= 3 ? 1 : 0) + (e.peril >= 5 ? 1 : 0)) * (d.base ? d.base.deg : 1) * (1 + D.CLE_PAR_NIVEAU.deg * (e.peril || 0));
     if (nbGroupe(e) <= 1) return n * d.solo.deg;
     if (i.tous) return n;
     return n * (1 + d.groupe.deg * Math.max(0, (nbCombat || 1) - 1));
@@ -262,6 +262,7 @@ var DJ = (function () {
     if (e.peril >= 1 && r === 'normal') pv *= 1.15;
     if (e.peril >= 2 && r !== 'normal') pv *= 1.15;
     if (e.peril >= 4) pv *= 1.1;
+    pv *= ((difficulte(e).base || {}).pv || 1) * (1 + D.CLE_PAR_NIVEAU.pv * (e.peril || 0));   // 3.30 : Héroïque et Mythique taillés pour un paquet construit pendant la semaine
     var f = facteurPv(e, nbGroupe(e)), base = pv;
     pv = Math.round(base * f);
     var m = { id: ++e.seq, type: type, salle: salle, x: x, y: y, pv: pv, pvMax: pv, pvBase: base, f: f, pas: 0, dir: 'b', armure: 0, etats: {}, k: 0, mem: {}, intention: null, cible: null };
@@ -325,52 +326,60 @@ var DJ = (function () {
     return p;
   }
 
-  // ---------- Avantages de la semaine (3.29) ----------
-  // av = { tr: [['r', relique] | ['c', carte]], b: { pv, or, fiole, aiguise } }, envoyé par chaque téléphone : on le vérifie avant de s'en servir.
+  // ---------- Le héros de la semaine (3.30) ----------
+  // av = { classe, paquet, reliques, pv, b } : le paquet, les reliques et les PV max gagnés à la fin du donjon d'avant, plus les bonus
+  // achetés avec les éclats. Envoyé par chaque téléphone : vérifié avant de s'en servir. Une seule relique de boss reste d'un donjon à l'autre.
   function nettoyerAvantages(av) {
     if (!av || typeof av !== 'object') return null;
-    var S = D.SEMAINE, tr = [], b = {};
-    (Array.isArray(av.tr) ? av.tr : []).slice(0, S.trophees).forEach(t => {
-      if (!Array.isArray(t)) return;
-      if (t[0] === 'r' && reliqueTrophee(t[1])) tr.push(['r', t[1]]);
-      if (t[0] === 'c' && trophee(t[1]) && !tr.some(x => x[0] === 'c' && baseCarte(x[1]) === baseCarte(t[1]))) tr.push(['c', t[1]]);
-    });
+    if (av.hero && !av.classe) av = Object.assign({ b: av.b }, av.hero);   // déjà vérifié une fois (chez l'hôte) : même forme
+    var S = D.SEMAINE, b = {}, hero = null;
     Object.keys(S.bonus).forEach(k => { var n = av.b && av.b[k] | 0; if (n > 0) b[k] = Math.min(n, S.bonus[k].max); });
-    return { tr: tr, b: b };
-  }
-  function reliqueTrophee(id) { return !!(RELIQUES[id] && D.SEMAINE.rarTrophees.indexOf(RELIQUES[id].rar) >= 0); }
-  function baseCarte(id) { return String(id).replace(/\+$/, ''); }
-  // Une carte peut devenir un trophée si elle a été gagnée (pas les cartes de départ ni les malédictions)
-  function trophee(id) {
-    var c = carte(id);
-    if (!c || c.type === 'malediction') return false;
-    var base = String(id).replace(/\+$/, '');
-    if (base === 'griffe' || base === 'bouclier') return false;
-    return !Object.keys(CLASSES).some(k => CLASSES[k].base.indexOf(base) >= 0);
+    if (av.classe && CLASSES[av.classe] && Array.isArray(av.paquet)) {
+      var paquet = av.paquet.slice(0, S.paquetMax).map(String).filter(id => { var c = carte(id); return c && c.type !== 'malediction'; });
+      var reliques = [], boss = 0;
+      (Array.isArray(av.reliques) ? av.reliques : []).forEach(r => {
+        if (!RELIQUES[r] || reliques.indexOf(r) >= 0 || reliques.length >= S.reliquesMax) return;
+        if (RELIQUES[r].rar === 'boss') { if (boss >= S.bossMax) return; boss++; }
+        reliques.push(r);
+      });
+      if (paquet.length >= 5) hero = { classe: av.classe, paquet: paquet, reliques: reliques, pv: Math.max(0, Math.min(S.pvMax, av.pv | 0)) };
+    }
+    return { b: b, hero: hero };
   }
   function appliquerAvantages(e, p, av) {
     av = nettoyerAvantages(av);
     if (!av) return;
-    var b = av.b, h = hasard((e.graine | 0) * 7 + p.ordre * 101 + 3);
-    var B = D.SEMAINE.bonus;
-    if (b.pv) { p.pvMax += B.pv.val * b.pv; p.pv += B.pv.val * b.pv; }
+    var b = av.b, h = hasard((e.graine | 0) * 7 + p.ordre * 101 + 3), B = D.SEMAINE.bonus, H = av.hero;
+    // Le héros de la semaine : son paquet, ses reliques (sans rejouer leurs PV : ils sont déjà comptés dans « pv ») et ses PV max
+    if (H && H.classe === p.classe) {
+      p.paquet = H.paquet.slice();
+      if (e.peril >= 5) p.paquet.push('blessure');
+      H.reliques.forEach(r => donnerRelique(e, p, r, h, null, true));
+      p.pvMax += H.pv; p.pv += H.pv;
+    }
+    p.bonusPv = b.pv ? B.pv.val * b.pv : 0;   // pour ne pas le compter deux fois dans le héros de la semaine
+    if (b.pv) { p.pvMax += p.bonusPv; p.pv += p.bonusPv; }
     if (b.or) p.or += B.or.val * b.or;
     for (var i = 0; i < (b.fiole || 0); i++) donnerFiole(e, p, null, h);
-    CLASSES[p.classe].base.slice(0, b.aiguise || 0).forEach(id => { var k = p.paquet.indexOf(id); if (k >= 0 && ameliorable(id)) p.paquet[k] = id + '+'; });
-    av.tr.forEach(t => { if (t[0] === 'r') donnerRelique(e, p, t[1], h); else p.paquet.push(t[1]); });
-    p.semaine = { tr: av.tr.length, b: Object.keys(b).length };
+    p.semaine = { hero: !!(H && H.classe === p.classe), b: Object.keys(b).length };
   }
-  // Les trophées possibles à la fin d'un donjon : ses reliques (sauf de boss) et les cartes gagnées, sans doublon avec ceux qu'on a déjà
-  function tropheesPossibles(p, deja) {
-    var l = [], vu = {};
-    (deja || []).forEach(t => { vu[t[0] + t[1]] = 1; });
-    (deja || []).forEach(t => { if (t[0] === 'c') vu['b' + baseCarte(t[1])] = 1; });
-    (p.reliques || []).forEach(r => { if (reliqueTrophee(r) && !vu['r' + r]) { vu['r' + r] = 1; l.push(['r', r]); } });
-    // Une seule carte de chaque sorte parmi les trophées ; la version améliorée d'abord
-    (p.paquet || []).slice().sort((x, y) => (y.slice(-1) === '+') - (x.slice(-1) === '+')).forEach(c => {
-      if (trophee(c) && !vu['b' + baseCarte(c)]) { vu['b' + baseCarte(c)] = 1; l.push(['c', c]); }
+  // Le héros à garder pour la semaine, à la fin d'un donjon : le paquet sans malédiction (le repos les efface), les reliques,
+  // les PV max gagnés en chemin (sans les bonus achetés avec les éclats, rachetés à chaque fois)
+  var RANG_REL = { boss: 4, r: 3, u: 2, c: 1 };
+  // Reliques gardées par défaut : les plus rares d'abord, une seule de boss
+  function reliquesParDefaut(p) {
+    var S = D.SEMAINE, l = [], boss = 0;
+    (p.reliques || []).filter(r => RELIQUES[r]).slice().sort((a, b) => RANG_REL[RELIQUES[b].rar] - RANG_REL[RELIQUES[a].rar]).forEach(r => {
+      if (l.length >= S.reliquesMax) return;
+      if (RELIQUES[r].rar === 'boss') { if (boss >= S.bossMax) return; boss++; }
+      l.push(r);
     });
     return l;
+  }
+  function heroSemaine(p, choix) {
+    var reliques = Array.isArray(choix) ? choix.filter(r => (p.reliques || []).indexOf(r) >= 0) : reliquesParDefaut(p);
+    return { classe: p.classe, paquet: (p.paquet || []).filter(id => { var c = carte(id); return c && c.type !== 'malediction'; }),
+             reliques: reliques, pv: Math.max(0, Math.min(D.SEMAINE.pvMax, (p.pvMax || 0) - CLASSES[p.classe].pv - (p.bonusPv || 0))) };
   }
   // Commandes reçues : direction tenue (ou null au lâcher)
   function entree(e, nom, d) {
@@ -402,7 +411,7 @@ var DJ = (function () {
     p.fioles.push(id);
     return id;
   }
-  function donnerRelique(e, p, id, h, rar) {
+  function donnerRelique(e, p, id, h, rar, sansPv) {
     if (!id) {
       var l = Object.keys(RELIQUES).filter(r => RELIQUES[r].rar !== 'boss' && !a(p, r) && (!rar || RELIQUES[r].rar === rar));
       if (!l.length) l = Object.keys(RELIQUES).filter(r => RELIQUES[r].rar !== 'boss' && !a(p, r));
@@ -411,8 +420,8 @@ var DJ = (function () {
     }
     if (a(p, id)) return null;
     p.reliques.push(id);
-    if (id === 'pomme') { p.pvMax += 8; p.pv += 8; }
-    if (id === 'calice') { p.pvMax += 20; p.pv = p.pvMax; }
+    if (id === 'pomme' && !sansPv) { p.pvMax += 8; p.pv += 8; }
+    if (id === 'calice' && !sansPv) { p.pvMax += 20; p.pv = p.pvMax; }
     if (id === 'ceinture') p.fiolesMax++;
     if (id === 'grimoire') p.paquet.push('blessure');
     return id;
@@ -1106,7 +1115,7 @@ var DJ = (function () {
   }
 
   return { W: W, H: H, GX: GX, GY: GY, PAS: PAS, DX: DX, PORTE: PORTE, MARCHABLE: MARCHABLE, POUVOIRS: POUVOIRS, ESPECES: ESPECES, MONSTRES: MONSTRES,
-           D: D, NB_ETAGES: NB_ETAGES, nettoyerAvantages: nettoyerAvantages, tropheesPossibles: tropheesPossibles, trophee: trophee, carte: carte, ameliorable: ameliorable, prixRetrait: prixRetrait, soinFeu: soinFeu,
+           D: D, NB_ETAGES: NB_ETAGES, nettoyerAvantages: nettoyerAvantages, heroSemaine: heroSemaine, reliquesParDefaut: reliquesParDefaut, paquetDepart: paquetDepart, carte: carte, ameliorable: ameliorable, prixRetrait: prixRetrait, soinFeu: soinFeu,
            pouvoirDe: pouvoirDe, hasard: hasard, generer: generer, nouvelle: nouvelle, ajouterJoueur: ajouterJoueur, entree: entree,
            jouerCarte: jouerCarte, finTour: finTour, utiliserFiole: utiliserFiole, jeterFiole: jeterFiole, choisir: choisir, demarrerCombat: demarrerCombat,
            interagir: interagir, ouvrirCoffre: ouvrirCoffre, tourMonstres: tourMonstres, etageSuivant: etageSuivant, tirerCartes: tirerCartes, donnerRelique: donnerRelique,

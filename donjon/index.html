@@ -469,6 +469,14 @@
     .trophees-fin { margin-top: 8px; padding: 10px; border-radius: 14px; background: rgba(255,255,255,0.55); border: 1.5px dashed #c9b08f; text-align: left; }
     .trophees-fin .titre-tr { font-weight: 900; font-size: 0.9em; }
     .trophees-fin .aide { margin-top: 6px; }
+    .tuiles-tr button.boss-tr { border-color: #f783ac; background: #fff0f6; color: #a61e4d; }
+    .tuiles-tr button.off { opacity: 0.4; }
+    .hero-sem { margin-top: 6px; padding: 8px 10px; border-radius: 12px; background: #f3f0ff; border: 1.5px solid #d0bfff; }
+    .hero-sem .ligne { font-weight: 800; font-size: 0.88em; color: #3b2a75; }
+    .atelier-dj .paquet-grille .carte-c { cursor: pointer; }
+    .atelier-dj .paquet-grille .carte-c.choisie { box-shadow: 0 0 0 3px #e8590c; }
+    .atelier-dj .actions-at { display: flex; gap: 6px; margin-top: 8px; }
+    .atelier-dj .actions-at .btn { margin-top: 0; }
   </style>
 </head>
 <body>
@@ -528,12 +536,18 @@
             <span v-for="id in D.ORDRE_DIFFICULTES" :key="id" :class="etapeSem(id)">{{ etapeSem(id) === 'fait' ? '✓' : etapeSem(id) === 'ici' ? D.DIFFICULTES[id].ico : '🔒' }} {{ D.DIFFICULTES[id].nom }}</span>
             <span v-if="sem.cle" class="cle">🗝️ clé +{{ sem.cle }}</span>
           </div>
-          <div class="sous-sem">🏅 Trophées ({{ sem.tr.length }}/{{ D.SEMAINE.trophees }})</div>
-          <div class="tuiles-tr" v-if="sem.tr.length">
-            <button v-for="(t, k) in sem.tr" :key="t[0] + t[1]" :class="{ 'carte-tr': t[0] === 'c', actif: trSel === k }" @click="voirTrophee(k)">{{ icoTr(t) }} {{ nomTr(t) }}</button>
+          <div class="sous-sem">🧙 Mon héros de la semaine</div>
+          <div class="hero-sem" v-if="sem.hero">
+            <div class="ligne">{{ D.CLASSES[sem.hero.classe].ico }} {{ D.CLASSES[sem.hero.classe].nom }} · 🃏 {{ sem.hero.paquet.length }} cartes<template v-if="nbAmeliorees"> ({{ nbAmeliorees }} améliorée{{ nbAmeliorees > 1 ? 's' : '' }})</template><template v-if="sem.hero.pv"> · ❤️ +{{ sem.hero.pv }} PV max</template></div>
+            <div class="tuiles-tr" v-if="sem.hero.reliques.length">
+              <button v-for="r in sem.hero.reliques" :key="r" :class="{ 'boss-tr': D.RELIQUES[r].rar === 'boss', actif: trSel === r }" @click="trSel = trSel === r ? null : r">{{ D.RELIQUES[r].ico }} {{ D.RELIQUES[r].nom }}</button>
+            </div>
+            <div class="aide" v-if="trSel && D.RELIQUES[trSel]">{{ D.RELIQUES[trSel].texte }}</div>
+            <div class="aide" v-if="sem.hero.classe !== maClasse">⚠️ Ton héros est de la classe {{ D.CLASSES[sem.hero.classe].nom }} : avec ton compagnon actuel ({{ D.CLASSES[maClasse].nom }}), tu repartirais d'un paquet neuf.</div>
+            <button class="btn" style="width:100%;margin-top:8px" @click="ouvrirAtelier">🃏 Voir et travailler mon paquet</button>
+            <button class="lien-profil" style="margin-top:6px" @click="nouveauHero">🔄 Repartir d'un héros neuf</button>
           </div>
-          <div class="aide" v-if="trSel !== null && sem.tr[trSel]">{{ texteTr(sem.tr[trSel]) }} <button class="lien-profil" @click="lacherTrophee(trSel)">✕ Le laisser</button></div>
-          <div class="aide" v-if="!sem.tr.length">À la fin de chaque donjon, gagné ou perdu, tu gardes une relique ou une carte trouvée : elle repart avec toi dans les donjons suivants de la semaine.</div>
+          <div class="aide" v-else>Ton héros grandit toute la semaine : à la fin de chaque donjon, gagné ou perdu, il garde son paquet, jusqu'à {{ D.SEMAINE.reliquesMax }} reliques (dont une de boss) et les PV max gagnés (+{{ D.SEMAINE.pvMax }} au plus). Sans un paquet construit en Normal, Héroïque est presque impossible.</div>
           <div class="sous-sem">💠 Éclats : {{ sem.eclats }}</div>
           <div class="bonus-sem" v-for="(B, k) in D.SEMAINE.bonus" :key="k">
             <span class="ico">{{ B.ico }}</span>
@@ -541,8 +555,24 @@
             <button v-if="(sem.b[k] || 0) < B.max" :disabled="sem.eclats < B.prix[sem.b[k] || 0]" @click="acheterBonus(k)">💠 {{ B.prix[sem.b[k] || 0] }}</button>
             <button v-else disabled>✓</button>
           </div>
-          <div class="aide">Chaque boss vaincu donne des éclats ({{ D.SEMAINE.eclats.normal }} en Normal, {{ D.SEMAINE.eclats.heroique }} en Héroïque, {{ D.SEMAINE.eclats.mythique }} en Mythique). Gagner un donjon ouvre la difficulté suivante. Lundi, tout repart de zéro. Entre amis, chacun vient avec ses propres avantages.</div>
+          <div class="aide">Chaque boss vaincu donne des éclats ({{ D.SEMAINE.eclats.normal }} en Normal, {{ D.SEMAINE.eclats.heroique }} en Héroïque, {{ D.SEMAINE.eclats.mythique }} en Mythique) : bonus de départ ci-dessus, ou travail du paquet ({{ D.SEMAINE.forge }} 💠 pour améliorer une carte, {{ D.SEMAINE.elaguer }} 💠 pour en retirer une). Gagner un donjon ouvre la difficulté suivante. Lundi, tout repart de zéro. Entre amis, chacun vient avec son héros.</div>
         </section>
+        <!-- Atelier du paquet de la semaine (3.30) : améliorer ou retirer des cartes avec les éclats -->
+        <div class="voile-dj atelier-dj" v-if="atelier && sem.hero" @click.self="atelier = false">
+          <div class="boite-dj">
+            <div class="titre">🃏 Mon paquet de la semaine</div>
+            <div class="aide" style="margin-top:0">💠 {{ sem.eclats }} éclat{{ sem.eclats > 1 ? 's' : '' }} · touche une carte</div>
+            <div class="actions-at" v-if="carteAt !== null && sem.hero.paquet[carteAt]">
+              <button class="btn principal" :disabled="sem.eclats < D.SEMAINE.forge || !DJ.ameliorable(sem.hero.paquet[carteAt])" @click="forger">⬆️ Améliorer · {{ D.SEMAINE.forge }} 💠</button>
+              <button class="btn" :disabled="sem.eclats < D.SEMAINE.elaguer || sem.hero.paquet.length <= 5" @click="elaguer">✂️ Retirer · {{ D.SEMAINE.elaguer }} 💠</button>
+            </div>
+            <button class="btn" @click="atelier = false">Fermer</button>
+            <div class="paquet-grille">
+              <carte-dj v-for="x in paquetHero" :key="'h' + x.i" :id="x.id" :class="{ choisie: carteAt === x.i }" @click.native="carteAt = carteAt === x.i ? null : x.i"></carte-dj>
+            </div>
+          </div>
+        </div>
+
 
         <template v-if="!role">
           <section class="carte">
@@ -920,18 +950,12 @@
               <li v-if="gains.peril">🗝️ Nouvelle clé mythique : +{{ gains.peril }} ({{ D.PERILS[gains.peril] }})</li>
               <li v-if="gains.eclats">💠 +{{ gains.eclats }} éclat{{ gains.eclats > 1 ? 's' : '' }} pour la semaine (boss vaincus)</li>
               <li v-if="gains.ouvre">🔓 {{ D.DIFFICULTES[gains.ouvre].nom }} est ouvert pour la semaine !</li>
-              <li v-if="gains.trophee">🏅 Trophée gardé : {{ icoTr(gains.trophee) }} {{ nomTr(gains.trophee) }}</li>
+              <li v-if="gains.hero">🧙 Ton héros garde son paquet ({{ gains.hero.paquet.length }} cartes)<template v-if="gains.hero.pv">, +{{ gains.hero.pv }} PV max</template> et {{ gains.hero.reliques.length }} relique{{ gains.hero.reliques.length > 1 ? 's' : '' }} pour le prochain donjon.</li>
             </ul>
-            <div class="trophees-fin" v-if="gains.trophees && gains.trophees.length && !gains.trophee && !gains.tropheePasse">
-              <div class="titre-tr">🏅 Garde un trophée pour tes prochains donjons de la semaine ({{ sem.tr.length }}/{{ D.SEMAINE.trophees }})</div>
-              <div class="tuiles-tr"><button v-for="(t, k) in gains.trophees" :key="t[0] + t[1]" :class="{ 'carte-tr': t[0] === 'c', actif: tropheeFin === k }" @click="tropheeFin = k">{{ icoTr(t) }} {{ nomTr(t) }}</button></div>
-              <div class="aide" v-if="tropheeFin !== null">{{ texteTr(gains.trophees[tropheeFin]) }}</div>
-              <template v-if="tropheeFin !== null">
-                <button v-if="sem.tr.length < D.SEMAINE.trophees" class="btn principal" @click="garderTrophee(null)">🏅 Garder : {{ nomTr(gains.trophees[tropheeFin]) }}</button>
-                <template v-else><div class="aide">Ta vitrine est pleine : touche le trophée à remplacer.</div>
-                  <div class="tuiles-tr"><button v-for="(t, k) in sem.tr" :key="'r' + k" :class="{ 'carte-tr': t[0] === 'c' }" @click="garderTrophee(k)">↔ {{ icoTr(t) }} {{ nomTr(t) }}</button></div></template>
-              </template>
-              <button class="btn" @click="passerTrophee">Ne rien garder</button>
+            <div class="trophees-fin" v-if="gains.reliquesDispo && gains.reliquesDispo.length > D.SEMAINE.reliquesMax || nbBossDispo > 1">
+              <div class="titre-tr">🎒 Choisis les reliques que ton héros garde ({{ choixRel.length }}/{{ D.SEMAINE.reliquesMax }}, une seule de boss)</div>
+              <div class="tuiles-tr"><button v-for="r in gains.reliquesDispo" :key="r" :class="{ 'boss-tr': D.RELIQUES[r].rar === 'boss', actif: choixRel.indexOf(r) >= 0, off: choixRel.indexOf(r) < 0 }" @click="basculerRelique(r)">{{ D.RELIQUES[r].ico }} {{ D.RELIQUES[r].nom }}</button></div>
+              <div class="aide" v-if="infoRel">{{ infoRel }}</div>
             </div>
             <button v-if="!solo && role === 'hote'" class="btn principal" @click="envoyerJeu({ type: 'NOUVELLE' })">🔁 Nouveau donjon</button>
             <button v-if="solo" class="btn principal" @click="nouveauSolo">🔁 Nouveau donjon</button>
@@ -973,8 +997,8 @@
             <li><strong>Fioles</strong> (2 emplacements) : à boire pendant ton tour ; la fiole de soin se boit aussi hors combat.</li>
             <li>Difficulté, choisie avant d'entrer (par l'hôte dans un salon) : 🛡️ Normal (monstres un peu plus doux ; poussières ×0,7), ⚔️ Héroïque (le défi prévu ; ×1), 💀 Mythique (monstres plus coriaces ; ×1,5). En Mythique, on choisit aussi sa clé.</li>
             <li>À plusieurs : chacun a ses cartes, son or et ses reliques ; les monstres ont plus de PV et frappent plus fort selon la difficulté et le nombre de joueurs <strong>présents dans le combat</strong> (seul dans la pièce, on les affronte comme en solo) ; leurs coups de zone ne sont pas renforcés ; le poison les ronge moins. Après un combat gagné ensemble, chacun reprend 10 % de ses PV. Une grille ⛓️ s'ouvre à deux sur les dalles. Un ami KO revient en fin de combat gagné, avec un Trèfle, ou si un ami reste 2 s à côté de lui. Tout le groupe KO : fin.</li>
-            <li><strong>Ma semaine</strong> (du lundi au dimanche) : lundi, seul Normal est ouvert. Gagner un donjon en Normal ouvre Héroïque, gagner en Héroïque ouvre Mythique (entre amis, la victoire compte pour chacun). À la fin de chaque donjon, gagné ou perdu, on garde un <strong>trophée</strong> : une relique (commune ou peu commune) ou une carte gagnée, {{ D.SEMAINE.trophees }} au plus, qui repartent avec nous. Chaque boss vaincu donne des <strong>éclats</strong> ({{ D.SEMAINE.eclats.normal }} en Normal, {{ D.SEMAINE.eclats.heroique }} en Héroïque, {{ D.SEMAINE.eclats.mythique }} en Mythique), qui achètent des bonus de départ dans l'onglet Partie. Lundi, tout repart de zéro.</li>
-            <li><strong>Clé mythique</strong> : gagner un donjon en Mythique avec la clé +N donne la clé +N+1 pour la semaine (jusqu'à +{{ D.PERILS.length - 1 }}). Chaque clé ajoute une épreuve, et elles se cumulent : <template v-for="(t, k) in D.PERILS.slice(1)">{{ k ? ' ; ' : '' }}+{{ k + 1 }} {{ t.charAt(0).toLowerCase() + t.slice(1) }}</template>.</li>
+            <li><strong>Ma semaine</strong> (du lundi au dimanche) : lundi, seul Normal est ouvert. Gagner un donjon en Normal ouvre Héroïque, gagner en Héroïque ouvre Mythique (entre amis, la victoire compte pour chacun). <strong>Ton héros grandit toute la semaine</strong> : à la fin de chaque donjon, gagné ou perdu, il garde son paquet (sans les malédictions), jusqu'à {{ D.SEMAINE.reliquesMax }} reliques (dont une seule de boss) et les PV max gagnés (+{{ D.SEMAINE.pvMax }} au plus), et repart avec dans le donjon suivant. Héroïque et Mythique sont taillés pour un héros déjà construit : avec un paquet neuf, c'est presque impossible. Chaque boss vaincu donne des <strong>éclats</strong> ({{ D.SEMAINE.eclats.normal }} en Normal, {{ D.SEMAINE.eclats.heroique }} en Héroïque, {{ D.SEMAINE.eclats.mythique }} en Mythique) : bonus de départ, ou travail du paquet entre deux donjons. Lundi, tout repart de zéro.</li>
+            <li><strong>Clé mythique</strong> : gagner un donjon en Mythique avec la clé +N donne la clé +N+1 pour la semaine (jusqu'à +{{ D.PERILS.length - 1 }}). Chaque clé rend tous les monstres un peu plus forts (+{{ Math.round(D.CLE_PAR_NIVEAU.pv * 100) }} % de PV et +{{ Math.round(D.CLE_PAR_NIVEAU.deg * 100) }} % de dégâts par clé) et ajoute une épreuve ; elles se cumulent : <template v-for="(t, k) in D.PERILS.slice(1)">{{ k ? ' ; ' : '' }}+{{ k + 1 }} {{ t.charAt(0).toLowerCase() + t.slice(1) }}</template>.</li>
             <li>À la fin, chacun garde les poussières d'étoile (5 poussières = 1 ⭐, comme en expédition). Donjon vaincu : un souvenir pour la maison de ton compagnon.</li>
           </ul>
         </section>
@@ -1039,8 +1063,11 @@
     }
     function lireSemaine() {
       var s = lireStockage('donjon-semaine'), l = lundiDe(Date.now());
-      if (!s || s.s !== l) return { s: l, ouvert: 'normal', cle: 0, tr: [], b: {}, eclats: 0, faits: 0 };
-      return Object.assign({ ouvert: 'normal', cle: 0, tr: [], b: {}, eclats: 0, faits: 0 }, s);
+      if (!s || s.s !== l) return { s: l, ouvert: 'normal', cle: 0, b: {}, eclats: 0, faits: 0, hero: null };
+      s = Object.assign({ ouvert: 'normal', cle: 0, b: {}, eclats: 0, faits: 0, hero: null }, s);
+      delete s.tr;   // trophées de la 1re version (3.29), remplacés par le héros de la semaine (3.30)
+      if (s.hero && !(s.hero.classe && Array.isArray(s.hero.paquet) && Array.isArray(s.hero.reliques))) s.hero = null;
+      return s;
     }
     var cacheDessins = {};
 
@@ -1076,7 +1103,7 @@
         voirPaquet: false,
         infoTxt: '', infoFiole: null,
         sem: lireSemaine(),   // ma semaine (3.29) : difficulté ouverte, clé, trophées, éclats et bonus
-        trSel: null, tropheeFin: null,
+        trSel: null, choixRel: [], atelier: false, carteAt: null,
         peril: Math.min(lireStockage('donjon-peril-choisi') || 0, lireSemaine().cle),
         vuCombat: null,
         D: DJ.D, MONSTRES: DJ.MONSTRES,
@@ -1114,7 +1141,15 @@
         },
         difPartie: function() { var d = this.partie && this.partie.difficulte; return DJ.D.DIFFICULTES[d] ? d : 'heroique'; },
         perilMax: function() { return this.sem.cle || 0; },   // clé mythique obtenue cette semaine
-        avSemaine: function() { return { tr: this.sem.tr, b: this.sem.b }; },
+        avSemaine: function() { return Object.assign({ b: this.sem.b }, this.sem.hero || {}); },
+        maClasse: function() { return DJ.pouvoirDe(this.monCp) || 'aucune'; },
+        nbAmeliorees: function() { return this.sem.hero ? this.sem.hero.paquet.filter(id => /\+$/.test(id)).length : 0; },
+        paquetHero: function() {
+          var l = this.sem.hero ? this.sem.hero.paquet.map((id, i) => ({ id: id, i: i })) : [], T = { attaque: 0, defense: 1, competence: 2, pouvoir: 3 };
+          return l.sort((a, b) => { var ca = DJ.carte(a.id) || {}, cb = DJ.carte(b.id) || {}; return (T[ca.type] || 4) - (T[cb.type] || 4) || String(ca.nom).localeCompare(String(cb.nom)); });
+        },
+        nbBossDispo: function() { var g = this.gains; return g && g.reliquesDispo ? g.reliquesDispo.filter(r => DJ.D.RELIQUES[r] && DJ.D.RELIQUES[r].rar === 'boss').length : 0; },
+        infoRel: function() { var r = this.choixRel[this.choixRel.length - 1]; return r && DJ.D.RELIQUES[r] ? DJ.D.RELIQUES[r].nom + ' : ' + DJ.D.RELIQUES[r].texte : ''; },
         prochaineOuverture: function() {
           var o = this.sem.ouvert;
           return o === 'normal' ? '🔒 Gagne un donjon en Normal pour ouvrir Héroïque cette semaine.' : o === 'heroique' ? '🔒 Gagne un donjon en Héroïque pour ouvrir Mythique.' : '';
@@ -1560,42 +1595,46 @@
           ecrireStockage('donjon-semaine', s);
           this.sem = s;
         },
-        icoTr: function(t) { return t[0] === 'r' ? (DJ.D.RELIQUES[t[1]] || {}).ico : (DJ.carte(t[1]) || {}).ico; },
-        nomTr: function(t) { return t[0] === 'r' ? (DJ.D.RELIQUES[t[1]] || {}).nom : (DJ.carte(t[1]) || {}).nom; },
-        texteTr: function(t) { var x = t[0] === 'r' ? DJ.D.RELIQUES[t[1]] : DJ.carte(t[1]); return x ? (t[0] === 'r' ? 'Relique : ' : 'Carte : ') + x.texte : ''; },
-        voirTrophee: function(k) { this.trSel = this.trSel === k ? null : k; },
-        lacherTrophee: function(k) {
-          var t = this.sem.tr[k];
-          if (!t || !confirm('Laisser ' + this.nomTr(t) + ' ? Il ne viendra plus avec toi cette semaine.')) return;
-          this.majSemaine(s => { s.tr.splice(k, 1); });
-          this.trSel = null;
+        ouvrirAtelier: function() { this.carteAt = null; this.atelier = true; },
+        forger: function() {
+          var k = this.carteAt, S = DJ.D.SEMAINE;
+          this.majSemaine(s => { var id = s.hero && s.hero.paquet[k]; if (id && DJ.ameliorable(id) && s.eclats >= S.forge) { s.eclats -= S.forge; s.hero.paquet.splice(k, 1, id + '+'); } });
+          this.son('toc'); this.vibre(30);
+        },
+        elaguer: function() {
+          var k = this.carteAt, S = DJ.D.SEMAINE;
+          this.majSemaine(s => { if (s.hero && s.hero.paquet[k] && s.hero.paquet.length > 5 && s.eclats >= S.elaguer) { s.eclats -= S.elaguer; s.hero.paquet.splice(k, 1); } });
+          this.carteAt = null; this.son('toc'); this.vibre(30);
+        },
+        nouveauHero: function() {
+          if (!confirm('Repartir d\'un héros neuf ? Ton paquet, tes reliques et tes PV gagnés cette semaine seront perdus (les difficultés ouvertes, la clé, les éclats et les bonus restent).')) return;
+          this.majSemaine(s => { s.hero = null; });
+        },
+        // Fin d'un donjon avec trop de reliques : on choisit celles que garde le héros (le choix par défaut est déjà enregistré)
+        basculerRelique: function(r) {
+          var S = DJ.D.SEMAINE, l = this.choixRel.slice(), R = DJ.D.RELIQUES, i = l.indexOf(r);
+          if (i >= 0) l.splice(i, 1);
+          else {
+            if (R[r].rar === 'boss') l = l.filter(x => R[x].rar !== 'boss');
+            if (l.length >= S.reliquesMax) l.shift();
+            l.push(r);
+          }
+          this.choixRel = l;
+          this.majSemaine(s => { if (s.hero) s.hero.reliques = l.slice(); });
+          this.gains = Object.assign({}, this.gains, { hero: this.sem.hero, choixRel: l });
+          if (this.partie) ecrireStockage('donjon-recompense', { id: this.partie.id, gains: this.gains });
         },
         acheterBonus: function(k) {
           var B = DJ.D.SEMAINE.bonus[k];
           this.majSemaine(s => { var n = s.b[k] || 0, prix = B.prix[n]; if (n < B.max && s.eclats >= prix) { s.eclats -= prix; s.b[k] = n + 1; } });
           this.son('toc'); this.vibre(30);
         },
-        garderTrophee: function(remplace) {
-          var g = this.gains, t = g && g.trophees && g.trophees[this.tropheeFin];
-          if (!t) return;
-          this.majSemaine(s => {
-            if (s.tr.length < DJ.D.SEMAINE.trophees) s.tr.push(t);
-            else if (remplace !== null && s.tr[remplace]) s.tr.splice(remplace, 1, t);
-          });
-          this.gains = Object.assign({}, g, { trophee: t });
-          this.tropheeFin = null;
-          if (this.partie) ecrireStockage('donjon-recompense', { id: this.partie.id, gains: this.gains });
-        },
-        passerTrophee: function() {
-          this.gains = Object.assign({}, this.gains, { tropheePasse: true });
-          if (this.partie) ecrireStockage('donjon-recompense', { id: this.partie.id, gains: this.gains });
-        },
 
         // ================== FIN : récompenses (une fois par donjon, sur chaque téléphone) ==================
         finir: function(p) {
           var gagne = !!(p.fin && p.fin.gagne), multi = !this.solo && Object.keys(p.joueurs).length > 1;
           var deja = lireStockage('donjon-recompense');
-          if (deja && deja.id === p.id) { this.gains = deja.gains; return; }
+          if (deja && deja.id === p.id) { this.gains = deja.gains; this.choixRel = (deja.gains && deja.gains.choixRel) || []; return; }
           // Poussières d'étoile multipliées selon la difficulté (3.23)
           var dif = DJ.D.DIFFICULTES[p.difficulte] ? p.difficulte : 'heroique', mult = DJ.D.DIFFICULTES[dif].poussieres;
           var pous = Math.round((p.poussiere || 0) * mult);
@@ -1617,9 +1656,14 @@
             if (O.indexOf(suiv) > O.indexOf(s.ouvert)) { s.ouvert = suiv; g.ouvre = suiv; }
             if (dif === 'mythique') { var k = Math.min(DJ.D.PERILS.length - 1, (p.peril || 0) + 1); if (k > s.cle) { s.cle = k; g.peril = k; } }
           });
+          // Le héros de la semaine : paquet, reliques (les plus rares par défaut, on peut changer), PV max gagnés
           var moiJ = p.joueurs && p.joueurs[this.moi];
-          g.trophees = moiJ ? DJ.tropheesPossibles(moiJ, this.sem.tr) : [];
-          this.tropheeFin = null;
+          if (moiJ && DJ.D.CLASSES[moiJ.classe]) {
+            var hero = DJ.heroSemaine(moiJ);
+            this.majSemaine(s => { s.hero = hero; });
+            g.hero = hero; g.reliquesDispo = (moiJ.reliques || []).filter(r => DJ.D.RELIQUES[r]); g.choixRel = hero.reliques.slice();
+            this.choixRel = hero.reliques.slice();
+          }
           // Souvenir du donjon (boss vaincu) et un peu de faim et de soif pour le compagnon
           var animal = lireStockage('compagnon-animal');
           if (animal && animal.espece && typeof CP !== 'undefined') {

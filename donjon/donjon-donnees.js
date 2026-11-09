@@ -296,9 +296,9 @@ var DJD = (function () {
   // Groupe refait en 3.26 (signalé par l'utilisateur : « à deux en Héroïque, aucune chance de passer le 1er étage, ça tape trop fort ») :
   // plus de PV, coups moins forts, coups de zone sans bonus, PV selon les joueurs du combat, soin après un combat gagné ensemble.
   var DIFFICULTES = {
-    normal:   { nom: 'Normal',    ico: '🛡️', solo: { pv: 1, deg: 0.95 },  groupe: { pv: 0.9, deg: 0 },    poussieres: 0.7, texte: 'Pour découvrir le donjon' },
-    heroique: { nom: 'Héroïque',  ico: '⚔️', solo: { pv: 1, deg: 1 },     groupe: { pv: 2.2, deg: 0.5 },  poussieres: 1,   texte: 'Le défi prévu' },
-    mythique: { nom: 'Mythique',  ico: '💀', solo: { pv: 1.05, deg: 1.05 }, groupe: { pv: 2.4, deg: 0.6 }, poussieres: 1.5, texte: 'Pour les plus aguerris' }
+    normal:   { nom: 'Normal',    ico: '🛡️', base: { pv: 1, deg: 1 }, solo: { pv: 1, deg: 0.95 },  groupe: { pv: 0.9, deg: 0 },    poussieres: 0.7, texte: 'Pour découvrir le donjon' },
+    heroique: { nom: 'Héroïque',  ico: '⚔️', base: { pv: 1.3, deg: 1.25 }, solo: { pv: 1, deg: 1 },     groupe: { pv: 2.2, deg: 0.5 },  poussieres: 1,   texte: 'Le défi prévu' },
+    mythique: { nom: 'Mythique',  ico: '💀', base: { pv: 1.5, deg: 1.4 }, solo: { pv: 1.05, deg: 1.05 }, groupe: { pv: 2.4, deg: 0.6 }, poussieres: 1.5, texte: 'Pour les plus aguerris' }
   };
   var ORDRE_DIFFICULTES = ['normal', 'heroique', 'mythique'];
   // À plusieurs, le poison sur les monstres est réduit (3.24, demandé par l'utilisateur : la Ruse rendait les duos bien trop faciles,
@@ -311,6 +311,8 @@ var DJD = (function () {
   // Niveaux +0 à +5 débloqués en gagnant en Mythique à sa plus haute clé ; chaque clé ajoute une épreuve (elles se cumulent).
   // Noms internes inchangés : PERILS, e.peril, donjon-peril (clé débloquée), donjon-peril-choisi (clé choisie).
 
+  // 3.30 : le héros de la semaine grossit vite, chaque clé rend aussi tous les monstres un peu plus forts (en plus de son épreuve)
+  var CLE_PAR_NIVEAU = { pv: 0.08, deg: 0.05 };
   var PERILS = [
     'Le Mythique tel quel',
     'Monstres ordinaires : +15 % de PV',
@@ -340,19 +342,23 @@ var DJD = (function () {
       choix: ['En manger (+6 PV max, −5 PV)', 'En cueillir (une fiole au hasard)'] }
   };
 
-  // ---------- La semaine (3.29, demandé par l'utilisateur : progresser du lundi au dimanche, en gardant des avantages d'un donjon à l'autre) ----------
+  // ---------- La semaine (3.29, refaite en 3.30 ; demandé par l'utilisateur : « que le personnage monte réellement en puissance en formant
+  // un deck de plus en plus fort au fil de la semaine », Héroïque quasi impossible sans le paquet construit en Normal) ----------
   // Lundi : tout repart de zéro, seul Normal est ouvert. Gagner un Normal ouvre Héroïque, gagner un Héroïque ouvre Mythique,
-  // gagner un Mythique à sa clé donne la suivante (+1 à +5). Chaque donjon fini (gagné ou perdu) laisse un trophée au choix
-  // (une relique ou une carte gagnée, 3 au plus dans la semaine) ; chaque boss vaincu donne des éclats, qui achètent des bonus de départ.
+  // gagner un Mythique à sa clé donne la suivante (+1 à +5). Le PAQUET de la fin d'un donjon (gagné ou perdu) devient le paquet de
+  // départ du suivant, avec ses reliques (une seule de boss) et ses PV max gagnés : le « héros de la semaine ». Chaque boss vaincu donne des éclats,
+  // qui achètent des bonus de départ ou travaillent le paquet entre deux donjons (améliorer, retirer une carte).
   var SEMAINE = {
-    trophees: 3,
-    rarTrophees: ['c', 'u'],   // reliques qu'on peut garder : communes et peu communes (les rares restent une trouvaille du donjon)
+    reliquesMax: 4,            // reliques qu'on garde d'un donjon à l'autre (on choisit lesquelles à la fin)
+    bossMax: 1,                // dont une seule relique de boss
+    pvMax: 20,                 // PV max gagnés en chemin qu'on garde au plus
     eclats: { normal: 1, heroique: 2, mythique: 3 },   // par boss vaincu
+    forge: 2, elaguer: 2,      // prix en éclats : améliorer une carte du paquet, retirer une carte
+    paquetMax: 60,
     bonus: {
       pv:      { nom: 'Robustesse',   ico: '❤️', max: 3, val: 3,  prix: [2, 3, 4], texte: '+3 PV max au départ' },
       or:      { nom: 'Bourse',       ico: '🪙', max: 2, val: 20, prix: [1, 2],    texte: '+20 or au départ' },
-      fiole:   { nom: 'Provisions',   ico: '🧪', max: 1, prix: [3],       texte: 'Une fiole au hasard au départ' },
-      aiguise: { nom: 'Entraînement', ico: '⬆️', max: 1, prix: [4],       texte: 'La 1re carte de base de ta classe améliorée au départ' }
+      fiole:   { nom: 'Provisions',   ico: '🧪', max: 1, prix: [3],       texte: 'Une fiole au hasard au départ' }
     }
   };
 
@@ -360,6 +366,6 @@ var DJD = (function () {
   var PRIX = { c: 45, u: 70, r: 120, fiole: 40, relique: 150, retrait: 70 };
 
   return { ETATS: ETATS, CLASSES: CLASSES, CARTES: CARTES, FIOLES: FIOLES, RELIQUES: RELIQUES, MONSTRES: MONSTRES,
-           ETAGES: ETAGES, PERILS: PERILS, DIFFICULTES: DIFFICULTES, ORDRE_DIFFICULTES: ORDRE_DIFFICULTES, POISON_GROUPE: POISON_GROUPE, SOIN_GROUPE: SOIN_GROUPE, SEMAINE: SEMAINE, EVENEMENTS: EVENEMENTS, PRIX: PRIX };
+           ETAGES: ETAGES, PERILS: PERILS, DIFFICULTES: DIFFICULTES, ORDRE_DIFFICULTES: ORDRE_DIFFICULTES, POISON_GROUPE: POISON_GROUPE, SOIN_GROUPE: SOIN_GROUPE, SEMAINE: SEMAINE, CLE_PAR_NIVEAU: CLE_PAR_NIVEAU, EVENEMENTS: EVENEMENTS, PRIX: PRIX };
 })();
 if (typeof module !== 'undefined') module.exports = DJD;

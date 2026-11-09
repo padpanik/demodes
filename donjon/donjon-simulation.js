@@ -90,7 +90,9 @@ function gererMenus(e, p, h) {
     if (m.type === 'butin' || m.type === 'choix') {
       var best = -1, bi = -1;
       m.cartes.forEach((id, i) => { var n = noteCarte(p, id); if (n > best) { best = n; bi = i; } });
-      r = best >= 10 && (p.paquet.length < 26 || best >= 18) ? DJ.choisir(e, p.nom, 'prendre', bi, h) : DJ.choisir(e, p.nom, 'passer', null, h);
+      // Paquet déjà épais (gardé de la semaine) : on ne prend qu'une carte nettement meilleure que la moyenne du paquet
+      var moyP = p.paquet.reduce((t, id) => t + noteCarte(p, id), 0) / Math.max(1, p.paquet.length);
+      r = best >= 10 && p.paquet.length < 34 && (p.paquet.length < 20 ? true : p.paquet.length < 26 ? best >= 18 || best >= moyP + 3 : best >= moyP + 6) ? DJ.choisir(e, p.nom, 'prendre', bi, h) : DJ.choisir(e, p.nom, 'passer', null, h);
     } else if (m.type === 'reliqueBoss') r = DJ.choisir(e, p.nom, 'prendre', 0, h);
     else if (m.type === 'feu') r = DJ.choisir(e, p.nom, p.pv < p.pvMax * 0.6 ? 'repos' : 'aiguiser', null, h);
     else if (m.type === 'marchand') {
@@ -158,56 +160,60 @@ function partie(classe, graine, peril, nb, diff, av) {
 
 // ---------- Une semaine (3.29) : on enchaîne les donjons du lundi au dimanche, avec trophées et éclats ----------
 // Le joueur automatique : Normal jusqu'à la victoire, puis Héroïque, puis Mythique et ses clés. Rend le parcours.
-var RANG = { r: 3, u: 2, c: 1 };
-function choisirTrophee(p, tr) {
-  if (tr.length >= DJ.D.SEMAINE.trophees) return;
-  var l = DJ.tropheesPossibles(p, tr);
-  if (!l.length) return;
-  l.sort((a, b) => valeurTrophee(p, b) - valeurTrophee(p, a));
-  tr.push(l[0]);
-}
-function valeurTrophee(p, t) { return t[0] === 'r' ? 20 + 5 * (RANG[DJ.D.RELIQUES[t[1]].rar] || 0) : noteCarte(p, t[1]); }
-function depenser(sem) {
-  var B = DJ.D.SEMAINE.bonus;
-  for (var essai = 0; essai < 20; essai++) {
-    var choix = ['pv', 'aiguise', 'fiole', 'or'].map(k => ({ k: k, n: sem.b[k] || 0 })).filter(x => x.n < B[x.k].max)
+function depenser(sem, p) {
+  var B = DJ.D.SEMAINE.bonus, S = DJ.D.SEMAINE;
+  for (var essai = 0; essai < 30; essai++) {
+    var choix = ['pv', 'fiole', 'or'].map(k => ({ k: k, n: sem.b[k] || 0 })).filter(x => x.n < B[x.k].max)
       .map(x => ({ k: x.k, prix: B[x.k].prix[x.n] })).filter(x => x.prix <= sem.eclats).sort((a, b) => a.prix - b.prix)[0];
+    // Travailler le paquet : retirer un Coup de griffe (tant qu'il y en a 2 ou plus), sinon améliorer la meilleure carte
+    if (!sem.hero) sem.hero = { classe: p.classe, paquet: DJ.paquetDepart(p.classe, 0), reliques: [], pv: 0 };
+    var pq = sem.hero.paquet;
+    var griffes = pq.filter(x => x === 'griffe' || x === 'bouclier').length;
+    if (sem.eclats >= S.elaguer && griffes >= 5 && (!choix || essai % 2)) { var i = pq.indexOf('griffe') >= 0 ? pq.indexOf('griffe') : pq.indexOf('bouclier'); pq.splice(i, 1); sem.eclats -= S.elaguer; continue; }
+    var am = pq.map((id, i) => ({ id: id, i: i })).filter(x => DJ.ameliorable(x.id)).sort((a, b) => noteCarte(p, b.id) - noteCarte(p, a.id))[0];
+    if (sem.eclats >= S.forge && am && (!choix || essai % 2)) { pq[am.i] = am.id + '+'; sem.eclats -= S.forge; continue; }
     if (!choix) return;
     sem.eclats -= choix.prix; sem.b[choix.k] = (sem.b[choix.k] || 0) + 1;
   }
 }
 function semaine(classe, graine, nbDonjons, avecAvantages) {
-  var sem = { ouvert: 'normal', cle: 0, tr: [], b: {}, eclats: 0 }, journal = [];
+  var sem = { ouvert: 'normal', cle: 0, b: {}, eclats: 0, hero: null }, journal = [], essais = {};
   for (var k = 0; k < nbDonjons; k++) {
     var diff = sem.ouvert, peril = diff === 'mythique' ? sem.cle : 0;
-    var r = partie(classe, graine * 100 + k, peril, 1, diff, avecAvantages ? { tr: sem.tr, b: sem.b } : null);
+    var r = partie(classe, graine * 100 + k, peril, 1, diff, avecAvantages ? Object.assign({ b: sem.b }, sem.hero || {}) : null);
+    var cle = diff + (diff === 'mythique' ? sem.cle : '');
+    essais[cle] = essais[cle] || [0, 0]; essais[cle][0]++; if (r.gagne) essais[cle][1]++;
     var boss = r.gagne ? 3 : r.etage - 1;
     sem.eclats += boss * DJ.D.SEMAINE.eclats[diff];
-    choisirTrophee(r.joueur, sem.tr);
-    depenser(sem);
+    sem.hero = DJ.heroSemaine(r.joueur);
+    depenser(sem, r.joueur);
     journal.push((diff[0].toUpperCase()) + (diff === 'mythique' ? sem.cle : '') + (r.gagne ? '✓' : '✗'));
     if (r.gagne) { if (diff === 'normal') sem.ouvert = 'heroique'; else if (diff === 'heroique') sem.ouvert = 'mythique'; else if (sem.cle < 5) sem.cle++; }
   }
-  return { sem: sem, journal: journal };
+  return { sem: sem, journal: journal, essais: essais };
 }
 
 if (require.main === module && process.argv[2] === 'semaine') {
   // node donjon/donjon-simulation.js semaine [semaines] [donjons par semaine] [sans]
   var ns = +process.argv[3] || 100, nd = +process.argv[4] || 10, avec = process.argv[5] !== 'sans';
+  var tousEssais = {};
   ['ronces', 'force', 'bond', 'flair', 'aucune'].forEach(cl => {
-    var tot = { heroique: 0, mythique: 0, cle: 0 }, atteint = { heroique: [], mythique: [] };
+    var tot = { heroique: 0, mythique: 0, cle: 0 }, atteint = { heroique: [], mythique: [] }, ess = {}, taille = 0;
     for (var i = 0; i < ns; i++) {
       var r = semaine(cl, 500 + i, nd, avec);
       var iH = r.journal.findIndex(x => x[0] !== 'N'), iM = r.journal.findIndex(x => x[0] === 'M');
       if (iH >= 0) { tot.heroique++; atteint.heroique.push(iH); }
       if (iM >= 0) { tot.mythique++; atteint.mythique.push(iM); }
-      tot.cle += r.sem.cle;
-      if (i < 2) console.log('   ', cl, r.journal.join(' '), JSON.stringify(r.sem.b), r.sem.tr.map(t => t[1]).join(','));
+      tot.cle += r.sem.cle; taille += (r.sem.hero ? r.sem.hero.paquet.length : 0);
+      Object.keys(r.essais).forEach(k => { [ess, tousEssais].forEach(o => { o[k] = o[k] || [0, 0]; o[k][0] += r.essais[k][0]; o[k][1] += r.essais[k][1]; }); });
+      if (i < 2) console.log('   ', cl, r.journal.join(' '), JSON.stringify(r.sem.b), r.sem.hero.reliques.join(','), r.sem.hero.paquet.length + ' cartes', '+' + r.sem.hero.pv + ' PV');
     }
     var moy = l => l.length ? (l.reduce((a, b) => a + b, 0) / l.length).toFixed(1) : '-';
     console.log(cl.padEnd(7), 'Héroïque ouvert', (100 * tot.heroique / ns).toFixed(0) + ' % (après ' + moy(atteint.heroique) + ' donjons)',
-      '| Mythique ouvert', (100 * tot.mythique / ns).toFixed(0) + ' % (après ' + moy(atteint.mythique) + ')', '| clé moyenne', (tot.cle / ns).toFixed(2));
+      '| Mythique ouvert', (100 * tot.mythique / ns).toFixed(0) + ' % (après ' + moy(atteint.mythique) + ')', '| clé moyenne', (tot.cle / ns).toFixed(2), '| paquet', Math.round(taille / ns),
+      '| réussite', Object.keys(ess).map(k => k.slice(0, 3) + (k.match(/\d/) || [''])[0] + ' ' + Math.round(100 * ess[k][1] / ess[k][0]) + '%').join(' '));
   });
+  console.log('Toutes classes :', Object.keys(tousEssais).map(k => k + ' ' + Math.round(100 * tousEssais[k][1] / tousEssais[k][0]) + '% (' + tousEssais[k][0] + ')').join(' | '));
 } else if (require.main === module) {
   // 3e argument facultatif : nombre de joueurs (même classe pour tous, ou duo mixte avec « mixte »)
   // 4e argument : difficulté (normal, heroique, mythique ; héroïque par défaut)
