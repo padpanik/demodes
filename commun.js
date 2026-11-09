@@ -3,12 +3,13 @@
 // Les clés de stockage gardent l'ancien préfixe "brillant-" : les réglages déjà faits sont conservés.
 
 // Numéro de version affiché (à augmenter à chaque mise en ligne, avec brilliant/index.html et sw.js)
-const VERSION = '3.33';
+const VERSION = '3.34';
 
 // ---------- Nouveautés (2.87, demandé par l'utilisateur) ----------
 // Une ligne très brève par mise en ligne (la plus récente en haut) : l'accueil les montre une seule fois, dans une petite fenêtre,
 // à qui n'a pas encore vu cette version. [version, jeu ou partie de l'appli, ce qui change]
 const NOUVEAUTES = [
+  ['3.34', 'Donjon', 'Ma semaine : le plus haut niveau tenté (meilleur étage, boss vaincus, victoires, essais) et le dernier donjon.'],
   ['3.33', 'Donjon', 'À plusieurs, une bulle sur le héros d\'un ami qui choisit (butin, marchand, feu…) ou regarde ailleurs ; « Passer » le butin se confirme d\'un 2e toucher.'],
   ['3.32', 'Donjon', 'Voyant de liaison à plusieurs (vert, orange, rouge) avec le détail au toucher, et « Relancer la liaison » dans le menu.'],
   ['3.31', 'Donjon', 'Entrée en combat : une fenêtre à toucher avant de jouer, pour ne plus finir son tour par erreur avec le doigt encore sur la croix.'],

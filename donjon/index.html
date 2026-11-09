@@ -462,6 +462,8 @@
     .entree-combat .noms-combat { font-weight: 800; color: #7c2d12; margin: 2px 0 6px; }
     .entree-combat .btn.principal { font-size: 1.15em; padding: 12px; }
     /* Ma semaine (3.29) */
+    .record-sem { background: #fff8ee; border: 1.5px solid #c9b08f; border-radius: 12px; padding: 7px 10px; margin: 8px 0 2px; font-size: 0.88em; line-height: 1.45; }
+    .record-sem .dernier { color: #7a6450; font-size: 0.92em; }
     .semaine-dj .titre-carte small { font-weight: 700; color: #7f8c8d; font-size: 0.75em; margin-left: 6px; }
     .etapes-sem { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 4px; }
     .etapes-sem span { border-radius: 999px; padding: 3px 9px; font-weight: 900; font-size: 0.8em; border: 1.5px solid #e3e8ec; background: #f8f9fa; color: #868e96; }
@@ -550,6 +552,11 @@
           <div class="etapes-sem">
             <span v-for="id in D.ORDRE_DIFFICULTES" :key="id" :class="etapeSem(id)">{{ etapeSem(id) === 'fait' ? '✓' : etapeSem(id) === 'ici' ? D.DIFFICULTES[id].ico : '🔒' }} {{ D.DIFFICULTES[id].nom }}</span>
             <span v-if="sem.cle" class="cle">🗝️ clé +{{ sem.cle }}</span>
+          </div>
+          <div class="record-sem" v-if="sem.record">
+            <div><b>🏔️ Plus haut niveau tenté : {{ D.DIFFICULTES[sem.record.dif].ico }} {{ D.DIFFICULTES[sem.record.dif].nom }}<template v-if="sem.record.peril"> +{{ sem.record.peril }}</template></b></div>
+            <div>Meilleur étage atteint : {{ sem.record.etage }}/{{ DJ.NB_ETAGES }} · 💀 {{ sem.record.boss }} boss vaincu{{ sem.record.boss > 1 ? 's' : '' }}<template v-if="sem.record.gagne"> · 🏆 {{ sem.record.gagne }} victoire{{ sem.record.gagne > 1 ? 's' : '' }}</template> · {{ sem.record.essais }} essai{{ sem.record.essais > 1 ? 's' : '' }}</div>
+            <div v-if="sem.dernier" class="dernier">Dernier donjon : {{ D.DIFFICULTES[sem.dernier.dif].nom }}<template v-if="sem.dernier.peril"> +{{ sem.dernier.peril }}</template>, {{ sem.dernier.gagne ? 'gagné 🏆' : 'étage ' + sem.dernier.etage + '/' + DJ.NB_ETAGES + ' atteint' }}</div>
           </div>
           <div class="sous-sem">🧙 Mon héros de la semaine</div>
           <div class="hero-sem" v-if="sem.hero">
@@ -1094,7 +1101,7 @@
     }
     function lireSemaine() {
       var s = lireStockage('donjon-semaine'), l = lundiDe(Date.now());
-      if (!s || s.s !== l) return { s: l, ouvert: 'normal', cle: 0, b: {}, eclats: 0, faits: 0, hero: null };
+      if (!s || s.s !== l) return { s: l, ouvert: 'normal', cle: 0, b: {}, eclats: 0, faits: 0, hero: null, record: null, dernier: null };
       s = Object.assign({ ouvert: 'normal', cle: 0, b: {}, eclats: 0, faits: 0, hero: null }, s);
       delete s.tr;   // trophées de la 1re version (3.29), remplacés par le héros de la semaine (3.30)
       if (s.hero && !(s.hero.classe && Array.isArray(s.hero.paquet) && Array.isArray(s.hero.reliques))) s.hero = null;
@@ -1758,6 +1765,13 @@
           g.eclats = bossVaincus * DJ.D.SEMAINE.eclats[dif];
           this.majSemaine(s => {
             s.faits = (s.faits || 0) + 1; s.eclats += g.eclats;
+            // Le plus haut niveau tenté de la semaine et le dernier donjon (3.34, demandé par l'utilisateur) :
+            // niveau = difficulté puis clé ; sur ce niveau on cumule les essais et les boss vaincus, et l'on garde le meilleur étage
+            var etage = gagne ? DJ.NB_ETAGES : ((p.fin && p.fin.etage) || p.etage || 1), niv = O.indexOf(dif) * 100 + (dif === 'mythique' ? (p.peril || 0) : 0);
+            s.dernier = { dif: dif, peril: dif === 'mythique' ? (p.peril || 0) : 0, etage: etage, gagne: gagne };
+            var r = s.record;
+            if (!r || niv > r.niv) s.record = { niv: niv, dif: dif, peril: s.dernier.peril, essais: 1, etage: etage, boss: bossVaincus, gagne: gagne ? 1 : 0 };
+            else if (niv === r.niv) { r.essais++; r.etage = Math.max(r.etage, etage); r.boss += bossVaincus; if (gagne) r.gagne++; }
             if (!gagne) return;
             var suiv = O[Math.min(O.length - 1, O.indexOf(dif) + 1)];
             if (O.indexOf(suiv) > O.indexOf(s.ouvert)) { s.ouvert = suiv; g.ouvre = suiv; }
