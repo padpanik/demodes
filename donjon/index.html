@@ -445,6 +445,30 @@
     .boite-dj ul { text-align: left; font-size: 0.9em; padding-left: 20px; line-height: 1.5; color: #3b2a1e; }
     .boite-dj .btn { width: 100%; margin-top: 8px; background: #fff8ee; border: 1.5px solid #c9b08f; color: #3b2a1e; }
     .boite-dj .btn.principal { background: linear-gradient(#c2410c, #9a3412); border-color: #7c2d12; color: #fff; }
+    .voile-dj .boite-dj { max-height: 100%; overflow-y: auto; }
+    /* Ma semaine (3.29) */
+    .semaine-dj .titre-carte small { font-weight: 700; color: #7f8c8d; font-size: 0.75em; margin-left: 6px; }
+    .etapes-sem { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 4px; }
+    .etapes-sem span { border-radius: 999px; padding: 3px 9px; font-weight: 900; font-size: 0.8em; border: 1.5px solid #e3e8ec; background: #f8f9fa; color: #868e96; }
+    .etapes-sem span.fait { border-color: #2f9e44; background: #ebfbee; color: #2b8a3e; }
+    .etapes-sem span.ici { border-color: #e8590c; background: #fff4e6; color: #d9480f; }
+    .etapes-sem span.cle { border-color: #b197fc; background: #f3f0ff; color: #5f3dc4; }
+    .sous-sem { font-weight: 900; margin-top: 12px; color: #2c3e50; font-size: 0.92em; }
+    .tuiles-tr { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
+    .tuiles-tr button { border: 2px solid #e3c77a; background: #fff9db; border-radius: 12px; padding: 5px 9px; font: inherit; font-weight: 800; font-size: 0.85em; cursor: pointer; color: #5c3d00; }
+    .tuiles-tr button.carte-tr { border-color: #a5d8ff; background: #e7f5ff; color: #1864ab; }
+    .tuiles-tr button.actif { box-shadow: 0 0 0 3px #e8590c; }
+    .bonus-sem { display: flex; align-items: center; gap: 8px; margin-top: 6px; padding: 6px 8px; border-radius: 12px; background: #f8f9fa; }
+    .bonus-sem .ico { font-size: 1.4em; }
+    .bonus-sem .txt { flex: 1; line-height: 1.2; font-size: 0.85em; }
+    .bonus-sem .txt b { display: block; font-size: 1.05em; }
+    .bonus-sem .niv { color: #e8590c; letter-spacing: 1px; }
+    .bonus-sem button { border: none; border-radius: 10px; padding: 6px 10px; font: inherit; font-weight: 900; background: #4dabf7; color: #fff; cursor: pointer; white-space: nowrap; }
+    .bonus-sem button:disabled { background: #dee2e6; color: #868e96; cursor: default; }
+    .diffs-dj button:disabled { opacity: 0.55; cursor: default; }
+    .trophees-fin { margin-top: 8px; padding: 10px; border-radius: 14px; background: rgba(255,255,255,0.55); border: 1.5px dashed #c9b08f; text-align: left; }
+    .trophees-fin .titre-tr { font-weight: 900; font-size: 0.9em; }
+    .trophees-fin .aide { margin-top: 6px; }
   </style>
 </head>
 <body>
@@ -483,9 +507,9 @@
         <!-- Difficulté (3.23, demandé par l'utilisateur) : pour le solo et pour le salon (l'hôte choisit), au-dessus des deux blocs -->
         <section class="carte" v-if="!role && !soloEnCours">
           <div class="titre-carte">Difficulté</div>
-          <div class="diffs-dj"><button v-for="id in D.ORDRE_DIFFICULTES" :key="id" :class="['d-' + id, { actif: difficulte === id }]" @click="difficulte = id">
-              <span class="ico">{{ D.DIFFICULTES[id].ico }}</span><b>{{ D.DIFFICULTES[id].nom }}</b><small>✨ ×{{ String(D.DIFFICULTES[id].poussieres).replace('.', ',') }}</small></button></div>
-            <div class="aide">{{ D.DIFFICULTES[difficulte].texte }} · poussières d'étoile ×{{ String(D.DIFFICULTES[difficulte].poussieres).replace('.', ',') }} à la fin.</div>
+          <div class="diffs-dj"><button v-for="id in D.ORDRE_DIFFICULTES" :key="id" :class="['d-' + id, { actif: difficulte === id }]" :disabled="!ouverte(id)" @click="difficulte = id">
+              <span class="ico">{{ ouverte(id) ? D.DIFFICULTES[id].ico : '🔒' }}</span><b>{{ D.DIFFICULTES[id].nom }}</b><small>{{ ouverte(id) ? '✨ ×' + String(D.DIFFICULTES[id].poussieres).replace('.', ',') : 'cette semaine' }}</small></button></div>
+            <div class="aide">{{ D.DIFFICULTES[difficulte].texte }} · poussières d'étoile ×{{ String(D.DIFFICULTES[difficulte].poussieres).replace('.', ',') }} à la fin.<template v-if="prochaineOuverture"> {{ prochaineOuverture }}</template></div>
             <!-- Clé mythique (3.24) : seulement en Mythique, sous le choix de difficulté -->
             <div v-if="difficulte === 'mythique'" class="cle-dj">
               <div class="titre-cle">🗝️ Clé mythique</div>
@@ -493,8 +517,31 @@
                 <div class="perils"><button v-for="n in perilMax + 1" :key="n" :class="{ actif: peril === n - 1 }" @click="peril = n - 1">+{{ n - 1 }}</button></div>
                 <div class="aide">{{ peril ? 'Clé +' + peril + ' : ' + D.PERILS[peril] + (peril > 1 ? ' (et les épreuves des clés d\'avant)' : '') + '.' : 'Clé +0 : le Mythique tel quel.' }}</div>
               </template>
-              <div v-else class="aide" style="margin-top:2px">Gagne un donjon en Mythique pour obtenir la clé +1 : chaque clé ajoute une épreuve (jusqu'à +{{ D.PERILS.length - 1 }}).</div>
+              <div v-else class="aide" style="margin-top:2px">Gagne un donjon en Mythique cette semaine pour obtenir la clé +1 : chaque clé ajoute une épreuve (jusqu'à +{{ D.PERILS.length - 1 }}). Les clés repartent de zéro le lundi.</div>
             </div>
+        </section>
+
+        <!-- Ma semaine (3.29, demandé par l'utilisateur) : progression du lundi au dimanche, trophées et éclats gardés d'un donjon à l'autre -->
+        <section class="carte semaine-dj" v-if="!role">
+          <div class="titre-carte">📅 Ma semaine<small>jusqu'à dimanche soir</small></div>
+          <div class="etapes-sem">
+            <span v-for="id in D.ORDRE_DIFFICULTES" :key="id" :class="etapeSem(id)">{{ etapeSem(id) === 'fait' ? '✓' : etapeSem(id) === 'ici' ? D.DIFFICULTES[id].ico : '🔒' }} {{ D.DIFFICULTES[id].nom }}</span>
+            <span v-if="sem.cle" class="cle">🗝️ clé +{{ sem.cle }}</span>
+          </div>
+          <div class="sous-sem">🏅 Trophées ({{ sem.tr.length }}/{{ D.SEMAINE.trophees }})</div>
+          <div class="tuiles-tr" v-if="sem.tr.length">
+            <button v-for="(t, k) in sem.tr" :key="t[0] + t[1]" :class="{ 'carte-tr': t[0] === 'c', actif: trSel === k }" @click="voirTrophee(k)">{{ icoTr(t) }} {{ nomTr(t) }}</button>
+          </div>
+          <div class="aide" v-if="trSel !== null && sem.tr[trSel]">{{ texteTr(sem.tr[trSel]) }} <button class="lien-profil" @click="lacherTrophee(trSel)">✕ Le laisser</button></div>
+          <div class="aide" v-if="!sem.tr.length">À la fin de chaque donjon, gagné ou perdu, tu gardes une relique ou une carte trouvée : elle repart avec toi dans les donjons suivants de la semaine.</div>
+          <div class="sous-sem">💠 Éclats : {{ sem.eclats }}</div>
+          <div class="bonus-sem" v-for="(B, k) in D.SEMAINE.bonus" :key="k">
+            <span class="ico">{{ B.ico }}</span>
+            <span class="txt"><b>{{ B.nom }} <span class="niv">{{ '●'.repeat(sem.b[k] || 0) + '○'.repeat(B.max - (sem.b[k] || 0)) }}</span></b>{{ B.texte }}{{ B.max > 1 ? ' (par niveau)' : '' }}</span>
+            <button v-if="(sem.b[k] || 0) < B.max" :disabled="sem.eclats < B.prix[sem.b[k] || 0]" @click="acheterBonus(k)">💠 {{ B.prix[sem.b[k] || 0] }}</button>
+            <button v-else disabled>✓</button>
+          </div>
+          <div class="aide">Chaque boss vaincu donne des éclats ({{ D.SEMAINE.eclats.normal }} en Normal, {{ D.SEMAINE.eclats.heroique }} en Héroïque, {{ D.SEMAINE.eclats.mythique }} en Mythique). Gagner un donjon ouvre la difficulté suivante. Lundi, tout repart de zéro. Entre amis, chacun vient avec ses propres avantages.</div>
         </section>
 
         <template v-if="!role">
@@ -548,9 +595,9 @@
           <div v-else class="aide">L'hôte lance l'exploration quand tout le monde est là.</div>
           <div class="aide">Le donjon est tiré au hasard selon les pouvoirs du groupe : il y aura toujours de quoi passer. Les monstres ont plus de PV et frappent plus fort à plusieurs, selon la difficulté.</div>
           <div class="titre-carte" style="margin-top:12px">Difficulté</div>
-          <template v-if="role === 'hote'"><div class="diffs-dj"><button v-for="id in D.ORDRE_DIFFICULTES" :key="id" :class="['d-' + id, { actif: difficulte === id }]" @click="difficulte = id">
-              <span class="ico">{{ D.DIFFICULTES[id].ico }}</span><b>{{ D.DIFFICULTES[id].nom }}</b><small>✨ ×{{ String(D.DIFFICULTES[id].poussieres).replace('.', ',') }}</small></button></div>
-            <div class="aide">{{ D.DIFFICULTES[difficulte].texte }} · poussières d'étoile ×{{ String(D.DIFFICULTES[difficulte].poussieres).replace('.', ',') }} à la fin.</div>
+          <template v-if="role === 'hote'"><div class="diffs-dj"><button v-for="id in D.ORDRE_DIFFICULTES" :key="id" :class="['d-' + id, { actif: difficulte === id }]" :disabled="!ouverte(id)" @click="difficulte = id">
+              <span class="ico">{{ ouverte(id) ? D.DIFFICULTES[id].ico : '🔒' }}</span><b>{{ D.DIFFICULTES[id].nom }}</b><small>{{ ouverte(id) ? '✨ ×' + String(D.DIFFICULTES[id].poussieres).replace('.', ',') : 'cette semaine' }}</small></button></div>
+            <div class="aide">{{ D.DIFFICULTES[difficulte].texte }} · poussières d'étoile ×{{ String(D.DIFFICULTES[difficulte].poussieres).replace('.', ',') }} à la fin.<template v-if="prochaineOuverture"> {{ prochaineOuverture }}</template></div>
             <!-- Clé mythique (3.24) : seulement en Mythique, sous le choix de difficulté -->
             <div v-if="difficulte === 'mythique'" class="cle-dj">
               <div class="titre-cle">🗝️ Clé mythique</div>
@@ -558,7 +605,7 @@
                 <div class="perils"><button v-for="n in perilMax + 1" :key="n" :class="{ actif: peril === n - 1 }" @click="peril = n - 1">+{{ n - 1 }}</button></div>
                 <div class="aide">{{ peril ? 'Clé +' + peril + ' : ' + D.PERILS[peril] + (peril > 1 ? ' (et les épreuves des clés d\'avant)' : '') + '.' : 'Clé +0 : le Mythique tel quel.' }}</div>
               </template>
-              <div v-else class="aide" style="margin-top:2px">Gagne un donjon en Mythique pour obtenir la clé +1 : chaque clé ajoute une épreuve (jusqu'à +{{ D.PERILS.length - 1 }}).</div>
+              <div v-else class="aide" style="margin-top:2px">Gagne un donjon en Mythique cette semaine pour obtenir la clé +1 : chaque clé ajoute une épreuve (jusqu'à +{{ D.PERILS.length - 1 }}). Les clés repartent de zéro le lundi.</div>
             </div></template>
           <div v-else class="aide" style="margin-top:0">{{ D.DIFFICULTES[difficulteSalon].ico }} {{ D.DIFFICULTES[difficulteSalon].nom }}<template v-if="difficulteSalon === 'mythique' && cleSalon"> · 🗝️ clé +{{ cleSalon }}</template> : {{ D.DIFFICULTES[difficulteSalon].texte.toLowerCase() }} (choisie par l'hôte).</div>
 
@@ -871,7 +918,21 @@
               <li v-if="gains.partie">⭐ {{ gains.partie }}</li>
               <li v-if="gains.souvenir">{{ gains.souvenir.ico }} Souvenir : {{ gains.souvenir.nom }} (dans la maison de {{ monCp.n }})</li>
               <li v-if="gains.peril">🗝️ Nouvelle clé mythique : +{{ gains.peril }} ({{ D.PERILS[gains.peril] }})</li>
+              <li v-if="gains.eclats">💠 +{{ gains.eclats }} éclat{{ gains.eclats > 1 ? 's' : '' }} pour la semaine (boss vaincus)</li>
+              <li v-if="gains.ouvre">🔓 {{ D.DIFFICULTES[gains.ouvre].nom }} est ouvert pour la semaine !</li>
+              <li v-if="gains.trophee">🏅 Trophée gardé : {{ icoTr(gains.trophee) }} {{ nomTr(gains.trophee) }}</li>
             </ul>
+            <div class="trophees-fin" v-if="gains.trophees && gains.trophees.length && !gains.trophee && !gains.tropheePasse">
+              <div class="titre-tr">🏅 Garde un trophée pour tes prochains donjons de la semaine ({{ sem.tr.length }}/{{ D.SEMAINE.trophees }})</div>
+              <div class="tuiles-tr"><button v-for="(t, k) in gains.trophees" :key="t[0] + t[1]" :class="{ 'carte-tr': t[0] === 'c', actif: tropheeFin === k }" @click="tropheeFin = k">{{ icoTr(t) }} {{ nomTr(t) }}</button></div>
+              <div class="aide" v-if="tropheeFin !== null">{{ texteTr(gains.trophees[tropheeFin]) }}</div>
+              <template v-if="tropheeFin !== null">
+                <button v-if="sem.tr.length < D.SEMAINE.trophees" class="btn principal" @click="garderTrophee(null)">🏅 Garder : {{ nomTr(gains.trophees[tropheeFin]) }}</button>
+                <template v-else><div class="aide">Ta vitrine est pleine : touche le trophée à remplacer.</div>
+                  <div class="tuiles-tr"><button v-for="(t, k) in sem.tr" :key="'r' + k" :class="{ 'carte-tr': t[0] === 'c' }" @click="garderTrophee(k)">↔ {{ icoTr(t) }} {{ nomTr(t) }}</button></div></template>
+              </template>
+              <button class="btn" @click="passerTrophee">Ne rien garder</button>
+            </div>
             <button v-if="!solo && role === 'hote'" class="btn principal" @click="envoyerJeu({ type: 'NOUVELLE' })">🔁 Nouveau donjon</button>
             <button v-if="solo" class="btn principal" @click="nouveauSolo">🔁 Nouveau donjon</button>
             <div v-if="!solo && role !== 'hote'" class="aide">L'hôte peut relancer un nouveau donjon.</div>
@@ -912,7 +973,8 @@
             <li><strong>Fioles</strong> (2 emplacements) : à boire pendant ton tour ; la fiole de soin se boit aussi hors combat.</li>
             <li>Difficulté, choisie avant d'entrer (par l'hôte dans un salon) : 🛡️ Normal (monstres un peu plus doux ; poussières ×0,7), ⚔️ Héroïque (le défi prévu ; ×1), 💀 Mythique (monstres plus coriaces ; ×1,5). En Mythique, on choisit aussi sa clé.</li>
             <li>À plusieurs : chacun a ses cartes, son or et ses reliques ; les monstres ont plus de PV et frappent plus fort selon la difficulté et le nombre de joueurs <strong>présents dans le combat</strong> (seul dans la pièce, on les affronte comme en solo) ; leurs coups de zone ne sont pas renforcés ; le poison les ronge moins. Après un combat gagné ensemble, chacun reprend 10 % de ses PV. Une grille ⛓️ s'ouvre à deux sur les dalles. Un ami KO revient en fin de combat gagné, avec un Trèfle, ou si un ami reste 2 s à côté de lui. Tout le groupe KO : fin.</li>
-            <li><strong>Clé mythique</strong> : gagner un donjon en Mythique avec sa plus haute clé donne la clé suivante (jusqu'à +{{ D.PERILS.length - 1 }}). Chaque clé ajoute une épreuve, et elles se cumulent : +1 monstres ordinaires +10 % de PV, +2 élites et boss +10 %, +3 feu de camp 25 %, +4 monstres +1 par coup, +5 une Blessure et −10 % de PV au départ.</li>
+            <li><strong>Ma semaine</strong> (du lundi au dimanche) : lundi, seul Normal est ouvert. Gagner un donjon en Normal ouvre Héroïque, gagner en Héroïque ouvre Mythique (entre amis, la victoire compte pour chacun). À la fin de chaque donjon, gagné ou perdu, on garde un <strong>trophée</strong> : une relique (commune ou peu commune) ou une carte gagnée, {{ D.SEMAINE.trophees }} au plus, qui repartent avec nous. Chaque boss vaincu donne des <strong>éclats</strong> ({{ D.SEMAINE.eclats.normal }} en Normal, {{ D.SEMAINE.eclats.heroique }} en Héroïque, {{ D.SEMAINE.eclats.mythique }} en Mythique), qui achètent des bonus de départ dans l'onglet Partie. Lundi, tout repart de zéro.</li>
+            <li><strong>Clé mythique</strong> : gagner un donjon en Mythique avec la clé +N donne la clé +N+1 pour la semaine (jusqu'à +{{ D.PERILS.length - 1 }}). Chaque clé ajoute une épreuve, et elles se cumulent : <template v-for="(t, k) in D.PERILS.slice(1)">{{ k ? ' ; ' : '' }}+{{ k + 1 }} {{ t.charAt(0).toLowerCase() + t.slice(1) }}</template>.</li>
             <li>À la fin, chacun garde les poussières d'étoile (5 poussières = 1 ⭐, comme en expédition). Donjon vaincu : un souvenir pour la maison de ton compagnon.</li>
           </ul>
         </section>
@@ -968,6 +1030,18 @@
     let pubHote = null;       // salle d'attente : { ordre, cps, phase, partieId }
     let partieHote = null;    // le donjon en cours (DJ), chez l'hôte ou en solo
     let salle = { infos: {} };
+    let avsSalon = {};        // chez l'hôte : les avantages de la semaine de chaque joueur (3.29)
+
+    // ---------- Ma semaine (3.29) : du lundi au dimanche, sur ce téléphone ----------
+    function lundiDe(t) {
+      var d = new Date(t); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() - (d.getDay() + 6) % 7);
+      return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+    }
+    function lireSemaine() {
+      var s = lireStockage('donjon-semaine'), l = lundiDe(Date.now());
+      if (!s || s.s !== l) return { s: l, ouvert: 'normal', cle: 0, tr: [], b: {}, eclats: 0, faits: 0 };
+      return Object.assign({ ouvert: 'normal', cle: 0, tr: [], b: {}, eclats: 0, faits: 0 }, s);
+    }
     var cacheDessins = {};
 
     // Une carte du donjon (main, butin, marchand, paquet)
@@ -1001,8 +1075,9 @@
         choixMenu: null,      // carte choisie dans une fenêtre (butin, marchand, paquet)
         voirPaquet: false,
         infoTxt: '', infoFiole: null,
-        peril: Math.min(lireStockage('donjon-peril-choisi') || 0, lireStockage('donjon-peril') || 0),
-        perilMax: lireStockage('donjon-peril') || 0,   // niveau de péril débloqué (gagner en solo débloque le suivant)
+        sem: lireSemaine(),   // ma semaine (3.29) : difficulté ouverte, clé, trophées, éclats et bonus
+        trSel: null, tropheeFin: null,
+        peril: Math.min(lireStockage('donjon-peril-choisi') || 0, lireSemaine().cle),
         vuCombat: null,
         D: DJ.D, MONSTRES: DJ.MONSTRES,
         inverse: lireStockage('donjon-inverse') === true,   // croix à droite (sur ce téléphone)
@@ -1038,6 +1113,12 @@
           return DJ.D.DIFFICULTES[d] ? d : 'heroique';
         },
         difPartie: function() { var d = this.partie && this.partie.difficulte; return DJ.D.DIFFICULTES[d] ? d : 'heroique'; },
+        perilMax: function() { return this.sem.cle || 0; },   // clé mythique obtenue cette semaine
+        avSemaine: function() { return { tr: this.sem.tr, b: this.sem.b }; },
+        prochaineOuverture: function() {
+          var o = this.sem.ouvert;
+          return o === 'normal' ? '🔒 Gagne un donjon en Normal pour ouvrir Héroïque cette semaine.' : o === 'heroique' ? '🔒 Gagne un donjon en Héroïque pour ouvrir Mythique.' : '';
+        },
         cleSalon: function() { return (this.partie ? this.partie.peril : this.pub && this.pub.peril) || 0; },
         groupe: function() {
           var p = this.pub;
@@ -1189,6 +1270,11 @@
         vibrationActive: function(v) { ecrireStockage('brillant-vibration', v); if (v) vibrer(40); },
         pseudoInput: function() { this.sauvegarder(); },
         menuCle: function() { this.choixMenu = null; },
+        sem: { immediate: true, handler: function() {
+          if (!this.ouverte(this.difficulte)) this.difficulte = this.sem.ouvert;
+          if (this.peril > this.perilMax) this.peril = this.perilMax;
+          if (this.role === 'client') this.envoyerHote({ action: 'AV', av: this.avSemaine });
+        } },
         peril: function(v) {
           ecrireStockage('donjon-peril-choisi', v);
           if (this.role === 'hote' && pubHote && pubHote.phase === 'attente') { pubHote.peril = v; this.publier(); }
@@ -1393,7 +1479,7 @@
           this.solo = true; this.gains = null;
           this.panne = false; this._erreurs = 0;
           if (s && !DJ.compatible(s)) { ecrireStockage(CLE_SOLO, null); s = null; }   // exploration d'une ancienne version : on repart de zéro
-          partieHote = s && s.phase === 'jeu' ? s : DJ.nouvelle(Math.floor(Math.random() * 1e9), { Moi: this.monCp }, nouvelId(), { peril: this.peril, difficulte: this.difficulte });
+          partieHote = s && s.phase === 'jeu' ? s : DJ.nouvelle(Math.floor(Math.random() * 1e9), { Moi: this.monCp }, nouvelId(), { peril: this.peril, difficulte: this.difficulte, avantages: { Moi: this.avSemaine } });
           if (partieHote.joueurs.Moi) { partieHote.joueurs.Moi.cp = this.monCp; partieHote.joueurs.Moi.surnom = 'L\'explorateur'; }
           this.sel = null;
           partieHote.maintenant = 0;   // l'horloge repart (l'exploration a pu être reprise plus tard)
@@ -1465,6 +1551,46 @@
           if (p.phase !== 'fin') this.gains = null;
         },
 
+        // ================== MA SEMAINE (3.29) ==================
+        ouverte: function(id) { var o = DJ.D.ORDRE_DIFFICULTES; return o.indexOf(id) <= o.indexOf(this.sem.ouvert); },
+        etapeSem: function(id) { var o = DJ.D.ORDRE_DIFFICULTES, i = o.indexOf(id), j = o.indexOf(this.sem.ouvert); return i < j ? 'fait' : i === j ? 'ici' : ''; },
+        majSemaine: function(fn) {
+          var s = lireSemaine();
+          if (fn) fn(s);
+          ecrireStockage('donjon-semaine', s);
+          this.sem = s;
+        },
+        icoTr: function(t) { return t[0] === 'r' ? (DJ.D.RELIQUES[t[1]] || {}).ico : (DJ.carte(t[1]) || {}).ico; },
+        nomTr: function(t) { return t[0] === 'r' ? (DJ.D.RELIQUES[t[1]] || {}).nom : (DJ.carte(t[1]) || {}).nom; },
+        texteTr: function(t) { var x = t[0] === 'r' ? DJ.D.RELIQUES[t[1]] : DJ.carte(t[1]); return x ? (t[0] === 'r' ? 'Relique : ' : 'Carte : ') + x.texte : ''; },
+        voirTrophee: function(k) { this.trSel = this.trSel === k ? null : k; },
+        lacherTrophee: function(k) {
+          var t = this.sem.tr[k];
+          if (!t || !confirm('Laisser ' + this.nomTr(t) + ' ? Il ne viendra plus avec toi cette semaine.')) return;
+          this.majSemaine(s => { s.tr.splice(k, 1); });
+          this.trSel = null;
+        },
+        acheterBonus: function(k) {
+          var B = DJ.D.SEMAINE.bonus[k];
+          this.majSemaine(s => { var n = s.b[k] || 0, prix = B.prix[n]; if (n < B.max && s.eclats >= prix) { s.eclats -= prix; s.b[k] = n + 1; } });
+          this.son('toc'); this.vibre(30);
+        },
+        garderTrophee: function(remplace) {
+          var g = this.gains, t = g && g.trophees && g.trophees[this.tropheeFin];
+          if (!t) return;
+          this.majSemaine(s => {
+            if (s.tr.length < DJ.D.SEMAINE.trophees) s.tr.push(t);
+            else if (remplace !== null && s.tr[remplace]) s.tr.splice(remplace, 1, t);
+          });
+          this.gains = Object.assign({}, g, { trophee: t });
+          this.tropheeFin = null;
+          if (this.partie) ecrireStockage('donjon-recompense', { id: this.partie.id, gains: this.gains });
+        },
+        passerTrophee: function() {
+          this.gains = Object.assign({}, this.gains, { tropheePasse: true });
+          if (this.partie) ecrireStockage('donjon-recompense', { id: this.partie.id, gains: this.gains });
+        },
+
         // ================== FIN : récompenses (une fois par donjon, sur chaque téléphone) ==================
         finir: function(p) {
           var gagne = !!(p.fin && p.fin.gagne), multi = !this.solo && Object.keys(p.joueurs).length > 1;
@@ -1480,10 +1606,20 @@
           var donnees = Etoiles.gagneesAujourdhui() - avant;
           Etoiles.finDePartie('Donjon', gagne, multi, p.id, { lieu: 'donjon' });
           var g = { etoiles: conv.etoiles, etoilesDonnees: donnees, reste: conv.reste, partie: multi ? (gagne ? 'Victoire entre amis' : 'Partie entre amis') : (gagne ? 'Victoire en solo' : ''), souvenir: null, peril: 0, poussieres: pous, mult: mult, difficulte: dif };
-          // Victoire en Mythique (seul ou entre amis) avec sa plus haute clé : la clé suivante s'obtient
-          if (gagne && dif === 'mythique' && (p.peril || 0) >= this.perilMax && this.perilMax < DJ.D.PERILS.length - 1) {
-            this.perilMax++; ecrireStockage('donjon-peril', this.perilMax); g.peril = this.perilMax;
-          }
+          // Ma semaine (3.29) : éclats pour chaque boss vaincu ; une victoire ouvre la difficulté suivante (entre amis aussi),
+          // et en Mythique donne la clé d'après celle du donjon. Puis un trophée à choisir parmi ce qu'on a trouvé.
+          var bossVaincus = gagne ? DJ.NB_ETAGES : Math.max(0, ((p.fin && p.fin.etage) || p.etage || 1) - 1), O = DJ.D.ORDRE_DIFFICULTES;
+          g.eclats = bossVaincus * DJ.D.SEMAINE.eclats[dif];
+          this.majSemaine(s => {
+            s.faits = (s.faits || 0) + 1; s.eclats += g.eclats;
+            if (!gagne) return;
+            var suiv = O[Math.min(O.length - 1, O.indexOf(dif) + 1)];
+            if (O.indexOf(suiv) > O.indexOf(s.ouvert)) { s.ouvert = suiv; g.ouvre = suiv; }
+            if (dif === 'mythique') { var k = Math.min(DJ.D.PERILS.length - 1, (p.peril || 0) + 1); if (k > s.cle) { s.cle = k; g.peril = k; } }
+          });
+          var moiJ = p.joueurs && p.joueurs[this.moi];
+          g.trophees = moiJ ? DJ.tropheesPossibles(moiJ, this.sem.tr) : [];
+          this.tropheeFin = null;
           // Souvenir du donjon (boss vaincu) et un peu de faim et de soif pour le compagnon
           var animal = lireStockage('compagnon-animal');
           if (animal && animal.espece && typeof CP !== 'undefined') {
@@ -1553,7 +1689,9 @@
             var presents = {};
             pubHote.ordre.filter(n => this.estConnecte(n)).forEach(n => { presents[n] = pubHote.cps[n] || null; });
             pubHote.partieId = nouvelId();
-            partieHote = DJ.nouvelle(Math.floor(Math.random() * 1e9), presents, pubHote.partieId, { peril: this.peril, difficulte: pubHote.difficulte || this.difficulte });
+            var avs = {};
+            Object.keys(presents).forEach(n => { avs[n] = n === monPseudo ? this.avSemaine : avsSalon[n]; });
+            partieHote = DJ.nouvelle(Math.floor(Math.random() * 1e9), presents, pubHote.partieId, { peril: this.peril, difficulte: pubHote.difficulte || this.difficulte, avantages: avs });
             pubHote.phase = 'jeu';
             this.carteV = 0;
             this.publier();
@@ -1809,10 +1947,14 @@
               pubHote.cps[pseudo] = cp;
               if (pubHote.ordre.indexOf(pseudo) === -1) pubHote.ordre.push(pseudo);
               // Arrivée en cours d'exploration : il entre dans la première pièce
-              if (partieHote && partieHote.phase === 'jeu') { var j = DJ.ajouterJoueur(partieHote, pseudo, cp); j.cp = cp; j.pouvoir = DJ.pouvoirDe(cp); }
+              avsSalon[pseudo] = DJ.nettoyerAvantages(data.av);
+              if (partieHote && partieHote.phase === 'jeu') { var j = DJ.ajouterJoueur(partieHote, pseudo, cp, avsSalon[pseudo]); j.cp = cp; j.pouvoir = DJ.pouvoirDe(cp); }
               this.publier();
               break;
             }
+            case 'AV':   // ses avantages de la semaine ont changé (trophée, bonus) : ils serviront au prochain donjon
+              if (p) avsSalon[p] = DJ.nettoyerAvantages(data.av);
+              break;
             case 'DEPART':
               if (!p) return;
               delete connParPseudo[p];
@@ -1868,7 +2010,7 @@
               this.roomCode = nom;
               this._echecsClient = 0;
               if (!reprise) { this.onglet = 'play'; this.finEntree(true); }
-              conn.send({ action: 'REJOINDRE', pseudo: monPseudo, clientId: clientId, cp: this.monCp });
+              conn.send({ action: 'REJOINDRE', pseudo: monPseudo, clientId: clientId, cp: this.monCp, av: this.avSemaine });
               this.dirCourante = null;
             });
             conn.on('data', (data) => { if (hostConn !== conn) return; dernierMsgHote = Date.now(); this.recevoirDeHote(data); });
@@ -1910,6 +2052,7 @@
         // ---------- Surveillance de la connexion ----------
         battement: function() {
           var maintenant = Date.now();
+          if (this.sem.s !== lundiDe(maintenant)) this.sem = lireSemaine();   // lundi : tout repart de zéro
           // Filet de sécurité (3.28, signalé par l'utilisateur : après un passage dans une autre appli, les deux joueurs ne se retrouvaient jamais) :
           // tant que la connexion n'est pas revenue, un nouvel essai au moins toutes les 20 s, quoi qu'il se soit passé
           if (this.role && this.connexion !== 'ok' && !this._entree && maintenant - (this._dernierEssai || 0) > 20000 && document.visibilityState !== 'hidden') {

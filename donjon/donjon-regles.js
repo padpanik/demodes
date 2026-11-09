@@ -237,7 +237,7 @@ var DJ = (function () {
   // Dégâts de base d'une attaque de monstre (péril 4 : +1 ; seul : selon la difficulté ; à plusieurs : selon le nombre de joueurs du combat)
   // nbCombat = joueurs vivants du combat ; un coup de zone (i.tous) frappe déjà chacun : pas de bonus de groupe (3.26, l'Écrasement faisait 40 à chacun à deux)
   function attaqueMonstre(e, i, nbCombat) {
-    var n = i.att + (e.peril >= 4 ? 1 : 0), d = difficulte(e);
+    var n = i.att + (e.peril >= 3 ? 1 : 0) + (e.peril >= 5 ? 1 : 0), d = difficulte(e);
     if (nbGroupe(e) <= 1) return n * d.solo.deg;
     if (i.tous) return n;
     return n * (1 + d.groupe.deg * Math.max(0, (nbCombat || 1) - 1));
@@ -259,8 +259,9 @@ var DJ = (function () {
   function creerMonstre(e, type, salle, x, y, h) {
     var M = MONSTRES[type], r = M.rang || 'normal';
     var pv = M.pv[0] + entier(h, M.pv[1] - M.pv[0] + 1);
-    if (e.peril >= 1 && r === 'normal') pv *= 1.1;
-    if (e.peril >= 2 && r !== 'normal') pv *= 1.1;
+    if (e.peril >= 1 && r === 'normal') pv *= 1.15;
+    if (e.peril >= 2 && r !== 'normal') pv *= 1.15;
+    if (e.peril >= 4) pv *= 1.1;
     var f = facteurPv(e, nbGroupe(e)), base = pv;
     pv = Math.round(base * f);
     var m = { id: ++e.seq, type: type, salle: salle, x: x, y: y, pv: pv, pvMax: pv, pvBase: base, f: f, pas: 0, dir: 'b', armure: 0, etats: {}, k: 0, mem: {}, intention: null, cible: null };
@@ -278,7 +279,8 @@ var DJ = (function () {
               difficulte: D.DIFFICULTES[options.difficulte] ? options.difficulte : 'heroique',
               nbJ: noms.length, salles: {}, depart: null, bossSalle: null, carteV: 1, ennemis: [], seq: 0, joueurs: {}, cles: 0, grandeCle: false,
               poussiere: 0, objets: [], effets: [], annonces: [], vues: {}, fin: null, debut: 0, maintenant: 0, pouvoirs: pouvoirs, combats: {} };
-    noms.forEach(n => ajouterJoueur(e, n, joueurs[n]));
+    var avs = options.avantages || {};
+    noms.forEach(n => ajouterJoueur(e, n, joueurs[n], avs[n]));
     etageSuivant(e);
     return e;
   }
@@ -311,14 +313,64 @@ var DJ = (function () {
     if (peril >= 5) l.push('blessure');
     return l;
   }
-  function ajouterJoueur(e, nom, cp) {
+  function ajouterJoueur(e, nom, cp, av) {
     if (e.joueurs[nom]) { if (cp) { e.joueurs[nom].cp = cp; } return e.joueurs[nom]; }
     var n = Object.keys(e.joueurs).length, d = DEPARTS[n % DEPARTS.length], pw = pouvoirDe(cp), classe = pw || 'aucune';
-    var pv = Math.round(CLASSES[classe].pv * (e.peril >= 5 ? 0.9 : 1));
-    return (e.joueurs[nom] = { nom: nom, ordre: n, salle: e.depart, x: d[0], y: d[1], dir: 'h', fantome: false, reanim: 0,
+    var pv = CLASSES[classe].pv;
+    var p = (e.joueurs[nom] = { nom: nom, ordre: n, salle: e.depart, x: d[0], y: d[1], dir: 'h', fantome: false, reanim: 0,
       cp: cp || null, pouvoir: pw, classe: classe, pas: 0, d: null, unPas: null, aideT: 0,
       pv: pv, pvMax: pv, or: 40, paquet: paquetDepart(classe, e.peril), reliques: [], fioles: [], fiolesMax: 2, menus: [], faits: {}, boutiques: {}, retraits: 0,
       pioche: [], main: [], defausse: [], epuisees: [], armure: 0, etats: {}, energie: 0, joues: 0, jouesTotal: 0 });
+    appliquerAvantages(e, p, av);
+    return p;
+  }
+
+  // ---------- Avantages de la semaine (3.29) ----------
+  // av = { tr: [['r', relique] | ['c', carte]], b: { pv, or, fiole, aiguise } }, envoyé par chaque téléphone : on le vérifie avant de s'en servir.
+  function nettoyerAvantages(av) {
+    if (!av || typeof av !== 'object') return null;
+    var S = D.SEMAINE, tr = [], b = {};
+    (Array.isArray(av.tr) ? av.tr : []).slice(0, S.trophees).forEach(t => {
+      if (!Array.isArray(t)) return;
+      if (t[0] === 'r' && reliqueTrophee(t[1])) tr.push(['r', t[1]]);
+      if (t[0] === 'c' && trophee(t[1]) && !tr.some(x => x[0] === 'c' && baseCarte(x[1]) === baseCarte(t[1]))) tr.push(['c', t[1]]);
+    });
+    Object.keys(S.bonus).forEach(k => { var n = av.b && av.b[k] | 0; if (n > 0) b[k] = Math.min(n, S.bonus[k].max); });
+    return { tr: tr, b: b };
+  }
+  function reliqueTrophee(id) { return !!(RELIQUES[id] && D.SEMAINE.rarTrophees.indexOf(RELIQUES[id].rar) >= 0); }
+  function baseCarte(id) { return String(id).replace(/\+$/, ''); }
+  // Une carte peut devenir un trophée si elle a été gagnée (pas les cartes de départ ni les malédictions)
+  function trophee(id) {
+    var c = carte(id);
+    if (!c || c.type === 'malediction') return false;
+    var base = String(id).replace(/\+$/, '');
+    if (base === 'griffe' || base === 'bouclier') return false;
+    return !Object.keys(CLASSES).some(k => CLASSES[k].base.indexOf(base) >= 0);
+  }
+  function appliquerAvantages(e, p, av) {
+    av = nettoyerAvantages(av);
+    if (!av) return;
+    var b = av.b, h = hasard((e.graine | 0) * 7 + p.ordre * 101 + 3);
+    var B = D.SEMAINE.bonus;
+    if (b.pv) { p.pvMax += B.pv.val * b.pv; p.pv += B.pv.val * b.pv; }
+    if (b.or) p.or += B.or.val * b.or;
+    for (var i = 0; i < (b.fiole || 0); i++) donnerFiole(e, p, null, h);
+    CLASSES[p.classe].base.slice(0, b.aiguise || 0).forEach(id => { var k = p.paquet.indexOf(id); if (k >= 0 && ameliorable(id)) p.paquet[k] = id + '+'; });
+    av.tr.forEach(t => { if (t[0] === 'r') donnerRelique(e, p, t[1], h); else p.paquet.push(t[1]); });
+    p.semaine = { tr: av.tr.length, b: Object.keys(b).length };
+  }
+  // Les trophées possibles à la fin d'un donjon : ses reliques (sauf de boss) et les cartes gagnées, sans doublon avec ceux qu'on a déjà
+  function tropheesPossibles(p, deja) {
+    var l = [], vu = {};
+    (deja || []).forEach(t => { vu[t[0] + t[1]] = 1; });
+    (deja || []).forEach(t => { if (t[0] === 'c') vu['b' + baseCarte(t[1])] = 1; });
+    (p.reliques || []).forEach(r => { if (reliqueTrophee(r) && !vu['r' + r]) { vu['r' + r] = 1; l.push(['r', r]); } });
+    // Une seule carte de chaque sorte parmi les trophées ; la version améliorée d'abord
+    (p.paquet || []).slice().sort((x, y) => (y.slice(-1) === '+') - (x.slice(-1) === '+')).forEach(c => {
+      if (trophee(c) && !vu['b' + baseCarte(c)]) { vu['b' + baseCarte(c)] = 1; l.push(['c', c]); }
+    });
+    return l;
   }
   // Commandes reçues : direction tenue (ou null au lâcher)
   function entree(e, nom, d) {
@@ -421,7 +473,7 @@ var DJ = (function () {
     return { cartes: cartes, fioles: fioles, relique: rl.length ? { id: auHasard(rl, h), prix: D.PRIX.relique, vendu: false } : null };
   }
   function prixRetrait(p) { return D.PRIX.retrait + 25 * (p.retraits || 0); }
-  function soinFeu(e, p) { if (a(p, 'lampe')) return 0; return Math.round(p.pvMax * (e.peril >= 3 ? 0.25 : 0.3)) + (a(p, 'carte') ? 15 : 0); }
+  function soinFeu(e, p) { if (a(p, 'lampe')) return 0; return Math.round(p.pvMax * (e.peril >= 4 ? 0.2 : 0.3)) + (a(p, 'carte') ? 15 : 0); }
 
   // Choix dans la fenêtre ouverte du joueur (butin, feu de camp, marchand, autel, paquet)
   function choisir(e, nom, action, arg, h) {
@@ -1054,7 +1106,7 @@ var DJ = (function () {
   }
 
   return { W: W, H: H, GX: GX, GY: GY, PAS: PAS, DX: DX, PORTE: PORTE, MARCHABLE: MARCHABLE, POUVOIRS: POUVOIRS, ESPECES: ESPECES, MONSTRES: MONSTRES,
-           D: D, NB_ETAGES: NB_ETAGES, carte: carte, ameliorable: ameliorable, prixRetrait: prixRetrait, soinFeu: soinFeu,
+           D: D, NB_ETAGES: NB_ETAGES, nettoyerAvantages: nettoyerAvantages, tropheesPossibles: tropheesPossibles, trophee: trophee, carte: carte, ameliorable: ameliorable, prixRetrait: prixRetrait, soinFeu: soinFeu,
            pouvoirDe: pouvoirDe, hasard: hasard, generer: generer, nouvelle: nouvelle, ajouterJoueur: ajouterJoueur, entree: entree,
            jouerCarte: jouerCarte, finTour: finTour, utiliserFiole: utiliserFiole, jeterFiole: jeterFiole, choisir: choisir, demarrerCombat: demarrerCombat,
            interagir: interagir, ouvrirCoffre: ouvrirCoffre, tourMonstres: tourMonstres, etageSuivant: etageSuivant, tirerCartes: tirerCartes, donnerRelique: donnerRelique,

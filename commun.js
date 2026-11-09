@@ -3,12 +3,13 @@
 // Les clés de stockage gardent l'ancien préfixe "brillant-" : les réglages déjà faits sont conservés.
 
 // Numéro de version affiché (à augmenter à chaque mise en ligne, avec brilliant/index.html et sw.js)
-const VERSION = '3.28';
+const VERSION = '3.29';
 
 // ---------- Nouveautés (2.87, demandé par l'utilisateur) ----------
 // Une ligne très brève par mise en ligne (la plus récente en haut) : l'accueil les montre une seule fois, dans une petite fenêtre,
 // à qui n'a pas encore vu cette version. [version, jeu ou partie de l'appli, ce qui change]
 const NOUVEAUTES = [
+  ['3.29', 'Donjon', 'Ma semaine : difficultés à ouvrir, trophées et éclats gardés jusqu\'à dimanche.'],
   ['3.28', 'Donjon', 'Reconnexion plus sûre après un passage dans une autre appli ; plus de recherche Google au doigt appuyé.'],
   ['3.27', 'Donjon', 'Les coups annoncés des monstres affichent le même chiffre sur tous les téléphones.'],
   ['3.26', 'Donjon', 'À plusieurs : coups de zone moins violents, monstres à la taille du combat, petit soin après chaque victoire.'],

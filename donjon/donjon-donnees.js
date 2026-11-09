@@ -313,11 +313,11 @@ var DJD = (function () {
 
   var PERILS = [
     'Le Mythique tel quel',
-    'Monstres ordinaires : +10 % de PV',
-    'Élites et boss : +10 % de PV',
-    'Le feu de camp soigne moins (25 % au lieu de 30 %)',
+    'Monstres ordinaires : +15 % de PV',
+    'Élites et boss : +15 % de PV',
     'Tous les monstres frappent 1 de plus',
-    'On part avec une Blessure et 10 % de PV en moins'
+    'Tous les monstres +10 % de PV, le feu de camp soigne 20 % (au lieu de 30 %)',
+    'Une Blessure dans le paquet, et les monstres frappent encore 1 de plus'
   ];
 
   // ---------- Événements (salle de l'autel ❓) ----------
@@ -340,10 +340,26 @@ var DJD = (function () {
       choix: ['En manger (+6 PV max, −5 PV)', 'En cueillir (une fiole au hasard)'] }
   };
 
+  // ---------- La semaine (3.29, demandé par l'utilisateur : progresser du lundi au dimanche, en gardant des avantages d'un donjon à l'autre) ----------
+  // Lundi : tout repart de zéro, seul Normal est ouvert. Gagner un Normal ouvre Héroïque, gagner un Héroïque ouvre Mythique,
+  // gagner un Mythique à sa clé donne la suivante (+1 à +5). Chaque donjon fini (gagné ou perdu) laisse un trophée au choix
+  // (une relique ou une carte gagnée, 3 au plus dans la semaine) ; chaque boss vaincu donne des éclats, qui achètent des bonus de départ.
+  var SEMAINE = {
+    trophees: 3,
+    rarTrophees: ['c', 'u'],   // reliques qu'on peut garder : communes et peu communes (les rares restent une trouvaille du donjon)
+    eclats: { normal: 1, heroique: 2, mythique: 3 },   // par boss vaincu
+    bonus: {
+      pv:      { nom: 'Robustesse',   ico: '❤️', max: 3, val: 3,  prix: [2, 3, 4], texte: '+3 PV max au départ' },
+      or:      { nom: 'Bourse',       ico: '🪙', max: 2, val: 20, prix: [1, 2],    texte: '+20 or au départ' },
+      fiole:   { nom: 'Provisions',   ico: '🧪', max: 1, prix: [3],       texte: 'Une fiole au hasard au départ' },
+      aiguise: { nom: 'Entraînement', ico: '⬆️', max: 1, prix: [4],       texte: 'La 1re carte de base de ta classe améliorée au départ' }
+    }
+  };
+
   // ---------- Prix chez le marchand ----------
   var PRIX = { c: 45, u: 70, r: 120, fiole: 40, relique: 150, retrait: 70 };
 
   return { ETATS: ETATS, CLASSES: CLASSES, CARTES: CARTES, FIOLES: FIOLES, RELIQUES: RELIQUES, MONSTRES: MONSTRES,
-           ETAGES: ETAGES, PERILS: PERILS, DIFFICULTES: DIFFICULTES, ORDRE_DIFFICULTES: ORDRE_DIFFICULTES, POISON_GROUPE: POISON_GROUPE, SOIN_GROUPE: SOIN_GROUPE, EVENEMENTS: EVENEMENTS, PRIX: PRIX };
+           ETAGES: ETAGES, PERILS: PERILS, DIFFICULTES: DIFFICULTES, ORDRE_DIFFICULTES: ORDRE_DIFFICULTES, POISON_GROUPE: POISON_GROUPE, SOIN_GROUPE: SOIN_GROUPE, SEMAINE: SEMAINE, EVENEMENTS: EVENEMENTS, PRIX: PRIX };
 })();
 if (typeof module !== 'undefined') module.exports = DJD;

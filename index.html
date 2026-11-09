@@ -592,6 +592,11 @@
           r.sous = cl ? 'Son pouvoir : ' + cl : a ? '3 étages, la Liche au fond' : 'Adopte un compagnon !';
           r.pastille = enCours ? '● Reprendre ›' : st.gagnes ? '🏆 ' + st.gagnes + ' vaincu' + (st.gagnes > 1 ? 's' : '') + ' · Entrer ›'
                      : st.record ? 'Record : étage ' + st.record + ' ›' : 'Entrer ›';
+          // Ma semaine au donjon (3.29) : la difficulté ouverte ou la clé de cette semaine
+          var sem = lireStockage('donjon-semaine'), d = new Date(); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() - (d.getDay() + 6) % 7);
+          var lundi = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+          if (!enCours && sem && sem.s === lundi && (sem.cle || sem.ouvert !== 'normal'))
+            r.pastille = (sem.cle ? '💀 Clé +' + sem.cle : sem.ouvert === 'mythique' ? '💀 Mythique ouvert' : '⚔️ Héroïque ouvert') + ' · Entrer ›';
           r.enCours = enCours;
           r.scene = sceneDonjon(a && typeof CP !== 'undefined' ? CP.dessin(a, 'content', false) : '');
           return r;
