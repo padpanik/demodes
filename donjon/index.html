@@ -534,7 +534,9 @@
     .plan-regle { position: absolute; left: 8px; right: 8px; bottom: 6px; z-index: 1; text-align: center; font-size: 0.72em; color: #e5dbff; background: rgba(59,42,110,0.82); border: 1px solid #845ef7; border-radius: 9px; padding: 2px 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .plan-dj.avec-regle .plan-svg { bottom: 28px; }
     .etats-c span.regle-c { background: #5f3dc4; color: #fff; white-space: nowrap; }
+    .etats-c span.regle-c.haute { background: #1c7ed6; }
     .etats-c span.regle-c.menace { background: #c2255c; animation: appel-c 0.7s ease-in-out infinite alternate; }
+    .a-lire .texte-lire { font-size: 1.08em; line-height: 1.45; margin: 4px 0 12px; }
     .regle-entree { margin-top: 6px; background: #f3f0ff; border: 1.5px solid #845ef7; border-radius: 10px; padding: 5px 8px; font-size: 0.86em; color: #3b2a6e; }
     .regle-entree.grande { font-size: 0.95em; line-height: 1.4; padding: 9px 10px; text-align: left; }
     .regle-entree.grande b { display: block; margin-bottom: 3px; }
@@ -820,7 +822,7 @@
                 <span class="moi-av" :class="{ touche: toucheC(moi) }" v-if="monJ.cp" v-html="dessinSvg(monJ.cp)"></span>
                 <div class="corps">
                   <span class="pv-dj"><i :style="{ width: pct(monJ.pv, monJ.pvMax) }"></i><b>❤️ {{ monJ.pv }} / {{ monJ.pvMax }}</b></span>
-                  <span class="etats-c"><span v-if="monJ.armure" class="armure-m">🛡️ {{ monJ.armure }}</span><span v-if="regle" class="regle-c" :class="{ menace: sporesMenace }" @click.stop="info(regle.ico + ' Règle du lieu, ' + regle.nom + ' : ' + regle.texte)">{{ regle.ico }}<template v-if="sporesMenace"> sans armure : ☠️+{{ regle.poison }}</template></span><span v-for="(n, et) in monJ.etats" :key="et" @click.stop="infoEtat(et, n)">{{ D.ETATS[et] ? D.ETATS[et].ico : '' }}{{ n }}</span></span>
+                  <span class="etats-c"><span v-if="monJ.armure" class="armure-m">🛡️ {{ monJ.armure }}</span><span v-if="regle" class="regle-c" :class="regleAlerte.cl" @click.stop="info(regle.ico + ' Règle du lieu, ' + regle.nom + ' : ' + regle.texte)">{{ regle.ico }}{{ regleAlerte.txt }}</span><span v-for="(n, et) in monJ.etats" :key="et" v-show="et !== 'maree'" @click.stop="infoEtat(et, n)">{{ D.ETATS[et] ? D.ETATS[et].ico : '' }}{{ n }}</span></span>
                 </div>
                 <span v-for="k in fxSur(moi)" :key="'x' + k.id" class="coup-flottant" :class="k.cl">{{ k.v }}</span>
               </div>
@@ -933,6 +935,16 @@
               <button class="btn" @click="menuJeu = false; onglet = 'regles'">📖 Règles du donjon</button>
               <button class="btn quitter-menu" @click="menuJeu = false; demandeQuitter = true">🏳️ Quitter le donjon</button>
             </div>
+          </div>
+        </div>
+
+        <!-- Message à lire (3.42, demandé par l'utilisateur : coffre maudit, trouvailles, issue d'un événement… le message à côté de la croix disparaissait trop vite) :
+             une fenêtre à fermer, une à la fois ; le bouton ne répond qu'au bout de 0,6 s (doigt resté sur la croix) -->
+        <div class="voile-dj entree-combat a-lire" v-if="aLire.length && partie && partie.phase === 'jeu'">
+          <div class="boite-dj">
+            <div class="grand">{{ aLireAff.ico }}</div>
+            <div class="texte-lire">{{ aLireAff.txt }}</div>
+            <button class="btn principal" @click="fermerALire">{{ aLire.length > 1 ? 'Suite (' + (aLire.length - 1) + ') →' : 'OK' }}</button>
           </div>
         </div>
 
@@ -1131,7 +1143,7 @@
         <section class="carte regles">
           <div class="titre-carte">Règles</div>
           <ul>
-            <li>Le donjon a <strong>3 étages</strong> : 🕳️ les Caves, ⚰️ les Catacombes, 🏰 la Forteresse. <strong>Un étage peut être un autre lieu</strong>, tiré au hasard à chaque donjon, avec ses monstres, son boss et sa <strong>règle</strong> : 🍄 la Champignonnière à la place des Caves (<em>Spores</em> : qui finit son tour sans armure reçoit ☠️ Poison 1, les monstres aussi ; boss : le Grand Mycélium). D'autres lieux arrivent. Chaque étage se visite pièce par pièce (la petite carte en haut à droite montre les pièces vues). Un <strong>élite ⭐</strong> garde la grande clé 🔑 qui ouvre la porte du <strong>boss 👑</strong> ; le boss vaincu, un escalier 🪜 descend à l'étage suivant (la moitié des PV perdus revient). Vaincre le boss du dernier étage (la Liche, au fond de la Forteresse) gagne le donjon.</li>
+            <li>Le donjon a <strong>3 étages</strong> : 🕳️ les Caves, ⚰️ les Catacombes, 🏰 la Forteresse. <strong>Un étage peut être un autre lieu</strong>, tiré au hasard à chaque donjon, avec ses monstres, son boss et sa <strong>règle</strong> : à la place des Caves, 🍄 la Champignonnière (<em>Spores</em> : qui finit son tour sans armure reçoit ☠️ Poison 1, les monstres aussi ; boss : le Grand Mycélium) ou 🌊 la Rivière souterraine (<em>Marée</em> : un tour sur deux, marée haute, tous les coups font 25 % de dégâts en moins, les tiens comme ceux des monstres ; boss : la Pieuvre des profondeurs, dont il faut couper les tentacules). D'autres lieux arrivent. Chaque étage se visite pièce par pièce (la petite carte en haut à droite montre les pièces vues). Un <strong>élite ⭐</strong> garde la grande clé 🔑 qui ouvre la porte du <strong>boss 👑</strong> ; le boss vaincu, un escalier 🪜 descend à l'étage suivant (la moitié des PV perdus revient). Vaincre le boss du dernier étage (la Liche, au fond de la Forteresse) gagne le donjon.</li>
             <li>La croix fait avancer ton compagnon (garde le doigt pour marcher). Le bouton ⇄ la met de l'autre côté.</li>
             <li><strong>Chaque compagnon a un pouvoir</strong>, qui ouvre un obstacle (fonce dedans) et donne sa <strong>classe de cartes</strong> :
               🔥 <strong>Feu</strong> (dragon, chat, oie : ronces) brûle tous les monstres ·
@@ -1261,6 +1273,7 @@
         coupActif: false,
         demandeQuitter: false,
         entreeCombat: null,
+        aLire: [],           // messages du moteur à lire dans une fenêtre (annonces marquées « lire » pour moi), dans l'ordre (3.42)
         lieuAnnonce: null,   // { cle, t } : la fenêtre qui présente un lieu à règle, une fois par étage (3.41)
         diagT: 0,
         chatVisible: false,      // la discussion du salon est ouverte par-dessus le jeu (3.33)
@@ -1323,7 +1336,7 @@
         monstresIci: function() { var s = this.monJ && this.monJ.salle; return this.partie.ennemis.filter(m => m.salle === s); },
         objetsIci: function() { var s = this.monJ && this.monJ.salle; return this.partie.objets.filter(o => o.salle === s); },
         effetsIci: function() { var s = this.monJ && this.monJ.salle; return this.partie.effets.filter(f => f.salle === s); },
-        annoncesVues: function() { var t = this.partie.maintenant; return this.partie.annonces.filter(a => (!a.pour || a.pour === this.moi) && t - a.t < 4500).slice(-2); },
+        annoncesVues: function() { var t = this.partie.maintenant; return this.partie.annonces.filter(a => (!a.pour || a.pour === this.moi) && t - a.t < 4500 && !this.pourMoiALire(a)).slice(-2); },
         alliesHaut: function() { return !!(this.combat && this.jeJoue && this.allies.length); },
         // Les amis (3.37) : leurs barres de vie, en combat (dans la fiche du haut, à la place de ma barre déjà montrée près des cartes) et en exploration
         allies: function() {
@@ -1442,6 +1455,14 @@
         regle: function() { return this.partie && this.partie.phase === 'jeu' ? DJ.regleLieu(this.partie) : null; },
         // Spores : je vais finir mon tour sans armure (le poison m'attend)
         sporesMenace: function() { return !!(this.regle && this.regle.poison && this.combat && this.jeJoue && this.monJ && !this.monJ.armure && !this.combat.fini[this.moi]); },
+        // Ce que la règle du lieu veut dire maintenant, dans ma ligne de combat : { txt, cl }
+        regleAlerte: function() {
+          var R = this.regle, c = this.combat;
+          if (!R || !c) return { txt: '', cl: '' };
+          if (R.poison) return this.sporesMenace ? { txt: ' sans armure : ☠️+' + R.poison, cl: 'menace' } : { txt: '', cl: '' };
+          if (R.maree) return c.maree ? { txt: ' marée haute : coups −25 %', cl: 'haute' } : { txt: ' marée basse · haute au tour suivant', cl: '' };
+          return { txt: '', cl: '' };
+        },
         fondCombat: function() {
           var E = this.lieu;
           return E ? { background: 'radial-gradient(ellipse at 50% 28%, ' + E.sol[1] + ' 0%, ' + E.mur[0] + ' 62%, #0b0806 100%)' } : {};
@@ -1450,6 +1471,10 @@
         decorCombat: function() {
           var E = this.lieu;
           return E && this.combat ? DJS.decor(this.partie.etage, E.sol, E.mur, this.combat.rang, E.decor) : '';
+        },
+        aLireAff: function() {
+          var t = this.aLire.length ? this.aLire[0].txt : '', k = t.indexOf(' ');
+          return k > 0 && k <= 4 ? { ico: t.slice(0, k), txt: t.slice(k + 1) } : { ico: '📜', txt: t };
         },
         cleLieu: function() { var p = this.partie; return p && p.phase === 'jeu' && this.regle ? p.id + ':' + p.etage + ':' + this.lieu.id : ''; },
         etageIco: function() { var E = this.lieu; return E ? E.ico : '🗝️'; },
@@ -1710,6 +1735,25 @@
           else if (this.role === 'hote') this.creerPartie(true);
           this.info('🔄 Liaison relancée…');
         },
+        fermerALire: function() {
+          if (Date.now() - (this._lireT || 0) < 600) return;
+          this.aLire.shift(); this._lireT = Date.now(); this.son('toc');
+        },
+        // Les annonces « à lire » qui me concernent : mises en file pour la fenêtre (une seule fois chacune ; rien au chargement d'un donjon déjà commencé)
+        suivreALire: function(p) {
+          var der = p.annonces.length ? p.annonces[p.annonces.length - 1].id : 0;
+          if (this._lirePartie !== p.id) { this._lirePartie = p.id; this._lireVu = p.annonces.reduce((m, x) => p.maintenant - x.t > 5000 ? Math.max(m, x.id) : m, 0); this.aLire = []; }
+          p.annonces.forEach(a => {
+            if (a.id <= this._lireVu || !this.pourMoiALire(a)) return;
+            if (!this.aLire.length) { this._lireT = Date.now(); this.direction(null); }
+            this.aLire.push({ id: a.id, txt: a.txt });
+          });
+          this._lireVu = Math.max(this._lireVu, der);
+        },
+        pourMoiALire: function(a) {
+          if (!a.lire || (a.pour && a.pour !== this.moi)) return false;
+          return a.lire === true || a.lire === this.moi || (Array.isArray(a.lire) && a.lire.indexOf(this.moi) >= 0);
+        },
         fermerLieu: function() {
           if (this.lieuAnnonce && Date.now() - this.lieuAnnonce.t < 600) return;
           this.lieuAnnonce = null; this.son('toc');
@@ -1875,6 +1919,7 @@
           if (moi && avant && moi.fantome && !avant.fantome) { this.son('choc'); this.vibre([220, 90, 420]); }
           else if (coup) { this.son('choc'); this.vibre(coup >= 15 ? [150, 50, 150, 50, 220] : coup >= 6 ? [110, 45, 110] : [80]); }
           else if (pare) this.vibre(30);
+          this.suivreALire(p);
           if (a && p.annonces.length && (!a.annonces.length || p.annonces[p.annonces.length - 1].id !== a.annonces[a.annonces.length - 1].id)) {
             var der = p.annonces[p.annonces.length - 1];
             if (!der.pour || der.pour === this.moi) this.son('toc');
@@ -2594,6 +2639,7 @@
         var X2 = x2 * T + 4 + k * 12, Y2 = y2 * T + 4 + (1 - k) * 12;
         if (q < 0.06) s += '<path d="M' + X2 + ' ' + Y2 + ' l5 4 l-2 5 l6 3" fill="none" stroke="' + so[2] + '" stroke-width="1.6" stroke-linecap="round"/>';
         else if (q < 0.11) s += '<ellipse cx="' + X2 + '" cy="' + Y2 + '" rx="3" ry="2" fill="' + mu[1] + '"/><ellipse cx="' + (X2 + 6) + '" cy="' + (Y2 + 3) + '" rx="2" ry="1.4" fill="' + mu[1] + '"/>';
+        else if (deco === 'riviere') s += '<ellipse cx="' + (X2 + 2) + '" cy="' + (Y2 + 2) + '" rx="' + (5 + k * 4) + '" ry="' + (2.6 + k * 1.6) + '" fill="#1c7ed6" opacity="0.5"/><ellipse cx="' + X2 + '" cy="' + (Y2 + 1.2) + '" rx="' + (2 + k * 2) + '" ry="1" fill="#a5d8ff" opacity="0.5"/>';
         else if (deco === 'champignonniere') s += '<path d="M' + (X2 - 1) + ' ' + (Y2 + 1) + ' v5 h2 v-5 Z" fill="#f3f0ff"/><path d="M' + (X2 - 5) + ' ' + (Y2 + 1.5) + ' Q' + (X2 - 5) + ' ' + (Y2 - 4) + ' ' + X2 + ' ' + (Y2 - 4) + ' Q' + (X2 + 5) + ' ' + (Y2 - 4) + ' ' + (X2 + 5) + ' ' + (Y2 + 1.5) + ' Z" fill="' + (k > 0.5 ? '#845ef7' : '#e03131') + '" stroke="#241812" stroke-width="0.9"/><circle cx="' + (X2 - 1.6) + '" cy="' + (Y2 - 1.6) + '" r="0.9" fill="#fff" opacity=".85"/>';
         else if (deco === 'catacombes') s += '<path d="M' + X2 + ' ' + Y2 + ' l9 4" stroke="#e9e2d0" stroke-width="2.4" stroke-linecap="round"/><circle cx="' + X2 + '" cy="' + Y2 + '" r="1.8" fill="#e9e2d0"/><circle cx="' + (X2 + 9) + '" cy="' + (Y2 + 4) + '" r="1.8" fill="#e9e2d0"/>';
         else if (deco === 'forteresse') s += '<circle cx="' + X2 + '" cy="' + Y2 + '" r="2.2" fill="#ff6b3d" opacity="0.8"/><circle cx="' + X2 + '" cy="' + Y2 + '" r="5" fill="#ff6b3d" opacity="0.15"/>';

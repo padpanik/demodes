@@ -25,7 +25,9 @@ var DJD = (function () {
     rythme: { nom: 'Réflexes', ico: '🎵', texte: 'Dès ta 4e carte du tour, chaque carte inflige {n} dégâts à un monstre au hasard' },
     accel: { nom: 'Frénésie', ico: '⚡', texte: '+{n} ⚡ au début de ton tour' },
     rage: { nom: 'Rage', ico: '😡', texte: 'Gagne {n} Force chaque fois qu\'on joue une carte qui n\'est pas une attaque' },
-    regen: { nom: 'Régénération', ico: '🌿', texte: 'Regagne {n} PV à la fin du tour' }
+    regen: { nom: 'Régénération', ico: '🌿', texte: 'Regagne {n} PV à la fin du tour' },
+    // Règle du lieu « Marée » (Rivière souterraine) : posé sur tout le monde aux tours de marée haute, retiré à marée basse (pas un état qui dure)
+    maree: { nom: 'Marée haute', ico: '🌊', texte: 'Ce tour-ci, ses coups font 25 % de dégâts en moins. Tout le monde est logé à la même enseigne.' }
   };
 
   // ---------- Classes : le pouvoir du compagnon ----------
@@ -261,6 +263,38 @@ var DJD = (function () {
         return mix(a(9), { nom: 'PLUIE DE SPORES', tous: true, deb: { e: 'poison', n: 2, tous: true } });
       } },
 
+    // Étage 1, autre lieu : la Rivière souterraine (3.42). Règle du lieu « Marée » : voir LIEUX plus bas.
+    crabe: { nom: 'Crabe', ico: '🦀', pv: [14, 17], vitesse: 1100,
+      ia: function (m, c) { return c.k % 2 === 0 ? mix(a(3), { nom: 'Se retranche', armure: 7 }) : mix(a(9), { nom: 'Coup de pince' }); } },
+    sangsue: { nom: 'Sangsue', ico: '🪱', pv: [11, 13], vitesse: 1200,
+      ia: function (m, c) { return c.k % 3 === 2 ? mix(a(3), { nom: 'S\'accroche', deb: { e: 'vuln', n: 1 } }) : mix(a(5), { nom: 'Succion', soin: 4 }); } },
+    piranha: { nom: 'Piranha', ico: '🐟', pv: [8, 10], vitesse: 450, vole: true,
+      ia: function (m, c) { return c.k % 3 === 1 ? mix(a(7), { nom: 'Morsure' }) : mix(a(3, 3), { nom: 'Frénésie' }); } },
+    grenouille: { nom: 'Grenouille bleue', ico: '🐸', pv: [11, 13], vitesse: 700,
+      ia: function (m, c) { return c.k % 2 === 0 ? mix(a(5), { nom: 'Coup de langue', deb: { e: 'faible', n: 1 } }) : mix(a(8), { nom: 'Saut' }); } },
+    // Élites
+    tortue: { nom: 'Tortue serpentine', ico: '🐢', taille: 2, rang: 'elite', pv: [66, 70], vitesse: 1300,
+      ia: function (m, c) {
+        var t = c.k % 3;
+        return t === 0 ? { nom: 'Rentre dans sa carapace', armure: 14 } : t === 1 ? mix(a(20), { nom: 'Morsure éclair' }) : mix(a(10), { nom: 'Coup de queue', armure: 6, deb: { e: 'fragile', n: 2 } });
+      } },
+    anguille: { nom: 'Anguille électrique', ico: '⚡', taille: 2, rang: 'elite', pv: [60, 64], vitesse: 600, chasse: true,
+      ia: function (m, c) {
+        var t = c.k % 3;
+        return t === 0 ? mix(a(5, 3), { nom: 'Étincelles' }) : t === 1 ? { nom: 'Elle se charge… ⚡', prep: true, armure: 6 } : mix(a(22), { nom: 'Décharge', deb: { e: 'faible', n: 2 } });
+      } },
+    // Boss : ses tentacules repoussent ; plus il en a, plus il se protège et plus son étreinte serre. Les couper avant l'étreinte.
+    tentacule: { nom: 'Tentacule', ico: '🦑', pv: [10, 10], vitesse: 900,
+      ia: function (m, c) { return c.k % 2 === 0 ? mix(a(5), { nom: 'Gifle' }) : mix(a(3), { nom: 'Enserre', deb: { e: 'faible', n: 1 } }); } },
+    pieuvre: { nom: 'La Pieuvre des profondeurs', ico: '🐙', couronne: true, taille: 2, rang: 'boss', pv: [74, 74], vitesse: 900,
+      ia: function (m, c) {
+        var t = c.k % 4, bras = Math.max(0, c.nb - 1);
+        if (t === 0) return c.nb < 3 ? { nom: 'Sort ses tentacules', appel: { type: 'tentacule', n: 2 }, armure: 4 } : mix(a(10), { nom: 'Coup de bec', armure: 4 });
+        if (t === 1) return mix(a(6, 2), { nom: 'Double gifle' });
+        if (t === 2) return mix(a(7), { nom: 'Jet d\'encre', armure: 2 + 3 * bras, deb: { e: 'fragile', n: 2 } });
+        return mix(a(10 + 4 * bras), { nom: bras ? 'ÉTREINTE (' + bras + ' tentacule' + (bras > 1 ? 's' : '') + ')' : 'Étreinte' });
+      } },
+
     // Étage 2 : les Catacombes
     squelette: { nom: 'Squelette', ico: '💀', pv: [26, 30], vitesse: 760, chasse: true,
       ia: function (m, c) { return c.k % 2 === 0 ? mix(a(9), { nom: 'Coup d\'os' }) : mix(a(4), { nom: 'Bouclier d\'os', armure: 7 }); } },
@@ -347,14 +381,21 @@ var DJD = (function () {
   // étage 2 Catacombes / Grotte de glace (Engelures) / Bibliothèque interdite (Savoir) ; étage 3 Forteresse / Forges (Braises) / Tour de l'horloge (Temps détraqué).
   var REGLES_LIEU = {
     spores: { nom: 'Spores', ico: '🍄', poison: 1, court: 'Finir son tour sans armure : ☠️ Poison 1',
-      texte: 'L\'air est plein de spores : qui finit son tour sans armure reçoit Poison 1. Les monstres aussi. Garde toujours un peu d\'armure.' }
+      texte: 'L\'air est plein de spores : qui finit son tour sans armure reçoit Poison 1. Les monstres aussi. Garde toujours un peu d\'armure.' },
+    maree: { nom: 'Marée', ico: '🌊', maree: 0.75, court: 'Un tour sur deux : tous les coups −25 %',
+      texte: 'La rivière monte un tour sur deux (les tours pairs). À marée haute, tous les coups font 25 % de dégâts en moins, les tiens comme ceux des monstres. Frappe à marée basse ; à marée haute, protège-toi ou prépare la suite. Poison, brûlure et armure ne changent pas.' }
   };
   var AUTRES_LIEUX = [
     { id: 'champignonniere', etage: 1, decor: 'champignonniere', nom: 'La Champignonnière', ico: '🍄', regle: 'spores',
       sol: ['#3d4a3c', '#465544', '#303b30'], mur: ['#2a2238', '#3a2f4d', '#1c1727'],
       faciles: [['sporion', 'sporion'], ['limace'], ['moucheron', 'sporion']],
       rencontres: [['champi', 'sporion'], ['limace', 'moucheron'], ['sporion', 'sporion', 'sporion'], ['champi', 'moucheron'], ['limace', 'sporion'], ['moucheron', 'moucheron', 'sporion']],
-      elites: ['ancetre', 'crapaud'], boss: 'mycelium' }
+      elites: ['ancetre', 'crapaud'], boss: 'mycelium' },
+    { id: 'riviere', etage: 1, decor: 'riviere', nom: 'La Rivière souterraine', ico: '🌊', regle: 'maree',
+      sol: ['#2f4a52', '#38575f', '#253c43'], mur: ['#1f3340', '#2a4454', '#14232d'],
+      faciles: [['piranha', 'piranha'], ['crabe'], ['grenouille', 'piranha']],
+      rencontres: [['crabe', 'piranha'], ['sangsue', 'grenouille'], ['piranha', 'piranha', 'piranha'], ['crabe', 'sangsue'], ['grenouille', 'grenouille'], ['sangsue', 'piranha', 'piranha']],
+      elites: ['tortue', 'anguille'], boss: 'pieuvre' }
   ];
   var LIEUX = {};
   ETAGES.forEach(function (E, i) { E.etage = i + 1; E.lieux = [E.id]; LIEUX[E.id] = E; });

@@ -29,7 +29,7 @@ function valeurCarte(e, p, id, ms, besoin) {
   if (k.finMain) return 4;   // malédiction qu'on peut payer pour s'en débarrasser : quand il reste de l'énergie
   k.fx.forEach(f => {
     if (f.deg !== undefined) v += f.deg * (f.x || 1) * (f.tous ? ms.length : 1) + (p.etats.force || 0) * (f.x || 1);
-    if (f.armure) v += Math.min(f.armure, Math.max(0, besoin)) * 1.3 + 0.5 + (spores && !p.armure ? 2.5 : 0);   // Spores : un peu d'armure évite le poison
+    if (f.armure) v += Math.min(f.armure, Math.max(0, besoin)) * 1.3 + 0.5 + (spores && spores.poison && !p.armure ? 2.5 : 0);   // Spores : un peu d'armure évite le poison
     if (f.pioche) v += 3 * f.pioche;
     if (f.energie) v += 5 * f.energie;
     if (f.etat === 'vuln') v += 6 * f.n;

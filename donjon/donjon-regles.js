@@ -426,17 +426,21 @@ var DJ = (function () {
     if (d && DX[d]) { p.d = d; p.unPas = d; } else p.d = null;   // un toucher bref fait quand même un pas
   }
 
-  function annonce(e, txt, pour) {
-    e.annonces.push({ id: ++e.seq, txt: txt, t: e.maintenant, pour: pour || null });
+  // lire (3.42, demandé par l'utilisateur : « ça donne le temps de lire ») : ce message s'ouvre en fenêtre à fermer chez ce joueur (son nom), ces joueurs (tableau)
+  // ou tous ceux qui le voient (true), au lieu de passer 4,5 s à côté de la croix. Pour ce qui se lit : trouvailles, issue d'un événement, pièce à risque.
+  function annonce(e, txt, pour, lire) {
+    var an = { id: ++e.seq, txt: txt, t: e.maintenant, pour: pour || null };
+    if (lire) an.lire = lire;
+    e.annonces.push(an);
     if (e.annonces.length > 6) e.annonces.shift();
   }
   function effet(e, salle, x, y, k) { e.effets.push({ id: ++e.seq, salle: salle, x: x, y: y, k: k, t: e.maintenant }); }
   function nomCp(p) { return p.cp && p.cp.n ? p.cp.n : p.surnom || p.nom; }
   function ennemiEn(e, salle, x, y) { return e.ennemis.find(m => m.salle === salle && m.x === x && m.y === y); }
-  function aide(e, p, txt) {
+  function aide(e, p, txt, lire) {
     if (e.maintenant < p.aideT) return;
     p.aideT = e.maintenant + 3000;
-    annonce(e, txt, p.nom);
+    annonce(e, txt, p.nom, lire ? p.nom : null);
   }
   function a(p, id) { return p.reliques.indexOf(id) >= 0; }
   function soigner(p, n) { if (p.fantome) return 0; var av = p.pv; p.pv = Math.min(p.pvMax, p.pv + n); return p.pv - av; }
@@ -489,7 +493,7 @@ var DJ = (function () {
     if (c === 'cle') { e.cles++; annonce(e, '🗝️ ' + nomCp(p) + ' trouve une petite clé !'); }
     else if (c === 'grandecle') { e.grandeCle = true; annonce(e, '🔑 ' + nomCp(p) + ' trouve la grande clé du boss !'); }
     else if (c === 'relique') {
-      ici.forEach(q => { var r = donnerRelique(e, q, null, h); if (r) annonce(e, RELIQUES[r].ico + ' Trésor ! ' + nomCp(q) + ' trouve : ' + RELIQUES[r].nom + '. ' + RELIQUES[r].texte + '.'); });
+      ici.forEach(q => { var r = donnerRelique(e, q, null, h); if (r) annonce(e, RELIQUES[r].ico + ' Trésor ! ' + nomCp(q) + ' trouve : ' + RELIQUES[r].nom + '. ' + RELIQUES[r].texte + '.', null, q.nom); });
     } else if (c === 'or') {
       var n = 25 + entier(h, 16);
       ici.forEach(q => donnerOr(e, q, n));
@@ -507,7 +511,7 @@ var DJ = (function () {
     if (e.ennemis.some(m => m.salle === S.id)) { aide(e, p, '🔒 Le coffre est gardé : battez d\'abord les monstres de la pièce.'); return; }
     if (!S.piege) {
       var cleP = e.etage + ':' + S.id;
-      if (p.piegeVu !== cleP) { p.piegeVu = cleP; p.piegeT = e.maintenant + INSISTER; p.aideT = 0; aide(e, p, '💰 Ce coffre sent le piège… Insiste si tu veux l\'ouvrir quand même.'); return; }
+      if (p.piegeVu !== cleP) { p.piegeVu = cleP; p.piegeT = e.maintenant + INSISTER; p.aideT = 0; aide(e, p, '💰 Ce coffre sent le piège… Des monstres vont sûrement surgir. Fonce encore dedans si tu veux l\'ouvrir quand même.', true); return; }
       if (e.maintenant < p.piegeT) return;   // le doigt est resté sur la croix : on laisse le temps de lire
       S.piege = 1; e.carteV++;
       var libres = PLACES.filter(q => MARCHABLE[tuile(S, q[0], q[1])] && !Object.values(e.joueurs).some(j => j.salle === S.id && Math.abs(j.x - q[0]) + Math.abs(j.y - q[1]) < 1));
@@ -523,7 +527,7 @@ var DJ = (function () {
     var ici = Object.values(e.joueurs).filter(q => q.salle === S.id && !q.fantome), n = T.or[0] + entier(h, T.or[1] - T.or[0] + 1);
     ici.forEach(q => { donnerOr(e, q, n); donnerFiole(e, q, null, h); });
     e.poussiere += T.poussiere;
-    annonce(e, '💰 Le grand coffre s\'ouvre : +' + n + ' or' + (ici.length > 1 ? ' chacun' : '') + ', une fiole et ' + T.poussiere + ' poussières d\'étoile !');
+    annonce(e, '💰 Le grand coffre s\'ouvre : +' + n + ' or' + (ici.length > 1 ? ' chacun' : '') + ', une fiole et ' + T.poussiere + ' poussières d\'étoile !', null, ici.map(q => q.nom));
   }
 
   // ---------- Salles spéciales : feu de camp, marchand, autel, escalier ----------
@@ -626,7 +630,7 @@ var DJ = (function () {
         for (var essai = 0; essai < 20 && (!nv || nv === carte(id).base); essai++) nv = tirerCartes(p, 1, 'elite', h)[0];
         if (!nv) return 'Le chaudron ne veut pas de cette carte';
         p.paquet[arg] = nv;
-        annonce(e, '🫕 ' + nomCp(p) + ' : ' + carte(id).nom + ' devient ' + carte(nv).nom + ' !', p.nom);
+        annonce(e, '🫕 ' + nomCp(p) + ' : ' + carte(id).nom + ' devient ' + carte(nv).nom + ' !', p.nom, p.nom);
         fermer(); return null;
       }
     }
@@ -640,7 +644,7 @@ var DJ = (function () {
     return 'Choix inconnu';
   }
   function evenement(e, p, m, i, h) {
-    var E = D.EVENEMENTS[m.id], dire = t => annonce(e, E.ico + ' ' + nomCp(p) + ' : ' + t, p.nom);
+    var E = D.EVENEMENTS[m.id], dire = t => annonce(e, E.ico + ' ' + nomCp(p) + ' : ' + t, p.nom, p.nom);
     function fermer() { p.menus.shift(); }
     switch (m.id) {
       case 'fontaine':
@@ -805,9 +809,9 @@ var DJ = (function () {
     else if (V.role === 'elite') annonce(e, '⭐ Un élite garde cette pièce…');
     else if (V.role === 'feu') annonce(e, '🔥 Un feu de camp : on peut s\'y reposer.');
     else if (V.role === 'marchand') annonce(e, '🛒 Un marchand ambulant !');
-    else if (V.role === 'defi') annonce(e, '💀 La salle du défi : un second élite et son butin. Rien n\'oblige à l\'affronter.');
-    else if (V.role === 'tresor') annonce(e, '💰 Un grand coffre, sans gardien… ça sent le piège.');
-    else if (V.role === 'maudit') annonce(e, '🔮 Un coffre maudit : une relique, contre une malédiction.');
+    else if (V.role === 'defi') annonce(e, '💀 La salle du défi : un second élite et son butin. Rien n\'oblige à l\'affronter.', null, p.nom);
+    else if (V.role === 'tresor') annonce(e, '💰 Un grand coffre, sans gardien… ça sent le piège.', null, p.nom);
+    else if (V.role === 'maudit') annonce(e, '🔮 Un coffre maudit : une relique, contre une malédiction dans ton paquet. À toi de voir.', null, p.nom);
     // Bottes de marche : chaque pièce découverte soigne un peu
     Object.values(e.joueurs).forEach(q => { if (a(q, 'bottes') && !q.fantome) soigner(q, 2); });
   }
@@ -922,12 +926,22 @@ var DJ = (function () {
       p.main.push(p.pioche.pop());
     }
   }
+  // Règle du lieu « Marée » (Rivière souterraine) : aux tours pairs, marée haute = l'état « maree » sur tous ceux du combat (tous les coups −25 %, voir calculer)
+  function maree(e, c) {
+    var R = regleLieu(e);
+    if (!R || !R.maree) return;
+    var haute = c.tour % 2 === 0;
+    monstresDe(e, c).concat(c.joueurs.map(n => e.joueurs[n]).filter(Boolean)).forEach(x => { if (haute) x.etats.maree = 1; else delete x.etats.maree; });
+    if (c.tour > 1) journal(c, haute ? '🌊 Marée haute : tous les coups −25 % ce tour-ci.' : '🏖️ Marée basse : les coups font tous leurs dégâts.');
+    c.maree = haute;
+  }
   function nouveauTour(e, c, h) {
     c.tour++; c.fini = {}; c.pret = 0;
     // Les joueurs vivants arrivés dans la pièce rejoignent le combat
     Object.values(e.joueurs).forEach(p => { if (p.salle === c.salle && !p.fantome && c.joueurs.indexOf(p.nom) < 0) entrerEnCombat(e, c, p, h); });
     c.joueurs = c.joueurs.filter(n => e.joueurs[n] && e.joueurs[n].salle === c.salle);
     ajusterPv(e, c);
+    maree(e, c);
     // Intentions des monstres (annoncées avant que les joueurs jouent)
     var cibles = vivantsDe(e, c);
     monstresDe(e, c).forEach(m => {
@@ -977,7 +991,7 @@ var DJ = (function () {
   }
   // Dégâts d'une attaque : force et faiblesse de qui frappe, vulnérabilité de la cible
   function calculer(source, cible, n, fixe) {
-    if (!fixe && source) { n += source.etats.force || 0; if (source.etats.faible) n *= 0.75; }
+    if (!fixe && source) { n += source.etats.force || 0; if (source.etats.faible) n *= 0.75; if (source.etats.maree) n *= D.REGLES_LIEU.maree.maree; }   // marée haute : règle de la Rivière souterraine
     if (cible.etats.vuln) n *= 1.5;
     return Math.max(0, Math.floor(n));
   }
@@ -1222,6 +1236,7 @@ var DJ = (function () {
           if (!pl) break;
           var nv = creerMonstre(e, i.appel.type, c.salle, pl[0], pl[1], h);
           nv.intention = null;
+          if (c.maree) nv.etats.maree = 1;
           noter(nomMonstre(nv), '📣 arrive', 'etat', nv.id);
         }
       }

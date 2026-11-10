@@ -216,6 +216,75 @@ var DJS = (function () {
         [[11, 17, 2.3], [20, 14.5, 1.9], [29, 17, 2.5], [16, 21, 1.3], [25, 21, 1.2]].map(function (q) { return c(q[0], q[1], q[2] * 1.8, '#63e6be', 0).replace('/>', ' opacity=".28"/>') + c(q[0], q[1], q[2], '#63e6be', 0.9); }).join('') +
         l('M14.5 27 L18.5 28.6 M25.5 27 L21.5 28.6', O, 1.7) + luisants(17, 23, 30, 1.4, '#63e6be') +
         p('M15 33 Q20 36.5 25 33 Q20 34 15 33 Z', '#2b1d14', 1) + couronne(20, 8, 0.95);
+    },
+    // ---- La Rivière souterraine (3.42) ----
+    crabe: function () {
+      var pattes = 'M10 30 L4 34 M12 32 L8 37.5 M30 30 L36 34 M28 32 L32 37.5', bras = 'M10 25 Q4 22 6 15 M30 25 Q36 22 34 15';
+      return ombre(14) + l(pattes, O, 3.4) + l(pattes, '#e8590c', 1.8) + l(bras, O, 4.2) + l(bras, '#f76707', 2.4) +
+        p('M2 12 Q2 5 8.5 6 L6.5 10 L10.5 9 Q11.5 15.5 6 15.5 Q2 15.5 2 12 Z', '#ff922b', 1.5) + p('M38 12 Q38 5 31.5 6 L33.5 10 L29.5 9 Q28.5 15.5 34 15.5 Q38 15.5 38 12 Z', '#ff922b', 1.5) +
+        l('M16 21 V15.5 M24 21 V15.5', O, 3.2) + l('M16 21 V15.5 M24 21 V15.5', '#f76707', 1.6) +
+        e(20, 27.5, 12.5, 7.8, '#f76707', 1.8) + '<path d="M9.5 26 Q11 21.5 17 20.8" fill="none" stroke="#ffc078" stroke-width="2.2" opacity=".8" stroke-linecap="round"/>' +
+        c(13, 29, 1.2, '#d9480f') + c(27, 29.5, 1.4, '#d9480f') + c(24, 24, 0.9, '#d9480f') +
+        yeux(16, 24, 14.5, 2.7) + l('M17 30.5 Q20 32.5 23 30.5', O, 1.3);
+    },
+    sangsue: function () {
+      return ombre(12) +
+        p('M9 36 Q3 28 11 23 Q19 19 15.5 13 Q13.5 4 23 4 Q32 5 31 15 Q30 23 23.5 27.5 Q19 31 27 36 Z', '#862e9c', 1.8) +
+        l('M8 31 Q12 33 15 29.5 M11 25.5 Q15 28 18.5 24 M16.5 20 Q21 22.5 24 18.5', '#5f1f73', 1.3) +
+        '<path d="M17 11 Q16 7 20 6" fill="none" stroke="#da77f2" stroke-width="2" opacity=".7" stroke-linecap="round"/>' +
+        yeux(20, 27.5, 8.3, 1.9) +
+        c(24, 15, 4.3, '#2b1d14', 1.3) + p('M20.4 13.5 L22.4 15.6 L23.2 12.4 Z M27.6 13.5 L25.6 15.6 L24.8 12.4 Z M22 18.2 L24 16.2 L26 18.2 Z', '#fff', 0.5) + c(24, 15.3, 1.3, '#e03131');
+    },
+    piranha: function () {
+      return '<ellipse cx="20" cy="37.5" rx="10" ry="2.2" fill="rgba(0,0,0,.22)"/>' +
+        p('M30 20 L38.5 11.5 Q36 20 38.5 28.5 Z', '#4263eb', 1.5) + p('M15 10 Q20 3 27 10 Z', '#4263eb', 1.4) + p('M17 30 Q20 35 24 30 Z', '#4263eb', 1.3) +
+        p('M3 20 Q5 9 18 9 Q30 10 32 20 Q30 30 18 31 Q5 31 3 20 Z', '#5c7cfa', 1.8) +
+        '<path d="M5.5 24 Q11 30.5 22 30 Q13 27.5 8.5 22.5 Z" fill="#fa5252"/>' +
+        '<path d="M9 13.5 Q13 10.5 19 10.8" fill="none" stroke="#bac8ff" stroke-width="2" opacity=".8" stroke-linecap="round"/>' +
+        p('M3.4 19 L14 17.5 L12.5 25 L4.5 23 Z', '#2b1d14', 1.3) +
+        p('M4.6 19 L6 21.2 L7.5 18.6 L9 20.8 L10.5 18.2 L12 20.4 L13.6 17.8 Z M5.2 23 L6.8 20.9 L8.2 23.6 L9.8 21.4 L11.2 24.3 L12.4 22 L12.5 24.9 Z', '#fff', 0.5) +
+        c(14.5, 14, 2.9, '#fff', 1.1) + c(14, 14.4, 1.5, '#c92a2a') + l('M11 10.6 L18 12.6', O, 1.8) +
+        l('M23 16 Q25 20 23 24', '#4263eb', 1.2);
+    },
+    grenouille: function () {
+      return ombre(12) + p('M7 35.5 Q3 31 8 27.5 L12.5 31 Z', '#1971c2', 1.4) + p('M33 35.5 Q37 31 32 27.5 L27.5 31 Z', '#1971c2', 1.4) +
+        p('M8 34 Q6 20 20 19 Q34 20 32 34 Q20 37 8 34 Z', '#339af0', 1.8) +
+        p('M13 33.2 Q12 26.5 20 26.5 Q28 26.5 27 33.2 Q20 35.5 13 33.2 Z', '#ffe066', 1.2) +
+        c(13, 16.5, 5.2, '#339af0', 1.7) + c(27, 16.5, 5.2, '#339af0', 1.7) + yeux(13, 27, 16.5, 3.3) +
+        l('M12 23.5 Q20 27.5 28 23.5', O, 1.5) + c(18.5, 21.3, 0.6, O) + c(21.5, 21.3, 0.6, O) +
+        c(9.5, 27, 1.5, '#1864ab') + c(30.5, 26.5, 1.3, '#1864ab') + c(10.5, 31.5, 1, '#1864ab') + c(29.5, 31, 1.1, '#1864ab') + c(20, 14.5, 1.1, '#1864ab') +
+        l('M15 34.5 v2.4 M25 34.5 v2.4', O, 1.6);
+    },
+    tortue: function () {
+      return ombre(16) + p('M3.5 30 L0.5 26.5 L6 27.5 Z', '#8a9a5b', 1.3) + p('M7 36 Q4 31 9 29.5 L12.5 35 Z', '#8a9a5b', 1.4) + p('M24 36 Q22 31 27 30 L30 35.5 Z', '#8a9a5b', 1.4) +
+        p('M9 17.5 L11 10.5 L14.5 15 Z', '#3f5a26', 1.3) + p('M15.5 14.5 L18.5 7.5 L22 14 Z', '#3f5a26', 1.3) + p('M23 15 L27 10.5 L28.5 18 Z', '#3f5a26', 1.3) +
+        p('M3.5 31 Q3.5 14 18.5 13 Q32.5 14 32.5 31 Z', '#5c7a3a', 1.9) +
+        l('M9.5 31 Q10.5 22 18.5 20 Q26.5 22 27.5 31 M18.5 20 V13.2 M10.5 25 L5 22.5 M26.5 25 L31 22.5', '#3f5a26', 1.3) +
+        '<path d="M6.5 27 Q6.5 19 12 16" fill="none" stroke="#94b060" stroke-width="2.4" opacity=".7" stroke-linecap="round"/>' +
+        p('M2.5 31 H33.5 Q33.5 35 30 35 H6 Q2.5 35 2.5 31 Z', '#d9c890', 1.5) +
+        p('M27 28 Q29.5 18 34 17 Q40 17 39.5 23 L35.2 24.4 Q38 26.2 36 29 Q32 31.5 27.5 30.5 Z', '#8a9a5b', 1.6) +
+        l('M35.2 24.4 L39 23.4', O, 1.2) + c(35, 20.6, 1.7, '#ffe066', 0.9) + c(35.3, 20.7, 0.8, '#222') + l('M32.3 18.2 L37.2 19.6', O, 1.5);
+    },
+    anguille: function () {
+      var corps = 'M5 34.5 Q2 27.5 10 26 Q22 24 28 30 Q34 35.5 36.5 28 Q38.5 19.5 28 18 Q15.5 16 16 10.5 Q16.5 6 21 6';
+      return ombre(15) + l(corps, O, 9.2) + l(corps, '#364fc7', 6.4) +
+        '<path d="' + corps + '" fill="none" stroke="#ffd43b" stroke-width="1.7" stroke-dasharray="2.2 3.4" stroke-linecap="round"/>' +
+        e(24, 6.8, 6, 4.6, '#364fc7', 1.7) + c(26, 5.6, 1.8, '#fff', 0.9) + c(26.5, 5.8, 0.9, '#222') + l('M23.5 3.6 L28.5 4.6', O, 1.4) + l('M25.5 9.4 L29.6 8.4', O, 1.2) +
+        p('M34 4 L30.5 10 L33.5 10 L31.5 15.5 L37 8.2 L34 8.2 Z', '#ffe066', 0.9) + p('M7 12 L4.5 16.5 L7 16.5 L5.5 21 L9.8 15 L7.4 15 Z', '#ffe066', 0.9) + p('M21 30 L19.5 33 L21.3 33 L20.3 36 L23.3 32 L21.6 32 Z', '#ffe066', 0.8);
+    },
+    tentacule: function () {
+      return '<ellipse cx="20" cy="35.5" rx="13" ry="3.6" fill="#1c5a72" stroke="' + O + '" stroke-width="1.3"/><ellipse cx="20" cy="35.2" rx="8.5" ry="2" fill="#2f8fb0" opacity=".8"/>' +
+        p('M13.5 35.5 Q11 24 16 17 Q20.5 10.5 17.5 7 Q15.5 3.2 20 3 Q27.5 3.6 26.5 12 Q25.5 20 26.5 27 Q27 32 27 35.5 Q20 37.5 13.5 35.5 Z', '#cc5de8', 1.8) +
+        '<path d="M15.5 30 Q14 23 18 17" fill="none" stroke="#eebefa" stroke-width="2" opacity=".7" stroke-linecap="round"/>' +
+        c(22.2, 9, 1.4, '#f8f0fc', 0.8) + c(22.6, 14.5, 1.7, '#f8f0fc', 0.8) + c(22.6, 20.5, 1.9, '#f8f0fc', 0.8) + c(23, 26.8, 2.1, '#f8f0fc', 0.8) + c(23.2, 32.6, 2, '#f8f0fc', 0.8);
+    },
+    pieuvre: function () {
+      var bras = 'M9 28 Q2 30 3 36.5 M13 31 Q8.5 34.5 11 38.5 M31 28 Q38 30 37 36.5 M27 31 Q31.5 34.5 29 38.5 M20 32 V38';
+      return ombre(16) + l(bras, O, 5.4) + l(bras, '#ae3ec9', 3.2) +
+        p('M6 26 Q3 10.5 20 10.5 Q37 10.5 34 26 Q32 33 20 33 Q8 33 6 26 Z', '#be4bdb', 1.9) +
+        '<path d="M8.5 23 Q8 15.5 14.5 13" fill="none" stroke="#eebefa" stroke-width="3" opacity=".6" stroke-linecap="round"/>' +
+        c(29.5, 15.5, 1.7, '#9c36b5') + c(25.5, 13.2, 1, '#9c36b5') + c(31, 20, 1.1, '#9c36b5') +
+        yeux(14.5, 25.5, 23, 3.7) + l('M10.3 18.2 L17.6 20.3 M29.7 18.2 L22.4 20.3', O, 1.9) + l('M17 29.3 Q20 27.8 23 29.3', O, 1.4) + couronne(20, 9.4, 0.95);
     }
   };
   var ALIAS = { gluantgeant: 'gluant', gluantmoyen: 'gluant' };
@@ -234,9 +303,10 @@ var DJS = (function () {
   // sur les côtés pour ne pas se mêler aux annonces des monstres. Identifiants « djc- » : un seul décor à l'écran à la fois.
   // genre : le décor du lieu (« caves », « catacombes », « forteresse », « champignonniere »…) ; absent = celui d'origine de l'étage
   function decor(etage, sol, mur, rang, genre) {
-    var s = '', i, x, y, HZ = 220, g = genre || ['caves', 'catacombes', 'forteresse'][etage - 1] || 'caves', champi = g === 'champignonniere';
+    var s = '', i, x, y, HZ = 220, g = genre || ['caves', 'catacombes', 'forteresse'][etage - 1] || 'caves', champi = g === 'champignonniere', riviere = g === 'riviere',
+        lueur = champi ? ['#63e6be', '#20c997'] : riviere ? ['#74c0fc', '#339af0'] : ['#ffb347', '#ff922b'];   // la lumière du lieu (torches, champignons, cristaux)
     var teinte = rang === 'boss' ? '#9c36b5' : rang === 'elite' ? '#fab005' : '#ffb347';
-    s += '<defs><radialGradient id="djc-lueur"><stop offset="0%" stop-color="' + (champi ? '#63e6be' : '#ffb347') + '" stop-opacity=".55"/><stop offset="100%" stop-color="' + (champi ? '#20c997' : '#ff922b') + '" stop-opacity="0"/></radialGradient>' +
+    s += '<defs><radialGradient id="djc-lueur"><stop offset="0%" stop-color="' + lueur[0] + '" stop-opacity=".55"/><stop offset="100%" stop-color="' + lueur[1] + '" stop-opacity="0"/></radialGradient>' +
          '<radialGradient id="djc-halo"><stop offset="0%" stop-color="' + teinte + '" stop-opacity="' + (rang === 'normal' ? '.22' : '.34') + '"/><stop offset="100%" stop-color="' + teinte + '" stop-opacity="0"/></radialGradient>' +
          '<linearGradient id="djc-haut" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#000" stop-opacity=".75"/><stop offset="100%" stop-color="#000" stop-opacity="0"/></linearGradient>' +
          '<linearGradient id="djc-bas" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#000" stop-opacity="0"/><stop offset="100%" stop-color="#000" stop-opacity=".8"/></linearGradient>' +
@@ -254,6 +324,16 @@ var DJS = (function () {
     if (g === 'caves') {
       [22, 58, 101, 139, 176, 213, 252, 296, 338].forEach(function (sx, k) { var h = 26 + (k * 17 % 30); s += '<path d="M' + (sx - 11) + ' 0 L' + sx + ' ' + h + ' L' + (sx + 11) + ' 0 Z" fill="' + mur[2] + '" stroke="#120c09" stroke-width="1.2"/>'; });
       [[70, 210], [108, 214], [256, 211], [300, 214], [186, 215]].forEach(function (m) { s += '<ellipse cx="' + m[0] + '" cy="' + m[1] + '" rx="14" ry="6" fill="#4d6b34" opacity=".8"/><ellipse cx="' + (m[0] + 6) + '" cy="' + (m[1] - 3) + '" rx="7" ry="4" fill="#6f8f45" opacity=".8"/>'; });
+    } else if (riviere) {
+      // Stalactites qui gouttent, une cascade de chaque côté du mur, l'eau qui court au pied du mur
+      [22, 58, 101, 139, 176, 213, 252, 296, 338].forEach(function (sx, k) { var h = 24 + (k * 17 % 30); s += '<path d="M' + (sx - 10) + ' 0 L' + sx + ' ' + h + ' L' + (sx + 10) + ' 0 Z" fill="' + mur[2] + '" stroke="#0b141a" stroke-width="1.2"/><circle class="djc-braise" style="animation-delay:' + (k * 0.37) + 's" cx="' + sx + '" cy="' + (h + 7 + (k % 3) * 9) + '" r="1.6" fill="#a5d8ff"/>'; });
+      [84, 276].forEach(function (bx, k) {
+        s += '<rect x="' + (bx - 15) + '" y="112" width="30" height="100" fill="#4dabf7" opacity=".55"/><rect x="' + (bx - 15) + '" y="112" width="30" height="100" fill="none" stroke="#0b141a" stroke-width="1.2" opacity=".5"/>' +
+             '<path class="djc-vacille" d="M' + (bx - 8) + ' 114 V208 M' + bx + ' 114 V210 M' + (bx + 8) + ' 114 V206" stroke="#e7f5ff" stroke-width="2.4" stroke-dasharray="14 9" stroke-linecap="round" opacity=".75"/>' +
+             '<path d="M' + (bx - 20) + ' 112 Q' + bx + ' 104 ' + (bx + 20) + ' 112 Z" fill="' + mur[2] + '" stroke="#0b141a" stroke-width="1.2"/>' +
+             '<ellipse cx="' + bx + '" cy="214" rx="24" ry="6" fill="#e7f5ff" opacity=".8"/><ellipse cx="' + (bx - 12 + k * 20) + '" cy="211" rx="9" ry="4" fill="#fff" opacity=".8"/>';
+      });
+      s += '<rect y="208" width="360" height="12" fill="#339af0" opacity=".35"/>';
     } else if (champi) {
       // Racines qui pendent du plafond, champignons en console sur le mur (lumineux), de chaque côté
       [18, 52, 96, 150, 205, 262, 300, 344].forEach(function (rx, k) { var h = 34 + (k * 23 % 44); s += '<path d="M' + rx + ' 0 Q' + (rx + (k % 2 ? 7 : -7)) + ' ' + (h * 0.6) + ' ' + rx + ' ' + h + '" fill="none" stroke="#120c09" stroke-width="4.4" stroke-linecap="round"/><path d="M' + rx + ' 0 Q' + (rx + (k % 2 ? 7 : -7)) + ' ' + (h * 0.6) + ' ' + rx + ' ' + h + '" fill="none" stroke="#6d5a45" stroke-width="2.4" stroke-linecap="round"/>'; });
@@ -304,10 +384,25 @@ var DJS = (function () {
       });
       [[48, 150], [70, 236], [112, 120], [250, 128], [292, 240], [318, 146], [40, 196], [326, 204]].forEach(function (o, k) { s += '<circle class="djc-braise" style="animation-delay:' + (k * 0.33) + 's" cx="' + o[0] + '" cy="' + o[1] + '" r="' + (1.4 + (k % 3) * 0.5) + '" fill="#d0bfff" opacity=".8"/>'; });
     }
+    if (riviere) {
+      // La rivière au pied du mur, des flaques sur les bords du sol, quelques roseaux
+      s += '<path d="M0 222 H360 V236 Q300 242 240 236 Q180 230 120 237 Q60 243 0 236 Z" fill="#1c7ed6" opacity=".55"/><path class="djc-vacille" d="M20 229 h26 M96 232 h30 M170 228 h24 M236 232 h28 M306 229 h30" stroke="#d0ebff" stroke-width="1.8" stroke-linecap="round" opacity=".8"/>';
+      [[34, 286, 26, 8], [326, 300, 30, 9], [58, 340, 22, 7], [306, 352, 24, 7]].forEach(function (o) { s += '<ellipse cx="' + o[0] + '" cy="' + o[1] + '" rx="' + o[2] + '" ry="' + o[3] + '" fill="#1c7ed6" opacity=".5" stroke="#0b141a" stroke-width="1"/><ellipse cx="' + (o[0] - 5) + '" cy="' + (o[1] - 1.5) + '" rx="' + (o[2] * 0.45) + '" ry="' + (o[3] * 0.35) + '" fill="#a5d8ff" opacity=".45"/>'; });
+      [[14, 262], [22, 268], [346, 268], [338, 262], [352, 276]].forEach(function (o, k) { s += '<path d="M' + o[0] + ' ' + o[1] + ' q' + (k % 2 ? 4 : -4) + ' -18 ' + (k % 2 ? -2 : 2) + ' -34" fill="none" stroke="#2b8a3e" stroke-width="2.6" stroke-linecap="round"/><ellipse cx="' + (o[0] + (k % 2 ? -2 : 2)) + '" cy="' + (o[1] - 36) + '" rx="2.6" ry="6" fill="#5c3d1e" stroke="#241812" stroke-width="0.8"/>'; });
+    }
     if (g === 'caves') [[30, 330], [330, 318], [60, 362], [300, 356]].forEach(function (o, k) { s += '<ellipse cx="' + o[0] + '" cy="' + o[1] + '" rx="' + (9 - k) + '" ry="' + (5 - k * 0.5) + '" fill="#8d7b68" stroke="#241812" stroke-width="1.1"/><ellipse cx="' + (o[0] - 2) + '" cy="' + (o[1] - 1.5) + '" rx="' + (4 - k * 0.5) + '" ry="1.6" fill="#a8957f"/>'; });
     // La lumière : halo derrière les monstres (doré pour un élite, violet pour un boss), deux torches sur les côtés
     s += '<ellipse cx="180" cy="' + HZ + '" rx="170" ry="130" fill="url(#djc-halo)"/>';
     [30, 330].forEach(function (tx) {
+      if (riviere) {
+        // Pas de torche : un cristal bleu qui luit de chaque côté
+        s += '<circle cx="' + tx + '" cy="166" r="70" fill="url(#djc-lueur)" class="djc-vacille"/>' +
+             '<path d="M' + (tx - 14) + ' 212 L' + (tx - 10) + ' 176 L' + (tx - 3) + ' 168 L' + (tx + 2) + ' 212 Z" fill="#4dabf7" stroke="#241812" stroke-width="1.4"/>' +
+             '<path d="M' + (tx - 4) + ' 212 L' + (tx - 2) + ' 152 L' + (tx + 5) + ' 140 L' + (tx + 11) + ' 154 L' + (tx + 12) + ' 212 Z" fill="#74c0fc" stroke="#241812" stroke-width="1.5"/>' +
+             '<path d="M' + (tx + 5) + ' 140 L' + (tx + 4) + ' 212 M' + (tx - 3) + ' 168 L' + (tx - 5) + ' 212" stroke="#d0ebff" stroke-width="1.4" opacity=".8"/>' +
+             '<path d="M' + (tx + 8) + ' 212 L' + (tx + 13) + ' 186 L' + (tx + 18) + ' 194 L' + (tx + 19) + ' 212 Z" fill="#339af0" stroke="#241812" stroke-width="1.3"/>';
+        return;
+      }
       if (champi) {
         // Pas de torche : un grand champignon lumineux de chaque côté
         s += '<circle cx="' + tx + '" cy="166" r="70" fill="url(#djc-lueur)" class="djc-vacille"/>' +
