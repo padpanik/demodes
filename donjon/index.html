@@ -153,6 +153,15 @@
     @keyframes flotte-c { from { opacity: 1; transform: translate(-50%, 0) scale(1.3); } to { opacity: 0; transform: translate(-50%, -26px) scale(1); } }
     .journal-c { background: rgba(255,255,255,0.08); border-radius: 10px; padding: 3px 8px; margin: 5px 0; font-size: 0.7em; line-height: 1.35; height: 62px; overflow-y: auto; }
     .journal-c .vide { opacity: 0.6; font-style: italic; }
+    /* Lignes du journal (3.39) : qui agit en gras (monstres en rose), son action, puis chaque cible et ce qu'elle reçoit */
+    .lj { margin: 1px 0; }
+    .lj-a { font-weight: 900; color: #ffe8cc; } .lj-a.mo { color: #ffc0c0; }
+    .lj-x { font-style: italic; opacity: 0.85; }
+    .lj-g i { font-style: normal; opacity: 0.55; } .lj-q { font-weight: 700; }
+    .lj b { font-weight: 900; margin-left: 3px; white-space: nowrap; }
+    .lj b.mal { color: #ff6b6b; } .lj b.soin { color: #69db7c; } .lj b.autre { color: #c49bff; }
+    .lj.lj-fin { color: #ffd43b; font-weight: 800; } .lj.lj-ko { color: #ff8787; font-weight: 800; } .lj.lj-vie { color: #8ce99a; font-weight: 800; } .lj.lj-info { opacity: 0.85; }
+    .dernier-combat .lj { display: block; } .dernier-combat .lj-a { color: inherit; } .dernier-combat .lj-a.mo { color: #ffc0c0; }
     .moi-c { position: relative; display: flex; align-items: center; gap: 8px; background: #3a2e26; border-radius: 12px; padding: 4px 6px; margin-bottom: 5px; border: 2px solid transparent; }
     .moi-c.ciblable { border-color: #8ce99a; cursor: pointer; }
     .nrj { flex: none; width: 40px; height: 40px; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #ffe066, #f08c00); color: #2a211b; font-weight: 900; font-size: 1.3em; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 10px rgba(255,212,59,0.5); }
@@ -785,7 +794,7 @@
                 <span class="etats-c"><span v-for="(n, et) in m.etats" :key="et" @click.stop="infoEtat(et, n)">{{ D.ETATS[et] ? D.ETATS[et].ico : '' }}{{ n }}</span></span>
               </button>
             </div></div>
-            <div class="journal-c" ref="journal"><div v-if="!combat.journal.length" class="vide">Chaque monstre annonce son prochain coup (en haut). Joue tes cartes, puis « Fin du tour ».</div><div v-for="(l, k) in combat.journal" :key="combat.id + '-' + k + l">{{ l }}</div></div>
+            <div class="journal-c" ref="journal"><div v-if="!combat.journal.length" class="vide">Chaque monstre annonce son prochain coup (en haut). Joue tes cartes, puis « Fin du tour ».</div><div v-for="(l, k) in journalAff(combat.journal)" :key="combat.id + '-' + k" class="lj" :class="l.c"><template v-if="l.t">{{ l.t }}</template><template v-else><span class="lj-a" :class="{ mo: l.mo }">{{ l.i }} {{ l.a }}</span> <span class="lj-x">{{ l.x }}</span><span v-for="(g, gi) in l.g" :key="gi" class="lj-g"><i>{{ gi ? ' · ' : ' → ' }}</i><span v-if="g.q" class="lj-q">{{ g.q }} </span><b v-for="(r, ri) in g.r" :key="ri" :class="r.c">{{ r.v }}</b></span></template></div></div>
             <div class="allies-dj combat" v-if="!jeJoue && allies.length" :class="'n' + Math.min(allies.length, 3)">
                   <button v-for="a in allies" :key="'al' + a.nom" class="allie-dj" :class="{ loin: a.loin, ko: a.fantome, bas: a.bas, ciblable: a.cible, touche: toucheC(a.nom) }" @click="toucherAllie(a)">
                     <span class="al-av"><span v-if="a.cp" v-html="dessinSvg(a.cp)"></span><span v-else class="sans">🧭</span>
@@ -846,7 +855,7 @@
             <div v-for="f in effetsIci" :key="'f' + f.id" class="ent effet" :style="pos(f)"><span class="emo">{{ EFFETS[f.k] || '✨' }}</span></div>
           </div>
 
-          <div class="dernier-combat" v-if="dernierCombatVu" @click="vuCombat = partie.dernierCombat.id"><b>{{ partie.dernierCombat.gagne ? '🎉 Victoire !' : '👻 Défaite…' }}</b> <span v-for="(l, k) in partie.dernierCombat.journal.slice(-2)" :key="k">{{ l }}</span></div>
+          <div class="dernier-combat" v-if="dernierCombatVu" @click="vuCombat = partie.dernierCombat.id"><b>{{ partie.dernierCombat.gagne ? '🎉 Victoire !' : '👻 Défaite…' }}</b> <span v-for="(l, k) in journalAff(partie.dernierCombat.journal.slice(-2))" :key="k" class="lj" :class="l.c"><template v-if="l.t">{{ l.t }}</template><template v-else><span class="lj-a" :class="{ mo: l.mo }">{{ l.i }} {{ l.a }}</span> <span class="lj-x">{{ l.x }}</span><span v-for="(g, gi) in l.g" :key="gi" class="lj-g"><i>{{ gi ? ' · ' : ' → ' }}</i><span v-if="g.q" class="lj-q">{{ g.q }} </span><b v-for="(r, ri) in g.r" :key="ri" :class="r.c">{{ r.v }}</b></span></template></span></div>
           </div>
           <div class="commandes-dj" :class="{ inverse: inverse }">
             <div class="pad" @pointerdown="padDebut" @pointermove="padBouger" @pointerup="padFin" @pointercancel="padFin" @lostpointercapture="padFin">
@@ -1586,6 +1595,22 @@
           return DJ.degatsIntention(p, m, cible || this.monJ);
         },
         fxSur: function(qui) { var c = this.combat, t = this.partie.maintenant; return c && c.fx ? c.fx.filter(k => k.qui === qui && t - k.t < 1300) : []; },
+        // Journal du combat (3.39) : chaque ligne { i, a, x, r } du moteur devient « qui · quoi → sur qui combien », les effets regroupés par cible
+        // (rouge = dégâts, vert = soins, violet = le reste : armure, états, malédictions, pioche…). Une ancienne ligne texte reste telle quelle.
+        journalAff: function(l) {
+          var p = this.partie, noms = {};
+          if (p) Object.values(p.joueurs).forEach(j => { noms[j.cp && j.cp.n ? j.cp.n : j.surnom || j.nom] = 1; });
+          return (l || []).map(x => {
+            if (typeof x === 'string') return { t: x, c: /vaincu/.test(x) ? 'lj-fin' : /KO/.test(x) ? 'lj-ko' : /ranimé|sauve/.test(x) ? 'lj-vie' : 'lj-info' };
+            var g = [], par = {};
+            (x.r || []).forEach(r => {
+              var k = r.k === undefined ? r.q : r.k;
+              if (!par[k]) { par[k] = { q: r.q === x.a ? '' : r.q, r: [] }; g.push(par[k]); }
+              par[k].r.push({ v: r.v + (r.n > 1 ? ' ×' + r.n : '') + (r.cl === 'neutre' && /^🛡️\d+$/.test(r.v) ? ' paré' : ''), c: r.cl === 'mal' ? 'mal' : r.cl === 'soin' ? 'soin' : 'autre' });
+            });
+            return { i: x.i, a: x.a, x: x.x, g: g, mo: !noms[x.a] };
+          });
+        },
         toucheC: function(qui) { return this.fxSur(qui).some(k => k.cl === 'mal'); },   // vient de prendre un coup : il tremble
         info: function(t) { this.infoTxt = t; this.infoFiole = null; clearTimeout(this._info); this._info = setTimeout(() => { this.infoTxt = ''; this.infoFiole = null; }, 5000); },
         infoEtat: function(et, n) { var E = DJ.D.ETATS[et]; if (E) this.info(E.ico + ' ' + E.nom + ' ' + n + ' : ' + E.texte.replace('{n}', n).replace('tour·s', n > 1 ? 'tours' : 'tour') + '.'); },
@@ -1810,7 +1835,7 @@
           if (!cP) this.entreeCombat = null;
           if (cP && cA && cP.tour !== cA.tour) { this.son('des', 3); this.sel = null; }
           if (!cP) this.sel = null;
-          if (cP && (!cA || cP.journal.length !== cA.journal.length || cP.journal[cP.journal.length - 1] !== cA.journal[cA.journal.length - 1])) this.$nextTick(() => { var j = this.$refs.journal; if (j) j.scrollTop = j.scrollHeight; });
+          if (cP && (!cA || cP.journal.length !== cA.journal.length || JSON.stringify(cP.journal[cP.journal.length - 1]) !== JSON.stringify(cA.journal[cA.journal.length - 1]))) this.$nextTick(() => { var j = this.$refs.journal; if (j) j.scrollTop = j.scrollHeight; });
           // Doigt toujours sur la croix mais direction oubliée par le donjon (après un combat, une reprise) : on la redonne
           if (this.dirCourante && moi && !moi.d && !cP && !moi.fantome && p.phase === 'jeu' && Date.now() - (this._redir || 0) > 500) {
             this._redir = Date.now(); this.envoyerJeu({ type: 'DIR', d: this.dirCourante });

@@ -692,7 +692,30 @@ var DJ = (function () {
   function vivantsDe(e, c) { return c.joueurs.map(n => e.joueurs[n]).filter(p => p && !p.fantome && p.salle === c.salle); }
   function monstresDe(e, c) { return e.ennemis.filter(m => m.salle === c.salle); }
   function journal(c, t) { c.journal.push(t); if (c.journal.length > 14) c.journal.shift(); }
-  function fx(e, c, qui, v, cl) { c.fx.push({ id: ++e.seq, qui: qui, v: v, cl: cl || 'mal', t: e.maintenant }); if (c.fx.length > 24) c.fx.shift(); }
+  // Journal détaillé (3.39, demandé par l'utilisateur : « qui, quoi, sur qui et combien ») : chaque action ouvre une ligne
+  // { i: icône, a: qui agit, x: ce qu'il fait, r: [{ q: sur qui, v: combien, cl }] } ; chaque effet (fx) s'y ajoute tout seul.
+  // cl : 'mal' (dégâts, rouge), 'soin' (vert), le reste (armure, états, malédictions…) en violet. Les anciennes lignes texte restent lisibles.
+  var LIGNE = null;
+  function ouvrir(c, ico, acteur, action) { LIGNE = { i: ico, a: acteur, x: action, r: [] }; journal(c, LIGNE); return LIGNE; }
+  function fermer() { LIGNE = null; }
+  // q : nom affiché ; k : qui exactement (nom du joueur ou numéro du monstre : deux « Gluant » restent distincts)
+  function noter(q, v, cl, k) {
+    if (!LIGNE) return;
+    k = k === undefined ? q : k;
+    var r = LIGNE.r, m = /^−(\d+)$/.exec(v), pa = /^🛡️(\d+)$/.exec(v);
+    // Plusieurs coups sur la même cible : additionnés (« −12 ×2 »), de même pour la part parée par l'armure
+    var meme = m && cl === 'mal' && r.find(x => x.k === k && x.cl === 'mal' && /^−\d+$/.test(x.v));
+    if (meme) { meme.v = '−' + (parseInt(meme.v.slice(1), 10) + parseInt(m[1], 10)); meme.n = (meme.n || 1) + 1; return; }
+    var par = pa && cl === 'neutre' && r.find(x => x.k === k && x.cl === 'neutre' && /^🛡️\d+$/.test(x.v));
+    if (par) { par.v = '🛡️' + (parseInt(/\d+/.exec(par.v)[0], 10) + parseInt(pa[1], 10)); return; }
+    if (r.length < 12) r.push({ q: q, k: k, v: v, cl: cl || 'mal' });
+  }
+  function nomQui(e, qui) {
+    if (e.joueurs[qui]) return nomCp(e.joueurs[qui]);
+    var m = e.ennemis.find(x => x.id === qui);
+    return m ? nomMonstre(m) : '?';
+  }
+  function fx(e, c, qui, v, cl) { c.fx.push({ id: ++e.seq, qui: qui, v: v, cl: cl || 'mal', t: e.maintenant }); if (c.fx.length > 24) c.fx.shift(); noter(nomQui(e, qui), v, cl, qui); }
   function nomMonstre(m) { return MONSTRES[m.type].nom; }
   function ajouterEtat(cible, et, n) { cible.etats[et] = (cible.etats[et] || 0) + n; if (cible.etats[et] <= 0) delete cible.etats[et]; }
 
@@ -753,18 +776,22 @@ var DJ = (function () {
     if (premier && a(p, 'ancre')) p.armure += 10;
     var n = MAIN + (a(p, 'sceptre') ? 1 : 0) - (a(p, 'couronne') ? 1 : 0) + (premier && a(p, 'sac') ? 2 : 0);
     piocher(e, p, n, h);
-    if (p.etats.brasier) { monstresDe(e, c).forEach(m => infliger(e, c, m, p.etats.brasier, null)); }
-    if (p.etats.fleau) { monstresDe(e, c).forEach(m => ajouterEtat(m, 'poison', p.etats.fleau)); }
+    if (p.etats.brasier) { ouvrir(c, ETATS.brasier.ico, nomCp(p), ETATS.brasier.nom); monstresDe(e, c).forEach(m => infliger(e, c, m, p.etats.brasier, null)); fermer(); }
+    if (p.etats.fleau) { ouvrir(c, ETATS.fleau.ico, nomCp(p), ETATS.fleau.nom); monstresDe(e, c).forEach(m => { ajouterEtat(m, 'poison', p.etats.fleau); noter(nomMonstre(m), '☠️+' + p.etats.fleau, 'etat', m.id); }); fermer(); }
   }
   // Poison et brûlure au début du tour de qui les porte
   function tickDot(e, c, x) {
     var estJ = !!x.paquet;
+    if (!x.etats.poison && !x.etats.brule) return;
+    var avant = LIGNE;
+    ouvrir(c, '⏳', estJ ? nomCp(x) : nomMonstre(x), x.etats.poison && x.etats.brule ? 'poison et brûlure' : x.etats.poison ? 'poison' : 'brûlure');
     if (x.etats.poison) {
       // À plusieurs, un monstre empoisonné perd moins de PV (POISON_GROUPE) ; le compteur baisse comme d'habitude
       var np = !estJ && nbGroupe(e) > 1 ? Math.max(1, Math.round(x.etats.poison * D.POISON_GROUPE)) : x.etats.poison;
       perdrePv(e, c, x, np, '☠️'); ajouterEtat(x, 'poison', -1);
     }
     if (x.etats.brule && (estJ ? !x.fantome : x.pv > 0)) { perdrePv(e, c, x, x.etats.brule, '🔥'); x.etats.brule = Math.floor(x.etats.brule / 2); if (!x.etats.brule) delete x.etats.brule; }
+    LIGNE = avant;
   }
   function perdrePv(e, c, x, n, ico) {
     x.pv -= n;
@@ -785,6 +812,7 @@ var DJ = (function () {
     cible.pv -= reste;
     var qui = cible.paquet ? cible.nom : cible.id;
     fx(e, c, qui, reste ? '−' + reste : bloque ? '🛡️' + bloque : '0', reste ? 'mal' : 'neutre');
+    if (reste && bloque) noter(nomQui(e, qui), '🛡️' + bloque, 'neutre', qui);   // journal : la part encaissée par l'armure
     if (attaque && source && cible.etats.epines) infliger(e, c, source, cible.etats.epines, null, false);
     if (attaque && source && source.paquet && reste > 0 && source.etats.venin && cible.pv > 0) ajouterEtat(cible, 'poison', source.etats.venin);
     if (cible.paquet) verifierKo(e, c, cible);
@@ -827,8 +855,8 @@ var DJ = (function () {
       } else if (f.armure) {
         var qui = cible && cible.paquet ? cible : p, n = p.etats.fragile ? Math.floor(f.armure * 0.75) : f.armure;
         qui.armure += n; fx(e, c, qui.nom, '+' + n + ' 🛡️', 'bouclier');
-      } else if (f.pioche) piocher(e, p, f.pioche, h);
-      else if (f.energie) p.energie += f.energie;
+      } else if (f.pioche) { piocher(e, p, f.pioche, h); noter(nomCp(p), '🃏+' + f.pioche, 'etat'); }
+      else if (f.energie) { p.energie += f.energie; noter(nomCp(p), '⚡+' + f.energie, 'etat'); }
       else if (f.etat) {
         (f.tous ? ms() : [cible].filter(m => m && !m.paquet && e.ennemis.indexOf(m) >= 0)).forEach(m => {
           var n = f.n + (f.etat === 'brule' && p.etats.foyer ? p.etats.foyer : 0);
@@ -854,7 +882,7 @@ var DJ = (function () {
         for (var i = 0; i < f.x; i++) { var l = monstresDe(e, c); if (!l.length) break; var x = auHasard(l, h); infliger(e, c, x, calculer(p, x, f.n), p, true); }
         break;
       case 'danse': if (vivant(m)) infliger(e, c, m, calculer(p, m, f.n * p.joues), p, true); break;
-      case 'traque': if (vivant(m)) { if (m.etats.vuln) p.energie++; infliger(e, c, m, calculer(p, m, f.n), p, true); } break;
+      case 'traque': if (vivant(m)) { if (m.etats.vuln) { p.energie++; noter(nomCp(p), '⚡+1', 'etat'); } infliger(e, c, m, calculer(p, m, f.n), p, true); } break;
       case 'embuscade': if (vivant(m)) infliger(e, c, m, calculer(p, m, m.etats.poison ? f.n * 2 : f.n), p, true); break;
       case 'catalyse': if (vivant(m) && m.etats.poison) { m.etats.poison *= f.n; fx(e, c, m.id, '☠️' + m.etats.poison, 'etat'); } break;
     }
@@ -862,6 +890,7 @@ var DJ = (function () {
 
   // Un joueur joue la carte n° i de sa main (effet immédiat)
   function jouerCarte(e, nom, i, cibleId, h) {
+    LIGNE = null;
     h = h || Math.random;
     var p = e.joueurs[nom], c = p && e.combats[p.salle];
     if (!c || p.fantome || c.joueurs.indexOf(nom) < 0) return 'Pas de combat';
@@ -880,12 +909,13 @@ var DJ = (function () {
     }
     p.energie -= k.cout;
     p.main.splice(i, 1);
-    // Rage : une carte qui n'est pas une attaque met les monstres enragés en colère
-    if (k.type !== 'attaque') ms.forEach(m => { if (m.etats.rage) { ajouterEtat(m, 'force', m.etats.rage); fx(e, c, m.id, '😡+' + m.etats.rage, 'etat'); } });
-    journal(c, k.ico + ' ' + nomCp(p) + ' : ' + k.nom + (cible && !cible.paquet ? ' → ' + nomMonstre(cible) : cible && cible !== p ? ' → ' + nomCp(cible) : ''));
+    ouvrir(c, k.ico, nomCp(p), k.nom);
     appliquer(e, c, p, k.fx, cible, h, false);
     p.joues++; p.jouesTotal = (p.jouesTotal || 0) + 1;
     if (p.etats.rythme && p.joues >= 4) { var l = monstresDe(e, c); if (l.length) { var x = auHasard(l, h); infliger(e, c, x, p.etats.rythme, null, false); } }
+    // Rage : une carte qui n'est pas une attaque met les monstres enragés en colère
+    if (k.type !== 'attaque') ms.forEach(m => { if (m.etats.rage && e.ennemis.indexOf(m) >= 0) { ajouterEtat(m, 'force', m.etats.rage); fx(e, c, m.id, '😡+' + m.etats.rage, 'etat'); } });
+    fermer();
     if (a(p, 'plume') && p.jouesTotal % 10 === 0) p.energie++;
     if (k.epuise || k.type === 'pouvoir') p.epuisees.push(id); else p.defausse.push(id);
     verifierFin(e, c, h);
@@ -893,6 +923,7 @@ var DJ = (function () {
   }
   // Une fiole : à tout moment de son tour (la Fiole de soin aussi hors combat)
   function utiliserFiole(e, nom, i, cibleId, h) {
+    LIGNE = null;
     h = h || Math.random;
     var p = e.joueurs[nom], id = p && p.fioles[i], F = id && FIOLES[id];
     if (!F || p.fantome) return 'Pas de fiole';
@@ -912,8 +943,9 @@ var DJ = (function () {
     if (F.cible === 'monstre') { cible = ms.find(m => m.id === cibleId) || (ms.length === 1 ? ms[0] : null); if (!cible) return 'Choisis un monstre'; }
     else if (F.cible === 'joueur') { var r = e.joueurs[cibleId]; cible = r && !r.fantome && c.joueurs.indexOf(r.nom) >= 0 ? r : p; }
     p.fioles.splice(i, 1);
-    journal(c, F.ico + ' ' + nomCp(p) + ' : ' + F.nom);
+    ouvrir(c, F.ico, nomCp(p), F.nom);
     appliquer(e, c, p, F.fx, cible, h, true);
+    fermer();
     verifierFin(e, c, h);
     return null;
   }
@@ -921,11 +953,14 @@ var DJ = (function () {
 
   // Fin du tour d'un joueur : effets de fin de tour, la main part à la défausse
   function finTour(e, nom, h) {
+    LIGNE = null;
     var p = e.joueurs[nom], c = p && e.combats[p.salle];
     if (!c || c.joueurs.indexOf(nom) < 0 || c.fini[nom] || p.fantome) return;
+    if (p.etats.metal || (a(p, 'coeurpierre') && !p.armure) || p.etats.regen) ouvrir(c, '⏹️', nomCp(p), 'fin de tour');
     if (p.etats.metal) { p.armure += p.etats.metal; fx(e, c, p.nom, '+' + p.etats.metal + ' 🛡️', 'bouclier'); }
     if (a(p, 'coeurpierre') && !p.armure) { p.armure += 6; fx(e, c, p.nom, '+6 🛡️', 'bouclier'); }
-    if (p.etats.regen) soigner(p, p.etats.regen);
+    if (p.etats.regen) { var gr = soigner(p, p.etats.regen); if (gr) noter(nomCp(p), '+' + gr + ' ❤️', 'soin'); }
+    fermer();
     defausserTout(p);
     c.fini[nom] = 1;
   }
@@ -952,19 +987,21 @@ var DJ = (function () {
       var cible = e.joueurs[m.cible];
       if (!cible || cible.fantome || cible.salle !== c.salle || c.joueurs.indexOf(cible.nom) < 0) cible = auHasard(vivants, h);
       var cibles = i.tous ? vivants : [cible];
-      journal(c, (MONSTRES[m.type].ico || '🟢') + ' ' + nomMonstre(m) + ' : ' + i.nom);
+      var nm = nomMonstre(m);
+      ouvrir(c, MONSTRES[m.type].ico || '🟢', nm, i.nom);
       if (i.divise) {
+        noter(nm, '➗ se divise en deux', 'etat', m.id); fermer();
         m.mem.divise = 1;
         var pv = Math.max(1, Math.floor(m.pv / 2)), pos = [[m.x - 1, m.y], [m.x + 1, m.y]];
         e.ennemis = e.ennemis.filter(x => x !== m);
         pos.forEach(q => { var n = creerMonstre(e, 'gluantmoyen', m.salle, q[0], q[1], h); n.pv = n.pvMax = pv; n.f = n.combatF = m.f; n.pvBase = pv / m.f; n.k = 0; n.intention = null; });
         return;
       }
-      if (i.armure) m.armure += i.armure;
-      if (i.force) ajouterEtat(m, 'force', i.force);
-      if (i.buffE) ajouterEtat(m, i.buffE, i.buffN);
+      if (i.armure) { m.armure += i.armure; noter(nm, '+' + i.armure + ' 🛡️', 'bouclier', m.id); }
+      if (i.force) { ajouterEtat(m, 'force', i.force); noter(nm, '💪+' + i.force, 'etat', m.id); }
+      if (i.buffE) { ajouterEtat(m, i.buffE, i.buffN); noter(nm, (ETATS[i.buffE] ? ETATS[i.buffE].ico : '') + '+' + i.buffN, 'etat', m.id); }
       if (i.fureur) m.mem.fureur = 1;
-      if (i.soin) m.pv = Math.min(m.pvMax, m.pv + i.soin);
+      if (i.soin) { var gm = Math.min(m.pvMax, m.pv + i.soin) - m.pv; m.pv += gm; if (gm) noter(nm, '+' + gm + ' ❤️', 'soin', m.id); }
       if (i.att) {
         for (var x = 0; x < (i.x || 1); x++) cibles.forEach(q => {
           if (q.fantome || e.ennemis.indexOf(m) < 0) return;
@@ -985,8 +1022,10 @@ var DJ = (function () {
           if (!pl) break;
           var nv = creerMonstre(e, i.appel.type, c.salle, pl[0], pl[1], h);
           nv.intention = null;
+          noter(nomMonstre(nv), '📣 arrive', 'etat', nv.id);
         }
       }
+      fermer();
       m.k++; m.mem.dernier = i.nom;
     });
     // Fin du tour : les états qui durent baissent de 1
@@ -1045,6 +1084,7 @@ var DJ = (function () {
 
   // ---------- Un pas de simulation (dix fois par seconde) ----------
   function tick(e, maintenant, h, absents) {
+    LIGNE = null;
     if (e.phase !== 'jeu') return;
     h = h || Math.random;
     var dt = e.maintenant ? Math.min(500, maintenant - e.maintenant) : 0;
