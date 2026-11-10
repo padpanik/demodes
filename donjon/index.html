@@ -341,8 +341,9 @@
     .jeu-dj.immersif .combat-dj { flex: 1; min-height: 0; display: flex; flex-direction: column; margin-top: 2px; }
     /* La taille des monstres suit la hauteur réelle de la scène (unités cqh) : l'annonce du coup, le nom et les PV restent toujours visibles */
     .jeu-dj.immersif .scene-c { flex: 1; min-height: 0; display: flex; flex-direction: column; justify-content: safe center; container-type: size; }
-    .jeu-dj.immersif .mc-des { width: clamp(44px, calc(100cqh - 96px), 96px); height: clamp(44px, calc(100cqh - 96px), 96px); }
-    .jeu-dj.immersif .mc.gros .mc-des { width: clamp(56px, calc(100cqh - 112px), 160px); height: clamp(56px, calc(100cqh - 112px), 160px); margin-top: 12px; }
+    /* 3.41 : jamais plus large que sa colonne (un boss entouré de deux monstres appelés débordait de la scène, coupé à gauche) */
+    .jeu-dj.immersif .mc-des { width: clamp(44px, calc(100cqh - 96px), 96px); max-width: 100%; height: auto; aspect-ratio: 1; }
+    .jeu-dj.immersif .mc.gros .mc-des { width: clamp(56px, calc(100cqh - 112px), 160px); max-width: 100%; height: auto; aspect-ratio: 1; margin-top: 12px; }
     .jeu-dj.immersif .journal-c { flex: none; height: 58px; }
     .jeu-dj.immersif .main-c .carte-c { min-height: 138px; }
     .jeu-dj.immersif .main-c .cc-ico { font-size: 23px; }
@@ -529,6 +530,14 @@
     .liaison-menu span { display: block; line-height: 1.4; }
     .entree-combat .noms-combat { font-weight: 800; color: #7c2d12; margin: 2px 0 6px; }
     .entree-combat .btn.principal { font-size: 1.15em; padding: 12px; }
+    /* Règle du lieu (3.41) : sur le plan, dans ma ligne de combat, dans les fenêtres d'entrée */
+    .plan-regle { position: absolute; left: 8px; right: 8px; bottom: 6px; z-index: 1; text-align: center; font-size: 0.72em; color: #e5dbff; background: rgba(59,42,110,0.82); border: 1px solid #845ef7; border-radius: 9px; padding: 2px 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .plan-dj.avec-regle .plan-svg { bottom: 28px; }
+    .etats-c span.regle-c { background: #5f3dc4; color: #fff; white-space: nowrap; }
+    .etats-c span.regle-c.menace { background: #c2255c; animation: appel-c 0.7s ease-in-out infinite alternate; }
+    .regle-entree { margin-top: 6px; background: #f3f0ff; border: 1.5px solid #845ef7; border-radius: 10px; padding: 5px 8px; font-size: 0.86em; color: #3b2a6e; }
+    .regle-entree.grande { font-size: 0.95em; line-height: 1.4; padding: 9px 10px; text-align: left; }
+    .regle-entree.grande b { display: block; margin-bottom: 3px; }
     /* Ma semaine (3.29) */
     .record-sem { background: #fff8ee; border: 1.5px solid #c9b08f; border-radius: 12px; padding: 7px 10px; margin: 8px 0 2px; font-size: 0.88em; line-height: 1.45; }
     .record-sem .dernier { color: #7a6450; font-size: 0.92em; }
@@ -811,7 +820,7 @@
                 <span class="moi-av" :class="{ touche: toucheC(moi) }" v-if="monJ.cp" v-html="dessinSvg(monJ.cp)"></span>
                 <div class="corps">
                   <span class="pv-dj"><i :style="{ width: pct(monJ.pv, monJ.pvMax) }"></i><b>❤️ {{ monJ.pv }} / {{ monJ.pvMax }}</b></span>
-                  <span class="etats-c"><span v-if="monJ.armure" class="armure-m">🛡️ {{ monJ.armure }}</span><span v-for="(n, et) in monJ.etats" :key="et" @click.stop="infoEtat(et, n)">{{ D.ETATS[et] ? D.ETATS[et].ico : '' }}{{ n }}</span></span>
+                  <span class="etats-c"><span v-if="monJ.armure" class="armure-m">🛡️ {{ monJ.armure }}</span><span v-if="regle" class="regle-c" :class="{ menace: sporesMenace }" @click.stop="info(regle.ico + ' Règle du lieu, ' + regle.nom + ' : ' + regle.texte)">{{ regle.ico }}<template v-if="sporesMenace"> sans armure : ☠️+{{ regle.poison }}</template></span><span v-for="(n, et) in monJ.etats" :key="et" @click.stop="infoEtat(et, n)">{{ D.ETATS[et] ? D.ETATS[et].ico : '' }}{{ n }}</span></span>
                 </div>
                 <span v-for="k in fxSur(moi)" :key="'x' + k.id" class="coup-flottant" :class="k.cl">{{ k.v }}</span>
               </div>
@@ -830,10 +839,11 @@
 
           <template v-else>
           <div class="zone-explo">
-          <div class="plan-dj" v-if="immersif" @click="info(etageInfo + ' · ' + objectif)">
-            <div class="plan-titre">{{ etageIco }} {{ D.ETAGES[partie.etage - 1].nom }}<small>{{ partie.etage }} / {{ DJ.NB_ETAGES }}</small>
+          <div class="plan-dj" :class="{ 'avec-regle': regle }" v-if="immersif" @click="info(etageInfo + ' · ' + objectif)">
+            <div class="plan-titre">{{ etageIco }} {{ lieu.nom }}<small>{{ partie.etage }} / {{ DJ.NB_ETAGES }}</small>
               <span class="diff-dj" :class="'d-' + difPartie">{{ D.DIFFICULTES[difPartie].ico }} {{ D.DIFFICULTES[difPartie].nom }}<template v-if="partie.peril"> +{{ partie.peril }}</template></span></div>
             <div class="plan-svg" v-html="planSvg"></div>
+            <div v-if="regle" class="plan-regle">{{ regle.ico }} <b>{{ regle.nom }}</b> · {{ regle.court }}</div>
           </div>
           <div class="salle-dj" ref="salle">
             <svg class="fond" viewBox="0 0 352 288" preserveAspectRatio="none" v-html="salleSvg"></svg>
@@ -926,6 +936,17 @@
           </div>
         </div>
 
+        <!-- Arrivée dans un lieu qui a sa règle (3.41) : on la présente une fois par étage ; le bouton ne répond qu'au bout de 0,6 s (doigt resté sur la croix) -->
+        <div class="voile-dj entree-combat" v-if="lieuAnnonce && partie && partie.phase === 'jeu' && regle && !combat">
+          <div class="boite-dj">
+            <div class="grand">{{ lieu.ico }}</div>
+            <div class="titre">{{ lieu.nom }}</div>
+            <div class="aide" style="font-size:0.9em">Étage {{ partie.etage }} sur {{ DJ.NB_ETAGES }} · le boss : {{ DJ.MONSTRES[lieu.boss].nom }}</div>
+            <div class="regle-entree grande"><b>{{ regle.ico }} Règle du lieu : {{ regle.nom }}</b>{{ regle.texte }}</div>
+            <button class="btn principal" @click="fermerLieu">Compris !</button>
+          </div>
+        </div>
+
         <!-- Entrée en combat (3.31, demandé par l'utilisateur : le doigt encore sur la croix touchait « Fin du tour ») :
              il faut toucher « Au combat » pour voir les cartes ; le bouton ne répond qu'au bout de 0,6 s et le voile ne se ferme pas tout seul -->
         <div class="voile-dj entree-combat" v-if="entreeCombat && combat && combat.id === entreeCombat.id">
@@ -934,6 +955,7 @@
             <div class="titre">{{ entreeCombat.rang === 'boss' ? 'Le boss !' : entreeCombat.rang === 'elite' ? 'Un élite !' : combat.embuscade ? 'Embuscade !' : 'Combat !' }}</div>
             <div class="noms-combat">{{ entreeCombat.noms }}</div>
             <div class="aide" style="font-size:0.9em">{{ combat.embuscade ? 'Pris par surprise : tu commences 🎯 Vulnérable.' : 'Joue tes cartes, puis touche « Fin du tour ».' }}</div>
+            <div v-if="regle" class="regle-entree">{{ regle.ico }} <b>{{ regle.nom }}</b> · {{ regle.court }}</div>
             <button class="btn principal" @click="fermerEntreeCombat">⚔️ Au combat !</button>
           </div>
         </div>
@@ -1069,7 +1091,7 @@
           <div class="boite-dj">
             <div class="grand">{{ partie.fin.gagne ? '🏆' : '👻' }}</div>
             <div class="titre">{{ partie.fin.gagne ? 'Le donjon est vaincu !' : 'Tout le groupe est KO…' }}</div>
-            <div class="aide" v-if="!partie.fin.gagne">Arrivé à l'étage {{ partie.fin.etage || partie.etage }} : {{ D.ETAGES[(partie.fin.etage || partie.etage) - 1].nom }}.</div>
+            <div class="aide" v-if="!partie.fin.gagne">Arrivé à l'étage {{ partie.fin.etage || partie.etage }} : {{ DJ.lieu(partie, partie.fin.etage || partie.etage).nom }}.</div>
             <ul>
               <li>✨ {{ gains.poussieres != null ? gains.poussieres : partie.poussiere }} poussière{{ (gains.poussieres != null ? gains.poussieres : partie.poussiere) > 1 ? 's' : '' }} d'étoile<small v-if="gains.mult && gains.mult !== 1"> ({{ partie.poussiere }} × {{ String(gains.mult).replace('.', ',') }}, {{ D.DIFFICULTES[gains.difficulte].nom }})</small><span v-if="gains.etoiles"> → +{{ gains.etoilesDonnees }} ⭐</span> (en réserve : {{ gains.reste }} / 5)</li>
               <li v-if="gains.partie">⭐ {{ gains.partie }}</li>
@@ -1109,7 +1131,7 @@
         <section class="carte regles">
           <div class="titre-carte">Règles</div>
           <ul>
-            <li>Le donjon a <strong>3 étages</strong> : 🕳️ les Caves, ⚰️ les Catacombes, 🏰 la Forteresse. Chaque étage se visite pièce par pièce (la petite carte en haut à droite montre les pièces vues). Un <strong>élite ⭐</strong> garde la grande clé 🔑 qui ouvre la porte du <strong>boss 👑</strong> ; le boss vaincu, un escalier 🪜 descend à l'étage suivant (la moitié des PV perdus revient). Vaincre la Liche, au fond de la Forteresse, gagne le donjon.</li>
+            <li>Le donjon a <strong>3 étages</strong> : 🕳️ les Caves, ⚰️ les Catacombes, 🏰 la Forteresse. <strong>Un étage peut être un autre lieu</strong>, tiré au hasard à chaque donjon, avec ses monstres, son boss et sa <strong>règle</strong> : 🍄 la Champignonnière à la place des Caves (<em>Spores</em> : qui finit son tour sans armure reçoit ☠️ Poison 1, les monstres aussi ; boss : le Grand Mycélium). D'autres lieux arrivent. Chaque étage se visite pièce par pièce (la petite carte en haut à droite montre les pièces vues). Un <strong>élite ⭐</strong> garde la grande clé 🔑 qui ouvre la porte du <strong>boss 👑</strong> ; le boss vaincu, un escalier 🪜 descend à l'étage suivant (la moitié des PV perdus revient). Vaincre le boss du dernier étage (la Liche, au fond de la Forteresse) gagne le donjon.</li>
             <li>La croix fait avancer ton compagnon (garde le doigt pour marcher). Le bouton ⇄ la met de l'autre côté.</li>
             <li><strong>Chaque compagnon a un pouvoir</strong>, qui ouvre un obstacle (fonce dedans) et donne sa <strong>classe de cartes</strong> :
               🔥 <strong>Feu</strong> (dragon, chat, oie : ronces) brûle tous les monstres ·
@@ -1239,6 +1261,7 @@
         coupActif: false,
         demandeQuitter: false,
         entreeCombat: null,
+        lieuAnnonce: null,   // { cle, t } : la fenêtre qui présente un lieu à règle, une fois par étage (3.41)
         diagT: 0,
         chatVisible: false,      // la discussion du salon est ouverte par-dessus le jeu (3.33)
         confirmePasser: false,   // « Passer » le butin demande un 2e toucher (3.33)             // horloge du voyant de liaison (3.32), avancée chaque seconde à plusieurs   // { id, rang, noms, t } : la fenêtre d'entrée en combat (3.31)
@@ -1414,17 +1437,23 @@
         },
         immersif: function() { return this.immersionVoulue && this.onglet === 'play' && !!this.partie; },
         enJeu: function() { return this.onglet === 'play' && !!this.partie; },
+        // Le lieu de l'étage en cours (3.41 : chaque étage est tiré parmi plusieurs lieux) et sa règle propre, s'il en a une
+        lieu: function() { return this.partie ? DJ.lieu(this.partie) : null; },
+        regle: function() { return this.partie && this.partie.phase === 'jeu' ? DJ.regleLieu(this.partie) : null; },
+        // Spores : je vais finir mon tour sans armure (le poison m'attend)
+        sporesMenace: function() { return !!(this.regle && this.regle.poison && this.combat && this.jeJoue && this.monJ && !this.monJ.armure && !this.combat.fini[this.moi]); },
         fondCombat: function() {
-          var E = this.partie && DJ.D.ETAGES[this.partie.etage - 1];
+          var E = this.lieu;
           return E ? { background: 'radial-gradient(ellipse at 50% 28%, ' + E.sol[1] + ' 0%, ' + E.mur[0] + ' 62%, #0b0806 100%)' } : {};
         },
         // Décor de la scène de combat (3.36) : mur, sol et torches aux couleurs de l'étage, halo doré (élite) ou violet (boss)
         decorCombat: function() {
-          var E = this.partie && DJ.D.ETAGES[this.partie.etage - 1];
-          return E && this.combat ? DJS.decor(this.partie.etage, E.sol, E.mur, this.combat.rang) : '';
+          var E = this.lieu;
+          return E && this.combat ? DJS.decor(this.partie.etage, E.sol, E.mur, this.combat.rang, E.decor) : '';
         },
-        etageIco: function() { var E = this.partie && DJ.D.ETAGES[this.partie.etage - 1]; return E ? E.ico : '🗝️'; },
-        etageInfo: function() { var p = this.partie, E = p && DJ.D.ETAGES[p.etage - 1]; return E ? E.ico + ' Étage ' + p.etage + ' sur ' + DJ.NB_ETAGES + ' : ' + E.nom + ' · ' + DJ.D.DIFFICULTES[DJ.D.DIFFICULTES[p.difficulte] ? p.difficulte : 'heroique'].nom + (p.peril ? ' · clé +' + p.peril : '') : ''; },
+        cleLieu: function() { var p = this.partie; return p && p.phase === 'jeu' && this.regle ? p.id + ':' + p.etage + ':' + this.lieu.id : ''; },
+        etageIco: function() { var E = this.lieu; return E ? E.ico : '🗝️'; },
+        etageInfo: function() { var p = this.partie, E = this.lieu, R = p && DJ.regleLieu(p); return E ? (R ? R.ico + ' Règle du lieu, ' + R.nom + ' : ' + R.texte + ' · ' : '') + E.ico + ' Étage ' + p.etage + ' sur ' + DJ.NB_ETAGES + ' : ' + E.nom + ' · ' + DJ.D.DIFFICULTES[DJ.D.DIFFICULTES[p.difficulte] ? p.difficulte : 'heroique'].nom + (p.peril ? ' · clé +' + p.peril : '') : ''; },
         objectif: function() {
           var p = this.partie;
           if (!p) return '';
@@ -1434,7 +1463,7 @@
         },
         dernierCombatVu: function() { var d = this.partie && this.partie.dernierCombat; return !!(d && !this.combat && this.monJ && d.salle === this.monJ.salle && this.partie.maintenant - d.t < 6000 && this.vuCombat !== d.id); },
         flairIci: function() { return this.joueursIci.some(p => p.pouvoir === 'flair' && !p.fantome); },
-        salleSvg: function() { return this.salleIci ? dessinerSalle(this.salleIci, this.flairIci, this.joueursIci, this.partie.etage) : ''; },
+        salleSvg: function() { return this.salleIci ? dessinerSalle(this.salleIci, this.flairIci, this.joueursIci, this.partie.etage, this.lieu) : ''; },
         // Plan de l'étage en grand (plein écran) : pièces vues, couloirs, rôle des pièces, où sont les amis
         // Plan de l'étage (plein écran) : il remplit la place libre entre la fiche et la pièce, mis à l'échelle (preserveAspectRatio)
         planSvg: function() {
@@ -1501,6 +1530,14 @@
         inverse: function(v) { ecrireStockage('donjon-inverse', v); },
         vibrationActive: function(v) { ecrireStockage('brillant-vibration', v); if (v) vibrer(40); },
         pseudoInput: function() { this.sauvegarder(); },
+        // Un lieu qui a sa règle : on le présente en y arrivant (une fois par étage et par donjon sur ce téléphone)
+        cleLieu: { immediate: true, handler: function(v) {
+          if (!v) { this.lieuAnnonce = null; return; }
+          var vus = this._lieuxVus = this._lieuxVus || lireStockage('donjon-lieux-vus') || {};
+          if (vus.cle === v) return;
+          vus.cle = v; ecrireStockage('donjon-lieux-vus', vus);
+          this.lieuAnnonce = { cle: v, t: Date.now() };
+        } },
         menuCle: function() { this.choixMenu = null; this.confirmePasser = false; this._menuT = Date.now(); },
         // Occupé sur mon téléphone (3.33) : l'hôte le note dans la partie pour que les amis voient la bulle 💭
         occupeIci: function(v) { if (!this.solo && this.role && this.partie && this.partie.phase === 'jeu') this.envoyerJeu({ type: 'OCC', v: v }); },
@@ -1596,7 +1633,7 @@
           if (i.buffE) l.push(E[i.buffE].ico + i.buffN);
           [i.deb, i.deb2].forEach(d => { if (d) l.push(E[d.e].ico + d.n); });
           if (i.appel) l.push('📣'); if (i.prep) l.push('😤'); if (i.divise) l.push('✂️');
-          if (i.maudit) l.push('🩹' + i.maudit); if (i.vol) l.push('🪙'); if (i.soin) l.push('💚');
+          if (i.maudit) l.push('🩹' + i.maudit); if (i.vol) l.push('🪙'); if (i.soin || i.soinPar) l.push('💚');
           return l.join(' ') || '💤';
         },
         intentionClasse: function(m) { var i = this.aveugle ? {} : m.intention || {}; return { att: !!i.att, danger: !!i.att && this.degatsAff(m) * (i.x || 1) >= 20 }; },
@@ -1672,6 +1709,10 @@
           if (this.role === 'client') { this.connexion = 'perdue'; this.rejoindrePartie(true); }
           else if (this.role === 'hote') this.creerPartie(true);
           this.info('🔄 Liaison relancée…');
+        },
+        fermerLieu: function() {
+          if (this.lieuAnnonce && Date.now() - this.lieuAnnonce.t < 600) return;
+          this.lieuAnnonce = null; this.son('toc');
         },
         fermerEntreeCombat: function() {
           if (this.entreeCombat && Date.now() - this.entreeCombat.t < 600) return;   // le doigt qui glissait encore de la croix
@@ -1765,7 +1806,7 @@
           this.solo = true; this.gains = null;
           this.panne = false; this._erreurs = 0;
           if (s && !DJ.compatible(s)) { ecrireStockage(CLE_SOLO, null); s = null; }   // exploration d'une ancienne version : on repart de zéro
-          partieHote = s && s.phase === 'jeu' ? s : DJ.nouvelle(Math.floor(Math.random() * 1e9), { Moi: this.monCp }, nouvelId(), { peril: this.peril, difficulte: this.difficulte, avantages: { Moi: this.avSemaine } });
+          partieHote = s && s.phase === 'jeu' ? s : DJ.nouvelle(Math.floor(Math.random() * 1e9), { Moi: this.monCp }, nouvelId(), { peril: this.peril, difficulte: this.difficulte, avantages: { Moi: this.avSemaine }, lieux: lireStockage('donjon-lieux-essai') });   // donjon-lieux-essai : lieux imposés pour un essai (tests), absent en jeu
           if (partieHote.joueurs.Moi) { partieHote.joueurs.Moi.cp = this.monCp; partieHote.joueurs.Moi.surnom = 'L\'explorateur'; }
           this.sel = null;
           partieHote.maintenant = 0;   // l'horloge repart (l'exploration a pu être reprise plus tard)
@@ -1957,7 +1998,7 @@
             ['repas', 'eau'].forEach(id => { animal.besoins[id] = { v: Math.max(0, n[id] - 15), t: t }; });
             ecrireStockage('compagnon-animal', animal);
             ecrireStockage('expedition-retour', { lieu: 'Donjon des compagnons', ico: '🗝️', gagne: gagne, abandon: false, bonnes: 0, questions: 0,
-              gain: conv.etoiles, donne: donnees, poussiere: pous, souvenirs: g.souvenir ? [g.souvenir] : [], boss: DJ.MONSTRES[DJ.D.ETAGES[Math.max(0, (p.etage || 1) - 1)].boss].nom, h: Date.now() });
+              gain: conv.etoiles, donne: donnees, poussiere: pous, souvenirs: g.souvenir ? [g.souvenir] : [], boss: DJ.MONSTRES[DJ.lieu(p).boss].nom, h: Date.now() });
           }
           var parDiff = Object.assign({}, this.stats.parDiff || {});
           if (gagne) parDiff[dif] = (parDiff[dif] || 0) + 1;
@@ -2013,7 +2054,7 @@
             pubHote.partieId = nouvelId();
             var avs = {};
             Object.keys(presents).forEach(n => { avs[n] = n === monPseudo ? this.avSemaine : avsSalon[n]; });
-            partieHote = DJ.nouvelle(Math.floor(Math.random() * 1e9), presents, pubHote.partieId, { peril: this.peril, difficulte: pubHote.difficulte || this.difficulte, avantages: avs });
+            partieHote = DJ.nouvelle(Math.floor(Math.random() * 1e9), presents, pubHote.partieId, { peril: this.peril, difficulte: pubHote.difficulte || this.difficulte, avantages: avs, lieux: lireStockage('donjon-lieux-essai') });
             pubHote.phase = 'jeu';
             this.carteV = 0;
             this.publier();
@@ -2412,8 +2453,8 @@
     });
 
     // ================== DESSIN D'UNE PIÈCE (SVG, cases de 32) ==================
-    function dessinerSalle(S, flair, joueurs, etage) {
-      var T = 32, s = '', W = DJ.W, H = DJ.H, E = DJ.D.ETAGES[(etage || 1) - 1] || DJ.D.ETAGES[0], so = E.sol, mu = E.mur;
+    function dessinerSalle(S, flair, joueurs, etage, lieu) {
+      var T = 32, s = '', W = DJ.W, H = DJ.H, E = lieu || DJ.D.ETAGES[(etage || 1) - 1] || DJ.D.ETAGES[0], so = E.sol, mu = E.mur, deco = E.decor;
       var sur = {};
       joueurs.forEach(p => { if (!p.fantome) sur[p.x + ',' + p.y] = 1; });
       s += '<defs><pattern id="dj-sol" width="64" height="64" patternUnits="userSpaceOnUse"><rect width="64" height="64" fill="' + so[0] + '"/>' +
@@ -2553,12 +2594,13 @@
         var X2 = x2 * T + 4 + k * 12, Y2 = y2 * T + 4 + (1 - k) * 12;
         if (q < 0.06) s += '<path d="M' + X2 + ' ' + Y2 + ' l5 4 l-2 5 l6 3" fill="none" stroke="' + so[2] + '" stroke-width="1.6" stroke-linecap="round"/>';
         else if (q < 0.11) s += '<ellipse cx="' + X2 + '" cy="' + Y2 + '" rx="3" ry="2" fill="' + mu[1] + '"/><ellipse cx="' + (X2 + 6) + '" cy="' + (Y2 + 3) + '" rx="2" ry="1.4" fill="' + mu[1] + '"/>';
-        else if (etage === 2) s += '<path d="M' + X2 + ' ' + Y2 + ' l9 4" stroke="#e9e2d0" stroke-width="2.4" stroke-linecap="round"/><circle cx="' + X2 + '" cy="' + Y2 + '" r="1.8" fill="#e9e2d0"/><circle cx="' + (X2 + 9) + '" cy="' + (Y2 + 4) + '" r="1.8" fill="#e9e2d0"/>';
-        else if (etage === 3) s += '<circle cx="' + X2 + '" cy="' + Y2 + '" r="2.2" fill="#ff6b3d" opacity="0.8"/><circle cx="' + X2 + '" cy="' + Y2 + '" r="5" fill="#ff6b3d" opacity="0.15"/>';
+        else if (deco === 'champignonniere') s += '<path d="M' + (X2 - 1) + ' ' + (Y2 + 1) + ' v5 h2 v-5 Z" fill="#f3f0ff"/><path d="M' + (X2 - 5) + ' ' + (Y2 + 1.5) + ' Q' + (X2 - 5) + ' ' + (Y2 - 4) + ' ' + X2 + ' ' + (Y2 - 4) + ' Q' + (X2 + 5) + ' ' + (Y2 - 4) + ' ' + (X2 + 5) + ' ' + (Y2 + 1.5) + ' Z" fill="' + (k > 0.5 ? '#845ef7' : '#e03131') + '" stroke="#241812" stroke-width="0.9"/><circle cx="' + (X2 - 1.6) + '" cy="' + (Y2 - 1.6) + '" r="0.9" fill="#fff" opacity=".85"/>';
+        else if (deco === 'catacombes') s += '<path d="M' + X2 + ' ' + Y2 + ' l9 4" stroke="#e9e2d0" stroke-width="2.4" stroke-linecap="round"/><circle cx="' + X2 + '" cy="' + Y2 + '" r="1.8" fill="#e9e2d0"/><circle cx="' + (X2 + 9) + '" cy="' + (Y2 + 4) + '" r="1.8" fill="#e9e2d0"/>';
+        else if (deco === 'forteresse') s += '<circle cx="' + X2 + '" cy="' + Y2 + '" r="2.2" fill="#ff6b3d" opacity="0.8"/><circle cx="' + X2 + '" cy="' + Y2 + '" r="5" fill="#ff6b3d" opacity="0.15"/>';
         else s += '<circle cx="' + X2 + '" cy="' + Y2 + '" r="2.6" fill="#5c7a3a" opacity="0.75"/><circle cx="' + (X2 + 4) + '" cy="' + (Y2 - 2) + '" r="1.8" fill="#6f8f45" opacity="0.75"/>';
       }
       // Bannières (Forteresse) et torches sur le mur du haut
-      if (etage === 3) [3, 7].forEach(tx => { if (S.t[tx] === '#') s += '<path d="M' + (tx * T + 7) + ' 2 h18 v22 l-9 -5 l-9 5 Z" fill="#a61e1e" stroke="#fab005" stroke-width="1.5"/><circle cx="' + (tx * T + 16) + '" cy="11" r="3" fill="#fab005"/>'; });
+      if (deco === 'forteresse') [3, 7].forEach(tx => { if (S.t[tx] === '#') s += '<path d="M' + (tx * T + 7) + ' 2 h18 v22 l-9 -5 l-9 5 Z" fill="#a61e1e" stroke="#fab005" stroke-width="1.5"/><circle cx="' + (tx * T + 16) + '" cy="11" r="3" fill="#fab005"/>'; });
       [2, 8].forEach(tx => {
         if (S.t[tx] !== '#') return;
         var cx = tx * T + 16;

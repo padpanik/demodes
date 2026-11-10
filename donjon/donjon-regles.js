@@ -145,7 +145,7 @@ var DJ = (function () {
   // ---------- Génération : l'étage dépend des pouvoirs présents dans le groupe ----------
   // Pièces : départ, boss (au plus profond), feu de camp (juste avant le boss), élite (gardien de la grande clé),
   // marchand, autel, et des pièces de combat.
-  function generer(graine, pouvoirs, humains, etage) {
+  function generer(graine, pouvoirs, humains, etage, lieu) {
     pouvoirs = (pouvoirs || []).filter((p, i, l) => POUVOIRS[p] && l.indexOf(p) === i);
     etage = etage || 1;
     for (var k = 0; k < 80; k++) {
@@ -156,11 +156,11 @@ var DJ = (function () {
       if (p.salles[boss].prof < 3) continue;
       // Les trois types de pièce à risque tournent d'un étage à l'autre ; l'ordre de départ dépend de la graine
       var R = D.RISQUES.ordre, risque = R[(entier(hasard(((graine >>> 0) ^ 0x51ed27) + 11), R.length) + etage) % R.length];
-      return construire(h, p, boss, pouvoirs, humains || 1, etage, risque);
+      return construire(h, p, boss, pouvoirs, humains || 1, etage, risque, lieu);
     }
     throw new Error('Donjon impossible à générer');
   }
-  function construire(h, p, boss, pouvoirs, humains, etage, risque) {
+  function construire(h, p, boss, pouvoirs, humains, etage, risque, lieu) {
     var S = p.salles, enfants = p.liste.filter(id => id !== p.depart), porte = {};
     enfants.forEach(id => { porte[id] = ''; });
     porte[boss] = 'B';
@@ -202,7 +202,7 @@ var DJ = (function () {
     mettre(elite, 'grandecle');
     if (combats.length) mettre(combats[combats.length - 1], 'relique');
     melanger(combats, h).slice(0, 2).forEach((id, i) => mettre(id, i ? 'or' : 'poussiere'));
-    var etg = D.ETAGES[etage - 1];
+    var etg = lieu || D.ETAGES[etage - 1];   // 3.41 : monstres, élites et boss du lieu tiré pour cet étage
     // L'élite qui garde la grande clé ; l'autre attend dans la salle du défi
     var typeElite = auHasard(etg.elites, h), typeDefi = etg.elites.filter(t => t !== typeElite)[0] || typeElite;
 
@@ -287,6 +287,24 @@ var DJ = (function () {
     return m;
   }
 
+  // ---------- Lieux (3.41) : chaque étage est tiré parmi plusieurs lieux (D.ETAGES[n].lieux), e.lieux = un identifiant par étage ----------
+  // Une partie d'avant 3.41 n'a pas e.lieux : ce sont les lieux d'origine. forces (simulation, essais) : { 1: 'champignonniere' } ou ['caves', …].
+  function tirerLieux(graine, forces) {
+    forces = forces || {};
+    var h = hasard(((graine >>> 0) ^ 0x2f6e2b1) + 977);
+    return D.ETAGES.map(function (E, i) {
+      var f = Array.isArray(forces) ? forces[i] : forces[i + 1], t = auHasard(E.lieux, h);
+      return f && E.lieux.indexOf(f) >= 0 ? f : t;
+    });
+  }
+  function lieuDe(e, etage) {
+    etage = etage || e.etage || 1;
+    var E = D.ETAGES[etage - 1] || D.ETAGES[0], L = e.lieux && D.LIEUX[e.lieux[etage - 1]];
+    return L && L.etage === E.etage ? L : E;
+  }
+  // La règle propre au lieu de l'étage en cours (null pour les lieux d'origine)
+  function regleLieu(e) { var L = lieuDe(e); return (L.regle && D.REGLES_LIEU[L.regle]) || null; }
+
   // ================== PARTIE ==================
   // joueurs : { pseudo: résumé du compagnon ({ e, c, n, p }) ou null } ; options : { peril, difficulte ('normal', 'heroique', 'mythique') }
   var FORMAT = 3;
@@ -296,7 +314,8 @@ var DJ = (function () {
     var e = { id: id || String(graine), graine: graine, phase: 'jeu', format: FORMAT, etage: 0, peril: options.difficulte === 'mythique' ? Math.max(0, Math.min(D.PERILS.length - 1, options.peril | 0)) : 0,   // clé mythique : seulement en Mythique
               difficulte: D.DIFFICULTES[options.difficulte] ? options.difficulte : 'heroique',
               nbJ: noms.length, salles: {}, depart: null, bossSalle: null, carteV: 1, ennemis: [], seq: 0, joueurs: {}, cles: 0, grandeCle: false,
-              poussiere: 0, objets: [], effets: [], annonces: [], vues: {}, fin: null, debut: 0, maintenant: 0, pouvoirs: pouvoirs, combats: {} };
+              poussiere: 0, objets: [], effets: [], annonces: [], vues: {}, fin: null, debut: 0, maintenant: 0, pouvoirs: pouvoirs, combats: {},
+              lieux: tirerLieux(graine, options.lieux) };
     var avs = options.avantages || {};
     noms.forEach(n => ajouterJoueur(e, n, joueurs[n], avs[n]));
     etageSuivant(e);
@@ -304,7 +323,7 @@ var DJ = (function () {
   }
   function etageSuivant(e) {
     e.etage++;
-    var c = generer(e.graine, e.pouvoirs, e.nbJ, e.etage);
+    var c = generer(e.graine, e.pouvoirs, e.nbJ, e.etage, lieuDe(e));
     e.salles = c.salles; e.depart = c.depart; e.bossSalle = c.boss; e.carteV++;
     e.ennemis = []; e.cles = 0; e.grandeCle = false; e.objets = []; e.vues = {}; e.combats = {};
     c.ennemis.forEach(m => creerMonstre(e, m.type, m.salle, m.x, m.y, c.h));
@@ -319,7 +338,9 @@ var DJ = (function () {
         p.pv += Math.floor((p.pvMax - p.pv) / 2);
       }
     });
-    if (e.etage > 1) annonce(e, D.ETAGES[e.etage - 1].ico + ' Étage ' + e.etage + ' : ' + D.ETAGES[e.etage - 1].nom + '. Le repos du voyage rend la moitié des PV perdus.');
+    var L = lieuDe(e), R = regleLieu(e);
+    if (e.etage > 1) annonce(e, L.ico + ' Étage ' + e.etage + ' : ' + L.nom + '. Le repos du voyage rend la moitié des PV perdus.');
+    if (R) annonce(e, R.ico + ' ' + L.nom + ' : ' + R.court + '.');
   }
   function compatible(e) {
     return !!(e && e.format === FORMAT && e.salles && e.joueurs && e.combats && Array.isArray(e.ennemis) &&
@@ -490,7 +511,7 @@ var DJ = (function () {
       if (e.maintenant < p.piegeT) return;   // le doigt est resté sur la croix : on laisse le temps de lire
       S.piege = 1; e.carteV++;
       var libres = PLACES.filter(q => MARCHABLE[tuile(S, q[0], q[1])] && !Object.values(e.joueurs).some(j => j.salle === S.id && Math.abs(j.x - q[0]) + Math.abs(j.y - q[1]) < 1));
-      auHasard(D.ETAGES[e.etage - 1].rencontres, h).slice(0, libres.length).forEach((type, i) => creerMonstre(e, type, S.id, libres[i][0], libres[i][1], h));
+      auHasard(lieuDe(e).rencontres, h).slice(0, libres.length).forEach((type, i) => creerMonstre(e, type, S.id, libres[i][0], libres[i][1], h));
       annonce(e, '💥 C\'était un piège ! Des monstres surgissent autour de ' + nomCp(p) + ' !');
       e.embuscade = S.id;
       demarrerCombat(e, S.id, h);
@@ -780,7 +801,7 @@ var DJ = (function () {
     if (e.vues[voisin]) return;
     e.vues[voisin] = 1;
     var V = e.salles[voisin];
-    if (V.boss) annonce(e, '👑 ' + nomCp(p) + ' entre dans l\'antre de ' + MONSTRES[D.ETAGES[e.etage - 1].boss].nom + ' !');
+    if (V.boss) annonce(e, '👑 ' + nomCp(p) + ' entre dans l\'antre de ' + MONSTRES[lieuDe(e).boss].nom + ' !');
     else if (V.role === 'elite') annonce(e, '⭐ Un élite garde cette pièce…');
     else if (V.role === 'feu') annonce(e, '🔥 Un feu de camp : on peut s\'y reposer.');
     else if (V.role === 'marchand') annonce(e, '🛒 Un marchand ambulant !');
@@ -993,6 +1014,8 @@ var DJ = (function () {
     // Le gobelin rend ce qu'il a volé
     Object.keys(m.mem.vol || {}).forEach(n => { var q = e.joueurs[n]; if (q) { q.or += m.mem.vol[n]; journal(c, '🪙 ' + nomCp(q) + ' récupère ' + m.mem.vol[n] + ' or.'); } });
     c.poussiere += M.rang === 'boss' ? 4 + e.etage : M.rang === 'elite' ? 2 : 1;
+    // Ce qu'il laisse en mourant (le Sporion éclate : Vulnérable). Les durées ne s'ajoutent pas : trois sporions d'un coup ne font pas 3 tours.
+    if (M.mort && M.mort.deb) vivantsDe(e, c).forEach(q => { var manque = M.mort.deb.n - (q.etats[M.mort.deb.e] || 0); if (manque > 0) affaiblir(e, c, q, M.mort.deb.e, manque); });
     // Trophée de chasse : pour ceux dont c'est encore le tour
     if (!c.pret) vivantsDe(e, c).forEach(p => { if (a(p, 'trophee') && !c.fini[p.nom]) { p.energie++; piocher(e, p, 1, Math.random); noter(nomCp(p), '🦌 ⚡+1 🃏+1', 'etat'); } });
   }
@@ -1128,6 +1151,9 @@ var DJ = (function () {
       if (k.finMain.pv) perdrePv(e, c, p, k.finMain.pv, k.ico);
       if (k.finMain.etat && !p.fantome) affaiblir(e, c, p, k.finMain.etat, k.finMain.n);
     });
+    // Règle du lieu « Spores » (Champignonnière) : finir son tour sans armure = Poison
+    var R = regleLieu(e);
+    if (R && R.poison && !p.armure && !p.fantome) { if (!LIGNE) ouvrir(c, R.ico, nomCp(p), R.nom.toLowerCase()); affaiblir(e, c, p, 'poison', R.poison); }
     fermer();
     if (p.fantome) return;
     defausserTout(p);
@@ -1146,6 +1172,7 @@ var DJ = (function () {
   }
   function tourMonstres(e, c, h) {
     c.pret = 0;
+    var spores = regleLieu(e);
     monstresDe(e, c).slice().forEach(m => {
       if (e.ennemis.indexOf(m) < 0) return;
       m.armure = 0;
@@ -1171,6 +1198,10 @@ var DJ = (function () {
       if (i.buffE) { ajouterEtat(m, i.buffE, i.buffN); noter(nm, (ETATS[i.buffE] ? ETATS[i.buffE].ico : '') + '+' + i.buffN, 'etat', m.id); }
       if (i.fureur) m.mem.fureur = 1;
       if (i.soin) { var gm = Math.min(m.pvMax, m.pv + i.soin) - m.pv; m.pv += gm; if (gm) noter(nm, '+' + gm + ' ❤️', 'soin', m.id); }
+      if (i.soinPar) {
+        var gs = Math.min(m.pvMax, m.pv + i.soinPar.n * monstresDe(e, c).filter(x => x.type === i.soinPar.type).length) - m.pv;
+        m.pv += gs; if (gs) noter(nm, '+' + gs + ' ❤️', 'soin', m.id);
+      }
       if (i.att) {
         for (var x = 0; x < (i.x || 1); x++) cibles.forEach(q => {
           if (q.fantome || e.ennemis.indexOf(m) < 0) return;
@@ -1194,6 +1225,8 @@ var DJ = (function () {
           noter(nomMonstre(nv), '📣 arrive', 'etat', nv.id);
         }
       }
+      // Règle du lieu « Spores » : un monstre qui finit son tour sans armure est empoisonné lui aussi
+      if (spores && spores.poison && !m.armure && e.ennemis.indexOf(m) >= 0) { ajouterEtat(m, 'poison', spores.poison); noter(nm, '☠️+' + spores.poison, 'etat', m.id); }
       fermer();
       m.k++; m.mem.dernier = i.nom;
     });
@@ -1243,11 +1276,11 @@ var DJ = (function () {
     if (rang === 'boss') {
       if (e.etage >= NB_ETAGES) {
         e.phase = 'fin'; e.fin = { gagne: true, t: e.maintenant, etage: e.etage };
-        annonce(e, '🎉 ' + MONSTRES[D.ETAGES[e.etage - 1].boss].nom + ' est vaincue ! Le donjon est à vous !');
+        annonce(e, '🎉 ' + MONSTRES[lieuDe(e).boss].nom + ' est vaincue ! Le donjon est à vous !');
       } else {
         var S = e.salles[c.salle];
         poser(S, CENTRE[0], CENTRE[1], 'E'); e.carteV++;
-        annonce(e, '🎉 ' + MONSTRES[D.ETAGES[e.etage - 1].boss].nom + ' est vaincu ! Un escalier 🪜 descend vers l\'étage ' + (e.etage + 1) + '.');
+        annonce(e, '🎉 ' + MONSTRES[lieuDe(e).boss].nom + ' est vaincu ! Un escalier 🪜 descend vers l\'étage ' + (e.etage + 1) + '.');
       }
     } else annonce(e, rang === 'elite' ? '⭐ L\'élite est vaincu !' : '🎉 Victoire ! La pièce est libre.');
   }
@@ -1326,7 +1359,7 @@ var DJ = (function () {
 
   return { W: W, H: H, GX: GX, GY: GY, PAS: PAS, DX: DX, PORTE: PORTE, MARCHABLE: MARCHABLE, POUVOIRS: POUVOIRS, ESPECES: ESPECES, MONSTRES: MONSTRES,
            D: D, NB_ETAGES: NB_ETAGES, nettoyerAvantages: nettoyerAvantages, heroSemaine: heroSemaine, reliquesParDefaut: reliquesParDefaut, paquetDepart: paquetDepart, carte: carte, ameliorable: ameliorable, prixRetrait: prixRetrait, soinFeu: soinFeu,
-           pouvoirDe: pouvoirDe, hasard: hasard, generer: generer, nouvelle: nouvelle, ajouterJoueur: ajouterJoueur, entree: entree,
+           pouvoirDe: pouvoirDe, hasard: hasard, generer: generer, lieu: lieuDe, regleLieu: regleLieu, tirerLieux: tirerLieux, nouvelle: nouvelle, ajouterJoueur: ajouterJoueur, entree: entree,
            jouerCarte: jouerCarte, finTour: finTour, utiliserFiole: utiliserFiole, jeterFiole: jeterFiole, choisir: choisir, demarrerCombat: demarrerCombat,
            interagir: interagir, ouvrirCoffre: ouvrirCoffre, ouvrirTresor: ouvrirTresor, decouvrir: decouvrir, tourMonstres: tourMonstres, etageSuivant: etageSuivant, tirerCartes: tirerCartes, donnerRelique: donnerRelique,
            degatsIntention: degatsIntention, degatsCarte: degatsCarte, calculer: calculer,

@@ -3,10 +3,14 @@
 // node donjon/donjon-simulation.js [parties par classe] [péril] [joueurs] [difficulté : normal | heroique | mythique] [risque]
 // 5e argument « risque » (3.40) : le joueur automatique tente aussi les pièces à risque (défi, trésor piégé, coffre maudit) quand il est en forme
 // (75 % de ses PV ou plus ; « risque-toujours » : même blessé) ; sans cet argument, il les évite.
+// Lieux (3.41) : un argument « lieux=champignonniere,-,- » (où qu'il soit) impose le lieu de chaque étage (« - » = tiré au hasard, comme en jeu) ;
+// « lieux=origine » : les trois lieux d'origine (la référence d'avant 3.41).
 // Repère : un humain attentif joue mieux que ce joueur automatique (il lit mieux les intentions et construit son paquet).
 
 var DJ = require('./donjon-regles.js');
 var D = DJ.D;
+var ARG_LIEUX = (process.argv.find(x => /^lieux=/.test(x)) || '').slice(6);
+var LIEUX_FORCES = ARG_LIEUX === 'origine' ? D.ETAGES.map(E => E.id) : ARG_LIEUX ? ARG_LIEUX.split(',').map(x => x === '-' ? null : x) : null;
 
 // ---------- Un tour de combat ----------
 function monstres(e, p) { return e.ennemis.filter(m => m.salle === p.salle); }
@@ -21,10 +25,11 @@ function valeurCarte(e, p, id, ms, besoin) {
   var k = DJ.carte(id), v = 0, cout = k.cout;
   if (k.injouable || cout > p.energie) return -1;
   if (k.type === 'pouvoir') return p.tourCombat <= 2 ? 30 : 8;
+  var spores = DJ.regleLieu(e);
   if (k.finMain) return 4;   // malédiction qu'on peut payer pour s'en débarrasser : quand il reste de l'énergie
   k.fx.forEach(f => {
     if (f.deg !== undefined) v += f.deg * (f.x || 1) * (f.tous ? ms.length : 1) + (p.etats.force || 0) * (f.x || 1);
-    if (f.armure) v += Math.min(f.armure, Math.max(0, besoin)) * 1.3 + 0.5;
+    if (f.armure) v += Math.min(f.armure, Math.max(0, besoin)) * 1.3 + 0.5 + (spores && !p.armure ? 2.5 : 0);   // Spores : un peu d'armure évite le poison
     if (f.pioche) v += 3 * f.pioche;
     if (f.energie) v += 5 * f.energie;
     if (f.etat === 'vuln') v += 6 * f.n;
@@ -137,7 +142,7 @@ function partie(classe, graine, peril, nb, diff, av, risque) {
     js[nom] = ESPECE[cl] ? { e: ESPECE[cl], c: '#c8915a', n: nom, p: {} } : null;
   }
   var avs = {}; if (av) Object.keys(js).forEach(n => { avs[n] = av; });
-  var e = DJ.nouvelle(graine, js, 'sim' + graine, { peril: peril, difficulte: diff || 'heroique', avantages: avs });
+  var e = DJ.nouvelle(graine, js, 'sim' + graine, { peril: peril, difficulte: diff || 'heroique', avantages: avs, lieux: LIEUX_FORCES });
   var ps = Object.keys(e.joueurs).map(n => e.joueurs[n]), p = ps[0], combats = 0;
   var resultat = (g, mort) => ({ joueur: p, gagne: g, etage: e.etage, combats: combats, pv: ps.reduce((t, q) => t + (q.fantome ? 0 : q.pv), 0) / nb, paquet: p.paquet.length, mort: mort });
   var RISQUE = { defi: 1, tresor: 1, maudit: 1 };

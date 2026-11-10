@@ -231,6 +231,36 @@ var DJD = (function () {
         return mix(a(24), { nom: 'ÉCRASEMENT', tous: true });
       } },
 
+    // Étage 1, autre lieu : la Champignonnière (3.41). Règle du lieu « Spores » : voir LIEUX plus bas.
+    // mort : { deb } = ce qui arrive aux joueurs du combat quand il est vaincu ; soinPar : { type, n } = n PV rendus par monstre de ce type encore debout.
+    sporion: { nom: 'Sporion', ico: '🍄', pv: [9, 12], vitesse: 800, mort: { nom: 'éclate', deb: { e: 'vuln', n: 1 } },
+      ia: function (m, c) { return c.dernier !== 'Bouffée de spores' && c.h() < 0.3 ? mix(a(2), { nom: 'Bouffée de spores', deb: { e: 'poison', n: 2 } }) : mix(a(4), { nom: 'Coup de tête' }); } },
+    limace: { nom: 'Limace cuirassée', ico: '🐌', pv: [16, 19], vitesse: 1300,
+      ia: function (m, c) { return c.k % 2 === 0 ? mix(a(4), { nom: 'Se recroqueville', armure: 7 }) : mix(a(8), { nom: 'Coup de corne', armure: 3 }); } },
+    moucheron: { nom: 'Nuée de moucherons', ico: '🦟', pv: [8, 10], vitesse: 480, vole: true,
+      ia: function (m, c) { return c.k % 3 === 2 ? mix(a(1, 2), { nom: 'Bourdonnement', deb: { e: 'faible', n: 1 } }) : mix(a(2, 3), { nom: 'Piqûres' }); } },
+    // Élites
+    ancetre: { nom: 'Champignon ancêtre', ico: '🍄', taille: 2, rang: 'elite', pv: [66, 70], vitesse: 1100,
+      ia: function (m, c) {
+        var t = c.k % 3;
+        return t === 0 ? { nom: 'Nuage de spores', armure: 8, deb: { e: 'poison', n: 4 } } : t === 1 ? mix(a(13), { nom: 'Coup de chapeau' }) : mix(a(8), { nom: 'Racines', deb: { e: 'vuln', n: 2 } });
+      } },
+    crapaud: { nom: 'Crapaud-buffle', ico: '🐸', taille: 2, rang: 'elite', pv: [62, 66], vitesse: 850, chasse: true,
+      ia: function (m, c) {
+        var t = c.k % 3;
+        return t === 0 ? { nom: 'Il se gonfle… 💥', prep: true, armure: 8 } : t === 1 ? mix(a(20), { nom: 'Bond écrasant' }) : mix(a(6), { nom: 'Coup de langue', deb: { e: 'faible', n: 2 } });
+      } },
+    // Boss : il fait pousser des sporions, puis reprend des forces sur ceux qu'on a laissés debout (mais un sporion qui éclate rend Vulnérable)
+    mycelium: { nom: 'Le Grand Mycélium', ico: '🍄', couronne: true, taille: 2, rang: 'boss', pv: [82, 82], vitesse: 900,
+      ia: function (m, c) {
+        var t = c.k % 5;
+        if (t === 0) return c.nb < 2 ? { nom: 'Germination', appel: { type: 'sporion', n: 2 }, armure: 6 } : mix(a(9), { nom: 'Coup de racine', armure: 6 });
+        if (t === 1) return mix(a(5, 2), { nom: 'Fouet de racines' });
+        if (t === 2) return mix(a(5), { nom: 'Absorbe ses sporions', soinPar: { type: 'sporion', n: 6 } });
+        if (t === 3) return { nom: 'Il enfle… 💥', prep: true, armure: 7 };
+        return mix(a(9), { nom: 'PLUIE DE SPORES', tous: true, deb: { e: 'poison', n: 2, tous: true } });
+      } },
+
     // Étage 2 : les Catacombes
     squelette: { nom: 'Squelette', ico: '💀', pv: [26, 30], vitesse: 760, chasse: true,
       ia: function (m, c) { return c.k % 2 === 0 ? mix(a(9), { nom: 'Coup d\'os' }) : mix(a(4), { nom: 'Bouclier d\'os', armure: 7 }); } },
@@ -296,19 +326,40 @@ var DJD = (function () {
 
   // ---------- Étages ----------
   var ETAGES = [
-    { nom: 'Les Caves', ico: '🕳️', sol: ['#5d4c3e', '#65533f', '#4e3f33'], mur: ['#3a2e26', '#4b3c31', '#2c231d'],
+    { id: 'caves', decor: 'caves', nom: 'Les Caves', ico: '🕳️', sol: ['#5d4c3e', '#65533f', '#4e3f33'], mur: ['#3a2e26', '#4b3c31', '#2c231d'],
       faciles: [['gluant'], ['chauve', 'rat'], ['rat', 'rat']],
       rencontres: [['gluant', 'chauve'], ['champi', 'rat'], ['rat', 'rat', 'rat'], ['chauve', 'chauve'], ['champi', 'gluant'], ['gluant', 'gluant']],
       elites: ['gluantgeant', 'brute'], boss: 'roi' },
-    { nom: 'Les Catacombes', ico: '⚰️', sol: ['#4a4a55', '#53535f', '#3c3c46'], mur: ['#2b2b33', '#3a3a44', '#202027'],
+    { id: 'catacombes', decor: 'catacombes', nom: 'Les Catacombes', ico: '⚰️', sol: ['#4a4a55', '#53535f', '#3c3c46'], mur: ['#2b2b33', '#3a3a44', '#202027'],
       faciles: [['squelette'], ['araignee', 'araignee']],
       rencontres: [['gobelin', 'squelette'], ['fantome', 'araignee'], ['fantome', 'gobelin'], ['squelette', 'araignee'], ['squelette', 'fantome']],
       elites: ['gargouille', 'sorciere'], boss: 'reine' },
-    { nom: 'La Forteresse', ico: '🏰', sol: ['#5a3d3d', '#634444', '#4a3232'], mur: ['#2e1f1f', '#3d2828', '#221616'],
+    { id: 'forteresse', decor: 'forteresse', nom: 'La Forteresse', ico: '🏰', sol: ['#5a3d3d', '#634444', '#4a3232'], mur: ['#2e1f1f', '#3d2828', '#221616'],
       faciles: [['chevalier'], ['diablotin', 'diablotin']],
       rencontres: [['golem', 'diablotin'], ['chevalier', 'squelette'], ['diablotin', 'squelette'], ['golem'], ['chevalier', 'diablotin']],
       elites: ['minotaure', 'ombre'], boss: 'liche' }
   ];
+  // ---------- Lieux (3.41, demandé par l'utilisateur : « plusieurs environnements ») ----------
+  // Chaque étage est tiré parmi plusieurs lieux (DJ.nouvelle : e.lieux = un identifiant par étage). Un lieu a ses monstres, son boss, ses couleurs,
+  // son décor (DJS.decor, détails des pièces) et parfois une règle qui change la façon de jouer (regle : appliquée par le moteur d'après son id).
+  // Le premier lieu de chaque étage est celui d'origine (ETAGES[n], sans règle : la référence d'équilibrage).
+  // Liste prévue, accord de l'utilisateur le 10 novembre 2026 : étage 1 Caves / Champignonnière / Rivière souterraine (Marée) ;
+  // étage 2 Catacombes / Grotte de glace (Engelures) / Bibliothèque interdite (Savoir) ; étage 3 Forteresse / Forges (Braises) / Tour de l'horloge (Temps détraqué).
+  var REGLES_LIEU = {
+    spores: { nom: 'Spores', ico: '🍄', poison: 1, court: 'Finir son tour sans armure : ☠️ Poison 1',
+      texte: 'L\'air est plein de spores : qui finit son tour sans armure reçoit Poison 1. Les monstres aussi. Garde toujours un peu d\'armure.' }
+  };
+  var AUTRES_LIEUX = [
+    { id: 'champignonniere', etage: 1, decor: 'champignonniere', nom: 'La Champignonnière', ico: '🍄', regle: 'spores',
+      sol: ['#3d4a3c', '#465544', '#303b30'], mur: ['#2a2238', '#3a2f4d', '#1c1727'],
+      faciles: [['sporion', 'sporion'], ['limace'], ['moucheron', 'sporion']],
+      rencontres: [['champi', 'sporion'], ['limace', 'moucheron'], ['sporion', 'sporion', 'sporion'], ['champi', 'moucheron'], ['limace', 'sporion'], ['moucheron', 'moucheron', 'sporion']],
+      elites: ['ancetre', 'crapaud'], boss: 'mycelium' }
+  ];
+  var LIEUX = {};
+  ETAGES.forEach(function (E, i) { E.etage = i + 1; E.lieux = [E.id]; LIEUX[E.id] = E; });
+  AUTRES_LIEUX.forEach(function (L) { LIEUX[L.id] = L; ETAGES[L.etage - 1].lieux.push(L.id); });
+
 
   // ---------- Difficultés (3.23, demandé par l'utilisateur) : choisies avant d'entrer (seul, ou par l'hôte du salon) ----------
   // solo : PV et dégâts des monstres quand on joue seul ; groupe : renfort par joueur en plus (PV × (1 + pv × (n − 1)),
@@ -426,6 +477,6 @@ var DJD = (function () {
   var PRIX = { c: 45, u: 70, r: 120, fiole: 40, relique: 150, retrait: 70 };
 
   return { ETATS: ETATS, CLASSES: CLASSES, CARTES: CARTES, FIOLES: FIOLES, RELIQUES: RELIQUES, MONSTRES: MONSTRES,
-           ETAGES: ETAGES, PERILS: PERILS, DIFFICULTES: DIFFICULTES, ORDRE_DIFFICULTES: ORDRE_DIFFICULTES, POISON_GROUPE: POISON_GROUPE, SOIN_GROUPE: SOIN_GROUPE, SEMAINE: SEMAINE, CLE_PAR_NIVEAU: CLE_PAR_NIVEAU, EVENEMENTS: EVENEMENTS, RISQUES: RISQUES, PRIX: PRIX };
+           ETAGES: ETAGES, LIEUX: LIEUX, REGLES_LIEU: REGLES_LIEU, PERILS: PERILS, DIFFICULTES: DIFFICULTES, ORDRE_DIFFICULTES: ORDRE_DIFFICULTES, POISON_GROUPE: POISON_GROUPE, SOIN_GROUPE: SOIN_GROUPE, SEMAINE: SEMAINE, CLE_PAR_NIVEAU: CLE_PAR_NIVEAU, EVENEMENTS: EVENEMENTS, RISQUES: RISQUES, PRIX: PRIX };
 })();
 if (typeof module !== 'undefined') module.exports = DJD;
