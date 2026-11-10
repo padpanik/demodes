@@ -1,6 +1,8 @@
 // ================== DONJON : SIMULATION D'ÉQUILIBRAGE (Node seulement, pas servi par le site) ==================
 // Un joueur automatique raisonnable traverse des donjons complets (3 étages) : combats, butin, feu de camp, marchand, autel.
-// node donjon/donjon-simulation.js [parties par classe] [péril] [joueurs] [difficulté : normal | heroique | mythique]
+// node donjon/donjon-simulation.js [parties par classe] [péril] [joueurs] [difficulté : normal | heroique | mythique] [risque]
+// 5e argument « risque » (3.40) : le joueur automatique tente aussi les pièces à risque (défi, trésor piégé, coffre maudit) quand il est en forme
+// (75 % de ses PV ou plus ; « risque-toujours » : même blessé) ; sans cet argument, il les évite.
 // Repère : un humain attentif joue mieux que ce joueur automatique (il lit mieux les intentions et construit son paquet).
 
 var DJ = require('./donjon-regles.js');
@@ -19,6 +21,7 @@ function valeurCarte(e, p, id, ms, besoin) {
   var k = DJ.carte(id), v = 0, cout = k.cout;
   if (k.injouable || cout > p.energie) return -1;
   if (k.type === 'pouvoir') return p.tourCombat <= 2 ? 30 : 8;
+  if (k.finMain) return 4;   // malédiction qu'on peut payer pour s'en débarrasser : quand il reste de l'énergie
   k.fx.forEach(f => {
     if (f.deg !== undefined) v += f.deg * (f.x || 1) * (f.tous ? ms.length : 1) + (p.etats.force || 0) * (f.x || 1);
     if (f.armure) v += Math.min(f.armure, Math.max(0, besoin)) * 1.3 + 0.5;
@@ -104,7 +107,10 @@ function gererMenus(e, p, h) {
       if (f >= 0 && p.fioles.length < p.fiolesMax && p.or > 80) { DJ.choisir(e, p.nom, 'fiole', f, h); continue; }
       r = DJ.choisir(e, p.nom, 'partir', null, h);
     } else if (m.type === 'evenement') {
-      var choix = { coffre: 1, des: 1, autel: p.pv > p.pvMax * 0.5 ? 0 : 1, fontaine: p.pv < p.pvMax * 0.8 ? 0 : 1, miroir: 0, grimoires: 0, enclume: 0, champignons: 0 }[m.id] || 0;
+      var bas = p.pv < p.pvMax * 0.5;
+      var choix = { coffre: 1, des: 1, autel: bas ? 1 : 0, fontaine: p.pv < p.pvMax * 0.8 ? 0 : 1, miroir: 0, grimoires: 0, enclume: 0, champignons: 0,
+        bivouac: p.pv < p.pvMax * 0.7 ? 0 : 1, puits: 0, colporteur: 0, sage: 0, voyageur: bas ? 1 : 0, idole: 1, roue: bas ? 1 : 0, gardien: bas ? 1 : 0,
+        cartographe: 1, chaudron: p.pv < p.pvMax * 0.7 ? 1 : 0, ratelier: 0, alchimiste: 0, coffremaudit: 0 }[m.id] || 0;
       r = DJ.choisir(e, p.nom, 'choix', choix, h);
       if (r) r = DJ.choisir(e, p.nom, 'choix', 1 - choix, h);
       if (r) p.menus.shift();
@@ -113,6 +119,7 @@ function gererMenus(e, p, h) {
       var pick;
       if (m.mode === 'retirer') pick = l.find(x => x.id === 'blessure') || l.find(x => x.id === 'griffe') || l[0];
       else if (m.mode === 'ameliorer') pick = l.filter(x => DJ.ameliorable(x.id)).sort((a, b) => noteCarte(p, b.id) - noteCarte(p, a.id))[0];
+      else if (m.mode === 'transformer') pick = l.find(x => x.id === 'griffe') || l.filter(x => DJ.carte(x.id).type !== 'malediction').sort((a, b) => noteCarte(p, a.id) - noteCarte(p, b.id))[0];
       else pick = l.filter(x => DJ.carte(x.id).type !== 'malediction').sort((a, b) => noteCarte(p, b.id) - noteCarte(p, a.id))[0];
       r = pick ? DJ.choisir(e, p.nom, 'carte', pick.i, h) : DJ.choisir(e, p.nom, 'annuler', null, h);
     }
@@ -122,7 +129,7 @@ function gererMenus(e, p, h) {
 
 // ---------- Une partie complète (1 à 4 joueurs automatiques qui avancent ensemble) ----------
 var ESPECE = { ronces: 'dragon', force: 'panda', bond: 'lapin', flair: 'renard', aucune: null };
-function partie(classe, graine, peril, nb, diff, av) {
+function partie(classe, graine, peril, nb, diff, av, risque) {
   nb = nb || 1;
   var h = DJ.hasard(graine * 31 + 7), classes = Array.isArray(classe) ? classe : [classe], js = {};
   for (var j = 0; j < nb; j++) {
@@ -133,23 +140,45 @@ function partie(classe, graine, peril, nb, diff, av) {
   var e = DJ.nouvelle(graine, js, 'sim' + graine, { peril: peril, difficulte: diff || 'heroique', avantages: avs });
   var ps = Object.keys(e.joueurs).map(n => e.joueurs[n]), p = ps[0], combats = 0;
   var resultat = (g, mort) => ({ joueur: p, gagne: g, etage: e.etage, combats: combats, pv: ps.reduce((t, q) => t + (q.fantome ? 0 : q.pv), 0) / nb, paquet: p.paquet.length, mort: mort });
+  var RISQUE = { defi: 1, tresor: 1, maudit: 1 };
+  function combattre(S) {
+    combats++;
+    DJ.demarrerCombat(e, S.id, h);
+    for (var t = 0; t < 80 && e.combats[S.id]; t++) {
+      ps.forEach(q => { if (e.combats[S.id] && !q.fantome) jouerTour(e, q, h); });
+      if (e.combats[S.id]) DJ.tourMonstres(e, e.combats[S.id], h);
+    }
+    return !(e.combats[S.id] || ps.every(q => q.fantome));
+  }
   for (var et = 1; et <= DJ.NB_ETAGES; et++) {
     var ordre = Object.keys(e.salles).sort((a, b) => e.salles[a].prof - e.salles[b].prof || (e.salles[a].boss ? 1 : 0) - (e.salles[b].boss ? 1 : 0));
     for (var i = 0; i < ordre.length; i++) {
       var S = e.salles[ordre[i]];
+      // Pièces à risque : facultatives. Le défi est un cul-de-sac (on n'y entre pas) ; les coffres maudit et piégé se laissent fermés.
+      // risque : true (en forme), 'toujours', ou un seul type ('defi', 'tresor', 'maudit') pour le mesurer à part
+      var ose = risque && (risque === 'toujours' || ps.every(q => !q.fantome && q.pv >= q.pvMax * 0.75)) && (!RISQUE[risque] || risque === S.role);
+      if (S.role === 'defi' && !ose) continue;
       ps.forEach(q => { q.salle = S.id; });
-      if (e.ennemis.some(m => m.salle === S.id)) {
-        combats++;
-        DJ.demarrerCombat(e, S.id, h);
-        for (var t = 0; t < 80 && e.combats[S.id]; t++) {
-          ps.forEach(q => { if (e.combats[S.id] && !q.fantome) jouerTour(e, q, h); });
-          if (e.combats[S.id]) DJ.tourMonstres(e, e.combats[S.id], h);
-        }
-        if (e.combats[S.id] || ps.every(q => q.fantome)) return resultat(false, S.role);
-      }
+      DJ.decouvrir(e, p, S.id);
+      if (e.ennemis.some(m => m.salle === S.id) && !combattre(S)) return resultat(false, S.role);
       ps.forEach(q => gererMenus(e, q, h));
       Object.keys(S.coffres).forEach(k => { if (S.t[+k] === 'C') DJ.ouvrirCoffre(e, S, +k % DJ.W, Math.floor(+k / DJ.W), p, h); });
-      ['F', 'M', 'A'].forEach(tt => { if (S.t.indexOf(tt) >= 0) ps.forEach(q => { DJ.interagir(e, q, S, tt, h); gererMenus(e, q, h); }); });
+      ['F', 'M', 'A'].concat(ose ? ['X'] : []).forEach(tt => { if (S.t.indexOf(tt) >= 0) ps.forEach(q => { DJ.interagir(e, q, S, tt, h); gererMenus(e, q, h); }); });
+      var iT = S.t.indexOf('T');
+      if (ose && iT >= 0) {
+        var tx = iT % DJ.W, ty = Math.floor(iT / DJ.W);
+        DJ.ouvrirTresor(e, S, tx, ty, p, h); p.piegeT = 0; DJ.ouvrirTresor(e, S, tx, ty, p, h);   // l'avertissement, puis (en insistant) l'embuscade
+        if (e.ennemis.some(m => m.salle === S.id)) {
+          combats++;
+          for (var t2 = 0; t2 < 80 && e.combats[S.id]; t2++) {
+            ps.forEach(q => { if (e.combats[S.id] && !q.fantome) jouerTour(e, q, h); });
+            if (e.combats[S.id]) DJ.tourMonstres(e, e.combats[S.id], h);
+          }
+          if (e.combats[S.id] || ps.every(q => q.fantome)) return resultat(false, S.role);
+        }
+        ps.forEach(q => gererMenus(e, q, h));
+        DJ.ouvrirTresor(e, S, tx, ty, p, h);
+      }
     }
     ps.forEach(q => gererMenus(e, q, h));
     if (e.phase === 'fin') return resultat(true);
@@ -176,11 +205,12 @@ function depenser(sem, p) {
     sem.eclats -= choix.prix; sem.b[choix.k] = (sem.b[choix.k] || 0) + 1;
   }
 }
+var RISQUE_SEMAINE = process.argv.indexOf('risque-toujours') >= 0 ? 'toujours' : process.argv.indexOf('risque') >= 0;
 function semaine(classe, graine, nbDonjons, avecAvantages) {
   var sem = { ouvert: 'normal', cle: 0, b: {}, eclats: 0, hero: null }, journal = [], essais = {};
   for (var k = 0; k < nbDonjons; k++) {
     var diff = sem.ouvert, peril = diff === 'mythique' ? sem.cle : 0;
-    var r = partie(classe, graine * 100 + k, peril, 1, diff, avecAvantages ? Object.assign({ b: sem.b }, sem.hero || {}) : null);
+    var r = partie(classe, graine * 100 + k, peril, 1, diff, avecAvantages ? Object.assign({ b: sem.b }, sem.hero || {}) : null, RISQUE_SEMAINE);
     var cle = diff + (diff === 'mythique' ? sem.cle : '');
     essais[cle] = essais[cle] || [0, 0]; essais[cle][0]++; if (r.gagne) essais[cle][1]++;
     var boss = r.gagne ? 3 : r.etage - 1;
@@ -217,11 +247,11 @@ if (require.main === module && process.argv[2] === 'semaine') {
 } else if (require.main === module) {
   // 3e argument facultatif : nombre de joueurs (même classe pour tous, ou duo mixte avec « mixte »)
   // 4e argument : difficulté (normal, heroique, mythique ; héroïque par défaut)
-  var n = +process.argv[2] || 200, peril = +process.argv[3] || 0, nb = +process.argv[4] || 1, diff = process.argv[5] || 'heroique';
+  var n = +process.argv[2] || 200, peril = +process.argv[3] || 0, nb = +process.argv[4] || 1, diff = process.argv[5] || 'heroique', risque = process.argv[6] === 'risque-toujours' ? 'toujours' : process.argv[6] === 'risque';
   ['ronces', 'force', 'bond', 'flair', 'aucune'].forEach(cl => {
     var g = 0, et = [0, 0, 0, 0], morts = {}, pv = 0;
     for (var i = 0; i < n; i++) {
-      var r = partie(cl, 1000 + i, peril, nb, diff);
+      var r = partie(cl, 1000 + i, peril, nb, diff, null, risque);
       if (r.gagne) { g++; pv += r.pv; } else { et[r.etage]++; morts[r.mort] = (morts[r.mort] || 0) + 1; }
     }
     console.log(cl.padEnd(7), 'gagnées', (100 * g / n).toFixed(0) + ' %', '| mortes aux étages 1/2/3 :', et.slice(1).join('/'), '| où :', JSON.stringify(morts), '| PV restants', g ? Math.round(pv / g) : '-');

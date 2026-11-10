@@ -786,7 +786,7 @@
             <div class="scene-c"><div class="decor-c" v-html="decorCombat"></div><div class="monstres-c">
               <button v-for="m in monstresCombat" :key="'mc' + m.id" class="mc" :class="{ ciblable: cibleAttendue === 'monstre', gros: grosM(m), touche: toucheC(m.id) }" @click="choisirMonstre(m.id)">
                 <span class="intention" :class="intentionClasse(m)">{{ intentionCourte(m) }}</span>
-                <span class="intention-nom">{{ m.intention ? m.intention.nom : '' }}</span>
+                <span class="intention-nom">{{ m.intention && !aveugle ? m.intention.nom : '' }}</span>
                 <span class="mc-des"><span v-html="spriteMonstre(m)"></span><span v-if="m.armure" class="armure-b">🛡️{{ m.armure }}</span>
                   <span v-for="k in fxSur(m.id)" :key="'x' + k.id" class="coup-flottant" :class="k.cl">{{ k.v }}</span></span>
                 <span class="mc-nom">{{ MONSTRES[m.type].nom }}</span>
@@ -930,10 +930,10 @@
              il faut toucher « Au combat » pour voir les cartes ; le bouton ne répond qu'au bout de 0,6 s et le voile ne se ferme pas tout seul -->
         <div class="voile-dj entree-combat" v-if="entreeCombat && combat && combat.id === entreeCombat.id">
           <div class="boite-dj">
-            <div class="grand">{{ entreeCombat.rang === 'boss' ? '👑' : entreeCombat.rang === 'elite' ? '⭐' : '⚔️' }}</div>
-            <div class="titre">{{ entreeCombat.rang === 'boss' ? 'Le boss !' : entreeCombat.rang === 'elite' ? 'Un élite !' : 'Combat !' }}</div>
+            <div class="grand">{{ entreeCombat.rang === 'boss' ? '👑' : entreeCombat.rang === 'elite' ? '⭐' : combat.embuscade ? '💥' : '⚔️' }}</div>
+            <div class="titre">{{ entreeCombat.rang === 'boss' ? 'Le boss !' : entreeCombat.rang === 'elite' ? 'Un élite !' : combat.embuscade ? 'Embuscade !' : 'Combat !' }}</div>
             <div class="noms-combat">{{ entreeCombat.noms }}</div>
-            <div class="aide" style="font-size:0.9em">Joue tes cartes, puis touche « Fin du tour ».</div>
+            <div class="aide" style="font-size:0.9em">{{ combat.embuscade ? 'Pris par surprise : tu commences 🎯 Vulnérable.' : 'Joue tes cartes, puis touche « Fin du tour ».' }}</div>
             <button class="btn principal" @click="fermerEntreeCombat">⚔️ Au combat !</button>
           </div>
         </div>
@@ -1011,11 +1011,11 @@
             </template>
 
             <template v-else-if="menu.type === 'paquet'">
-              <div class="titre">{{ { ameliorer: '⚒️ Améliorer une carte', retirer: '✂️ Retirer une carte', copier: '🪞 Copier une carte' }[menu.mode] }}</div>
+              <div class="titre">{{ { ameliorer: '⚒️ Améliorer une carte', retirer: '✂️ Retirer une carte', copier: '🪞 Copier une carte', transformer: '🫕 Jeter une carte au chaudron' }[menu.mode] }}</div>
               <div class="apercu-plus grande" v-if="menu.mode === 'ameliorer' && choixMenu !== null && monJ.paquet[choixMenu]">
                 <carte-dj :id="monJ.paquet[choixMenu]"></carte-dj><b>→</b><carte-dj :id="monJ.paquet[choixMenu] + '+'" class="plus"></carte-dj>
               </div>
-              <button class="btn principal" :disabled="choixMenu === null || !choixPaquetPossible" @click="menuAction('carte', choixMenu)">{{ choixMenu === null ? 'Touche une carte' : { ameliorer: 'Améliorer', retirer: 'Retirer', copier: 'Copier' }[menu.mode] + ' « ' + carte(monJ.paquet[choixMenu]).nom + ' »' + (menu.prix ? ' (' + menu.prix + ' or)' : '') }}</button>
+              <button class="btn principal" :disabled="choixMenu === null || !choixPaquetPossible" @click="menuAction('carte', choixMenu)">{{ choixMenu === null ? 'Touche une carte' : { ameliorer: 'Améliorer', retirer: 'Retirer', copier: 'Copier', transformer: 'Transformer' }[menu.mode] + ' « ' + carte(monJ.paquet[choixMenu]).nom + ' »' + (menu.prix ? ' (' + menu.prix + ' or)' : '') }}</button>
               <button class="btn" @click="menuAction('annuler')">↩ Annuler</button>
               <div class="paquet-grille">
                 <carte-dj v-for="x in paquetTrie" :key="'pq' + x.i" :id="x.id" :class="{ choisie: choixMenu === x.i, vendu: !possiblePaquet(x.id) }" :style="{ opacity: possiblePaquet(x.id) ? 1 : 0.35 }" @click.native="choisirPaquet(x)"></carte-dj>
@@ -1121,6 +1121,7 @@
             <li><strong>Armure 🛡️</strong> : elle prend les coups avant tes PV, puis disparaît au début de ton tour. États : 🎯 Vulnérable (+50 % de dégâts reçus), 🥀 Faible (−25 % de dégâts), 🧊 Fragile (−25 % d'armure), ☠️ Poison et 🔥 Brûlure (PV perdus au début du tour), 💪 Force (+dégâts à chaque coup). Touche un état pour le relire.</li>
             <li>Après chaque combat : de l'or 🪙, parfois une fiole, et <strong>une carte au choix parmi 3</strong> (ou passer : un paquet léger pioche plus souvent tes meilleures cartes). Les élites donnent une <strong>relique</strong> (effet permanent), les boss une relique puissante au choix.</li>
             <li><strong>Salles</strong> : 🔥 feu de camp (se reposer ou améliorer une carte), 🛒 marchand (cartes, fioles, relique, retrait d'une carte), ❓ autel (un choix, parfois risqué). Les coffres sont gardés tant que les monstres de la pièce sont là.</li>
+            <li><strong>Choisis ton chemin</strong> : le plan montre déjà ce qu'il y a dans les pièces voisines (⚔️ monstres, ⭐ élite, 🔥, 🛒, ❓, 👑 boss). Seuls l'élite et le boss sont obligatoires. Chaque étage cache aussi une <strong>pièce à risque</strong>, jamais obligatoire : 💀 <strong>salle du défi</strong> (un second élite : une relique de plus), 💰 <strong>trésor piégé</strong> (ouvrir le grand coffre déclenche une embuscade où tu commences Vulnérable ; ensuite, beaucoup d'or, une fiole et des poussières), 🔮 <strong>coffre maudit</strong> (une relique, contre une malédiction dans le paquet : 🏋️ Fardeau ou 🌀 Doute, qu'on peut jouer pour 1 ⚡ pour s'en débarrasser le temps du combat).</li>
             <li><strong>Fioles</strong> (2 emplacements) : à boire pendant ton tour ; la fiole de soin se boit aussi hors combat.</li>
             <li>Difficulté, choisie avant d'entrer (par l'hôte dans un salon) : 🛡️ Normal (monstres un peu plus doux ; poussières ×0,7), ⚔️ Héroïque (le défi prévu ; ×1), 💀 Mythique (monstres plus coriaces ; ×1,5). En Mythique, on choisit aussi sa clé.</li>
             <li>À plusieurs : chacun a ses cartes, son or et ses reliques ; les monstres ont plus de PV et frappent plus fort selon la difficulté et le nombre de joueurs <strong>présents dans le combat</strong> (seul dans la pièce, on les affronte comme en solo) ; leurs coups de zone ne sont pas renforcés ; le poison les ronge moins. Après un combat gagné ensemble, chacun reprend 10 % de ses PV. Une grille ⛓️ s'ouvre à deux sur les dalles. Un ami KO revient en fin de combat gagné, avec un Trèfle, ou si un ami reste 2 s à côté de lui. Tout le groupe KO : fin.</li>
@@ -1393,6 +1394,8 @@
           return { '--ml': n <= 5 ? '1%' : 'calc((100% - ' + n + ' * 19.2%) / ' + (n - 1) + ')',
                    '--vis': n <= 5 ? '100%' : (80.8 / (n - 1) / 19.2 * 100).toFixed(1) + '%', '--ico': n <= 7 ? '20px' : n === 8 ? '18px' : '15px', '--nom': n <= 6 ? '0.6em' : n <= 8 ? '0.55em' : '0.48em', '--txt': n <= 6 ? '0.55em' : n === 7 ? '0.5em' : '0.45em' };
         },
+        // Masque aveugle (relique de boss, 3.40) : je ne vois plus ce que préparent les monstres
+        aveugle: function() { return !!(this.monJ && this.monJ.reliques && this.monJ.reliques.indexOf('masque') >= 0); },
         rienAJouer: function() { return !this.monJ || !this.monJ.main.some(id => this.jouable(id)); },
         degatsAnnonces: function() {
           var p = this.monJ;
@@ -1406,6 +1409,7 @@
             return att.length ? 'En attente de ' + att.join(', ') : 'Les monstres jouent…';
           }
           var d = this.degatsAnnonces, a = this.monJ.armure;
+          if (this.aveugle) return '🎭 Le masque cache leurs coups';
           return d ? '⚔️ ' + d + ' annoncé' + (d > 1 ? 's' : '') + (a ? ' · 🛡️ ' + a : '') : 'Aucun coup annoncé sur toi';
         },
         immersif: function() { return this.immersionVoulue && this.onglet === 'play' && !!this.partie; },
@@ -1435,29 +1439,36 @@
         // Plan de l'étage (plein écran) : il remplit la place libre entre la fiche et la pièce, mis à l'échelle (preserveAspectRatio)
         planSvg: function() {
           var p = this.partie, S = this.salles || {}, CW = 50, CH = 34, o = '', moi = this.monJ;
-          var ICO = { feu: '🔥', marchand: '🛒', autel: '❓', elite: '⭐', boss: '👑', depart: '🚪' };
+          var ICO = { feu: '🔥', marchand: '🛒', autel: '❓', elite: '⭐', boss: '👑', depart: '🚪', defi: '💀', tresor: '💰', maudit: '🔮' };
           if (!p) return '';
           var cx = s => s.x * CW + CW / 2, cy = s => s.y * CH + CH / 2, vu = id => !!p.vues[id];
-          var montre = s => vu(s.id) || Object.values(s.portes).some(vu);
+          // 3.40 (demandé par l'utilisateur : choisir son chemin) : une pièce voisine pas encore vue montre déjà ce qu'elle contient ;
+          // le plan acheté au cartographe (p.revele = n° de l'étage) montre tout l'étage
+          var tout = p.revele === p.etage, connu = id => tout || vu(id);
+          var montre = s => tout || vu(s.id) || Object.values(s.portes).some(vu);
           var x0 = 99, y0 = 99, x1 = -1, y1 = -1;
           Object.values(S).forEach(s => { if (!montre(s)) return; x0 = Math.min(x0, s.x); y0 = Math.min(y0, s.y); x1 = Math.max(x1, s.x); y1 = Math.max(y1, s.y); });
           if (x1 < 0) return '';
           // Couloirs : un trait sombre, un trait clair dedans (pointillés vers une pièce encore inconnue)
           Object.values(S).forEach(s => {
-            if (!vu(s.id)) return;
+            if (!connu(s.id)) return;
             Object.keys(s.portes).forEach(d => {
               var v = S[s.portes[d]];
-              if (!v || (vu(v.id) && v.id < s.id)) return;
-              var l = 'x1="' + cx(s) + '" y1="' + cy(s) + '" x2="' + cx(v) + '" y2="' + cy(v) + '"';
+              if (!v || (connu(v.id) && v.id < s.id)) return;
+              var l = 'x1="' + cx(s) + '" y1="' + cy(s) + '" x2="' + cx(v) + '" y2="' + cy(v) + '"', fait = vu(s.id) && vu(v.id);
               o += '<line ' + l + ' stroke="#120c09" stroke-width="9" stroke-linecap="round"/>' +
-                   '<line ' + l + ' stroke="' + (vu(v.id) ? '#b08a57' : '#6b5644') + '" stroke-width="3.5" stroke-linecap="round"' + (vu(v.id) ? '' : ' stroke-dasharray="2 4"') + '/>';
+                   '<line ' + l + ' stroke="' + (fait ? '#b08a57' : '#6b5644') + '" stroke-width="3.5" stroke-linecap="round"' + (fait ? '' : ' stroke-dasharray="2 4"') + '/>';
             });
           });
           Object.values(S).forEach(s => {
             if (!montre(s)) return;
             var x = s.x * CW + 6, y = s.y * CH + 5, w = CW - 12, h = CH - 10, rect = 'x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" rx="6"';
-            if (!vu(s.id)) { o += '<rect ' + rect + ' fill="#120d0a" stroke="#6b5644" stroke-width="1.4" stroke-dasharray="3 3"/><text x="' + cx(s) + '" y="' + (cy(s) + 4.5) + '" text-anchor="middle" font-size="12" font-weight="700" fill="#8d7b68">?</text>'; return; }
             var ici = moi && moi.salle === s.id, combat = p.ennemis && p.ennemis.some(m => m.salle === s.id);
+            if (!vu(s.id)) {
+              o += '<rect ' + rect + ' fill="#120d0a" stroke="#6b5644" stroke-width="1.4" stroke-dasharray="3 3"/>' +
+                   '<text x="' + cx(s) + '" y="' + (cy(s) + 4.5) + '" text-anchor="middle" font-size="12" opacity=".8">' + (ICO[s.role] || (combat ? '⚔️' : '')) + '</text>';
+              return;
+            }
             var fond = ici ? '#d9480f' : s.boss ? '#4c2a85' : s.role === 'elite' ? '#5c3d12' : '#3b2d22';
             if (ici) o += '<rect x="' + (x - 4) + '" y="' + (y - 4) + '" width="' + (w + 8) + '" height="' + (h + 8) + '" rx="9" fill="none" stroke="#ffa94d" stroke-width="2" class="pl-pouls"/>';
             o += '<rect ' + rect + ' fill="#000" opacity=".45" transform="translate(0 2)"/>' +
@@ -1577,6 +1588,7 @@
         // L'intention d'un monstre en raccourci : ⚔️ 12×2, 🛡️ 10, 💪+2, états…
         intentionCourte: function(m) {
           var i = m.intention, l = [], E = DJ.D.ETATS;
+          if (this.aveugle) return '🎭 ?';
           if (!i) return '…';
           if (i.att) l.push('⚔️' + this.degatsAff(m) + (i.x > 1 ? '×' + i.x : '') + (i.tous ? ' tous' : this.nbJoueurs > 1 && m.cible ? ' → ' + (m.cible === this.moi ? 'toi' : m.cible) : ''));
           if (i.armure) l.push('🛡️' + i.armure);
@@ -1587,7 +1599,7 @@
           if (i.maudit) l.push('🩹' + i.maudit); if (i.vol) l.push('🪙'); if (i.soin) l.push('💚');
           return l.join(' ') || '💤';
         },
-        intentionClasse: function(m) { var i = m.intention || {}; return { att: !!i.att, danger: !!i.att && this.degatsAff(m) * (i.x || 1) >= 20 }; },
+        intentionClasse: function(m) { var i = this.aveugle ? {} : m.intention || {}; return { att: !!i.att, danger: !!i.att && this.degatsAff(m) * (i.x || 1) >= 20 }; },
         // Dégâts annoncés : calculés contre la cible du monstre (sa vulnérabilité, son affaiblissement…), pour que tout le monde voie le même chiffre
         // (3.27, signalé par l'utilisateur : « je vois attaque 20, mon co-joueur voit 13 ») ; un coup de zone : contre moi, puisqu'il me touche aussi.
         degatsAff: function(m) {
@@ -1699,7 +1711,7 @@
           var m = this.menu;
           if (!m || m.type !== 'paquet') return true;
           if (m.mode === 'ameliorer') return DJ.ameliorable(id);
-          if (m.mode === 'copier') return (DJ.carte(id) || {}).type !== 'malediction';
+          if (m.mode === 'copier' || m.mode === 'transformer') return (DJ.carte(id) || {}).type !== 'malediction';
           return true;
         },
         choisirPaquet: function(x) { if (this.possiblePaquet(x.id)) this.choixMenu = x.i; },
@@ -2485,6 +2497,29 @@
                '<g class="flotte-o"><path d="M' + ax + ' ' + (Y - 20) + ' l8 9 l-8 12 l-8 -12 Z" fill="#9775fa" stroke="#241812" stroke-width="1.5" stroke-linejoin="round"/>' +
                '<path d="M' + ax + ' ' + (Y - 20) + ' l-8 9 h16 Z" fill="#d0bfff"/><path d="M' + ax + ' ' + (Y - 20) + ' l8 9 l-8 12 l-8 -12 Z" fill="none" stroke="#241812" stroke-width="1.5" stroke-linejoin="round"/>' +
                '<path d="M' + (ax - 13) + ' ' + (Y - 14) + ' l1.2 3 l3 1.2 l-3 1.2 l-1.2 3 l-1.2 -3 l-3 -1.2 l3 -1.2 Z" fill="#fff" class="scintille"/><path d="M' + (ax + 13) + ' ' + (Y - 3) + ' l.9 2.2 l2.2 .9 l-2.2 .9 l-.9 2.2 l-.9 -2.2 l-2.2 -.9 l2.2 -.9 Z" fill="#fff" class="scintille"/></g>';
+        } else if (c === 'X') {
+          // Coffre maudit (3.40) : coffre sombre cerclé de fer, dans une brume violette
+          var mx = X + 16;
+          s += '<circle cx="' + mx + '" cy="' + (Y + 12) + '" r="46" fill="url(#dj-magie)" class="scintille-d"/>' +
+               '<ellipse cx="' + mx + '" cy="' + (Y + 30) + '" rx="21" ry="5" fill="rgba(0,0,0,.45)"/>' +
+               '<rect x="' + (X - 3) + '" y="' + (Y + 9) + '" width="38" height="21" rx="3" fill="#3b2a4d" stroke="#16101d" stroke-width="1.6"/>' +
+               '<path d="M' + (X - 3) + ' ' + (Y + 10) + ' Q' + mx + ' ' + (Y - 9) + ' ' + (X + 35) + ' ' + (Y + 10) + ' Z" fill="#553c73" stroke="#16101d" stroke-width="1.6"/>' +
+               '<path d="M' + (X + 5) + ' ' + (Y + 3) + ' V' + (Y + 30) + ' M' + (X + 27) + ' ' + (Y + 3) + ' V' + (Y + 30) + '" stroke="#868e96" stroke-width="2.6"/>' +
+               '<circle cx="' + mx + '" cy="' + (Y + 14) + '" r="5" fill="#b197fc" stroke="#16101d" stroke-width="1.4" class="scintille"/>' +
+               '<path d="M' + (mx - 1.5) + ' ' + (Y + 12.5) + ' h3 v3.5 h-3 Z" fill="#16101d"/>' +
+               '<g class="flotte-o"><path d="M' + (mx - 15) + ' ' + (Y - 8) + ' l1.2 3 l3 1.2 l-3 1.2 l-1.2 3 l-1.2 -3 l-3 -1.2 l3 -1.2 Z" fill="#d0bfff" class="scintille"/><path d="M' + (mx + 14) + ' ' + (Y - 14) + ' l.9 2.2 l2.2 .9 l-2.2 .9 l-.9 2.2 l-.9 -2.2 l-2.2 -.9 l2.2 -.9 Z" fill="#d0bfff" class="scintille"/></g>';
+        } else if (c === 'T' || c === 't') {
+          // Grand coffre piégé (3.40) : gros coffre cerclé d'or dans sa lueur ; ouvert une fois l'embuscade battue
+          var gx = X + 16, go = c === 't';
+          s += '<circle cx="' + gx + '" cy="' + (Y + 12) + '" r="50" fill="url(#dj-lueur)"' + (go ? ' opacity=".35"' : ' class="scintille-d"') + '/>' +
+               '<ellipse cx="' + gx + '" cy="' + (Y + 31) + '" rx="25" ry="5" fill="rgba(0,0,0,.4)"/>' +
+               '<rect x="' + (X - 6) + '" y="' + (Y + 9) + '" width="44" height="22" rx="3" fill="#a0612b" stroke="#3d2410" stroke-width="1.8"/>' +
+               '<path d="M' + (X + 2) + ' ' + (Y + 9) + ' V' + (Y + 31) + ' M' + (X + 30) + ' ' + (Y + 9) + ' V' + (Y + 31) + '" stroke="#ffd43b" stroke-width="3.2"/>' +
+               (go ? '<path d="M' + (X - 6) + ' ' + (Y + 10) + ' L' + (X - 1) + ' ' + (Y - 8) + ' H' + (X + 33) + ' L' + (X + 38) + ' ' + (Y + 10) + ' Z" fill="#7a4a1f" stroke="#3d2410" stroke-width="1.8"/><rect x="' + (X - 3) + '" y="' + (Y + 11) + '" width="38" height="5" fill="#1a1008"/>'
+                   : '<path d="M' + (X - 6) + ' ' + (Y + 10) + ' Q' + gx + ' ' + (Y - 14) + ' ' + (X + 38) + ' ' + (Y + 10) + ' Z" fill="#b5702f" stroke="#3d2410" stroke-width="1.8"/>' +
+                     '<path d="M' + (X + 2) + ' ' + (Y + 1) + ' V' + (Y + 10) + ' M' + (X + 30) + ' ' + (Y + 1) + ' V' + (Y + 10) + '" stroke="#ffd43b" stroke-width="3.2"/>' +
+                     '<rect x="' + (gx - 4.5) + '" y="' + (Y + 7) + '" width="9" height="10" rx="2" fill="#ffd43b" stroke="#3d2410" stroke-width="1.3"/><circle cx="' + gx + '" cy="' + (Y + 11.5) + '" r="1.6" fill="#3d2410"/>' +
+                     '<path d="M' + (gx - 17) + ' ' + (Y - 12) + ' l1.2 3 l3 1.2 l-3 1.2 l-1.2 3 l-1.2 -3 l-3 -1.2 l3 -1.2 Z" fill="#fff3bf" class="scintille"/>');
         } else if (c === 'E') {
           // Escalier qui descend
           s += '<rect x="' + (X + 1) + '" y="' + (Y + 1) + '" width="30" height="30" rx="3" fill="#120d0a"/>' + [0, 1, 2, 3].map(k => '<rect x="' + (X + 3 + k * 3) + '" y="' + (Y + 4 + k * 7) + '" width="' + (26 - k * 6) + '" height="5" fill="' + ['#bfa27a', '#9a7f5f', '#76603f', '#4e3f33'][k] + '"/>').join('') +

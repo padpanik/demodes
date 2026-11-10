@@ -127,7 +127,11 @@ var DJD = (function () {
     k('fleau', 'Fléau', '🦠', 'pouvoir', 'flair', 'r', 2, 'soi', [{ buff: 'fleau', n: 3 }], { fx: [{ buff: 'fleau', n: 4 }] }),
 
     // Malédiction (posée par des monstres ou des événements)
-    k('blessure', 'Blessure', '🩹', 'malediction', null, 'x', null, 'soi', [], {}, { injouable: true, texte: 'Injouable. Encombre la main.' })
+    k('blessure', 'Blessure', '🩹', 'malediction', null, 'x', null, 'soi', [], {}, { injouable: true, texte: 'Injouable. Encombre la main.' }),
+    // Malédictions du coffre maudit (3.40) : finMain = ce qu'elles font si elles sont encore en main à la fin du tour.
+    // On peut payer 1 ⚡ pour s'en débarrasser jusqu'à la fin du combat (elles ne font rien d'autre).
+    k('fardeau', 'Fardeau', '🏋️', 'malediction', null, 'x', 1, 'soi', [], {}, { epuise: true, finMain: { pv: 2 }, texte: 'Si elle reste en main : −2 PV. La jouer s\'en débarrasse' }),
+    k('doute', 'Doute', '🌀', 'malediction', null, 'x', 1, 'soi', [], {}, { epuise: true, finMain: { etat: 'faible', n: 2 }, texte: 'Si elle reste en main : Faible au tour suivant. La jouer s\'en débarrasse' })
   ];
   var CARTES = {};
   L.forEach(function (c) { CARTES[c.id] = c; });
@@ -162,12 +166,29 @@ var DJD = (function () {
     trefle4: { nom: 'Trèfle à quatre feuilles', ico: '☘️', rar: 'r', texte: 'Une fois : au lieu d\'être KO, revient à 30 % des PV' },
     plume: { nom: 'Plume vive', ico: '🪶', rar: 'r', texte: 'Toutes les 10 cartes jouées : +1 ⚡' },
     carte: { nom: 'Vieille carte', ico: '🗺️', rar: 'c', texte: 'Le feu de camp soigne 15 PV de plus' },
+    // Ajoutées en 3.40 (demandé par l'utilisateur : plus de variété)
+    dent: { nom: 'Dent de dragon', ico: '🦷', rar: 'c', texte: 'Ton premier coup de chaque combat fait 8 dégâts de plus' },
+    braises: { nom: 'Braises éternelles', ico: '🕯️', rar: 'c', texte: 'Les monstres commencent le combat avec Brûlure 4' },
+    dard: { nom: 'Dard', ico: '🦂', rar: 'c', texte: 'Les monstres commencent le combat avec Poison 3' },
+    bottes: { nom: 'Bottes de marche', ico: '🥾', rar: 'c', texte: 'Soigne 2 PV à chaque pièce découverte' },
+    bon: { nom: 'Bon de réduction', ico: '🏷️', rar: 'c', texte: 'Tout est 20 % moins cher chez le marchand' },
+    pierre: { nom: 'Pierre à aiguiser', ico: '🔪', rar: 'c', texte: 'En la trouvant : améliore 3 cartes au hasard' },
+    ecu: { nom: 'Écu', ico: '🔰', rar: 'u', texte: '2 armure au début de chacun de tes tours' },
+    trophee: { nom: 'Trophée de chasse', ico: '🦌', rar: 'u', texte: 'Un monstre vaincu pendant ton tour : +1 ⚡ et pioche 1 carte' },
+    cape: { nom: 'Cape de voyage', ico: '🧥', rar: 'u', texte: 'Fin de tour : +3 armure par ⚡ non dépensé' },
+    de: { nom: 'Dé pipé', ico: '🎲', rar: 'u', texte: 'Butin : 4 cartes au choix au lieu de 3' },
+    amulette: { nom: 'Amulette', ico: '🧿', rar: 'u', texte: 'Pare le premier état néfaste de chaque combat' },
+    grigri: { nom: 'Grigri', ico: '🦴', rar: 'u', texte: '+1 PV max après chaque combat gagné' },
+    gemme: { nom: 'Gemme d\'énergie', ico: '💎', rar: 'r', texte: 'Les ⚡ non dépensés (2 au plus) sont gardés pour le tour suivant' },
+    marteau: { nom: 'Marteau de forgeron', ico: '🔨', rar: 'r', texte: 'Au feu de camp, se reposer permet aussi d\'améliorer une carte' },
     // Reliques de boss : fortes, avec un prix
     couronne: { nom: 'Couronne d\'épines', ico: '👑', rar: 'boss', texte: '+1 ⚡ à chaque tour, mais pioche 1 carte de moins' },
     lampe: { nom: 'Lampe éternelle', ico: '🪔', rar: 'boss', texte: '+1 ⚡ à chaque tour, mais le feu de camp ne soigne plus' },
     grimoire: { nom: 'Grimoire interdit', ico: '📕', rar: 'boss', texte: '+1 ⚡ à chaque tour, mais une Blessure dans le paquet' },
     calice: { nom: 'Calice', ico: '🏆', rar: 'boss', texte: '+20 PV max et tous les PV rendus' },
-    sceptre: { nom: 'Sceptre', ico: '🔱', rar: 'boss', texte: 'Pioche 1 carte de plus à chaque tour' }
+    sceptre: { nom: 'Sceptre', ico: '🔱', rar: 'boss', texte: 'Pioche 1 carte de plus à chaque tour' },
+    masque: { nom: 'Masque aveugle', ico: '🎭', rar: 'boss', texte: '+1 ⚡ à chaque tour, mais tu ne vois plus ce que préparent les monstres' },
+    balance: { nom: 'Balance truquée', ico: '⚖️', rar: 'boss', texte: '+1 ⚡ à chaque tour, mais les monstres commencent le combat avec 1 Force' }
   };
 
   // ---------- Monstres ----------
@@ -339,7 +360,46 @@ var DJD = (function () {
     des: { titre: 'Esprit joueur', ico: '🎲', texte: 'Un esprit propose une partie de dés.',
       choix: ['Parier 30 or (une chance sur deux d\'en gagner 45 de plus)', 'Refuser poliment'] },
     champignons: { titre: 'Cercle de champignons', ico: '🍄', texte: 'Des champignons phosphorescents poussent en rond.',
-      choix: ['En manger (+6 PV max, −5 PV)', 'En cueillir (une fiole au hasard)'] }
+      choix: ['En manger (+6 PV max, −5 PV)', 'En cueillir (une fiole au hasard)'] },
+    // Ajoutés en 3.40 (demandé par l'utilisateur : plus de variété). Le 2e choix est toujours possible.
+    bivouac: { titre: 'Bivouac abandonné', ico: '⛺', texte: 'Une tente, des braises encore tièdes, un sac oublié.',
+      choix: ['Dormir un peu (soigne 40 % des PV)', 'Fouiller le sac (+20 or et une fiole au hasard)'] },
+    puits: { titre: 'Puits aux vœux', ico: '🪙', texte: 'Des pièces brillent tout au fond.',
+      choix: ['Jeter 25 or et faire un vœu (+8 PV max)', 'Descendre chercher les pièces (+35 or, −6 PV)'] },
+    colporteur: { titre: 'Colporteur louche', ico: '🕴️', texte: '« Une affaire en or, les yeux fermés ! »',
+      choix: ['Acheter sans voir (55 or : une relique au hasard)', 'Refuser'] },
+    sage: { titre: 'Vieux sage endormi', ico: '🦉', texte: 'Il ronfle sur ses parchemins, sa bourse à la ceinture.',
+      choix: ['Le réveiller pour une leçon (améliore une carte au choix)', 'Lui prendre sa bourse (+40 or, mais une Blessure)'] },
+    voyageur: { titre: 'Voyageur blessé', ico: '🤕', texte: 'Il ne peut plus avancer. Son sac déborde de parchemins.',
+      choix: ['Le porter jusqu\'à l\'abri (−8 PV, 1 carte parmi 3, souvent rare)', 'Passer son chemin'] },
+    idole: { titre: 'Idole dorée', ico: '🗿', texte: 'Elle est lourde, très lourde. Et elle te regarde.',
+      choix: ['L\'emporter (+90 or, mais −6 PV max)', 'La laisser'] },
+    roue: { titre: 'Roue du destin', ico: '🎡', texte: 'Une roue grince dans le noir : or, relique, soin… ou pire.',
+      choix: ['Tourner la roue (au hasard : +60 or, une relique, tous les PV, −8 PV ou une Blessure)', 'Ne pas tenter le sort'] },
+    gardien: { titre: 'Gardien assoupi', ico: '😴', texte: 'Un ogre dort contre le mur, une grosse bourse sur les genoux.',
+      choix: ['Chiper la bourse (2 chances sur 3 : +70 or ; sinon il se réveille : −12 PV)', 'Passer sur la pointe des pattes'] },
+    cartographe: { titre: 'Cartographe perdu', ico: '🗺️', texte: 'Il connaît l\'étage par cœur, mais plus la sortie.',
+      choix: ['Acheter son plan (20 or : montre tout l\'étage)', 'Lui indiquer la sortie (+12 or)'] },
+    chaudron: { titre: 'Chaudron qui bout', ico: '🫕', texte: 'Ça sent la magie et le poireau.',
+      choix: ['Y jeter une carte (elle devient une autre carte, au hasard)', 'Boire un bol de soupe (+12 PV)'] },
+    ratelier: { titre: 'Râtelier d\'armes', ico: '⚔️', texte: 'Tout a été pillé, ou presque.',
+      choix: ['Prendre le marteau (ajoute Frappe lourde+ au paquet)', 'Prendre le pavois (ajoute Garde haute+ au paquet)'] },
+    alchimiste: { titre: 'Alchimiste distrait', ico: '⚗️', texte: 'Il cherche une fiole pour finir son chef-d\'œuvre.',
+      choix: ['Lui donner ta première fiole (contre une relique commune)', 'Repartir avec un échantillon (une fiole au hasard, si tu as la place)'] },
+    // Le coffre maudit a sa propre pièce (hors : jamais tiré pour un autel)
+    coffremaudit: { titre: 'Coffre maudit', ico: '🔮', hors: true, texte: 'Une brume violette s\'en échappe. Ce qu\'il contient a un prix.',
+      choix: ['L\'ouvrir (une relique, mais une malédiction dans le paquet)', 'Le laisser fermé'] }
+  };
+
+  // ---------- Pièces à risque (3.40, demandé par l'utilisateur : un chemin qu'on choisit) ----------
+  // Une par étage, toujours facultative, annoncée sur le plan ; les trois types tournent d'un étage à l'autre (ordre selon la graine).
+  // defi : le second élite de l'étage (butin d'élite) ; tresor : un grand coffre piégé (embuscade, puis or, fiole et poussières) ;
+  // maudit : un coffre qui donne une relique contre une malédiction.
+  var RISQUES = {
+    ordre: ['defi', 'tresor', 'maudit'],
+    defi: { nom: 'Salle du défi', ico: '💀' },
+    tresor: { nom: 'Trésor piégé', ico: '💰', or: [60, 80], poussiere: 3, vuln: 1 },
+    maudit: { nom: 'Coffre maudit', ico: '🔮', maledictions: ['fardeau', 'doute'] }
   };
 
   // ---------- La semaine (3.29, refaite en 3.30 ; demandé par l'utilisateur : « que le personnage monte réellement en puissance en formant
@@ -366,6 +426,6 @@ var DJD = (function () {
   var PRIX = { c: 45, u: 70, r: 120, fiole: 40, relique: 150, retrait: 70 };
 
   return { ETATS: ETATS, CLASSES: CLASSES, CARTES: CARTES, FIOLES: FIOLES, RELIQUES: RELIQUES, MONSTRES: MONSTRES,
-           ETAGES: ETAGES, PERILS: PERILS, DIFFICULTES: DIFFICULTES, ORDRE_DIFFICULTES: ORDRE_DIFFICULTES, POISON_GROUPE: POISON_GROUPE, SOIN_GROUPE: SOIN_GROUPE, SEMAINE: SEMAINE, CLE_PAR_NIVEAU: CLE_PAR_NIVEAU, EVENEMENTS: EVENEMENTS, PRIX: PRIX };
+           ETAGES: ETAGES, PERILS: PERILS, DIFFICULTES: DIFFICULTES, ORDRE_DIFFICULTES: ORDRE_DIFFICULTES, POISON_GROUPE: POISON_GROUPE, SOIN_GROUPE: SOIN_GROUPE, SEMAINE: SEMAINE, CLE_PAR_NIVEAU: CLE_PAR_NIVEAU, EVENEMENTS: EVENEMENTS, RISQUES: RISQUES, PRIX: PRIX };
 })();
 if (typeof module !== 'undefined') module.exports = DJD;
