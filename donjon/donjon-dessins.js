@@ -1,7 +1,7 @@
-// ================== DONJON DES COMPAGNONS : DESSINS DES MONSTRES ET DES OBJETS (SVG dessiné par le code) ==================
+// ================== DONJON DES COMPAGNONS : DESSINS DES MONSTRES ET DU DÉCOR DE COMBAT (SVG dessiné par le code) ==================
 // Un seul style pour tous : contour sombre, couleur franche, une ombre plus foncée, un reflet clair, de grands yeux.
 // Pas de dégradé (des identifiants partagés entre dessins cachés et visibles feraient disparaître les couleurs).
-// DJS.monstre(type) rend un <svg viewBox="0 0 40 40"> ; utilisé par donjon/index.html.
+// DJS.monstre(type) rend un <svg viewBox="0 0 40 40"> ; DJS.decor(étage, sol, mur, rang) le fond de la scène de combat ; utilisés par donjon/index.html.
 
 var DJS = (function () {
   var O = '#241812';          // contour
@@ -167,6 +167,75 @@ var DJS = (function () {
     if (type === 'gluantmoyen') f = function () { return D.gluant(false).replace('#69db7c', '#a9e34b'); };
     return (cache[type] = svg(f ? f() : D.gluant(false)));
   }
-  return { monstre: monstre, TYPES: Object.keys(D).concat(['roi', 'reine', 'gluantgeant', 'gluantmoyen']) };
+
+  // ---------- Décor de la scène de combat (3.36) : un mur, un sol en perspective et deux torches, aux couleurs de l'étage ----------
+  // viewBox 360 × 440, affiché en « slice » : la ligne d'horizon (y = 220) reste au milieu de la scène, quelle que soit sa hauteur.
+  // Une scène basse (petit téléphone) ne montre que y = 115 à 325 : les torches, niches et bannières tiennent dans cette bande,
+  // sur les côtés pour ne pas se mêler aux annonces des monstres. Identifiants « djc- » : un seul décor à l'écran à la fois.
+  function decor(etage, sol, mur, rang) {
+    var s = '', i, x, y, HZ = 220;
+    var teinte = rang === 'boss' ? '#9c36b5' : rang === 'elite' ? '#fab005' : '#ffb347';
+    s += '<defs><radialGradient id="djc-lueur"><stop offset="0%" stop-color="#ffb347" stop-opacity=".55"/><stop offset="100%" stop-color="#ff922b" stop-opacity="0"/></radialGradient>' +
+         '<radialGradient id="djc-halo"><stop offset="0%" stop-color="' + teinte + '" stop-opacity="' + (rang === 'normal' ? '.22' : '.34') + '"/><stop offset="100%" stop-color="' + teinte + '" stop-opacity="0"/></radialGradient>' +
+         '<linearGradient id="djc-haut" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#000" stop-opacity=".75"/><stop offset="100%" stop-color="#000" stop-opacity="0"/></linearGradient>' +
+         '<linearGradient id="djc-bas" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#000" stop-opacity="0"/><stop offset="100%" stop-color="#000" stop-opacity=".8"/></linearGradient>' +
+         '<linearGradient id="djc-cote" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#000" stop-opacity=".5"/><stop offset="16%" stop-color="#000" stop-opacity="0"/><stop offset="84%" stop-color="#000" stop-opacity="0"/><stop offset="100%" stop-color="#000" stop-opacity=".5"/></linearGradient></defs>';
+    // Le mur et ses pierres
+    s += '<rect width="360" height="' + HZ + '" fill="' + mur[0] + '"/>';
+    var joints = '';
+    for (y = HZ - 7 - 22 * 9, i = 0; y < HZ - 8; y += 22, i++) {
+      joints += 'M0 ' + y + ' H360 ';
+      for (x = (i % 2 ? 0 : 22); x < 360; x += 44) joints += 'M' + x + ' ' + y + ' v22 ';
+    }
+    s += '<path d="' + joints + '" stroke="' + mur[2] + '" stroke-width="1.6" fill="none"/>';
+    for (i = 0; i < 12; i++) s += '<rect x="' + ((i * 97) % 316 + (i % 2 ? 0 : 22) - ((i * 97) % 316) % 44 + 1) + '" y="' + (HZ - 7 - 22 * (1 + (i * 5) % 9) + 1) + '" width="42" height="20" fill="' + mur[1] + '" opacity=".5"/>';
+    // Selon l'étage : stalactites et mousse, niches à crânes, bannières
+    if (etage === 1) {
+      [22, 58, 101, 139, 176, 213, 252, 296, 338].forEach(function (sx, k) { var h = 26 + (k * 17 % 30); s += '<path d="M' + (sx - 11) + ' 0 L' + sx + ' ' + h + ' L' + (sx + 11) + ' 0 Z" fill="' + mur[2] + '" stroke="#120c09" stroke-width="1.2"/>'; });
+      [[70, 210], [108, 214], [256, 211], [300, 214], [186, 215]].forEach(function (m) { s += '<ellipse cx="' + m[0] + '" cy="' + m[1] + '" rx="14" ry="6" fill="#4d6b34" opacity=".8"/><ellipse cx="' + (m[0] + 6) + '" cy="' + (m[1] - 3) + '" rx="7" ry="4" fill="#6f8f45" opacity=".8"/>'; });
+    } else if (etage === 2) {
+      [84, 276].forEach(function (nx) {
+        s += '<path d="M' + (nx - 18) + ' 208 V152 Q' + nx + ' 122 ' + (nx + 18) + ' 152 V208 Z" fill="#131318" stroke="' + mur[1] + '" stroke-width="4"/>' +
+             '<path d="M' + (nx - 9) + ' 193 Q' + (nx - 11) + ' 175 ' + nx + ' 175 Q' + (nx + 11) + ' 175 ' + (nx + 9) + ' 193 L' + (nx + 5.5) + ' 201 H' + (nx - 5.5) + ' Z" fill="#d8d2c2" stroke="#241812" stroke-width="1.4"/>' +
+             '<circle cx="' + (nx - 4) + '" cy="187" r="2.7" fill="#241812"/><circle cx="' + (nx + 4) + '" cy="187" r="2.7" fill="#241812"/><path d="M' + (nx - 3) + ' 197 v4 M' + nx + ' 197 v4 M' + (nx + 3) + ' 197 v4" stroke="#241812" stroke-width="1"/>';
+      });
+    } else {
+      [84, 276].forEach(function (bx) {
+        s += '<rect x="' + (bx - 19) + '" y="122" width="38" height="4" rx="2" fill="#fab005" stroke="#241812" stroke-width="1"/>' +
+             '<path d="M' + (bx - 16) + ' 126 h32 v66 l-16 -12 l-16 12 Z" fill="#a61e1e" stroke="#fab005" stroke-width="2"/><circle cx="' + bx + '" cy="151" r="7.5" fill="#fab005"/><circle cx="' + bx + '" cy="151" r="3.2" fill="#a61e1e"/>';
+      });
+    }
+    s += '<rect width="360" height="110" fill="url(#djc-haut)"/>';
+    // La plinthe, puis le sol : dalles qui fuient vers le milieu de l'horizon
+    s += '<rect y="' + (HZ - 7) + '" width="360" height="8" fill="' + mur[1] + '"/><rect y="' + (HZ - 1) + '" width="360" height="3" fill="#120c09" opacity=".7"/>';
+    s += '<rect y="' + (HZ + 2) + '" width="360" height="' + (438 - HZ) + '" fill="' + sol[0] + '"/>';
+    var lignes = '', LY = [0, 8, 20, 38, 64, 102, 160, 220];
+    // Une dalle sur deux plus claire, en damier
+    for (var r = 0; r < LY.length - 1; r++) for (i = -8; i < 8; i++) {
+      if ((i + r) % 2) continue;
+      var y0 = HZ + 2 + LY[r], y1 = HZ + 2 + LY[r + 1], f0 = 1 + LY[r] / 44, f1 = 1 + LY[r + 1] / 44;
+      s += '<path d="M' + (180 + i * 24 * f0) + ' ' + y0 + ' L' + (180 + (i + 1) * 24 * f0) + ' ' + y0 + ' L' + (180 + (i + 1) * 24 * f1) + ' ' + y1 + ' L' + (180 + i * 24 * f1) + ' ' + y1 + ' Z" fill="' + sol[1] + '" opacity=".7"/>';
+    }
+    for (i = -8; i <= 8; i++) lignes += 'M' + (180 + i * 24) + ' ' + (HZ + 2) + ' L' + (180 + i * 24 * 6) + ' 440 ';
+    LY.slice(1, 7).forEach(function (ly) { lignes += 'M0 ' + (HZ + 2 + ly) + ' H360 '; });
+    s += '<path d="' + lignes + '" stroke="' + sol[2] + '" stroke-width="1.6" fill="none"/>';
+    if (etage === 2) [[40, 292], [300, 306], [76, 330]].forEach(function (o) { s += '<path d="M' + o[0] + ' ' + o[1] + ' l18 5" stroke="#d8d2c2" stroke-width="3.6" stroke-linecap="round"/><circle cx="' + o[0] + '" cy="' + o[1] + '" r="2.8" fill="#d8d2c2"/><circle cx="' + (o[0] + 18) + '" cy="' + (o[1] + 5) + '" r="2.8" fill="#d8d2c2"/>'; });
+    if (etage === 3) [[36, 262], [322, 284], [66, 318], [296, 330], [20, 300]].forEach(function (o, k) { s += '<circle cx="' + o[0] + '" cy="' + o[1] + '" r="10" fill="#ff6b3d" opacity=".16"/><circle class="djc-braise" style="animation-delay:' + (k * 0.4) + 's" cx="' + o[0] + '" cy="' + o[1] + '" r="2.8" fill="#ff8a4c"/>'; });
+    if (etage === 1) [[30, 330], [330, 318], [60, 362], [300, 356]].forEach(function (o, k) { s += '<ellipse cx="' + o[0] + '" cy="' + o[1] + '" rx="' + (9 - k) + '" ry="' + (5 - k * 0.5) + '" fill="#8d7b68" stroke="#241812" stroke-width="1.1"/><ellipse cx="' + (o[0] - 2) + '" cy="' + (o[1] - 1.5) + '" rx="' + (4 - k * 0.5) + '" ry="1.6" fill="#a8957f"/>'; });
+    // La lumière : halo derrière les monstres (doré pour un élite, violet pour un boss), deux torches sur les côtés
+    s += '<ellipse cx="180" cy="' + HZ + '" rx="170" ry="130" fill="url(#djc-halo)"/>';
+    [30, 330].forEach(function (tx) {
+      s += '<circle cx="' + tx + '" cy="162" r="70" fill="url(#djc-lueur)" class="djc-vacille"/>' +
+           '<path d="M' + (tx - 3) + ' 172 h6 l-1.2 22 h-3.6 Z" fill="#5d3a18" stroke="#241812" stroke-width="1.2"/><rect x="' + (tx - 7) + '" y="168" width="14" height="6" rx="2" fill="#868e96" stroke="#241812" stroke-width="1.2"/>' +
+           '<path class="djc-flamme" d="M' + tx + ' 140 C' + (tx + 10) + ' 151 ' + (tx + 8) + ' 168 ' + tx + ' 168 C' + (tx - 8) + ' 168 ' + (tx - 10) + ' 151 ' + tx + ' 140 Z" fill="#ff922b"/>' +
+           '<path class="djc-flamme" d="M' + tx + ' 151 C' + (tx + 5) + ' 157 ' + (tx + 4) + ' 167 ' + tx + ' 167 C' + (tx - 4) + ' 167 ' + (tx - 5) + ' 157 ' + tx + ' 151 Z" fill="#ffe066"/>';
+    });
+    s += '<rect width="360" height="440" fill="url(#djc-cote)"/><rect y="' + (HZ + 30) + '" width="360" height="' + (410 - HZ) + '" fill="url(#djc-bas)"/>';
+    s += '<style>.djc-flamme{animation:djc-f .35s ease-in-out infinite alternate;transform-box:fill-box;transform-origin:50% 100%}.djc-vacille{animation:djc-v 1.7s ease-in-out infinite alternate}' +
+         '.djc-braise{animation:djc-v 1.3s ease-in-out infinite alternate}@keyframes djc-f{to{transform:scale(1.1,.88)}}@keyframes djc-v{from{opacity:.55}to{opacity:1}}' +
+         '@media (prefers-reduced-motion: reduce){.djc-flamme,.djc-vacille,.djc-braise{animation:none}}</style>';
+    return '<svg viewBox="0 0 360 440" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">' + s + '</svg>';
+  }
+  return { monstre: monstre, decor: decor, TYPES: Object.keys(D).concat(['roi', 'reine', 'gluantgeant', 'gluantmoyen']) };
 })();
 if (typeof module !== 'undefined') module.exports = DJS;

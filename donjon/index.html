@@ -197,7 +197,7 @@
     .carte-c.plus .cc-nom { color: #2b8a3e; }
     .cc-cout { position: absolute; left: -3px; top: -9px; width: 22px; height: 22px; border-radius: 50%; background: #ffd43b; color: #2a211b; font-weight: 900; font-size: 0.85em; display: flex; align-items: center; justify-content: center; box-shadow: 0 1px 3px rgba(0,0,0,0.4); }
     .cc-ico { font-size: 22px; line-height: 1.05; }
-    .cc-nom { font-weight: 900; font-size: 0.64em; text-align: center; line-height: 1.1; }
+    .cc-nom { font-weight: 900; font-size: 0.64em; text-align: center; line-height: 1.1; max-width: 100%; overflow-wrap: anywhere; }
     .cc-txt { font-size: 0.56em; color: #5b6b78; text-align: center; line-height: 1.15; }
     .cc-badge { position: absolute; right: -3px; top: -9px; background: #e03131; color: #fff; border-radius: 8px; font-size: 0.68em; font-weight: 900; padding: 1px 4px; }
     .cc-prix { font-weight: 900; font-size: 0.72em; color: #a8590f; margin-top: auto; }
@@ -208,7 +208,7 @@
     .boite-menu { max-height: calc(100vh - 40px); overflow-y: auto; padding: 14px 12px; }
     .choix-cartes { display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; margin: 10px 0 6px; }
     .choix-cartes .carte-c { width: calc((100% - 12px) / 3); }
-    .choix-cartes.quatre .carte-c { width: calc((100% - 18px) / 4); }
+    .choix-cartes.quatre { gap: 12px 10px; } .choix-cartes.quatre .carte-c { width: 38%; min-height: 112px; }
     .choix-cartes .carte-c.choisie { transform: translateY(-6px); box-shadow: 0 0 0 3px #ff922b, 0 6px 10px rgba(0,0,0,0.25); }
     .choix-cartes .carte-c.vendu { opacity: 0.3; pointer-events: none; }
     .butin-l { display: flex; flex-direction: column; gap: 4px; margin: 8px 0; font-weight: 700; font-size: 0.88em; color: #3b4b57; text-align: left; }
@@ -424,6 +424,35 @@
     .fiche-dj.en-combat .sac-dj { padding: 1px 5px; }
     .fiche-dj.en-combat .sac-txt { display: none; }
     .combat-dj .scene-c { overflow: hidden; }
+    /* Décor de la scène (3.36) : dessiné par DJS.decor, derrière les monstres */
+    .scene-c { border-radius: 10px; border: 1px solid rgba(141,106,63,0.45); box-shadow: inset 0 0 18px rgba(0,0,0,0.55); }
+    .scene-c:after { display: none; }
+    .decor-c { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
+    .decor-c svg { width: 100%; height: 100%; display: block; }
+    .monstres-c { position: relative; z-index: 1; }
+    .scene-c .intention-nom, .scene-c .mc-nom { text-shadow: 0 1px 2px #000, 0 0 5px #000; opacity: 1; }
+    .scene-c .etats-c span { background: rgba(0,0,0,0.55); }
+    /* Les monstres respirent, et tremblent quand ils prennent un coup (le héros aussi) */
+    .mc-des .gl { animation: respire-c 2.4s ease-in-out infinite alternate; transform-origin: 50% 100%; }
+    .mc:nth-child(2) .mc-des .gl { animation-delay: -0.8s; } .mc:nth-child(3) .mc-des .gl { animation-delay: -1.6s; } .mc:nth-child(4) .mc-des .gl { animation-delay: -0.4s; }
+    @keyframes respire-c { from { transform: translateY(0) scale(1, 1); } to { transform: translateY(-2px) scale(1.03, 0.98); } }
+    .mc.touche .mc-des .gl, .moi-av.touche { animation: touche-c 0.38s ease-out; }
+    @keyframes touche-c { 0% { transform: translateX(0); filter: brightness(2.2); } 25% { transform: translateX(-6px) rotate(-4deg); } 50% { transform: translateX(5px) rotate(3deg); filter: brightness(1.3); } 75% { transform: translateX(-3px); } 100% { transform: translateX(0); } }
+    @media (prefers-reduced-motion: reduce) { .mc-des .gl, .mc.touche .mc-des .gl, .moi-av.touche { animation: none; } }
+    /* Téléphone peu haut (3.36) : le journal et les cartes se tassent pour que les PV et les états des monstres restent visibles */
+    @media (max-height: 700px) {
+      .jeu-dj.immersif .journal-c { height: 32px; margin: 3px 0; }
+      .jeu-dj.immersif .main-c .carte-c { min-height: 112px; }
+      .jeu-dj.immersif .main-c { padding-top: 9px; }
+      .jeu-dj.immersif .mc.gros .mc-des { width: clamp(40px, calc(100cqh - 90px), 160px); height: clamp(40px, calc(100cqh - 90px), 160px); margin-top: 2px; }
+      .jeu-dj.immersif .mc-des { width: clamp(36px, calc(100cqh - 90px), 96px); height: clamp(36px, calc(100cqh - 90px), 96px); }
+    }
+    /* Main serrée (plus de 5 cartes, 3.36) : le coût, le médaillon et le nom tiennent dans la bande visible de chaque carte ; la carte touchée et la dernière restent entières */
+    .main-c.serree .carte-c:not(:last-child):not(.choisie) { align-items: flex-start; padding-left: 0; padding-right: 0; }
+    .main-c.serree .carte-c:not(:last-child):not(.choisie) .cc-ico { font-size: var(--ico, 20px); margin-left: calc((var(--vis) - 1.55em - 4px) / 2); }
+    .main-c.serree .carte-c:not(:last-child):not(.choisie) .cc-nom { width: var(--vis); font-size: var(--nom, 0.56em); letter-spacing: -0.2px; overflow-wrap: anywhere; hyphens: auto; -webkit-hyphens: auto; }
+    .main-c.serree .carte-c:not(:last-child):not(.choisie) .cc-txt { display: none; }
+    .main-c.serree .carte-c:not(:last-child):not(.choisie) .cc-badge { position: static; order: 9; align-self: flex-start; margin: 3px 0 0 calc(var(--vis) / 2 - 9px); }
     /* Fenêtre « Mon sac » */
     .sac-tete { display: flex; align-items: center; gap: 10px; text-align: left; }
     .sac-tete .portrait-dj { width: 60px; height: 60px; }
@@ -705,8 +734,8 @@
           <!-- COMBAT AUX CARTES, à la place de la pièce -->
           <div v-if="combat" class="combat-dj" :style="fondCombat">
             <div class="tete-combat"><span>{{ combat.rang === 'boss' ? '👑 Boss' : combat.rang === 'elite' ? '⭐ Élite' : '⚔️ Combat' }} · tour {{ combat.tour }}</span><span class="aide-combat">{{ aideCombat }}</span></div>
-            <div class="scene-c"><div class="monstres-c">
-              <button v-for="m in monstresCombat" :key="'mc' + m.id" class="mc" :class="{ ciblable: cibleAttendue === 'monstre', gros: grosM(m) }" @click="choisirMonstre(m.id)">
+            <div class="scene-c"><div class="decor-c" v-html="decorCombat"></div><div class="monstres-c">
+              <button v-for="m in monstresCombat" :key="'mc' + m.id" class="mc" :class="{ ciblable: cibleAttendue === 'monstre', gros: grosM(m), touche: toucheC(m.id) }" @click="choisirMonstre(m.id)">
                 <span class="intention" :class="intentionClasse(m)">{{ intentionCourte(m) }}</span>
                 <span class="intention-nom">{{ m.intention ? m.intention.nom : '' }}</span>
                 <span class="mc-des"><span v-html="spriteMonstre(m)"></span><span v-if="m.armure" class="armure-b">🛡️{{ m.armure }}</span>
@@ -727,14 +756,14 @@
             <template v-if="jeJoue">
               <div class="moi-c" :class="{ ciblable: cibleAttendue === 'joueur' }" @click="choisirMembre(moi)">
                 <span class="nrj" :class="{ vide: !monJ.energie }">{{ monJ.energie }}<small>⚡</small></span>
-                <span class="moi-av" v-if="monJ.cp" v-html="dessinSvg(monJ.cp)"></span>
+                <span class="moi-av" :class="{ touche: toucheC(moi) }" v-if="monJ.cp" v-html="dessinSvg(monJ.cp)"></span>
                 <div class="corps">
                   <span class="pv-dj"><i :style="{ width: pct(monJ.pv, monJ.pvMax) }"></i><b>❤️ {{ monJ.pv }} / {{ monJ.pvMax }}</b></span>
                   <span class="etats-c"><span v-if="monJ.armure" class="armure-m">🛡️ {{ monJ.armure }}</span><span v-for="(n, et) in monJ.etats" :key="et" @click.stop="infoEtat(et, n)">{{ D.ETATS[et] ? D.ETATS[et].ico : '' }}{{ n }}</span></span>
                 </div>
                 <span v-for="k in fxSur(moi)" :key="'x' + k.id" class="coup-flottant" :class="k.cl">{{ k.v }}</span>
               </div>
-              <div class="main-c" :style="styleMain">
+              <div class="main-c" :class="{ serree: monJ.main.length > 5 }" :style="styleMain">
                 <carte-dj v-for="(id, i) in monJ.main" :key="combat.tour + '-' + i + id" :id="id" :badge="badgeCarte(id)" :class="{ choisie: sel && sel.k === 'carte' && sel.i === i, chere: !jouable(id) }" @click.native="toucherCarte(i)"></carte-dj>
               </div>
               <div class="desc-c">{{ descSel }}</div>
@@ -1287,7 +1316,9 @@
         // Plus de 5 cartes en main : elles se chevauchent (une seule rangée, comme une main tenue en éventail)
         styleMain: function() {
           var n = this.monJ ? this.monJ.main.length : 0;
-          return { '--ml': n <= 5 ? '1%' : 'calc((100% - ' + n + ' * 19.2%) / ' + (n - 1) + ')' };
+          // --vis : la part d'une carte qui reste visible sous la suivante (en % de la carte), --ico : taille du médaillon qui y tient
+          return { '--ml': n <= 5 ? '1%' : 'calc((100% - ' + n + ' * 19.2%) / ' + (n - 1) + ')',
+                   '--vis': n <= 5 ? '100%' : (80.8 / (n - 1) / 19.2 * 100).toFixed(1) + '%', '--ico': n <= 7 ? '20px' : n === 8 ? '18px' : '15px', '--nom': n <= 6 ? '0.6em' : n <= 8 ? '0.55em' : '0.48em' };
         },
         rienAJouer: function() { return !this.monJ || !this.monJ.main.some(id => this.jouable(id)); },
         degatsAnnonces: function() {
@@ -1309,6 +1340,11 @@
         fondCombat: function() {
           var E = this.partie && DJ.D.ETAGES[this.partie.etage - 1];
           return E ? { background: 'radial-gradient(ellipse at 50% 28%, ' + E.sol[1] + ' 0%, ' + E.mur[0] + ' 62%, #0b0806 100%)' } : {};
+        },
+        // Décor de la scène de combat (3.36) : mur, sol et torches aux couleurs de l'étage, halo doré (élite) ou violet (boss)
+        decorCombat: function() {
+          var E = this.partie && DJ.D.ETAGES[this.partie.etage - 1];
+          return E && this.combat ? DJS.decor(this.partie.etage, E.sol, E.mur, this.combat.rang) : '';
         },
         etageIco: function() { var E = this.partie && DJ.D.ETAGES[this.partie.etage - 1]; return E ? E.ico : '🗝️'; },
         etageInfo: function() { var p = this.partie, E = p && DJ.D.ETAGES[p.etage - 1]; return E ? E.ico + ' Étage ' + p.etage + ' sur ' + DJ.NB_ETAGES + ' : ' + E.nom + ' · ' + DJ.D.DIFFICULTES[DJ.D.DIFFICULTES[p.difficulte] ? p.difficulte : 'heroique'].nom + (p.peril ? ' · clé +' + p.peril : '') : ''; },
@@ -1486,6 +1522,7 @@
           return DJ.degatsIntention(p, m, cible || this.monJ);
         },
         fxSur: function(qui) { var c = this.combat, t = this.partie.maintenant; return c && c.fx ? c.fx.filter(k => k.qui === qui && t - k.t < 1300) : []; },
+        toucheC: function(qui) { return this.fxSur(qui).some(k => k.cl === 'mal'); },   // vient de prendre un coup : il tremble
         info: function(t) { this.infoTxt = t; this.infoFiole = null; clearTimeout(this._info); this._info = setTimeout(() => { this.infoTxt = ''; this.infoFiole = null; }, 5000); },
         infoEtat: function(et, n) { var E = DJ.D.ETATS[et]; if (E) this.info(E.ico + ' ' + E.nom + ' ' + n + ' : ' + E.texte.replace('{n}', n).replace('tour·s', n > 1 ? 'tours' : 'tour') + '.'); },
         jouable: function(id) { var k = DJ.carte(id); return !!(k && !k.injouable && this.monJ && k.cout <= this.monJ.energie && this.combat && !this.combat.fini[this.moi]); },
@@ -2264,7 +2301,8 @@
            '<rect width="32" height="32" fill="' + so[1] + '"/><rect x="32" y="32" width="32" height="32" fill="' + so[1] + '"/>' +
            '<path d="M0 0 H64 M0 32 H64 M0 0 V64 M32 0 V64" stroke="' + so[2] + '" stroke-width="1.5"/></pattern>' +
            '<radialGradient id="dj-vig" cx="50%" cy="55%" r="72%"><stop offset="55%" stop-color="#000" stop-opacity="0"/><stop offset="100%" stop-color="#000" stop-opacity="0.62"/></radialGradient>' +
-           '<radialGradient id="dj-lueur"><stop offset="0%" stop-color="#ffb347" stop-opacity="0.5"/><stop offset="100%" stop-color="#ff922b" stop-opacity="0"/></radialGradient></defs>';
+           '<radialGradient id="dj-lueur"><stop offset="0%" stop-color="#ffb347" stop-opacity="0.5"/><stop offset="100%" stop-color="#ff922b" stop-opacity="0"/></radialGradient>' +
+           '<radialGradient id="dj-magie"><stop offset="0%" stop-color="#b197fc" stop-opacity="0.6"/><stop offset="100%" stop-color="#7950f2" stop-opacity="0"/></radialGradient></defs>';
       s += '<rect x="0" y="0" width="352" height="288" fill="url(#dj-sol)"/>';
       for (var y = 0; y < H; y++) for (var x = 0; x < W; x++) {
         var c = S.t[y * W + x], X = x * T, Y = y * T;
@@ -2301,21 +2339,45 @@
           s += '<rect x="' + (X + 3) + '" y="' + (Y + 3) + '" width="26" height="26" rx="4" fill="' + (on ? '#fab005' : '#b08d57') + '" stroke="#6d5432" stroke-width="2"/>' +
                '<rect x="' + (X + 9) + '" y="' + (Y + 9) + '" width="14" height="14" rx="2" fill="' + (on ? '#ffe066' : '#c9a66b') + '"/>';
         } else if (c === 'F') {
-          // Feu de camp : bûches et flammes
-          s += '<ellipse cx="' + (X + 16) + '" cy="' + (Y + 26) + '" rx="14" ry="4" fill="rgba(0,0,0,.35)"/><rect x="' + (X + 3) + '" y="' + (Y + 20) + '" width="26" height="6" rx="3" fill="#7a4a1f" transform="rotate(-14 ' + (X + 16) + ' ' + (Y + 23) + ')"/>' +
-               '<rect x="' + (X + 3) + '" y="' + (Y + 20) + '" width="26" height="6" rx="3" fill="#8d5a2b" transform="rotate(14 ' + (X + 16) + ' ' + (Y + 23) + ')"/>' +
-               '<path class="flamme" d="M' + (X + 16) + ' ' + (Y + 2) + ' C' + (X + 24) + ' ' + (Y + 11) + ' ' + (X + 24) + ' ' + (Y + 21) + ' ' + (X + 16) + ' ' + (Y + 22) + ' C' + (X + 8) + ' ' + (Y + 21) + ' ' + (X + 8) + ' ' + (Y + 12) + ' ' + (X + 16) + ' ' + (Y + 2) + ' Z" fill="#ff922b"/>' +
-               '<path class="flamme" d="M' + (X + 16) + ' ' + (Y + 9) + ' C' + (X + 20) + ' ' + (Y + 14) + ' ' + (X + 20) + ' ' + (Y + 20) + ' ' + (X + 16) + ' ' + (Y + 21) + ' C' + (X + 12) + ' ' + (Y + 20) + ' ' + (X + 12) + ' ' + (Y + 15) + ' ' + (X + 16) + ' ' + (Y + 9) + ' Z" fill="#ffe066"/>' +
-               '<circle cx="' + (X + 16) + '" cy="' + (Y + 16) + '" r="40" fill="#ff922b" opacity="0.10"/>';
+          // Feu de camp (3.36) : cercle de pierres, bûches, grandes flammes, étincelles et lueur sur le sol
+          var fx = X + 16, fy = Y + 16;
+          s += '<circle cx="' + fx + '" cy="' + fy + '" r="62" fill="url(#dj-lueur)" class="scintille-d"/>' +
+               '<ellipse cx="' + fx + '" cy="' + (Y + 26) + '" rx="19" ry="7" fill="rgba(0,0,0,.4)"/>' +
+               [[-17, 24], [-11, 30], [0, 32], [11, 30], [17, 24]].map(q => '<ellipse cx="' + (fx + q[0]) + '" cy="' + (Y + q[1]) + '" rx="5" ry="3.6" fill="#8d8d8d" stroke="#2a1a0c" stroke-width="1.2"/>').join('') +
+               '<rect x="' + (X + 1) + '" y="' + (Y + 19) + '" width="30" height="7" rx="3.5" fill="#7a4a1f" stroke="#2a1a0c" stroke-width="1.2" transform="rotate(-16 ' + fx + ' ' + (Y + 23) + ')"/>' +
+               '<rect x="' + (X + 1) + '" y="' + (Y + 19) + '" width="30" height="7" rx="3.5" fill="#8d5a2b" stroke="#2a1a0c" stroke-width="1.2" transform="rotate(16 ' + fx + ' ' + (Y + 23) + ')"/>' +
+               '<path class="flamme" d="M' + fx + ' ' + (Y - 8) + ' C' + (fx + 12) + ' ' + (Y + 6) + ' ' + (fx + 11) + ' ' + (Y + 22) + ' ' + fx + ' ' + (Y + 23) + ' C' + (fx - 11) + ' ' + (Y + 22) + ' ' + (fx - 12) + ' ' + (Y + 6) + ' ' + fx + ' ' + (Y - 8) + ' Z" fill="#ff922b" stroke="#c2410c" stroke-width="1"/>' +
+               '<path class="flamme" d="M' + fx + ' ' + (Y + 3) + ' C' + (fx + 6) + ' ' + (Y + 11) + ' ' + (fx + 6) + ' ' + (Y + 21) + ' ' + fx + ' ' + (Y + 22) + ' C' + (fx - 6) + ' ' + (Y + 21) + ' ' + (fx - 6) + ' ' + (Y + 11) + ' ' + fx + ' ' + (Y + 3) + ' Z" fill="#ffe066"/>' +
+               [[-7, 0, 0], [6, -4, 0.5], [1, -10, 1]].map(q => '<circle class="etincelle" style="animation-delay:' + q[2] + 's" cx="' + (fx + q[0]) + '" cy="' + (Y + q[1]) + '" r="1.5" fill="#ffd43b"/>').join('');
         } else if (c === 'M') {
-          // Marchand : un étal sous un auvent rayé
-          s += '<rect x="' + (X - 10) + '" y="' + (Y + 14) + '" width="52" height="16" rx="2" fill="#8d5a2b" stroke="#5d3a18" stroke-width="2"/>' +
-               [0, 1, 2, 3].map(k => '<rect x="' + (X - 12 + k * 14) + '" y="' + (Y - 2) + '" width="14" height="12" fill="' + (k % 2 ? '#fff' : '#e03131') + '"/>').join('') +
-               '<text x="' + (X + 16) + '" y="' + (Y + 28) + '" text-anchor="middle" font-size="14">🛒</text>';
+          // Marchand (3.36) : tapis, étal garni sous un auvent rayé, le marchand encapuchonné derrière et sa lanterne
+          var mx = X + 16;
+          s += '<circle cx="' + mx + '" cy="' + (Y + 10) + '" r="56" fill="url(#dj-lueur)" opacity=".7"/>' +
+               '<ellipse cx="' + mx + '" cy="' + (Y + 32) + '" rx="34" ry="7" fill="#7a2e2e" stroke="#fab005" stroke-width="1.2" opacity=".9"/>' +
+               '<rect x="' + (X - 14) + '" y="' + (Y - 12) + '" width="3.5" height="44" fill="#5d3a18" stroke="#2a1a0c" stroke-width="1"/><rect x="' + (X + 42.5) + '" y="' + (Y - 12) + '" width="3.5" height="44" fill="#5d3a18" stroke="#2a1a0c" stroke-width="1"/>' +
+               '<path d="M' + (mx - 10) + ' ' + (Y + 16) + ' Q' + (mx - 11) + ' ' + (Y - 4) + ' ' + mx + ' ' + (Y - 5) + ' Q' + (mx + 11) + ' ' + (Y - 4) + ' ' + (mx + 10) + ' ' + (Y + 16) + ' Z" fill="#4a3566" stroke="#241812" stroke-width="1.4"/>' +
+               '<ellipse cx="' + mx + '" cy="' + (Y + 7) + '" rx="6" ry="5.5" fill="#1b1326"/><circle cx="' + (mx - 2.6) + '" cy="' + (Y + 6.5) + '" r="1.4" fill="#ffe066"/><circle cx="' + (mx + 2.6) + '" cy="' + (Y + 6.5) + '" r="1.4" fill="#ffe066"/>' +
+               '<rect x="' + (X - 16) + '" y="' + (Y + 14) + '" width="64" height="17" rx="2.5" fill="#8d5a2b" stroke="#2a1a0c" stroke-width="1.6"/><path d="M' + (X - 15) + ' ' + (Y + 20) + ' h62 M' + (X + 5) + ' ' + (Y + 20) + ' v10 M' + (X + 27) + ' ' + (Y + 20) + ' v10" stroke="#5d3a18" stroke-width="1.3"/>' +
+               '<rect x="' + (X - 16) + '" y="' + (Y + 12) + '" width="64" height="4.5" rx="2" fill="#b5702f" stroke="#2a1a0c" stroke-width="1.2"/>' +
+               // sur l'étal : une fiole rouge, une bleue, un tas de pièces
+               '<path d="M' + (X - 8) + ' ' + (Y + 12) + ' v-5 h-1.5 v-2.5 h6 v2.5 h-1.5 v5 Z" fill="#fa5252" stroke="#241812" stroke-width="1"/>' +
+               '<path d="M' + (X + 1) + ' ' + (Y + 12) + ' v-4 h-1.5 v-2 h6 v2 h-1.5 v4 Z" fill="#4dabf7" stroke="#241812" stroke-width="1"/>' +
+               '<ellipse cx="' + (X + 36) + '" cy="' + (Y + 10.5) + '" rx="5.5" ry="2.2" fill="#fab005" stroke="#241812" stroke-width="1"/><ellipse cx="' + (X + 36) + '" cy="' + (Y + 8) + '" rx="4.5" ry="2" fill="#ffd43b" stroke="#241812" stroke-width="1"/>' +
+               [0, 1, 2, 3, 4].map(k => '<path d="M' + (X - 18 + k * 13.6) + ' ' + (Y - 16) + ' h13.6 v9 q-6.8 7 -13.6 0 Z" fill="' + (k % 2 ? '#fff4e6' : '#e03131') + '" stroke="#2a1a0c" stroke-width="1.1"/>').join('') +
+               '<rect x="' + (X - 19) + '" y="' + (Y - 18) + '" width="70" height="4" rx="2" fill="#7a4a1f" stroke="#2a1a0c" stroke-width="1.1"/>' +
+               '<circle cx="' + (X + 44) + '" cy="' + (Y - 2) + '" r="9" fill="#ffd43b" opacity=".3" class="scintille-d"/><rect x="' + (X + 41.5) + '" y="' + (Y - 6) + '" width="5" height="7" rx="1.5" fill="#ffe066" stroke="#2a1a0c" stroke-width="1"/>';
         } else if (c === 'A') {
-          // Autel mystérieux
-          s += '<rect x="' + (X + 2) + '" y="' + (Y + 12) + '" width="28" height="18" rx="3" fill="#868e96" stroke="#495057" stroke-width="2"/><rect x="' + X + '" y="' + (Y + 9) + '" width="32" height="6" rx="2" fill="#adb5bd"/>' +
-               '<text x="' + (X + 16) + '" y="' + (Y + 7) + '" text-anchor="middle" font-size="15" class="scintille">❓</text>';
+          // Autel mystérieux (3.36) : socle de pierre gravé, cristal qui flotte dans un halo violet
+          var ax = X + 16;
+          s += '<circle cx="' + ax + '" cy="' + (Y + 8) + '" r="50" fill="url(#dj-magie)" class="scintille-d"/>' +
+               '<ellipse cx="' + ax + '" cy="' + (Y + 30) + '" rx="21" ry="5" fill="rgba(0,0,0,.4)"/>' +
+               '<rect x="' + (X - 5) + '" y="' + (Y + 24) + '" width="42" height="7" rx="2" fill="#6c757d" stroke="#241812" stroke-width="1.4"/>' +
+               '<rect x="' + (X + 1) + '" y="' + (Y + 9) + '" width="30" height="16" fill="#868e96" stroke="#241812" stroke-width="1.4"/><rect x="' + (X + 1) + '" y="' + (Y + 9) + '" width="7" height="16" fill="#adb5bd" opacity=".6"/>' +
+               '<rect x="' + (X - 3) + '" y="' + (Y + 4) + '" width="38" height="6.5" rx="2" fill="#adb5bd" stroke="#241812" stroke-width="1.4"/>' +
+               '<path class="scintille" d="M' + (ax - 5) + ' ' + (Y + 14) + ' l5 -3 l5 3 l-5 3 Z M' + ax + ' ' + (Y + 17) + ' v5" fill="none" stroke="#d0bfff" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/>' +
+               '<g class="flotte-o"><path d="M' + ax + ' ' + (Y - 20) + ' l8 9 l-8 12 l-8 -12 Z" fill="#9775fa" stroke="#241812" stroke-width="1.5" stroke-linejoin="round"/>' +
+               '<path d="M' + ax + ' ' + (Y - 20) + ' l-8 9 h16 Z" fill="#d0bfff"/><path d="M' + ax + ' ' + (Y - 20) + ' l8 9 l-8 12 l-8 -12 Z" fill="none" stroke="#241812" stroke-width="1.5" stroke-linejoin="round"/>' +
+               '<path d="M' + (ax - 13) + ' ' + (Y - 14) + ' l1.2 3 l3 1.2 l-3 1.2 l-1.2 3 l-1.2 -3 l-3 -1.2 l3 -1.2 Z" fill="#fff" class="scintille"/><path d="M' + (ax + 13) + ' ' + (Y - 3) + ' l.9 2.2 l2.2 .9 l-2.2 .9 l-.9 2.2 l-.9 -2.2 l-2.2 -.9 l2.2 -.9 Z" fill="#fff" class="scintille"/></g>';
         } else if (c === 'E') {
           // Escalier qui descend
           s += '<rect x="' + (X + 1) + '" y="' + (Y + 1) + '" width="30" height="30" rx="3" fill="#120d0a"/>' + [0, 1, 2, 3].map(k => '<rect x="' + (X + 3 + k * 3) + '" y="' + (Y + 4 + k * 7) + '" width="' + (26 - k * 6) + '" height="5" fill="' + ['#bfa27a', '#9a7f5f', '#76603f', '#4e3f33'][k] + '"/>').join('') +
@@ -2365,7 +2427,10 @@
       });
       s += '<rect width="352" height="288" fill="url(#dj-vig)"/>';
       if (S.boss) s += '<circle cx="176" cy="144" r="70" fill="#9c36b5" opacity="0.12"/>';
-      return s + '<style>.scintille{animation:sc 1s ease-in-out infinite alternate}.fleche-dj{animation:sc .8s ease-in-out infinite alternate}.flamme{animation:fl .35s ease-in-out infinite alternate;transform-box:fill-box;transform-origin:50% 100%}@keyframes fl{to{transform:scale(1.08,.9)}}@keyframes sc{from{opacity:.35}to{opacity:1}}</style>';
+      return s + '<style>.scintille{animation:sc 1s ease-in-out infinite alternate}.fleche-dj{animation:sc .8s ease-in-out infinite alternate}.flamme{animation:fl .35s ease-in-out infinite alternate;transform-box:fill-box;transform-origin:50% 100%}@keyframes fl{to{transform:scale(1.08,.9)}}@keyframes sc{from{opacity:.35}to{opacity:1}}' +
+        '.scintille-d{animation:scd 1.6s ease-in-out infinite alternate}@keyframes scd{from{opacity:.6}to{opacity:1}}.flotte-o{animation:fo 1.8s ease-in-out infinite alternate}@keyframes fo{to{transform:translateY(-3px)}}' +
+        '.etincelle{animation:et 1.5s ease-out infinite}@keyframes et{0%{opacity:0;transform:translateY(8px)}20%{opacity:1}100%{opacity:0;transform:translateY(-14px)}}' +
+        '@media (prefers-reduced-motion: reduce){.scintille-d,.flotte-o,.etincelle{animation:none}.etincelle{opacity:0}}</style>';
     }
     // Les gluants (et leur roi) : dessinés par le code
     function gluantSvg(roi) {
