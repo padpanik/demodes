@@ -27,7 +27,9 @@ var DJD = (function () {
     rage: { nom: 'Rage', ico: '😡', texte: 'Gagne {n} Force chaque fois qu\'on joue une carte qui n\'est pas une attaque' },
     regen: { nom: 'Régénération', ico: '🌿', texte: 'Regagne {n} PV à la fin du tour' },
     // Règle du lieu « Marée » (Rivière souterraine) : posé sur tout le monde aux tours de marée haute, retiré à marée basse (pas un état qui dure)
-    maree: { nom: 'Marée haute', ico: '🌊', texte: 'Ce tour-ci, ses coups font 25 % de dégâts en moins. Tout le monde est logé à la même enseigne.' }
+    maree: { nom: 'Marée haute', ico: '🌊', texte: 'Ce tour-ci, ses coups font 25 % de dégâts en moins. Tout le monde est logé à la même enseigne.' },
+    // Grotte de glace (3.43) : posé par les monstres du lieu, consommé au début du tour suivant (pas un état qui dure)
+    givre: { nom: 'Givre', ico: '❄️', texte: 'Au début de son prochain tour, {n} carte·s de plus gèle·nt dans sa main' }
   };
 
   // ---------- Classes : le pouvoir du compagnon ----------
@@ -295,6 +297,31 @@ var DJD = (function () {
         return mix(a(10 + 4 * bras), { nom: bras ? 'ÉTREINTE (' + bras + ' tentacule' + (bras > 1 ? 's' : '') + ')' : 'Étreinte' });
       } },
 
+    // Étage 2, autre lieu : la Grotte de glace (3.43). Règle du lieu « Engelures » : voir LIEUX plus bas. Le Givre (❄️) gèle des cartes en plus.
+    loupneige: { nom: 'Loup des neiges', ico: '🐺', pv: [24, 28], vitesse: 550, chasse: true,
+      ia: function (m, c) { var t = c.k % 3; return t === 0 ? mix(a(8), { nom: 'Crocs' }) : t === 1 ? mix(a(4, 2), { nom: 'Bond' }) : { nom: 'Hurle à la lune', force: 2, armure: 4 }; } },
+    glacon: { nom: 'Glaçon vivant', ico: '🧊', pv: [19, 22], vitesse: 1100, mort: { deb: { e: 'givre', n: 1 } },
+      ia: function (m, c) { return c.k % 2 === 0 ? mix(a(4), { nom: 'Se fige', armure: 8 }) : mix(a(3, 3), { nom: 'Éclats' }); } },
+    harfang: { nom: 'Chouette harfang', ico: '🦉', pv: [17, 20], vitesse: 650, vole: true,
+      ia: function (m, c) { return c.k % 3 === 2 ? mix(a(5), { nom: 'Cri perçant', deb: { e: 'vuln', n: 1 } }) : mix(a(4, 2), { nom: 'Serres' }); } },
+    lutin: { nom: 'Lutin de givre', ico: '❄️', pv: [16, 19], vitesse: 600,
+      ia: function (m, c) { var t = c.k % 3; return t === 0 ? mix(a(4), { nom: 'Souffle de givre', deb: { e: 'givre', n: 1 } }) : t === 1 ? mix(a(7), { nom: 'Boule de neige' }) : { nom: 'Ricane', armure: 5, deb: { e: 'faible', n: 1 } }; } },
+    // Élites
+    yeti: { nom: 'Yéti', ico: '🦍', taille: 2, rang: 'elite', pv: [82, 86], vitesse: 900, chasse: true,
+      ia: function (m, c) { var t = c.k % 3; return t === 0 ? { nom: 'Se frappe la poitrine', force: 3, armure: 8 } : t === 1 ? mix(a(16), { nom: 'Coup de poing' }) : mix(a(7), { nom: 'Avalanche', tous: true, deb: { e: 'givre', n: 1, tous: true } }); } },
+    golemglace: { nom: 'Golem de glace', ico: '🧊', taille: 2, rang: 'elite', pv: [76, 80], vitesse: 1200,
+      ia: function (m, c) { var t = c.k % 3; return t === 0 ? { nom: 'Carapace de givre', armure: 18 } : t === 1 ? mix(a(12), { nom: 'Poing glacé', deb: { e: 'givre', n: 2 } }) : mix(a(5, 3), { nom: 'Éclats' }); } },
+    // Boss : il fait monter des glaçons (qui gèlent une carte en éclatant) ; son blizzard gèle tout le monde
+    dragongivre: { nom: 'Le Dragon de givre', ico: '🐉', couronne: true, taille: 2, rang: 'boss', pv: [130, 130], vitesse: 800, chasse: true,
+      ia: function (m, c) {
+        var t = c.k % 5;
+        if (t === 0) return mix(a(7), { nom: 'Souffle glacé', tous: true, deb: { e: 'givre', n: 1, tous: true } });
+        if (t === 1) return mix(a(8, 2), { nom: 'Griffes' });
+        if (t === 2) return c.nb < 3 ? { nom: 'Mur de glace', appel: { type: 'glacon', n: 2 }, armure: 10 } : { nom: 'Ailes déployées', armure: 12, force: 2 };
+        if (t === 3) return { nom: 'Il inspire… 💥', prep: true, armure: 8 };
+        return mix(a(14), { nom: 'BLIZZARD', tous: true, deb: { e: 'givre', n: 2, tous: true } });
+      } },
+
     // Étage 2 : les Catacombes
     squelette: { nom: 'Squelette', ico: '💀', pv: [26, 30], vitesse: 760, chasse: true,
       ia: function (m, c) { return c.k % 2 === 0 ? mix(a(9), { nom: 'Coup d\'os' }) : mix(a(4), { nom: 'Bouclier d\'os', armure: 7 }); } },
@@ -383,7 +410,9 @@ var DJD = (function () {
     spores: { nom: 'Spores', ico: '🍄', poison: 1, court: 'Finir son tour sans armure : ☠️ Poison 1',
       texte: 'L\'air est plein de spores : qui finit son tour sans armure reçoit Poison 1. Les monstres aussi. Garde toujours un peu d\'armure.' },
     maree: { nom: 'Marée', ico: '🌊', maree: 0.75, court: 'Un tour sur deux : tous les coups −25 %',
-      texte: 'La rivière monte un tour sur deux (les tours pairs). À marée haute, tous les coups font 25 % de dégâts en moins, les tiens comme ceux des monstres. Frappe à marée basse ; à marée haute, protège-toi ou prépare la suite. Poison, brûlure et armure ne changent pas.' }
+      texte: 'La rivière monte un tour sur deux (les tours pairs). À marée haute, tous les coups font 25 % de dégâts en moins, les tiens comme ceux des monstres. Frappe à marée basse ; à marée haute, protège-toi ou prépare la suite. Poison, brûlure et armure ne changent pas.' },
+    engelures: { nom: 'Engelures', ico: '❄️', gel: 1, court: 'Chaque tour, une carte de ta main gèle',
+      texte: 'Il fait si froid qu\'à chaque tour une carte de ta main gèle, au hasard : elle ne se joue pas ce tour-ci, mais tu la gardes et elle dégèle au tour suivant, en plus de ta pioche. Le ❄️ Givre des monstres de la grotte en gèle d\'autres. Les malédictions ne gèlent jamais.' }
   };
   var AUTRES_LIEUX = [
     { id: 'champignonniere', etage: 1, decor: 'champignonniere', nom: 'La Champignonnière', ico: '🍄', regle: 'spores',
@@ -395,7 +424,12 @@ var DJD = (function () {
       sol: ['#2f4a52', '#38575f', '#253c43'], mur: ['#1f3340', '#2a4454', '#14232d'],
       faciles: [['piranha', 'piranha'], ['crabe'], ['grenouille', 'piranha']],
       rencontres: [['crabe', 'piranha'], ['sangsue', 'grenouille'], ['piranha', 'piranha', 'piranha'], ['crabe', 'sangsue'], ['grenouille', 'grenouille'], ['sangsue', 'piranha', 'piranha']],
-      elites: ['tortue', 'anguille'], boss: 'pieuvre' }
+      elites: ['tortue', 'anguille'], boss: 'pieuvre' },
+    { id: 'glace', etage: 2, decor: 'glace', nom: 'La Grotte de glace', ico: '❄️', regle: 'engelures',
+      sol: ['#5b7286', '#6a8297', '#4b5f71'], mur: ['#2b3d52', '#3a5068', '#1d2a3a'],
+      faciles: [['loupneige'], ['harfang', 'harfang'], ['lutin', 'glacon']],
+      rencontres: [['loupneige', 'harfang'], ['glacon', 'lutin'], ['loupneige', 'glacon'], ['harfang', 'lutin'], ['loupneige', 'lutin'], ['glacon', 'glacon', 'harfang']],
+      elites: ['yeti', 'golemglace'], boss: 'dragongivre' }
   ];
   var LIEUX = {};
   ETAGES.forEach(function (E, i) { E.etage = i + 1; E.lieux = [E.id]; LIEUX[E.id] = E; });

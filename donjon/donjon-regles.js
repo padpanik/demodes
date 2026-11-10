@@ -331,7 +331,7 @@ var DJ = (function () {
     Object.values(e.joueurs).forEach((p, i) => {
       var d = DEPARTS[i % DEPARTS.length];
       p.salle = e.depart; p.x = d[0]; p.y = d[1]; p.d = null; p.unPas = null;
-      p.armure = 0; p.etats = {}; p.main = []; p.pioche = []; p.defausse = []; p.epuisees = []; p.energie = 0; p.tourCombat = 0;
+      p.armure = 0; p.etats = {}; p.main = []; p.glace = []; p.pioche = []; p.defausse = []; p.epuisees = []; p.energie = 0; p.tourCombat = 0;
       p.menus = (p.menus || []).filter(m => m.type === 'butin' || m.type === 'reliqueBoss' || m.type === 'choix');
       if (e.etage > 1) {
         if (p.fantome) { p.fantome = false; p.pv = 1; }
@@ -359,7 +359,7 @@ var DJ = (function () {
     var p = (e.joueurs[nom] = { nom: nom, ordre: n, salle: e.depart, x: d[0], y: d[1], dir: 'h', fantome: false, reanim: 0,
       cp: cp || null, pouvoir: pw, classe: classe, pas: 0, d: null, unPas: null, aideT: 0,
       pv: pv, pvMax: pv, or: 40, paquet: paquetDepart(classe, e.peril), reliques: [], fioles: [], fiolesMax: 2, menus: [], faits: {}, boutiques: {}, retraits: 0,
-      pioche: [], main: [], defausse: [], epuisees: [], armure: 0, etats: {}, energie: 0, joues: 0, jouesTotal: 0 });
+      pioche: [], main: [], glace: [], defausse: [], epuisees: [], armure: 0, etats: {}, energie: 0, joues: 0, jouesTotal: 0 });
     appliquerAvantages(e, p, av);
     return p;
   }
@@ -900,7 +900,7 @@ var DJ = (function () {
   }
   function entrerEnCombat(e, c, p, h) {
     c.joueurs.push(p.nom); p.d = null; p.unPas = null;
-    p.pioche = melanger(p.paquet, h); p.main = []; p.defausse = []; p.epuisees = []; p.armure = 0; p.etats = {}; p.joues = 0; p.tourCombat = 0;
+    p.pioche = melanger(p.paquet, h); p.main = []; p.glace = []; p.defausse = []; p.epuisees = []; p.armure = 0; p.etats = {}; p.joues = 0; p.tourCombat = 0;
     if (a(p, 'gant')) ajouterEtat(p, 'force', 1);
     if (a(p, 'collier')) ajouterEtat(p, 'epines', 3);
     p.dentPrete = a(p, 'dent'); p.amulettePrete = a(p, 'amulette'); p.reserve = 0;
@@ -935,6 +935,21 @@ var DJ = (function () {
     if (c.tour > 1) journal(c, haute ? '🌊 Marée haute : tous les coups −25 % ce tour-ci.' : '🏖️ Marée basse : les coups font tous leurs dégâts.');
     c.maree = haute;
   }
+  // Règle du lieu « Engelures » (Grotte de glace, 3.43) : au début du tour, après la pioche, une carte de la main gèle (au hasard, jamais une malédiction),
+  // plus une par Givre ❄️ posé par les monstres. Gelée = rangée dans p.glace : elle ne se joue pas, ne part pas à la défausse, et revient dans la main au tour suivant.
+  function geler(e, c, p, h) {
+    var R = regleLieu(e), n = (R && R.gel ? R.gel : 0) + (p.etats.givre || 0), noms = [];
+    delete p.etats.givre;
+    for (var k = 0; k < n; k++) {
+      var possibles = [];
+      p.main.forEach((id, i) => { var kk = carte(id); if (kk && kk.type !== 'malediction') possibles.push(i); });
+      if (!possibles.length) break;
+      var i = possibles[entier(h, possibles.length)];
+      noms.push(carte(p.main[i]).nom);
+      p.glace.push(p.main.splice(i, 1)[0]);
+    }
+    if (noms.length) { var avant = LIGNE; ouvrir(c, '❄️', nomCp(p), 'engelures'); noter(nomCp(p), '❄️ ' + noms.join(', ') + ' gelée' + (noms.length > 1 ? 's' : ''), 'etat'); LIGNE = avant; }
+  }
   function nouveauTour(e, c, h) {
     c.tour++; c.fini = {}; c.pret = 0;
     // Les joueurs vivants arrivés dans la pièce rejoignent le combat
@@ -966,7 +981,10 @@ var DJ = (function () {
     if (premier && a(p, 'ancre')) p.armure += 10;
     if (a(p, 'ecu')) p.armure += 2;
     var n = MAIN + (a(p, 'sceptre') ? 1 : 0) - (a(p, 'couronne') ? 1 : 0) + (premier && a(p, 'sac') ? 2 : 0);
+    if (!p.glace) p.glace = [];
+    if (p.glace.length) { p.main = p.main.concat(p.glace); p.glace = []; }   // les cartes gelées au tour d'avant dégèlent
     piocher(e, p, n, h);
+    geler(e, c, p, h);
     if (p.etats.brasier) { ouvrir(c, ETATS.brasier.ico, nomCp(p), ETATS.brasier.nom); monstresDe(e, c).forEach(m => infliger(e, c, m, p.etats.brasier, null)); fermer(); }
     if (p.etats.fleau) { ouvrir(c, ETATS.fleau.ico, nomCp(p), ETATS.fleau.nom); monstresDe(e, c).forEach(m => { ajouterEtat(m, 'poison', p.etats.fleau); noter(nomMonstre(m), '☠️+' + p.etats.fleau, 'etat', m.id); }); fermer(); }
   }
@@ -1016,6 +1034,7 @@ var DJ = (function () {
     if (a(p, 'trefle4') && !p.trefleUtilise) { p.trefleUtilise = true; p.pv = Math.max(1, Math.round(p.pvMax * 0.3)); journal(c, '☘️ Le trèfle à quatre feuilles sauve ' + nomCp(p) + ' !'); return; }
     p.pv = 0; p.fantome = true; p.reanim = 0; p.d = null; p.armure = 0;
     defausserTout(p);
+    if (p.glace && p.glace.length) { p.defausse = p.defausse.concat(p.glace); p.glace = []; }
     journal(c, '👻 ' + nomCp(p) + ' est KO !');
     annonce(e, '👻 ' + nomCp(p) + ' est KO' + (Object.keys(e.joueurs).length > 1 ? ' : un Trèfle ou un ami à côté de lui hors combat le ranime !' : '…'));
   }
@@ -1262,7 +1281,7 @@ var DJ = (function () {
     h = h || Math.random;
     delete e.combats[c.salle];
     var joueurs = c.joueurs.map(n => e.joueurs[n]).filter(p => p && p.salle === c.salle && !(e.combats[p.salle] && e.combats[p.salle] !== c));
-    joueurs.forEach(p => { p.armure = 0; p.etats = {}; p.main = []; p.pioche = []; p.defausse = []; p.epuisees = []; p.energie = 0; p.tourCombat = 0; });
+    joueurs.forEach(p => { p.armure = 0; p.etats = {}; p.main = []; p.glace = []; p.pioche = []; p.defausse = []; p.epuisees = []; p.energie = 0; p.tourCombat = 0; });
     e.dernierCombat = { salle: c.salle, gagne: gagne, journal: c.journal.slice(-4), t: e.maintenant, id: c.id };
     if (!gagne) {
       monstresDe(e, c).forEach(m => { m.armure = 0; m.etats = {}; m.intention = null; });

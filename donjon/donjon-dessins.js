@@ -287,6 +287,76 @@ var DJS = (function () {
         yeux(14.5, 25.5, 23, 3.7) + l('M10.3 18.2 L17.6 20.3 M29.7 18.2 L22.4 20.3', O, 1.9) + l('M17 29.3 Q20 27.8 23 29.3', O, 1.4) + couronne(20, 9.4, 0.95);
     }
   };
+  // ---- La Grotte de glace (3.43) ----
+  D.loupneige = function () {
+    return ombre(15) + p('M29 31 Q37 30 38 22 Q38.5 18 35.5 17 Q35 24 28 26 Z', '#dee2e6', 1.5) +
+      p('M8 36 L9 27 Q9 19 19 18 Q30 18 31 27 L32 36 L27 36 L26 30 L14 30 L13 36 Z', '#e9ecef', 1.8) +
+      l('M11 29 L11 35 M29 29 L29 35', '#adb5bd', 1.3) + '<path d="M11.5 25 Q12 21 17 20" fill="none" stroke="#fff" stroke-width="2.2" opacity=".9" stroke-linecap="round"/>' +
+      p('M9 8 L11 1.5 L15.5 7.5 Z', '#ced4da', 1.4) + p('M25 7.5 L29.5 1.5 L31 8 Z', '#ced4da', 1.4) + p('M10.5 6.5 L11.3 3.6 L13.6 6.6 Z M26.5 6.6 L28.8 3.6 L29.5 6.5 Z', '#868e96', 0) +
+      p('M7 14 Q7 5 20 5 Q33 5 33 14 Q33 19 27 21 L13 21 Q7 19 7 14 Z', '#f1f3f5', 1.8) +
+      p('M14 15 Q20 13 26 15 Q27 22 20 24.5 Q13 22 14 15 Z', '#fff', 1.4) + e(20, 16.3, 2.2, 1.5, O) +
+      l('M17.5 21.5 Q20 23 22.5 21.5', O, 1.2) + p('M18 21.8 L18.8 23.6 L19.5 22.2 Z M22 21.8 L21.2 23.6 L20.5 22.2 Z', '#fff', 0.6) +
+      yeux(14, 26, 11.5, 2.4, '#1c7ed6') + l('M11 8.8 L16.5 10 M29 8.8 L23.5 10', O, 1.5);
+  };
+  D.glacon = function () {
+    return ombre(12) + p('M7 13 L12 7 L31 7 L34 13 L34 33 L30 36 L10 36 L7 33 Z', '#99e9f2', 1.8) +
+      p('M12 7 L31 7 L34 13 L14 13 Z', '#c5f6fa', 1.3) + p('M34 13 L34 33 L30 36 L30 16 Z', '#66d9e8', 1.3) +
+      '<path d="M10 17 L10 28 M13.5 15.5 L13.5 20" stroke="#fff" stroke-width="2.4" opacity=".85" stroke-linecap="round"/>' +
+      p('M13 36 L14 39 L15.5 36 Z M22 36 L23 39.5 L24.5 36 Z', '#c5f6fa', 0.9) +
+      yeux(16, 25, 22, 2.8, '#1864ab') + l('M14.5 17.5 L18.5 19 M26.5 17.5 L22.5 19', O, 1.4) + l('M17 29.5 Q20.5 27.5 24 29.5', O, 1.4) +
+      l('M27 24.5 L29.5 27.5 L27.5 30', '#3bc9db', 1);
+  };
+  D.harfang = function () {
+    var ailes = p('M12 18 Q3 15 1 24 Q5 22 6.5 25 Q8.5 22 10.5 25 Q12 22 14 24 Z', '#f8f9fa', 1.5) + p('M28 18 Q37 15 39 24 Q35 22 33.5 25 Q31.5 22 29.5 25 Q28 22 26 24 Z', '#f8f9fa', 1.5);
+    return '<ellipse cx="20" cy="37.5" rx="9" ry="2.2" fill="rgba(0,0,0,.25)"/>' + ailes +
+      e(20, 22, 9.5, 11, '#fff', 1.8) + p('M11 10.5 L12.5 5.5 L16 9.5 Z M29 10.5 L27.5 5.5 L24 9.5 Z', '#f1f3f5', 1.2) +
+      [[16, 26], [23, 25], [19, 29.5], [25, 30], [14.5, 30.5], [21.5, 33]].map(function (q) { return l('M' + (q[0] - 1.3) + ' ' + q[1] + ' l1.3 1 l1.3 -1', '#495057', 1); }).join('') +
+      c(16, 16.5, 4, '#e9ecef', 1.1) + c(24, 16.5, 4, '#e9ecef', 1.1) +
+      c(16, 16.5, 2.7, '#fcc419', 0.9) + c(24, 16.5, 2.7, '#fcc419', 0.9) + c(16.3, 16.8, 1.3, '#222') + c(24.3, 16.8, 1.3, '#222') + c(16.8, 16, 0.45, '#fff') + c(24.8, 16, 0.45, '#fff') +
+      p('M18.6 19.5 L20 23 L21.4 19.5 Z', '#495057', 0.9) + l('M17 35 v3 M23 35 v3', '#495057', 1.5);
+  };
+  D.lutin = function () {
+    return ombre(10) + p('M12 36 L13 27 Q13 23 20 23 Q27 23 27 27 L28 36 Z', '#1c7ed6', 1.6) +
+      p('M13 31 L27 31 L27.6 36 L12.4 36 Z', '#e7f5ff', 1.2) + l('M10 27 L13 25 M30 27 L27 25', O, 2.6) + l('M10 27 L13 25 M30 27 L27 25', '#74c0fc', 1.4) +
+      p('M5 15 L11.5 16.5 L9 19.5 Z M35 15 L28.5 16.5 L31 19.5 Z', '#74c0fc', 1.3) +
+      c(20, 17, 8, '#a5d8ff', 1.7) +
+      p('M11 13 Q14 1 30 3 Q24 5 25 9.5 L29 12.5 Q20 9.5 11 13 Z', '#1864ab', 1.5) + p('M10 13.5 Q20 9 30 13.5 L29.5 15.5 Q20 11.5 10.5 15.5 Z', '#fff', 1.2) + c(30, 3, 2.2, '#fff', 1) +
+      yeux(16.5, 23.5, 17.5, 2.2, '#1864ab') + l('M17 21.3 Q20 23.5 23 21.3', O, 1.2) + p('M18.2 21.6 L19 23 L19.6 21.9 Z', '#fff', 0.5) +
+      p('M33 30 L34 27.5 L35 30 L37.5 31 L35 32 L34 34.5 L33 32 L30.5 31 Z', '#e7f5ff', 0.8);
+  };
+  D.yeti = function () {
+    return ombre(16) + p('M5 36 Q3 20 10 14 Q20 8 30 14 Q37 20 35 36 Z', '#f1f3f5', 1.9) +
+      p('M4 34 Q1 26 5 20 L9 22 Q6 28 9 34 Z M36 34 Q39 26 35 20 L31 22 Q34 28 31 34 Z', '#e9ecef', 1.5) +
+      l('M9 30 l-1.5 -3 M12 34 l-1 -3.5 M28 34 l1 -3.5 M31 30 l1.5 -3 M15 13 l-1 -3 M25 13 l1 -3 M20 11.5 v-3', '#adb5bd', 1.2) +
+      p('M12 25 Q11 15 20 15 Q29 15 28 25 Q28 31 20 31 Q12 31 12 25 Z', '#74c0fc', 1.6) +
+      p('M11.5 20 Q20 16 28.5 20 L28 22 Q20 18.5 12 22 Z', '#f8f9fa', 0) +
+      luisants(16, 24, 22, 1.4, '#1864ab') + l('M13.5 19.5 L18 21 M26.5 19.5 L22 21', O, 1.8) +
+      p('M15 26.5 Q20 30.5 25 26.5 Q20 28 15 26.5 Z', '#2b1d14', 1.1) + p('M16.4 27 L17.2 29 L18 27.4 Z M23.6 27 L22.8 29 L22 27.4 Z', '#fff', 0.6);
+  };
+  D.golemglace = function () {
+    return ombre(16) + p('M3 22 L7 18 L11 20 L11 31 L7 34 L3 31 Z', '#66d9e8', 1.5) + p('M37 22 L33 18 L29 20 L29 31 L33 34 L37 31 Z', '#66d9e8', 1.5) +
+      p('M11 17 L29 17 L31 32 L26 37 L14 37 L9 32 Z', '#99e9f2', 1.8) + p('M14 37 L14 31 L20 33 L26 31 L26 37 Z', '#66d9e8', 1.2) +
+      p('M13 6 L27 6 L29 15 L25 18 L15 18 L11 15 Z', '#c5f6fa', 1.7) +
+      p('M15 6 L17 1 L19 6 Z M22 6 L25 0.5 L26 6 Z', '#e3fafc', 1.1) +
+      '<path d="M12.5 21 L12 28 M14 8.5 L13.5 13" stroke="#fff" stroke-width="2" opacity=".85" stroke-linecap="round"/>' +
+      l('M19 20 L22 24 L19 27 L22 30', '#3bc9db', 1.2) + l('M5 24 L9 26 M33 24 L35 28', '#3bc9db', 1) +
+      luisants(16.5, 23.5, 12, 1.6, '#1c7ed6') + l('M14 9.5 L18.5 10.8 M26 9.5 L21.5 10.8', O, 1.6) + l('M17.5 15.5 H22.5', O, 1.4);
+  };
+  D.dragongivre = function () {
+    var aile = function (d) {
+      var X = function (v) { return 20 + v * d; };
+      return p('M' + X(8) + ' 22 L' + X(13) + ' 9 L' + X(19.5) + ' 5 Q' + X(18) + ' 12 ' + X(19.5) + ' 19 Q' + X(17) + ' 17 ' + X(15.5) + ' 21 Q' + X(13.5) + ' 18.5 ' + X(12) + ' 25 Z', '#339af0', 1.5) +
+        '<path d="M' + X(13) + ' 9.5 L' + X(15.2) + ' 20.5 M' + X(13) + ' 9.5 L' + X(18.7) + ' 18" stroke="#a5d8ff" stroke-width="1" fill="none" opacity=".8"/>';
+    };
+    return ombre(16) + aile(-1) + aile(1) +
+      p('M10 37 Q8 26 20 24 Q32 26 30 37 Z', '#74c0fc', 1.8) + p('M15 37 Q15 30 20 29 Q25 30 25 37 Z', '#e7f5ff', 1.2) + l('M16 31.5 h8 M15.5 34.5 h9', '#a5d8ff', 1) +
+      p('M12 12 L9 4 L15 9 Z M28 12 L31 4 L25 9 Z', '#e7f5ff', 1.3) +
+      p('M10 17 Q10 8 20 8 Q30 8 30 17 Q30 22 26 25 L14 25 Q10 22 10 17 Z', '#74c0fc', 1.8) +
+      p('M14 19.5 Q20 17.5 26 19.5 L25.5 25 Q20 27.5 14.5 25 Z', '#a5d8ff', 1.4) + c(17.5, 21, 0.8, O) + c(22.5, 21, 0.8, O) +
+      p('M16 24.5 L16.8 27 L17.6 25 Z M24 24.5 L23.2 27 L22.4 25 Z', '#fff', 0.6) +
+      yeux(15.5, 24.5, 14.5, 2.5, '#1864ab') + l('M12 11 L18 12.6 M28 11 L22 12.6', O, 1.7) +
+      '<path d="M12 15 Q12 11 15 10" fill="none" stroke="#d0ebff" stroke-width="2" opacity=".8" stroke-linecap="round"/>' + couronne(20, 7, 0.9);
+  };
   var ALIAS = { gluantgeant: 'gluant', gluantmoyen: 'gluant' };
   var cache = {};
   function monstre(type) {
@@ -303,8 +373,8 @@ var DJS = (function () {
   // sur les côtés pour ne pas se mêler aux annonces des monstres. Identifiants « djc- » : un seul décor à l'écran à la fois.
   // genre : le décor du lieu (« caves », « catacombes », « forteresse », « champignonniere »…) ; absent = celui d'origine de l'étage
   function decor(etage, sol, mur, rang, genre) {
-    var s = '', i, x, y, HZ = 220, g = genre || ['caves', 'catacombes', 'forteresse'][etage - 1] || 'caves', champi = g === 'champignonniere', riviere = g === 'riviere',
-        lueur = champi ? ['#63e6be', '#20c997'] : riviere ? ['#74c0fc', '#339af0'] : ['#ffb347', '#ff922b'];   // la lumière du lieu (torches, champignons, cristaux)
+    var s = '', i, x, y, HZ = 220, g = genre || ['caves', 'catacombes', 'forteresse'][etage - 1] || 'caves', champi = g === 'champignonniere', riviere = g === 'riviere', glace = g === 'glace',
+        lueur = champi ? ['#63e6be', '#20c997'] : riviere ? ['#74c0fc', '#339af0'] : glace ? ['#e3fafc', '#66d9e8'] : ['#ffb347', '#ff922b'];   // la lumière du lieu (torches, champignons, cristaux)
     var teinte = rang === 'boss' ? '#9c36b5' : rang === 'elite' ? '#fab005' : '#ffb347';
     s += '<defs><radialGradient id="djc-lueur"><stop offset="0%" stop-color="' + lueur[0] + '" stop-opacity=".55"/><stop offset="100%" stop-color="' + lueur[1] + '" stop-opacity="0"/></radialGradient>' +
          '<radialGradient id="djc-halo"><stop offset="0%" stop-color="' + teinte + '" stop-opacity="' + (rang === 'normal' ? '.22' : '.34') + '"/><stop offset="100%" stop-color="' + teinte + '" stop-opacity="0"/></radialGradient>' +
@@ -334,6 +404,19 @@ var DJS = (function () {
              '<ellipse cx="' + bx + '" cy="214" rx="24" ry="6" fill="#e7f5ff" opacity=".8"/><ellipse cx="' + (bx - 12 + k * 20) + '" cy="211" rx="9" ry="4" fill="#fff" opacity=".8"/>';
       });
       s += '<rect y="208" width="360" height="12" fill="#339af0" opacity=".35"/>';
+    } else if (glace) {
+      // Stalactites de glace (longues, claires, avec un reflet), givre sur les pierres, deux coulées gelées sur le mur, neige au pied du mur
+      [16, 44, 74, 104, 136, 166, 196, 226, 258, 290, 318, 346].forEach(function (sx, k) {
+        var h = 26 + (k * 19 % 40), w = 6 + (k % 3) * 2;
+        s += '<path d="M' + (sx - w) + ' 0 L' + sx + ' ' + h + ' L' + (sx + w) + ' 0 Z" fill="#a5d8ff" stroke="#14202c" stroke-width="1.1" opacity=".92"/><path d="M' + (sx - w * 0.45) + ' 2 L' + (sx - 0.6) + ' ' + (h * 0.75) + '" stroke="#fff" stroke-width="1.4" opacity=".75"/>';
+      });
+      for (i = 0; i < 14; i++) s += '<path d="M' + ((i * 61) % 340 + 6) + ' ' + (HZ - 22 - (i * 37) % 170) + ' h' + (14 + (i % 3) * 6) + '" stroke="#d0ebff" stroke-width="2.2" stroke-linecap="round" opacity=".35"/>';
+      [84, 276].forEach(function (bx, k) {
+        s += '<path d="M' + (bx - 16) + ' 108 Q' + (bx - 20) + ' 160 ' + (bx - 13) + ' 212 H' + (bx + 13) + ' Q' + (bx + 20) + ' 160 ' + (bx + 16) + ' 108 Q' + bx + ' 102 ' + (bx - 16) + ' 108 Z" fill="#c5f6fa" opacity=".55" stroke="#14202c" stroke-width="1.2"/>' +
+             '<path d="M' + (bx - 7) + ' 114 Q' + (bx - 10) + ' 160 ' + (bx - 5) + ' 206 M' + (bx + 6) + ' 116 Q' + (bx + 9) + ' 150 ' + (bx + 4) + ' 196" stroke="#fff" stroke-width="2.2" fill="none" opacity=".7" stroke-linecap="round"/>' +
+             '<path d="M' + (bx - 20) + ' 108 Q' + bx + ' 100 ' + (bx + 20) + ' 108 Z" fill="' + mur[2] + '" stroke="#14202c" stroke-width="1.2"/>';
+      });
+      s += '<path d="M0 214 Q30 204 60 211 Q100 202 140 212 Q180 204 220 211 Q262 202 300 212 Q330 205 360 210 V220 H0 Z" fill="#f1f3f5" stroke="#14202c" stroke-width="1" opacity=".95"/>';
     } else if (champi) {
       // Racines qui pendent du plafond, champignons en console sur le mur (lumineux), de chaque côté
       [18, 52, 96, 150, 205, 262, 300, 344].forEach(function (rx, k) { var h = 34 + (k * 23 % 44); s += '<path d="M' + rx + ' 0 Q' + (rx + (k % 2 ? 7 : -7)) + ' ' + (h * 0.6) + ' ' + rx + ' ' + h + '" fill="none" stroke="#120c09" stroke-width="4.4" stroke-linecap="round"/><path d="M' + rx + ' 0 Q' + (rx + (k % 2 ? 7 : -7)) + ' ' + (h * 0.6) + ' ' + rx + ' ' + h + '" fill="none" stroke="#6d5a45" stroke-width="2.4" stroke-linecap="round"/>'; });
@@ -384,6 +467,12 @@ var DJS = (function () {
       });
       [[48, 150], [70, 236], [112, 120], [250, 128], [292, 240], [318, 146], [40, 196], [326, 204]].forEach(function (o, k) { s += '<circle class="djc-braise" style="animation-delay:' + (k * 0.33) + 's" cx="' + o[0] + '" cy="' + o[1] + '" r="' + (1.4 + (k % 3) * 0.5) + '" fill="#d0bfff" opacity=".8"/>'; });
     }
+    if (glace) {
+      // Plaques de glace sur le sol (reflets), congères sur les bords, flocons qui tombent
+      [[180, 300, 70, 14], [70, 270, 34, 8], [292, 276, 36, 8]].forEach(function (o) { s += '<ellipse cx="' + o[0] + '" cy="' + o[1] + '" rx="' + o[2] + '" ry="' + o[3] + '" fill="#d0ebff" opacity=".22"/><path d="M' + (o[0] - o[2] * 0.6) + ' ' + (o[1] - 1) + ' l' + (o[2] * 0.4) + ' -' + (o[3] * 0.4) + ' M' + (o[0] + o[2] * 0.1) + ' ' + (o[1] + o[3] * 0.3) + ' l' + (o[2] * 0.35) + ' -' + (o[3] * 0.5) + '" stroke="#fff" stroke-width="1.6" opacity=".5" stroke-linecap="round"/>'; });
+      [[16, 300, 30, 16], [344, 312, 34, 18], [40, 360, 36, 14], [326, 372, 40, 14]].forEach(function (o) { s += '<path d="M' + (o[0] - o[2]) + ' ' + o[1] + ' Q' + o[0] + ' ' + (o[1] - o[3] * 2) + ' ' + (o[0] + o[2]) + ' ' + o[1] + ' Z" fill="#f8f9fa" stroke="#14202c" stroke-width="1"/><path d="M' + (o[0] - o[2] * 0.5) + ' ' + (o[1] - o[3] * 0.6) + ' Q' + o[0] + ' ' + (o[1] - o[3] * 1.2) + ' ' + (o[0] + o[2] * 0.3) + ' ' + (o[1] - o[3] * 0.8) + '" stroke="#dee2e6" stroke-width="2" fill="none"/>'; });
+      [[48, 140], [72, 236], [110, 118], [252, 126], [290, 244], [320, 150], [36, 196], [330, 206], [150, 96], [214, 104]].forEach(function (o, k) { s += '<circle class="djc-braise" style="animation-delay:' + (k * 0.29) + 's" cx="' + o[0] + '" cy="' + o[1] + '" r="' + (1.4 + (k % 3) * 0.6) + '" fill="#fff" opacity=".9"/>'; });
+    }
     if (riviere) {
       // La rivière au pied du mur, des flaques sur les bords du sol, quelques roseaux
       s += '<path d="M0 222 H360 V236 Q300 242 240 236 Q180 230 120 237 Q60 243 0 236 Z" fill="#1c7ed6" opacity=".55"/><path class="djc-vacille" d="M20 229 h26 M96 232 h30 M170 228 h24 M236 232 h28 M306 229 h30" stroke="#d0ebff" stroke-width="1.8" stroke-linecap="round" opacity=".8"/>';
@@ -394,6 +483,15 @@ var DJS = (function () {
     // La lumière : halo derrière les monstres (doré pour un élite, violet pour un boss), deux torches sur les côtés
     s += '<ellipse cx="180" cy="' + HZ + '" rx="170" ry="130" fill="url(#djc-halo)"/>';
     [30, 330].forEach(function (tx) {
+      if (glace) {
+        // Pas de torche : un bloc de glace qui luit de chaque côté, une flamme bleue prise dedans
+        s += '<circle cx="' + tx + '" cy="166" r="72" fill="url(#djc-lueur)" class="djc-vacille"/>' +
+             '<path d="M' + (tx - 17) + ' 212 L' + (tx - 19) + ' 160 L' + (tx - 6) + ' 140 L' + (tx + 12) + ' 146 L' + (tx + 19) + ' 170 L' + (tx + 16) + ' 212 Z" fill="#c5f6fa" stroke="#14202c" stroke-width="1.5" opacity=".9"/>' +
+             '<path class="djc-flamme" d="M' + tx + ' 168 C' + (tx + 8) + ' 177 ' + (tx + 6) + ' 192 ' + tx + ' 192 C' + (tx - 6) + ' 192 ' + (tx - 8) + ' 177 ' + tx + ' 168 Z" fill="#3bc9db" opacity=".8"/>' +
+             '<path d="M' + (tx - 12) + ' 200 L' + (tx - 13) + ' 164 L' + (tx - 5) + ' 150" stroke="#fff" stroke-width="2.2" fill="none" opacity=".8" stroke-linecap="round"/>' +
+             '<path d="M' + (tx - 6) + ' 140 L' + (tx + 2) + ' 178 L' + (tx + 19) + ' 170 M' + (tx + 2) + ' 178 L' + (tx - 3) + ' 212" stroke="#66d9e8" stroke-width="1.1" fill="none"/>';
+        return;
+      }
       if (riviere) {
         // Pas de torche : un cristal bleu qui luit de chaque côté
         s += '<circle cx="' + tx + '" cy="166" r="70" fill="url(#djc-lueur)" class="djc-vacille"/>' +
