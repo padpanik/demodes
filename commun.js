@@ -3,12 +3,13 @@
 // Les clés de stockage gardent l'ancien préfixe "brillant-" : les réglages déjà faits sont conservés.
 
 // Numéro de version affiché (à augmenter à chaque mise en ligne, avec brilliant/index.html et sw.js)
-const VERSION = '3.37';
+const VERSION = '3.38';
 
 // ---------- Nouveautés (2.87, demandé par l'utilisateur) ----------
 // Une ligne très brève par mise en ligne (la plus récente en haut) : l'accueil les montre une seule fois, dans une petite fenêtre,
 // à qui n'a pas encore vu cette version. [version, jeu ou partie de l'appli, ce qui change]
 const NOUVEAUTES = [
+  ['3.38', 'Donjon', 'Main de 6 cartes et plus : le descriptif de chaque carte est de nouveau visible.'],
   ['3.37', 'Donjon', 'À plusieurs : les barres de vie des amis en haut du combat et à côté de la croix ; vibrations selon la force du coup reçu.'],
   ['3.36', 'Donjon', 'Combats dans un vrai décor (mur, sol, torches selon l\'étage), monstres qui bougent, main de 6 cartes et plus lisible, marchand, autel et feu redessinés.'],
   ['3.35', 'Mon compagnon', 'Boutique : 30 nouveaux articles, cabine d\'essayage, lunettes avec un chapeau, dessins retouchés.'],

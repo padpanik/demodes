@@ -480,7 +480,8 @@
     .main-c.serree .carte-c:not(:last-child):not(.choisie) { align-items: flex-start; padding-left: 0; padding-right: 0; }
     .main-c.serree .carte-c:not(:last-child):not(.choisie) .cc-ico { font-size: var(--ico, 20px); margin-left: calc((var(--vis) - 1.55em - 4px) / 2); }
     .main-c.serree .carte-c:not(:last-child):not(.choisie) .cc-nom { width: var(--vis); font-size: var(--nom, 0.56em); letter-spacing: -0.2px; overflow-wrap: anywhere; hyphens: auto; -webkit-hyphens: auto; }
-    .main-c.serree .carte-c:not(:last-child):not(.choisie) .cc-txt { display: none; }
+    /* 3.38 : le descriptif reste, dans la bande visible lui aussi (signalé par l'utilisateur : caché en 3.36, « la plupart des cartes n'ont plus de descriptif ») */
+    .main-c.serree .carte-c:not(:last-child):not(.choisie) .cc-txt { width: var(--vis); font-size: var(--txt, 0.5em); line-height: 1.12; letter-spacing: -0.2px; overflow-wrap: anywhere; hyphens: auto; -webkit-hyphens: auto; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 7; overflow: hidden; }
     .main-c.serree .carte-c:not(:last-child):not(.choisie) .cc-badge { position: static; order: 9; align-self: flex-start; margin: 3px 0 0 calc(var(--vis) / 2 - 9px); }
     /* Fenêtre « Mon sac » */
     .sac-tete { display: flex; align-items: center; gap: 10px; text-align: left; }
@@ -1381,7 +1382,7 @@
           var n = this.monJ ? this.monJ.main.length : 0;
           // --vis : la part d'une carte qui reste visible sous la suivante (en % de la carte), --ico : taille du médaillon qui y tient
           return { '--ml': n <= 5 ? '1%' : 'calc((100% - ' + n + ' * 19.2%) / ' + (n - 1) + ')',
-                   '--vis': n <= 5 ? '100%' : (80.8 / (n - 1) / 19.2 * 100).toFixed(1) + '%', '--ico': n <= 7 ? '20px' : n === 8 ? '18px' : '15px', '--nom': n <= 6 ? '0.6em' : n <= 8 ? '0.55em' : '0.48em' };
+                   '--vis': n <= 5 ? '100%' : (80.8 / (n - 1) / 19.2 * 100).toFixed(1) + '%', '--ico': n <= 7 ? '20px' : n === 8 ? '18px' : '15px', '--nom': n <= 6 ? '0.6em' : n <= 8 ? '0.55em' : '0.48em', '--txt': n <= 6 ? '0.55em' : n === 7 ? '0.5em' : '0.45em' };
         },
         rienAJouer: function() { return !this.monJ || !this.monJ.main.some(id => this.jouable(id)); },
         degatsAnnonces: function() {
