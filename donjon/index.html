@@ -90,9 +90,6 @@
     .annonces-dj div.perso { background: #fff4e6; }
     @keyframes arrive-dj { from { transform: translateY(-6px); opacity: 0; } }
 
-    .equipe-dj { display: flex; gap: 6px; flex-wrap: wrap; margin: 6px 0 2px; font-size: 0.78em; }
-    .equipe-dj span { background: #fff; border-radius: 999px; padding: 2px 8px; font-weight: 700; color: #3b4b57; box-shadow: 0 1px 2px rgba(0,0,0,0.08); white-space: nowrap; }
-    .equipe-dj span.loin { opacity: 0.55; }
 
     .commandes-dj { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 8px; }
     .commandes-dj.inverse { flex-direction: row-reverse; }
@@ -156,12 +153,6 @@
     @keyframes flotte-c { from { opacity: 1; transform: translate(-50%, 0) scale(1.3); } to { opacity: 0; transform: translate(-50%, -26px) scale(1); } }
     .journal-c { background: rgba(255,255,255,0.08); border-radius: 10px; padding: 3px 8px; margin: 5px 0; font-size: 0.7em; line-height: 1.35; height: 62px; overflow-y: auto; }
     .journal-c .vide { opacity: 0.6; font-style: italic; }
-    .equipe-c { display: flex; justify-content: center; gap: 4px; flex-wrap: wrap; margin-bottom: 4px; }
-    .membre-c { position: relative; border: 2px solid transparent; background: #3a2e26; border-radius: 10px; padding: 2px 6px; color: #fff; font: inherit; font-size: 0.7em; font-weight: 800; display: flex; align-items: center; gap: 4px; cursor: default; }
-    .membre-c.fantome { opacity: 0.55; }
-    .membre-c.ciblable { border-color: #8ce99a; cursor: pointer; animation: appel-c 0.8s ease-in-out infinite alternate; }
-    .mc-cp { position: relative; width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
-    .mc-cp > span:first-child, .mc-cp svg { width: 100%; height: 100%; }
     .moi-c { position: relative; display: flex; align-items: center; gap: 8px; background: #3a2e26; border-radius: 12px; padding: 4px 6px; margin-bottom: 5px; border: 2px solid transparent; }
     .moi-c.ciblable { border-color: #8ce99a; cursor: pointer; }
     .nrj { flex: none; width: 40px; height: 40px; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #ffe066, #f08c00); color: #2a211b; font-weight: 900; font-size: 1.3em; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 10px rgba(255,212,59,0.5); }
@@ -256,7 +247,6 @@
     .salle-dj { border: 2px solid #4b3a2c; box-shadow: 0 6px 16px rgba(0,0,0,0.55); }
     .annonces-dj div { background: rgba(28,20,15,0.92); color: #ffe8cc; border: 1px solid #8d6a3f; }
     .annonces-dj div.perso { background: rgba(92,56,20,0.94); }
-    .equipe-dj span { background: #3a2c22; color: #f1e6d6; box-shadow: none; }
     .dernier-combat { background: #2a1f18; color: #e9dcc8; border: 1px solid #5c4532; box-shadow: none; }
     .pad { background: radial-gradient(circle at 50% 40%, #3f3026, #241a14); box-shadow: inset 0 3px 10px rgba(0,0,0,0.6), 0 0 0 2px #4b3a2c; }
     .pad span { background: linear-gradient(#6b4f36, #4b3a2c); color: #ffd8a8; box-shadow: 0 3px 0 #120c09; }
@@ -424,6 +414,45 @@
     .fiche-dj.en-combat .sac-dj { padding: 1px 5px; }
     .fiche-dj.en-combat .sac-txt { display: none; }
     .combat-dj .scene-c { overflow: hidden; }
+    /* Barres de vie des amis (3.37) : portrait, nom avec sa couleur, barre verte (orange qui palpite sous 30 %), armure, état (✓ a fini, … joue, bulle, ailleurs) */
+    .allies-dj { display: grid; gap: 4px; grid-template-columns: 1fr; min-width: 0; }
+    .allies-dj.n2 { grid-template-columns: 1fr 1fr; } .allies-dj.n3 { grid-template-columns: 1fr 1fr 1fr; }
+    .allies-dj.combat { margin: 5px 0 2px; }
+    /* En exploration : dans le panneau à côté de la croix, une colonne (deux sans portrait à partir de 3 amis) */
+    .allies-dj.explo { align-self: stretch; grid-template-columns: 1fr; font-size: 1.333em; line-height: 1.2; text-align: left; }
+    .allies-dj.explo.n3 { grid-template-columns: 1fr 1fr; } .allies-dj.explo.n3 .al-av { display: none; } .allies-dj.explo.n3 .allie-dj { padding-left: 4px; }
+    .milieu-dj.al3 .annonces-dj div:not(:last-child) { display: none; }   /* à 4 et plus, une seule annonce à la fois : la place est aux barres */
+    @media (max-height: 700px) {
+      .jeu-dj.immersif .milieu-dj.al2 .allies-dj.explo { grid-template-columns: 1fr 1fr; }
+      .jeu-dj.immersif .milieu-dj.al2 .al-av { display: none; } .jeu-dj.immersif .milieu-dj.al2 .allie-dj { padding-left: 4px; }
+      .jeu-dj.immersif .milieu-dj[class*="al"] { gap: 4px; padding-top: 4px; padding-bottom: 4px; }
+      .jeu-dj.immersif .milieu-dj[class*="al"] .annonces-dj div:not(:last-child), .jeu-dj.immersif .milieu-dj.al3 .inverser-dj, .jeu-dj.immersif .milieu-dj.al3 .annonces-dj ~ .inverser-dj { display: none; }
+      .jeu-dj.immersif .milieu-dj[class*="al"] .annonces-dj div { font-size: 0.95em; padding: 3px 7px; }
+      .jeu-dj.immersif .milieu-dj.al2 .annonces-dj ~ .inverser-dj, .jeu-dj.immersif .milieu-dj.al1 .annonces-dj ~ .inverser-dj { display: none; }
+    }
+    /* En combat, dans la fiche du haut : sous mon nom jusqu'à 2 amis, sur toute la largeur à partir de 3 */
+    .fiche-l1.avec-allies { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; grid-template-areas: "p id m" "p al m"; column-gap: 7px; row-gap: 3px; align-items: center; }
+    .fiche-l1.avec-allies.allies-large { grid-template-areas: "p id m" "al al al"; row-gap: 5px; }
+    .fiche-l1.avec-allies .portrait-dj { grid-area: p; } .fiche-l1.avec-allies .fiche-id { grid-area: id; } .fiche-l1.avec-allies .menu-dj { grid-area: m; } .fiche-l1.avec-allies .allies-dj { grid-area: al; }
+    .allies-dj.combat.n1 { grid-template-columns: minmax(0, 62%); justify-content: center; }
+    .allie-dj { position: relative; display: flex; align-items: center; gap: 4px; min-width: 0; padding: 2px 4px 2px 2px; border-radius: 9px; border: 1.5px solid #5c4532; background: linear-gradient(#3f3026, #2e231b); color: #f1e6d6; font: inherit; text-align: left; cursor: pointer; }
+    .allie-dj.loin { opacity: 0.55; }
+    .allie-dj.ciblable { border-color: #8ce99a; animation: appel-c 0.8s ease-in-out infinite alternate; }
+    .al-av { position: relative; flex: none; width: 24px; height: 24px; border-radius: 50%; background: radial-gradient(circle at 50% 35%, #6b5644, #2a211b); border: 1.5px solid #c9a66b; display: flex; align-items: center; justify-content: center; font-size: 13px; }
+    .al-av > span:first-child { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; } .al-av svg { width: 100%; height: 100%; }
+    .allie-dj.ko .al-av > span:first-child { filter: grayscale(1) opacity(0.5); }
+    .allie-dj.touche .al-av { animation: touche-c 0.38s ease-out; }
+    .al-corps { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+    .al-nom { display: flex; align-items: center; gap: 3px; min-width: 0; font-size: 0.62em; font-weight: 800; line-height: 1.15; white-space: nowrap; }
+    .al-nom i { flex: none; width: 6px; height: 6px; border-radius: 50%; border: 1px solid #120c09; }
+    .al-nom b { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+    .al-nom em { flex: none; font-style: normal; color: #e9c46a; }
+    .al-pv { position: relative; display: block; height: 13px; border-radius: 7px; background: #16301c; border: 1px solid #120c09; overflow: hidden; }
+    .al-pv i { position: absolute; left: 0; top: 0; bottom: 0; background: linear-gradient(#8ce99a, #2f9e44 70%, #2b8a3e); transition: width 0.3s; }
+    .al-pv b { position: relative; display: block; text-align: center; font-size: 0.6em; line-height: 12px; color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.8); white-space: nowrap; }
+    .allie-dj.bas .al-pv { background: #40210c; } .allie-dj.bas .al-pv i { background: linear-gradient(#ffa94d, #e8590c); animation: clignote-dj 0.9s ease-in-out infinite; }
+    .allie-dj.ko .al-pv { background: #2b2b2b; } .allie-dj.ko .al-pv i { width: 0 !important; }
+    @media (prefers-reduced-motion: reduce) { .allie-dj.touche .al-av, .allie-dj.bas .al-pv i { animation: none; } }
     /* Décor de la scène (3.36) : dessiné par DJS.decor, derrière les monstres */
     .scene-c { border-radius: 10px; border: 1px solid rgba(141,106,63,0.45); box-shadow: inset 0 0 18px rgba(0,0,0,0.55); }
     .scene-c:after { display: none; }
@@ -695,16 +724,26 @@
         <div v-else class="jeu-dj" :class="{ immersif: immersif }" @contextmenu.prevent @pointerdown="reprendrePleinEcran">
           <!-- Fiche du compagnon : qui, PV, ressources, et tous les objets d'un coup (rien ne défile) -->
           <div class="tete-dj fiche-dj" :class="{ 'en-combat': !!combat }" v-if="monJ">
-            <div class="fiche-l1">
+            <div class="fiche-l1" :class="{ 'avec-allies': alliesHaut, 'allies-large': alliesHaut && allies.length > 2 }">
               <button class="portrait-dj" :class="{ ko: monJ.fantome }" @click="voirSac = true" aria-label="Mon sac">
                 <span v-if="monJ.cp" v-html="dessinSvg(monJ.cp)"></span><span v-else class="sans">🧭</span>
                 <i v-if="monJ.fantome">👻</i>
               </button>
               <div class="fiche-id">
                 <div class="fiche-nom"><b>{{ monJ.cp && monJ.cp.n ? monJ.cp.n : 'Explorateur' }}</b><span>{{ D.CLASSES[monJ.classe].ico }} {{ D.CLASSES[monJ.classe].nom }}<i v-if="combat" class="diff-dj mini" :class="'d-' + difPartie">{{ D.DIFFICULTES[difPartie].ico }} {{ D.DIFFICULTES[difPartie].nom }}<template v-if="partie.peril"> +{{ partie.peril }}</template></i></span></div>
-                <span class="pv-dj"><i :style="{ width: pct(monJ.pv, monJ.pvMax) }"></i><b>{{ monJ.fantome ? '👻 KO' : '❤️ ' + monJ.pv + ' / ' + monJ.pvMax }}</b></span>
+                <span v-if="!alliesHaut" class="pv-dj"><i :style="{ width: pct(monJ.pv, monJ.pvMax) }"></i><b>{{ monJ.fantome ? '👻 KO' : '❤️ ' + monJ.pv + ' / ' + monJ.pvMax }}</b></span>
               </div>
               <button class="menu-dj" @click="menuJeu = true" aria-label="Menu">☰<b v-if="chatNonLus">{{ chatNonLus }}</b></button>
+                <div v-if="alliesHaut" class="allies-dj" :class="'n' + Math.min(allies.length, 3)">
+                  <button v-for="a in allies" :key="'al' + a.nom" class="allie-dj" :class="{ loin: a.loin, ko: a.fantome, bas: a.bas, ciblable: a.cible, touche: toucheC(a.nom) }" @click="toucherAllie(a)">
+                    <span class="al-av"><span v-if="a.cp" v-html="dessinSvg(a.cp)"></span><span v-else class="sans">🧭</span>
+                      <span v-for="k in fxSur(a.nom)" :key="'x' + k.id" class="coup-flottant" :class="k.cl">{{ k.v }}</span></span>
+                    <span class="al-corps">
+                      <span class="al-nom"><i :style="{ background: a.couleur }"></i><b>{{ a.nom }}</b><em v-if="a.etat">{{ a.etat }}</em></span>
+                      <span class="al-pv"><i :style="{ width: a.pct }"></i><b>{{ a.fantome ? '👻 KO' : '❤️ ' + a.pv + (allies.length > 3 ? '' : ' / ' + a.pvMax) }}<template v-if="a.armure && !a.fantome"> 🛡️{{ a.armure }}</template></b></span>
+                    </span>
+                  </button>
+              </div>
             </div>
             <div class="fiche-l2">
               <button v-if="liaison" class="puce-dj liaison-dj" :class="liaison.c" @click="info(liaison.detail)" aria-label="Liaison avec les amis"><i></i>{{ liaison.court }}</button>
@@ -746,12 +785,15 @@
               </button>
             </div></div>
             <div class="journal-c" ref="journal"><div v-if="!combat.journal.length" class="vide">Chaque monstre annonce son prochain coup (en haut). Joue tes cartes, puis « Fin du tour ».</div><div v-for="(l, k) in combat.journal" :key="combat.id + '-' + k + l">{{ l }}</div></div>
-            <div class="equipe-c" v-if="equipeCombat.length > 1">
-              <button v-for="p in equipeCombat" :key="'ec' + p.nom" class="membre-c" :class="{ ciblable: cibleAttendue === 'joueur' && (!p.fantome || selSoigne), fantome: p.fantome }" @click="choisirMembre(p.nom)">
-                <span class="mc-cp"><span v-if="p.cp" v-html="dessinSvg(p.cp)"></span><span v-else>🧭</span>
-                  <span v-for="k in fxSur(p.nom)" :key="'x' + k.id" class="coup-flottant" :class="k.cl">{{ k.v }}</span></span>
-                {{ p.nom === moi ? 'Moi' : p.nom }} {{ p.fantome ? '👻' : '❤️' + p.pv }}<template v-if="p.armure"> 🛡️{{ p.armure }}</template> {{ combat.fini[p.nom] ? '✓' : '…' }}
-              </button>
+            <div class="allies-dj combat" v-if="!jeJoue && allies.length" :class="'n' + Math.min(allies.length, 3)">
+                  <button v-for="a in allies" :key="'al' + a.nom" class="allie-dj" :class="{ loin: a.loin, ko: a.fantome, bas: a.bas, ciblable: a.cible, touche: toucheC(a.nom) }" @click="toucherAllie(a)">
+                    <span class="al-av"><span v-if="a.cp" v-html="dessinSvg(a.cp)"></span><span v-else class="sans">🧭</span>
+                      <span v-for="k in fxSur(a.nom)" :key="'x' + k.id" class="coup-flottant" :class="k.cl">{{ k.v }}</span></span>
+                    <span class="al-corps">
+                      <span class="al-nom"><i :style="{ background: a.couleur }"></i><b>{{ a.nom }}</b><em v-if="a.etat">{{ a.etat }}</em></span>
+                      <span class="al-pv"><i :style="{ width: a.pct }"></i><b>{{ a.fantome ? '👻 KO' : '❤️ ' + a.pv + (allies.length > 3 ? '' : ' / ' + a.pvMax) }}<template v-if="a.armure && !a.fantome"> 🛡️{{ a.armure }}</template></b></span>
+                    </span>
+                  </button>
             </div>
             <template v-if="jeJoue">
               <div class="moi-c" :class="{ ciblable: cibleAttendue === 'joueur' }" @click="choisirMembre(moi)">
@@ -803,10 +845,6 @@
             <div v-for="f in effetsIci" :key="'f' + f.id" class="ent effet" :style="pos(f)"><span class="emo">{{ EFFETS[f.k] || '✨' }}</span></div>
           </div>
 
-          <div class="equipe-dj" v-if="nbJoueurs > 1">
-            <span v-for="p in equipe" :key="p.nom" :class="{ loin: p.salle !== monJ.salle }">{{ p.nom === moi ? 'Moi' : p.nom }} {{ p.fantome ? '👻' : '❤️' + p.pv }}<template v-if="p.salle !== monJ.salle"> · ailleurs</template><template v-if="p.nom !== moi && occupation(p)"> · {{ occupation(p).ico }} {{ occupation(p).txt }}</template></span>
-          </div>
-
           <div class="dernier-combat" v-if="dernierCombatVu" @click="vuCombat = partie.dernierCombat.id"><b>{{ partie.dernierCombat.gagne ? '🎉 Victoire !' : '👻 Défaite…' }}</b> <span v-for="(l, k) in partie.dernierCombat.journal.slice(-2)" :key="k">{{ l }}</span></div>
           </div>
           <div class="commandes-dj" :class="{ inverse: inverse }">
@@ -814,11 +852,22 @@
               <span class="h" :class="{ actif: dirCourante === 'h' }">▲</span><span class="b" :class="{ actif: dirCourante === 'b' }">▼</span>
               <span class="g" :class="{ actif: dirCourante === 'g' }">◀</span><span class="d" :class="{ actif: dirCourante === 'd' }">▶</span>
             </div>
-            <div class="milieu-dj">
+            <div class="milieu-dj" :class="allies.length ? 'al' + Math.min(allies.length, 3) : ''">
               <!-- Annonces (butin, clés, portes…) : ici, à côté de la croix, jamais sur la pièce ni sur le plan (3.21, demandé par l'utilisateur) -->
+              <!-- Barres de vie des amis (3.37) : ici aussi, pour ne rien prendre à la pièce ni au plan -->
+              <div class="allies-dj explo" v-if="allies.length" :class="'n' + Math.min(allies.length, 3)">
+                  <button v-for="a in allies" :key="'al' + a.nom" class="allie-dj" :class="{ loin: a.loin, ko: a.fantome, bas: a.bas, ciblable: a.cible, touche: toucheC(a.nom) }" @click="toucherAllie(a)">
+                    <span class="al-av"><span v-if="a.cp" v-html="dessinSvg(a.cp)"></span><span v-else class="sans">🧭</span>
+                      <span v-for="k in fxSur(a.nom)" :key="'x' + k.id" class="coup-flottant" :class="k.cl">{{ k.v }}</span></span>
+                    <span class="al-corps">
+                      <span class="al-nom"><i :style="{ background: a.couleur }"></i><b>{{ a.nom }}</b><em v-if="a.etat">{{ a.etat }}</em></span>
+                      <span class="al-pv"><i :style="{ width: a.pct }"></i><b>{{ a.fantome ? '👻 KO' : '❤️ ' + a.pv + (allies.length > 3 ? '' : ' / ' + a.pvMax) }}<template v-if="a.armure && !a.fantome"> 🛡️{{ a.armure }}</template></b></span>
+                    </span>
+                  </button>
+          </div>
               <div v-if="annoncesVues.length" class="annonces-dj"><div v-for="a in annoncesVues" :key="a.id" :class="{ perso: a.pour }">{{ a.txt }}</div></div>
               <template v-else-if="monJ && monJ.fantome">👻 Tu es KO.<br>{{ nbJoueurs > 1 ? 'Va près d\'un ami : il te ranime en restant à côté de toi.' : '' }}</template>
-              <template v-else-if="monPouvoir"><span class="pouvoir">{{ POUVOIRS[monPouvoir].ico }} {{ POUVOIRS[monPouvoir].nom }}</span><br>fonce dans {{ POUVOIRS[monPouvoir].quoi }}</template>
+              <template v-else-if="monPouvoir"><span class="pouvoir">{{ POUVOIRS[monPouvoir].ico }} {{ POUVOIRS[monPouvoir].nom }}</span><template v-if="!allies.length"><br>fonce dans {{ POUVOIRS[monPouvoir].quoi }}</template></template>
               <template v-else>Sans pouvoir : explore et trouve les coffres.</template>
               <div class="aide objectif-dj" style="margin-top:4px">{{ objectif }}</div>
               <button class="inverser-dj" @click="inverse = !inverse" aria-label="Mettre la croix de l'autre côté">⇄</button>
@@ -857,6 +906,7 @@
               <button v-if="liaison" class="btn" @click="relancerLiaison">🔄 Relancer la liaison</button>
               <button class="btn" @click="ouvrirChat">💬 Discuter avec les amis<span v-if="chatNonLus" class="pastille">{{ chatNonLus }}</span></button>
               <button class="btn" @click="sonActif = !sonActif">{{ sonActif ? '🔊 Son activé' : '🔇 Son coupé' }}</button>
+              <button class="btn" v-if="peutVibrer" @click="vibrationActive = !vibrationActive">{{ vibrationActive ? '📳 Vibrations activées' : '📴 Vibrations coupées' }}</button>
               <button class="btn" @click="inverse = !inverse">⇄ Mettre la croix {{ inverse ? 'à gauche' : 'à droite' }}</button>
               <button class="btn" @click="basculerPleinEcran">{{ immersionVoulue ? '🗗 Quitter le plein écran' : '⛶ Plein écran' }}</button>
               <button class="btn" v-if="immersionVoulue" @click="basculerBarres">{{ barresCachees ? '📱 Montrer les barres du tél.' : '📱 Cacher les barres du tél.' }}</button>
@@ -1198,6 +1248,7 @@
         roomCode: '',
         entreeEnCours: false,
         sonActif: lireStockage('brillant-son') !== false,
+        peutVibrer: typeof navigator.vibrate === 'function',
         vibrationActive: lireStockage('brillant-vibration') !== null ? lireStockage('brillant-vibration') !== false : lireStockage('brillant-son') !== false
       },
       computed: {
@@ -1239,7 +1290,19 @@
         objetsIci: function() { var s = this.monJ && this.monJ.salle; return this.partie.objets.filter(o => o.salle === s); },
         effetsIci: function() { var s = this.monJ && this.monJ.salle; return this.partie.effets.filter(f => f.salle === s); },
         annoncesVues: function() { var t = this.partie.maintenant; return this.partie.annonces.filter(a => (!a.pour || a.pour === this.moi) && t - a.t < 4500).slice(-2); },
-        equipe: function() { return Object.values(this.partie.joueurs).sort((a, b) => a.ordre - b.ordre); },
+        alliesHaut: function() { return !!(this.combat && this.jeJoue && this.allies.length); },
+        // Les amis (3.37) : leurs barres de vie, en combat (dans la fiche du haut, à la place de ma barre déjà montrée près des cartes) et en exploration
+        allies: function() {
+          var p = this.partie, moi = this.monJ, c = this.combat;
+          if (!p || !moi) return [];
+          return Object.values(p.joueurs).filter(j => j.nom !== this.moi).sort((a, b) => a.ordre - b.ordre).map(j => {
+            var loin = j.salle !== moi.salle, dedans = !!c && !loin && (c.joueurs.indexOf(j.nom) >= 0 || j.fantome), o = this.occupation(j);
+            return { nom: j.nom, cp: j.cp, pv: Math.max(0, j.pv), pvMax: j.pvMax, pct: this.pct(j.pv, j.pvMax), armure: j.armure, fantome: j.fantome, loin: loin, dedans: dedans,
+              bas: !j.fantome && j.pv <= j.pvMax * 0.3, couleur: COULEURS_J[j.ordre % COULEURS_J.length], occ: o,
+              cible: dedans && this.cibleAttendue === 'joueur' && (!j.fantome || this.selSoigne),
+              etat: loin ? 'ailleurs' : o ? o.ico : dedans && !j.fantome ? (c.fini[j.nom] ? '✓' : '…') : '' };
+          });
+        },
         // Voyant de liaison (3.32, demandé par l'utilisateur après « je vois l'autre mais il ne bouge plus ») : ce que CE téléphone sait de la liaison.
         // Invité : ligne avec l'hôte, dernier message reçu, donjon qui avance ou non, ce que l'hôte dit de moi.
         // Hôte : ligne avec le serveur, chaque ami (connecté selon le salon, dernier message reçu de lui), moteur en panne.
@@ -1559,6 +1622,11 @@
           this.vibre(15); this.son('toc');
         },
         choisirMonstre: function(id) { if (this.cibleAttendue === 'monstre') this.jouerSel(id); },
+        // Toucher la barre d'un ami : le viser avec la carte choisie, sinon dire où il en est
+        toucherAllie: function(a) {
+          if (a.cible) { this.choisirMembre(a.nom); return; }
+          this.info(a.nom + ' : ' + (a.fantome ? '👻 KO' : '❤️ ' + a.pv + ' / ' + a.pvMax + (a.armure ? ' · 🛡️ ' + a.armure : '')) + (a.loin ? ' · dans une autre pièce' : '') + (a.occ ? ' · ' + a.occ.ico + ' ' + a.occ.txt : a.dedans && !a.fantome ? (this.combat.fini[a.nom] ? ' · ✓ a fini son tour' : ' · joue son tour…') : ''));
+        },
         choisirMembre: function(nom) { var k = this.selDef; if (k && k.cible === 'joueur') this.jouerSel(nom); },
         // Relance à la main (3.32) : l'invité refait sa liaison avec l'hôte ; l'hôte rouvre sa ligne (les amis se reconnectent seuls)
         relancerLiaison: function() {
@@ -1714,7 +1782,20 @@
           if (!p) return;
           if (!a || a.maintenant !== p.maintenant) this._majT = Date.now();   // le donjon avance (voyant de liaison)
           var moi = p.joueurs[this.moi], avant = a && a.joueurs[this.moi];
-          if (moi && avant && moi.pv < avant.pv) { this.son('choc'); this.vibre([60, 40, 60]); }
+          // Coups reçus : lus dans les effets du combat (`fx` à mon nom, chacun compté une fois), sinon dans mes PV (hors combat, dernier coup d'un combat)
+          if (!a || a.id !== p.id) this._fxVu = 0;   // autre donjon : les numéros d'effets repartent de zéro
+          var cF = moi && p.combats && p.combats[moi.salle], vu = this._fxVu || 0, coup = 0, pare = false, maxFx = vu;
+          ((cF && cF.fx) || []).forEach(k => {
+            if (k.id > maxFx) maxFx = k.id;
+            if (k.id <= vu || k.qui !== this.moi || !a) return;
+            if (k.cl === 'mal') coup += parseInt(String(k.v).replace(/[^0-9]/g, ''), 10) || 1;
+            else if (k.cl === 'neutre' && String(k.v).indexOf('🛡️') >= 0) pare = true;
+          });
+          this._fxVu = maxFx;
+          if (!coup && moi && avant && moi.pv < avant.pv) coup = avant.pv - moi.pv;
+          if (moi && avant && moi.fantome && !avant.fantome) { this.son('choc'); this.vibre([220, 90, 420]); }
+          else if (coup) { this.son('choc'); this.vibre(coup >= 15 ? [150, 50, 150, 50, 220] : coup >= 6 ? [110, 45, 110] : [80]); }
+          else if (pare) this.vibre(30);
           if (a && p.annonces.length && (!a.annonces.length || p.annonces[p.annonces.length - 1].id !== a.annonces[a.annonces.length - 1].id)) {
             var der = p.annonces[p.annonces.length - 1];
             if (!der.pour || der.pour === this.moi) this.son('toc');
