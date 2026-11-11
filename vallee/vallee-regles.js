@@ -7,7 +7,7 @@
 
 var VL = (function () {
   var W = 11, H = 9;               // un écran = 11 × 9 cases, comme une pièce du Donjon
-  var EW = 3, EH = 3;              // le monde : 3 × 3 écrans (le village au centre)
+  var EW = 6, EH = 3;              // le monde : 3 × 3 écrans (le village au centre), plus le quartier des amis à l'est, 3 écrans de long (3.51)
   var LARG = W * EW, HAUT = H * EH;
   var GRAINE = 20261111;           // graine fixe : mêmes petites variations (arbres, fleurs) pour tout le monde
   var VISION = 3.6;                // rayon de ce que l'on découvre autour de soi (en cases)
@@ -47,7 +47,7 @@ var VL = (function () {
         'T...:..,..T',
         'Tb..:...b.T',
         'TT..:..TTTT',
-        'TTTTT:TTTTT'] } ],
+        'TTTTT:TTTTT'] }, null, null, null ],
     [ { id: 'ruisseau', nom: 'Le ruisseau', ico: '💧', l: [
         'TTTTT:TTTTT',
         'T..,.:..b.T',
@@ -73,11 +73,43 @@ var VL = (function () {
         'TT...:...TT',
         'T..,.:.,..T',
         'T...:::...T',
-        ':::::::...T',
+        ':::::::::::',
         'T..,:::.,.T',
         'T....:..o.T',
         'TT.b.:..TTT',
-        'TTTTT:TTTTT'] } ],
+        'TTTTT:TTTTT'] },
+      // Le quartier des amis (3.51, demandé par l'utilisateur) : une rue de 3 écrans qui DÉFILE (la vue suit le compagnon, pas de fondu),
+      // 18 parcelles fixes : chaque ami a sa maison, au même endroit (tirée de son identifiant), gardée à vie
+      { id: 'quartier', nom: 'Le quartier des amis', ico: '🏘️', defile: true, l: [
+        'TTTTTTTTTTT',
+        'Txx,xx,xx,,',
+        'Txx,xx,xx,,',
+        'T::::::::::',
+        ':::::::::::',
+        'Txx,xx,xx,,',
+        'Txx,xx,xx,,',
+        'T::::::::::',
+        'TTTTTTTTTTT'] },
+      { id: 'quartier', nom: 'Le quartier des amis', ico: '🏘️', defile: true, l: [
+        'TTTTTTTTTTT',
+        ',xx,xx,xx,,',
+        ',xx,xx,xx,,',
+        ':::::::::::',
+        ':::::::::::',
+        ',xx,xx,xx,,',
+        ',xx,xx,xx,,',
+        ':::::::::::',
+        'TTTTTTTTTTT'] },
+      { id: 'quartier', nom: 'Le quartier des amis', ico: '🏘️', defile: true, l: [
+        'TTTTTTTTTTT',
+        ',xx,xx,xx,T',
+        ',xx,xx,xx,T',
+        '::::::::::T',
+        '::::::::::T',
+        ',xx,xx,xx,T',
+        ',xx,xx,xx,T',
+        '::::::::::T',
+        'TTTTTTTTTTT'] } ],
     [ { id: 'chene', nom: 'Le vieux chêne', ico: '🌳', l: [
         'TTTTT:TTTTT',
         'T,...:...,T',
@@ -107,7 +139,7 @@ var VL = (function () {
         'T,....vcs.T',
         'T..,..TRT.T',
         'T.b.......T',
-        'TTTTTTTTTTT'] } ]
+        'TTTTTTTTTTT'] }, null, null, null ]
   ];
 
   var MARCHE = { '.': 1, ',': 1, ':': 1, '=': 1 };
@@ -133,6 +165,14 @@ var VL = (function () {
     Object.assign({ type: 'cabane', w: 2, h: 2 }, g(2, 0, 6, 1)),
     Object.assign({ type: 'chene', w: 2, h: 2 }, g(0, 2, 3, 2))
   ];
+  // Les parcelles du quartier : 3 maisons par écran en haut de la rue, 3 en bas (porte en bas de chaque maison), sur 3 écrans
+  var NB_PARCELLES = 18;
+  var PARCELLES = [];
+  for (var k = 0; k < NB_PARCELLES; k++) {
+    var rang = k % 9;
+    PARCELLES.push(Object.assign({ p: k }, g(3 + Math.floor(rang / 3), 1, 1 + 3 * (rang % 3), k < 9 ? 1 : 5)));
+  }
+  PARCELLES.forEach(P => BATIMENTS.push({ type: 'parcelle', p: P.p, x: P.x, y: P.y, w: 2, h: 2 }));
   // Ce qui se passe quand on fonce dans une case
   var ACTIONS = {};
   function action(p, a) { ACTIONS[p.x + ',' + p.y] = a; }
@@ -148,6 +188,7 @@ var VL = (function () {
   [[3, 2], [4, 2], [3, 3], [4, 3]].forEach(c => action(g(0, 2, c[0], c[1]), { id: 'chene' }));
   action(g(2, 2, 7, 5), { id: 'coffre' });
   action(g(1, 1, 4, 1), { id: 'etabli' });
+  PARCELLES.forEach(P => { action({ x: P.x, y: P.y + 1 }, { id: 'parcelle', p: P.p }); action({ x: P.x + 1, y: P.y + 1 }, { id: 'parcelle', p: P.p }); });
 
   // ---------- Les habitants ----------
   var HABITANTS = {
@@ -242,10 +283,11 @@ var VL = (function () {
   // ---------- Lecture de la carte ----------
   function tuile(x, y) {
     if (x < 0 || y < 0 || x >= LARG || y >= HAUT) return null;
-    return ECRANS[Math.floor(y / H)][Math.floor(x / W)].l[y % H][x % W];
+    var E = ECRANS[Math.floor(y / H)][Math.floor(x / W)];
+    return E ? E.l[y % H][x % W] : null;   // pas d'écran à cet endroit (hors du monde)
   }
   function ecranDe(x, y) { return { ex: Math.floor(x / W), ey: Math.floor(y / H) }; }
-  function ecran(x, y) { var c = ecranDe(x, y); return ECRANS[c.ey][c.ex]; }
+  function ecran(x, y) { var c = ecranDe(x, y); return ECRANS[c.ey] && ECRANS[c.ey][c.ex] || null; }
   function habitantEn(x, y) {
     for (var id in HABITANTS) { var h = HABITANTS[id]; if (h.x === x && h.y === y && !h.etal) return id; }
     return null;
@@ -263,7 +305,7 @@ var VL = (function () {
   // ---------- État d'un joueur ----------
   function nouvelEtat() {
     var p = g(1, 1, 2, 3);
-    var e = { v: 1, x: p.x, y: p.y, dir: 'b', vu: '', ouverts: {}, pris: {}, quetes: {}, coffre: false, cle: false, pas: 0,
+    var e = { v: 1, lv: LARG, x: p.x, y: p.y, dir: 'b', vu: '', ouverts: {}, pris: {}, quetes: {}, coffre: false, cle: false, pas: 0,
               sac: { bois: 0, pierre: 0, plante: 0, cristal: 0 }, recolte: { j: '', pris: {} }, outils: {}, besace: {} };
     reveler(e);
     return e;
@@ -276,6 +318,7 @@ var VL = (function () {
     if (libre(e, s.x | 0, s.y | 0)) { e.x = s.x | 0; e.y = s.y | 0; }
     e.dir = ['h', 'b', 'g', 'd'].indexOf(s.dir) >= 0 ? s.dir : 'b';
     e.vu = typeof s.vu === 'string' && /^[0-9a-f]*$/.test(s.vu) ? s.vu : '';
+    if (e.vu && (s.lv | 0 || 33) !== LARG) e.vu = elargir(e.vu, s.lv | 0 || 33);   // sauvegarde d'avant le quartier (3 écrans de large)
     if (s.quetes && typeof s.quetes === 'object') Object.keys(QUETES).forEach(id => { if (s.quetes[id] && typeof s.quetes[id] === 'object') e.quetes[id] = Object.assign({}, s.quetes[id]); });
     e.coffre = !!s.coffre; e.cle = !!s.cle; e.pas = s.pas | 0;
     if (s.sac && typeof s.sac === 'object') ORDRE_RES.forEach(r => { e.sac[r] = Math.max(0, Math.min(SAC_MAX, s.sac[r] | 0)); });
@@ -298,6 +341,15 @@ var VL = (function () {
     for (var i = 0; i < b.length && i < s.length; i++) b[i] = parseInt(s[i], 16) || 0;
     return b;
   }
+  // Le brouillard d'une carte plus étroite (ancienne sauvegarde) recopié dans la carte actuelle
+  function elargir(vu, largAvant) {
+    var b = new Uint8Array(Math.ceil(LARG * HAUT / 4));
+    for (var y = 0; y < HAUT; y++) for (var x = 0; x < largAvant && x < LARG; x++) {
+      var i = y * largAvant + x, v = parseInt(vu[i >> 2] || '0', 16) || 0;
+      if (v & (1 << (i & 3))) { var j = y * LARG + x; b[j >> 2] |= 1 << (j & 3); }
+    }
+    return Array.from(b, v => v.toString(16)).join('');
+  }
   function estVu(e, x, y, b) {
     b = b || bits(e);
     var i = y * LARG + x;
@@ -316,7 +368,7 @@ var VL = (function () {
   }
   function partVue(e) {
     var b = bits(e), n = 0, t = 0;
-    for (var y = 0; y < HAUT; y++) for (var x = 0; x < LARG; x++) { t++; if (estVu(e, x, y, b)) n++; }
+    for (var y = 0; y < HAUT; y++) for (var x = 0; x < LARG; x++) { if (tuile(x, y) === null) continue; t++; if (estVu(e, x, y, b)) n++; }
     return n / t;
   }
 
@@ -412,7 +464,7 @@ var VL = (function () {
     if (t === null) return { bord: true };
     var hab = habitantEn(nx, ny);
     if (hab) return { parler: hab };
-    if (ACTIONS[k]) return { action: ACTIONS[k].id, x: nx, y: ny };
+    if (ACTIONS[k]) return { action: ACTIONS[k].id, x: nx, y: ny, p: ACTIONS[k].p };
     if (OBSTACLES[t] && !ouvert(e, nx, ny)) {
       var besoin = OBSTACLES[t];
       if (ctx && ctx.pouvoir === besoin) { e.ouverts[k] = 1; return { ouvre: besoin, x: nx, y: ny }; }
@@ -528,6 +580,61 @@ var VL = (function () {
     return {};
   }
 
+  // ---------- Le quartier des amis (3.51) ----------
+  // La parcelle « naturelle » d'un ami : tirée de son identifiant de personne (Joueur.id), donc la même sur tous les téléphones
+  function parcelleDe(j) {
+    var h = 2166136261;
+    for (var i = 0; i < String(j).length; i++) { h ^= String(j).charCodeAt(i); h = Math.imul(h, 16777619) >>> 0; }
+    return h % NB_PARCELLES;
+  }
+  // Le quartier défile : est-on dedans ?
+  function defile(x, y) { var E = ecran(x, y); return !!(E && E.defile); }
+  // voisins = { idDeLaPersonne: { p: parcelle, nom, couleur, cp, vu } }, propre à ce téléphone (`vallee-voisins`, dans la sauvegarde).
+  // Un ami connecté qui a un compagnon reçoit une parcelle libre et la garde ; quand tout est pris, l'ami absent depuis le plus longtemps
+  // laisse sa place. presents = [{ j, pseudo, couleur, cp }].
+  function placerVoisins(voisins, presents, t) {
+    var v = Object.assign({}, voisins || {}), change = false, ici = {};
+    (presents || []).forEach(m => {
+      if (!m || !m.j || !m.cp) return;
+      ici[m.j] = 1;
+      var a = v[m.j];
+      if (a) {
+        if (a.nom !== m.pseudo || a.couleur !== m.couleur || JSON.stringify(a.cp) !== JSON.stringify(m.cp)) change = true;
+        v[m.j] = Object.assign({}, a, { nom: m.pseudo, couleur: m.couleur, cp: m.cp, vu: t });
+        return;
+      }
+      var prises = {}; Object.keys(v).forEach(j => { prises[v[j].p] = j; });
+      // Sa parcelle se tire de son identifiant : la même chez tous les amis (sauf si deux identifiants tombent au même endroit)
+      var p = -1, depart = parcelleDe(m.j);
+      for (var k = 0; k < NB_PARCELLES; k++) { var q = (depart + k) % NB_PARCELLES; if (!(q in prises)) { p = q; break; } }
+      if (p < 0) {   // tout est pris : l'absent le plus ancien déménage
+        var vieux = Object.keys(v).filter(j => !ici[j] && !(presents || []).some(x => x && x.j === j)).sort((a, b) => (v[a].vu || 0) - (v[b].vu || 0))[0];
+        if (!vieux) return;
+        p = v[vieux].p; delete v[vieux];
+      }
+      v[m.j] = { p: p, nom: m.pseudo, couleur: m.couleur, cp: m.cp, vu: t };
+      change = true;
+    });
+    return { voisins: v, change: change };
+  }
+  // Une sauvegarde de voisins vient du téléphone : on la vérifie
+  function nettoyerVoisins(v) {
+    var r = {}, prises = {};
+    Object.keys(v && typeof v === 'object' ? v : {}).forEach(j => {
+      var a = v[j], p = a && a.p | 0;
+      if (!a || !/^[a-z0-9]{4,40}$/i.test(j) || p < 0 || p >= NB_PARCELLES || prises[p]) return;
+      prises[p] = 1;
+      r[j] = { p: p, nom: String(a.nom || '').slice(0, 20), couleur: /^#[0-9a-f]{6}$/i.test(a.couleur) ? a.couleur : '#8d6e63', cp: a.cp && typeof a.cp === 'object' ? a.cp : null, vu: +a.vu || 0 };
+    });
+    return r;
+  }
+  // Ce qu'il y a sur chaque parcelle : [{ j, nom, couleur, cp, present }] ou null (libre)
+  function parcelles(voisins, presentsJ) {
+    var l = []; for (var k = 0; k < NB_PARCELLES; k++) l.push(null);
+    Object.keys(voisins || {}).forEach(j => { var a = voisins[j]; if (a.p >= 0 && a.p < NB_PARCELLES) l[a.p] = { j: j, nom: a.nom, couleur: a.couleur, cp: a.cp, present: !!(presentsJ && presentsJ[j]) }; });
+    return l;
+  }
+
   // ---------- Récolte ----------
   // Le jour (heure du téléphone) : les points repoussent au changement de jour
   function jourDe(t) {
@@ -603,6 +710,7 @@ var VL = (function () {
     LIEUX_FAB: LIEUX_FAB, RECETTES: RECETTES,
     jourDe: jourDe, pointEn: pointEn, pointVisible: pointVisible, prisAujourdhui: prisAujourdhui, gain: gain, recolter: recolter, assezPour: assezPour, besaceTotal: besaceTotal,
     ouvertFab: ouvertFab, recette: recette, etatRecette: etatRecette, fabriquer: fabriquer, prendreFioles: prendreFioles,
+    NB_PARCELLES: NB_PARCELLES, PARCELLES: PARCELLES, placerVoisins: placerVoisins, parcelleDe: parcelleDe, defile: defile, nettoyerVoisins: nettoyerVoisins, parcelles: parcelles, elargir: elargir,
     W: W, H: H, EW: EW, EH: EH, LARG: LARG, HAUT: HAUT, GRAINE: GRAINE, VISION: VISION,
     ECRANS: ECRANS, BATIMENTS: BATIMENTS, ACTIONS: ACTIONS, HABITANTS: HABITANTS, CHAMPIGNONS: CHAMPIGNONS, QUETES: QUETES, ORDRE_QUETES: ORDRE_QUETES,
     OBSTACLES: OBSTACLES, POUVOIRS: POUVOIRS, POUVOIR_ESPECE: POUVOIR_ESPECE, VENTE: VENTE,

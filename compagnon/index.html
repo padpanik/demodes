@@ -546,7 +546,7 @@
         <div class="aide">Glisse pour voir ses pièces. Touche {{ animal.nom }} pour lui faire un câlin : il le sentira chez {{ visite.pseudo }} ❤️</div>
         <div class="actions-visite">
           <button class="btn principal" @click="calinVisite">❤️ Câlin à {{ animal.nom }}</button>
-          <a class="btn" href="compagnon/">↩ Rentrer chez moi</a>
+          <a class="btn" :href="retourVallee ? 'vallee/' : 'compagnon/'">{{ retourVallee ? '↩ Retour dans la Vallée' : '↩ Rentrer chez moi' }}</a>
         </div>
       </section>
 
@@ -1459,10 +1459,12 @@
         demanderVisite: function(n) {
           n = n || 0;
           var sg = window.SalonGlobal;
-          if (!sg || !sg.pret || !sg.pret()) { if (n > 40) { this.visite.etat = 'echec'; return; } return setTimeout(() => this.demanderVisite(n + 1), 500); }
-          var m = sg.membre(this.visite.id);
-          this.visite.pseudo = m ? m.pseudo : 'ton ami';
+          // On attend d'être dans le salon global ET d'y voir l'ami : en changeant de page, le salon se reforme (jusqu'à ~40 s si l'on en était l'hôte)
+          var m = sg && sg.pret && sg.pret() ? sg.membre(this.visite.id) : null;
+          if (!m) { if (n > 90) { this.visite.etat = 'echec'; return; } return setTimeout(() => this.demanderVisite(n + 1), 500); }
+          this.visite.pseudo = m.pseudo || 'ton ami';
           sg.demander(this.visite.id, { type: 'MAISON?' }, d => {
+            if (!d && n < 90) return setTimeout(() => this.demanderVisite(n + 24), 500);   // pas de réponse : on redemande (le salon se reformait)
             if (!d || d.aucun || !d.a || !ESPECES.some(e => e.id === d.a.espece)) { this.visite.etat = 'echec'; return; }
             var a = d.a, propre = {};
             BESOINS.forEach(b => { var x = a.besoins && a.besoins[b.id]; propre[b.id] = { v: +(x && x.v) || 0, t: +(x && x.t) || Date.now() }; });

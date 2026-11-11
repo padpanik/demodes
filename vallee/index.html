@@ -61,6 +61,10 @@
     .ecran-vl { flex: none; position: relative; width: 100%; aspect-ratio: 11 / 9; border-radius: 12px; overflow: hidden; border: 3px solid #5c3a1f; box-sizing: border-box;
                 box-shadow: 0 6px 16px rgba(0,0,0,0.45); background: #8fcf6b; touch-action: none; }
     .ecran-vl > svg.fond { position: absolute; inset: 0; width: 100%; height: 100%; }
+    /* Le quartier des amis défile (3.51) : la bande de 3 écrans glisse sous la fenêtre de vue */
+    .ecran-vl > svg.fond.bande { width: 300%; right: auto; transition: transform 0.19s linear; }
+    .ecran-vl .voile-bande { position: absolute; inset: 0; pointer-events: none; z-index: 1;
+      background: radial-gradient(ellipse 72% 72% at 50% 52%, rgba(26,18,8,0) 58%, rgba(26,18,8,0.55) 100%), linear-gradient(135deg, rgba(255,242,196,0.18), rgba(255,242,196,0) 50%, rgba(58,36,16,0.16)); }
     .ent { position: absolute; width: calc(100% / 11); height: calc(100% / 9); transition: left 0.19s linear, top 0.19s linear; pointer-events: none; z-index: 2; }
     .ent.saut { transition: none; }
     .ent .sp { position: absolute; left: -35%; bottom: 0; width: 170%; height: 170%; }
@@ -223,6 +227,27 @@
     .cout-vl span.manque { background: #ffe3e3; color: #c92a2a; }
     .article-vl.fait { opacity: 0.6; }
     .article-vl .raison { margin-left: auto; font-size: 0.78em; font-weight: 800; color: #8a6a46; text-align: right; max-width: 92px; line-height: 1.2; }
+    /* Les amis dans la Vallée (3.51) */
+    .ent.joueur, .ent.ami { pointer-events: auto; cursor: pointer; }
+    .ent.ami { transition: left 0.32s linear, top 0.32s linear; z-index: 1; }
+    .ent.ami:before { content: ''; position: absolute; left: 12%; right: 12%; bottom: 4%; height: 22%; border-radius: 50%; background: rgba(0,0,0,0.25); }
+    .ent .nom-ami { position: absolute; left: 50%; bottom: 168%; transform: translateX(-50%); white-space: nowrap; font: 800 10px/1.2 system-ui, sans-serif; color: #fff;
+                    padding: 1px 6px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.6); box-shadow: 0 1px 3px rgba(0,0,0,0.5); }
+    .ent .av-ami { position: absolute; left: 10%; bottom: 8%; width: 80%; height: 80%; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+                   color: #fff; font-weight: 900; font-size: 14px; border: 2px solid #fff; box-sizing: border-box; }
+    .bulle-ent { position: absolute; left: 50%; bottom: 172%; transform: translateX(-50%); z-index: 4; white-space: nowrap; background: #fffaf0; color: #3b2a1e;
+                 border: 2px solid #6b4f36; border-radius: 12px; padding: 2px 8px; font: 800 12px system-ui, sans-serif; animation: vl-pop 2.6s ease-out forwards; pointer-events: none; }
+    .ent.bord-g .bulle-ent, .ent.bord-g .nom-ami { left: 0; transform: none; animation-name: vl-pop-g; }
+    .ent.bord-d .bulle-ent, .ent.bord-d .nom-ami { left: auto; right: 0; transform: none; animation-name: vl-pop-g; }
+    .ent.bord-g .bulle-ent:after { left: 14px; } .ent.bord-d .bulle-ent:after { left: auto; right: 9px; }
+    @keyframes vl-pop-g { 0% { transform: translateY(6px) scale(0.6); opacity: 0; } 10% { transform: none; opacity: 1; } 85% { opacity: 1; } 100% { opacity: 0; } }
+    .bulle-ent:after { content: ''; position: absolute; left: 50%; bottom: -7px; margin-left: -5px; border: 5px solid transparent; border-top-color: #6b4f36; border-bottom: 0; }
+    .bulle-ent .i { font-size: 18px; vertical-align: -3px; margin-right: 3px; }
+    @keyframes vl-pop { 0% { transform: translate(-50%, 6px) scale(0.6); opacity: 0; } 10% { transform: translate(-50%, 0) scale(1.08); opacity: 1; } 18%, 85% { transform: translate(-50%, 0) scale(1); opacity: 1; } 100% { opacity: 0; } }
+    .emotes-vl { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin-top: 6px; }
+    .emotes-vl button { border: 1.5px solid #c9b08f; background: #fffaf0; border-radius: 12px; padding: 6px 2px; font: inherit; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 2px; }
+    .emotes-vl button .i { font-size: 24px; line-height: 1.1; }
+    .emotes-vl button small { font-size: 0.68em; font-weight: 800; color: #6d5a44; white-space: nowrap; }
     .sac-titre { margin: 12px 0 2px; font: 900 1em Georgia, serif; color: #5c3a1f; }
     /* Lueurs des lanternes et des torches, qui vacillent (comme au Donjon) */
     .vl-halo { animation: vl-halo 1.3s ease-in-out infinite alternate; }
@@ -258,18 +283,26 @@
 
       <!-- La carte du monde, sous le brouillard -->
       <div class="carte-vl" @click="fenetre = 'quetes'">
-        <svg :viewBox="'0 0 ' + VL.LARG * 10 + ' ' + VL.HAUT * 10" preserveAspectRatio="xMidYMid meet"><g v-html="carteSvg"></g><g v-html="carteDessus"></g></svg>
+        <svg :view-box.camel="vue.defile ? '330 90 330 90' : '0 0 330 270'" preserveAspectRatio="xMidYMid meet"><g v-html="carteSvg"></g><g v-html="carteDessus"></g></svg>
         <div class="titre-carte">La Vallée de Désdale · {{ explore }} % exploré</div>
         <div class="rose">N ↑</div>
       </div>
 
       <!-- Le lieu où je suis -->
       <div class="ecran-vl" ref="ecran">
-        <svg class="fond" viewBox="0 0 352 288" preserveAspectRatio="none" v-html="ecranSvg"></svg>
+        <svg class="fond" :class="{ bande: vue.defile }" :view-box.camel="vue.defile ? '0 0 1056 288' : '0 0 352 288'" preserveAspectRatio="none" :style="vue.defile ? { transform: 'translateX(' + (-vue.cam * 100 / 33) + '%)' } : null" v-html="ecranSvg"></svg>
+        <div class="voile-bande" v-if="vue.defile"></div>
         <div class="fondu-vl" :key="'f' + ecranCle"></div>
-        <div class="ent joueur" :class="{ gauche: sens === 'g', saut: saut, marche: !!dir }" :style="posMoi">
+        <div v-for="a in amisIci" :key="a.id" class="ent ami" :class="{ gauche: a.d === 'g', saut: saut, 'bord-g': a.lx <= 1, 'bord-d': a.lx >= 9 }" :style="a.pos" @click="ouvrirAmi(a)">
+          <span class="sp" v-if="a.dessin" v-html="a.dessin"></span>
+          <span class="av-ami" v-else :style="{ background: a.couleur }">{{ (a.pseudo || '?').charAt(0).toUpperCase() }}</span>
+          <span class="nom-ami" v-if="!bulles[a.id]" :style="{ background: a.couleur }">{{ a.pseudo }}</span>
+          <span class="bulle-ent" v-if="bulles[a.id]" :key="bulles[a.id].k"><span class="i">{{ bulles[a.id].ico }}</span>{{ bulles[a.id].txt }}</span>
+        </div>
+        <div class="ent joueur" :class="{ gauche: sens === 'g', saut: saut, marche: !!dir, 'bord-g': e.x - vue.x0 <= 1, 'bord-d': e.x - vue.x0 >= 9 }" :style="posMoi" @click="ouvrirEmotes">
           <span class="sp" v-if="animal" v-html="'<svg viewBox=&quot;0 -6 200 216&quot;>' + dessinMoi + '</svg>'"></span>
           <span class="sp boussole" v-else>🧭</span>
+          <span class="bulle-ent" v-if="bulles.moi" :key="bulles.moi.k"><span class="i">{{ bulles.moi.ico }}</span>{{ bulles.moi.txt }}</span>
         </div>
         <div class="lieu-vl" v-if="lieuMontre" :key="'l' + ecranCle">{{ lieuMontre.ico }} {{ lieuMontre.nom }}<small v-if="lieuMontre.neuf">Nouveau lieu découvert</small></div>
       </div>
@@ -413,6 +446,33 @@
       </div>
     </div>
 
+    <!-- Un ami croisé dans la Vallée : saluer, visiter sa maison, descendre ensemble -->
+    <div class="voile-vl" v-if="fenetre === 'ami' && ami" @click.self="fermer">
+      <div class="fen-vl">
+        <div class="dial-tete">
+          <div class="portrait" v-if="ami.dessin" style="overflow:hidden"><svg viewBox="0 -6 200 216" width="62" height="66" v-html="ami.dessinBrut"></svg></div>
+          <div class="portrait" v-else :style="{ background: ami.couleur, color: '#fff', fontSize: '28px', fontWeight: 900, alignItems: 'center' }">{{ (ami.pseudo || '?').charAt(0).toUpperCase() }}</div>
+          <div><b>{{ ami.pseudo }}</b><small>{{ ami.cp ? ami.cp.n + ', son compagnon' : 'Sans compagnon' }}</small></div>
+        </div>
+        <div class="boutons-vl">
+          <button class="btn-vl principal" @click="saluerAmi">👋 Saluer {{ ami.pseudo }}</button>
+          <button class="btn-vl" v-if="ami.cp" @click="entrer('compagnon/?visite=' + encodeURIComponent(ami.id))">🏠 Visiter sa maison</button>
+          <button class="btn-vl" @click="descendreAvec">⚔️ Descendre ensemble au Donjon</button>
+          <button class="btn-vl" @click="fermer">Fermer</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mes émotions (toucher mon compagnon) : vues par les amis sur le même écran -->
+    <div class="voile-vl" v-if="fenetre === 'emotes'" @click.self="fermer">
+      <div class="fen-vl">
+        <h2>{{ animal ? animal.nom + ' dit…' : 'Je dis…' }}</h2>
+        <p style="margin:0;color:#6d5a44;font-size:0.9em">{{ amisIci.length ? 'Vu par ' + amisIci.map(a => a.pseudo).join(', ') + '.' : 'Personne sur cet écran pour l\'instant : seuls les amis qui sont ici le voient.' }}</p>
+        <div class="emotes-vl"><button v-for="(m, k) in EMOTES" :key="k" @click="envoyerEmote(k)"><span class="i">{{ m.ico }}</span><small>{{ m.txt }}</small></button></div>
+        <div class="boutons-vl"><button class="btn-vl" @click="fermer">Fermer</button></div>
+      </div>
+    </div>
+
     <!-- Menu ☰ -->
     <div class="voile-vl" v-if="fenetre === 'menu'" @click.self="fermer">
       <div class="fen-vl">
@@ -444,6 +504,7 @@
           <li><b>Récolter</b> : marche sur le bois mort 🪵, les cailloux 🪨, les herbes 🌿 et les cristaux 💎. Chaque point repousse le lendemain. Ton sac en garde {{ VL.SAC_MAX }} de chaque. Ton pouvoir double une ressource : 🔥 le bois, 💪 la pierre, 🦘 les plantes ; 👃 montre les cristaux sur la carte.</li>
           <li><b>Fabriquer</b> (après la quête de Bruno) : de la déco à l'établi devant ta maison, des fioles pour le Donjon chez Mme Sauge, des outils à la forge. Fonce dans l'établi, la hutte ou la forge.</li>
           <li><b>La carte</b> se dévoile au fil de tes pas. L'anneau orange montre où aller pour ta quête.</li>
+          <li><b>Les amis</b> connectés qui sont dans la Vallée apparaissent sur ton écran et en points sur la carte. Touche un ami pour le saluer, visiter sa maison ou descendre ensemble au Donjon. Touche ton compagnon pour envoyer une émotion. À l'est de la clairière, <b>le quartier des amis</b> : chacun y a sa maison.</li>
           <li><b>La crypte</b>, au nord du village, mène au Donjon des compagnons. Ta maison est la maison de ton compagnon.</li>
           <li>Ta progression est gardée sur ce téléphone et dans ta sauvegarde.</li>
         </ul>
@@ -469,10 +530,21 @@
     // Petites phrases de la fontaine et des maisons
     const FONTAINE = ['Tu fais un vœu… plouf ! 🪙', 'L\'eau est fraîche et claire. 💧', 'Un poisson rouge te fait des bulles. 🐟'];
     var etat = VL.charger(lireStockage(CLE));
+    // Les émotions des jeux (même liste et même ordre que compagnons-jeu.js : le numéro voyage sur le réseau)
+    const EMOTES = [
+      { ico: '👍', txt: 'Bien joué !' }, { ico: '😂', txt: 'Ha ha !' }, { ico: '😮', txt: 'Oh !' }, { ico: '😅', txt: 'Oups…' },
+      { ico: '🤔', txt: 'Hmm…' }, { ico: '😤', txt: 'Grrr !' }, { ico: '🎉', txt: 'Bravo !' }, { ico: '❤️', txt: 'Merci !' },
+      { ico: '⏳', txt: 'À toi !' }, { ico: '😴', txt: 'Zzz…' }
+    ];
+    function dessinCp(c) {
+      if (!c || !c.e) return '';
+      return CP.dessin({ espece: c.e, couleur: c.c, porte: c.p || {} }, c.h || 'calme', false);
+    }
 
     new Vue({
       el: '#app',
       data: {
+        EMOTES: EMOTES, amis: [], presentsJ: {}, voisins: VL.nettoyerVoisins(lireStockage('vallee-voisins')), ami: null, bulles: {},
         VL: VL, POUVOIRS: VL.POUVOIRS, QUETES: VL.QUETES, ETOILE: ETOILE, LIBELLES: LIBELLES,
         v: 0,                       // monte à chaque changement de l'état (le dessin se recalcule)
         dir: null, sens: etat.dir === 'g' ? 'g' : 'd', saut: false, ecranCle: 0, lieuMontre: null,
@@ -488,6 +560,15 @@
         pouvoir: function() { return this.animal && VL.POUVOIR_ESPECE[this.animal.espece] || null; },
         ctx: function() { this.v; return { pouvoir: this.pouvoir, bossTotal: (lireStockage('donjon-stats') || {}).boss | 0, nom: this.animal ? this.animal.nom : '', jour: this.jour,
                                            compagnon: !!(this.animal && this.animal.espece), possede: (this.animal && this.animal.possede) || {} }; },
+        parcelles: function() { return VL.parcelles(this.voisins, this.presentsJ); },
+        // Les amis sur le même écran que moi
+        amisIci: function() {
+          this.v; var V = this.vue;
+          return this.amis.filter(a => a.y >= V.y0 && a.y < V.y0 + VL.H && a.x >= V.x0 - (V.defile ? 1 : 0) && a.x < V.x0 + VL.W + (V.defile ? 1 : 0)).map(a => Object.assign({}, a, {
+            lx: a.x - V.x0,
+            dessin: a.cp && a.cp.e ? '<svg viewBox="0 -6 200 216">' + dessinCp(a.cp) + '</svg>' : '',
+            pos: { left: ((a.x - V.x0) * 100 / VL.W) + '%', top: ((a.y - V.y0) * 100 / VL.H) + '%' } }));
+        },
         sacVisible: function() { this.v; return VL.etatQuete(etat, 'atelier') !== 'dispo' || VL.ORDRE_RES.some(r => etat.sac[r] > 0); },
         besace: function() { this.v; return VL.besaceTotal(etat); },
         aujourdhui: function() {
@@ -508,6 +589,13 @@
           return CP.dessin(this.animal, h === 'triste' ? 'triste' : 'content', false);
         },
         ecranCoord: function() { return VL.ecranDe(this.e.x, this.e.y); },
+        // La fenêtre de vue : l'écran où je suis, ou dans le quartier (qui défile) 11 cases centrées sur moi
+        vue: function() {
+          var c = this.ecranCoord, x = this.e.x, y = this.e.y;
+          if (!VL.defile(x, y)) return { defile: false, x0: c.ex * VL.W, y0: c.ey * VL.H, cam: 0 };
+          var q0 = 3 * VL.W, cam = Math.max(0, Math.min(2 * VL.W, x - q0 - 5));
+          return { defile: true, x0: q0 + cam, y0: c.ey * VL.H, cam: cam };
+        },
         ici: function() { this.v; return VL.ecran(etat.x, etat.y); },
         marques: function() {
           this.v; var m = {};
@@ -520,26 +608,30 @@
           var c = this.ecranCoord;
           // On ne redessine l'écran que s'il a changé (pas à chaque pas)
           var atelier = VL.ouvertFab(etat, 'etabli');
-          var cle = [c.ex, c.ey, JSON.stringify(etat.ouverts), JSON.stringify(etat.pris), etat.coffre, VL.etatQuete(etat, 'herbes'), JSON.stringify(this.marques), this.tableauMarque, this.animal && this.animal.nom,
-                     JSON.stringify(etat.recolte), this.jour, atelier].join('|');
+          var defile = VL.defile(etat.x, etat.y);
+          var cle = [defile ? 'q' : c.ex, c.ey, JSON.stringify(etat.ouverts), JSON.stringify(etat.pris), etat.coffre, VL.etatQuete(etat, 'herbes'), JSON.stringify(this.marques), this.tableauMarque, this.animal && this.animal.nom,
+                     JSON.stringify(etat.recolte), this.jour, atelier, defile ? JSON.stringify(this.parcelles) : ''].join('|');
           if (cle === this._cleEcran) return this._svgEcran;
           this._cleEcran = cle;
-          return this._svgEcran = VLD.ecranSvg(etat, c.ex, c.ey, { flair: this.pouvoir === 'flair', plaque: this.animal ? 'Chez ' + this.animal.nom : 'Ma maison', marques: this.marques, tableauMarque: this.tableauMarque, atelier: atelier, jour: this.jour });
+          var ctx = { flair: this.pouvoir === 'flair', plaque: this.animal ? 'Chez ' + this.animal.nom : 'Ma maison', marques: this.marques, tableauMarque: this.tableauMarque, atelier: atelier, jour: this.jour, parcelles: this.parcelles };
+          // Le quartier : ses 3 écrans côte à côte, en une bande que la page fait glisser
+          if (defile) return this._svgEcran = [3, 4, 5].map((ex, i) => '<g transform="translate(' + (i * 352) + ' 0)">' + VLD.ecranSvg(etat, ex, c.ey, Object.assign({ sansVoile: true }, ctx)) + '</g>').join('');
+          return this._svgEcran = VLD.ecranSvg(etat, c.ex, c.ey, ctx);
         },
         queteSuivie: function() { this.v; return VL.queteSuivie(etat); },
         quetesDispo: function() { this.v; return VL.ORDRE_QUETES.filter(id => VL.etatQuete(etat, id) === 'dispo').length; },
         carteSvg: function() {
           this.v;
-          var cle = [etat.vu, JSON.stringify(etat.ouverts), JSON.stringify(this.marques), this.tableauMarque, JSON.stringify(etat.recolte), this.jour, this.pouvoir].join('|');
+          var cle = [etat.vu, JSON.stringify(etat.ouverts), JSON.stringify(this.marques), this.tableauMarque, JSON.stringify(etat.recolte), this.jour, this.pouvoir, JSON.stringify(this.parcelles.map(p => p && p.couleur))].join('|');
           if (cle === this._cleCarte) return this._svgCarte;
           this._cleCarte = cle;
-          return this._svgCarte = VLD.carteSvg(etat, { marques: this.marques, tableauMarque: this.tableauMarque, flair: this.pouvoir === 'flair', jour: this.jour });
+          return this._svgCarte = VLD.carteSvg(etat, { marques: this.marques, tableauMarque: this.tableauMarque, flair: this.pouvoir === 'flair', jour: this.jour, parcelles: this.parcelles });
         },
-        carteDessus: function() { this.v; return VLD.carteDessus(etat, { cible: VL.cible(etat, this.queteSuivie, this.ctx) }); },
+        carteDessus: function() { this.v; return VLD.carteDessus(etat, { cible: VL.cible(etat, this.queteSuivie, this.ctx), amis: this.amis, x0: this.vue.x0 }); },
         explore: function() { this.v; return Math.round(VL.partVue(etat) * 100); },
         posMoi: function() {
-          this.v; var c = this.ecranCoord;
-          return { left: ((etat.x - c.ex * VL.W) * 100 / VL.W) + '%', top: ((etat.y - c.ey * VL.H) * 100 / VL.H) + '%' };
+          this.v; var V = this.vue;
+          return { left: ((etat.x - V.x0) * 100 / VL.W) + '%', top: ((etat.y - V.y0) * 100 / VL.H) + '%' };
         },
         annoncesVues: function() { return this.annonces.filter(a => this.maintenant - a.t0 < 4500).slice(-2); },
         astuce: function() {
@@ -574,6 +666,20 @@
           this.etoiles = Etoiles.solde();
           try { this.nonLus = SalonGlobal.nonLus(); } catch (e) {}
         }, 1500);
+        // Les amis (3.51) : présents, positions, émotions, saluts, invitations au Donjon
+        var majAmis = () => this.majAmis();
+        window.addEventListener('desdale-membres', majAmis);
+        window.addEventListener('desdale-pos', majAmis);
+        setInterval(() => { this.majAmis(); this.envoyerPosition(); }, 1000);
+        window.addEventListener('desdale-emote', ev => { var d = ev.detail || {}, m = EMOTES[d.e]; if (m) this.bulle(window.SalonGlobal && d.id === SalonGlobal.monId() ? 'moi' : d.id, m.ico, m.txt); });
+        window.addEventListener('desdale-salut', ev => { var d = ev.detail || {}; this.bulle(d.id, '👋', 'Coucou !'); });
+        window.addEventListener('desdale-invite', ev => {
+          var d = ev.detail || {};
+          ev.preventDefault();
+          this.son('toc'); this.vibre([60, 60, 60]);
+          this.lire({ ico: '⚔️', titre: d.pseudo + ' t\'attend au Donjon', texte: d.pseudo + ' descend dans la crypte et t\'invite à l\'accompagner (salon « ' + d.salon + ' »).',
+            boutons: [{ t: '⚔️ Descendre avec ' + d.pseudo, principal: true, f: () => this.entrer('donjon/?salon=' + encodeURIComponent(d.salon)) }, { t: 'Plus tard', f: () => this.fermer() }] });
+        });
         // Clavier : flèches
         var touches = { ArrowUp: 'h', ArrowDown: 'b', ArrowLeft: 'g', ArrowRight: 'd' };
         document.addEventListener('keydown', ev => { var d = touches[ev.key]; if (!d || this.fenetre) return; ev.preventDefault(); if (this.dir !== d) { this.dir = d; this.avancer(d); } });
@@ -623,8 +729,18 @@
         avancer: function(d) {
           this._dernierPas = Date.now();
           if (d === 'g' || d === 'd') this.sens = d;
+          // On fonce dans un ami : le menu pour le saluer, visiter sa maison, descendre ensemble
+          var D = { h: [0, -1], b: [0, 1], g: [-1, 0], d: [1, 0] }[d], ax = etat.x + D[0], ay = etat.y + D[1];
+          var amiLa = this.amisIci.find(a => a.x === ax && a.y === ay);
+          // (une 2e poussée juste après avoir fermé son menu passe à travers : un ami ne bloque jamais le chemin)
+          if (amiLa && !(this._amiPasse && this._amiPasse.id === amiLa.id && Date.now() - this._amiPasse.t < 5000)) {
+            this._amiPasse = { id: amiLa.id, t: Date.now() };
+            this.ouvrirAmi(amiLa); return;
+          }
+          var dansQuartier = VL.defile(etat.x, etat.y);
           var r = VL.pas(etat, d, this.ctx);
           if (r.bouge) {
+            if (r.ecran && dansQuartier && VL.defile(etat.x, etat.y)) r.ecran = false;   // le quartier défile : ni fondu ni nom du lieu
             if (r.ecran) {
               this.saut = true; this.ecranCle++;
               var E = VL.ecran(etat.x, etat.y), vus = lireStockage('vallee-lieux') || [];
@@ -648,11 +764,11 @@
             }
             if (r.sacPlein) this.annoncerUneFois('plein' + r.sacPlein, '🎒 Ton sac est plein : ' + VL.SAC_MAX + ' ' + VL.RESSOURCES[r.sacPlein].nom.toLowerCase() + ' au plus. Fabrique quelque chose !');
             if (r.filon) this.annoncerUneFois('filon', '💎 Un filon de cristal ! Il faudrait une pioche' + (VL.ouvertFab(etat, 'forge') ? ' (forge de Bruno).' : '. Bruno en forge une, quand sa forge tourne.'));
-            this.v++; this.sauver();
+            this.v++; this.sauver(); this.envoyerPosition();
             return;
           }
           if (r.parler) return this.parler(r.parler);
-          if (r.action) return this.action(r.action);
+          if (r.action) return this.action(r.action, r);
           if (r.ouvre) {
             var P = VL.POUVOIRS[r.ouvre];
             this.annoncer(P.ico + ' ' + (this.animal ? this.animal.nom : 'Ton compagnon') + ' ' + P.fait + ' !');
@@ -717,8 +833,9 @@
           this.son('victoire'); this.vibre([60, 50, 120]);
           this.lire({ ico: ico, titre: 'Quête réussie : ' + Q.nom, texte: texte });
         },
-        action: function(id) {
+        action: function(id, r) {
           var c = this.ctx;
+          if (id === 'parcelle') return this.porteAmi(r && r.p);
           if (id === 'maison') return this.entrer('compagnon/');
           if (id === 'marchand') { this.fenetre = 'marchand'; this.son('toc'); return; }
           if (id === 'tableau') { this.fenetre = 'tableau'; this.son('toc'); return; }
@@ -745,6 +862,59 @@
           }
         },
         lire: function(m) { this.aLire = m; this.fenetre = 'lire'; },
+        // ---------- Les amis (3.51) ----------
+        majAmis: function() {
+          if (!window.SalonGlobal || !SalonGlobal.presents) return;
+          var pr = SalonGlobal.presents(), pj = {};
+          pr.forEach(m => { if (m.j) pj[m.j] = m.id; });
+          if (JSON.stringify(pj) !== JSON.stringify(this.presentsJ)) this.presentsJ = pj;
+          var r = VL.placerVoisins(this.voisins, pr.map(m => ({ j: m.j, pseudo: m.pseudo, couleur: m.couleur, cp: m.cp ? { e: m.cp.e, c: m.cp.c, p: m.cp.p, n: m.cp.n } : null })), Date.now());
+          if (r.change) { this.voisins = r.voisins; ecrireStockage('vallee-voisins', r.voisins); }
+          var l = SalonGlobal.positions();
+          if (JSON.stringify(l) !== JSON.stringify(this.amis)) this.amis = l;
+        },
+        envoyerPosition: function() { if (window.SalonGlobal && SalonGlobal.position) SalonGlobal.position({ x: etat.x, y: etat.y, d: this.sens }); },
+        bulle: function(id, ico, txt) {
+          var k = Date.now() + Math.random();
+          this.$set(this.bulles, id, { ico: ico, txt: txt, k: k });
+          setTimeout(() => { if (this.bulles[id] && this.bulles[id].k === k) this.$delete(this.bulles, id); }, 2700);
+        },
+        ouvrirAmi: function(a) {
+          this.ami = Object.assign({}, a, { dessinBrut: dessinCp(a.cp) });
+          this.fenetre = 'ami'; this.son('toc');
+        },
+        ouvrirEmotes: function() { this.fenetre = 'emotes'; },
+        envoyerEmote: function(k) {
+          var t = Date.now();
+          if (t - (this._emoteT || 0) < 1500) return;   // une émotion toutes les 1,5 s au plus (comme dans les jeux)
+          this._emoteT = t;
+          this.fermer();
+          if (window.SalonGlobal && SalonGlobal.emoteA) SalonGlobal.emoteA(this.amisIci.map(a => a.id), k);
+          else this.bulle('moi', EMOTES[k].ico, EMOTES[k].txt);
+        },
+        saluerAmi: function() {
+          var a = this.ami; this.fermer();
+          if (!a || !window.SalonGlobal) return;
+          SalonGlobal.saluer(a.id);
+          this.bulle('moi', '👋', 'Salut ' + a.pseudo + ' !');
+          this.son('toc');
+        },
+        // On descend ensemble : un salon du Donjon tiré au hasard, l'ami reçoit l'invitation, on y entre le premier
+        descendreAvec: function() {
+          var a = this.ami;
+          if (!a || !window.SalonGlobal) return;
+          var salon = 'rdv-' + Math.random().toString(36).slice(2, 6);
+          SalonGlobal.inviter(a.id, salon);
+          this.entrer('donjon/?salon=' + salon);
+        },
+        // On fonce dans la porte d'une maison du quartier
+        porteAmi: function(p) {
+          var a = this.parcelles[p];
+          if (!a) return this.annoncer('🏡 Une parcelle libre. Un ami qui a un compagnon y emménagera dès qu\'il se connectera.');
+          var id = this.presentsJ[a.j];
+          if (id && a.cp) return this.entrer('compagnon/?visite=' + encodeURIComponent(id));
+          this.annoncer('🏠 Chez ' + a.nom + ' : volets fermés. ' + a.nom + ' n\'est pas connecté.');
+        },
         ouvrirFab: function(ou) { this.fabOu = ou; this.fenetre = 'fab'; this.son('toc'); },
         // Fabriquer : deux touchers (le 2e confirme), comme les achats
         fabriquer: function(r) {

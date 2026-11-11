@@ -279,8 +279,8 @@ var VLD = (function () {
 
   // ---------- Bâtiments ----------
   // Le panneau de ma maison, posé sur le toit : la taille du texte suit la longueur du nom
-  function panneau(cx, cy, texte) {
-    var t = String(texte || ''), l = 66, fs = Math.max(6.5, Math.min(10.5, (l - 8) * 1.75 / Math.max(1, t.length)));
+  function panneau(cx, cy, texte, larg) {
+    var t = String(texte || ''), l = larg || 66, fs = Math.max(6.5, Math.min(10.5, (l - 8) * 1.75 / Math.max(1, t.length)));
     return '<path d="M' + (cx - 20) + ' ' + (cy - 9) + 'L' + (cx - 16) + ' ' + (cy - 15) + 'M' + (cx + 20) + ' ' + (cy - 9) + 'L' + (cx + 16) + ' ' + (cy - 15) + '" stroke="' + OLB + '" stroke-width="1.6"/>' +
       '<rect x="' + (cx - l / 2) + '" y="' + (cy - 9) + '" width="' + l + '" height="17" rx="3" fill="' + OLB + '"/>' +
       '<rect x="' + (cx - l / 2 + 1.5) + '" y="' + (cy - 7.5) + '" width="' + (l - 3) + '" height="14" rx="2" fill="#c08a4e"/>' +
@@ -378,8 +378,44 @@ var VLD = (function () {
         '<circle cx="' + (X + 46) + '" cy="' + (Y + 22) + '" r="13" fill="#2f6a2e" opacity=".75"/><circle cx="' + (X + 58) + '" cy="' + (Y + 12) + '" r="11" fill="#2f6a2e" opacity=".7"/>' +
         '<circle cx="' + (X + 24) + '" cy="' + (Y - 10) + '" r="9" fill="#58a64a"/><circle cx="' + (X + 4) + '" cy="' + (Y + 8) + '" r="7" fill="#58a64a"/><circle cx="' + (X + 20) + '" cy="' + (Y - 14) + '" r="3.5" fill="#7cc25c"/>' +
         '<ellipse cx="' + (X + 40) + '" cy="' + (Y + 30) + '" rx="2.4" ry="1.7" fill="#c08a4e" stroke="' + OLB + '" stroke-width=".6"/><ellipse cx="' + (X + 16) + '" cy="' + (Y + 20) + '" rx="2.4" ry="1.7" fill="#c08a4e" stroke="' + OLB + '" stroke-width=".6"/>';
+    } else if (b.type === 'parcelle') {
+      s += maisonAmi(X, Y, ctx.parcelles && ctx.parcelles[b.p]);
     }
     return s;
+  }
+  // La maison d'un ami, dans le quartier (2 × 2 cases) : toit à sa couleur, son nom sur le panneau ;
+  // fenêtres allumées et cheminée qui fume s'il est connecté, volets fermés sinon. Parcelle libre : un terrain clôturé.
+  function fonce(c, k) {
+    var n = parseInt(String(c).slice(1), 16) || 0;
+    var r = Math.round((n >> 16) * k), g = Math.round(((n >> 8) & 255) * k), b = Math.round((n & 255) * k);
+    return '#' + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+  }
+  function maisonAmi(X, Y, a) {
+    if (!a) {
+      return '<rect x="' + (X + 3) + '" y="' + (Y + 12) + '" width="58" height="48" rx="3" fill="#a07a4c" opacity=".55"/>' +
+        [12, 22, 32, 42, 52].map(k => '<path d="M' + (X + 6) + ' ' + (Y + k + 4) + 'h52" stroke="#7a5a33" stroke-width="1" opacity=".5"/>').join('') +
+        [[4, 12], [60, 12], [4, 60], [60, 60], [32, 12]].map(c => '<rect x="' + (X + c[0] - 1.6) + '" y="' + (Y + c[1] - 9) + '" width="3.2" height="10" fill="#8d5a2b" stroke="' + OLB + '" stroke-width=".9"/>').join('') +
+        '<path d="M' + (X + 4) + ' ' + (Y + 7) + 'H' + (X + 60) + 'M' + (X + 4) + ' ' + (Y + 7) + 'V' + (Y + 55) + 'M' + (X + 60) + ' ' + (Y + 7) + 'V' + (Y + 55) + '" stroke="#8d5a2b" stroke-width="1.6" fill="none"/>' +
+        '<path d="M' + (X + 32) + ' ' + (Y + 52) + 'v-14" stroke="' + OLB + '" stroke-width="2.4"/><rect x="' + (X + 19) + '" y="' + (Y + 28) + '" width="26" height="12" rx="2" fill="#f3dfb4" stroke="' + OLB + '" stroke-width="1.2"/>' +
+        '<text x="' + (X + 32) + '" y="' + (Y + 37) + '" text-anchor="middle" font-size="7.5" font-weight="900" fill="#4a2e17" font-family="Georgia, serif">Libre</text>';
+    }
+    var toit = a.couleur || '#c94a3f', ombre = fonce(toit, 0.72), trait = fonce(toit, 0.45), on = a.present;
+    var fen = (x, y) => on ? fenetre(x, y, 11, 10)
+      : '<rect x="' + x + '" y="' + y + '" width="11" height="10" rx="1" fill="#6b4626" stroke="' + OLB + '" stroke-width="1.2"/><path d="M' + (x + 5.5) + ' ' + y + 'v10M' + x + ' ' + (y + 3.5) + 'h11M' + x + ' ' + (y + 6.5) + 'h11" stroke="#4a2e17" stroke-width=".9"/>';
+    return '<ellipse cx="' + (X + 32) + '" cy="' + (Y + 62) + '" rx="31" ry="4.5" fill="rgba(10,20,5,.32)"/>' +
+      '<rect x="' + (X + 44) + '" y="' + (Y + 2) + '" width="8" height="16" fill="#a8a29e" stroke="' + OLB + '" stroke-width="1.3"/>' +
+      (on ? '<g class="vl-fumee"><circle cx="' + (X + 48) + '" cy="' + (Y - 4) + '" r="3.5" fill="#fff" opacity=".7"/><circle cx="' + (X + 51) + '" cy="' + (Y - 11) + '" r="4.5" fill="#fff" opacity=".45"/></g>' : '') +
+      '<rect x="' + (X + 5) + '" y="' + (Y + 26) + '" width="54" height="36" fill="#f3e0bd" stroke="' + OLB + '" stroke-width="1.6"/>' +
+      '<rect x="' + (X + 5) + '" y="' + (Y + 55) + '" width="54" height="7" fill="#a8a29e" stroke="' + OLB + '" stroke-width="1.3"/>' +
+      '<path d="M' + (X + 1) + ' ' + (Y + 29) + 'L' + (X + 32) + ' ' + (Y + 6) + 'L' + (X + 63) + ' ' + (Y + 29) + 'Z" fill="' + toit + '" stroke="' + OLB + '" stroke-width="1.7" stroke-linejoin="round"/>' +
+      '<path d="M' + (X + 32) + ' ' + (Y + 8) + 'L' + (X + 60) + ' ' + (Y + 28) + 'H' + (X + 32) + 'Z" fill="' + ombre + '"/>' +
+      [15, 22].map(yy => '<path d="M' + f(X + 32 - (yy - 6) * 1.3) + ' ' + (Y + yy) + 'H' + f(X + 32 + (yy - 6) * 1.3) + '" stroke="' + trait + '" stroke-width="1.1" stroke-dasharray="5 1.5"/>').join('') +
+      fen(X + 10, Y + 36) + fen(X + 43, Y + 36) +
+      '<rect x="' + (X + 25) + '" y="' + (Y + 41) + '" width="14" height="21" rx="6" fill="' + (on ? '#8d5a2b' : '#6b4626') + '" stroke="' + OLB + '" stroke-width="1.4"/>' +
+      '<circle cx="' + (X + 35.5) + '" cy="' + (Y + 52) + '" r="1.2" fill="#fcc419"/>' +
+      (on ? '<circle cx="' + (X + 32) + '" cy="' + (Y + 52) + '" r="14" fill="url(#vl-lueur)" opacity=".55" class="vl-halo"/>' : '') +
+      panneau(X + 32, Y + 25, a.nom || '…', 54) +
+      (on ? '' : '<g opacity=".85"><rect x="' + (X + 18) + '" y="' + (Y + 64) + '" width="28" height="9" rx="2" fill="#2b1a0e"/><text x="' + (X + 32) + '" y="' + (Y + 70.5) + '" text-anchor="middle" font-size="6" font-weight="800" fill="#e9dcc0" font-family="system-ui, sans-serif">absent</text></g>');
   }
   function esc(t) { return String(t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]); }
 
@@ -427,7 +463,7 @@ var VLD = (function () {
   function ecranSvg(e, ex, ey, ctx) {
     ctx = ctx || {};
     var x0 = ex * VL.W, y0 = ey * VL.H, s = [], objets = [], x, y, t, X, Y, h;
-    var E = VL.ECRANS[ey][ex], village = E.id === 'village';
+    var E = VL.ECRANS[ey][ex], village = E.id === 'village' || E.id === 'quartier';   // pavés au village et dans le quartier
     var tu = (xx, yy) => VL.tuile(xx, yy);
     var chemin = c => c === ':' || c === '=' || c === 'F';   // la fontaine est posée sur les pavés de la place
     var foret = c => c === 'T' || c === 'S';
@@ -531,6 +567,8 @@ var VLD = (function () {
       if (x !== 0 && y !== 0 && x !== VL.W - 1 && y !== VL.H - 1) continue;
       t = tu(x0 + x, y0 + y); if (t !== ':') continue;
       var d = x === 0 ? 'g' : x === VL.W - 1 ? 'd' : y === 0 ? 'h' : 'b', cx = x * T + 16, cy = y * T + 16;
+      var vx = x0 + x + (d === 'g' ? -1 : d === 'd' ? 1 : 0), vy = y0 + y + (d === 'h' ? -1 : d === 'b' ? 1 : 0);
+      if (E.defile && VL.defile(vx, vy)) continue;   // dans le quartier, la rue continue : pas de flèche
       var rot = { h: 0, d: 90, b: 180, g: 270 }[d];
       s.push('<g class="vl-fleche" transform="rotate(' + rot + ' ' + cx + ' ' + cy + ')"><path d="M' + (cx - 6) + ' ' + (cy + 3) + 'l6-6 6 6" stroke="' + OLB + '" stroke-width="5.5" fill="none" stroke-linecap="round" stroke-linejoin="round" opacity=".5"/>' +
              '<path d="M' + (cx - 6) + ' ' + (cy + 3) + 'l6-6 6 6" stroke="#ffd43b" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/></g>');
@@ -551,7 +589,7 @@ var VLD = (function () {
       else if (VL.OBSTACLES[t]) poser(y - 0.1, obstacle(t, X, Y, VL.ouvert(e, gx2, gy2), ctx.flair));
       if (t === 'm' && tu(gx2 - 1, gy2) !== 'm') poser(y, etal(X, Y) + bulleQuete(X + 32, Y - 26, ctx.marques && ctx.marques.pipa));
     }
-    if (village) LANTERNES_VILLAGE.forEach(p => poser(p[1] + 0.3, lanterne(p[0] * T + 16, p[1] * T + 24)));
+    if (E.id === 'village') LANTERNES_VILLAGE.forEach(p => poser(p[1] + 0.3, lanterne(p[0] * T + 16, p[1] * T + 24)));
     VL.BATIMENTS.forEach(b => {
       var c = VL.ecranDe(b.x, b.y);
       if (c.ex !== ex || c.ey !== ey) return;
@@ -574,7 +612,8 @@ var VLD = (function () {
     });
     objets.sort((a, b) => a[0] - b[0]).forEach(o => s.push(o[1]));
     // Lumière de fin d'après-midi et bords plus sombres, comme dans les pièces du Donjon
-    s.push('<rect width="352" height="288" fill="url(#vl-soleil)"/><rect width="352" height="288" fill="url(#vl-vig)"/>');
+    // Lumière et bords assombris (sauf dans le quartier qui défile : la page les pose sur la fenêtre de vue)
+    if (!ctx.sansVoile) s.push('<rect width="352" height="288" fill="url(#vl-soleil)"/><rect width="352" height="288" fill="url(#vl-vig)"/>');
     return s.join('');
   }
 
@@ -595,17 +634,18 @@ var VLD = (function () {
     var terre = [];
     for (y = 0; y < VL.HAUT; y++) for (x = 0; x < VL.LARG; x++) {
       var t = VL.tuile(x, y);
+      if (t === null) continue;   // hors du monde (au nord et au sud du quartier)
       if (VL.OBSTACLES[t] && VL.ouvert(e, x, y)) t = '.';
       terre.push('<rect x="' + (x * U) + '" y="' + (y * U) + '" width="' + (U + 0.4) + '" height="' + (U + 0.4) + '" fill="' + (COUL[t] || '#a9d18e') + '"/>');
       if (t === 'T' || t === 'S') terre.push('<circle cx="' + (x * U + 5) + '" cy="' + (y * U + 5) + '" r="4" fill="' + (t === 'S' ? '#3d7344' : '#4d8a3e') + '"/>');
     }
     VL.BATIMENTS.forEach(bt => terre.push('<rect x="' + (bt.x * U + 1) + '" y="' + (bt.y * U + 1) + '" width="' + (bt.w * U - 2) + '" height="' + (bt.h * U - 2) + '" rx="2" fill="' +
-      ({ maison: '#d9534f', hutte: '#d4a24c', forge: '#495057', crypte: '#868e96', cabane: '#6b8e3a', chene: '#3a8435' })[bt.type] + '" stroke="rgba(0,0,0,.35)" stroke-width="1"/>'));
+      (bt.type === 'parcelle' ? ((ctx.parcelles && ctx.parcelles[bt.p] && ctx.parcelles[bt.p].couleur) || '#b7a184') : ({ maison: '#d9534f', hutte: '#d4a24c', forge: '#495057', crypte: '#868e96', cabane: '#6b8e3a', chene: '#3a8435' })[bt.type]) + '" stroke="rgba(0,0,0,.35)" stroke-width="1"/>'));
     s.push('<g mask="url(#vl-masque)">' + terre.join('') + '</g>');
     // Repères des lieux découverts
     var ICO = { maison: '🏠', hutte: '🌿', forge: '⚒️', crypte: '🗝️', cabane: '🛖', chene: '🌳' };
     VL.BATIMENTS.forEach(bt => {
-      if (!VL.estVu(e, bt.x + (bt.w >> 1), bt.y + bt.h - 1, b)) return;
+      if (!ICO[bt.type] || !VL.estVu(e, bt.x + (bt.w >> 1), bt.y + bt.h - 1, b)) return;
       s.push('<text x="' + ((bt.x + bt.w / 2) * U) + '" y="' + ((bt.y + bt.h / 2) * U + 5) + '" text-anchor="middle" font-size="13">' + ICO[bt.type] + '</text>');
     });
     // Points de récolte encore là aujourd'hui (les cristaux se voient même sous le brouillard avec le Flair)
@@ -626,8 +666,7 @@ var VLD = (function () {
     var tq = VL.ACTIONS && Object.keys(VL.ACTIONS).find(k => VL.ACTIONS[k].id === 'tableau');
     if (tq && ctx.tableauMarque) { var p = tq.split(',').map(Number); if (VL.estVu(e, p[0], p[1], b)) s.push('<text x="' + (p[0] * U + 5) + '" y="' + (p[1] * U - 1) + '" text-anchor="middle" font-size="10" font-weight="900" fill="' + (ctx.tableauMarque === '?' ? '#2f9e44' : '#e67700') + '" stroke="#fff" stroke-width="2.5" paint-order="stroke">' + ctx.tableauMarque + '</text>'); }
     // Grille des écrans
-    for (x = 1; x < VL.EW; x++) s.push('<path d="M' + (x * VL.W * U) + ' 0V' + (VL.HAUT * U) + '" stroke="#8a6a46" stroke-width="1" stroke-dasharray="3 4" opacity=".45"/>');
-    for (y = 1; y < VL.EH; y++) s.push('<path d="M0 ' + (y * VL.H * U) + 'H' + (VL.LARG * U) + '" stroke="#8a6a46" stroke-width="1" stroke-dasharray="3 4" opacity=".45"/>');
+    VL.ECRANS.forEach((l, ey) => l.forEach((E, ex) => { if (E) s.push('<rect x="' + (ex * VL.W * U) + '" y="' + (ey * VL.H * U) + '" width="' + (VL.W * U) + '" height="' + (VL.H * U) + '" fill="none" stroke="#8a6a46" stroke-width="1" stroke-dasharray="3 4" opacity=".45"/>'); }));
     // Cadre de vieille carte
     s.push('<rect x="1" y="1" width="' + (VL.LARG * U - 2) + '" height="' + (VL.HAUT * U - 2) + '" rx="6" fill="none" stroke="#8a6a46" stroke-width="2"/>');
     return s.join('');
@@ -635,10 +674,12 @@ var VLD = (function () {
   // Ce qui bouge à chaque pas (dessiné par-dessus, pour ne pas tout redessiner) : l'écran où je suis, la quête suivie, moi
   function carteDessus(e, ctx) {
     ctx = ctx || {};
-    var U = 10, s = [], ec = VL.ecranDe(e.x, e.y);
-    s.push('<rect x="' + (ec.ex * VL.W * U + 1.5) + '" y="' + (ec.ey * VL.H * U + 1.5) + '" width="' + (VL.W * U - 3) + '" height="' + (VL.H * U - 3) + '" rx="4" fill="none" stroke="#fff" stroke-width="2.5" opacity=".9"/>');
+    var U = 10, s = [], ec = VL.ecranDe(e.x, e.y), x0 = ctx.x0 != null ? ctx.x0 : ec.ex * VL.W;   // x0 : la fenêtre de vue (le quartier défile)
+    s.push('<rect x="' + (x0 * U + 1.5) + '" y="' + (ec.ey * VL.H * U + 1.5) + '" width="' + (VL.W * U - 3) + '" height="' + (VL.H * U - 3) + '" rx="4" fill="none" stroke="#fff" stroke-width="2.5" opacity=".9"/>');
     // La quête suivie : un anneau qui palpite
     if (ctx.cible) s.push('<circle class="vl-cible" cx="' + (ctx.cible.x * U + 5) + '" cy="' + (ctx.cible.y * U + 5) + '" r="8" fill="none" stroke="#f59f00" stroke-width="2.5"/>');
+    // Les amis dans la Vallée (3.51) : un point à leur couleur
+    (ctx.amis || []).forEach(a => s.push('<circle cx="' + (a.x * U + 5) + '" cy="' + (a.y * U + 5) + '" r="4.5" fill="' + (a.couleur || '#3498db') + '" stroke="#fff" stroke-width="1.6"/>'));
     // Moi
     s.push('<circle cx="' + (e.x * U + 5) + '" cy="' + (e.y * U + 5) + '" r="5.5" fill="#ff922b" stroke="#fff" stroke-width="2" class="vl-moi"/>');
     return s.join('');

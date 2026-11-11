@@ -5,6 +5,7 @@ function verif(c, m) { if (c) ok++; else { ko++; console.log('✗ ' + m); } }
 
 // 1. Les écrans ont la bonne taille, les bords du monde sont fermés, les passages entre écrans se font face
 VL.ECRANS.forEach((ligne, ey) => ligne.forEach((E, ex) => {
+  if (!E) return;
   verif(E.l.length === VL.H, E.id + ' : ' + E.l.length + ' lignes');
   E.l.forEach((l, y) => verif(l.length === VL.W, E.id + ' ligne ' + y + ' : ' + l.length + ' cases'));
 }));
@@ -19,13 +20,17 @@ for (var y = 0; y < VL.HAUT; y++) {
 }
 for (var ex = 0; ex < VL.EW; ex++) for (var ey = 0; ey < VL.EH; ey++) {
   // passage à droite : la dernière colonne et la première de l'écran voisin, ligne 4
-  if (ex < VL.EW - 1) { var a = VL.tuile(ex * 11 + 10, ey * 9 + 4), b = VL.tuile(ex * 11 + 11, ey * 9 + 4); verif(marche(a) && marche(b), 'passage ' + ex + ',' + ey + ' → droite'); }
-  if (ey < VL.EH - 1) { var c = VL.tuile(ex * 11 + 5, ey * 9 + 8), d = VL.tuile(ex * 11 + 5, ey * 9 + 9); verif(marche(c) && marche(d), 'passage ' + ex + ',' + ey + ' → bas'); }
+  if (!VL.ECRANS[ey][ex]) continue;
+  if (ex < VL.EW - 1 && VL.ECRANS[ey][ex + 1]) { var a = VL.tuile(ex * 11 + 10, ey * 9 + 4), b = VL.tuile(ex * 11 + 11, ey * 9 + 4); verif(marche(a) && marche(b), 'passage ' + ex + ',' + ey + ' → droite'); }
+  if (ey < VL.EH - 1 && VL.ECRANS[ey + 1][ex]) { var c = VL.tuile(ex * 11 + 5, ey * 9 + 8), d = VL.tuile(ex * 11 + 5, ey * 9 + 9); verif(marche(c) && marche(d), 'passage ' + ex + ',' + ey + ' → bas'); }
 }
 // Pas d'autre ouverture que les passages prévus sur les bords d'écran
 for (var x2 = 0; x2 < VL.LARG; x2++) for (var y2 = 0; y2 < VL.HAUT; y2++) {
   var lx = x2 % 11, ly = y2 % 9, t = VL.tuile(x2, y2);
   if (!marche(t)) continue;
+  // Dans le quartier (il défile), les écrans se touchent sur toute leur hauteur ; seule son entrée à l'ouest compte
+  var dedans = VL.defile(x2, y2), voisin = lx === 0 ? VL.defile(x2 - 1, y2) : lx === 10 ? VL.defile(x2 + 1, y2) : false;
+  if (dedans && voisin) continue;
   if (lx === 0 || lx === 10) verif(ly === 4, 'ouverture imprévue en ' + x2 + ',' + y2);
   if (ly === 0 || ly === 8) verif(lx === 5, 'ouverture imprévue en ' + x2 + ',' + y2);
 }
@@ -56,6 +61,7 @@ function accessibles(pouvoir) {
   VL.CHAMPIGNONS.forEach(c => verif(r.vus[c.x + ',' + c.y] && VL.libre(VL.nouvelEtat(), c.x, c.y), 'champignon ' + c.id + ' injoignable'));
   // 3. Chaque écran a au moins une case accessible
   VL.ECRANS.forEach((l, ey) => l.forEach((E, ex) => {
+    if (!E) return;
     var n = Object.keys(r.vus).filter(k => { var p = k.split(','); return Math.floor(p[0] / 11) === ex && Math.floor(p[1] / 9) === ey; }).length;
     verif(n > 10, E.id + ' presque vide (' + n + ')');
   }));
@@ -227,6 +233,40 @@ VL.RECETTES.forEach(r => { verif(VL.LIEUX_FAB[r.ou], 'recette ' + r.id + ' : lie
 var e4 = VL.charger({ v: 1, sac: { bois: 999, pierre: -4, plante: 'x' }, besace: { soin: 50, poison: 3 }, outils: { hache: 1, epee: 1 }, recolte: { j: '2026-01-01', pris: { r0: 1, zz: 1 } } });
 verif(e4.sac.bois === VL.SAC_MAX && e4.sac.pierre === 0 && e4.sac.plante === 0, 'sac abîmé');
 verif(VL.besaceTotal(e4) === VL.BESACE_MAX && !e4.besace.poison && e4.outils.hache && !e4.outils.epee && !e4.recolte.pris.zz, 'besace et outils abîmés');
+
+// 8. Le quartier des amis (3.51) : 3 écrans qui défilent, 18 parcelles fixes
+verif(VL.ECRANS[1][3] && VL.ECRANS[1][3].id === 'quartier' && VL.ECRANS[1][5].id === 'quartier', 'quartier à l\'est de la clairière, sur 3 écrans');
+verif(VL.defile(3 * 11 + 5, 13) && VL.defile(5 * 11 + 5, 13) && !VL.defile(2 * 11 + 5, 13), 'le quartier défile, pas la clairière');
+verif(VL.tuile(3 * 11 + 5, 2) === null && VL.tuile(4 * 11 + 5, 20) === null, 'rien au nord et au sud du quartier');
+verif(VL.PARCELLES.length === 18, '18 parcelles');
+var acc0 = accessibles(null);
+VL.PARCELLES.forEach(P => verif(acc0.touche[P.x + ',' + (P.y + 1)], 'porte de la parcelle ' + P.p + ' injoignable'));
+var e5 = VL.nouvelEtat(), ctx5 = { pouvoir: null };
+var r5 = aller(e5, { x: VL.PARCELLES[16].x, y: VL.PARCELLES[16].y + 1 }, ctx5);
+verif(r5 && r5.action === 'parcelle' && r5.p === 16, 'on fonce dans une porte au bout du quartier : ' + JSON.stringify(r5));
+// La parcelle vient de l'identifiant : même place quel que soit l'ordre d'arrivée
+var amis = [];
+for (var i = 0; i < 25; i++) amis.push({ j: 'id' + (i * 7919) + 'xyz', pseudo: 'Ami ' + i, couleur: '#123456', cp: { e: 'chien' } });
+var pa = VL.placerVoisins({}, amis.slice(0, 5), 100).voisins, pb = VL.placerVoisins({}, amis.slice(0, 5).reverse(), 100).voisins;
+var sansCollision = amis.slice(0, 5).every(a => amis.slice(0, 5).filter(b => VL.parcelleDe(b.j) === VL.parcelleDe(a.j)).length === 1);
+if (sansCollision) verif(amis.slice(0, 5).every(a => pa[a.j].p === VL.parcelleDe(a.j) && pb[a.j].p === pa[a.j].p), 'même parcelle quel que soit l\'ordre');
+verif(!VL.placerVoisins({}, [{ j: 'sanscp1', pseudo: 'X', couleur: '#111111' }], 1).change, 'pas de maison sans compagnon');
+var pv2 = VL.placerVoisins(pa, amis.slice(0, 1), 200);
+verif(Object.keys(pa).every(j => pv2.voisins[j].p === pa[j].p), 'les parcelles restent');
+var pv3 = VL.placerVoisins(pv2.voisins, amis.slice(5, 18), 300);
+var places = Object.keys(pv3.voisins).map(j => pv3.voisins[j].p);
+verif(places.length === 18 && new Set(places).size === 18, 'quartier plein, une maison par parcelle');
+var pv4 = VL.placerVoisins(pv3.voisins, amis.slice(18, 19), 400);
+var parti = Object.keys(pv3.voisins).find(j => !pv4.voisins[j]);
+verif(pv4.voisins[amis[18].j] && parti && pv3.voisins[parti].vu === 100 && j0Garde(), 'le plus ancien absent laisse sa place');
+function j0Garde() { return pv4.voisins[amis[0].j]; }
+var pl = VL.parcelles(pv4.voisins, { [amis[0].j]: 1 });
+verif(pl.length === 18 && pl[pv4.voisins[amis[0].j].p].present && pl.filter(Boolean).length === 18, 'parcelles et présents');
+verif(Object.keys(VL.nettoyerVoisins({ ok12: { p: 2 }, zz: { p: 1 }, ok13: { p: 2 }, ok14: { p: 99 } })).join() === 'ok12', 'voisins abîmés');
+// Brouillard d'une sauvegarde d'avant le quartier (33 cases de large)
+var vieux = new Uint8Array(Math.ceil(33 * 27 / 4)), iv = 20 * 33 + 30; vieux[iv >> 2] |= 1 << (iv & 3);
+var e6 = VL.charger({ v: 1, x: 13, y: 12, vu: Array.from(vieux, v => v.toString(16)).join('') });
+verif(VL.estVu(e6, 30, 20) && !VL.estVu(e6, 30 + 11, 20) && e6.lv === VL.LARG, 'brouillard élargi');
 
 console.log(ok + ' vérifications réussies, ' + ko + ' échec(s)');
 process.exit(ko ? 1 : 0);

@@ -125,6 +125,7 @@ var SalonGlobal = (function () {
     ouvrir();
     setInterval(battement, 5000);
     setInterval(verifierOu, 2500);
+    setInterval(() => { if (maPos && Date.now() - posEnvoyee > 2900) position(maPos); }, 1000);   // la Vallée : ma position, même sans bouger
     document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') auRetour(); });
     window.addEventListener('online', auRetour);
     window.addEventListener('offline', () => rendre());
@@ -330,6 +331,22 @@ var SalonGlobal = (function () {
   function recevoirRelais(de, m) {
     var qui = (membres[de] && membres[de].pseudo) || 'Un ami';
     if (m.type === 'EMOTE') { signalerEmote(de, m.e); return; }
+    if (m.type === 'POS') { recevoirPosition(de, m.p); return; }
+    if (m.type === 'SALUT') {
+      toast('👋 ' + esc(qui) + ' te salue !');
+      try { if (navigator.vibrate && lire('brillant-vibration') !== false) navigator.vibrate([60, 60, 60]); } catch (e) {}
+      try { window.dispatchEvent(new CustomEvent('desdale-salut', { detail: { id: de, pseudo: qui } })); } catch (e) {}
+      return;
+    }
+    if (m.type === 'INVITE') {   // « Descendre ensemble » : un ami m'attend dans un salon du Donjon
+      var salon = String(m.salon || '').slice(0, 30);
+      if (!/^[a-z0-9-]+$/i.test(salon)) return;
+      var ev = new CustomEvent('desdale-invite', { cancelable: true, detail: { id: de, pseudo: qui, salon: salon } });
+      var pris = false;
+      try { pris = !window.dispatchEvent(ev); } catch (e) {}
+      if (!pris) toast('⚔️ ' + esc(qui) + ' t\'attend au Donjon (salon « ' + esc(salon) + ' »)');
+      return;
+    }
     if (m.type === 'MAISON?') {
       envoyerA(de, { type: 'MAISON', r: m.q, donnees: instantaneMaison() });
       if (lire('compagnon-animal')) toast('👀 ' + esc(qui) + ' visite ta maison');
@@ -609,6 +626,46 @@ var SalonGlobal = (function () {
     membresDuSalon().forEach(m => { if (!m.moi) envoyerA(m.id, { type: 'EMOTE', e: e }); });
     signalerEmote(monId(), e);
   }
+  // Une émotion pour quelques amis choisis (la Vallée : ceux qui sont sur le même écran que moi)
+  function emoteA(ids, e) {
+    (ids || []).forEach(id => { if (id !== monId()) envoyerA(id, { type: 'EMOTE', e: e }); });
+    signalerEmote(monId(), e);
+  }
+
+  // ================== LA VALLÉE : où sont les amis (3.51) ==================
+  // Chaque téléphone dans la Vallée envoie sa position (case x, y et sens) aux autres membres qui sont dans la Vallée,
+  // par l'hôte du salon global : quand elle change (au plus ~3 fois par seconde) et toutes les 3 s sinon.
+  var maPos = null, posEnvoyee = 0, posTimer = null, posAmis = {};
+  function dansVallee(m) { return m && m.ou && m.ou.jeu === 'vallee' && m.id !== monId(); }
+  function position(p) {
+    maPos = p ? { x: p.x | 0, y: p.y | 0, d: String(p.d || 'b').slice(0, 1) } : null;
+    if (posTimer) return;
+    var attente = Math.max(0, 320 - (Date.now() - posEnvoyee));
+    posTimer = setTimeout(() => {
+      posTimer = null; posEnvoyee = Date.now();
+      if (!maPos || !role) return;
+      listeMembres().filter(dansVallee).forEach(m => envoyerA(m.id, { type: 'POS', p: maPos }));
+    }, attente);
+  }
+  function recevoirPosition(de, p) {
+    if (!p || !membres[de]) return;
+    posAmis[de] = { x: p.x | 0, y: p.y | 0, d: String(p.d || 'b').slice(0, 1), t: Date.now() };
+    try { window.dispatchEvent(new CustomEvent('desdale-pos')); } catch (e) {}
+  }
+  // Les amis dans la Vallée dont on a une position récente
+  function positions() {
+    var l = [], t = Date.now();
+    listeMembres().filter(dansVallee).forEach(m => {
+      var p = posAmis[m.id];
+      if (p && t - p.t < 15000) l.push({ id: m.id, j: m.j, pseudo: m.pseudo, couleur: m.couleur, cp: m.cp, x: p.x, y: p.y, d: p.d });
+    });
+    return l;
+  }
+  // Tous les présents (sauf moi), où qu'ils soient : la Vallée leur donne une maison
+  function presents() { return listeMembres().filter(m => m.id !== monId()).map(m => ({ id: m.id, j: m.j, pseudo: m.pseudo, couleur: m.couleur, cp: m.cp, ou: m.ou })); }
+  function saluer(id) { envoyerA(id, { type: 'SALUT' }); }
+  function inviter(id, salon) { envoyerA(id, { type: 'INVITE', salon: salon }); }
+
   function signalerEmote(id, e) { try { window.dispatchEvent(new CustomEvent('desdale-emote', { detail: { id: id, e: +e || 0 } })); } catch (x) {} }
 
   function rendre(defiler) {
@@ -765,5 +822,5 @@ var SalonGlobal = (function () {
   if (script && script.dataset.jeu) demarrer(script.dataset.jeu);
 
   return { demarrer: demarrer, ouvrir: ouvrir_panneau, nonLus: () => { try { return nonLus(); } catch (e) { return 0; } }, estOuvert: () => ouvert, pret: () => !!role, membre: id => membres[id] || null, demander: demander, envoyerA: envoyerA,
-           membresDuSalon: membresDuSalon, emote: emote, reserverBas: reserverBas, dessinCompagnon: dessinCompagnon, _etat: () => ({ role: role, membres: membres, messages: messages, ou: ou() }) };
+           membresDuSalon: membresDuSalon, emote: emote, emoteA: emoteA, position: position, positions: positions, presents: presents, saluer: saluer, inviter: inviter, monId: monId, reserverBas: reserverBas, dessinCompagnon: dessinCompagnon, _etat: () => ({ role: role, membres: membres, messages: messages, ou: ou() }) };
 })();
