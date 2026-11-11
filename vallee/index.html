@@ -468,7 +468,7 @@
       <div class="fen-vl">
         <h2>{{ animal ? animal.nom + ' dit…' : 'Je dis…' }}</h2>
         <p style="margin:0;color:#6d5a44;font-size:0.9em">{{ amisIci.length ? 'Vu par ' + amisIci.map(a => a.pseudo).join(', ') + '.' : 'Personne sur cet écran pour l\'instant : seuls les amis qui sont ici le voient.' }}</p>
-        <div class="emotes-vl"><button v-for="(m, k) in EMOTES" :key="k" @click="envoyerEmote(k)"><span class="i">{{ m.ico }}</span><small>{{ m.txt }}</small></button></div>
+        <div class="emotes-vl"><button v-for="k in [10, 11, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9]" :key="k" @click="envoyerEmote(k)"><span class="i">{{ EMOTES[k].ico }}</span><small>{{ EMOTES[k].txt }}</small></button></div>
         <div class="boutons-vl"><button class="btn-vl" @click="fermer">Fermer</button></div>
       </div>
     </div>
@@ -534,7 +534,9 @@
     const EMOTES = [
       { ico: '👍', txt: 'Bien joué !' }, { ico: '😂', txt: 'Ha ha !' }, { ico: '😮', txt: 'Oh !' }, { ico: '😅', txt: 'Oups…' },
       { ico: '🤔', txt: 'Hmm…' }, { ico: '😤', txt: 'Grrr !' }, { ico: '🎉', txt: 'Bravo !' }, { ico: '❤️', txt: 'Merci !' },
-      { ico: '⏳', txt: 'À toi !' }, { ico: '😴', txt: 'Zzz…' }
+      { ico: '⏳', txt: 'À toi !' }, { ico: '😴', txt: 'Zzz…' },
+      // 3.52 (demandé par l'utilisateur : « au minimum un sourire sans les larmes ») : ajoutés à la fin, le numéro voyage sur le réseau
+      { ico: '😊', txt: 'Content !' }, { ico: '😉', txt: 'Hé hé !' }
     ];
     function dessinCp(c) {
       if (!c || !c.e) return '';
@@ -649,7 +651,7 @@
       },
       watch: {
         sonActif: function(v) { ecrireStockage('brillant-son', v); },
-        fenetre: function(f) { if (f) { this.dir = null; this._bloque = true; } this.achat = null; this.fabChoix = null; }
+        fenetre: function(f) { if (f) { this.dir = null; this._bloque = true; this._fenT = Date.now(); } this.achat = null; this.fabChoix = null; }
       },
       created: function() {
         // Une victoire au Donjon depuis la dernière visite (quête du gardien) : on le dit tout de suite
@@ -680,6 +682,14 @@
           this.lire({ ico: '⚔️', titre: d.pseudo + ' t\'attend au Donjon', texte: d.pseudo + ' descend dans la crypte et t\'invite à l\'accompagner (salon « ' + d.salon + ' »).',
             boutons: [{ t: '⚔️ Descendre avec ' + d.pseudo, principal: true, f: () => this.entrer('donjon/?salon=' + encodeURIComponent(d.salon)) }, { t: 'Plus tard', f: () => this.fermer() }] });
         });
+        // Une fenêtre qui s'ouvre sous le doigt (on a foncé dans un ami, un habitant…) n'accepte un toucher que s'il a COMMENCÉ après son ouverture
+        // (et 0,4 s après) : sinon le doigt qui quitte la croix « clique » un bouton tout seul (3.52, signalé par l'utilisateur)
+        document.addEventListener('pointerdown', () => { this._appuiT = Date.now(); }, true);
+        document.addEventListener('click', ev => {
+          if (!ev.target.closest || !ev.target.closest('.voile-vl')) return;
+          var t = this._fenT || 0;
+          if ((this._appuiT || 0) < t || Date.now() - t < 400) { ev.stopPropagation(); ev.preventDefault(); }
+        }, true);
         // Clavier : flèches
         var touches = { ArrowUp: 'h', ArrowDown: 'b', ArrowLeft: 'g', ArrowRight: 'd' };
         document.addEventListener('keydown', ev => { var d = touches[ev.key]; if (!d || this.fenetre) return; ev.preventDefault(); if (this.dir !== d) { this.dir = d; this.avancer(d); } });

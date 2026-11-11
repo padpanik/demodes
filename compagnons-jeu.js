@@ -9,8 +9,12 @@ var CompagnonsJeu = (function () {
   var EMOTES = [
     { ico: '👍', txt: 'Bien joué !' }, { ico: '😂', txt: 'Ha ha !' }, { ico: '😮', txt: 'Oh !' }, { ico: '😅', txt: 'Oups…' },
     { ico: '🤔', txt: 'Hmm…' }, { ico: '😤', txt: 'Grrr !' }, { ico: '🎉', txt: 'Bravo !' }, { ico: '❤️', txt: 'Merci !' },
-    { ico: '⏳', txt: 'À toi !' }, { ico: '😴', txt: 'Zzz…' }
+    { ico: '⏳', txt: 'À toi !' }, { ico: '😴', txt: 'Zzz…' },
+      // 3.52 (demandé par l'utilisateur : « au minimum un sourire sans les larmes ») : ajoutés à la fin, le numéro voyage sur le réseau
+      { ico: '😊', txt: 'Content !' }, { ico: '😉', txt: 'Hé hé !' }
   ];
+  // Ordre d'affichage du choix : les sourires en tête (le numéro envoyé reste celui de la liste)
+  var ORDRE = [10, 11, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
   var ATTENTE = 1500;   // pas plus d'une émotion toutes les 1,5 s
 
   // --t : taille d'un compagnon (calculée selon la place libre : largeur partagée entre les joueurs, hauteur jusqu'au bas de l'écran)
@@ -45,7 +49,7 @@ var CompagnonsJeu = (function () {
   if (typeof document !== 'undefined') { var s = document.createElement('style'); s.textContent = css; document.head.appendChild(s); }
 
   if (typeof Vue !== 'undefined') Vue.component('compagnons-jeu', {
-    data: function () { return { taille: 56, amis: [], choix: false, bulles: {}, vols: [], cpPret: typeof CP !== 'undefined', dernier: 0, EMOTES: EMOTES }; },
+    data: function () { return { taille: 56, amis: [], choix: false, bulles: {}, vols: [], cpPret: typeof CP !== 'undefined', dernier: 0, EMOTES: EMOTES, ORDRE: ORDRE }; },
     created: function () {
       this._maj = () => this.majAmis();
       this._emote = (ev) => this.montrer(ev.detail.id, ev.detail.e);
@@ -115,7 +119,7 @@ var CompagnonsJeu = (function () {
       '<div class="cpj" :style="{ \'--t\': taille + \'px\' }">' +
         '<div v-if="choix" class="cpj-fond" @click="choix = false"></div>' +
         '<div v-if="choix" class="cpj-choix">' +
-          '<button v-for="(e, k) in EMOTES" :key="k" @click="envoyer(k)"><span>{{ e.ico }}</span><small>{{ e.txt }}</small></button>' +
+          '<button v-for="k in ORDRE" :key="k" @click="envoyer(k)"><span>{{ EMOTES[k].ico }}</span><small>{{ EMOTES[k].txt }}</small></button>' +
         '</div>' +
         '<div v-for="m in amis" :key="m.id" class="cpj-ami" :class="{ moi: m.moi }">' +
           '<button class="cpj-des" @click="toucher(m)" :aria-label="m.moi ? \'Choisir une émotion\' : m.pseudo">' +
