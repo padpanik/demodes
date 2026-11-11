@@ -8,7 +8,7 @@
   <title>La Vallée de Désdale · Désdale</title>
   <meta name="robots" content="noindex, nofollow, noarchive">
   <link rel="manifest" href="manifest.webmanifest">
-  <meta name="theme-color" content="#2c4a34">
+  <meta name="theme-color" content="#17110d">
   <link rel="icon" type="image/png" href="favicon.png">
   <link rel="apple-touch-icon" href="apple-touch-icon.png">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -170,6 +170,53 @@
       .pad .h { left: 39px; } .pad .b { left: 39px; } .pad .g { top: 39px; } .pad .d { top: 39px; }
       .milieu-vl { font-size: 0.75em; }
     }
+    /* ================== Habillage façon Donjon (3.49, demandé par l'utilisateur : « la touche des donjons ne se retrouve pas ») :
+       bois sombre, or et parchemin, mêmes couleurs que le Donjon ================== */
+    body { background: #17110d; }
+    .vl { background: radial-gradient(ellipse at 50% 0%, #2c211a 0%, #17110d 70%); color: #f1e6d6; }
+    .fiche-vl { background: linear-gradient(#3a2c22, #261c15); border: 1px solid #5c4532; border-radius: 12px; box-shadow: inset 0 1px 0 rgba(255,255,255,0.06), 0 3px 8px rgba(0,0,0,0.4); }
+    .portrait-vl { background: radial-gradient(circle at 50% 35%, #6b4f36, #241a14); border: 2px solid #c9a66b; box-shadow: 0 0 0 2px #1b130e, 0 2px 6px rgba(0,0,0,0.5); }
+    .infos-vl .nom-vl { font-family: Georgia, 'Times New Roman', serif; color: #ffe8cc; }
+    .infos-vl .pouvoir-vl { font-family: system-ui, sans-serif; background: transparent; color: #e9c46a; padding: 0; }
+    .quete-vl { color: #f1e6d6; font-weight: 700; }
+    .quete-vl.rendre { color: #8ce99a; }
+    .etoiles-vl { background: #1b130e; border: 1px solid #5c4532; color: #ffd43b; }
+    .menu-vl { background: #3f3026; border: 1px solid #8d6a3f; color: #ffd8a8; box-shadow: 0 2px 0 #120c09; }
+    .menu-vl i { border-color: #261c15; }
+    .carte-vl { background: radial-gradient(circle, #241a14 1px, transparent 1.2px) 0 0 / 10px 10px, #17110d; border: 1px solid #5c4532; border-radius: 14px;
+                box-shadow: inset 0 0 24px rgba(0,0,0,0.65), 0 3px 8px rgba(0,0,0,0.4); }
+    .carte-vl svg { filter: drop-shadow(0 3px 6px rgba(0,0,0,0.6)); }
+    .carte-vl .titre-carte { background: rgba(28,20,15,0.92); color: #ffe8cc; border: 1px solid #8d6a3f; }
+    .carte-vl .rose { color: #c9a66b; }
+    .ecran-vl { border: 2px solid #4b3a2c; box-shadow: 0 6px 16px rgba(0,0,0,0.55), 0 0 0 1px #120c09; background: #2c211a; }
+    .lieu-vl { background: rgba(28,20,15,0.9); border-color: #8d6a3f; color: #ffe8cc; box-shadow: 0 4px 12px rgba(0,0,0,0.5); }
+    .lieu-vl small { color: #ffd43b; }
+    .pad { background: radial-gradient(circle at 50% 40%, #3f3026, #241a14); box-shadow: inset 0 3px 10px rgba(0,0,0,0.6), 0 0 0 2px #4b3a2c; }
+    .pad span { background: linear-gradient(#6b4f36, #4b3a2c); color: #ffd8a8; box-shadow: 0 3px 0 #120c09; }
+    .pad span.actif { background: linear-gradient(#e8590c, #b8541a); color: #fff; box-shadow: none; }
+    .milieu-vl { background: linear-gradient(#2e231b, #1f1712); border: 1px solid #4b3a2c; border-radius: 12px; padding: 6px 7px; color: #c9b8a6; box-shadow: inset 0 0 12px rgba(0,0,0,0.4); }
+    .milieu-vl .ici-vl { color: #ffe8cc; }
+    .milieu-vl .aide-vl { color: #a8957f; }
+    .annonces-vl div { background: rgba(28,20,15,0.92); color: #ffe8cc; border: 1px solid #8d6a3f; }
+    .petit-btn { background: #3a2c22; border: 1px solid #5c4532; color: #ffd8a8; }
+    .voile-vl { background: rgba(10,6,4,0.72); }
+    .fen-vl { background: linear-gradient(#fdf4e3, #ecd6b0); border: 3px solid #6b4f36; color: #3b2a1e; box-shadow: 0 0 0 2px #2a1f18, 0 12px 30px rgba(0,0,0,0.6); }
+    .fen-vl h2, .dial-tete b { color: #3b2a1e; }
+    .dial-tete .portrait { background: radial-gradient(circle at 50% 60%, #6b4f36, #241a14 75%); border: 2px solid #c9a66b; box-shadow: 0 0 0 2px #2a1f18; }
+    .dial-texte, .ligne-q, .article-vl { background: #fffaf0; border-color: #c9b08f; }
+    .dial-texte:before { border-bottom-color: #c9b08f; }
+    .btn-vl { background: #fff8ee; border: 1.5px solid #c9b08f; color: #3b2a1e; }
+    .btn-vl.principal { background: linear-gradient(#c2410c, #9a3412); border-color: #7c2d12; color: #fff; box-shadow: 0 3px 0 #5c1f0a; }
+    .btn-vl.vert { background: linear-gradient(#2f9e44, #237a34); border-color: #1b5e28; color: #fff; }
+    .btn-vl.rouge { background: #fff5f5; border-color: #e03131; color: #c92a2a; }
+    .avis-vl { background: #fffaf0; border-color: #8d6a3f; }
+    .article-vl .ico { background: radial-gradient(circle at 50% 40%, #4a3a1a, #241a0c); border: 1.5px solid #c9a66b; }
+    /* Lueurs des lanternes et des torches, qui vacillent (comme au Donjon) */
+    .vl-halo { animation: vl-halo 1.3s ease-in-out infinite alternate; }
+    @keyframes vl-halo { to { opacity: 0.6; } }
+    .vl-flamme { transform-box: fill-box; transform-origin: 50% 100%; animation: vl-flamme 0.8s ease-in-out infinite alternate; }
+    @keyframes vl-flamme { to { transform: scale(0.85, 1.12); } }
+    @media (prefers-reduced-motion: reduce) { .vl-halo, .vl-flamme { animation: none; } }
   </style>
 </head>
 <body class="vl-page">
@@ -454,7 +501,7 @@
         }, 1500);
         // Clavier : flèches
         var touches = { ArrowUp: 'h', ArrowDown: 'b', ArrowLeft: 'g', ArrowRight: 'd' };
-        document.addEventListener('keydown', ev => { var d = touches[ev.key]; if (!d || this.fenetre) return; ev.preventDefault(); if (this.dir !== d) { this.dir = d; this._dernierPas = 0; } });
+        document.addEventListener('keydown', ev => { var d = touches[ev.key]; if (!d || this.fenetre) return; ev.preventDefault(); if (this.dir !== d) { this.dir = d; this.avancer(d); } });
         document.addEventListener('keyup', ev => { if (touches[ev.key] === this.dir) this.dir = null; });
         // Plein écran du navigateur (comme au Donjon) : demandé au premier toucher
         document.addEventListener('pointerdown', () => { if (this.pleinEcran && !this._fsDemande) { this._fsDemande = true; this.pleinEcranNavigateur(); } }, true);
@@ -494,7 +541,7 @@
           var r = this._pad.getBoundingClientRect(), dx = ev.clientX - (r.left + r.width / 2), dy = ev.clientY - (r.top + r.height / 2);
           if (Math.hypot(dx, dy) < 14) return;
           var d = Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 'd' : 'g') : (dy > 0 ? 'b' : 'h');
-          if (d !== this.dir) { this.dir = d; this._dernierPas = 0; }
+          if (d !== this.dir) { this.dir = d; if (!this.fenetre && !this.sortie) this.avancer(d); }
         },
         padFin: function() { this._pad = null; this.dir = null; this._bloque = false; },
         avancer: function(d) {
