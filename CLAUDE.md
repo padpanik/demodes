@@ -206,7 +206,7 @@ Pas d'étape de construction, pas de dépendance à ajouter.
 en bas de l'accueil. `Sauvegarde.creer()` (commun.js) met dans un fichier JSON `desdale-sauvegarde-AAAA-MM-JJ.json` toutes nos clés
 (préfixes listés dans `NOTRES` : l'origine GitHub Pages est partagée avec d'autres sites), **sauf** `brillant-acces` (il faut retaper le code),
 `brillant-client-id` (propre au téléphone), `desdale-admin`, les parties en salon (`*-sauvegarde`, `*-prive`). « 📤 Envoyer le fichier… »
-(`navigator.share` avec fichier, si possible) ou « ⬇️ Télécharger » ; « 📥 Récupérer une sauvegarde… » : résumé (date, pseudo, compagnon, ⭐),
+(`navigator.share` avec fichier, si possible ; **partagé en `.txt` / `text/plain`** depuis 3.45 : signalé par l'utilisateur, le bouton ne faisait rien, Chrome sur Android refuse les `.json` en partage et l'erreur était avalée ; partage refusé autrement qu'en fermant le menu = téléchargement + message ; « Récupérer » accepte `.json` et `.txt`) ou « ⬇️ Télécharger » ; « 📥 Récupérer une sauvegarde… » : résumé (date, pseudo, compagnon, ⭐),
 confirmation, puis remplacement des données de ce téléphone (`Sauvegarde.restaurer`) et retour à l'accueil. Nouvelle clé = l'ajouter à `NOTRES` si son préfixe est nouveau.
 
 Communs : `brillant-acces`, `brillant-client-id` (ce téléphone), `desdale-joueur-id` (la personne, sauvegardée), `desdale-noms` (carnet id → pseudo), `brillant-son`, `brillant-vibration`, `brillant-voix`,

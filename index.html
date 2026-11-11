@@ -355,7 +355,7 @@
             <button class="btn" :class="{ principal: !peutEnvoyerFichier }" style="width:100%;margin-top:6px" @click="telechargerSauvegarde"><span v-html="icoTrait('telecharger')"></span>Télécharger le fichier</button>
             <div class="separateur-sv">Sur le nouveau téléphone</div>
             <label class="btn" style="width:100%;display:block;box-sizing:border-box"><span v-html="icoTrait('recuperer')"></span>Récupérer une sauvegarde…
-              <input type="file" accept=".json,application/json" style="display:none" @change="choisirFichier">
+              <input type="file" accept=".json,.txt,application/json,text/plain" style="display:none" @change="choisirFichier">
             </label>
             <div class="aide-partage ligne-ico" style="margin-top:10px"><span v-html="icoTrait('cadenas', 16)"></span><span>Le code d'accès n'est pas dans le fichier. Les parties en salon en cours ne sont pas sauvegardées.</span></div>
             <div class="erreur-sv" v-if="sauvegarde.erreur">{{ sauvegarde.erreur }}</div>
@@ -719,15 +719,23 @@
         // ---------- Sauvegarde (fichier) ----------
         ouvrirSauvegarde: function() {
           var s = Sauvegarde.creer();
-          try { this.peutEnvoyerFichier = !!(navigator.canShare && navigator.canShare({ files: [this.fichierSv(s)] })); } catch (e) { this.peutEnvoyerFichier = false; }
+          try { this.peutEnvoyerFichier = !!(navigator.share && navigator.canShare && navigator.canShare({ files: [this.fichierSv(s, true)] })); } catch (e) { this.peutEnvoyerFichier = false; }
           this.sauvegarde = { ici: Sauvegarde.resume(s), lue: null, brute: null, erreur: '' };
         },
-        fichierSv: function(s) {
-          return new File([JSON.stringify(s)], 'desdale-sauvegarde-' + s.date.slice(0, 10) + '.json', { type: 'application/json' });
+        // texte = true : fichier .txt pour le menu de partage (Chrome sur Android refuse les .json en partage)
+        fichierSv: function(s, texte) {
+          var nom = 'desdale-sauvegarde-' + s.date.slice(0, 10) + (texte ? '.txt' : '.json');
+          return new File([JSON.stringify(s)], nom, { type: texte ? 'text/plain' : 'application/json' });
         },
         envoyerSauvegarde: function() {
-          var f = this.fichierSv(Sauvegarde.creer());
-          navigator.share({ files: [f], title: 'Sauvegarde Désdale' }).catch(() => {});
+          var f = this.fichierSv(Sauvegarde.creer(), true);
+          this.sauvegarde.erreur = '';
+          navigator.share({ files: [f], title: 'Sauvegarde Désdale' }).catch(e => {
+            if (e && e.name === 'AbortError') return;   // menu fermé par le joueur
+            // Partage refusé par le téléphone : on télécharge le fichier à la place
+            this.telechargerSauvegarde();
+            if (this.sauvegarde) this.sauvegarde.erreur = 'Ce téléphone refuse d\'envoyer le fichier : il a été téléchargé à la place (dossier Téléchargements).';
+          });
         },
         telechargerSauvegarde: function() {
           var f = this.fichierSv(Sauvegarde.creer()), url = URL.createObjectURL(f), a = document.createElement('a');

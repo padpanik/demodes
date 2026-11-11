@@ -3,12 +3,13 @@
 // Les clés de stockage gardent l'ancien préfixe "brillant-" : les réglages déjà faits sont conservés.
 
 // Numéro de version affiché (à augmenter à chaque mise en ligne, avec brilliant/index.html et sw.js)
-const VERSION = '3.44';
+const VERSION = '3.45';
 
 // ---------- Nouveautés (2.87, demandé par l'utilisateur) ----------
 // Une ligne très brève par mise en ligne (la plus récente en haut) : l'accueil les montre une seule fois, dans une petite fenêtre,
 // à qui n'a pas encore vu cette version. [version, jeu ou partie de l'appli, ce qui change]
 const NOUVEAUTES = [
+  ['3.45', 'Ma sauvegarde', '« Envoyer le fichier… » fonctionne aussi sur Android (sinon, le fichier est téléchargé).'],
   ['3.44', 'Donjon', 'Monstres de la Grotte de glace redessinés, plus détaillés.'],
   ['3.43', 'Donjon', 'Nouveau lieu au 2e étage : la Grotte de glace ❄️ (une carte de ta main gèle à chaque tour, boss le Dragon de givre).'],
   ['3.42', 'Donjon', 'Nouveau lieu au 1er étage : la Rivière souterraine 🌊 (marée haute un tour sur deux, boss la Pieuvre). Les messages importants (coffre maudit, trouvailles…) restent à l\'écran jusqu\'à « OK ».'],
