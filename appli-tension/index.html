@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="theme-color" content="#1f5f8b">
+  <title>Relevé de tension</title>
+  <script>
+    // Ces fichiers sont aussi publiés dans le site de Désdale : on ne s'en sert que depuis l'adresse à part
+    if (location.pathname.indexOf('/appli-tension/') === 0) location.replace('https://tension.desdale.workers.dev/' + location.hash);
+  </script>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" type="image/png" href="icone-192.png">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Tension">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      background: #eef3f7; color: #1d2b36; font-size: 16px;
+      padding: 0 0 calc(24px + env(safe-area-inset-bottom));
+    }
+    header {
+      background: #1f5f8b; color: #fff; padding: calc(14px + env(safe-area-inset-top)) 16px 14px;
+    }
+    header h1 { margin: 0; font-size: 21px; }
+    header p { margin: 4px 0 0; font-size: 13.5px; opacity: .85; }
+    main { max-width: 560px; margin: 0 auto; padding: 12px; }
+
+    .resume {
+      background: #fff; border-radius: 14px; padding: 14px; margin-bottom: 14px;
+      box-shadow: 0 1px 4px rgba(0,0,0,.08);
+    }
+    .resume h2 { margin: 0 0 8px; font-size: 16px; color: #1f5f8b; }
+    .moy { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+    .moy .val { font-size: 40px; font-weight: 700; letter-spacing: -.5px; }
+    .moy .unite { font-size: 14px; color: #5b6b78; }
+    .moy .pouls { font-size: 15px; color: #5b6b78; }
+    .compte { font-size: 13.5px; color: #5b6b78; margin-top: 4px; }
+    .barre { height: 6px; border-radius: 3px; background: #dde6ee; margin-top: 8px; overflow: hidden; }
+    .barre i { display: block; height: 100%; background: #2e8b57; transition: width .3s; }
+    .sous { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px; }
+    .sous div { background: #f4f7fa; border-radius: 10px; padding: 8px 10px; font-size: 13px; color: #5b6b78; }
+    .sous b { display: block; font-size: 18px; color: #1d2b36; }
+    .repere { font-size: 12.5px; color: #5b6b78; margin-top: 10px; line-height: 1.4; }
+
+    .jour {
+      background: #fff; border-radius: 14px; margin-bottom: 14px; overflow: hidden;
+      box-shadow: 0 1px 4px rgba(0,0,0,.08);
+    }
+    .jour > h3 {
+      margin: 0; padding: 10px 14px; font-size: 16px; background: #dbe8f2; color: #1f5f8b;
+      display: flex; justify-content: space-between; align-items: baseline;
+    }
+    .jour > h3 small { font-weight: 400; font-size: 13px; color: #44596a; }
+    .seance { padding: 10px 14px 12px; }
+    .seance + .seance { border-top: 1px solid #e6edf3; }
+    .seance h4 {
+      margin: 0 0 6px; font-size: 14.5px; display: flex; justify-content: space-between; align-items: baseline;
+    }
+    .seance h4 small { font-weight: 400; color: #5b6b78; font-size: 13px; }
+    .entetes, .ligne {
+      display: grid; grid-template-columns: 22px 1fr 1fr 1fr 44px; gap: 6px; align-items: center;
+    }
+    .entetes { font-size: 11.5px; color: #6b7b88; text-align: center; margin-bottom: 2px; }
+    .ligne { margin-top: 6px; }
+    .ligne .n { font-size: 13px; color: #6b7b88; text-align: center; }
+    .ligne input {
+      width: 100%; min-width: 0; font-size: 18px; padding: 9px 4px; text-align: center;
+      border: 1.5px solid #c7d4df; border-radius: 9px; background: #fbfdfe; color: inherit;
+      -moz-appearance: textfield;
+    }
+    .ligne input::-webkit-outer-spin-button, .ligne input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+    .ligne input::placeholder { color: #c5cfd7; }
+    .ligne input:focus { outline: none; border-color: #1f5f8b; background: #fff; }
+    .ligne input.faux { border-color: #c0392b; background: #fdf0ee; }
+    .ligne.ok input { border-color: #8fc3a5; background: #f2faf5; }
+    .ligne .heure { font-size: 11.5px; color: #6b7b88; text-align: center; line-height: 1.2; }
+    .ligne .effacer {
+      border: 0; background: none; color: #a0aab3; font-size: 18px; padding: 6px 0; cursor: pointer;
+    }
+    .msg { font-size: 12.5px; color: #c0392b; margin-top: 4px; min-height: 0; }
+    .moy-seance { font-size: 13px; color: #44596a; margin-top: 8px; }
+
+    .actions { display: flex; flex-direction: column; gap: 10px; margin-top: 6px; }
+    button.gros {
+      font-size: 16px; padding: 13px; border-radius: 12px; border: 0; cursor: pointer; font-weight: 600;
+    }
+    .copier { background: #1f5f8b; color: #fff; }
+    .deux { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .secondaire { background: #fff; color: #1f5f8b; border: 1.5px solid #b8cfe0 !important; }
+    .titre-bloc { font-size: 13px; color: #5b6b78; margin: 8px 2px -2px; }
+
+    .installer {
+      display: none; align-items: center; gap: 12px; background: #fff; border-radius: 14px;
+      padding: 12px 14px; margin-bottom: 14px; box-shadow: 0 1px 4px rgba(0,0,0,.08);
+    }
+    .installer.vu { display: flex; }
+    .installer img { width: 44px; height: 44px; border-radius: 10px; flex: none; }
+    .installer div { flex: 1; font-size: 14px; line-height: 1.35; }
+    .installer b { display: block; font-size: 15px; }
+    .installer button {
+      flex: none; background: #1f5f8b; color: #fff; border: 0; border-radius: 10px;
+      padding: 10px 14px; font-size: 15px; font-weight: 600; cursor: pointer;
+    }
+    .installer .fermer { background: none; color: #a0aab3; padding: 6px; font-size: 20px; font-weight: 400; }
+    .fenetre ol { margin: 0 0 16px; padding-left: 22px; color: #44596a; line-height: 1.5; }
+    .zero { background: #fff; color: #c0392b; border: 1.5px solid #e3b4ae !important; }
+
+    .voile {
+      position: fixed; inset: 0; background: rgba(15,30,45,.55); display: none;
+      align-items: center; justify-content: center; padding: 20px; z-index: 10;
+    }
+    .voile.ouvert { display: flex; }
+    .fenetre { background: #fff; border-radius: 16px; padding: 18px; max-width: 360px; width: 100%; }
+    .fenetre h2 { margin: 0 0 8px; font-size: 18px; }
+    .fenetre p { margin: 0 0 16px; color: #44596a; line-height: 1.4; }
+    .fenetre .boutons { display: flex; gap: 10px; }
+    .fenetre .boutons button { flex: 1; }
+    .annuler { background: #e8eef3; color: #1d2b36; }
+    .confirmer { background: #c0392b; color: #fff; }
+    .toast {
+      position: fixed; left: 50%; bottom: calc(20px + env(safe-area-inset-bottom)); transform: translateX(-50%);
+      background: #1d2b36; color: #fff; padding: 10px 16px; border-radius: 10px; font-size: 14px;
+      opacity: 0; transition: opacity .25s; pointer-events: none;
+    }
+    .toast.vu { opacity: 1; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Relevé de tension</h1>
+    <p>3 mesures le matin, 3 le soir, pendant 3 jours</p>
+  </header>
+
+  <main>
+    <section class="installer" id="installer">
+      <img src="icone-192.png" alt="">
+      <div><b>Installer l'appli</b>Avec son icône sur l'écran d'accueil</div>
+      <button id="installerBtn">Installer</button>
+      <button class="fermer" id="installerFermer" aria-label="Masquer">✕</button>
+    </section>
+    <section class="resume" id="resume"></section>
+    <div id="jours"></div>
+    <div class="actions">
+      <button class="gros copier" id="copier">Envoyer le relevé (pour le médecin)</button>
+      <div class="titre-bloc">Changement de téléphone</div>
+      <div class="deux">
+        <button class="gros secondaire" id="exporter">⬇️ Sauvegarder</button>
+        <button class="gros secondaire" id="importer">📥 Récupérer</button>
+      </div>
+      <input type="file" id="fichier" accept=".json,application/json" hidden>
+      <button class="gros secondaire" id="installerBas" hidden>📲 Installer l'appli</button>
+      <button class="gros zero" id="zero">Tout remettre à zéro</button>
+    </div>
+  </main>
+
+  <div class="voile" id="voile">
+    <div class="fenetre">
+      <h2>Tout remettre à zéro ?</h2>
+      <p>Les <b id="nbEfface">0</b> relevés enregistrés seront effacés de ce téléphone. Impossible de revenir en arrière.</p>
+      <div class="boutons">
+        <button class="gros annuler" id="non">Annuler</button>
+        <button class="gros confirmer" id="oui">Effacer</button>
+      </div>
+    </div>
+  </div>
+  <div class="voile" id="voileImport">
+    <div class="fenetre">
+      <h2>Récupérer cette sauvegarde ?</h2>
+      <p id="texteImport"></p>
+      <div class="boutons">
+        <button class="gros annuler" id="nonImport">Annuler</button>
+        <button class="gros copier" id="ouiImport">Récupérer</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="voile" id="voileIos">
+    <div class="fenetre">
+      <h2>Installer sur iPhone</h2>
+      <ol>
+        <li>Ouvrir cette page dans <b>Safari</b>.</li>
+        <li>Toucher le bouton <b>Partager</b> (carré avec une flèche).</li>
+        <li>Choisir <b>Sur l'écran d'accueil</b>, puis <b>Ajouter</b>.</li>
+      </ol>
+      <div class="boutons"><button class="gros copier" id="okIos">Compris</button></div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    // Relevé de tension (automesure) : 3 jours × matin / soir × 3 mesures.
+    // Les relevés restent sur ce téléphone (localStorage), rien n'est envoyé.
+    const CLE = 'tension-releves';
+    const JOURS = 3, MESURES = 3;
+    const SEANCES = [['matin', 'Matin'], ['soir', 'Soir']];
+    const CHAMPS = ['sys', 'dia', 'pouls'];
+
+    function lire() {
+      try {
+        const d = JSON.parse(localStorage.getItem(CLE));
+        if (d && d.v === 1) return d;
+      } catch (e) {}
+      return { v: 1, m: {} };
+    }
+    let donnees = lire();
+
+    function ecrire() {
+      try { localStorage.setItem(CLE, JSON.stringify(donnees)); } catch (e) {}
+    }
+
+    function cle(j, s, n) {
+      return j + '-' + s + '-' + n;
+    }
+
+    // Mesure complète et plausible ?
+    function verifier(m) {
+      if (!m) return { ok: false, vide: true };
+      const vide = !m.sys && !m.dia && !m.pouls;
+      if (vide) return { ok: false, vide: true };
+      if (!m.sys || !m.dia) return { ok: false, msg: 'Il manque la systolique ou la diastolique.' };
+      if (m.sys < 60 || m.sys > 260) return { ok: false, msg: 'Systolique à vérifier (' + m.sys + ').', faux: 'sys' };
+      if (m.dia < 30 || m.dia > 160) return { ok: false, msg: 'Diastolique à vérifier (' + m.dia + ').', faux: 'dia' };
+      if (m.dia >= m.sys) return { ok: false, msg: 'La diastolique doit être plus petite que la systolique.', faux: 'dia' };
+      if (m.pouls && (m.pouls < 30 || m.pouls > 220)) return { ok: false, msg: 'Pouls à vérifier (' + m.pouls + ').', faux: 'pouls' };
+      return { ok: true };
+    }
+
+    function valides(filtre) {
+      const l = [];
+      Object.keys(donnees.m).forEach(k => {
+        const [j, s] = k.split('-');
+        if (filtre && !filtre(+j, s)) return;
+        const m = donnees.m[k];
+        if (verifier(m).ok) l.push(m);
+      });
+      return l;
+    }
+
+    function moyenne(l) {
+      if (!l.length) return null;
+      const r = { sys: 0, dia: 0, n: l.length };
+      let p = 0, np = 0;
+      l.forEach(m => {
+        r.sys += m.sys; r.dia += m.dia;
+        if (m.pouls) { p += m.pouls; np++; }
+      });
+      r.sys = Math.round(r.sys / l.length);
+      r.dia = Math.round(r.dia / l.length);
+      r.pouls = np ? Math.round(p / np) : null;
+      return r;
+    }
+
+    function texteMoy(r) {
+      return r ? r.sys + ' / ' + r.dia : '– / –';
+    }
+
+    function heure(t) {
+      const d = new Date(t);
+      return d.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' }) + '<br>' +
+        d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+    }
+
+    function dateJour(j) {
+      // Date de la première mesure du jour, s'il y en a une
+      let t = null;
+      SEANCES.forEach(([s]) => {
+        for (let n = 1; n <= MESURES; n++) {
+          const m = donnees.m[cle(j, s, n)];
+          if (m && m.t && (!t || m.t < t)) t = m.t;
+        }
+      });
+      return t ? new Date(t).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' }) : '';
+    }
+
+    // ---- Affichage ----
+    function construire() {
+      const conteneur = document.getElementById('jours');
+      let h = '';
+      for (let j = 1; j <= JOURS; j++) {
+        h += '<section class="jour"><h3>Jour ' + j + ' <small id="date-' + j + '"></small></h3>';
+        SEANCES.forEach(([s, nom]) => {
+          h += '<div class="seance"><h4>' + nom + ' <small id="ms-' + j + '-' + s + '"></small></h4>' +
+            '<div class="entetes"><span></span><span>Systolique</span><span>Diastolique</span><span>Pouls</span><span></span></div>';
+          for (let n = 1; n <= MESURES; n++) {
+            const k = cle(j, s, n);
+            h += '<div class="ligne" id="l-' + k + '"><span class="n">' + n + '</span>';
+            CHAMPS.forEach(c => {
+              h += '<input type="number" inputmode="numeric" pattern="[0-9]*" data-k="' + k + '" data-c="' + c + '" ' +
+                'placeholder="–" aria-label="' + c + ' ' + k + '">';
+            });
+            h += '<span class="heure" id="h-' + k + '"></span></div><div class="msg" id="e-' + k + '"></div>';
+          }
+          h += '</div>';
+        });
+        h += '</section>';
+      }
+      conteneur.innerHTML = h;
+
+      // Remplissage depuis la mémoire
+      conteneur.querySelectorAll('input').forEach(inp => {
+        const m = donnees.m[inp.dataset.k];
+        inp.value = m && m[inp.dataset.c] ? m[inp.dataset.c] : '';
+        inp.addEventListener('input', saisir);
+        inp.addEventListener('keydown', e => {
+          if (e.key === 'Enter') { e.preventDefault(); suivant(inp); }
+        });
+      });
+      Object.keys(donnees.m).forEach(majLigne);
+      majResume();
+    }
+
+    function suivant(inp) {
+      const tous = Array.from(document.querySelectorAll('#jours input'));
+      const i = tous.indexOf(inp);
+      if (tous[i + 1]) tous[i + 1].focus(); else inp.blur();
+    }
+
+    function saisir(e) {
+      const inp = e.target, k = inp.dataset.k, c = inp.dataset.c;
+      const v = parseInt(inp.value, 10);
+      const m = donnees.m[k] || {};
+      if (v > 0) m[c] = v; else delete m[c];
+      if (!m.sys && !m.dia && !m.pouls) {
+        delete donnees.m[k];
+      } else {
+        if (!m.t) m.t = Date.now(); // heure de la première saisie, gardée lors d'une correction
+        donnees.m[k] = m;
+      }
+      ecrire();
+      majLigne(k);
+      majResume();
+      // Passage automatique au champ suivant quand la valeur est complète
+      const lg = inp.value.length;
+      if ((c === 'sys' && lg >= 3) || (c !== 'sys' && lg >= 2 && v >= 40)) {
+        if (c !== 'sys' || v >= 60) suivant(inp);
+      }
+    }
+
+    function majLigne(k) {
+      const ligne = document.getElementById('l-' + k);
+      if (!ligne) return;
+      const m = donnees.m[k];
+      const r = verifier(m);
+      ligne.classList.toggle('ok', r.ok);
+      ligne.querySelectorAll('input').forEach(inp => {
+        inp.classList.toggle('faux', !!r.faux && r.faux === inp.dataset.c);
+      });
+      document.getElementById('h-' + k).innerHTML = m && m.t ? heure(m.t) : '';
+      // Message seulement quand la saisie de la ligne semble terminée
+      const actif = document.activeElement && document.activeElement.dataset && document.activeElement.dataset.k === k;
+      document.getElementById('e-' + k).textContent = (!r.ok && !r.vide && (!actif || r.faux)) ? r.msg : '';
+    }
+
+    function majResume() {
+      const tout = moyenne(valides());
+      const matin = moyenne(valides((j, s) => s === 'matin'));
+      const soir = moyenne(valides((j, s) => s === 'soir'));
+      const total = JOURS * SEANCES.length * MESURES;
+      const n = tout ? tout.n : 0;
+
+      document.getElementById('resume').innerHTML =
+        '<h2>Moyenne de tous les relevés</h2>' +
+        '<div class="moy"><span class="val">' + texteMoy(tout) + '</span><span class="unite">mmHg</span>' +
+        (tout && tout.pouls ? '<span class="pouls">pouls ' + tout.pouls + '</span>' : '') + '</div>' +
+        '<div class="compte">' + n + ' relevé' + (n > 1 ? 's' : '') + ' sur ' + total +
+        (n === total ? ' : série complète ✓' : '') + '</div>' +
+        '<div class="barre"><i style="width:' + Math.round(100 * n / total) + '%"></i></div>' +
+        '<div class="sous"><div>Matins<b>' + texteMoy(matin) + '</b></div><div>Soirs<b>' + texteMoy(soir) + '</b></div></div>' +
+        '<div class="repere">Repère courant en automesure : moyenne sous 135 / 85. Le résultat est à interpréter par votre médecin.</div>';
+
+      for (let j = 1; j <= JOURS; j++) {
+        document.getElementById('date-' + j).textContent = dateJour(j);
+        SEANCES.forEach(([s]) => {
+          const r = moyenne(valides((jj, ss) => jj === j && ss === s));
+          document.getElementById('ms-' + j + '-' + s).textContent = r ? 'moy. ' + texteMoy(r) : '';
+        });
+      }
+    }
+
+    // ---- Copier le relevé ----
+    function texteReleve() {
+      const lignes = ['Relevé de tension (automesure)'];
+      for (let j = 1; j <= JOURS; j++) {
+        lignes.push('', 'Jour ' + j + (dateJour(j) ? ' (' + dateJour(j) + ')' : ''));
+        SEANCES.forEach(([s, nom]) => {
+          const l = [];
+          for (let n = 1; n <= MESURES; n++) {
+            const m = donnees.m[cle(j, s, n)];
+            if (verifier(m).ok) l.push(m.sys + '/' + m.dia + (m.pouls ? ' (' + m.pouls + ')' : ''));
+          }
+          lignes.push('  ' + nom + ' : ' + (l.length ? l.join(' ; ') : '–'));
+        });
+      }
+      const tout = moyenne(valides());
+      lignes.push('', 'Moyenne : ' + texteMoy(tout) + ' mmHg' + (tout && tout.pouls ? ', pouls ' + tout.pouls : '') +
+        ' (' + (tout ? tout.n : 0) + ' relevés)');
+      return lignes.join('\n');
+    }
+
+    function toast(t) {
+      const el = document.getElementById('toast');
+      el.textContent = t;
+      el.classList.add('vu');
+      clearTimeout(toast._t);
+      toast._t = setTimeout(() => el.classList.remove('vu'), 2200);
+    }
+
+    document.getElementById('copier').addEventListener('click', () => {
+      const t = texteReleve();
+      if (navigator.share) {
+        navigator.share({ title: 'Relevé de tension', text: t }).catch(() => {});
+        return;
+      }
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(t).then(() => toast('Relevé copié'), () => toast('Copie impossible'));
+      } else {
+        toast('Copie impossible sur ce navigateur');
+      }
+    });
+
+    // ---- Remise à zéro avec confirmation ----
+    const voile = document.getElementById('voile');
+    document.getElementById('zero').addEventListener('click', () => {
+      const n = Object.keys(donnees.m).length;
+      if (!n) { toast('Aucun relevé à effacer'); return; }
+      document.getElementById('nbEfface').textContent = n;
+      voile.classList.add('ouvert');
+    });
+    document.getElementById('non').addEventListener('click', () => voile.classList.remove('ouvert'));
+    voile.addEventListener('click', e => { if (e.target === voile) voile.classList.remove('ouvert'); });
+    document.getElementById('oui').addEventListener('click', () => {
+      donnees = { v: 1, m: {} };
+      ecrire();
+      voile.classList.remove('ouvert');
+      construire();
+      window.scrollTo(0, 0);
+      toast('Relevés effacés');
+    });
+
+    // ---- Sauvegarde dans un fichier (changement de téléphone) ----
+    function aujourdhui() {
+      const d = new Date();
+      return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+    }
+
+    document.getElementById('exporter').addEventListener('click', async () => {
+      const n = Object.keys(donnees.m).length;
+      if (!n) { toast('Aucun relevé à sauvegarder'); return; }
+      const nom = 'tension-releves-' + aujourdhui() + '.json';
+      const contenu = JSON.stringify({ appli: 'releve-tension', date: Date.now(), donnees: donnees }, null, 1);
+      const fichier = new File([contenu], nom, { type: 'application/json' });
+      // Sur téléphone : menu de partage (mail, messagerie, Drive…) ; sinon téléchargement
+      if (navigator.canShare && navigator.canShare({ files: [fichier] })) {
+        try {
+          await navigator.share({ files: [fichier], title: 'Sauvegarde du relevé de tension' });
+          return;
+        } catch (e) {
+          if (e && e.name === 'AbortError') return;
+        }
+      }
+      const url = URL.createObjectURL(fichier);
+      const a = document.createElement('a');
+      a.href = url; a.download = nom;
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 2000);
+      toast('Fichier enregistré : ' + nom);
+    });
+
+    // Lecture d'un fichier de sauvegarde : on ne garde que des relevés bien formés
+    function lireSauvegarde(texte) {
+      const j = JSON.parse(texte);
+      const d = j && j.donnees;
+      if (!j || j.appli !== 'releve-tension' || !d || d.v !== 1 || typeof d.m !== 'object') return null;
+      const m = {};
+      Object.keys(d.m).forEach(k => {
+        const r = /^([1-3])-(matin|soir)-([1-3])$/.exec(k);
+        const v = d.m[k];
+        if (!r || !v || typeof v !== 'object') return;
+        const propre = {};
+        CHAMPS.forEach(c => {
+          const x = parseInt(v[c], 10);
+          if (x > 0 && x < 400) propre[c] = x;
+        });
+        if (typeof v.t === 'number') propre.t = v.t;
+        if (propre.sys || propre.dia || propre.pouls) m[k] = propre;
+      });
+      return { v: 1, m: m, date: j.date };
+    }
+
+    let aImporter = null;
+    const voileImport = document.getElementById('voileImport');
+    document.getElementById('importer').addEventListener('click', () => document.getElementById('fichier').click());
+    function proposerImport(texte, origine) {
+      let d = null;
+      try { d = lireSauvegarde(texte); } catch (err) {}
+      if (!d) { toast(origine === 'lien' ? 'Lien de déménagement illisible' : "Ce fichier n'est pas une sauvegarde du relevé"); return; }
+      aImporter = d;
+      const n = Object.keys(d.m).length;
+      const quand = d.date ? ' du ' + new Date(d.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }) : '';
+      const ici = Object.keys(donnees.m).length;
+      document.getElementById('texteImport').innerHTML = 'Sauvegarde' + quand + ' : <b>' + n + '</b> relevé' + (n > 1 ? 's' : '') + '.' +
+        (ici ? '<br>Elle remplacera les <b>' + ici + '</b> relevé' + (ici > 1 ? 's' : '') + ' de ce téléphone.' : '');
+      voileImport.classList.add('ouvert');
+    }
+    document.getElementById('fichier').addEventListener('change', e => {
+      const f = e.target.files && e.target.files[0];
+      e.target.value = '';
+      if (!f) return;
+      const lecteur = new FileReader();
+      lecteur.onload = () => proposerImport(lecteur.result, 'fichier');
+      lecteur.readAsText(f);
+    });
+
+    // Déménagement depuis l'ancienne adresse : relevés passés dans #import=… (jamais envoyés au serveur)
+    if (location.hash.indexOf('#import=') === 0) {
+      let texte = '';
+      try { texte = decodeURIComponent(escape(atob(decodeURIComponent(location.hash.slice(8))))); } catch (e) {}
+      history.replaceState(null, '', location.pathname + location.search);
+      if (texte) setTimeout(() => proposerImport(texte, 'lien'), 0); else toast('Lien de déménagement illisible');
+    }
+    document.getElementById('nonImport').addEventListener('click', () => { aImporter = null; voileImport.classList.remove('ouvert'); });
+    voileImport.addEventListener('click', e => { if (e.target === voileImport) { aImporter = null; voileImport.classList.remove('ouvert'); } });
+    document.getElementById('ouiImport').addEventListener('click', () => {
+      if (!aImporter) return;
+      donnees = { v: 1, m: aImporter.m };
+      aImporter = null;
+      ecrire();
+      voileImport.classList.remove('ouvert');
+      construire();
+      window.scrollTo(0, 0);
+      toast('Relevés récupérés');
+    });
+
+    // ---- Installation sur l'écran d'accueil ----
+    const CLE_INSTALL = 'tension-installer-masque';
+    const installer = document.getElementById('installer');
+    const dejaInstallee = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+    const ios = /iphone|ipad|ipod/i.test(navigator.userAgent) ||
+      (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    let invite = null;
+    function masque() {
+      try { return localStorage.getItem(CLE_INSTALL) === '1'; } catch (e) { return false; }
+    }
+    // Carte en haut (masquable) + bouton en bas (toujours là tant que l'appli n'est pas installée)
+    function montrerInstaller() {
+      if (dejaInstallee) return;
+      document.getElementById('installerBas').hidden = false;
+      if (!masque()) installer.classList.add('vu');
+    }
+    window.addEventListener('beforeinstallprompt', e => {
+      e.preventDefault();
+      invite = e;
+      montrerInstaller();
+    });
+    window.addEventListener('appinstalled', () => {
+      installer.classList.remove('vu');
+      document.getElementById('installerBas').hidden = true;
+      toast('Appli installée');
+    });
+    if (ios) montrerInstaller();
+    async function installerAppli() {
+      if (invite) {
+        invite.prompt();
+        const r = await invite.userChoice.catch(() => null);
+        if (r && r.outcome === 'accepted') installer.classList.remove('vu');
+        invite = null;
+      } else {
+        document.getElementById('voileIos').classList.add('ouvert');
+      }
+    }
+    document.getElementById('installerBtn').addEventListener('click', installerAppli);
+    document.getElementById('installerBas').addEventListener('click', installerAppli);
+    document.getElementById('okIos').addEventListener('click', () => document.getElementById('voileIos').classList.remove('ouvert'));
+    document.getElementById('installerFermer').addEventListener('click', () => {
+      installer.classList.remove('vu');
+      try { localStorage.setItem(CLE_INSTALL, '1'); } catch (e) {}
+    });
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js', { scope: './' }).catch(() => {});
+    }
+
+    // Sortie d'un champ : afficher l'éventuel message de la ligne
+    document.addEventListener('focusout', e => {
+      if (e.target.dataset && e.target.dataset.k) setTimeout(() => majLigne(e.target.dataset.k), 0);
+    });
+
+    construire();
+  </script>
+</body>
+</html>

@@ -9,3 +9,5 @@
   Cache-Control: no-cache
 /tension/sw.js
   Cache-Control: no-cache
+/appli-tension/sw.js
+  Cache-Control: no-cache
