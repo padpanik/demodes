@@ -3,12 +3,13 @@
 // Les clés de stockage gardent l'ancien préfixe "brillant-" : les réglages déjà faits sont conservés.
 
 // Numéro de version affiché (à augmenter à chaque mise en ligne, avec brilliant/index.html et sw.js)
-const VERSION = '3.52';
+const VERSION = '3.53';
 
 // ---------- Nouveautés (2.87, demandé par l'utilisateur) ----------
 // Une ligne très brève par mise en ligne (la plus récente en haut) : l'accueil les montre une seule fois, dans une petite fenêtre,
 // à qui n'a pas encore vu cette version. [version, jeu ou partie de l'appli, ce qui change]
 const NOUVEAUTES = [
+  ['3.53', 'La Vallée', 'Un marais au bout du bosquet : Bruno répare sa passerelle, Rainette la passeuse attend tes lucioles, et un coffre dort sur l\'îlot.'],
   ['3.52', 'La Vallée', 'En fonçant dans un ami, le menu ne se choisit plus tout seul ; deux sourires de plus dans les émotions.'],
   ['3.51', 'La Vallée', 'Tes amis connectés apparaissent dans la Vallée : salue-les, visite leur maison dans le nouveau quartier, descendez ensemble au Donjon.'],
   ['3.50', 'La Vallée', 'Récolte du bois, des pierres, des plantes et des cristaux ; fabrique de la déco, des fioles pour le Donjon et des outils (quête de Bruno).'],

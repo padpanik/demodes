@@ -682,7 +682,7 @@
           var a = lireStockage('compagnon-animal'), sv = lireStockage('vallee-etat'), r = { vive: true };
           r.scene = VLD.sceneAccueil(a && typeof CP !== 'undefined' ? CP.dessin(a, 'content', false) : '');
           if (!sv) { r.pastille = 'Nouveau · Entrer ›'; return r; }
-          var e = VL.charger(sv), q = VL.queteSuivie(e), dispo = VL.ORDRE_QUETES.filter(id => VL.etatQuete(e, id) === 'dispo').length;
+          var e = VL.charger(sv), q = VL.queteSuivie(e), dispo = VL.ORDRE_QUETES.filter(id => VL.prenable(e, id)).length;
           if (q) r.pastille = VL.QUETES[q].ico + ' ' + VL.consigne(e, q);
           else if (dispo) r.pastille = dispo + ' quête' + (dispo > 1 ? 's' : '') + ' à prendre ›';
           else { r.pastille = 'Entrer ›'; r.vive = false; }

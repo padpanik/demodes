@@ -17,6 +17,8 @@ var VL = (function () {
   // T  arbre   S  sapin    b  buisson  h  haie   o  souche   ~  eau   x  bâtiment (dessiné à part)
   // m  étal du marchand    Q  tableau de quêtes   F  fontaine   c  coffre   e  établi (3.50, devant ma maison)
   // r  ronces (🔥)   R  rocher (💪)   v  trou (🦘)   s  passage secret (👃) : le pouvoir du compagnon les ouvre
+  // Le marais (3.53) : y  roseaux   -  ponton (on le traverse de gauche à droite)   p  pierres de gué   C  coffre du marais
+  //                    P  la passerelle cassée : on y marche une fois réparée par Bruno (quête « La passerelle du marais »)
   var ECRANS = [
     [ { id: 'sapins', nom: 'Bois des sapins', ico: '🌲', l: [
         'SSSSSSSSSSS',
@@ -134,15 +136,47 @@ var VL = (function () {
         'TTTTT:TTTTT',
         'T,...:..b.T',
         'T....:....T',
-        'T.b.::::..T',
-        '::::::TrT.T',
+        'T.b.::::::T',
+        '::::::TrT::',
         'T,....vcs.T',
         'T..,..TRT.T',
         'T.b.......T',
-        'TTTTTTTTTTT'] }, null, null, null ]
+        'TTTTTTTTTTT'] },
+      // Le marais (3.53, demandé par l'utilisateur : « une nouvelle zone, soigne le design ») : 3 écrans au sud-est, après le bosquet,
+      // derrière une passerelle cassée que Bruno répare. Eau trouble, roseaux, pontons, lucioles et brume.
+      { id: 'marais1', nom: 'L\'orée du marais', ico: '🪵', zone: 'marais', l: [
+        'TTTTTTTTTTT',
+        'Ty~~~y.,.yT',
+        'T~~~~..xx.T',
+        'T~~~~..xx.T',
+        ':PPPP::::::',
+        'T~~~~.....T',
+        'Ty~~~y.,o.T',
+        'TTy~~yy..TT',
+        'TTTTTTTTTTT'] },
+      { id: 'marais2', nom: 'Les roselières', ico: '🐸', zone: 'marais', l: [
+        'TTTTTTTTTTT',
+        'Ty.~~~~y..T',
+        'T..~~~~~,.T',
+        'T.~~~..~~.T',
+        '::---::--::',
+        'T~~~~=~~~~T',
+        'T~~y...y~~T',
+        'Ty~~.,.~~yT',
+        'TTTTTTTTTTT'] },
+      { id: 'marais3', nom: 'Le vieux saule', ico: '🌿', zone: 'marais', l: [
+        'TTTTTTTTTTT',
+        'Ty.xx.~~~yT',
+        'T..xx.~~~~T',
+        'T.,..y~~~~T',
+        '::::::pp.CT',
+        'T..,.y~~~~T',
+        'Ty.o..~~~yT',
+        'TTy..,.~yTT',
+        'TTTTTTTTTTT'] } ]
   ];
 
-  var MARCHE = { '.': 1, ',': 1, ':': 1, '=': 1 };
+  var MARCHE = { '.': 1, ',': 1, ':': 1, '=': 1, '-': 1, p: 1 };
   var OBSTACLES = { r: 'ronces', R: 'force', v: 'bond', s: 'flair' };
   var POUVOIRS = {
     ronces: { nom: 'Débroussailler', ico: '🔥', obstacle: 'des ronces', fait: 'brûle les ronces' },
@@ -163,7 +197,9 @@ var VL = (function () {
     Object.assign({ type: 'forge', w: 2, h: 2 }, g(1, 1, 8, 5)),
     Object.assign({ type: 'crypte', w: 3, h: 2 }, g(1, 0, 4, 0)),
     Object.assign({ type: 'cabane', w: 2, h: 2 }, g(2, 0, 6, 1)),
-    Object.assign({ type: 'chene', w: 2, h: 2 }, g(0, 2, 3, 2))
+    Object.assign({ type: 'chene', w: 2, h: 2 }, g(0, 2, 3, 2)),
+    Object.assign({ type: 'rainette', w: 2, h: 2 }, g(3, 2, 7, 2)),
+    Object.assign({ type: 'saule', w: 2, h: 2 }, g(5, 2, 3, 1))
   ];
   // Les parcelles du quartier : 3 maisons par écran en haut de la rue, 3 en bas (porte en bas de chaque maison), sur 3 écrans
   var NB_PARCELLES = 18;
@@ -188,6 +224,9 @@ var VL = (function () {
   [[3, 2], [4, 2], [3, 3], [4, 3]].forEach(c => action(g(0, 2, c[0], c[1]), { id: 'chene' }));
   action(g(2, 2, 7, 5), { id: 'coffre' });
   action(g(1, 1, 4, 1), { id: 'etabli' });
+  [7, 8].forEach(x => action(g(3, 2, x, 3), { id: 'rainette' }));
+  [3, 4].forEach(x => action(g(5, 2, x, 2), { id: 'saule' }));
+  action(g(5, 2, 9, 4), { id: 'coffreM' });
   PARCELLES.forEach(P => { action({ x: P.x, y: P.y + 1 }, { id: 'parcelle', p: P.p }); action({ x: P.x + 1, y: P.y + 1 }, { id: 'parcelle', p: P.p }); });
 
   // ---------- Les habitants ----------
@@ -196,12 +235,17 @@ var VL = (function () {
     sauge: Object.assign({ nom: 'Mme Sauge', titre: 'l\'herboriste', espece: 'herisson', ico: '🦔' }, g(1, 1, 3, 6)),
     bruno: Object.assign({ nom: 'Bruno', titre: 'le forgeron', espece: 'ours', ico: '🐻' }, g(1, 1, 7, 6)),
     tortue: Object.assign({ nom: 'Papi Tortue', titre: 'l\'ermite', espece: 'tortue', ico: '🐢' }, g(2, 0, 8, 2)),
-    pipa: Object.assign({ nom: 'Pipa', titre: 'la marchande', espece: 'chat', ico: '🐱', etal: true }, g(1, 1, 7, 1))
+    pipa: Object.assign({ nom: 'Pipa', titre: 'la marchande', espece: 'chat', ico: '🐱', etal: true }, g(1, 1, 7, 1)),
+    rainette: Object.assign({ nom: 'Rainette', titre: 'la passeuse du marais', espece: 'grenouille', ico: '🐸' }, g(3, 2, 6, 3))
   };
   // Les champignons de Mme Sauge (on en garde 5 ; ils n'apparaissent que pendant la quête)
   var CHAMPIGNONS = [
     g(0, 0, 2, 2), g(0, 0, 8, 6), g(0, 1, 8, 3), g(0, 1, 2, 6), g(2, 1, 2, 2), g(2, 1, 7, 6), g(2, 1, 2, 5), g(0, 2, 6, 2), g(1, 2, 8, 6)
   ].map((p, k) => Object.assign({ id: 'ch' + k }, p));
+  // Les lucioles du marais, pour la lanterne de Rainette (on en attrape 5 ; elles ne brillent que pendant la quête)
+  var LUCIOLES = [
+    g(3, 2, 6, 6), g(3, 2, 9, 2), g(4, 2, 2, 1), g(4, 2, 6, 7), g(4, 2, 9, 3), g(5, 2, 2, 1), g(5, 2, 4, 6), g(5, 2, 8, 4)
+  ].map((p, k) => Object.assign({ id: 'lu' + k }, p));
 
   // ---------- Les quêtes ----------
   var QUETES = {
@@ -214,9 +258,14 @@ var VL = (function () {
     gardien: { nom: 'Le gardien de la crypte', ico: '⚔️', qui: 'tableau', recompense: { deco: 'val-banniere' },
                resume: 'Descendre dans la crypte et vaincre le boss du premier étage du Donjon.' },
     atelier: { nom: 'L\'établi de Bruno', ico: '🪵', qui: 'bruno', recompense: { etoiles: 3, atelier: true }, but: { bois: 3, pierre: 3 },
-               resume: 'Rapporter 3 bois et 3 pierres à Bruno, le forgeron.' }
+               resume: 'Rapporter 3 bois et 3 pierres à Bruno, le forgeron.' },
+    // Le marais (3.53) : la passerelle ouvre la zone, puis Rainette, la passeuse, a besoin de lucioles
+    passerelle: { nom: 'La passerelle du marais', ico: '🛶', qui: 'bruno', apres: 'atelier', recompense: { etoiles: 3, passerelle: true }, but: { bois: 8, pierre: 4 },
+                  resume: 'Rapporter 8 bois et 4 pierres à Bruno pour réparer la passerelle du marais, à l\'est du bosquet.' },
+    lucioles: { nom: 'La lanterne de Rainette', ico: '✨', qui: 'rainette', apres: 'passerelle', but: 5, recompense: { deco: 'val-lucioles', etoiles: 3 },
+                resume: 'Attraper 5 lucioles dans le marais pour rallumer la lanterne de Rainette.' }
   };
-  var ORDRE_QUETES = ['lettre', 'atelier', 'herbes', 'cle', 'gardien'];
+  var ORDRE_QUETES = ['lettre', 'atelier', 'herbes', 'cle', 'passerelle', 'lucioles', 'gardien'];
   // Déco de la Vallée (articles « souvenir: 'vallee' » de compagnon-commun.js) : vendue par Pipa, ou offerte par une quête
   var VENTE = [{ id: 'val-champi', prix: 15 }, { id: 'val-hibou', prix: 20 }, { id: 'val-carte', prix: 25 }];
 
@@ -236,7 +285,9 @@ var VL = (function () {
     [0, 0, 2, 1, 'bois'], [0, 0, 8, 2, 'bois'], [0, 0, 5, 6, 'bois'], [2, 1, 2, 1, 'bois'], [2, 1, 8, 5, 'bois'], [0, 2, 7, 3, 'bois'], [0, 2, 7, 7, 'bois'], [2, 0, 2, 6, 'bois'],
     [0, 1, 1, 1, 'pierre'], [0, 1, 7, 3, 'pierre'], [0, 1, 3, 5, 'pierre'], [1, 0, 2, 2, 'pierre'], [1, 0, 7, 5, 'pierre'], [1, 0, 8, 2, 'pierre'], [2, 0, 8, 5, 'pierre'],
     [1, 2, 1, 1, 'plante'], [1, 2, 7, 3, 'plante'], [1, 2, 4, 5, 'plante'], [1, 2, 9, 5, 'plante'], [2, 1, 2, 3, 'plante'], [0, 2, 2, 5, 'plante'], [0, 1, 8, 5, 'plante'], [2, 2, 2, 2, 'plante'],
-    [2, 0, 9, 3, 'cristal'], [2, 2, 1, 7, 'cristal'], [1, 0, 1, 2, 'cristal', true], [2, 2, 9, 2, 'cristal', true]
+    [2, 0, 9, 3, 'cristal'], [2, 2, 1, 7, 'cristal'], [1, 0, 1, 2, 'cristal', true], [2, 2, 9, 2, 'cristal', true],
+    // Le marais (3.53) : bois flotté, joncs, galets et un cristal sur la berge du vieux saule
+    [3, 2, 8, 1, 'bois'], [3, 2, 9, 6, 'plante'], [4, 2, 9, 1, 'plante'], [4, 2, 4, 6, 'bois'], [5, 2, 4, 5, 'pierre'], [5, 2, 5, 7, 'plante'], [5, 2, 1, 3, 'cristal']
   ].map((r, k) => Object.assign({ id: 'r' + k, res: r[4], filon: !!r[5] }, g(r[0], r[1], r[2], r[3])));
   var OUTILS = {
     hache: { nom: 'Hache', ico: '🪓', texte: '+1 bois à chaque récolte' },
@@ -293,11 +344,13 @@ var VL = (function () {
     return null;
   }
   function ouvert(e, x, y) { return !!(e.ouverts && e.ouverts[x + ',' + y]); }
+  function passerelleOk(e) { return !!(e.quetes && e.quetes.passerelle && e.quetes.passerelle.etat === 'finie'); }
   // Une case où l'on peut marcher (obstacle déjà ouvert compris)
   function libre(e, x, y) {
     var t = tuile(x, y);
     if (t === null) return false;
     if (habitantEn(x, y)) return false;
+    if (t === 'P') return passerelleOk(e);
     if (OBSTACLES[t]) return ouvert(e, x, y);
     return !!MARCHE[t];
   }
@@ -305,7 +358,7 @@ var VL = (function () {
   // ---------- État d'un joueur ----------
   function nouvelEtat() {
     var p = g(1, 1, 2, 3);
-    var e = { v: 1, lv: LARG, x: p.x, y: p.y, dir: 'b', vu: '', ouverts: {}, pris: {}, quetes: {}, coffre: false, cle: false, pas: 0,
+    var e = { v: 1, lv: LARG, x: p.x, y: p.y, dir: 'b', vu: '', ouverts: {}, pris: {}, quetes: {}, coffre: false, coffreM: false, cle: false, pas: 0,
               sac: { bois: 0, pierre: 0, plante: 0, cristal: 0 }, recolte: { j: '', pris: {} }, outils: {}, besace: {} };
     reveler(e);
     return e;
@@ -315,12 +368,13 @@ var VL = (function () {
     var e = nouvelEtat();
     if (!s || typeof s !== 'object' || s.v !== 1) return e;
     ['ouverts', 'pris'].forEach(k => { if (s[k] && typeof s[k] === 'object') e[k] = Object.assign({}, s[k]); });
-    if (libre(e, s.x | 0, s.y | 0)) { e.x = s.x | 0; e.y = s.y | 0; }
+    if (s.quetes && typeof s.quetes === 'object') Object.keys(QUETES).forEach(id => { if (s.quetes[id] && typeof s.quetes[id] === 'object') e.quetes[id] = Object.assign({}, s.quetes[id]); });
+    var dansMarais = (ecran(s.x | 0, s.y | 0) || {}).zone === 'marais' && (s.x | 0) % W > 0;   // au-delà de la passerelle
+    if (libre(e, s.x | 0, s.y | 0) && (!dansMarais || passerelleOk(e))) { e.x = s.x | 0; e.y = s.y | 0; }
     e.dir = ['h', 'b', 'g', 'd'].indexOf(s.dir) >= 0 ? s.dir : 'b';
     e.vu = typeof s.vu === 'string' && /^[0-9a-f]*$/.test(s.vu) ? s.vu : '';
     if (e.vu && (s.lv | 0 || 33) !== LARG) e.vu = elargir(e.vu, s.lv | 0 || 33);   // sauvegarde d'avant le quartier (3 écrans de large)
-    if (s.quetes && typeof s.quetes === 'object') Object.keys(QUETES).forEach(id => { if (s.quetes[id] && typeof s.quetes[id] === 'object') e.quetes[id] = Object.assign({}, s.quetes[id]); });
-    e.coffre = !!s.coffre; e.cle = !!s.cle; e.pas = s.pas | 0;
+    e.coffre = !!s.coffre; e.coffreM = !!s.coffreM; e.cle = !!s.cle; e.pas = s.pas | 0;
     if (s.sac && typeof s.sac === 'object') ORDRE_RES.forEach(r => { e.sac[r] = Math.max(0, Math.min(SAC_MAX, s.sac[r] | 0)); });
     if (s.recolte && typeof s.recolte === 'object' && typeof s.recolte.j === 'string') {
       e.recolte.j = s.recolte.j;
@@ -375,22 +429,27 @@ var VL = (function () {
   // ---------- Quêtes ----------
   function etatQuete(e, id) { var q = e.quetes[id]; return q ? q.etat : 'dispo'; }
   function champignonVisible(e, c) { return etatQuete(e, 'herbes') === 'cours' && !e.pris[c.id]; }
+  function lucioleVisible(e, c) { return etatQuete(e, 'lucioles') === 'cours' && !e.pris[c.id]; }
+  // Une quête qu'on peut déjà prendre (certaines viennent après une autre)
+  function prenable(e, id) { var Q = QUETES[id]; return !!Q && etatQuete(e, id) === 'dispo' && (!Q.apres || etatQuete(e, Q.apres) === 'finie'); }
   // ctx.bossTotal : nombre de boss du Donjon vaincus jusqu'ici (donjon-stats.boss)
   function verifier(e, ctx) {
     var q = e.quetes, change = false;
     if (q.herbes && q.herbes.etat === 'cours' && (q.herbes.n | 0) >= QUETES.herbes.but) { q.herbes.etat = 'rendre'; change = true; }
     if (q.cle && q.cle.etat === 'cours' && e.cle) { q.cle.etat = 'rendre'; change = true; }
     if (q.gardien && q.gardien.etat === 'cours' && ctx && (ctx.bossTotal | 0) > (q.gardien.boss | 0)) { q.gardien.etat = 'rendre'; change = true; }
-    if (q.atelier && (q.atelier.etat === 'cours' || q.atelier.etat === 'rendre')) {
-      var assez = assezPour(e, QUETES.atelier.but), voulu = assez ? 'rendre' : 'cours';
-      if (q.atelier.etat !== voulu) { q.atelier.etat = voulu; change = true; }
-    }
+    if (q.lucioles && q.lucioles.etat === 'cours' && (q.lucioles.n | 0) >= QUETES.lucioles.but) { q.lucioles.etat = 'rendre'; change = true; }
+    ['atelier', 'passerelle'].forEach(id => {
+      if (!q[id] || (q[id].etat !== 'cours' && q[id].etat !== 'rendre')) return;
+      var voulu = assezPour(e, QUETES[id].but) ? 'rendre' : 'cours';
+      if (q[id].etat !== voulu) { q[id].etat = voulu; change = true; }
+    });
     return change;
   }
   function accepter(e, id, ctx) {
-    if (!QUETES[id] || etatQuete(e, id) !== 'dispo') return false;
+    if (!prenable(e, id)) return false;
     var q = { etat: 'cours', t: Date.now() };
-    if (id === 'herbes') q.n = 0;
+    if (id === 'herbes' || id === 'lucioles') q.n = 0;
     if (id === 'lettre') q.etape = 'porter';
     if (id === 'gardien') q.boss = ctx && ctx.bossTotal | 0;
     e.quetes[id] = q;
@@ -399,7 +458,7 @@ var VL = (function () {
   }
   function rendre(e, id) {
     if (etatQuete(e, id) !== 'rendre') return null;
-    if (id === 'atelier') payer(e, QUETES.atelier.but);
+    if (id === 'atelier' || id === 'passerelle') payer(e, QUETES[id].but);
     e.quetes[id].etat = 'finie'; e.quetes[id].fin = Date.now();
     return Object.assign({ quete: id }, QUETES[id].recompense);
   }
@@ -409,7 +468,7 @@ var VL = (function () {
     Object.keys(QUETES).forEach(id => {
       var Q = QUETES[id], s = etatQuete(e, id);
       if (Q.qui === qui && s === 'rendre') m = '?';
-      else if (Q.qui === qui && s === 'dispo' && !m) m = '!';
+      else if (Q.qui === qui && prenable(e, id) && !m) m = '!';
     });
     if (qui === 'tortue' && e.quetes.lettre && e.quetes.lettre.etat === 'cours' && e.quetes.lettre.etape === 'porter') m = '?';
     if (qui === 'bubo' && e.quetes.lettre && e.quetes.lettre.etape === 'reponse' && e.quetes.lettre.etat === 'rendre') m = '?';
@@ -425,12 +484,15 @@ var VL = (function () {
   function consigne(e, id) {
     var q = e.quetes[id], s = etatQuete(e, id);
     if (s === 'rendre') return id === 'gardien' ? 'Retourne au tableau de quêtes' : 'Retourne voir ' + HABITANTS[QUETES[id].qui].nom;
+    if (s === 'dispo' && !prenable(e, id)) return 'Après « ' + QUETES[QUETES[id].apres].nom + ' »';
     if (s !== 'cours') return QUETES[id].resume;
     if (id === 'herbes') return 'Champignons : ' + (q.n | 0) + ' / ' + QUETES.herbes.but;
     if (id === 'lettre') return 'Porte la lettre à Papi Tortue (nord-est)';
     if (id === 'cle') return 'Cherche la clé dans le bosquet (sud-est)';
     if (id === 'gardien') return 'Bats le boss du 1er étage de la crypte';
     if (id === 'atelier') return 'Pour Bruno : bois ' + Math.min(3, e.sac.bois) + '/3, pierres ' + Math.min(3, e.sac.pierre) + '/3';
+    if (id === 'passerelle') return 'Pour la passerelle : bois ' + Math.min(8, e.sac.bois) + '/8, pierres ' + Math.min(4, e.sac.pierre) + '/4';
+    if (id === 'lucioles') return 'Lucioles : ' + (q.n | 0) + ' / ' + QUETES.lucioles.but;
     return '';
   }
   // Où aller pour la quête suivie (une case), pour la flèche sur la carte
@@ -441,15 +503,16 @@ var VL = (function () {
     if (id === 'lettre') return HABITANTS.tortue;
     if (id === 'cle') return ctx && !ctx.pouvoir ? g(0, 2, 4, 3) : g(2, 2, 7, 5);
     if (id === 'gardien') return g(1, 0, 5, 1);
-    if (id === 'atelier') {
-      var res = e.sac.bois < 3 ? 'bois' : 'pierre', jour = (ctx && ctx.jour) || jourDe();
-      var p = RECOLTE.filter(k => k.res === res && !k.filon && !prisAujourdhui(e, k, jour)).sort((a, b) => Math.hypot(a.x - e.x, a.y - e.y) - Math.hypot(b.x - e.x, b.y - e.y))[0];
+    if (id === 'atelier' || id === 'passerelle') {
+      var but = QUETES[id].but, res = e.sac.bois < but.bois ? 'bois' : 'pierre', jour = (ctx && ctx.jour) || jourDe();
+      var p = RECOLTE.filter(k => k.res === res && !k.filon && !prisAujourdhui(e, k, jour) && pointOuvert(e, k)).sort((a, b) => Math.hypot(a.x - e.x, a.y - e.y) - Math.hypot(b.x - e.x, b.y - e.y))[0];
       return p || HABITANTS.bruno;
     }
     if (id === 'herbes') {
       var c = CHAMPIGNONS.filter(k => !e.pris[k.id]).sort((a, b) => Math.hypot(a.x - e.x, a.y - e.y) - Math.hypot(b.x - e.x, b.y - e.y))[0];
       return c || null;
     }
+    if (id === 'lucioles') return LUCIOLES.filter(k => !e.pris[k.id]).sort((a, b) => Math.hypot(a.x - e.x, a.y - e.y) - Math.hypot(b.x - e.x, b.y - e.y))[0] || null;
     return null;
   }
 
@@ -465,6 +528,7 @@ var VL = (function () {
     var hab = habitantEn(nx, ny);
     if (hab) return { parler: hab };
     if (ACTIONS[k]) return { action: ACTIONS[k].id, x: nx, y: ny, p: ACTIONS[k].p };
+    if (t === 'P' && !passerelleOk(e)) return { action: 'passerelle', x: nx, y: ny };
     if (OBSTACLES[t] && !ouvert(e, nx, ny)) {
       var besoin = OBSTACLES[t];
       if (ctx && ctx.pouvoir === besoin) { e.ouverts[k] = 1; return { ouvre: besoin, x: nx, y: ny }; }
@@ -480,6 +544,12 @@ var VL = (function () {
     if (c) {
       e.pris[c.id] = 1; e.quetes.herbes.n = (e.quetes.herbes.n | 0) + 1;
       r.ramasse = 'champignon'; r.n = e.quetes.herbes.n;
+      verifier(e, ctx);
+    }
+    var lu = LUCIOLES.find(c => c.x === nx && c.y === ny && lucioleVisible(e, c));
+    if (lu) {
+      e.pris[lu.id] = 1; e.quetes.lucioles.n = (e.quetes.lucioles.n | 0) + 1;
+      r.ramasse = 'luciole'; r.n = e.quetes.lucioles.n;
       verifier(e, ctx);
     }
     var pt = pointEn(nx, ny);
@@ -521,22 +591,48 @@ var VL = (function () {
       return { qui: qui, texte: [
         'Bonjour, petit. Ici, on prend le temps. Écoute le vent dans les sapins…',
         'On dit qu\'un coffre dort au fond du bosquet, au sud-est. Seul un compagnon sait l\'ouvrir.',
-        'Quand j\'étais jeune, la crypte n\'avait qu\'un étage. Enfin… je crois.'][e.pas % 3], boutons: [ok] };
+        'Quand j\'étais jeune, la crypte n\'avait qu\'un étage. Enfin… je crois.',
+        'Au bout du bosquet commence le marais. Brumeux, mais si joli quand les lucioles s\'allument.'][e.pas % 4], boutons: [ok] };
     }
     if (qui === 'bruno') {
       s = etatQuete(e, 'cle');
-      var sa = etatQuete(e, 'atelier');
-      if (s !== 'rendre' && sa === 'rendre') return { qui: qui, texte: 'Trois bûches, trois pierres… Parfait ! Grrr, voilà du solide. Je t\'ai remis en état le vieil établi, devant ta maison : tu pourras y fabriquer de la déco. Et Mme Sauge t\'apprendra ses fioles, j\'en suis sûr.',
-                                                         boutons: [{ t: '🪵 Donner le bois et les pierres', a: 'rendre:atelier', principal: true }] };
-      if (s !== 'rendre' && sa === 'dispo') return { qui: qui, texte: 'Grrr… Bonjour. Tu vois le vieil établi devant ta maison ? Il ne tient plus debout. Rapporte-moi 3 bois et 3 pierres, je te le répare. Du bois mort dans les forêts, des pierres près du ruisseau et de la crypte. Tout repousse chaque jour !',
-                                                     boutons: [{ t: '🪵 Je m\'en occupe', a: 'accepter:atelier', principal: true }, plusTard] };
+      var sa = etatQuete(e, 'atelier'), sp = etatQuete(e, 'passerelle');
+      var manque = but => [e.sac.bois < but.bois ? (but.bois - e.sac.bois) + ' bois' : '', e.sac.pierre < but.pierre ? (but.pierre - e.sac.pierre) + ' pierre' + (but.pierre - e.sac.pierre > 1 ? 's' : '') : ''].filter(Boolean).join(' et ');
+      // D'abord ce qu'on lui rapporte, puis ce qu'il demande, puis où l'on en est
+      if (s === 'rendre') return { qui: qui, texte: 'Ma clé ! Grrr… de joie ! Je vais pouvoir rallumer la forge.' + (sa === 'finie' ? ' Reviens m\'y voir : je te forgerai des outils.' : '') + ' Voilà pour toi.', boutons: [{ t: '🔑 Rendre la clé', a: 'rendre:cle', principal: true }] };
+      if (sa === 'rendre') return { qui: qui, texte: 'Trois bûches, trois pierres… Parfait ! Grrr, voilà du solide. Je t\'ai remis en état le vieil établi, devant ta maison : tu pourras y fabriquer de la déco. Et Mme Sauge t\'apprendra ses fioles, j\'en suis sûr.',
+                                   boutons: [{ t: '🪵 Donner le bois et les pierres', a: 'rendre:atelier', principal: true }] };
+      if (sp === 'rendre') return { qui: qui, texte: 'Huit bûches, quatre pierres… Grrr, du costaud ! Je file au marais avec mon marteau. (Bang ! Bang ! Bang !) Voilà : la passerelle tiendrait sous un ours. Rainette t\'attend de l\'autre côté.',
+                                    boutons: [{ t: '🛶 Donner le bois et les pierres', a: 'rendre:passerelle', principal: true }] };
+      if (sa === 'dispo') return { qui: qui, texte: 'Grrr… Bonjour. Tu vois le vieil établi devant ta maison ? Il ne tient plus debout. Rapporte-moi 3 bois et 3 pierres, je te le répare. Du bois mort dans les forêts, des pierres près du ruisseau et de la crypte. Tout repousse chaque jour !',
+                                   boutons: [{ t: '🪵 Je m\'en occupe', a: 'accepter:atelier', principal: true }, plusTard] };
       if (s === 'dispo') return { qui: qui, texte: 'Grrr… Bonjour. J\'ai perdu la clé de mon atelier en cueillant des mûres dans le bosquet, au sud-est. Depuis, les ronces et les rochers ont tout recouvert… ' + (ctx && ctx.pouvoir ? 'Ton compagnon saurait passer, lui ?' : 'Tu veux bien chercher ?'),
                                   boutons: [{ t: '🔑 Je la cherche', a: 'accepter:cle', principal: true }, plusTard] };
+      if (prenable(e, 'passerelle')) return { qui: qui, texte: 'Grrr… Tu as vu la vieille passerelle du marais, au bout du bosquet ? L\'orage l\'a mise en miettes, et Rainette, la passeuse, est coincée de l\'autre côté. Rapporte-moi 8 bois et 4 pierres, et je te la remets d\'aplomb.',
+                                              boutons: [{ t: '🛶 Je rapporte tout ça', a: 'accepter:passerelle', principal: true }, plusTard] };
       if (s === 'cours') return { qui: qui, texte: ctx && ctx.pouvoir ? 'Le bosquet est au sud-est du village. Pour passer un obstacle, fonce dedans : ' + tu + ' s\'en sert de son pouvoir (' + POUVOIRS[ctx.pouvoir].ico + ' ' + POUVOIRS[ctx.pouvoir].nom + ').'
                                                          : 'Papi Tortue sait tout ce qui se passe dans la forêt. Demande-lui !', boutons: [ok] };
-      if (s === 'rendre') return { qui: qui, texte: 'Ma clé ! Grrr… de joie ! Je vais pouvoir rallumer la forge.' + (etatQuete(e, 'atelier') === 'finie' ? ' Reviens m\'y voir : je te forgerai des outils.' : '') + ' Voilà pour toi.', boutons: [{ t: '🔑 Rendre la clé', a: 'rendre:cle', principal: true }] };
-      if (sa === 'cours') return { qui: qui, texte: 'Il me faut encore ' + [e.sac.bois < 3 ? (3 - e.sac.bois) + ' bois' : '', e.sac.pierre < 3 ? (3 - e.sac.pierre) + ' pierre' + (3 - e.sac.pierre > 1 ? 's' : '') : ''].filter(Boolean).join(' et ') + ' pour l\'établi. Fonce dans le bois mort et les cailloux pour les ramasser.', boutons: [ok] };
+      if (sa === 'cours') return { qui: qui, texte: 'Il me faut encore ' + manque(QUETES.atelier.but) + ' pour l\'établi. Fonce dans le bois mort et les cailloux pour les ramasser.', boutons: [ok] };
+      if (sp === 'cours') return { qui: qui, texte: 'Pour la passerelle, il me faut encore ' + manque(QUETES.passerelle.but) + '. Ton sac en garde ' + SAC_MAX + ' de chaque, et tout repousse demain si tu manques de bois.', boutons: [ok] };
       return { qui: qui, texte: 'Ding ! Dong ! La forge tourne à nouveau. Fonce dans l\'enclume si tu veux un outil, l\'ami !', boutons: [ok] };
+    }
+    if (qui === 'rainette') {
+      s = etatQuete(e, 'lucioles');
+      if (!passerelleOk(e)) {   // on lui parle par-dessus l'eau, depuis la passerelle cassée
+        var sp2 = etatQuete(e, 'passerelle');
+        return { qui: qui, texte: sp2 === 'rendre' ? 'Coâ ! Tu as tout le bois qu\'il faut ? Vite, porte-le à Bruno, au village !'
+          : sp2 === 'cours' ? 'Coâ ! Bruno va la réparer ? Rapporte-lui son bois et ses pierres, je t\'attends de ce côté-ci, promis !'
+          : 'Coâ ! Ohé, de l\'autre côté ! Ma passerelle s\'est effondrée pendant l\'orage, et me voilà coincée… Bruno, le forgeron du village, saurait la réparer.' + (etatQuete(e, 'atelier') !== 'finie' ? ' Mais il a d\'abord son vieil établi à remettre debout.' : ''), boutons: [ok] };
+      }
+      if (s === 'dispo') return { qui: qui, texte: 'Coâ ! Merci, merci ! Je suis Rainette, la passeuse du marais. Dis, ma lanterne s\'est éteinte pendant l\'orage… Sans elle, les voyageurs se perdent dans la brume. Les lucioles des roseaux la rallumeraient ! Tu m\'en attrapes 5 ?',
+                                  boutons: [{ t: '✨ J\'y vais !', a: 'accepter:lucioles', principal: true }, plusTard] };
+      if (s === 'cours') return { qui: qui, texte: 'Encore ' + (QUETES.lucioles.but - (e.quetes.lucioles.n | 0)) + ' luciole' + (QUETES.lucioles.but - (e.quetes.lucioles.n | 0) > 1 ? 's' : '') + ' ! Elles dansent dans les trois coins du marais : près des roseaux, sur les îlots, et jusqu\'au vieux saule.', boutons: [ok] };
+      if (s === 'rendre') return { qui: qui, texte: 'Oh ! Cinq lucioles… Regarde comme elles brillent dans la lanterne ! Tiens, garde ce petit bocal : quelques-unes ont voulu te suivre.' + (nom ? ' Elles éclaireront la maison de ' + nom + '.' : ''),
+                                   boutons: [{ t: '✨ Donner les lucioles', a: 'rendre:lucioles', principal: true }] };
+      return { qui: qui, texte: [
+        'Coâ ! Ma lanterne brille de nouveau. Plus personne ne se perd dans la brume.',
+        'Tu as vu le vieux saule, tout à l\'est ? On dit qu\'il pleure parce qu\'il se souvient de tout.',
+        'Il y a un coffre sur l\'îlot, au bout du gué de pierres. Personne n\'ose y aller, à cause des grenouilles taquines… dont moi !'][e.pas % 3], boutons: [ok] };
     }
     return { qui: qui, texte: '…', boutons: [ok] };
   }
@@ -550,7 +646,8 @@ var VL = (function () {
     else if (s === 'rendre') { t.avis = 'Victoire ! La garde t\'offre sa bannière du héros, pour la maison.'; t.boutons = [{ t: '🚩 Recevoir la bannière', a: 'rendre:gardien', principal: true }]; }
     else t.avis = 'Le gardien est vaincu. La Vallée te dit merci !';
     t.quetes = ORDRE_QUETES.map(id => ({ id: id, nom: QUETES[id].nom, ico: QUETES[id].ico, etat: etatQuete(e, id), consigne: consigne(e, id),
-                                         prendre: QUETES[id].qui === 'tableau' ? 'Sur le tableau de quêtes, au village' : 'Demande à ' + HABITANTS[QUETES[id].qui].nom + ', ' + HABITANTS[QUETES[id].qui].titre }));
+                                         prendre: etatQuete(e, id) === 'dispo' && !prenable(e, id) ? 'Après « ' + QUETES[QUETES[id].apres].nom + ' »'
+                                           : QUETES[id].qui === 'tableau' ? 'Sur le tableau de quêtes, au village' : 'Demande à ' + HABITANTS[QUETES[id].qui].nom + ', ' + HABITANTS[QUETES[id].qui].titre }));
     return t;
   }
   // Une action choisie dans une conversation. Renvoie { recompense } quand il y en a une.
@@ -572,6 +669,13 @@ var VL = (function () {
       else r.texte += ' !';
       verifier(e, ctx);
       return r;
+    }
+    if (ou === 'coffreM') {   // le coffre de l'îlot du marais, au bout du gué de pierres
+      if (e.coffreM) return { texte: 'Le coffre est vide. Une grenouille y a laissé un nénuphar.' };
+      e.coffreM = true;
+      var k = Math.min(SAC_MAX - e.sac.cristal, 2);
+      e.sac.cristal += k;
+      return { etoiles: 4, cristal: k, texte: 'Le coffre est couvert de mousse… Dedans : 4 ⭐' + (k ? ' et ' + k + (k > 1 ? ' cristaux' : ' cristal') + ' 💎 pour ton sac' : '') + ' !' };
     }
     if (ou === 'chene') {
       if (sansPouvoir && !e.cle && etatQuete(e, 'cle') === 'cours') { e.cle = true; verifier(e, ctx); return { cle: true, texte: 'Dans le creux du vieux chêne, entre des noisettes et un bouton doré : une grosse clé en fer forgé !' }; }
@@ -644,6 +748,8 @@ var VL = (function () {
   function pointEn(x, y) { return RECOLTE.find(p => p.x === x && p.y === y) || null; }
   function prisAujourdhui(e, p, jour) { return e.recolte.j === (jour || jourDe()) && !!e.recolte.pris[p.id]; }
   function pointVisible(e, p, ctx) { return !prisAujourdhui(e, p, ctx && ctx.jour); }
+  // Un point qu'on peut atteindre (ceux du marais attendent la passerelle)
+  function pointOuvert(e, p) { var E = ecran(p.x, p.y); return !(E && E.zone === 'marais') || passerelleOk(e); }
   // Combien un point donne : la base, ×2 avec le pouvoir qui va avec, +1 avec l'outil
   function gain(e, res, ctx) {
     var R = RESSOURCES[res], n = R.base;
@@ -708,11 +814,12 @@ var VL = (function () {
   return {
     RESSOURCES: RESSOURCES, ORDRE_RES: ORDRE_RES, SAC_MAX: SAC_MAX, RECOLTE: RECOLTE, OUTILS: OUTILS, FIOLES: FIOLES, BESACE_MAX: BESACE_MAX, DONJON_MAX: DONJON_MAX,
     LIEUX_FAB: LIEUX_FAB, RECETTES: RECETTES,
-    jourDe: jourDe, pointEn: pointEn, pointVisible: pointVisible, prisAujourdhui: prisAujourdhui, gain: gain, recolter: recolter, assezPour: assezPour, besaceTotal: besaceTotal,
+    jourDe: jourDe, pointEn: pointEn, pointOuvert: pointOuvert, pointVisible: pointVisible, prisAujourdhui: prisAujourdhui, gain: gain, recolter: recolter, assezPour: assezPour, besaceTotal: besaceTotal,
     ouvertFab: ouvertFab, recette: recette, etatRecette: etatRecette, fabriquer: fabriquer, prendreFioles: prendreFioles,
     NB_PARCELLES: NB_PARCELLES, PARCELLES: PARCELLES, placerVoisins: placerVoisins, parcelleDe: parcelleDe, defile: defile, nettoyerVoisins: nettoyerVoisins, parcelles: parcelles, elargir: elargir,
     W: W, H: H, EW: EW, EH: EH, LARG: LARG, HAUT: HAUT, GRAINE: GRAINE, VISION: VISION,
-    ECRANS: ECRANS, BATIMENTS: BATIMENTS, ACTIONS: ACTIONS, HABITANTS: HABITANTS, CHAMPIGNONS: CHAMPIGNONS, QUETES: QUETES, ORDRE_QUETES: ORDRE_QUETES,
+    ECRANS: ECRANS, BATIMENTS: BATIMENTS, ACTIONS: ACTIONS, HABITANTS: HABITANTS, CHAMPIGNONS: CHAMPIGNONS, LUCIOLES: LUCIOLES, QUETES: QUETES, ORDRE_QUETES: ORDRE_QUETES,
+    prenable: prenable, lucioleVisible: lucioleVisible, passerelleOk: passerelleOk,
     OBSTACLES: OBSTACLES, POUVOIRS: POUVOIRS, POUVOIR_ESPECE: POUVOIR_ESPECE, VENTE: VENTE,
     hash: hash, tuile: tuile, ecran: ecran, ecranDe: ecranDe, habitantEn: habitantEn, libre: libre, ouvert: ouvert,
     nouvelEtat: nouvelEtat, charger: charger, bits: bits, estVu: estVu, reveler: reveler, partVue: partVue,

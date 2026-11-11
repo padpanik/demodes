@@ -49,7 +49,7 @@
     /* La carte du monde : une vieille carte, sous le brouillard */
     .carte-vl { flex: 1; min-height: 0; position: relative; display: flex; align-items: center; justify-content: center; background: #ead8b0; border: 2px solid #8a6a46; border-radius: 14px;
                 box-shadow: inset 0 0 18px rgba(138,106,70,0.45), 0 3px 10px rgba(0,0,0,0.25); overflow: hidden; cursor: pointer; }
-    .carte-vl svg { width: 100%; height: 100%; display: block; }
+    .carte-vl svg { width: 100%; height: 100%; display: block; overflow: hidden; }
     .carte-vl .titre-carte { position: absolute; left: 50%; top: 4px; transform: translateX(-50%); white-space: nowrap; font: italic 800 0.78em/1.2 Georgia, serif; color: #5c3a1f;
                              background: rgba(255,248,231,0.88); border: 1px solid #c9a874; border-radius: 10px; padding: 1px 9px; pointer-events: none; }
     .carte-vl .rose { position: absolute; right: 6px; bottom: 4px; font: 900 0.7em Georgia, serif; color: #8a6a46; opacity: 0.8; pointer-events: none; }
@@ -255,6 +255,20 @@
     .vl-flamme { transform-box: fill-box; transform-origin: 50% 100%; animation: vl-flamme 0.8s ease-in-out infinite alternate; }
     @keyframes vl-flamme { to { transform: scale(0.85, 1.12); } }
     @media (prefers-reduced-motion: reduce) { .vl-halo, .vl-flamme { animation: none; } }
+    /* Le marais (3.53) : saules qui ondulent, brume qui traîne, lucioles qui dansent, une grenouille, une libellule */
+    .vl-saule { animation: vl-saule 4.5s ease-in-out infinite alternate; transform-box: fill-box; transform-origin: 50% 0; }
+    @keyframes vl-saule { to { transform: skewX(4deg); } }
+    .vl-brume { animation: vl-brume 16s ease-in-out infinite alternate; }
+    @keyframes vl-brume { from { transform: translateX(-36px); } to { transform: translateX(36px); } }
+    .vl-luc { animation: vl-luc 5.4s ease-in-out infinite; }
+    @keyframes vl-luc { 0% { transform: translate(0, 0); opacity: 0.15; } 25% { opacity: 1; } 50% { transform: translate(9px, -7px); opacity: 0.35; } 75% { opacity: 0.95; } 100% { transform: translate(0, 0); opacity: 0.15; } }
+    .vl-luciole-q { animation: vl-luciole-q 1.6s ease-in-out infinite alternate; }
+    @keyframes vl-luciole-q { to { transform: translate(2px, -4px); } }
+    .vl-grenouille { animation: vl-grenouille 6s ease-in-out infinite; transform-box: fill-box; transform-origin: 50% 100%; }
+    @keyframes vl-grenouille { 0%, 88%, 100% { transform: none; } 92% { transform: scaleY(1.12) translateY(-1px); } }
+    .vl-libellule { animation: vl-libellule 7s ease-in-out infinite; }
+    @keyframes vl-libellule { 0%, 100% { transform: translate(0, 0); } 30% { transform: translate(26px, -8px); } 35% { transform: translate(26px, -8px); } 65% { transform: translate(-18px, 6px); } 70% { transform: translate(-18px, 6px); } }
+    @media (prefers-reduced-motion: reduce) { .vl-saule, .vl-brume, .vl-luc, .vl-luciole-q, .vl-grenouille, .vl-libellule { animation: none; } }
   </style>
 </head>
 <body class="vl-page">
@@ -282,8 +296,8 @@
       </div>
 
       <!-- La carte du monde, sous le brouillard -->
-      <div class="carte-vl" @click="fenetre = 'quetes'">
-        <svg :view-box.camel="vue.defile ? '330 90 330 90' : '0 0 330 270'" preserveAspectRatio="xMidYMid meet"><g v-html="carteSvg"></g><g v-html="carteDessus"></g></svg>
+      <div class="carte-vl" ref="carte" @click="fenetre = 'quetes'">
+        <svg :view-box.camel="carteVue" preserveAspectRatio="xMidYMid meet"><g v-html="carteSvg"></g><g v-html="carteDessus"></g></svg>
         <div class="titre-carte">La Vallée de Désdale · {{ explore }} % exploré</div>
         <div class="rose">N ↑</div>
       </div>
@@ -505,6 +519,7 @@
           <li><b>Fabriquer</b> (après la quête de Bruno) : de la déco à l'établi devant ta maison, des fioles pour le Donjon chez Mme Sauge, des outils à la forge. Fonce dans l'établi, la hutte ou la forge.</li>
           <li><b>La carte</b> se dévoile au fil de tes pas. L'anneau orange montre où aller pour ta quête.</li>
           <li><b>Les amis</b> connectés qui sont dans la Vallée apparaissent sur ton écran et en points sur la carte. Touche un ami pour le saluer, visiter sa maison ou descendre ensemble au Donjon. Touche ton compagnon pour envoyer une émotion. À l'est de la clairière, <b>le quartier des amis</b> : chacun y a sa maison.</li>
+          <li><b>Le marais</b>, au bout du bosquet (sud-est) : sa passerelle est cassée. Bruno saura la réparer, une fois son établi remis debout.</li>
           <li><b>La crypte</b>, au nord du village, mène au Donjon des compagnons. Ta maison est la maison de ton compagnon.</li>
           <li>Ta progression est gardée sur ce téléphone et dans ta sauvegarde.</li>
         </ul>
@@ -529,6 +544,7 @@
     const LIBELLES = { dispo: 'À prendre', cours: 'En cours', rendre: 'À rendre', finie: 'Finie' };
     // Petites phrases de la fontaine et des maisons
     const FONTAINE = ['Tu fais un vœu… plouf ! 🪙', 'L\'eau est fraîche et claire. 💧', 'Un poisson rouge te fait des bulles. 🐟'];
+    const SAULE = ['🌳 Le vieux saule frissonne. Ses branches caressent l\'eau.', '🌳 Quelqu\'un a gravé un cœur dans l\'écorce, il y a très longtemps.', '🌳 Une balançoire pend à une grosse branche. Elle grince doucement.'];
     var etat = VL.charger(lireStockage(CLE));
     // Les émotions des jeux (même liste et même ordre que compagnons-jeu.js : le numéro voyage sur le réseau)
     const EMOTES = [
@@ -552,7 +568,7 @@
         dir: null, sens: etat.dir === 'g' ? 'g' : 'd', saut: false, ecranCle: 0, lieuMontre: null,
         animal: lireStockage('compagnon-animal'), etoiles: Etoiles.solde(), nonLus: 0,
         fenetre: null, dialogue: null, aLire: null, achat: null, sortie: false, fabOu: null, fabChoix: null, jour: VL.jourDe(),
-        annonces: [], maintenant: Date.now(),
+        annonces: [], maintenant: Date.now(), carteAspect: 330 / 270,
         inverse: lireStockage('donjon-inverse') === true,
         sonActif: lireStockage('brillant-son') !== false,
         pleinEcran: lireStockage('vallee-plein-ecran') !== false
@@ -574,7 +590,7 @@
         sacVisible: function() { this.v; return VL.etatQuete(etat, 'atelier') !== 'dispo' || VL.ORDRE_RES.some(r => etat.sac[r] > 0); },
         besace: function() { this.v; return VL.besaceTotal(etat); },
         aujourdhui: function() {
-          this.v; var n = VL.RECOLTE.filter(p => VL.pointVisible(etat, p, this.ctx)).length;
+          this.v; var n = VL.RECOLTE.filter(p => VL.pointVisible(etat, p, this.ctx) && VL.pointOuvert(etat, p)).length;
           return n ? n + ' point' + (n > 1 ? 's' : '') + ' de récolte t\'attend' + (n > 1 ? 'ent' : '') + ' encore aujourd\'hui. Tout repousse demain.' : 'Tu as tout ramassé aujourd\'hui ! Tout repousse demain.';
         },
         recettes: function() {
@@ -611,23 +627,35 @@
           // On ne redessine l'écran que s'il a changé (pas à chaque pas)
           var atelier = VL.ouvertFab(etat, 'etabli');
           var defile = VL.defile(etat.x, etat.y);
-          var cle = [defile ? 'q' : c.ex, c.ey, JSON.stringify(etat.ouverts), JSON.stringify(etat.pris), etat.coffre, VL.etatQuete(etat, 'herbes'), JSON.stringify(this.marques), this.tableauMarque, this.animal && this.animal.nom,
+          var cle = [defile ? 'q' : c.ex, c.ey, JSON.stringify(etat.ouverts), JSON.stringify(etat.pris), etat.coffre, etat.coffreM, VL.ORDRE_QUETES.map(id => VL.etatQuete(etat, id)).join(), JSON.stringify(this.marques), this.tableauMarque, this.animal && this.animal.nom,
                      JSON.stringify(etat.recolte), this.jour, atelier, defile ? JSON.stringify(this.parcelles) : ''].join('|');
           if (cle === this._cleEcran) return this._svgEcran;
           this._cleEcran = cle;
-          var ctx = { flair: this.pouvoir === 'flair', plaque: this.animal ? 'Chez ' + this.animal.nom : 'Ma maison', marques: this.marques, tableauMarque: this.tableauMarque, atelier: atelier, jour: this.jour, parcelles: this.parcelles };
+          var ctx = { flair: this.pouvoir === 'flair', plaque: this.animal ? 'Chez ' + this.animal.nom : 'Ma maison', marques: this.marques, tableauMarque: this.tableauMarque, atelier: atelier, jour: this.jour, parcelles: this.parcelles,
+                      lanterneRainette: VL.etatQuete(etat, 'lucioles') === 'finie' };
           // Le quartier : ses 3 écrans côte à côte, en une bande que la page fait glisser
           if (defile) return this._svgEcran = [3, 4, 5].map((ex, i) => '<g transform="translate(' + (i * 352) + ' 0)">' + VLD.ecranSvg(etat, ex, c.ey, Object.assign({ sansVoile: true }, ctx)) + '</g>').join('');
           return this._svgEcran = VLD.ecranSvg(etat, c.ex, c.ey, ctx);
         },
         queteSuivie: function() { this.v; return VL.queteSuivie(etat); },
-        quetesDispo: function() { this.v; return VL.ORDRE_QUETES.filter(id => VL.etatQuete(etat, id) === 'dispo').length; },
+        quetesDispo: function() { this.v; return VL.ORDRE_QUETES.filter(id => VL.prenable(etat, id)).length; },
         carteSvg: function() {
           this.v;
           var cle = [etat.vu, JSON.stringify(etat.ouverts), JSON.stringify(this.marques), this.tableauMarque, JSON.stringify(etat.recolte), this.jour, this.pouvoir, JSON.stringify(this.parcelles.map(p => p && p.couleur))].join('|');
           if (cle === this._cleCarte) return this._svgCarte;
           this._cleCarte = cle;
           return this._svgCarte = VLD.carteSvg(etat, { marques: this.marques, tableauMarque: this.tableauMarque, flair: this.pouvoir === 'flair', jour: this.jour, parcelles: this.parcelles });
+        },
+        // La partie de la carte du monde montrée : le quartier et le marais en bande, ailleurs les 3 × 3 écrans de l'ouest
+        // (sur un écran peu haut, la carte est plus large : on montre plus de monde au lieu de déborder d'un seul côté)
+        carteVue: function() {
+          if (this.vue.defile) return '330 90 330 90';
+          // Ce qu'on veut voir (le marais : avec le bosquet et le quartier autour), agrandi à la forme du cadre, sans sortir du monde
+          var R = this.ici.zone === 'marais' ? [220, 90, 440, 180] : [0, 0, 330, 270], A = this.carteAspect, L = VL.LARG * 10, Ht = VL.HAUT * 10;
+          var w = R[2], h = R[3];
+          if (w / h < A) w = h * A; else h = w / A;
+          var place = (debut, taille, monde, voulu) => taille >= monde ? (monde - taille) / 2 : Math.max(0, Math.min(monde - taille, debut - (taille - voulu) / 2));
+          return [place(R[0], w, L, R[2]), place(R[1], h, Ht, R[3]), w, h].map(n => Math.round(n)).join(' ');
         },
         carteDessus: function() { this.v; return VLD.carteDessus(etat, { cible: VL.cible(etat, this.queteSuivie, this.ctx), amis: this.amis, x0: this.vue.x0 }); },
         explore: function() { this.v; return Math.round(VL.partVue(etat) * 100); },
@@ -704,6 +732,10 @@
             'Glisse le doigt sur la croix pour marcher, fonce dans une porte pour entrer, et dans un habitant pour lui parler. Les « ! » t\'attendent !' });
         }
       },
+      mounted: function() {
+        var mesure = () => { var c = this.$refs.carte; if (c && c.clientHeight) this.carteAspect = c.clientWidth / c.clientHeight; };
+        mesure(); window.addEventListener('resize', mesure); setTimeout(mesure, 300);
+      },
       methods: {
         son: function(nom) { if (this.sonActif) try { Sons.jouer(nom); } catch (e) {} },
         vibre: function(m) { if (lireStockage('brillant-vibration') !== false) vibrer(m); },
@@ -764,6 +796,11 @@
               if (VL.etatQuete(etat, 'herbes') === 'rendre') this.annoncer('🍄 Cinq champignons ! Retourne voir Mme Sauge.');
               else this.annoncer('🍄 Un champignon ! ' + r.n + ' / ' + VL.QUETES.herbes.but);
             }
+            if (r.ramasse === 'luciole') {
+              this.son('toc'); this.vibre([20, 30, 20]);
+              if (VL.etatQuete(etat, 'lucioles') === 'rendre') this.annoncer('✨ Cinq lucioles ! Rapporte-les à Rainette.');
+              else this.annoncer('✨ Une luciole dans tes mains ! ' + r.n + ' / ' + VL.QUETES.lucioles.but);
+            }
             if (r.recolte) {
               var R = VL.RESSOURCES[r.recolte];
               this.son('toc'); this.vibre(25);
@@ -821,24 +858,24 @@
           this.fermer();
         },
         recompenser: function(rc) {
-          var Q = VL.QUETES[rc.quete], texte, ico = '🎁';
-          if (rc.etoiles) {
-            Etoiles.ajouter(rc.etoiles, 'Vallée : ' + Q.nom, true);
-            texte = '+' + rc.etoiles + ' étoiles ⭐';
-            if (rc.atelier) { ico = '🪚'; texte = 'L\'établi est réparé, devant ta maison : fonce dedans pour fabriquer de la déco. Mme Sauge t\'attend aussi dans sa hutte pour les fioles. ' + texte; }
-          } else if (rc.deco) {
+          var Q = VL.QUETES[rc.quete], l = [], ico = '🎁', texte;
+          if (rc.deco) {
             var art = CP.art(rc.deco), a = lireStockage('compagnon-animal');
             ico = art.ico || '🎁';
             if (a && a.espece) {
               a.possede = a.possede || {}; a.porte = a.porte || {};
               a.possede[art.id] = 1; a.porte[art.slot] = art.id;
               ecrireStockage('compagnon-animal', a); this.animal = a;
-              texte = art.nom + ' : installée dans le salon de ' + a.nom + '.';
+              l.push(art.nom + ' : dans le salon de ' + a.nom + ', désormais.');
             } else {
               Etoiles.ajouter(6, 'Vallée : ' + Q.nom, true);
-              texte = 'Sans compagnon, pas de maison à décorer : la récompense devient 6 étoiles ⭐.';
+              l.push('Sans compagnon, pas de maison à décorer : la récompense devient 6 étoiles ⭐.');
             }
           }
+          if (rc.etoiles) { Etoiles.ajouter(rc.etoiles, 'Vallée : ' + Q.nom, true); l.push('+' + rc.etoiles + ' étoiles ⭐'); }
+          if (rc.atelier) { ico = '🪚'; l.unshift('L\'établi est réparé, devant ta maison : fonce dedans pour fabriquer de la déco. Mme Sauge t\'attend aussi dans sa hutte pour les fioles.'); }
+          if (rc.passerelle) { ico = '🛶'; l.unshift('La passerelle du marais est réparée ! Le marais t\'attend au bout du bosquet, au sud-est. Rainette, la passeuse, guette ton arrivée.'); }
+          texte = l.join(' ');
           this.etoiles = Etoiles.solde();
           this.son('victoire'); this.vibre([60, 50, 120]);
           this.lire({ ico: ico, titre: 'Quête réussie : ' + Q.nom, texte: texte });
@@ -863,12 +900,16 @@
             return this.annoncer(VL.etatQuete(etat, 'cle') !== 'finie' ? '⚒️ La forge est froide : Bruno a perdu sa clé.' : '⚒️ Tchac ! Tchac ! Bruno te forgera des outils une fois l\'établi réparé.');
           }
           if (id === 'cabane') return this.annoncer('🐢 La cabane de Papi Tortue. Une tisane fume sur le rebord.');
-          if (id === 'coffre' || id === 'chene') {
-            var r = VL.fouiller(etat, id, c);
+          // Le marais (3.53)
+          if (id === 'passerelle') return this.parler('rainette');
+          if (id === 'rainette') return this.annoncer(VL.etatQuete(etat, 'lucioles') === 'finie' ? '🐸 La maison de Rainette. Sa lanterne brille au bout de sa perche.' : '🐸 La maison de Rainette, perchée sur pilotis. Un filet de pêche sèche au soleil.');
+          if (id === 'saule') { this._saule = ((this._saule | 0) + 1) % SAULE.length; return this.annoncer(SAULE[this._saule]); }
+          if (id === 'coffre' || id === 'chene' || id === 'coffreM') {
+            var r = VL.fouiller(etat, id, c), titre = { coffre: 'Le coffre du bosquet', chene: 'Le vieux chêne', coffreM: 'Le coffre de l\'îlot' }[id];
             this.sauver(); this.v++;
-            if (r.etoiles) { Etoiles.ajouter(r.etoiles, 'Vallée : coffre du bosquet', true); this.etoiles = Etoiles.solde(); }
-            if (r.cle || r.etoiles) { this.son('victoire'); this.vibre([50, 40, 90]); return this.lire({ ico: r.cle ? '🔑' : '⭐', titre: id === 'coffre' ? 'Le coffre du bosquet' : 'Le vieux chêne', texte: r.texte }); }
-            return this.annoncer((id === 'coffre' ? '🧰 ' : '🌳 ') + r.texte);
+            if (r.etoiles) { Etoiles.ajouter(r.etoiles, 'Vallée : ' + titre.toLowerCase(), true); this.etoiles = Etoiles.solde(); }
+            if (r.cle || r.etoiles) { this.son('victoire'); this.vibre([50, 40, 90]); return this.lire({ ico: r.cle ? '🔑' : '⭐', titre: titre, texte: r.texte }); }
+            return this.annoncer((id === 'chene' ? '🌳 ' : '🧰 ') + r.texte);
           }
         },
         lire: function(m) { this.aLire = m; this.fenetre = 'lire'; },
