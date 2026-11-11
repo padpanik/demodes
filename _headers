@@ -7,3 +7,5 @@
 # Le service worker doit toujours être relu (nouvelle version visible au prochain lancement)
 /sw.js
   Cache-Control: no-cache
+/tension/sw.js
+  Cache-Control: no-cache

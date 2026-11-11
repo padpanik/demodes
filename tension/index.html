@@ -6,6 +6,13 @@
   <meta name="robots" content="noindex, nofollow">
   <meta name="theme-color" content="#1f5f8b">
   <title>Relevé de tension</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" type="image/png" href="icone-192.png">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Tension">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <style>
     * { box-sizing: border-box; }
     body {
@@ -80,6 +87,24 @@
       font-size: 16px; padding: 13px; border-radius: 12px; border: 0; cursor: pointer; font-weight: 600;
     }
     .copier { background: #1f5f8b; color: #fff; }
+    .deux { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .secondaire { background: #fff; color: #1f5f8b; border: 1.5px solid #b8cfe0 !important; }
+    .titre-bloc { font-size: 13px; color: #5b6b78; margin: 8px 2px -2px; }
+
+    .installer {
+      display: none; align-items: center; gap: 12px; background: #fff; border-radius: 14px;
+      padding: 12px 14px; margin-bottom: 14px; box-shadow: 0 1px 4px rgba(0,0,0,.08);
+    }
+    .installer.vu { display: flex; }
+    .installer img { width: 44px; height: 44px; border-radius: 10px; flex: none; }
+    .installer div { flex: 1; font-size: 14px; line-height: 1.35; }
+    .installer b { display: block; font-size: 15px; }
+    .installer button {
+      flex: none; background: #1f5f8b; color: #fff; border: 0; border-radius: 10px;
+      padding: 10px 14px; font-size: 15px; font-weight: 600; cursor: pointer;
+    }
+    .installer .fermer { background: none; color: #a0aab3; padding: 6px; font-size: 20px; font-weight: 400; }
+    .fenetre ol { margin: 0 0 16px; padding-left: 22px; color: #44596a; line-height: 1.5; }
     .zero { background: #fff; color: #c0392b; border: 1.5px solid #e3b4ae !important; }
 
     .voile {
@@ -109,10 +134,23 @@
   </header>
 
   <main>
+    <section class="installer" id="installer">
+      <img src="icone-192.png" alt="">
+      <div><b>Installer l'appli</b>Avec son icône sur l'écran d'accueil</div>
+      <button id="installerBtn">Installer</button>
+      <button class="fermer" id="installerFermer" aria-label="Masquer">✕</button>
+    </section>
     <section class="resume" id="resume"></section>
     <div id="jours"></div>
     <div class="actions">
       <button class="gros copier" id="copier">Envoyer le relevé (pour le médecin)</button>
+      <div class="titre-bloc">Changement de téléphone</div>
+      <div class="deux">
+        <button class="gros secondaire" id="exporter">⬇️ Sauvegarder</button>
+        <button class="gros secondaire" id="importer">📥 Récupérer</button>
+      </div>
+      <input type="file" id="fichier" accept=".json,application/json" hidden>
+      <button class="gros secondaire" id="installerBas" hidden>📲 Installer l'appli</button>
       <button class="gros zero" id="zero">Tout remettre à zéro</button>
     </div>
   </main>
@@ -127,6 +165,29 @@
       </div>
     </div>
   </div>
+  <div class="voile" id="voileImport">
+    <div class="fenetre">
+      <h2>Récupérer cette sauvegarde ?</h2>
+      <p id="texteImport"></p>
+      <div class="boutons">
+        <button class="gros annuler" id="nonImport">Annuler</button>
+        <button class="gros copier" id="ouiImport">Récupérer</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="voile" id="voileIos">
+    <div class="fenetre">
+      <h2>Installer sur iPhone</h2>
+      <ol>
+        <li>Ouvrir cette page dans <b>Safari</b>.</li>
+        <li>Toucher le bouton <b>Partager</b> (carré avec une flèche).</li>
+        <li>Choisir <b>Sur l'écran d'accueil</b>, puis <b>Ajouter</b>.</li>
+      </ol>
+      <div class="boutons"><button class="gros copier" id="okIos">Compris</button></div>
+    </div>
+  </div>
+
   <div class="toast" id="toast"></div>
 
   <script>
@@ -378,6 +439,139 @@
       window.scrollTo(0, 0);
       toast('Relevés effacés');
     });
+
+    // ---- Sauvegarde dans un fichier (changement de téléphone) ----
+    function aujourdhui() {
+      const d = new Date();
+      return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+    }
+
+    document.getElementById('exporter').addEventListener('click', async () => {
+      const n = Object.keys(donnees.m).length;
+      if (!n) { toast('Aucun relevé à sauvegarder'); return; }
+      const nom = 'tension-releves-' + aujourdhui() + '.json';
+      const contenu = JSON.stringify({ appli: 'releve-tension', date: Date.now(), donnees: donnees }, null, 1);
+      const fichier = new File([contenu], nom, { type: 'application/json' });
+      // Sur téléphone : menu de partage (mail, messagerie, Drive…) ; sinon téléchargement
+      if (navigator.canShare && navigator.canShare({ files: [fichier] })) {
+        try {
+          await navigator.share({ files: [fichier], title: 'Sauvegarde du relevé de tension' });
+          return;
+        } catch (e) {
+          if (e && e.name === 'AbortError') return;
+        }
+      }
+      const url = URL.createObjectURL(fichier);
+      const a = document.createElement('a');
+      a.href = url; a.download = nom;
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 2000);
+      toast('Fichier enregistré : ' + nom);
+    });
+
+    // Lecture d'un fichier de sauvegarde : on ne garde que des relevés bien formés
+    function lireSauvegarde(texte) {
+      const j = JSON.parse(texte);
+      const d = j && j.donnees;
+      if (!j || j.appli !== 'releve-tension' || !d || d.v !== 1 || typeof d.m !== 'object') return null;
+      const m = {};
+      Object.keys(d.m).forEach(k => {
+        const r = /^([1-3])-(matin|soir)-([1-3])$/.exec(k);
+        const v = d.m[k];
+        if (!r || !v || typeof v !== 'object') return;
+        const propre = {};
+        CHAMPS.forEach(c => {
+          const x = parseInt(v[c], 10);
+          if (x > 0 && x < 400) propre[c] = x;
+        });
+        if (typeof v.t === 'number') propre.t = v.t;
+        if (propre.sys || propre.dia || propre.pouls) m[k] = propre;
+      });
+      return { v: 1, m: m, date: j.date };
+    }
+
+    let aImporter = null;
+    const voileImport = document.getElementById('voileImport');
+    document.getElementById('importer').addEventListener('click', () => document.getElementById('fichier').click());
+    document.getElementById('fichier').addEventListener('change', e => {
+      const f = e.target.files && e.target.files[0];
+      e.target.value = '';
+      if (!f) return;
+      const lecteur = new FileReader();
+      lecteur.onload = () => {
+        let d = null;
+        try { d = lireSauvegarde(lecteur.result); } catch (err) {}
+        if (!d) { toast("Ce fichier n'est pas une sauvegarde du relevé"); return; }
+        aImporter = d;
+        const n = Object.keys(d.m).length;
+        const quand = d.date ? ' du ' + new Date(d.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }) : '';
+        const ici = Object.keys(donnees.m).length;
+        document.getElementById('texteImport').innerHTML = 'Sauvegarde' + quand + ' : <b>' + n + '</b> relevé' + (n > 1 ? 's' : '') + '.' +
+          (ici ? '<br>Elle remplacera les <b>' + ici + '</b> relevé' + (ici > 1 ? 's' : '') + ' de ce téléphone.' : '');
+        voileImport.classList.add('ouvert');
+      };
+      lecteur.readAsText(f);
+    });
+    document.getElementById('nonImport').addEventListener('click', () => { aImporter = null; voileImport.classList.remove('ouvert'); });
+    voileImport.addEventListener('click', e => { if (e.target === voileImport) { aImporter = null; voileImport.classList.remove('ouvert'); } });
+    document.getElementById('ouiImport').addEventListener('click', () => {
+      if (!aImporter) return;
+      donnees = { v: 1, m: aImporter.m };
+      aImporter = null;
+      ecrire();
+      voileImport.classList.remove('ouvert');
+      construire();
+      window.scrollTo(0, 0);
+      toast('Relevés récupérés');
+    });
+
+    // ---- Installation sur l'écran d'accueil ----
+    const CLE_INSTALL = 'tension-installer-masque';
+    const installer = document.getElementById('installer');
+    const dejaInstallee = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+    const ios = /iphone|ipad|ipod/i.test(navigator.userAgent) ||
+      (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    let invite = null;
+    function masque() {
+      try { return localStorage.getItem(CLE_INSTALL) === '1'; } catch (e) { return false; }
+    }
+    // Carte en haut (masquable) + bouton en bas (toujours là tant que l'appli n'est pas installée)
+    function montrerInstaller() {
+      if (dejaInstallee) return;
+      document.getElementById('installerBas').hidden = false;
+      if (!masque()) installer.classList.add('vu');
+    }
+    window.addEventListener('beforeinstallprompt', e => {
+      e.preventDefault();
+      invite = e;
+      montrerInstaller();
+    });
+    window.addEventListener('appinstalled', () => {
+      installer.classList.remove('vu');
+      document.getElementById('installerBas').hidden = true;
+      toast('Appli installée');
+    });
+    if (ios) montrerInstaller();
+    async function installerAppli() {
+      if (invite) {
+        invite.prompt();
+        const r = await invite.userChoice.catch(() => null);
+        if (r && r.outcome === 'accepted') installer.classList.remove('vu');
+        invite = null;
+      } else {
+        document.getElementById('voileIos').classList.add('ouvert');
+      }
+    }
+    document.getElementById('installerBtn').addEventListener('click', installerAppli);
+    document.getElementById('installerBas').addEventListener('click', installerAppli);
+    document.getElementById('okIos').addEventListener('click', () => document.getElementById('voileIos').classList.remove('ouvert'));
+    document.getElementById('installerFermer').addEventListener('click', () => {
+      installer.classList.remove('vu');
+      try { localStorage.setItem(CLE_INSTALL, '1'); } catch (e) {}
+    });
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js', { scope: './' }).catch(() => {});
+    }
 
     // Sortie d'un champ : afficher l'éventuel message de la ligne
     document.addEventListener('focusout', e => {
