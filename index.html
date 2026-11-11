@@ -119,7 +119,25 @@
     .cal-case.ajd span { text-decoration: underline; }
     .cal-case i { position: absolute; right: 2px; top: 1px; font-style: normal; font-size: 0.68em; color: #2b8a3e; font-weight: 900; }
     .voile-partage { position: fixed; inset: 0; z-index: 5000; background: rgba(20,30,40,0.55); display: flex; align-items: center; justify-content: center; padding: 16px; }
-    .fenetre-partage { background: #fff; border-radius: 22px; padding: 18px; width: 100%; max-width: 330px; text-align: center; box-shadow: 0 12px 40px rgba(0,0,0,0.3); }
+    .fenetre-partage { background: #fff; border-radius: 22px; padding: 18px; width: 100%; max-width: 330px; text-align: center; box-shadow: 0 12px 40px rgba(0,0,0,0.3);
+                       max-height: calc(100dvh - 32px); overflow-y: auto; box-sizing: border-box; }
+    /* Sauvegarde en ligne (facultative, chiffrée sur le téléphone) */
+    .nuage-sv { background: #f4f8fd; border: 1px solid #dbe6f3; border-radius: 14px; padding: 10px 12px; text-align: left; }
+    .nuage-sv .btn { width: 100%; margin-top: 8px; box-sizing: border-box; }
+    .nuage-tete { display: flex; align-items: center; gap: 8px; font-weight: 800; color: #24425f; }
+    .nuage-tete .etat { margin-left: auto; font-size: 0.78em; font-weight: 800; padding: 2px 8px; border-radius: 99px; background: #e3f4e7; color: #2b8a3e; }
+    .nuage-tete .etat.pause { background: #eef0f2; color: #6b7a86; }
+    .nuage-tete .etat.souci { background: #fdecea; color: #c0392b; }
+    .avert-sv { display: flex; gap: 6px; align-items: flex-start; margin-top: 8px; padding: 7px 9px; border-radius: 10px; background: #fff6e0; color: #7a5300; font-size: 0.84em; line-height: 1.3; }
+    .avert-sv svg { flex: none; margin-top: 1px; }
+    .code-sv { margin-top: 8px; padding: 8px; border-radius: 10px; background: #fff; border: 2px dashed #9db8d9; text-align: center;
+               font: 800 15px/1.4 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; letter-spacing: 0; white-space: nowrap; color: #1d2b36; user-select: all; }
+    .code-sv small { display: block; white-space: normal; font: 600 0.72em/1.3 system-ui, sans-serif; color: #6b7a86; letter-spacing: 0; margin-top: 3px; }
+    .saisie-sv { width: 100%; box-sizing: border-box; margin-top: 8px; padding: 10px; border-radius: 10px; border: 2px solid #c9d6e3; text-align: center;
+                 font: 800 1em ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; text-transform: uppercase; }
+    .lien-sv { display: block; width: 100%; margin-top: 8px; background: none; border: none; color: #c0392b; font: inherit; font-size: 0.85em; font-weight: 700; text-decoration: underline; cursor: pointer; }
+    .lien-sv.fort { background: #c0392b; color: #fff; text-decoration: none; border-radius: 10px; padding: 9px; }
+    .deux-sv { display: flex; gap: 6px; } .deux-sv .btn { flex: 1; font-size: 0.9em; padding-left: 6px; padding-right: 6px; }
     .titre-partage { font-weight: 900; font-size: 1.25em; margin-bottom: 4px; }
     .aide-partage { color: #6b7a86; font-size: 0.88em; line-height: 1.35; }
     .qr-partage { margin: 12px auto 6px; width: 220px; height: 220px; }
@@ -353,10 +371,47 @@
               Garde-le (Drive, mail à toi-même…), puis ouvre-le sur l'autre téléphone ou navigateur.</div>
             <button v-if="peutEnvoyerFichier" class="btn principal" style="width:100%;margin-top:12px" @click="envoyerSauvegarde"><span v-html="icoTrait('envoyer')"></span>Envoyer le fichier…</button>
             <button class="btn" :class="{ principal: !peutEnvoyerFichier }" style="width:100%;margin-top:6px" @click="telechargerSauvegarde"><span v-html="icoTrait('telecharger')"></span>Télécharger le fichier</button>
+            <div class="separateur-sv">Sauvegarde en ligne (facultative)</div>
+            <div class="nuage-sv" v-if="nuagePossible">
+              <div class="nuage-tete"><span class="mc-ico" v-html="icoCompte('nuage', 26)"></span>En ligne, chiffrée
+                <span v-if="nuage.code" class="etat" :class="{ pause: !nuage.actif, souci: nuage.actif && nuage.erreur }">{{ !nuage.actif ? 'En pause' : nuage.erreur ? 'Souci' : 'Activée' }}</span></div>
+              <template v-if="!nuage.code">
+                <div class="aide-partage" style="margin-top:6px">Une copie part toute seule sur le serveur de Désdale quand tu utilises l'appli. Elle est <b>chiffrée sur ce téléphone</b> avec ton code de récupération : sans ce code, personne ne peut la lire, pas même le serveur. Tu peux l'arrêter et l'effacer quand tu veux.</div>
+                <div class="avert-sv"><span v-html="icoTrait('attention', 16)"></span><span><b>Ça ne remplace pas une sauvegarde locale.</b> Le serveur gratuit peut perdre ou effacer des données : garde aussi un fichier de temps en temps (bouton du haut).</span></div>
+                <button class="btn principal" :disabled="nuageVue.occupe" @click="activerNuage">{{ nuageVue.occupe ? 'Envoi…' : 'Activer la sauvegarde en ligne' }}</button>
+              </template>
+              <template v-else>
+                <div class="aide-partage" style="margin-top:6px">
+                  <template v-if="nuage.dernier">Dernier envoi : {{ depuisSv(nuage.dernier) }}<span v-if="nuage.taille"> ({{ Math.max(1, Math.round(nuage.taille / 1024)) }} Ko)</span>.</template>
+                  <template v-else>Pas encore envoyée.</template>
+                  <span v-if="nuage.actif"> Envoi automatique au plus toutes les 15 min, seulement si quelque chose a changé.</span>
+                </div>
+                <div class="erreur-sv" v-if="nuage.actif && nuage.erreur && !nuageVue.msg" style="margin-top:6px">{{ nuage.erreur }}</div>
+                <div class="aide-partage" v-if="nuageVue.msg" style="margin-top:6px;font-weight:700">{{ nuageVue.msg }}</div>
+                <div v-if="nuageVue.voirCode" class="code-sv">{{ nuage.code }}<small>Ton code de récupération : note-le (papier, gestionnaire de mots de passe). Sans lui, la copie en ligne est perdue.</small></div>
+                <div class="deux-sv">
+                  <button class="btn" @click="nuageVue.voirCode = !nuageVue.voirCode"><span v-html="icoTrait('cadenas', 16)"></span>{{ nuageVue.voirCode ? 'Cacher' : 'Mon code' }}</button>
+                  <button v-if="nuageVue.voirCode" class="btn" @click="copierCodeNuage"><span v-html="icoTrait(nuageVue.copie ? 'coche' : 'copier', 16)"></span>{{ nuageVue.copie ? 'Copié' : 'Copier' }}</button>
+                  <button v-else-if="nuage.actif" class="btn" :disabled="nuageVue.occupe" @click="envoyerNuage"><span v-html="icoTrait('envoyer', 16)"></span>{{ nuageVue.occupe ? 'Envoi…' : 'Envoyer' }}</button>
+                </div>
+                <button class="btn" @click="pauseNuage">{{ nuage.actif ? 'Mettre en pause' : 'Reprendre' }}</button>
+                <div class="avert-sv"><span v-html="icoTrait('attention', 16)"></span><span>Ne remplace pas une sauvegarde locale : garde aussi un fichier.</span></div>
+                <button class="lien-sv" :class="{ fort: nuageVue.confirmeEffacer }" :disabled="nuageVue.occupe" @click="effacerNuage">{{ nuageVue.confirmeEffacer ? 'Vraiment tout effacer en ligne ?' : 'Arrêter et effacer la copie en ligne' }}</button>
+              </template>
+            </div>
+            <div v-else class="aide-partage">Ce navigateur ne permet pas la sauvegarde en ligne.</div>
             <div class="separateur-sv">Sur le nouveau téléphone</div>
             <label class="btn" style="width:100%;display:block;box-sizing:border-box"><span v-html="icoTrait('recuperer')"></span>Récupérer une sauvegarde…
               <input type="file" accept=".json,.txt,application/json,text/plain" style="display:none" @change="choisirFichier">
             </label>
+            <template v-if="nuagePossible">
+              <button v-if="!nuageVue.chercher" class="btn" style="width:100%;margin-top:6px" @click="nuageVue.chercher = true"><span v-html="icoTrait('nuage')"></span>Récupérer la sauvegarde en ligne…</button>
+              <div v-else class="nuage-sv" style="margin-top:6px">
+                <div class="aide-partage">Tape ton code de récupération (20 signes) :</div>
+                <input class="saisie-sv" v-model="nuageVue.saisie" placeholder="XXXXX-XXXXX-XXXXX-XXXXX" autocomplete="off" autocapitalize="characters" spellcheck="false" @keyup.enter="chercherNuage">
+                <button class="btn principal" :disabled="nuageVue.occupe" @click="chercherNuage">{{ nuageVue.occupe ? 'Recherche…' : 'Chercher ma sauvegarde' }}</button>
+              </div>
+            </template>
             <div class="aide-partage ligne-ico" style="margin-top:10px"><span v-html="icoTrait('cadenas', 16)"></span><span>Le code d'accès n'est pas dans le fichier. Les parties en salon en cours ne sont pas sauvegardées.</span></div>
             <div class="erreur-sv" v-if="sauvegarde.erreur">{{ sauvegarde.erreur }}</div>
           </template>
@@ -450,6 +505,7 @@
       envoyer:    { d: '<path d="M12 15V4"/><path d="M7.8 8.2L12 4l4.2 4.2"/><path d="M4.5 13v4.8a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V13"/>' },
       telecharger:{ d: '<path d="M12 3.5v10"/><path d="M7.8 9.4L12 13.6l4.2-4.2"/><path d="M4.5 15v2.8a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V15"/>' },
       recuperer:  { d: '<path d="M4 8.5V6a2 2 0 0 1 2-2h3.5l2 2.2H18a2 2 0 0 1 2 2V18a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-1.5"/><path d="M2.5 12.5h9"/><path d="M8.5 9.5l3 3-3 3"/>' },
+      nuage:      { c: '#3d6fb6', f: '#e4eefb', d: '<path d="M7 18.5h10.2a3.8 3.8 0 0 0 .6-7.55A5.3 5.3 0 0 0 7.6 9.6 4.5 4.5 0 0 0 7 18.5z"/><path d="M12 16.2v-4.6"/><path d="M10 13.4l2-2 2 2"/>' },
       attention:  { d: '<path d="M12 4l9 15.5H3z"/><path d="M12 10v4"/><path d="M12 17v.2"/>' },
       installer:  { d: '<rect x="6.5" y="2.8" width="11" height="18.4" rx="2.5"/><path d="M12 7.5v6.5"/><path d="M9.3 11.5L12 14.2l2.7-2.7"/><path d="M10.5 18h3"/>' },
       trophee:    { d: '<path d="M8 4h8v5a4 4 0 0 1-8 0z"/><path d="M8 5.5H5v1.2a3 3 0 0 0 3 3M16 5.5h3v1.2a3 3 0 0 1-3 3"/><path d="M12 13v3.5M8.5 20h7M9.5 20c0-2 1-3.5 2.5-3.5s2.5 1.5 2.5 3.5"/>' },
@@ -503,6 +559,9 @@
         nouveautes: [],    // fenêtre « Quoi de neuf ? » (nouveautesAVoir, commun.js)
         sauvegarde: null,  // fenêtre « Ma sauvegarde » : { ici, lue (sauvegarde choisie, à confirmer), erreur }
         peutEnvoyerFichier: false,
+        nuage: {},         // état de la sauvegarde en ligne (Nuage.etat(), commun.js)
+        nuageVue: { voirCode: false, copie: false, occupe: false, confirmeEffacer: false, chercher: false, saisie: '', msg: '' },
+        nuagePossible: typeof Nuage !== 'undefined' && Nuage.possible(),
         copie: false,
         logo: [B, J, R, V],
         installPossible: false,
@@ -629,6 +688,7 @@
       },
       created: function() {
         setInterval(() => { this.maj++; }, 30000);   // humeur du compagnon et étoiles à jour
+        window.addEventListener('desdale-nuage', () => { if (this.sauvegarde) this.majNuage(); });   // envoi automatique en ligne terminé
         // Un défi de la semaine réussi pendant une partie (si le module n'était pas encore chargé) : on le valide ici
         setTimeout(() => { try { if (CP.verifierDefis(true).length) this.maj++; } catch (e) {} }, 1200);
         // Glisser au doigt : il faut pouvoir bloquer le défilement de la page pendant le tri
@@ -721,6 +781,55 @@
           var s = Sauvegarde.creer();
           try { this.peutEnvoyerFichier = !!(navigator.share && navigator.canShare && navigator.canShare({ files: [this.fichierSv(s, true)] })); } catch (e) { this.peutEnvoyerFichier = false; }
           this.sauvegarde = { ici: Sauvegarde.resume(s), lue: null, brute: null, erreur: '' };
+          this.nuage = Nuage.etat();
+          this.nuageVue = { voirCode: false, copie: false, occupe: false, confirmeEffacer: false, chercher: false, saisie: '', msg: '' };
+        },
+        // ---------- Sauvegarde en ligne (Nuage, commun.js) ----------
+        majNuage: function() { this.nuage = Nuage.etat(); },
+        depuisSv: function(t) {
+          var m = Math.round((Date.now() - t) / 60000);
+          if (m < 1) return 'à l\'instant';
+          if (m < 60) return 'il y a ' + m + ' min';
+          if (m < 48 * 60) return 'il y a ' + Math.round(m / 60) + ' h';
+          return 'le ' + new Date(t).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' });
+        },
+        activerNuage: function() {
+          this.nuageVue.occupe = true; this.sauvegarde.erreur = '';
+          Nuage.activer().catch(() => {}).then(() => { this.nuageVue.occupe = false; this.nuageVue.voirCode = true; this.majNuage(); });
+          this.majNuage();
+        },
+        envoyerNuage: function() {
+          this.nuageVue.occupe = true;
+          this.nuageVue.msg = '';
+          Nuage.envoyer(true).then(() => { this.nuageVue.msg = '✓ Envoyée.'; }, e => { this.nuageVue.msg = e && e.message ? e.message : 'Envoi impossible.'; })
+            .then(() => { this.nuageVue.occupe = false; this.majNuage(); });
+        },
+        pauseNuage: function() {
+          if (this.nuage.actif) { Nuage.suspendre(); this.majNuage(); return; }
+          this.nuageVue.occupe = true;
+          Nuage.reprendre().catch(() => {}).then(() => { this.nuageVue.occupe = false; this.majNuage(); });
+          this.majNuage();
+        },
+        copierCodeNuage: function() {
+          var fini = () => { this.nuageVue.copie = true; setTimeout(() => { this.nuageVue.copie = false; }, 2000); };
+          if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(this.nuage.code).then(fini, () => {});
+        },
+        effacerNuage: function() {
+          if (!this.nuageVue.confirmeEffacer) { this.nuageVue.confirmeEffacer = true; setTimeout(() => { this.nuageVue.confirmeEffacer = false; }, 4000); return; }
+          this.nuageVue.occupe = true; this.nuageVue.confirmeEffacer = false; this.sauvegarde.erreur = '';
+          Nuage.effacer().then(() => { this.nuageVue.voirCode = false; },
+            e => { this.sauvegarde.erreur = (e && e.message ? e.message : 'Effacement impossible.') + ' Rien n\'a été changé, réessaie plus tard.'; })
+            .then(() => { this.nuageVue.occupe = false; this.majNuage(); });
+        },
+        chercherNuage: function() {
+          var code = this.nuageVue.saisie;
+          this.sauvegarde.erreur = '';
+          if (!Nuage.codeValide(code)) { this.sauvegarde.erreur = 'Le code doit avoir 20 signes (4 groupes de 5).'; return; }
+          this.nuageVue.occupe = true;
+          Nuage.lire(code).then(s => {
+            this.sauvegarde.brute = s; this.sauvegarde.lue = Sauvegarde.resume(s); this.sauvegarde.codeNuage = Nuage.formater(code);
+          }, e => { this.sauvegarde.erreur = e && e.message ? e.message : 'Sauvegarde introuvable.'; })
+            .then(() => { this.nuageVue.occupe = false; });
         },
         // texte = true : fichier .txt pour le menu de partage (Chrome sur Android refuse les .json en partage)
         fichierSv: function(s, texte) {
@@ -753,6 +862,8 @@
         },
         restaurerSauvegarde: function() {
           Sauvegarde.restaurer(this.sauvegarde.brute);
+          // Récupérée en ligne : ce téléphone continue la sauvegarde en ligne avec le même code
+          if (this.sauvegarde.codeNuage) ecrireStockage('desdale-nuage', { code: this.sauvegarde.codeNuage, actif: true });
           location.replace('index.html?choix');
         },
         dateSv: function(iso) {

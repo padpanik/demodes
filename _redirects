@@ -3,6 +3,7 @@
 /netlify.toml             /  302
 /serveur-cloudflare/*     /  302
 /serveur-tension/*        /  302
+/serveur-sauvegarde/*     /  302
 /_headers                 /  302
 
 # Chez Cloudflare seulement (GitHub Pages ignore ce fichier) : icônes à fond crème et manifeste propre à la nouvelle adresse,

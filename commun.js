@@ -3,12 +3,13 @@
 // Les clés de stockage gardent l'ancien préfixe "brillant-" : les réglages déjà faits sont conservés.
 
 // Numéro de version affiché (à augmenter à chaque mise en ligne, avec brilliant/index.html et sw.js)
-const VERSION = '3.45';
+const VERSION = '3.46';
 
 // ---------- Nouveautés (2.87, demandé par l'utilisateur) ----------
 // Une ligne très brève par mise en ligne (la plus récente en haut) : l'accueil les montre une seule fois, dans une petite fenêtre,
 // à qui n'a pas encore vu cette version. [version, jeu ou partie de l'appli, ce qui change]
 const NOUVEAUTES = [
+  ['3.46', 'Ma sauvegarde', 'Sauvegarde en ligne facultative, chiffrée sur ton téléphone avec ton code de récupération.'],
   ['3.45', 'Ma sauvegarde', '« Envoyer le fichier… » fonctionne aussi sur Android (sinon, le fichier est téléchargé).'],
   ['3.44', 'Donjon', 'Monstres de la Grotte de glace redessinés, plus détaillés.'],
   ['3.43', 'Donjon', 'Nouveau lieu au 2e étage : la Grotte de glace ❄️ (une carte de ta main gèle à chaque tour, boss le Dragon de givre).'],
@@ -138,7 +139,7 @@ var DEMENAGEMENT = { ouvert: true, ancienHote: 'padpanik.github.io', nouvelle: '
 
 var Sauvegarde = (function () {
   var NOTRES = /^(brillant|desdale|compagnon|expedition|yams2?|bg|assaut|bataille|gribouille|petitbac|agents|quatre|domino|lettres|donjon|joyaux|dix|chinchon|cieljo)-/;
-  var EXCLUES = ['brillant-acces', 'brillant-client-id', 'desdale-admin'];
+  var EXCLUES = ['brillant-acces', 'brillant-client-id', 'desdale-admin', 'desdale-nuage'];
   function gardee(k) { return NOTRES.test(k) && EXCLUES.indexOf(k) === -1 && !/-sauvegarde(-v1)?$/.test(k) && !/-prive$/.test(k); }
   function cles() { var l = []; try { for (var i = 0; i < localStorage.length; i++) { var k = localStorage.key(i); if (gardee(k)) l.push(k); } } catch (e) {} return l.sort(); }
   function creer() {
@@ -166,6 +167,165 @@ var Sauvegarde = (function () {
   }
   return { creer: creer, resume: resume, lireFichier: lireFichier, restaurer: restaurer, gardee: gardee };
 })();
+
+// ================== SAUVEGARDE EN LIGNE (facultative) ==================
+// Choisie par le joueur dans « Ma sauvegarde ». Le joueur reste maître de ses données :
+// - tout est chiffré sur le téléphone (AES-GCM) avec une clé tirée de son code de récupération ;
+//   le serveur (Worker « desdale-sauvegarde », voir serveur-sauvegarde/) ne garde qu'un texte illisible ;
+// - le code n'est gardé que sur ce téléphone (`desdale-nuage`, jamais dans le fichier de sauvegarde) ;
+// - il peut tout arrêter et effacer la copie en ligne quand il veut.
+// Envoi automatique à l'ouverture d'une page et quand l'appli passe en arrière-plan,
+// au plus toutes les 15 min et seulement si quelque chose a changé (quota gratuit de Cloudflare : 1 000 écritures par jour).
+// Ne remplace pas une sauvegarde locale (fichier) : le serveur peut perdre ses données ou fermer.
+var Nuage = (function () {
+  var ADRESSE = 'https://desdale-sauvegarde.desdale.workers.dev';
+  var CLE = 'desdale-nuage';                       // { code, actif, dernier, emp, erreur }
+  var ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // 32 signes, sans I, O, 0, 1 (faciles à confondre)
+  var INTERVALLE = 15 * 60 * 1000;
+  var derives = {}, enCours = null;
+
+  function adresse() { var a = lireStockage('desdale-nuage-adresse'); return typeof a === 'string' && a ? a : ADRESSE; }   // essais : serveur local
+  function etat() { return lireStockage(CLE) || {}; }
+  function ecrire(e) { ecrireStockage(CLE, e); try { window.dispatchEvent(new CustomEvent('desdale-nuage')); } catch (x) {} }
+  function possible() { return !!(window.crypto && crypto.subtle && window.fetch && window.TextEncoder); }
+
+  // Code de récupération : 20 signes (100 bits), lus par groupes de 5
+  function nouveauCode() {
+    var o = crypto.getRandomValues(new Uint8Array(20)), c = '';
+    for (var i = 0; i < 20; i++) c += ALPHABET[o[i] & 31];
+    return formater(c);
+  }
+  function nettoyer(code) {
+    return String(code || '').toUpperCase().split('').filter(function (x) { return ALPHABET.indexOf(x) !== -1; }).join('');
+  }
+  function formater(c) { c = nettoyer(c); return (c.match(/.{1,5}/g) || []).join('-'); }
+  function codeValide(code) { return nettoyer(code).length === 20; }
+
+  function hex(b) { return Array.prototype.map.call(b, function (x) { return ('0' + x.toString(16)).slice(-2); }).join(''); }
+  function b64(octets) { var s = '', b = new Uint8Array(octets); for (var i = 0; i < b.length; i += 0x8000) s += String.fromCharCode.apply(null, b.subarray(i, i + 0x8000)); return btoa(s); }
+  function deb64(t) { var s = atob(t), b = new Uint8Array(s.length); for (var i = 0; i < s.length; i++) b[i] = s.charCodeAt(i); return b; }
+
+  // Du code : identifiant (où est rangée la sauvegarde), jeton (droit d'écrire) et clé de chiffrement
+  function deriver(code) {
+    var c = nettoyer(code);
+    if (derives[c]) return derives[c];
+    var enc = new TextEncoder();
+    derives[c] = crypto.subtle.importKey('raw', enc.encode(c), 'PBKDF2', false, ['deriveBits'])
+      .then(function (k) { return crypto.subtle.deriveBits({ name: 'PBKDF2', hash: 'SHA-256', salt: enc.encode('desdale-nuage-v1'), iterations: 150000 }, k, 512); })
+      .then(function (bits) {
+        var b = new Uint8Array(bits);
+        return crypto.subtle.importKey('raw', b.slice(32, 64), 'AES-GCM', false, ['encrypt', 'decrypt']).then(function (cle) {
+          return { id: hex(b.slice(0, 16)), jeton: hex(b.slice(16, 32)), cle: cle };
+        });
+      });
+    derives[c].catch(function () { delete derives[c]; });
+    return derives[c];
+  }
+
+  // Compression si le navigateur sait faire (Chrome 80+, Safari 16.4+)
+  function compresser(texte) {
+    if (!window.CompressionStream) return Promise.resolve({ z: 0, o: new TextEncoder().encode(texte) });
+    var flux = new Blob([texte]).stream().pipeThrough(new CompressionStream('gzip'));
+    return new Response(flux).arrayBuffer().then(function (a) { return { z: 1, o: new Uint8Array(a) }; });
+  }
+  function decompresser(octets, z) {
+    if (!z) return Promise.resolve(new TextDecoder().decode(octets));
+    if (!window.DecompressionStream) return Promise.reject(new Error('Ce navigateur ne sait pas lire cette sauvegarde.'));
+    var flux = new Blob([octets]).stream().pipeThrough(new DecompressionStream('gzip'));
+    return new Response(flux).text();
+  }
+  function empreinte(texte) {
+    return crypto.subtle.digest('SHA-256', new TextEncoder().encode(texte)).then(function (b) { return hex(new Uint8Array(b)).slice(0, 24); });
+  }
+
+  function requete(methode, d, corps) {
+    return fetch(adresse() + '/s/' + d.id, {
+      method: methode, cache: 'no-store',
+      headers: corps ? { 'Authorization': 'Bearer ' + d.jeton, 'Content-Type': 'application/json' } : { 'Authorization': 'Bearer ' + d.jeton },
+      body: corps
+    }).then(function (r) {
+      if (r.ok) return r.text();
+      var e = new Error(r.status === 404 ? 'Aucune sauvegarde en ligne pour ce code.' : r.status === 403 ? 'Ce code ne donne pas accès à cette sauvegarde.'
+        : r.status === 429 ? 'Envoi trop rapproché, nouvel essai plus tard.' : r.status === 413 ? 'Sauvegarde trop grande pour le serveur.' : 'Le serveur de sauvegarde ne répond pas (' + r.status + ').');
+      e.statut = r.status; throw e;
+    }, function () { throw new Error('Pas de connexion au serveur de sauvegarde.'); });
+  }
+
+  // Envoie la sauvegarde de ce téléphone. force = sans attendre les 15 min ni un changement.
+  function envoyer(force) {
+    var e = etat();
+    if (!e.actif || !e.code || !possible()) return Promise.resolve(false);
+    if (!force && e.dernier && Date.now() - e.dernier < INTERVALLE) return Promise.resolve(false);
+    if (enCours) return enCours;
+    var s = Sauvegarde.creer(), texte = JSON.stringify(s);
+    enCours = empreinte(JSON.stringify(s.donnees)).then(function (emp) {
+      if (!force && emp === e.emp) return false;          // rien n'a changé depuis le dernier envoi
+      return deriver(e.code).then(function (d) {
+        return compresser(texte).then(function (c) {
+          var iv = crypto.getRandomValues(new Uint8Array(12));
+          return crypto.subtle.encrypt({ name: 'AES-GCM', iv: iv }, d.cle, c.o).then(function (chiffre) {
+            var paquet = JSON.stringify({ v: 1, z: c.z, iv: b64(iv), d: b64(chiffre) });
+            return requete('PUT', d, paquet).then(function () {
+              var e2 = etat();
+              if (e2.code !== e.code) return false;           // arrêté ou changé pendant l'envoi
+              e2.dernier = Date.now(); e2.emp = emp; e2.taille = paquet.length; delete e2.erreur; ecrire(e2);
+              return true;
+            });
+          });
+        });
+      });
+    }).catch(function (err) {
+      var e2 = etat();
+      if (e2.code === e.code && e2.actif && err.statut !== 429) { e2.erreur = err.message || String(err); e2.erreurT = Date.now(); ecrire(e2); }
+      throw err;
+    }).then(function (r) { enCours = null; return r; }, function (err) { enCours = null; throw err; });
+    return enCours;
+  }
+
+  // Lit la sauvegarde rangée sous ce code (sur n'importe quel téléphone)
+  function lire(code) {
+    if (!possible()) return Promise.reject(new Error('Ce navigateur ne permet pas la sauvegarde en ligne.'));
+    if (!codeValide(code)) return Promise.reject(new Error('Le code doit avoir 20 signes (4 groupes de 5).'));
+    return deriver(code).then(function (d) {
+      return requete('GET', d).then(function (texte) {
+        var p = JSON.parse(texte);
+        return crypto.subtle.decrypt({ name: 'AES-GCM', iv: deb64(p.iv) }, d.cle, deb64(p.d))
+          .catch(function () { throw new Error('Impossible de déchiffrer : le code ne correspond pas.'); })
+          .then(function (o) { return decompresser(new Uint8Array(o), p.z); })
+          .then(function (t) { return Sauvegarde.lireFichier(t); });
+      });
+    });
+  }
+
+  // Activer : nouveau code (ou celui d'une sauvegarde récupérée), puis premier envoi
+  function activer(code) {
+    var e = { code: formater(code || nouveauCode()), actif: true };
+    ecrire(e);
+    return envoyer(true);
+  }
+  function reprendre() { var e = etat(); if (!e.code) return Promise.resolve(false); e.actif = true; ecrire(e); return envoyer(true); }
+  function suspendre() { var e = etat(); e.actif = false; ecrire(e); }
+  // Arrêter et effacer la copie en ligne ; le code est oublié sur ce téléphone
+  function effacer() {
+    var e = etat();
+    if (!e.code) { effacerStockage(CLE); return Promise.resolve(); }
+    return deriver(e.code).then(function (d) { return requete('DELETE', d); }).then(function () { effacerStockage(CLE); ecrire0(); });
+  }
+  function ecrire0() { try { window.dispatchEvent(new CustomEvent('desdale-nuage')); } catch (x) {} }
+
+  // Envoi automatique : à l'ouverture (après 20 s, pour ne pas gêner le chargement) et en arrière-plan
+  function demarrer() {
+    if (!possible()) return;
+    setTimeout(function () { envoyer(false).catch(function () {}); }, 20000);
+    document.addEventListener('visibilitychange', function () {
+      if (document.visibilityState === 'hidden') envoyer(false).catch(function () {});
+    });
+  }
+
+  return { etat: etat, possible: possible, nouveauCode: nouveauCode, formater: formater, codeValide: codeValide,
+    envoyer: envoyer, lire: lire, activer: activer, reprendre: reprendre, suspendre: suspendre, effacer: effacer, demarrer: demarrer };
+})();
+if (typeof document !== 'undefined') { try { Nuage.demarrer(); } catch (e) {} }
 
 // Garde-fou réseau : si le serveur de mise en relation (PeerJS) ne répond pas, l'événement « open » n'arrive jamais
 // et aucune erreur non plus : la page resterait sur « connexion… ». Passé le délai, on déclenche une erreur ;

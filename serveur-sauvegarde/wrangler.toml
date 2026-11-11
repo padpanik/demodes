@@ -1,0 +1,11 @@
+# Worker « desdale-sauvegarde » : sauvegarde en ligne facultative (chiffrée sur le téléphone). Voir LISEZMOI.md.
+name = "desdale-sauvegarde"
+main = "worker.js"
+compatibility_date = "2026-11-01"
+
+[vars]
+ORIGINES = "https://demodes.desdale.workers.dev,https://padpanik.github.io"
+
+[[kv_namespaces]]
+binding = "SAUVEGARDES"
+id = "3fd30555ec48415eb41b0ec2e6dd388d"
