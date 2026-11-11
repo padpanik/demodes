@@ -331,7 +331,7 @@ var DJ = (function () {
     Object.values(e.joueurs).forEach((p, i) => {
       var d = DEPARTS[i % DEPARTS.length];
       p.salle = e.depart; p.x = d[0]; p.y = d[1]; p.d = null; p.unPas = null;
-      p.armure = 0; p.etats = {}; p.main = []; p.glace = []; p.pioche = []; p.defausse = []; p.epuisees = []; p.energie = 0; p.tourCombat = 0;
+      p.armure = 0; p.etats = {}; p.main = []; p.glace = []; p.gardees = []; p.marque = null; p.garderTout = false; p.pioche = []; p.defausse = []; p.epuisees = []; p.energie = 0; p.tourCombat = 0;
       p.menus = (p.menus || []).filter(m => m.type === 'butin' || m.type === 'reliqueBoss' || m.type === 'choix');
       if (e.etage > 1) {
         if (p.fantome) { p.fantome = false; p.pv = 1; }
@@ -359,7 +359,7 @@ var DJ = (function () {
     var p = (e.joueurs[nom] = { nom: nom, ordre: n, salle: e.depart, x: d[0], y: d[1], dir: 'h', fantome: false, reanim: 0,
       cp: cp || null, pouvoir: pw, classe: classe, pas: 0, d: null, unPas: null, aideT: 0,
       pv: pv, pvMax: pv, or: 40, paquet: paquetDepart(classe, e.peril), reliques: [], fioles: [], fiolesMax: 2, menus: [], faits: {}, boutiques: {}, retraits: 0,
-      pioche: [], main: [], glace: [], defausse: [], epuisees: [], armure: 0, etats: {}, energie: 0, joues: 0, jouesTotal: 0 });
+      pioche: [], main: [], glace: [], gardees: [], defausse: [], epuisees: [], armure: 0, etats: {}, energie: 0, joues: 0, jouesTotal: 0 });
     appliquerAvantages(e, p, av);
     return p;
   }
@@ -900,7 +900,7 @@ var DJ = (function () {
   }
   function entrerEnCombat(e, c, p, h) {
     c.joueurs.push(p.nom); p.d = null; p.unPas = null;
-    p.pioche = melanger(p.paquet, h); p.main = []; p.glace = []; p.defausse = []; p.epuisees = []; p.armure = 0; p.etats = {}; p.joues = 0; p.tourCombat = 0;
+    p.pioche = melanger(p.paquet, h); p.main = []; p.glace = []; p.gardees = []; p.marque = null; p.garderTout = false; p.defausse = []; p.epuisees = []; p.armure = 0; p.etats = {}; p.joues = 0; p.tourCombat = 0;
     if (a(p, 'gant')) ajouterEtat(p, 'force', 1);
     if (a(p, 'collier')) ajouterEtat(p, 'epines', 3);
     p.dentPrete = a(p, 'dent'); p.amulettePrete = a(p, 'amulette'); p.reserve = 0;
@@ -983,6 +983,7 @@ var DJ = (function () {
     var n = MAIN + (a(p, 'sceptre') ? 1 : 0) - (a(p, 'couronne') ? 1 : 0) + (premier && a(p, 'sac') ? 2 : 0);
     if (!p.glace) p.glace = [];
     if (p.glace.length) { p.main = p.main.concat(p.glace); p.glace = []; }   // les cartes gelées au tour d'avant dégèlent
+    if (p.gardees && p.gardees.length) { p.main = p.main.concat(p.gardees); p.gardees = []; }   // cartes gardées (Marque-page, Prévoyance)
     piocher(e, p, n, h);
     geler(e, c, p, h);
     if (p.etats.brasier) { ouvrir(c, ETATS.brasier.ico, nomCp(p), ETATS.brasier.nom); monstresDe(e, c).forEach(m => infliger(e, c, m, p.etats.brasier, null)); fermer(); }
@@ -1035,6 +1036,8 @@ var DJ = (function () {
     p.pv = 0; p.fantome = true; p.reanim = 0; p.d = null; p.armure = 0;
     defausserTout(p);
     if (p.glace && p.glace.length) { p.defausse = p.defausse.concat(p.glace); p.glace = []; }
+    if (p.gardees && p.gardees.length) { p.defausse = p.defausse.concat(p.gardees); p.gardees = []; }
+    p.marque = null; p.garderTout = false;
     journal(c, '👻 ' + nomCp(p) + ' est KO !');
     annonce(e, '👻 ' + nomCp(p) + ' est KO' + (Object.keys(e.joueurs).length > 1 ? ' : un Trèfle ou un ami à côté de lui hors combat le ranime !' : '…'));
   }
@@ -1099,6 +1102,11 @@ var DJ = (function () {
       case 'danse': if (vivant(m)) infliger(e, c, m, calculer(p, m, f.n * p.joues), p, true); break;
       case 'traque': if (vivant(m)) { if (m.etats.vuln) { p.energie++; noter(nomCp(p), '⚡+1', 'etat'); } infliger(e, c, m, calculer(p, m, f.n), p, true); } break;
       case 'embuscade': if (vivant(m)) infliger(e, c, m, calculer(p, m, m.etats.poison ? f.n * 2 : f.n), p, true); break;
+      // Interruption (3.47) : le monstre perd l'action qu'il avait annoncée, boss compris (choix de l'utilisateur) ; son cycle avance
+      case 'assommer':
+        if (vivant(m) && m.intention && !m.intention.assomme) { m.intention = { nom: '💫 Assommé', assomme: true, avant: m.intention.nom }; fx(e, c, m.id, '💫', 'etat'); }
+        break;
+      case 'prevoyance': p.garderTout = true; noter(nomCp(p), '📌 garde sa main', 'etat'); break;
       case 'catalyse': if (vivant(m) && m.etats.poison) { m.etats.poison *= f.n; fx(e, c, m.id, '☠️' + m.etats.poison, 'etat'); } break;
     }
   }
@@ -1124,6 +1132,7 @@ var DJ = (function () {
     }
     p.energie -= k.cout;
     p.main.splice(i, 1);
+    if (p.marque === id && p.main.indexOf(id) < 0) p.marque = null;
     ouvrir(c, k.ico, nomCp(p), k.nom);
     appliquer(e, c, p, k.fx, cible, h, false);
     p.joues++; p.jouesTotal = (p.jouesTotal || 0) + 1;
@@ -1164,6 +1173,17 @@ var DJ = (function () {
     verifierFin(e, c, h);
     return null;
   }
+  // Marque-page (3.47) : choisir la carte de la main à garder pour le tour suivant (toucher encore = l'enlever)
+  function marquer(e, nom, i) {
+    var p = e.joueurs[nom], c = p && e.combats[p.salle];
+    if (!c || p.fantome || c.joueurs.indexOf(nom) < 0 || c.fini[nom] || c.pret) return 'Pas maintenant';
+    if (!a(p, 'marquepage')) return 'Il faut le Marque-page';
+    var id = p.main[i], kk = id && carte(id);
+    if (!kk) return 'Carte inconnue';
+    if (kk.type === 'malediction') return 'Une malédiction ne se garde pas';
+    p.marque = p.marque === id ? null : id;
+    return null;
+  }
   function jeterFiole(e, nom, i) { var p = e.joueurs[nom]; if (p && p.fioles[i]) p.fioles.splice(i, 1); }
 
   // Fin du tour d'un joueur : effets de fin de tour, la main part à la défausse
@@ -1189,6 +1209,15 @@ var DJ = (function () {
     if (R && R.poison && !p.armure && !p.fantome) { if (!LIGNE) ouvrir(c, R.ico, nomCp(p), R.nom.toLowerCase()); affaiblir(e, c, p, 'poison', R.poison); }
     fermer();
     if (p.fantome) return;
+    // Cartes gardées pour le tour suivant (3.47) : toute la main avec Prévoyance, sinon la carte marquée avec le Marque-page ; jamais une malédiction
+    var gardees = [];
+    if (p.garderTout) p.main = p.main.filter(id => { var kk = carte(id); if (kk && kk.type !== 'malediction') { gardees.push(id); return false; } return true; });
+    else if (p.marque && a(p, 'marquepage')) { var jm = p.main.indexOf(p.marque); if (jm >= 0) gardees.push(p.main.splice(jm, 1)[0]); }
+    p.marque = null; p.garderTout = false;
+    if (gardees.length) {
+      p.gardees = (p.gardees || []).concat(gardees);
+      ouvrir(c, '🔖', nomCp(p), 'garde'); noter(nomCp(p), gardees.map(id => carte(id).nom).join(', '), 'etat'); fermer();
+    }
     defausserTout(p);
     c.fini[nom] = 1;
   }
@@ -1281,7 +1310,7 @@ var DJ = (function () {
     h = h || Math.random;
     delete e.combats[c.salle];
     var joueurs = c.joueurs.map(n => e.joueurs[n]).filter(p => p && p.salle === c.salle && !(e.combats[p.salle] && e.combats[p.salle] !== c));
-    joueurs.forEach(p => { p.armure = 0; p.etats = {}; p.main = []; p.glace = []; p.pioche = []; p.defausse = []; p.epuisees = []; p.energie = 0; p.tourCombat = 0; });
+    joueurs.forEach(p => { p.armure = 0; p.etats = {}; p.main = []; p.glace = []; p.gardees = []; p.marque = null; p.garderTout = false; p.pioche = []; p.defausse = []; p.epuisees = []; p.energie = 0; p.tourCombat = 0; });
     e.dernierCombat = { salle: c.salle, gagne: gagne, journal: c.journal.slice(-4), t: e.maintenant, id: c.id };
     if (!gagne) {
       monstresDe(e, c).forEach(m => { m.armure = 0; m.etats = {}; m.intention = null; });
@@ -1394,7 +1423,7 @@ var DJ = (function () {
   return { W: W, H: H, GX: GX, GY: GY, PAS: PAS, DX: DX, PORTE: PORTE, MARCHABLE: MARCHABLE, POUVOIRS: POUVOIRS, ESPECES: ESPECES, MONSTRES: MONSTRES,
            D: D, NB_ETAGES: NB_ETAGES, nettoyerAvantages: nettoyerAvantages, heroSemaine: heroSemaine, reliquesParDefaut: reliquesParDefaut, paquetDepart: paquetDepart, carte: carte, ameliorable: ameliorable, prixRetrait: prixRetrait, soinFeu: soinFeu,
            pouvoirDe: pouvoirDe, hasard: hasard, generer: generer, lieu: lieuDe, regleLieu: regleLieu, tirerLieux: tirerLieux, nouvelle: nouvelle, ajouterJoueur: ajouterJoueur, entree: entree,
-           jouerCarte: jouerCarte, finTour: finTour, utiliserFiole: utiliserFiole, jeterFiole: jeterFiole, choisir: choisir, demarrerCombat: demarrerCombat,
+           jouerCarte: jouerCarte, finTour: finTour, marquer: marquer, utiliserFiole: utiliserFiole, jeterFiole: jeterFiole, choisir: choisir, demarrerCombat: demarrerCombat,
            interagir: interagir, ouvrirCoffre: ouvrirCoffre, ouvrirTresor: ouvrirTresor, decouvrir: decouvrir, tourMonstres: tourMonstres, etageSuivant: etageSuivant, tirerCartes: tirerCartes, donnerRelique: donnerRelique,
            degatsIntention: degatsIntention, degatsCarte: degatsCarte, calculer: calculer,
            tick: tick, tuile: tuile, compatible: compatible, FORMAT: FORMAT, idx: idx, etatMobile: etatMobile, pieces: pieces };

@@ -540,6 +540,14 @@
     .main-c .carte-c.gelee::after { content: '❄️'; position: absolute; right: -4px; top: -10px; width: 24px; height: 24px; border-radius: 50%; background: #e3fafc; border: 1.5px solid #1c7ed6; display: flex; align-items: center; justify-content: center; font-size: 14px; pointer-events: none; }
     .main-c .carte-c.gelee::before { content: ''; position: absolute; inset: 0; border-radius: 8px; pointer-events: none; background: repeating-linear-gradient(135deg, rgba(255,255,255,0.35) 0 3px, transparent 3px 11px); }
     .main-c .carte-c.gelee .cc-cout { background: #74c0fc; }
+    /* Marque-page (3.47) : carte gardée pour le tour suivant */
+    .main-c .carte-c.marquee { box-shadow: 0 3px 0 #1b130e, 0 0 0 3px #f59f00, 0 0 12px rgba(245,159,0,0.8); }
+    .main-c .carte-c.marquee::after { content: '🔖'; position: absolute; right: -4px; top: -10px; width: 24px; height: 24px; border-radius: 50%; background: #fff3bf; border: 1.5px solid #f08c00; display: flex; align-items: center; justify-content: center; font-size: 13px; pointer-events: none; }
+    .desc-c.avec-garder { display: flex; align-items: center; gap: 6px; }
+    .desc-c.avec-garder > span { flex: 1; }
+    .garder-c { flex: none; border: 1.5px solid #f08c00; background: #fff3bf; color: #7a4a00; border-radius: 8px; padding: 3px 8px; font: inherit; font-weight: 900; cursor: pointer; }
+    .garder-c.on { background: #f59f00; color: #fff; }
+    .intention-nom s { opacity: 0.7; margin-left: 4px; }
     .etats-c span.regle-c.menace { background: #c2255c; animation: appel-c 0.7s ease-in-out infinite alternate; }
     .a-lire .texte-lire { font-size: 1.08em; line-height: 1.45; margin: 4px 0 12px; }
     .regle-entree { margin-top: 6px; background: #f3f0ff; border: 1.5px solid #845ef7; border-radius: 10px; padding: 5px 8px; font-size: 0.86em; color: #3b2a6e; }
@@ -802,7 +810,7 @@
             <div class="scene-c"><div class="decor-c" v-html="decorCombat"></div><div class="monstres-c">
               <button v-for="m in monstresCombat" :key="'mc' + m.id" class="mc" :class="{ ciblable: cibleAttendue === 'monstre', gros: grosM(m), touche: toucheC(m.id) }" @click="choisirMonstre(m.id)">
                 <span class="intention" :class="intentionClasse(m)">{{ intentionCourte(m) }}</span>
-                <span class="intention-nom">{{ m.intention && !aveugle ? m.intention.nom : '' }}</span>
+                <span class="intention-nom">{{ m.intention && !aveugle ? m.intention.nom : '' }}<template v-if="m.intention && m.intention.avant && !aveugle"> <s>{{ m.intention.avant }}</s></template></span>
                 <span class="mc-des"><span v-html="spriteMonstre(m)"></span><span v-if="m.armure" class="armure-b">🛡️{{ m.armure }}</span>
                   <span v-for="k in fxSur(m.id)" :key="'x' + k.id" class="coup-flottant" :class="k.cl">{{ k.v }}</span></span>
                 <span class="mc-nom">{{ MONSTRES[m.type].nom }}</span>
@@ -827,15 +835,15 @@
                 <span class="moi-av" :class="{ touche: toucheC(moi) }" v-if="monJ.cp" v-html="dessinSvg(monJ.cp)"></span>
                 <div class="corps">
                   <span class="pv-dj"><i :style="{ width: pct(monJ.pv, monJ.pvMax) }"></i><b>❤️ {{ monJ.pv }} / {{ monJ.pvMax }}</b></span>
-                  <span class="etats-c"><span v-if="monJ.armure" class="armure-m">🛡️ {{ monJ.armure }}</span><span v-if="regle" class="regle-c" :class="regleAlerte.cl" @click.stop="info(regle.ico + ' Règle du lieu, ' + regle.nom + ' : ' + regle.texte)">{{ regle.ico }}{{ regleAlerte.txt }}</span><span v-for="(n, et) in monJ.etats" :key="et" v-show="et !== 'maree'" @click.stop="infoEtat(et, n)">{{ D.ETATS[et] ? D.ETATS[et].ico : '' }}{{ n }}</span></span>
+                  <span class="etats-c"><span v-if="monJ.armure" class="armure-m">🛡️ {{ monJ.armure }}</span><span v-if="monJ.garderTout" @click.stop="info('📌 Prévoyance : à la fin du tour, tu gardes ta main pour le tour suivant.')">📌</span><span v-if="regle" class="regle-c" :class="regleAlerte.cl" @click.stop="info(regle.ico + ' Règle du lieu, ' + regle.nom + ' : ' + regle.texte)">{{ regle.ico }}{{ regleAlerte.txt }}</span><span v-for="(n, et) in monJ.etats" :key="et" v-show="et !== 'maree'" @click.stop="infoEtat(et, n)">{{ D.ETATS[et] ? D.ETATS[et].ico : '' }}{{ n }}</span></span>
                 </div>
                 <span v-for="k in fxSur(moi)" :key="'x' + k.id" class="coup-flottant" :class="k.cl">{{ k.v }}</span>
               </div>
               <div class="main-c" :class="{ serree: monJ.main.length + gelees.length > 5 }" :style="styleMain">
-                <carte-dj v-for="(id, i) in monJ.main" :key="combat.tour + '-' + i + id" :id="id" :badge="badgeCarte(id)" :class="{ choisie: sel && sel.k === 'carte' && sel.i === i, chere: !jouable(id) }" @click.native="toucherCarte(i)"></carte-dj>
+                <carte-dj v-for="(id, i) in monJ.main" :key="combat.tour + '-' + i + id" :id="id" :badge="badgeCarte(id)" :class="{ choisie: sel && sel.k === 'carte' && sel.i === i, chere: !jouable(id), marquee: i === indexMarque }" @click.native="toucherCarte(i)"></carte-dj>
                 <carte-dj v-for="(id, i) in gelees" :key="'g' + combat.tour + '-' + i + id" :id="id" class="gelee" @click.native="toucherGelee(id)"></carte-dj>
               </div>
-              <div class="desc-c">{{ descSel }}</div>
+              <div class="desc-c" :class="{ 'avec-garder': peutGarder }"><span>{{ descSel }}</span><button v-if="peutGarder" class="garder-c" :class="{ on: selMarquee }" @click.stop="garderSel">🔖 {{ selMarquee ? 'Gardée' : 'Garder' }}</button></div>
               <div class="pied-c">
                 <span class="piles">🂠 {{ monJ.pioche.length }} à piocher<br>♻️ {{ monJ.defausse.length }} défaussée{{ monJ.defausse.length > 1 ? 's' : '' }}</span>
                 <button v-for="(f, i) in monJ.fioles" :key="'fc' + i + f" class="fiole-c" :class="{ choisie: sel && sel.k === 'fiole' && sel.i === i }" @click="toucherFioleCombat(i)">{{ D.FIOLES[f].ico }}</button>
@@ -1157,6 +1165,7 @@
               🦘 <strong>Vivacité</strong> (lapin, écureuil, singe : trous) cartes à 0 ⚡, coups multiples ·
               👃 <strong>Ruse</strong> (chien, renard, raton laveur : passages secrets) poison et points faibles.</li>
             <li><strong>Combat</strong> : au contact d'un monstre. À chaque tour, tu as <strong>3 ⚡</strong> et tu pioches <strong>5 cartes</strong> ; joue-les dans l'ordre que tu veux (le chiffre jaune = son coût), puis « Fin du tour ». Les cartes non jouées partent à la défausse ; la pioche vide, la défausse est remélangée.</li>
+            <li>Une carte <strong>épuisée</strong> quitte le combat une fois jouée (elle revient au combat suivant). 💫 <strong>Assommer</strong> fait perdre au monstre visé son prochain coup, boss compris. 📌 <strong>Prévoyance</strong> fait garder toute sa main pour le tour suivant ; avec la relique 🔖 <strong>Marque-page</strong>, touche une carte puis « Garder » pour la garder au tour suivant.</li>
             <li>Chaque monstre <strong>annonce ce qu'il va faire</strong> : ⚔️ 12 = 12 dégâts, ×2 = deux coups, 🛡️ armure, 💪 force, 😤 grosse attaque au prochain tour… Lis-les pour choisir entre attaquer et te protéger.</li>
             <li><strong>Armure 🛡️</strong> : elle prend les coups avant tes PV, puis disparaît au début de ton tour. États : 🎯 Vulnérable (+50 % de dégâts reçus), 🥀 Faible (−25 % de dégâts), 🧊 Fragile (−25 % d'armure), ☠️ Poison et 🔥 Brûlure (PV perdus au début du tour), 💪 Force (+dégâts à chaque coup). Touche un état pour le relire.</li>
             <li>Après chaque combat : de l'or 🪙, parfois une fiole, et <strong>une carte au choix parmi 3</strong> (ou passer : un paquet léger pioche plus souvent tes meilleures cartes). Les élites donnent une <strong>relique</strong> (effet permanent), les boss une relique puissante au choix.</li>
@@ -1405,6 +1414,14 @@
         },
         choixPaquetPossible: function() { return this.choixMenu !== null && this.monJ && this.monJ.paquet[this.choixMenu] !== undefined && this.possiblePaquet(this.monJ.paquet[this.choixMenu]); },
         // La carte ou la fiole touchée en combat
+        // Marque-page (3.47) : la carte marquée pour être gardée au tour suivant
+        indexMarque: function() { var j = this.monJ; return j && j.marque ? j.main.indexOf(j.marque) : -1; },
+        peutGarder: function() {
+          var j = this.monJ, s = this.sel, c = this.combat;
+          if (!j || !c || !s || s.k !== 'carte' || c.fini[this.moi] || !this.jeJoue || (j.reliques || []).indexOf('marquepage') < 0) return false;
+          var k = DJ.carte(j.main[s.i]); return !!k && k.type !== 'malediction';
+        },
+        selMarquee: function() { return !!(this.sel && this.sel.k === 'carte' && this.sel.i === this.indexMarque); },
         selDef: function() {
           var s = this.sel;
           if (!s || !this.monJ) return null;
@@ -1661,6 +1678,7 @@
           var i = m.intention, l = [], E = DJ.D.ETATS;
           if (this.aveugle) return '🎭 ?';
           if (!i) return '…';
+          if (i.assomme) return '💫';
           if (i.att) l.push('⚔️' + this.degatsAff(m) + (i.x > 1 ? '×' + i.x : '') + (i.tous ? ' tous' : this.nbJoueurs > 1 && m.cible ? ' → ' + (m.cible === this.moi ? 'toi' : m.cible) : ''));
           if (i.armure) l.push('🛡️' + i.armure);
           if (i.force) l.push('💪+' + i.force);
@@ -1716,6 +1734,11 @@
             return;
           }
           this.sel = { k: 'carte', i: i };
+        },
+        garderSel: function() {
+          if (!this.sel || this.sel.k !== 'carte') return;
+          this.vibre(20);
+          this.envoyerJeu({ type: 'GARDER', i: this.sel.i });
         },
         toucherGelee: function(id) {
           var k = DJ.carte(id);
@@ -2093,7 +2116,7 @@
         traiterJeu: function(p, m) {
           if (m.type === 'DIR') { if (partieHote && partieHote.phase === 'jeu') DJ.entree(partieHote, p, m.d); return; }
           if (m.type === 'OCC') { var jo = partieHote && partieHote.joueurs[p]; if (jo) { if (m.v) jo.occ = 1; else delete jo.occ; } return; }
-          var jeu = { CARTE: 1, FIN: 1, FIOLE: 1, JETER: 1, MENU: 1 };
+          var jeu = { CARTE: 1, FIN: 1, FIOLE: 1, JETER: 1, MENU: 1, GARDER: 1 };
           if (jeu[m.type]) {
             if (!partieHote || partieHote.phase !== 'jeu') return;
             var err = null, e = partieHote;
@@ -2101,6 +2124,7 @@
             else if (m.type === 'FIN') DJ.finTour(e, p);
             else if (m.type === 'FIOLE') err = DJ.utiliserFiole(e, p, +m.i, m.cible);
             else if (m.type === 'JETER') DJ.jeterFiole(e, p, +m.i);
+            else if (m.type === 'GARDER') err = DJ.marquer(e, p, +m.i);
             else err = DJ.choisir(e, p, String(m.a || ''), m.x);
             if (err && (p === monPseudo || this.solo)) this.info('⚠️ ' + err);
             if (p === monPseudo || this.solo) this.montrerPartie(false);

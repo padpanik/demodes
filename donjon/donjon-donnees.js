@@ -67,6 +67,9 @@ var DJD = (function () {
     k('couvrir', 'Couvrir', '🤝', 'defense', null, 'c', 1, 'joueur', [{ armure: 7 }], { fx: [{ armure: 10 }] }),
     k('tourbillon', 'Tourbillon', '🌪️', 'attaque', null, 'u', 2, 'tous', [{ deg: 8, tous: true }], { fx: [{ deg: 11, tous: true }] }),
     k('cri', 'Cri de guerre', '📯', 'pouvoir', null, 'u', 1, 'soi', [{ buff: 'force', n: 2 }], { fx: [{ buff: 'force', n: 3 }] }),
+    // 3.47 (demandé par l'utilisateur) : interrompre un monstre, garder sa main
+    k('assommer', 'Assommer', '💫', 'competence', null, 'u', 2, 'monstre', [{ special: 'assommer' }], { cout: 1 }, { epuise: true, texte: 'Le monstre perd son prochain coup (même un boss)' }),
+    k('prevoyance', 'Prévoyance', '📌', 'competence', null, 'u', 1, 'soi', [{ special: 'prevoyance' }], { cout: 0 }, { texte: 'À la fin du tour, tu gardes ta main pour le tour suivant' }),
     k('trefle', 'Trèfle', '🍀', 'competence', null, 'u', 1, 'joueur', [{ soin: 6 }], { fx: [{ soin: 9 }] }, { epuise: true }),
     k('souffle2', 'Second souffle', '🌬️', 'competence', null, 'u', 0, 'soi', [{ energie: 1 }, { pioche: 1 }], { fx: [{ energie: 2 }, { pioche: 1 }] }, { epuise: true }),
     k('inspiration', 'Inspiration', '💡', 'competence', null, 'r', 1, 'soi', [{ pioche: 3 }], { cout: 0 }),
@@ -184,6 +187,7 @@ var DJD = (function () {
     amulette: { nom: 'Amulette', ico: '🧿', rar: 'u', texte: 'Pare le premier état néfaste de chaque combat' },
     grigri: { nom: 'Grigri', ico: '🦴', rar: 'u', texte: '+1 PV max après chaque combat gagné' },
     gemme: { nom: 'Gemme d\'énergie', ico: '💎', rar: 'r', texte: 'Les ⚡ non dépensés (2 au plus) sont gardés pour le tour suivant' },
+    marquepage: { nom: 'Marque-page', ico: '🔖', rar: 'u', texte: 'À chaque tour, garde 1 carte de ta main pour le tour suivant (touche-la puis « Garder »)' },
     marteau: { nom: 'Marteau de forgeron', ico: '🔨', rar: 'r', texte: 'Au feu de camp, se reposer permet aussi d\'améliorer une carte' },
     // Reliques de boss : fortes, avec un prix
     couronne: { nom: 'Couronne d\'épines', ico: '👑', rar: 'boss', texte: '+1 ⚡ à chaque tour, mais pioche 1 carte de moins' },

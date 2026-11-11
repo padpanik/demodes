@@ -44,8 +44,22 @@ function valeurCarte(e, p, id, ms, besoin) {
     if (f.special === 'traque' || f.special === 'embuscade') v += f.n * 1.3;
     if (f.special === 'attiser') v += ms.reduce((s, m) => Math.max(s, (m.etats.brule || 0) * 1.5), 0);
     if (f.special === 'catalyse') v += ms.reduce((s, m) => Math.max(s, (m.etats.poison || 0) * 2), 0);
+    if (f.special === 'assommer') { var dm = menaceMax(e, p, ms); v += dm ? dm.v * 1.1 : 0; }
+    if (f.special === 'prevoyance') v += 1;
   });
   return v / Math.max(0.6, cout);
+}
+// Le monstre le plus menaçant ce tour (pour Assommer) : dégâts annoncés sur le groupe, ou renforts appelés
+function menaceMax(e, p, ms) {
+  var nb = Object.values(e.joueurs).filter(q => !q.fantome && q.salle === p.salle).length;
+  var best = null;
+  ms.forEach(m => {
+    var i = m.intention;
+    if (!i || i.assomme) return;
+    var v = (i.att ? DJ.degatsIntention(e, m, p) * (i.x || 1) * (i.tous ? nb : 1) : 0) + (i.appel ? 8 * i.appel.n : 0) + (i.force ? 3 * i.force : 0) + (i.armure ? i.armure * 0.3 : 0);
+    if (!best || v > best.v) best = { m: m, v: v };
+  });
+  return best && best.v >= 10 ? best : null;
 }
 function cibleAttaque(ms, k) {
   // le monstre qu'on peut achever, sinon le plus faible
@@ -67,8 +81,16 @@ function jouerTour(e, p, h) {
     var best = -1, bi = -1;
     p.main.forEach((id, i) => { var v = valeurCarte(e, p, id, ms, besoin); if (v > best) { best = v; bi = i; } });
     if (bi < 0 || best <= 0) break;
-    var k = DJ.carte(p.main[bi]), cible = k.cible === 'monstre' ? cibleAttaque(ms, k).id : null;
+    var k = DJ.carte(p.main[bi]), cible = k.cible === 'monstre' ? (k.fx.some(f => f.special === 'assommer') ? menaceMax(e, p, ms).m : cibleAttaque(ms, k)).id : null;
     if (DJ.jouerCarte(e, p.nom, bi, cible, h)) break;
+  }
+  // Marque-page : garder la meilleure carte qui reste
+  if (e.combats[p.salle] && !p.fantome && p.main.length && (p.reliques || []).indexOf('marquepage') >= 0) {
+    var ms2 = monstres(e, p), en = p.energie, bm = -1, bj = -1;
+    p.energie = 3;
+    p.main.forEach((id, i) => { var v = valeurCarte(e, p, id, ms2, 10); if (v > bm) { bm = v; bj = i; } });
+    p.energie = en;
+    if (bj >= 0) DJ.marquer(e, p.nom, bj);
   }
   DJ.finTour(e, p.nom, h);
 }
