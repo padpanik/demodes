@@ -556,7 +556,7 @@
     /* Ma semaine (3.29) */
     .record-sem { background: #fff8ee; border: 1.5px solid #c9b08f; border-radius: 12px; padding: 7px 10px; margin: 8px 0 2px; font-size: 0.88em; line-height: 1.45; }
     .record-sem .dernier { color: #7a6450; font-size: 0.92em; }
-    .semaine-dj .titre-carte small { font-weight: 700; color: #7f8c8d; font-size: 0.75em; margin-left: 6px; }
+    .semaine-dj .titre-carte small, .fioles-v .titre-carte small { font-weight: 700; color: #7f8c8d; font-size: 0.75em; margin-left: 6px; }
     .etapes-sem { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 4px; }
     .etapes-sem span { border-radius: 999px; padding: 3px 9px; font-weight: 900; font-size: 0.8em; border: 1.5px solid #e3e8ec; background: #f8f9fa; color: #868e96; }
     .etapes-sem span.fait { border-color: #2f9e44; background: #ebfbee; color: #2b8a3e; }
@@ -636,6 +636,15 @@
               </template>
               <div v-else class="aide" style="margin-top:2px">Gagne un donjon en Mythique cette semaine pour obtenir la clé +1 : chaque clé ajoute une épreuve (jusqu'à +{{ D.PERILS.length - 1 }}). Les clés repartent de zéro le lundi.</div>
             </div>
+        </section>
+
+        <!-- Fioles de la Vallée (3.50) : fabriquées chez Mme Sauge, on en emporte 2 au plus dans le donjon -->
+        <section class="carte fioles-v" v-if="besaceTotal && !soloEnCours && (!partie || partie.phase !== 'jeu')">
+          <div class="titre-carte">🧪 Fioles de la Vallée<small>{{ fiolesPrises.length }} / {{ VL.DONJON_MAX }} emportée{{ fiolesPrises.length > 1 ? 's' : '' }}</small></div>
+          <div class="tuiles-tr">
+            <button v-for="(n, f) in besaceV" :key="f" :class="{ actif: nbPrises(f) > 0 }" @click="prendreFiole(f)">{{ VL.FIOLES[f].ico }} {{ VL.FIOLES[f].nom }} <b>{{ nbPrises(f) ? nbPrises(f) + ' / ' : '' }}{{ n }}</b></button>
+          </div>
+          <div class="aide">{{ fiolesPrises.length ? 'Dans ton sac au départ : ' + fiolesPrises.map(f => VL.FIOLES[f].ico).join(' ') + '. Toucher une fiole pour en prendre une de plus ou la reposer.' : 'Touche une fiole pour l\'emporter dans le prochain donjon (' + VL.DONJON_MAX + ' au plus). Elle quitte ta besace quand le donjon commence.' }}</div>
         </section>
 
         <!-- Ma semaine (3.29, demandé par l'utilisateur) : progression du lundi au dimanche, trophées et éclats gardés d'un donjon à l'autre -->
@@ -1193,6 +1202,7 @@
   <script src="donjon/donjon-donnees.js"></script>
   <script src="donjon/donjon-dessins.js"></script>
   <script src="donjon/donjon-regles.js"></script>
+  <script src="vallee/vallee-regles.js"></script>
   <script>
     if (!ACCES.memorise()) location.replace('index.html');
 
@@ -1238,6 +1248,10 @@
       var d = new Date(t); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() - (d.getDay() + 6) % 7);
       return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
     }
+    // La besace de la Vallée (fioles fabriquées chez Mme Sauge)
+    function lireBesace() {
+      try { return Object.assign({}, VL.charger(lireStockage('vallee-etat')).besace); } catch (e) { return {}; }
+    }
     function lireSemaine() {
       var s = lireStockage('donjon-semaine'), l = lundiDe(Date.now());
       if (!s || s.s !== l) return { s: l, ouvert: 'normal', cle: 0, b: {}, eclats: 0, faits: 0, hero: null, record: null, dernier: null };
@@ -1280,6 +1294,7 @@
         voirPaquet: false,
         infoTxt: '', infoFiole: null,
         sem: lireSemaine(),   // ma semaine (3.29) : difficulté ouverte, clé, trophées, éclats et bonus
+        VL: VL, besaceV: lireBesace(), fiolesV: lireStockage('donjon-fioles-vallee') || [],   // fioles de la Vallée (3.50)
         trSel: null, choixRel: [], atelier: false, carteAt: null,
         peril: Math.min(lireStockage('donjon-peril-choisi') || 0, lireSemaine().cle),
         vuCombat: null,
@@ -1325,7 +1340,13 @@
         },
         difPartie: function() { var d = this.partie && this.partie.difficulte; return DJ.D.DIFFICULTES[d] ? d : 'heroique'; },
         perilMax: function() { return this.sem.cle || 0; },   // clé mythique obtenue cette semaine
-        avSemaine: function() { return Object.assign({ b: this.sem.b }, this.sem.hero || {}); },
+        avSemaine: function() { return Object.assign({ b: this.sem.b, v: this.fiolesPrises }, this.sem.hero || {}); },
+        besaceTotal: function() { return Object.values(this.besaceV).reduce((a, n) => a + n, 0); },
+        // Les fioles choisies qui sont encore dans la besace
+        fiolesPrises: function() {
+          var reste = Object.assign({}, this.besaceV);
+          return this.fiolesV.filter(f => { if ((reste[f] | 0) > 0) { reste[f]--; return true; } return false; }).slice(0, VL.DONJON_MAX);
+        },
         maClasse: function() { return DJ.pouvoirDe(this.monCp) || 'aucune'; },
         nbAmeliorees: function() { return this.sem.hero ? this.sem.hero.paquet.filter(id => /\+$/.test(id)).length : 0; },
         paquetHero: function() {
@@ -1592,6 +1613,11 @@
         menuCle: function() { this.choixMenu = null; this.confirmePasser = false; this._menuT = Date.now(); },
         // Occupé sur mon téléphone (3.33) : l'hôte le note dans la partie pour que les amis voient la bulle 💭
         occupeIci: function(v) { if (!this.solo && this.role && this.partie && this.partie.phase === 'jeu') this.envoyerJeu({ type: 'OCC', v: v }); },
+        fiolesPrises: function(v, a) {
+          if (JSON.stringify(v) === JSON.stringify(a)) return;
+          ecrireStockage('donjon-fioles-vallee', v);
+          if (this.role === 'client') this.envoyerHote({ action: 'AV', av: this.avSemaine });
+        },
         sem: { immediate: true, handler: function() {
           if (!this.ouverte(this.difficulte)) this.difficulte = this.sem.ouvert;
           if (this.peril > this.perilMax) this.peril = this.perilMax;
@@ -1945,6 +1971,7 @@
           if (!p) return;
           if (!a || a.maintenant !== p.maintenant) this._majT = Date.now();   // le donjon avance (voyant de liaison)
           var moi = p.joueurs[this.moi], avant = a && a.joueurs[this.moi];
+          if (moi && moi.vallee && moi.vallee.length && lireStockage('vallee-fioles-partie') !== p.id) this.consommerFioles(p.id, moi.vallee);
           // Coups reçus : lus dans les effets du combat (`fx` à mon nom, chacun compté une fois), sinon dans mes PV (hors combat, dernier coup d'un combat)
           if (!a || a.id !== p.id) this._fxVu = 0;   // autre donjon : les numéros d'effets repartent de zéro
           var cF = moi && p.combats && p.combats[moi.salle], vu = this._fxVu || 0, coup = 0, pare = false, maxFx = vu;
@@ -1985,6 +2012,25 @@
         // ================== MA SEMAINE (3.29) ==================
         ouverte: function(id) { var o = DJ.D.ORDRE_DIFFICULTES; return o.indexOf(id) <= o.indexOf(this.sem.ouvert); },
         etapeSem: function(id) { var o = DJ.D.ORDRE_DIFFICULTES, i = o.indexOf(id), j = o.indexOf(this.sem.ouvert); return i < j ? 'fait' : i === j ? 'ici' : ''; },
+        // Fioles de la Vallée : toucher en prend une de plus (tant qu'il en reste et qu'il y a de la place), sinon la repose
+        nbPrises: function(f) { return this.fiolesPrises.filter(x => x === f).length; },
+        prendreFiole: function(f) {
+          var l = this.fiolesPrises.slice(), n = this.nbPrises(f);
+          if (n < (this.besaceV[f] | 0) && l.length < VL.DONJON_MAX) l.push(f);
+          else l = l.filter(x => x !== f);
+          this.fiolesV = l;
+        },
+        // Le donjon a commencé avec mes fioles : elles quittent la besace (une seule fois par donjon)
+        consommerFioles: function(id, l) {
+          ecrireStockage('vallee-fioles-partie', id);
+          try {
+            var et = VL.charger(lireStockage('vallee-etat'));
+            VL.prendreFioles(et, l);
+            ecrireStockage('vallee-etat', et);
+          } catch (e) {}
+          this.besaceV = lireBesace();
+          this.fiolesV = [];
+        },
         majSemaine: function(fn) {
           var s = lireSemaine();
           if (fn) fn(s);
@@ -2524,6 +2570,7 @@
           }
         },
         auRetourPremierPlan: function() {
+          this.besaceV = lireBesace();
           if (document.visibilityState === 'hidden') { this.direction(null); return; }
           if (!this.role) return;
           if (this.role === 'hote') {

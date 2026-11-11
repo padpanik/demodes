@@ -164,6 +164,68 @@ var VLD = (function () {
       '<circle cx="' + (X + 12) + '" cy="' + (Y + 14) + '" r="1.6" fill="#fff"/><circle cx="' + (X + 17) + '" cy="' + (Y + 11) + '" r="1.9" fill="#fff"/><circle cx="' + (X + 21) + '" cy="' + (Y + 15) + '" r="1.3" fill="#fff"/>' +
       '<path d="M' + (X + 27) + ' ' + (Y + 6) + 'l1 2.5 2.5 1-2.5 1-1 2.5-1-2.5-2.5-1 2.5-1z" fill="#fff9db"/></g>';
   }
+  // ---------- Points de récolte (3.50) : on fonce dedans pour ramasser ----------
+  function boisMort(X, Y) {   // deux bûches coupées et une branche
+    var buche = (x1, y1, l, a) => '<g transform="rotate(' + a + ' ' + x1 + ' ' + y1 + ')"><rect x="' + x1 + '" y="' + (y1 - 4) + '" width="' + l + '" height="8" rx="3.5" fill="#8d5a2b" stroke="' + OLB + '" stroke-width="1.3"/>' +
+      '<path d="M' + (x1 + 4) + ' ' + (y1 - 1.5) + 'h' + (l - 9) + 'M' + (x1 + 6) + ' ' + (y1 + 1.8) + 'h' + (l - 12) + '" stroke="#6b4626" stroke-width="1"/>' +
+      '<ellipse cx="' + (x1 + l) + '" cy="' + y1 + '" rx="3" ry="4" fill="#e0b07a" stroke="' + OLB + '" stroke-width="1.2"/><ellipse cx="' + (x1 + l) + '" cy="' + y1 + '" rx="1.2" ry="1.8" fill="none" stroke="#a87447" stroke-width=".7"/></g>';
+    return '<ellipse cx="' + (X + 16) + '" cy="' + (Y + 27) + '" rx="13" ry="3.2" fill="rgba(10,20,5,.3)"/>' +
+      '<path d="M' + (X + 4) + ' ' + (Y + 15) + 'l9 6M' + (X + 8) + ' ' + (Y + 13) + 'l2 5" stroke="' + OLB + '" stroke-width="3" stroke-linecap="round"/><path d="M' + (X + 4) + ' ' + (Y + 15) + 'l9 6M' + (X + 8) + ' ' + (Y + 13) + 'l2 5" stroke="#7a4a26" stroke-width="1.5" stroke-linecap="round"/>' +
+      buche(X + 5, Y + 24, 20, -6) + buche(X + 8, Y + 17, 17, 4) +
+      '<path d="M' + (X + 24) + ' ' + (Y + 13) + 'q3-4 6-3" stroke="#69b34c" stroke-width="1.6" fill="none"/>';
+  }
+  function cailloux(X, Y) {   // trois pierres grises, un peu de mousse
+    return '<ellipse cx="' + (X + 16) + '" cy="' + (Y + 27) + '" rx="13" ry="3.2" fill="rgba(10,20,5,.32)"/>' +
+      [[10, 21, 7, 5.5, '#a5a5a5'], [21, 22, 6.5, 5, '#8f8f8f'], [15, 15, 6, 5, '#b8b8b8']].map(c =>
+        '<ellipse cx="' + (X + c[0]) + '" cy="' + (Y + c[1]) + '" rx="' + c[2] + '" ry="' + c[3] + '" fill="' + c[4] + '" stroke="#2f2f2f" stroke-width="1.3"/>' +
+        '<path d="M' + (X + c[0] - c[2] * 0.6) + ' ' + (Y + c[1] - c[3] * 0.25) + 'q' + (c[2] * 0.4) + ' ' + (-c[3] * 0.6) + ' ' + (c[2] * 0.9) + ' ' + (-c[3] * 0.55) + '" stroke="#e6e6e6" stroke-width="1.6" fill="none" stroke-linecap="round"/>').join('') +
+      '<path d="M' + (X + 4) + ' ' + (Y + 25) + 'q5-3 9 0" stroke="#4c9a3c" stroke-width="2.4" fill="none" stroke-linecap="round"/><circle cx="' + (X + 24) + '" cy="' + (Y + 18) + '" r="1.4" fill="#4c9a3c"/>';
+  }
+  function herbes(X, Y) {   // une touffe d'herbes aromatiques, fleurs violettes et blanches
+    var feuille = (a, l) => '<path d="M' + (X + 16) + ' ' + (Y + 26) + 'q' + f(Math.sin(a) * l * 0.2 - 3) + ' ' + f(-l * 0.5) + ' ' + f(Math.sin(a) * l) + ' ' + f(-Math.cos(a) * l) + 'q' + f(-Math.sin(a) * l * 0.2 + 5) + ' ' + f(l * 0.35) + ' ' + f(-Math.sin(a) * l + 3) + ' ' + f(Math.cos(a) * l) + 'z" fill="#5fae4c" stroke="' + OL + '" stroke-width="1.1"/>';
+    return '<ellipse cx="' + (X + 16) + '" cy="' + (Y + 27) + '" rx="11" ry="2.8" fill="rgba(10,20,5,.28)"/>' +
+      [-1.1, -0.6, -0.15, 0.3, 0.75, 1.2].map((a, k) => feuille(a, 14 + (k % 3) * 3)).join('') +
+      '<path d="M' + (X + 14) + ' ' + (Y + 22) + 'l-1-9M' + (X + 19) + ' ' + (Y + 22) + 'l2-11" stroke="#3f7a2c" stroke-width="1.2"/>' +
+      [[13, 12], [13.5, 9], [21, 10], [21.5, 7]].map(c => '<circle cx="' + (X + c[0]) + '" cy="' + (Y + c[1]) + '" r="2.3" fill="#9775fa" stroke="#3b2a6e" stroke-width=".6"/>').join('') +
+      '<circle cx="' + (X + 8) + '" cy="' + (Y + 18) + '" r="2" fill="#fff" stroke="#adb5bd" stroke-width=".5"/><circle cx="' + (X + 8) + '" cy="' + (Y + 18) + '" r=".8" fill="#ffd43b"/>';
+  }
+  function cristaux(X, Y, flair) {   // cristaux violets qui brillent
+    var c = (x, y, w, hh, a, coul) => '<path transform="rotate(' + a + ' ' + (X + x) + ' ' + (Y + y) + ')" d="M' + (X + x - w) + ' ' + (Y + y) + 'V' + (Y + y - hh + w) + 'L' + (X + x) + ' ' + (Y + y - hh) + 'L' + (X + x + w) + ' ' + (Y + y - hh + w) + 'V' + (Y + y) + 'z" fill="' + coul + '" stroke="#2b1a5c" stroke-width="1.1" stroke-linejoin="round"/>' +
+      '<path transform="rotate(' + a + ' ' + (X + x) + ' ' + (Y + y) + ')" d="M' + (X + x) + ' ' + (Y + y - hh + 1) + 'V' + (Y + y - 1) + 'H' + (X + x + w - 0.6) + 'V' + (Y + y - hh + w) + 'z" fill="#fff" opacity=".28"/>';
+    return '<circle cx="' + (X + 16) + '" cy="' + (Y + 17) + '" r="' + (flair ? 17 : 13) + '" fill="url(#vl-cristal)" class="vl-halo"/>' +
+      '<ellipse cx="' + (X + 16) + '" cy="' + (Y + 26) + '" rx="10" ry="2.6" fill="rgba(0,0,0,.3)"/>' +
+      c(9, 26, 3.5, 12, -22, '#9775fa') + c(23, 26, 3.5, 11, 24, '#748ffc') + c(16, 27, 4.5, 19, 0, '#b197fc') +
+      '<g class="vl-scintille"><path d="M' + (X + 26) + ' ' + (Y + 4) + 'l1 2.5 2.5 1-2.5 1-1 2.5-1-2.5-2.5-1 2.5-1z" fill="#fff"/></g>';
+  }
+  function filon(X, Y) {   // un rocher où affleurent des cristaux (il faut la pioche)
+    return '<ellipse cx="' + (X + 17) + '" cy="' + (Y + 28) + '" rx="14" ry="3.3" fill="rgba(10,20,5,.32)"/>' +
+      '<path d="M' + (X + 3) + ' ' + (Y + 28) + 'L' + (X + 6) + ' ' + (Y + 13) + 'L' + (X + 15) + ' ' + (Y + 6) + 'L' + (X + 26) + ' ' + (Y + 9) + 'L' + (X + 30) + ' ' + (Y + 27) + 'Z" fill="#8a8a96" stroke="#2f2f3a" stroke-width="1.6" stroke-linejoin="round"/>' +
+      '<path d="M' + (X + 17) + ' ' + (Y + 7) + 'L' + (X + 26) + ' ' + (Y + 9) + 'L' + (X + 30) + ' ' + (Y + 27) + 'H' + (X + 19) + 'z" fill="#6f6f7c"/>' +
+      [[11, 20, -15], [20, 15, 20], [16, 24, 5]].map(k => '<path transform="rotate(' + k[2] + ' ' + (X + k[0]) + ' ' + (Y + k[1]) + ')" d="M' + (X + k[0] - 2.5) + ' ' + (Y + k[1]) + 'v-4l2.5-3.5 2.5 3.5v4z" fill="#b197fc" stroke="#2b1a5c" stroke-width=".9"/>').join('') +
+      '<g class="vl-scintille"><circle cx="' + (X + 21) + '" cy="' + (Y + 10) + '" r="1.3" fill="#fff"/></g>';
+  }
+  function pointRecolte(p, X, Y, ctx) {
+    if (p.filon) return filon(X, Y);
+    if (p.res === 'cristal') return cristaux(X, Y, ctx.flair);
+    // Une petite étincelle qui clignote : ça se ramasse
+    return { bois: boisMort, pierre: cailloux, plante: herbes }[p.res](X, Y) +
+      '<g class="vl-scintille"><path d="M' + (X + 27) + ' ' + (Y + 5) + 'l.9 2.3 2.3.9-2.3.9-.9 2.3-.9-2.3-2.3-.9 2.3-.9z" fill="#fff9db" stroke="#8a6a00" stroke-width=".4"/></g>';
+  }
+  // L'établi, devant ma maison : vermoulu et couvert de mousse avant la quête de Bruno, tout neuf après
+  function etabli(X, Y, repare) {
+    var bois = repare ? '#c08a4e' : '#8a6a52', fonce = repare ? '#8d5a2b' : '#5e4a3a';
+    return '<ellipse cx="' + (X + 16) + '" cy="' + (Y + 28) + '" rx="15" ry="3.4" fill="rgba(10,20,5,.32)"/>' +
+      '<path d="M' + (X + 5) + ' ' + (Y + 17) + 'v11M' + (X + 27) + ' ' + (Y + 17) + 'v' + (repare ? 11 : 7) + '" stroke="' + OLB + '" stroke-width="4.4"/><path d="M' + (X + 5) + ' ' + (Y + 17) + 'v11M' + (X + 27) + ' ' + (Y + 17) + 'v' + (repare ? 11 : 7) + '" stroke="' + fonce + '" stroke-width="2.4"/>' +
+      '<path d="M' + (X + 5) + ' ' + (Y + 24) + 'h22" stroke="' + fonce + '" stroke-width="2" stroke-dasharray="' + (repare ? '0' : '9 5') + '"/>' +
+      '<rect x="' + (X + 1) + '" y="' + (Y + 12) + '" width="30" height="6" rx="1.5" fill="' + bois + '" stroke="' + OLB + '" stroke-width="1.4"' + (repare ? '' : ' transform="rotate(4 ' + (X + 16) + ' ' + (Y + 15) + ')"') + '/>' +
+      '<path d="M' + (X + 3) + ' ' + (Y + 14.5) + 'h26" stroke="' + fonce + '" stroke-width=".9"/>' +
+      (repare
+        ? '<path d="M' + (X + 6) + ' ' + (Y + 12) + 'l7-6" stroke="#5c3a1f" stroke-width="2" stroke-linecap="round"/><rect x="' + (X + 10) + '" y="' + (Y + 3) + '" width="7" height="4" rx="1" fill="#868e96" stroke="#2f2f2f" stroke-width="1" transform="rotate(-40 ' + (X + 13) + ' ' + (Y + 5) + ')"/>' +
+          '<path d="M' + (X + 18) + ' ' + (Y + 11.5) + 'l9-1.5v-4l-9 1.5z" fill="#ced4da" stroke="#2f2f2f" stroke-width="1"/><path d="M' + (X + 19) + ' ' + (Y + 11) + 'l1 1.4 1-1.6 1 1.4 1-1.6 1 1.4 1-1.6" stroke="#2f2f2f" stroke-width=".6" fill="none"/>' +
+          '<rect x="' + (X + 16) + '" y="' + (Y + 8.5) + '" width="3.5" height="3.5" rx=".8" fill="#8d5a2b" stroke="' + OLB + '" stroke-width=".8"/>'
+        : '<path d="M' + (X + 2) + ' ' + (Y + 13) + 'q6-4 11 0" stroke="#4c9a3c" stroke-width="3" fill="none" stroke-linecap="round"/><circle cx="' + (X + 25) + '" cy="' + (Y + 12.5) + '" r="2.2" fill="#4c9a3c"/>' +
+          '<path d="M' + (X + 20) + ' ' + (Y + 18) + 'q3 4 6 2M' + (X + 22) + ' ' + (Y + 18) + 'l1 4" stroke="#f1f3f5" stroke-width=".6" fill="none" opacity=".8"/>');
+  }
   // Lanterne sur poteau, avec sa lueur (comme les torches du Donjon)
   function lanterne(cx, base, petite) {
     var hgt = petite ? 16 : 26;
@@ -371,6 +433,7 @@ var VLD = (function () {
     var foret = c => c === 'T' || c === 'S';
     s.push('<defs><radialGradient id="vl-lueur"><stop offset="0" stop-color="#ffd27a" stop-opacity=".75"/><stop offset=".55" stop-color="#ffb347" stop-opacity=".28"/><stop offset="1" stop-color="#ff922b" stop-opacity="0"/></radialGradient>' +
            '<radialGradient id="vl-braise"><stop offset="0" stop-color="#ff8a3d" stop-opacity=".7"/><stop offset="1" stop-color="#ff5a1f" stop-opacity="0"/></radialGradient>' +
+           '<radialGradient id="vl-cristal"><stop offset="0" stop-color="#d0bfff" stop-opacity=".75"/><stop offset="1" stop-color="#9775fa" stop-opacity="0"/></radialGradient>' +
            '<radialGradient id="vl-magie"><stop offset="0" stop-color="#fff3bf" stop-opacity=".7"/><stop offset="1" stop-color="#ffe066" stop-opacity="0"/></radialGradient>' +
            '<radialGradient id="vl-vig" cx="50%" cy="52%" r="72%"><stop offset="58%" stop-color="#1a1208" stop-opacity="0"/><stop offset="100%" stop-color="#1a1208" stop-opacity=".55"/></radialGradient>' +
            '<linearGradient id="vl-soleil" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff2c4" stop-opacity=".18"/><stop offset=".5" stop-color="#fff2c4" stop-opacity="0"/><stop offset="1" stop-color="#3a2410" stop-opacity=".16"/></linearGradient></defs>');
@@ -484,6 +547,7 @@ var VLD = (function () {
       else if (t === 'F') poser(y, fontaine(X, Y));
       else if (t === 'Q') poser(y, tableau(X, Y) + bulleQuete(X + 16, Y - 9, ctx.tableauMarque));
       else if (t === 'c') poser(y, coffre(X, Y, e.coffre));
+      else if (t === 'e') poser(y, etabli(X, Y, ctx.atelier));
       else if (VL.OBSTACLES[t]) poser(y - 0.1, obstacle(t, X, Y, VL.ouvert(e, gx2, gy2), ctx.flair));
       if (t === 'm' && tu(gx2 - 1, gy2) !== 'm') poser(y, etal(X, Y) + bulleQuete(X + 32, Y - 26, ctx.marques && ctx.marques.pipa));
     }
@@ -496,6 +560,10 @@ var VLD = (function () {
     VL.CHAMPIGNONS.forEach(c => {
       var k = VL.ecranDe(c.x, c.y);
       if (k.ex === ex && k.ey === ey && VL.champignonVisible(e, c)) poser(c.y - y0 - 0.05, champignon((c.x - x0) * T, (c.y - y0) * T));
+    });
+    VL.RECOLTE.forEach(p => {
+      var k = VL.ecranDe(p.x, p.y);
+      if (k.ex === ex && k.ey === ey && VL.pointVisible(e, p, ctx)) poser(p.y - y0 - 0.05, pointRecolte(p, (p.x - x0) * T, (p.y - y0) * T, ctx));
     });
     Object.keys(VL.HABITANTS).forEach(id => {
       var H = VL.HABITANTS[id], k = VL.ecranDe(H.x, H.y);
@@ -512,7 +580,7 @@ var VLD = (function () {
 
   // ---------- La carte du monde, sous le brouillard (10 unités par case) ----------
   var COUL = { '.': '#a9d18e', ',': '#b8dc96', ':': '#e7cf9b', '=': '#c08a4e', T: '#5d9b4c', S: '#4b8650', b: '#77b35f', h: '#6aa653', o: '#a9d18e',
-               '~': '#7fbde8', x: '#c98a6a', m: '#e8590c', Q: '#b07a45', F: '#9ab', c: '#a9d18e', r: '#3d7a3a', R: '#9e9e9e', v: '#6b5040', s: '#3f7a35' };
+               '~': '#7fbde8', x: '#c98a6a', e: '#b07a45', m: '#e8590c', Q: '#b07a45', F: '#9ab', c: '#a9d18e', r: '#3d7a3a', R: '#9e9e9e', v: '#6b5040', s: '#3f7a35' };
   // ctx = { cible: { x, y }, marques: { habitant: m }, tableauMarque, ecranVu: { 'ex,ey': 1 } }
   function carteSvg(e, ctx) {
     ctx = ctx || {};
@@ -539,6 +607,14 @@ var VLD = (function () {
     VL.BATIMENTS.forEach(bt => {
       if (!VL.estVu(e, bt.x + (bt.w >> 1), bt.y + bt.h - 1, b)) return;
       s.push('<text x="' + ((bt.x + bt.w / 2) * U) + '" y="' + ((bt.y + bt.h / 2) * U + 5) + '" text-anchor="middle" font-size="13">' + ICO[bt.type] + '</text>');
+    });
+    // Points de récolte encore là aujourd'hui (les cristaux se voient même sous le brouillard avec le Flair)
+    var COUL_RES = { bois: '#8d5a2b', pierre: '#868e96', plante: '#40c057', cristal: '#9775fa' };
+    VL.RECOLTE.forEach(p => {
+      if (!VL.pointVisible(e, p, ctx)) return;
+      var vu = VL.estVu(e, p.x, p.y, b);
+      if (!vu && !(ctx.flair && p.res === 'cristal')) return;
+      s.push('<rect x="' + (p.x * U + 2) + '" y="' + (p.y * U + 2) + '" width="6" height="6" rx="' + (p.res === 'cristal' ? 1 : 3) + '" transform="' + (p.res === 'cristal' ? 'rotate(45 ' + (p.x * U + 5) + ' ' + (p.y * U + 5) + ')' : '') + '" fill="' + COUL_RES[p.res] + '" stroke="#fff" stroke-width="1.2"' + (vu ? '' : ' class="vl-scintille"') + '/>');
     });
     // Habitants et tableau : « ! » ou « ? » s'ils attendent quelque chose
     Object.keys(VL.HABITANTS).forEach(id => {

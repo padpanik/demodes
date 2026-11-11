@@ -367,10 +367,13 @@ var DJ = (function () {
   // ---------- Le héros de la semaine (3.30) ----------
   // av = { classe, paquet, reliques, pv, b } : le paquet, les reliques et les PV max gagnés à la fin du donjon d'avant, plus les bonus
   // achetés avec les éclats. Envoyé par chaque téléphone : vérifié avant de s'en servir. Une seule relique de boss reste d'un donjon à l'autre.
+  var VALLEE_FIOLES = 2;
   function nettoyerAvantages(av) {
     if (!av || typeof av !== 'object') return null;
-    if (av.hero && !av.classe) av = Object.assign({ b: av.b }, av.hero);   // déjà vérifié une fois (chez l'hôte) : même forme
+    if (av.hero && !av.classe) av = Object.assign({ b: av.b, v: av.v }, av.hero);   // déjà vérifié une fois (chez l'hôte) : même forme
     var S = D.SEMAINE, b = {}, hero = null;
+    // Fioles fabriquées dans la Vallée (3.50) : 2 au plus, parmi les fioles connues
+    var v = (Array.isArray(av.v) ? av.v : []).map(String).filter(f => FIOLES[f]).slice(0, VALLEE_FIOLES);
     Object.keys(S.bonus).forEach(k => { var n = av.b && av.b[k] | 0; if (n > 0) b[k] = Math.min(n, S.bonus[k].max); });
     if (av.classe && CLASSES[av.classe] && Array.isArray(av.paquet)) {
       var paquet = av.paquet.slice(0, S.paquetMax).map(String).filter(id => { var c = carte(id); return c && c.type !== 'malediction'; });
@@ -382,7 +385,7 @@ var DJ = (function () {
       });
       if (paquet.length >= 5) hero = { classe: av.classe, paquet: paquet, reliques: reliques, pv: Math.max(0, Math.min(S.pvMax, av.pv | 0)) };
     }
-    return { b: b, hero: hero };
+    return { b: b, hero: hero, v: v };
   }
   function appliquerAvantages(e, p, av) {
     av = nettoyerAvantages(av);
@@ -399,6 +402,8 @@ var DJ = (function () {
     if (b.pv) { p.pvMax += p.bonusPv; p.pv += p.bonusPv; }
     if (b.or) p.or += B.or.val * b.or;
     for (var i = 0; i < (b.fiole || 0); i++) donnerFiole(e, p, null, h);
+    // Fioles de la Vallée : celles qui tiennent dans le sac ; le téléphone du joueur les retire de sa besace (p.vallee)
+    p.vallee = (av.v || []).filter(f => donnerFiole(e, p, f, h));
     p.semaine = { hero: !!(H && H.classe === p.classe), b: Object.keys(b).length };
   }
   // Le héros à garder pour la semaine, à la fin d'un donjon : le paquet sans malédiction (le repos les efface), les reliques,

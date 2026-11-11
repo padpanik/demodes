@@ -3,12 +3,13 @@
 // Les clés de stockage gardent l'ancien préfixe "brillant-" : les réglages déjà faits sont conservés.
 
 // Numéro de version affiché (à augmenter à chaque mise en ligne, avec brilliant/index.html et sw.js)
-const VERSION = '3.49';
+const VERSION = '3.50';
 
 // ---------- Nouveautés (2.87, demandé par l'utilisateur) ----------
 // Une ligne très brève par mise en ligne (la plus récente en haut) : l'accueil les montre une seule fois, dans une petite fenêtre,
 // à qui n'a pas encore vu cette version. [version, jeu ou partie de l'appli, ce qui change]
 const NOUVEAUTES = [
+  ['3.50', 'La Vallée', 'Récolte du bois, des pierres, des plantes et des cristaux ; fabrique de la déco, des fioles pour le Donjon et des outils (quête de Bruno).'],
   ['3.49', 'La Vallée', 'Habillée comme le Donjon (lanternes, torches, pavés) ; un toucher bref sur la croix fait un pas.'],
   ['3.48', 'La Vallée', 'Nouveau : la Vallée de Désdale ! Promène-toi avec ton compagnon, aide les habitants du village, et descends au Donjon par la crypte.'],
   ['3.47', 'Donjon', 'Nouvelles cartes 💫 Assommer (le monstre perd son prochain coup) et 📌 Prévoyance (garder sa main), relique 🔖 Marque-page.'],

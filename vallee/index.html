@@ -211,6 +211,19 @@
     .btn-vl.rouge { background: #fff5f5; border-color: #e03131; color: #c92a2a; }
     .avis-vl { background: #fffaf0; border-color: #8d6a3f; }
     .article-vl .ico { background: radial-gradient(circle at 50% 40%, #4a3a1a, #241a0c); border: 1.5px solid #c9a66b; }
+    /* Récolte et fabrication (3.50) : le sac dans la fiche, la fenêtre de fabrication */
+    .sac-vl { display: flex; align-items: center; gap: 7px; margin-top: 3px; font-size: 0.78em; font-weight: 800; color: #e9dcc0; cursor: pointer; white-space: nowrap; overflow: hidden; }
+    .sac-vl span { display: inline-flex; align-items: center; gap: 2px; }
+    .sac-vl span.plein { color: #ffa94d; }
+    .sac-vl .besace { margin-left: 2px; padding-left: 7px; border-left: 1px solid #5c4532; }
+    .res-l { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0 2px; }
+    .res-l span { display: inline-flex; align-items: center; gap: 3px; background: #fffaf0; border: 1.5px solid #c9b08f; border-radius: 10px; padding: 3px 9px; font-weight: 800; }
+    .cout-vl { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 3px; }
+    .cout-vl span { font-size: 0.8em; font-weight: 800; border-radius: 8px; padding: 1px 6px; background: #d3f9d8; color: #2b8a3e; }
+    .cout-vl span.manque { background: #ffe3e3; color: #c92a2a; }
+    .article-vl.fait { opacity: 0.6; }
+    .article-vl .raison { margin-left: auto; font-size: 0.78em; font-weight: 800; color: #8a6a46; text-align: right; max-width: 92px; line-height: 1.2; }
+    .sac-titre { margin: 12px 0 2px; font: 900 1em Georgia, serif; color: #5c3a1f; }
     /* Lueurs des lanternes et des torches, qui vacillent (comme au Donjon) */
     .vl-halo { animation: vl-halo 1.3s ease-in-out infinite alternate; }
     @keyframes vl-halo { to { opacity: 0.6; } }
@@ -233,6 +246,10 @@
           <div class="quete-vl" :class="{ rendre: queteSuivie && etatQ(queteSuivie) === 'rendre' }" @click="fenetre = 'quetes'">
             <template v-if="queteSuivie"><span class="q-ico">{{ QUETES[queteSuivie].ico }}</span><span>{{ consigne(queteSuivie) }}</span></template>
             <template v-else><span class="q-ico">📜</span><span>{{ quetesDispo ? quetesDispo + ' quête' + (quetesDispo > 1 ? 's' : '') + ' à prendre' : 'Toutes les quêtes sont finies !' }}</span></template>
+          </div>
+          <div class="sac-vl" v-if="sacVisible" @click="fenetre = 'sac'">
+            <span v-for="r in VL.ORDRE_RES" :key="r" :class="{ plein: e.sac[r] >= VL.SAC_MAX }">{{ VL.RESSOURCES[r].ico }} {{ e.sac[r] }}</span>
+            <span class="besace" v-if="besace">🧪 {{ besace }}</span>
           </div>
         </div>
         <span class="etoiles-vl"><span v-html="ETOILE"></span>{{ etoiles }}</span>
@@ -359,6 +376,43 @@
       </div>
     </div>
 
+    <!-- Mon sac : ressources, besace (fioles pour le Donjon), outils -->
+    <div class="voile-vl" v-if="fenetre === 'sac'" @click.self="fermer">
+      <div class="fen-vl">
+        <h2>🎒 Mon sac</h2>
+        <div class="res-l"><span v-for="r in VL.ORDRE_RES" :key="r">{{ VL.RESSOURCES[r].ico }} {{ VL.RESSOURCES[r].nom }} : {{ e.sac[r] }} / {{ VL.SAC_MAX }}</span></div>
+        <p style="color:#6d5a44;font-size:0.9em;margin:6px 0">{{ aujourdhui }}</p>
+        <div class="sac-titre">🧪 Besace ({{ besace }} / {{ VL.BESACE_MAX }})</div>
+        <p v-if="!besace" style="color:#6d5a44;font-size:0.9em;margin:4px 0">Pas encore de fiole. Mme Sauge en prépare avec tes plantes{{ VL.ouvertFab(e, 'hutte') ? '' : ', une fois l\'établi de Bruno réparé' }}.</p>
+        <div v-for="(n, f) in e.besace" :key="f" class="article-vl"><span class="ico">{{ VL.FIOLES[f].ico }}</span><div><b>{{ VL.FIOLES[f].nom }} × {{ n }}</b><small>{{ VL.FIOLES[f].texte }}</small></div></div>
+        <p v-if="besace" style="color:#6d5a44;font-size:0.88em;margin:6px 0 0">Au Donjon, onglet Partie, choisis les {{ VL.DONJON_MAX }} fioles à emporter.</p>
+        <div class="sac-titre">🛠️ Outils</div>
+        <div v-for="(o, k) in VL.OUTILS" :key="k" class="article-vl" :class="{ fait: !e.outils[k] }"><span class="ico">{{ o.ico }}</span><div><b>{{ o.nom }}</b><small>{{ o.texte }}</small></div><span class="raison">{{ e.outils[k] ? '✓ À toi' : 'À la forge' }}</span></div>
+        <div class="boutons-vl"><button class="btn-vl" @click="fermer">Fermer</button></div>
+      </div>
+    </div>
+
+    <!-- Fabriquer : l'établi, la hutte de Mme Sauge, la forge de Bruno -->
+    <div class="voile-vl" v-if="fenetre === 'fab' && fabOu" @click.self="fermer">
+      <div class="fen-vl">
+        <div class="dial-tete">
+          <div class="portrait" v-if="VL.LIEUX_FAB[fabOu].qui" v-html="portrait(VL.LIEUX_FAB[fabOu].qui)"></div>
+          <div class="portrait" v-else style="font-size:34px;align-items:center">🪚</div>
+          <div><b>{{ VL.LIEUX_FAB[fabOu].nom }}</b><small>{{ VL.LIEUX_FAB[fabOu].texte }}</small></div>
+        </div>
+        <div class="res-l"><span v-for="r in VL.ORDRE_RES" :key="r">{{ VL.RESSOURCES[r].ico }} {{ e.sac[r] }}</span><span v-if="fabOu === 'hutte'">🧪 {{ besace }} / {{ VL.BESACE_MAX }}</span></div>
+        <div v-for="r in recettes" :key="r.id" class="article-vl" :class="{ fait: r.etat.fait }">
+          <span class="ico">{{ r.ico }}</span>
+          <div style="min-width:0"><b>{{ r.nom }}</b><small>{{ r.texte }}</small>
+            <div class="cout-vl"><span v-for="(n, k) in r.cout" :key="k" :class="{ manque: e.sac[k] < n }">{{ n }} {{ VL.RESSOURCES[k].ico }}</span></div>
+          </div>
+          <button v-if="r.etat.ok" class="btn-vl" :class="fabChoix === r.id ? 'vert' : 'principal'" @click="fabriquer(r)">{{ fabChoix === r.id ? '✓ Sûr ?' : 'Fabriquer' }}</button>
+          <span v-else class="raison">{{ r.etat.fait ? '✓ ' : '' }}{{ r.etat.raison }}</span>
+        </div>
+        <div class="boutons-vl"><button class="btn-vl" @click="fermer">Fermer</button></div>
+      </div>
+    </div>
+
     <!-- Menu ☰ -->
     <div class="voile-vl" v-if="fenetre === 'menu'" @click.self="fermer">
       <div class="fen-vl">
@@ -366,6 +420,7 @@
         <div class="menu-liste">
           <button class="btn-vl principal" @click="fermer"><i>▶</i>Continuer</button>
           <button class="btn-vl" @click="fenetre = 'quetes'"><i>📜</i>Mes quêtes</button>
+          <button class="btn-vl" @click="fenetre = 'sac'"><i>🎒</i>Mon sac</button>
           <button class="btn-vl" @click="discuter"><i>💬</i>Discuter<span v-if="nonLus" class="pastille">{{ nonLus }}</span></button>
           <button class="btn-vl" @click="entrer('compagnon/')"><i>🏠</i>{{ animal ? 'Chez ' + animal.nom : 'Adopter un compagnon' }}</button>
           <button class="btn-vl" @click="sonActif = !sonActif"><i>{{ sonActif ? '🔊' : '🔇' }}</i>Son : {{ sonActif ? 'oui' : 'non' }}</button>
@@ -386,6 +441,8 @@
           <li><b>Entrer</b> dans une maison ou dans la crypte : fonce dans la porte. <b>Parler</b> à un habitant : fonce dans lui.</li>
           <li><b>!</b> au-dessus d'un habitant : il a une quête pour toi. <b>?</b> : il attend ce que tu lui rapportes.</li>
           <li><b>Pouvoir de ton compagnon</b> : ronces 🔥, rocher 💪, trou 🦘, buisson très épais 👃. Fonce dans l'obstacle qui va avec ton pouvoir pour l'ouvrir.</li>
+          <li><b>Récolter</b> : marche sur le bois mort 🪵, les cailloux 🪨, les herbes 🌿 et les cristaux 💎. Chaque point repousse le lendemain. Ton sac en garde {{ VL.SAC_MAX }} de chaque. Ton pouvoir double une ressource : 🔥 le bois, 💪 la pierre, 🦘 les plantes ; 👃 montre les cristaux sur la carte.</li>
+          <li><b>Fabriquer</b> (après la quête de Bruno) : de la déco à l'établi devant ta maison, des fioles pour le Donjon chez Mme Sauge, des outils à la forge. Fonce dans l'établi, la hutte ou la forge.</li>
           <li><b>La carte</b> se dévoile au fil de tes pas. L'anneau orange montre où aller pour ta quête.</li>
           <li><b>La crypte</b>, au nord du village, mène au Donjon des compagnons. Ta maison est la maison de ton compagnon.</li>
           <li>Ta progression est gardée sur ce téléphone et dans ta sauvegarde.</li>
@@ -420,7 +477,7 @@
         v: 0,                       // monte à chaque changement de l'état (le dessin se recalcule)
         dir: null, sens: etat.dir === 'g' ? 'g' : 'd', saut: false, ecranCle: 0, lieuMontre: null,
         animal: lireStockage('compagnon-animal'), etoiles: Etoiles.solde(), nonLus: 0,
-        fenetre: null, dialogue: null, aLire: null, achat: null, sortie: false,
+        fenetre: null, dialogue: null, aLire: null, achat: null, sortie: false, fabOu: null, fabChoix: null, jour: VL.jourDe(),
         annonces: [], maintenant: Date.now(),
         inverse: lireStockage('donjon-inverse') === true,
         sonActif: lireStockage('brillant-son') !== false,
@@ -429,7 +486,22 @@
       computed: {
         e: function() { this.v; return etat; },
         pouvoir: function() { return this.animal && VL.POUVOIR_ESPECE[this.animal.espece] || null; },
-        ctx: function() { this.v; return { pouvoir: this.pouvoir, bossTotal: (lireStockage('donjon-stats') || {}).boss | 0, nom: this.animal ? this.animal.nom : '' }; },
+        ctx: function() { this.v; return { pouvoir: this.pouvoir, bossTotal: (lireStockage('donjon-stats') || {}).boss | 0, nom: this.animal ? this.animal.nom : '', jour: this.jour,
+                                           compagnon: !!(this.animal && this.animal.espece), possede: (this.animal && this.animal.possede) || {} }; },
+        sacVisible: function() { this.v; return VL.etatQuete(etat, 'atelier') !== 'dispo' || VL.ORDRE_RES.some(r => etat.sac[r] > 0); },
+        besace: function() { this.v; return VL.besaceTotal(etat); },
+        aujourdhui: function() {
+          this.v; var n = VL.RECOLTE.filter(p => VL.pointVisible(etat, p, this.ctx)).length;
+          return n ? n + ' point' + (n > 1 ? 's' : '') + ' de récolte t\'attend' + (n > 1 ? 'ent' : '') + ' encore aujourd\'hui. Tout repousse demain.' : 'Tu as tout ramassé aujourd\'hui ! Tout repousse demain.';
+        },
+        recettes: function() {
+          this.v; var c = this.ctx;
+          return VL.RECETTES.filter(r => r.ou === this.fabOu).map(r => {
+            var i = r.type === 'deco' ? CP.art(r.id) : r.type === 'fiole' ? VL.FIOLES[r.id] : VL.OUTILS[r.id];
+            var texte = r.type === 'deco' ? 'Pour la maison' : r.type === 'fiole' ? i.texte + (etat.besace[r.id] ? ' · ' + etat.besace[r.id] + ' dans la besace' : '') : i.texte;
+            return { id: r.id, nom: i.nom, ico: i.ico, texte: texte, cout: r.cout, etat: VL.etatRecette(etat, r, c) };
+          });
+        },
         dessinMoi: function() {
           if (!this.animal) return '';
           var n = CP.niveaux(this.animal), h = CP.humeur(n);
@@ -447,19 +519,21 @@
           this.v;
           var c = this.ecranCoord;
           // On ne redessine l'écran que s'il a changé (pas à chaque pas)
-          var cle = [c.ex, c.ey, JSON.stringify(etat.ouverts), JSON.stringify(etat.pris), etat.coffre, VL.etatQuete(etat, 'herbes'), JSON.stringify(this.marques), this.tableauMarque, this.animal && this.animal.nom].join('|');
+          var atelier = VL.ouvertFab(etat, 'etabli');
+          var cle = [c.ex, c.ey, JSON.stringify(etat.ouverts), JSON.stringify(etat.pris), etat.coffre, VL.etatQuete(etat, 'herbes'), JSON.stringify(this.marques), this.tableauMarque, this.animal && this.animal.nom,
+                     JSON.stringify(etat.recolte), this.jour, atelier].join('|');
           if (cle === this._cleEcran) return this._svgEcran;
           this._cleEcran = cle;
-          return this._svgEcran = VLD.ecranSvg(etat, c.ex, c.ey, { flair: this.pouvoir === 'flair', plaque: this.animal ? 'Chez ' + this.animal.nom : 'Ma maison', marques: this.marques, tableauMarque: this.tableauMarque });
+          return this._svgEcran = VLD.ecranSvg(etat, c.ex, c.ey, { flair: this.pouvoir === 'flair', plaque: this.animal ? 'Chez ' + this.animal.nom : 'Ma maison', marques: this.marques, tableauMarque: this.tableauMarque, atelier: atelier, jour: this.jour });
         },
         queteSuivie: function() { this.v; return VL.queteSuivie(etat); },
         quetesDispo: function() { this.v; return VL.ORDRE_QUETES.filter(id => VL.etatQuete(etat, id) === 'dispo').length; },
         carteSvg: function() {
           this.v;
-          var cle = [etat.vu, JSON.stringify(etat.ouverts), JSON.stringify(this.marques), this.tableauMarque].join('|');
+          var cle = [etat.vu, JSON.stringify(etat.ouverts), JSON.stringify(this.marques), this.tableauMarque, JSON.stringify(etat.recolte), this.jour, this.pouvoir].join('|');
           if (cle === this._cleCarte) return this._svgCarte;
           this._cleCarte = cle;
-          return this._svgCarte = VLD.carteSvg(etat, { marques: this.marques, tableauMarque: this.tableauMarque });
+          return this._svgCarte = VLD.carteSvg(etat, { marques: this.marques, tableauMarque: this.tableauMarque, flair: this.pouvoir === 'flair', jour: this.jour });
         },
         carteDessus: function() { this.v; return VLD.carteDessus(etat, { cible: VL.cible(etat, this.queteSuivie, this.ctx) }); },
         explore: function() { this.v; return Math.round(VL.partVue(etat) * 100); },
@@ -483,7 +557,7 @@
       },
       watch: {
         sonActif: function(v) { ecrireStockage('brillant-son', v); },
-        fenetre: function(f) { if (f) { this.dir = null; this._bloque = true; } this.achat = null; }
+        fenetre: function(f) { if (f) { this.dir = null; this._bloque = true; } this.achat = null; this.fabChoix = null; }
       },
       created: function() {
         // Une victoire au Donjon depuis la dernière visite (quête du gardien) : on le dit tout de suite
@@ -493,6 +567,7 @@
         // Une boucle : un pas toutes les 0,19 s tant que la croix est tenue
         setInterval(() => {
           this.maintenant = Date.now();
+          if (this.maintenant - (this._jourT || 0) > 30000) { this._jourT = this.maintenant; var j = VL.jourDe(); if (j !== this.jour) this.jour = j; }   // minuit : tout repousse
           if (this.dir && !this.fenetre && !this.sortie && Date.now() - this._dernierPas >= 190) this.avancer(this.dir);
         }, 40);
         setInterval(() => {
@@ -519,6 +594,7 @@
         sauver: function() { ecrireStockage(CLE, etat); },
         etatQ: function(id) { this.v; return VL.etatQuete(etat, id); },
         consigne: function(id) { this.v; return VL.consigne(etat, id); },
+        annoncerUneFois: function(k, t) { if (this._unefois === k && Date.now() - this._unefoisT < 6000) return; this._unefois = k; this._unefoisT = Date.now(); this.annoncer(t); },
         annoncer: function(t) { this.annonces.push({ id: ++this._annId, t: t, t0: Date.now() }); this.annonces = this.annonces.slice(-4); this.maintenant = Date.now(); },
         portrait: function(qui) { var H = VL.HABITANTS[qui]; return H ? VLD.habitant(H.espece, 58) : ''; },
         montrerLieu: function(neuf) {
@@ -562,6 +638,16 @@
               if (VL.etatQuete(etat, 'herbes') === 'rendre') this.annoncer('🍄 Cinq champignons ! Retourne voir Mme Sauge.');
               else this.annoncer('🍄 Un champignon ! ' + r.n + ' / ' + VL.QUETES.herbes.but);
             }
+            if (r.recolte) {
+              var R = VL.RESSOURCES[r.recolte];
+              this.son('toc'); this.vibre(25);
+              var t = R.ico + ' +' + r.n + ' ' + R.nom.toLowerCase() + ' (' + etat.sac[r.recolte] + ' / ' + VL.SAC_MAX + ')';
+              if (r.pierre) t += ' · 🪨 +' + r.pierre;
+              if (VL.etatQuete(etat, 'atelier') === 'rendre' && !this._atelierDit) { this._atelierDit = true; t += ' · Retourne voir Bruno !'; }
+              this.annoncer(t);
+            }
+            if (r.sacPlein) this.annoncerUneFois('plein' + r.sacPlein, '🎒 Ton sac est plein : ' + VL.SAC_MAX + ' ' + VL.RESSOURCES[r.sacPlein].nom.toLowerCase() + ' au plus. Fabrique quelque chose !');
+            if (r.filon) this.annoncerUneFois('filon', '💎 Un filon de cristal ! Il faudrait une pioche' + (VL.ouvertFab(etat, 'forge') ? ' (forge de Bruno).' : '. Bruno en forge une, quand sa forge tourne.'));
             this.v++; this.sauver();
             return;
           }
@@ -613,6 +699,7 @@
           if (rc.etoiles) {
             Etoiles.ajouter(rc.etoiles, 'Vallée : ' + Q.nom, true);
             texte = '+' + rc.etoiles + ' étoiles ⭐';
+            if (rc.atelier) { ico = '🪚'; texte = 'L\'établi est réparé, devant ta maison : fonce dedans pour fabriquer de la déco. Mme Sauge t\'attend aussi dans sa hutte pour les fioles. ' + texte; }
           } else if (rc.deco) {
             var art = CP.art(rc.deco), a = lireStockage('compagnon-animal');
             ico = art.ico || '🎁';
@@ -642,8 +729,12 @@
               boutons: [{ t: '⬇️ Descendre', principal: true, f: () => this.entrer('donjon/') }, { t: 'Plus tard', f: () => this.fermer() }] });
           }
           if (id === 'fontaine') { this._fontaine = ((this._fontaine | 0) + 1) % FONTAINE.length; return this.annoncer(FONTAINE[this._fontaine]); }
-          if (id === 'hutte') return this.annoncer('🌿 La hutte de Mme Sauge. Ça sent bon le thym.');
-          if (id === 'forge') return this.annoncer(VL.etatQuete(etat, 'cle') === 'finie' ? '⚒️ Tchac ! Tchac ! La forge de Bruno tourne.' : '⚒️ La forge est froide : Bruno a perdu sa clé.');
+          if (id === 'etabli') return VL.ouvertFab(etat, 'etabli') ? this.ouvrirFab('etabli') : this.annoncer('🪚 Un vieil établi vermoulu, couvert de mousse. Bruno, le forgeron, saurait le réparer.');
+          if (id === 'hutte') return VL.ouvertFab(etat, 'hutte') ? this.ouvrirFab('hutte') : this.annoncer('🌿 La hutte de Mme Sauge. Ça sent bon le thym.');
+          if (id === 'forge') {
+            if (VL.ouvertFab(etat, 'forge')) return this.ouvrirFab('forge');
+            return this.annoncer(VL.etatQuete(etat, 'cle') !== 'finie' ? '⚒️ La forge est froide : Bruno a perdu sa clé.' : '⚒️ Tchac ! Tchac ! Bruno te forgera des outils une fois l\'établi réparé.');
+          }
           if (id === 'cabane') return this.annoncer('🐢 La cabane de Papi Tortue. Une tisane fume sur le rebord.');
           if (id === 'coffre' || id === 'chene') {
             var r = VL.fouiller(etat, id, c);
@@ -654,7 +745,28 @@
           }
         },
         lire: function(m) { this.aLire = m; this.fenetre = 'lire'; },
-        fermer: function() { this.fenetre = null; this.dialogue = null; this.aLire = null; },
+        ouvrirFab: function(ou) { this.fabOu = ou; this.fenetre = 'fab'; this.son('toc'); },
+        // Fabriquer : deux touchers (le 2e confirme), comme les achats
+        fabriquer: function(r) {
+          if (this.fabChoix !== r.id) { this.fabChoix = r.id; return; }
+          this.fabChoix = null;
+          var res = VL.fabriquer(etat, r.id, this.ctx);
+          if (res.erreur) { this.annoncer('⚠️ ' + res.erreur); return; }
+          if (res.deco) {
+            var art = CP.art(res.deco), a = lireStockage('compagnon-animal');
+            if (a && a.espece) {
+              a.possede = a.possede || {}; a.porte = a.porte || {};
+              a.possede[art.id] = 1; a.porte[art.slot] = art.id;
+              ecrireStockage('compagnon-animal', a); this.animal = a;
+            }
+          }
+          this.sauver(); this.v++;
+          this.son('victoire'); this.vibre([50, 40, 90]);
+          if (res.type === 'deco') this.annoncer(r.ico + ' ' + r.nom + ' : dans le salon de ' + (this.animal ? this.animal.nom : 'la maison') + ' !');
+          else if (res.type === 'fiole') this.annoncer(r.ico + ' ' + r.nom + ' dans ta besace (' + VL.besaceTotal(etat) + ' / ' + VL.BESACE_MAX + ')');
+          else this.annoncer(r.ico + ' ' + r.nom + ' : ' + r.texte + ' !');
+        },
+        fermer: function() { this.fenetre = null; this.dialogue = null; this.aLire = null; this.fabOu = null; },
         acheter: function(a) {
           if (this.achat !== a.id) { this.achat = a.id; return; }
           var animal = lireStockage('compagnon-animal'), art = CP.art(a.id);

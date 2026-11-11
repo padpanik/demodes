@@ -15,7 +15,7 @@ var VL = (function () {
   // ---------- Les écrans (lignes de 11 cases) ----------
   // .  herbe   ,  fleurs   :  chemin   =  pont         (on y marche)
   // T  arbre   S  sapin    b  buisson  h  haie   o  souche   ~  eau   x  bâtiment (dessiné à part)
-  // m  étal du marchand    Q  tableau de quêtes   F  fontaine   c  coffre
+  // m  étal du marchand    Q  tableau de quêtes   F  fontaine   c  coffre   e  établi (3.50, devant ma maison)
   // r  ronces (🔥)   R  rocher (💪)   v  trou (🦘)   s  passage secret (👃) : le pouvoir du compagnon les ouvre
   var ECRANS = [
     [ { id: 'sapins', nom: 'Bois des sapins', ico: '🌲', l: [
@@ -60,7 +60,7 @@ var VL = (function () {
         'TTTTT:TTTTT'] },
       { id: 'village', nom: 'Le village', ico: '🏡', l: [
         'hhhhh:hhhhh',
-        'hxxx.:.mmQh',
+        'hxxxe:.mmQh',
         'hxxx.:....h',
         'h.::::::..h',
         ':::::F:::::',
@@ -147,6 +147,7 @@ var VL = (function () {
   [[6, 1], [7, 1], [6, 2], [7, 2]].forEach(c => action(g(2, 0, c[0], c[1]), { id: 'cabane' }));
   [[3, 2], [4, 2], [3, 3], [4, 3]].forEach(c => action(g(0, 2, c[0], c[1]), { id: 'chene' }));
   action(g(2, 2, 7, 5), { id: 'coffre' });
+  action(g(1, 1, 4, 1), { id: 'etabli' });
 
   // ---------- Les habitants ----------
   var HABITANTS = {
@@ -170,11 +171,66 @@ var VL = (function () {
     cle: { nom: 'La clé du forgeron', ico: '🔑', qui: 'bruno', recompense: { etoiles: 8 },
            resume: 'Retrouver la clé de Bruno, perdue dans le bosquet du sud-est.' },
     gardien: { nom: 'Le gardien de la crypte', ico: '⚔️', qui: 'tableau', recompense: { deco: 'val-banniere' },
-               resume: 'Descendre dans la crypte et vaincre le boss du premier étage du Donjon.' }
+               resume: 'Descendre dans la crypte et vaincre le boss du premier étage du Donjon.' },
+    atelier: { nom: 'L\'établi de Bruno', ico: '🪵', qui: 'bruno', recompense: { etoiles: 3, atelier: true }, but: { bois: 3, pierre: 3 },
+               resume: 'Rapporter 3 bois et 3 pierres à Bruno, le forgeron.' }
   };
-  var ORDRE_QUETES = ['lettre', 'herbes', 'cle', 'gardien'];
+  var ORDRE_QUETES = ['lettre', 'atelier', 'herbes', 'cle', 'gardien'];
   // Déco de la Vallée (articles « souvenir: 'vallee' » de compagnon-commun.js) : vendue par Pipa, ou offerte par une quête
   var VENTE = [{ id: 'val-champi', prix: 15 }, { id: 'val-hibou', prix: 20 }, { id: 'val-carte', prix: 25 }];
+
+  // ---------- Récolte et fabrication (phase 2, 3.50, demandée par l'utilisateur) ----------
+  // On fonce dans un point de récolte (on marche dessus) : il disparaît jusqu'au lendemain (repousse une fois par jour, choix de l'utilisateur).
+  // Les points sont les mêmes pour tous ; ce qu'on a ramassé est propre à chaque téléphone. Sac limité : SAC_MAX de chaque ressource.
+  var RESSOURCES = {
+    bois: { nom: 'Bois', ico: '🪵', base: 2, pouvoir: 'ronces', outil: 'hache' },
+    pierre: { nom: 'Pierre', ico: '🪨', base: 2, pouvoir: 'force', outil: 'pioche' },
+    plante: { nom: 'Plantes', ico: '🌿', base: 2, pouvoir: 'bond', outil: 'faucille' },
+    cristal: { nom: 'Cristaux', ico: '💎', base: 1 }          // le Flair 👃 les fait scintiller sur la carte, même sous le brouillard
+  };
+  var ORDRE_RES = ['bois', 'pierre', 'plante', 'cristal'];
+  var SAC_MAX = 20;
+  // Points de récolte : [écran x, écran y, case x, case y, ressource, filon (il faut la pioche)]
+  var RECOLTE = [
+    [0, 0, 2, 1, 'bois'], [0, 0, 8, 2, 'bois'], [0, 0, 5, 6, 'bois'], [2, 1, 2, 1, 'bois'], [2, 1, 8, 5, 'bois'], [0, 2, 7, 3, 'bois'], [0, 2, 7, 7, 'bois'], [2, 0, 2, 6, 'bois'],
+    [0, 1, 1, 1, 'pierre'], [0, 1, 7, 3, 'pierre'], [0, 1, 3, 5, 'pierre'], [1, 0, 2, 2, 'pierre'], [1, 0, 7, 5, 'pierre'], [1, 0, 8, 2, 'pierre'], [2, 0, 8, 5, 'pierre'],
+    [1, 2, 1, 1, 'plante'], [1, 2, 7, 3, 'plante'], [1, 2, 4, 5, 'plante'], [1, 2, 9, 5, 'plante'], [2, 1, 2, 3, 'plante'], [0, 2, 2, 5, 'plante'], [0, 1, 8, 5, 'plante'], [2, 2, 2, 2, 'plante'],
+    [2, 0, 9, 3, 'cristal'], [2, 2, 1, 7, 'cristal'], [1, 0, 1, 2, 'cristal', true], [2, 2, 9, 2, 'cristal', true]
+  ].map((r, k) => Object.assign({ id: 'r' + k, res: r[4], filon: !!r[5] }, g(r[0], r[1], r[2], r[3])));
+  var OUTILS = {
+    hache: { nom: 'Hache', ico: '🪓', texte: '+1 bois à chaque récolte' },
+    faucille: { nom: 'Faucille', ico: '🌾', texte: '+1 plante à chaque récolte' },
+    pioche: { nom: 'Pioche', ico: '⛏️', texte: '+1 pierre, et les filons de cristal' }
+  };
+  // Fioles de la Vallée : mêmes identifiants que les fioles du Donjon (DJD.FIOLES). On en emporte DONJON_MAX au plus par donjon.
+  var FIOLES = {
+    soin: { nom: 'Fiole de soin', ico: '💖', texte: 'Soigne 15 PV' },
+    garde: { nom: 'Fiole de pierre', ico: '🛡️', texte: '+12 armure' },
+    force: { nom: 'Fiole de force', ico: '💪', texte: '+2 Force pour un combat' }
+  };
+  var BESACE_MAX = 6, DONJON_MAX = 2;
+  // Recettes : où (établi devant ma maison, hutte de Mme Sauge, forge de Bruno), quoi, et ce que ça coûte
+  var LIEUX_FAB = {
+    etabli: { nom: 'L\'établi', ico: '🪚', qui: null, texte: 'La déco de la maison, faite de tes mains. On ne la trouve nulle part ailleurs.' },
+    hutte: { nom: 'La hutte de Mme Sauge', ico: '🌿', qui: 'sauge', texte: 'Des fioles pour le Donjon, gardées dans ta besace (' + BESACE_MAX + ' au plus). Tu en emportes ' + DONJON_MAX + ' par donjon.' },
+    forge: { nom: 'La forge de Bruno', ico: '⚒️', qui: 'bruno', texte: 'Des outils pour mieux récolter. Une fois forgés, ils sont à toi pour toujours.' }
+  };
+  var RECETTES = [
+    { id: 'fab-tabouret', ou: 'etabli', type: 'deco', cout: { bois: 3 } },
+    { id: 'fab-bouquet', ou: 'etabli', type: 'deco', cout: { plante: 4 } },
+    { id: 'fab-nichoir', ou: 'etabli', type: 'deco', cout: { bois: 4, plante: 1 } },
+    { id: 'fab-statuette', ou: 'etabli', type: 'deco', cout: { pierre: 5 } },
+    { id: 'fab-muret', ou: 'etabli', type: 'deco', cout: { pierre: 3, plante: 2 } },
+    { id: 'fab-lampe', ou: 'etabli', type: 'deco', cout: { bois: 2, cristal: 1 } },
+    { id: 'fab-vitrine', ou: 'etabli', type: 'deco', cout: { bois: 3, cristal: 2 } },
+    { id: 'fab-bassin', ou: 'etabli', type: 'deco', cout: { pierre: 4, plante: 2, cristal: 1 } },
+    { id: 'soin', ou: 'hutte', type: 'fiole', cout: { plante: 3 } },
+    { id: 'garde', ou: 'hutte', type: 'fiole', cout: { plante: 2, pierre: 2 } },
+    { id: 'force', ou: 'hutte', type: 'fiole', cout: { plante: 2, cristal: 1 } },
+    { id: 'hache', ou: 'forge', type: 'outil', cout: { bois: 4, pierre: 3 } },
+    { id: 'faucille', ou: 'forge', type: 'outil', cout: { bois: 2, pierre: 4 } },
+    { id: 'pioche', ou: 'forge', type: 'outil', cout: { bois: 3, pierre: 5 } }
+  ];
 
   // ---------- Hasard fixe (variations du dessin) ----------
   function hash(x, y, k) {
@@ -207,7 +263,8 @@ var VL = (function () {
   // ---------- État d'un joueur ----------
   function nouvelEtat() {
     var p = g(1, 1, 2, 3);
-    var e = { v: 1, x: p.x, y: p.y, dir: 'b', vu: '', ouverts: {}, pris: {}, quetes: {}, coffre: false, cle: false, pas: 0 };
+    var e = { v: 1, x: p.x, y: p.y, dir: 'b', vu: '', ouverts: {}, pris: {}, quetes: {}, coffre: false, cle: false, pas: 0,
+              sac: { bois: 0, pierre: 0, plante: 0, cristal: 0 }, recolte: { j: '', pris: {} }, outils: {}, besace: {} };
     reveler(e);
     return e;
   }
@@ -221,6 +278,16 @@ var VL = (function () {
     e.vu = typeof s.vu === 'string' && /^[0-9a-f]*$/.test(s.vu) ? s.vu : '';
     if (s.quetes && typeof s.quetes === 'object') Object.keys(QUETES).forEach(id => { if (s.quetes[id] && typeof s.quetes[id] === 'object') e.quetes[id] = Object.assign({}, s.quetes[id]); });
     e.coffre = !!s.coffre; e.cle = !!s.cle; e.pas = s.pas | 0;
+    if (s.sac && typeof s.sac === 'object') ORDRE_RES.forEach(r => { e.sac[r] = Math.max(0, Math.min(SAC_MAX, s.sac[r] | 0)); });
+    if (s.recolte && typeof s.recolte === 'object' && typeof s.recolte.j === 'string') {
+      e.recolte.j = s.recolte.j;
+      Object.keys(s.recolte.pris || {}).forEach(id => { if (RECOLTE.some(r => r.id === id)) e.recolte.pris[id] = 1; });
+    }
+    if (s.outils && typeof s.outils === 'object') Object.keys(OUTILS).forEach(o => { if (s.outils[o]) e.outils[o] = 1; });
+    if (s.besace && typeof s.besace === 'object') {
+      var n = 0;
+      Object.keys(FIOLES).forEach(f => { var k = Math.max(0, Math.min(BESACE_MAX - n, s.besace[f] | 0)); if (k) { e.besace[f] = k; n += k; } });
+    }
     reveler(e);
     return e;
   }
@@ -262,6 +329,10 @@ var VL = (function () {
     if (q.herbes && q.herbes.etat === 'cours' && (q.herbes.n | 0) >= QUETES.herbes.but) { q.herbes.etat = 'rendre'; change = true; }
     if (q.cle && q.cle.etat === 'cours' && e.cle) { q.cle.etat = 'rendre'; change = true; }
     if (q.gardien && q.gardien.etat === 'cours' && ctx && (ctx.bossTotal | 0) > (q.gardien.boss | 0)) { q.gardien.etat = 'rendre'; change = true; }
+    if (q.atelier && (q.atelier.etat === 'cours' || q.atelier.etat === 'rendre')) {
+      var assez = assezPour(e, QUETES.atelier.but), voulu = assez ? 'rendre' : 'cours';
+      if (q.atelier.etat !== voulu) { q.atelier.etat = voulu; change = true; }
+    }
     return change;
   }
   function accepter(e, id, ctx) {
@@ -276,6 +347,7 @@ var VL = (function () {
   }
   function rendre(e, id) {
     if (etatQuete(e, id) !== 'rendre') return null;
+    if (id === 'atelier') payer(e, QUETES.atelier.but);
     e.quetes[id].etat = 'finie'; e.quetes[id].fin = Date.now();
     return Object.assign({ quete: id }, QUETES[id].recompense);
   }
@@ -306,6 +378,7 @@ var VL = (function () {
     if (id === 'lettre') return 'Porte la lettre à Papi Tortue (nord-est)';
     if (id === 'cle') return 'Cherche la clé dans le bosquet (sud-est)';
     if (id === 'gardien') return 'Bats le boss du 1er étage de la crypte';
+    if (id === 'atelier') return 'Pour Bruno : bois ' + Math.min(3, e.sac.bois) + '/3, pierres ' + Math.min(3, e.sac.pierre) + '/3';
     return '';
   }
   // Où aller pour la quête suivie (une case), pour la flèche sur la carte
@@ -316,6 +389,11 @@ var VL = (function () {
     if (id === 'lettre') return HABITANTS.tortue;
     if (id === 'cle') return ctx && !ctx.pouvoir ? g(0, 2, 4, 3) : g(2, 2, 7, 5);
     if (id === 'gardien') return g(1, 0, 5, 1);
+    if (id === 'atelier') {
+      var res = e.sac.bois < 3 ? 'bois' : 'pierre', jour = (ctx && ctx.jour) || jourDe();
+      var p = RECOLTE.filter(k => k.res === res && !k.filon && !prisAujourdhui(e, k, jour)).sort((a, b) => Math.hypot(a.x - e.x, a.y - e.y) - Math.hypot(b.x - e.x, b.y - e.y))[0];
+      return p || HABITANTS.bruno;
+    }
     if (id === 'herbes') {
       var c = CHAMPIGNONS.filter(k => !e.pris[k.id]).sort((a, b) => Math.hypot(a.x - e.x, a.y - e.y) - Math.hypot(b.x - e.x, b.y - e.y))[0];
       return c || null;
@@ -352,6 +430,8 @@ var VL = (function () {
       r.ramasse = 'champignon'; r.n = e.quetes.herbes.n;
       verifier(e, ctx);
     }
+    var pt = pointEn(nx, ny);
+    if (pt) Object.assign(r, recolter(e, pt, ctx));
     return r;
   }
 
@@ -393,12 +473,18 @@ var VL = (function () {
     }
     if (qui === 'bruno') {
       s = etatQuete(e, 'cle');
+      var sa = etatQuete(e, 'atelier');
+      if (s !== 'rendre' && sa === 'rendre') return { qui: qui, texte: 'Trois bûches, trois pierres… Parfait ! Grrr, voilà du solide. Je t\'ai remis en état le vieil établi, devant ta maison : tu pourras y fabriquer de la déco. Et Mme Sauge t\'apprendra ses fioles, j\'en suis sûr.',
+                                                         boutons: [{ t: '🪵 Donner le bois et les pierres', a: 'rendre:atelier', principal: true }] };
+      if (s !== 'rendre' && sa === 'dispo') return { qui: qui, texte: 'Grrr… Bonjour. Tu vois le vieil établi devant ta maison ? Il ne tient plus debout. Rapporte-moi 3 bois et 3 pierres, je te le répare. Du bois mort dans les forêts, des pierres près du ruisseau et de la crypte. Tout repousse chaque jour !',
+                                                     boutons: [{ t: '🪵 Je m\'en occupe', a: 'accepter:atelier', principal: true }, plusTard] };
       if (s === 'dispo') return { qui: qui, texte: 'Grrr… Bonjour. J\'ai perdu la clé de mon atelier en cueillant des mûres dans le bosquet, au sud-est. Depuis, les ronces et les rochers ont tout recouvert… ' + (ctx && ctx.pouvoir ? 'Ton compagnon saurait passer, lui ?' : 'Tu veux bien chercher ?'),
                                   boutons: [{ t: '🔑 Je la cherche', a: 'accepter:cle', principal: true }, plusTard] };
       if (s === 'cours') return { qui: qui, texte: ctx && ctx.pouvoir ? 'Le bosquet est au sud-est du village. Pour passer un obstacle, fonce dedans : ' + tu + ' s\'en sert de son pouvoir (' + POUVOIRS[ctx.pouvoir].ico + ' ' + POUVOIRS[ctx.pouvoir].nom + ').'
                                                          : 'Papi Tortue sait tout ce qui se passe dans la forêt. Demande-lui !', boutons: [ok] };
-      if (s === 'rendre') return { qui: qui, texte: 'Ma clé ! Grrr… de joie ! Je vais pouvoir rallumer la forge. Voilà pour toi.', boutons: [{ t: '🔑 Rendre la clé', a: 'rendre:cle', principal: true }] };
-      return { qui: qui, texte: 'Ding ! Dong ! La forge tourne à nouveau. Merci, l\'ami !', boutons: [ok] };
+      if (s === 'rendre') return { qui: qui, texte: 'Ma clé ! Grrr… de joie ! Je vais pouvoir rallumer la forge.' + (etatQuete(e, 'atelier') === 'finie' ? ' Reviens m\'y voir : je te forgerai des outils.' : '') + ' Voilà pour toi.', boutons: [{ t: '🔑 Rendre la clé', a: 'rendre:cle', principal: true }] };
+      if (sa === 'cours') return { qui: qui, texte: 'Il me faut encore ' + [e.sac.bois < 3 ? (3 - e.sac.bois) + ' bois' : '', e.sac.pierre < 3 ? (3 - e.sac.pierre) + ' pierre' + (3 - e.sac.pierre > 1 ? 's' : '') : ''].filter(Boolean).join(' et ') + ' pour l\'établi. Fonce dans le bois mort et les cailloux pour les ramasser.', boutons: [ok] };
+      return { qui: qui, texte: 'Ding ! Dong ! La forge tourne à nouveau. Fonce dans l\'enclume si tu veux un outil, l\'ami !', boutons: [ok] };
     }
     return { qui: qui, texte: '…', boutons: [ok] };
   }
@@ -442,7 +528,81 @@ var VL = (function () {
     return {};
   }
 
+  // ---------- Récolte ----------
+  // Le jour (heure du téléphone) : les points repoussent au changement de jour
+  function jourDe(t) {
+    var d = new Date(t || Date.now());
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  }
+  function pointEn(x, y) { return RECOLTE.find(p => p.x === x && p.y === y) || null; }
+  function prisAujourdhui(e, p, jour) { return e.recolte.j === (jour || jourDe()) && !!e.recolte.pris[p.id]; }
+  function pointVisible(e, p, ctx) { return !prisAujourdhui(e, p, ctx && ctx.jour); }
+  // Combien un point donne : la base, ×2 avec le pouvoir qui va avec, +1 avec l'outil
+  function gain(e, res, ctx) {
+    var R = RESSOURCES[res], n = R.base;
+    if (R.pouvoir && ctx && ctx.pouvoir === R.pouvoir) n *= 2;
+    if (R.outil && e.outils[R.outil]) n += 1;
+    return n;
+  }
+  function recolter(e, p, ctx) {
+    var jour = (ctx && ctx.jour) || jourDe();
+    if (e.recolte.j !== jour) e.recolte = { j: jour, pris: {} };
+    if (e.recolte.pris[p.id]) return {};
+    if (p.filon && !e.outils.pioche) return { filon: p.id };
+    if (e.sac[p.res] >= SAC_MAX) return { sacPlein: p.res };
+    var n = Math.min(SAC_MAX - e.sac[p.res], gain(e, p.res, ctx)), r = { recolte: p.res, n: n };
+    e.sac[p.res] += n; e.recolte.pris[p.id] = 1;
+    if (p.filon) { var k = Math.min(SAC_MAX - e.sac.pierre, 1); e.sac.pierre += k; r.pierre = k; }
+    verifier(e, ctx);
+    return r;
+  }
+  function assezPour(e, cout) { return Object.keys(cout).every(r => (e.sac[r] | 0) >= cout[r]); }
+  function payer(e, cout) { Object.keys(cout).forEach(r => { e.sac[r] = Math.max(0, (e.sac[r] | 0) - cout[r]); }); }
+  function besaceTotal(e) { return Object.keys(e.besace).reduce((s, f) => s + (e.besace[f] | 0), 0); }
+
+  // ---------- Fabrication ----------
+  // ctx = { compagnon: true/false, possede: { idDeco: 1 } (les objets de la maison) }
+  function ouvertFab(e, ou) {
+    if (etatQuete(e, 'atelier') !== 'finie') return false;
+    if (ou === 'forge') return etatQuete(e, 'cle') === 'finie';
+    return true;
+  }
+  function recette(id) { return RECETTES.find(r => r.id === id) || null; }
+  // Peut-on la fabriquer ? { ok, raison, fait (déjà fait : déco ou outil) }
+  function etatRecette(e, r, ctx) {
+    if (!ouvertFab(e, r.ou)) return { ok: false, raison: 'Pas encore ouvert' };
+    if (r.type === 'deco') {
+      if (ctx && ctx.possede && ctx.possede[r.id]) return { ok: false, fait: true, raison: 'Dans la maison' };
+      if (!(ctx && ctx.compagnon)) return { ok: false, raison: 'Pour la maison d\'un compagnon' };
+    }
+    if (r.type === 'outil' && e.outils[r.id]) return { ok: false, fait: true, raison: 'Déjà forgé' };
+    if (r.type === 'fiole' && besaceTotal(e) >= BESACE_MAX) return { ok: false, raison: 'Besace pleine (' + BESACE_MAX + ')' };
+    if (!assezPour(e, r.cout)) return { ok: false, raison: 'Il manque ' + ORDRE_RES.filter(k => (r.cout[k] | 0) > e.sac[k]).map(k => (r.cout[k] - e.sac[k]) + ' ' + RESSOURCES[k].ico).join(' ') };
+    return { ok: true };
+  }
+  function fabriquer(e, id, ctx) {
+    var r = recette(id);
+    if (!r) return { erreur: 'Recette inconnue' };
+    var s = etatRecette(e, r, ctx);
+    if (!s.ok) return { erreur: s.raison };
+    payer(e, r.cout);
+    if (r.type === 'outil') e.outils[r.id] = 1;
+    if (r.type === 'fiole') e.besace[r.id] = (e.besace[r.id] | 0) + 1;
+    verifier(e, ctx);
+    return { ok: true, type: r.type, id: r.id, deco: r.type === 'deco' ? r.id : null };
+  }
+  // Le Donjon a mis ces fioles dans le sac du héros : on les retire de la besace
+  function prendreFioles(e, ids) {
+    var l = [];
+    (ids || []).forEach(f => { if ((e.besace[f] | 0) > 0) { e.besace[f]--; if (!e.besace[f]) delete e.besace[f]; l.push(f); } });
+    return l;
+  }
+
   return {
+    RESSOURCES: RESSOURCES, ORDRE_RES: ORDRE_RES, SAC_MAX: SAC_MAX, RECOLTE: RECOLTE, OUTILS: OUTILS, FIOLES: FIOLES, BESACE_MAX: BESACE_MAX, DONJON_MAX: DONJON_MAX,
+    LIEUX_FAB: LIEUX_FAB, RECETTES: RECETTES,
+    jourDe: jourDe, pointEn: pointEn, pointVisible: pointVisible, prisAujourdhui: prisAujourdhui, gain: gain, recolter: recolter, assezPour: assezPour, besaceTotal: besaceTotal,
+    ouvertFab: ouvertFab, recette: recette, etatRecette: etatRecette, fabriquer: fabriquer, prendreFioles: prendreFioles,
     W: W, H: H, EW: EW, EH: EH, LARG: LARG, HAUT: HAUT, GRAINE: GRAINE, VISION: VISION,
     ECRANS: ECRANS, BATIMENTS: BATIMENTS, ACTIONS: ACTIONS, HABITANTS: HABITANTS, CHAMPIGNONS: CHAMPIGNONS, QUETES: QUETES, ORDRE_QUETES: ORDRE_QUETES,
     OBSTACLES: OBSTACLES, POUVOIRS: POUVOIRS, POUVOIR_ESPECE: POUVOIR_ESPECE, VENTE: VENTE,

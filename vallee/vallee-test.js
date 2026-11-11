@@ -153,5 +153,80 @@ verif(r3.obstacle === 'ronces' && e3.y === 2 * 9 + 3, 'ronces fermées sans le f
 r3 = VL.pas(e3, 'b', { pouvoir: 'ronces' }); verif(r3.ouvre === 'ronces', 'ronces brûlées');
 r3 = VL.pas(e3, 'b', { pouvoir: 'force' }); verif(r3.bouge, 'on passe ensuite');
 
+// 7. Récolte et fabrication (3.50)
+var ids = {};
+VL.RECOLTE.forEach(p => {
+  verif(!ids[p.x + ',' + p.y], 'deux points de récolte en ' + p.id); ids[p.x + ',' + p.y] = 1;
+  verif(VL.libre(VL.nouvelEtat(), p.x, p.y), 'point ' + p.id + ' sur une case où l\'on ne marche pas');
+  verif(!VL.CHAMPIGNONS.some(c => c.x === p.x && c.y === p.y), 'point ' + p.id + ' sur un champignon');
+  [null, 'ronces', 'force', 'bond', 'flair'].forEach(pv => verif(accessibles(pv).vus[p.x + ',' + p.y], 'point ' + p.id + ' injoignable (' + pv + ')'));
+});
+VL.RECETTES.forEach(r => { verif(VL.LIEUX_FAB[r.ou], 'recette ' + r.id + ' : lieu'); Object.keys(r.cout).forEach(k => verif(VL.RESSOURCES[k] && r.cout[k] <= VL.SAC_MAX, 'recette ' + r.id + ' : coût')); });
+[null, 'ronces', 'force', 'bond', 'flair'].forEach(pv => {
+  var e = VL.nouvelEtat(), ctx = { pouvoir: pv, bossTotal: 0, jour: '2026-11-11', compagnon: !!pv, possede: {} };
+  verif(!VL.ouvertFab(e, 'etabli'), 'établi fermé au départ');
+  aller(e, VL.HABITANTS.bruno, ctx);
+  verif(VL.marque(e, 'bruno') === '!', 'Bruno : !');
+  verif(VL.parler(e, 'bruno', ctx).boutons[0].a === 'accepter:atelier', 'Bruno propose l\'établi d\'abord');
+  VL.agir(e, 'accepter:atelier', ctx);
+  verif(VL.parler(e, 'bruno', ctx).boutons[0].a === 'accepter:cle', 'puis la clé');
+  // On suit l'anneau orange jusqu'à avoir 3 bois et 3 pierres
+  var n = 0;
+  while (VL.etatQuete(e, 'atelier') === 'cours' && n++ < 20) {
+    var c = VL.cible(e, 'atelier', ctx), l = chemin(e, c, pv);
+    verif(l, 'chemin vers le point ' + c.x + ',' + c.y); if (!l) break;
+    l.forEach(d => { var q = VL.pas(e, d, ctx); if (q.ouvre) VL.pas(e, d, ctx); });
+  }
+  verif(VL.etatQuete(e, 'atelier') === 'rendre', 'bois et pierres réunis (' + pv + ') : ' + JSON.stringify(e.sac));
+  verif(VL.marque(e, 'bruno') === '?', 'Bruno : ?');
+  var avant = Object.assign({}, e.sac);
+  aller(e, VL.HABITANTS.bruno, ctx);
+  var rc = VL.agir(e, 'rendre:atelier', ctx).recompense;
+  verif(rc && rc.atelier && rc.etoiles === 3, 'établi réparé');
+  verif(e.sac.bois === avant.bois - 3 && e.sac.pierre === avant.pierre - 3, 'bois et pierres donnés');
+  verif(VL.ouvertFab(e, 'etabli') && VL.ouvertFab(e, 'hutte') && !VL.ouvertFab(e, 'forge'), 'établi et hutte ouverts, forge froide');
+  // Bonus du pouvoir
+  verif(VL.gain(e, 'bois', ctx) === (pv === 'ronces' ? 4 : 2), 'gain de bois (' + pv + ')');
+  verif(VL.gain(e, 'pierre', ctx) === (pv === 'force' ? 4 : 2), 'gain de pierre (' + pv + ')');
+  verif(VL.gain(e, 'plante', ctx) === (pv === 'bond' ? 4 : 2), 'gain de plantes (' + pv + ')');
+  // Un point ramassé ne redonne rien le même jour, et repousse le lendemain
+  var p = VL.RECOLTE.find(k => k.res === 'plante');
+  e.x = p.x; e.y = p.y - 1;
+  var ok1 = VL.libre(e, p.x, p.y - 1);
+  if (ok1) {
+    var q = VL.pas(e, 'b', ctx); verif(q.recolte === 'plante', 'plante ramassée');
+    VL.pas(e, 'h', ctx); q = VL.pas(e, 'b', ctx); verif(!q.recolte, 'pas deux fois le même jour');
+    VL.pas(e, 'h', ctx); q = VL.pas(e, 'b', Object.assign({}, ctx, { jour: '2026-11-12' })); verif(q.recolte === 'plante', 'repousse le lendemain');
+  }
+  // Sac plein
+  e.sac.cristal = VL.SAC_MAX;
+  var cr = VL.RECOLTE.find(k => k.res === 'cristal' && !k.filon);
+  verif(VL.recolter(e, cr, ctx).sacPlein === 'cristal', 'sac plein');
+  e.sac.cristal = 0;
+  verif(VL.recolter(e, VL.RECOLTE.find(k => k.filon), ctx).filon, 'filon sans pioche');
+  // Fabrication
+  e.sac = { bois: 20, pierre: 20, plante: 20, cristal: 20 };
+  var f = VL.fabriquer(e, 'fab-tabouret', ctx);
+  verif(pv ? f.ok && f.deco === 'fab-tabouret' && e.sac.bois === 17 : !!f.erreur, 'tabouret (' + pv + ')');
+  verif(VL.etatRecette(e, VL.recette('fab-tabouret'), { compagnon: true, possede: { 'fab-tabouret': 1 } }).fait, 'déco déjà faite');
+  verif(VL.fabriquer(e, 'hache', ctx).erreur, 'forge froide');
+  for (var i = 0; i < 8; i++) VL.fabriquer(e, 'soin', ctx);
+  verif(VL.besaceTotal(e) === VL.BESACE_MAX, 'besace limitée : ' + VL.besaceTotal(e));
+  verif(JSON.stringify(VL.prendreFioles(e, ['soin', 'soin', 'force'])) === '["soin","soin"]', 'fioles emportées');
+  e.quetes.cle = { etat: 'finie' };
+  verif(VL.fabriquer(e, 'pioche', ctx).ok && e.outils.pioche, 'pioche forgée');
+  verif(VL.fabriquer(e, 'pioche', ctx).erreur, 'pas deux pioches');
+  verif(VL.gain(e, 'pierre', ctx) === (pv === 'force' ? 5 : 3), 'pioche : +1 pierre');
+  e.sac.cristal = 0; e.sac.pierre = 0;
+  var fl = VL.recolter(e, VL.RECOLTE.find(k => k.filon), ctx);
+  verif(fl.recolte === 'cristal' && e.sac.cristal === 1 && e.sac.pierre === 1, 'filon avec la pioche');
+  // Rechargement
+  var e2 = VL.charger(JSON.parse(JSON.stringify(e)));
+  verif(JSON.stringify(e2.sac) === JSON.stringify(e.sac) && e2.outils.pioche && JSON.stringify(e2.besace) === JSON.stringify(e.besace) && e2.recolte.j === e.recolte.j, 'rechargement du sac');
+});
+var e4 = VL.charger({ v: 1, sac: { bois: 999, pierre: -4, plante: 'x' }, besace: { soin: 50, poison: 3 }, outils: { hache: 1, epee: 1 }, recolte: { j: '2026-01-01', pris: { r0: 1, zz: 1 } } });
+verif(e4.sac.bois === VL.SAC_MAX && e4.sac.pierre === 0 && e4.sac.plante === 0, 'sac abîmé');
+verif(VL.besaceTotal(e4) === VL.BESACE_MAX && !e4.besace.poison && e4.outils.hache && !e4.outils.epee && !e4.recolte.pris.zz, 'besace et outils abîmés');
+
 console.log(ok + ' vérifications réussies, ' + ko + ' échec(s)');
 process.exit(ko ? 1 : 0);
