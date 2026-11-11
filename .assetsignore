@@ -13,5 +13,6 @@ serveur-cloudflare
 dix/outils
 dix/questions/LISEZMOI.md
 donjon/donjon-simulation.js
+vallee/vallee-test.js
 serveur-tension
 serveur-sauvegarde

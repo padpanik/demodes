@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <!-- La page est rangée dans son dossier : les adresses relatives partent de la racine du site (fichiers communs) -->
+  <base href="../">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>La Vallée de Désdale · Désdale</title>
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="theme-color" content="#2c4a34">
+  <link rel="icon" type="image/png" href="favicon.png">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Désdale">
+  <script src="https://cdn.jsdelivr.net/npm/vue@2.7.16/dist/vue.min.js"></script>
+  <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+  <script src="reseau.js"></script>
+  <link rel="stylesheet" href="commun.css">
+  <style>
+    /* ---------- La Vallée : tout l'écran, sans défilement ---------- */
+    html, body { height: 100%; }
+    body { background: #2c4a34; overflow: hidden; overscroll-behavior: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
+    body.vl-page #sg-bulle { display: none !important; }   /* la discussion passe par le menu ☰ */
+    .vl { position: fixed; inset: 0; display: flex; flex-direction: column; gap: 6px; max-width: 600px; margin: 0 auto; box-sizing: border-box;
+          padding: max(6px, env(safe-area-inset-top)) 6px max(6px, env(safe-area-inset-bottom)); font-family: system-ui, sans-serif; color: #2b2118;
+          background: radial-gradient(120% 60% at 50% 0%, #3b6146, #2c4a34 60%, #233d2b); }
+
+    /* Fiche du haut : mon compagnon, sa quête, mes étoiles, le menu */
+    .fiche-vl { flex: none; display: flex; align-items: center; gap: 8px; background: #fff8e7; border: 2px solid #c9a874; border-radius: 16px; padding: 5px 6px 5px 5px;
+                box-shadow: 0 3px 0 #8a6a46, 0 6px 14px rgba(0,0,0,0.25); }
+    .portrait-vl { width: 48px; height: 48px; flex: none; border-radius: 50%; background: radial-gradient(circle at 50% 35%, #fffaf0, #f3e2c0); border: 2px solid #c9a874;
+                   padding: 0; overflow: hidden; cursor: pointer; display: flex; align-items: flex-end; justify-content: center; }
+    .portrait-vl svg { width: 50px; height: 52px; display: block; margin-bottom: -3px; }
+    .portrait-vl .boussole { font-size: 26px; margin-bottom: 9px; }
+    .infos-vl { flex: 1; min-width: 0; line-height: 1.2; }
+    .infos-vl .nom-vl { display: flex; align-items: center; gap: 6px; font-weight: 900; font-size: 1.02em; white-space: nowrap; overflow: hidden; }
+    .infos-vl .pouvoir-vl { font-size: 0.72em; font-weight: 800; color: #a8590f; background: #fff0d6; border-radius: 999px; padding: 1px 7px; white-space: nowrap; }
+    .quete-vl { display: flex; align-items: center; gap: 5px; margin-top: 2px; font-size: 0.82em; color: #6d4520; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; }
+    .quete-vl .q-ico { flex: none; }
+    .quete-vl span:last-child { overflow: hidden; text-overflow: ellipsis; }
+    .quete-vl.rendre { color: #2b8a3e; }
+    .etoiles-vl { flex: none; display: inline-flex; align-items: center; gap: 3px; background: #fff3bf; color: #7a5600; font-weight: 900; border-radius: 12px; padding: 4px 8px; font-size: 0.95em; }
+    .etoiles-vl svg { width: 16px; height: 16px; }
+    .menu-vl { position: relative; flex: none; width: 40px; height: 40px; border-radius: 12px; border: none; background: #8a6a46; color: #fff8e7; font-size: 20px; cursor: pointer; box-shadow: 0 2px 0 #5c3a1f; }
+    .menu-vl i { position: absolute; top: -3px; right: -3px; width: 12px; height: 12px; border-radius: 50%; background: #e03131; border: 2px solid #fff8e7; }
+
+    /* La carte du monde : une vieille carte, sous le brouillard */
+    .carte-vl { flex: 1; min-height: 0; position: relative; display: flex; align-items: center; justify-content: center; background: #ead8b0; border: 2px solid #8a6a46; border-radius: 14px;
+                box-shadow: inset 0 0 18px rgba(138,106,70,0.45), 0 3px 10px rgba(0,0,0,0.25); overflow: hidden; cursor: pointer; }
+    .carte-vl svg { width: 100%; height: 100%; display: block; }
+    .carte-vl .titre-carte { position: absolute; left: 50%; top: 4px; transform: translateX(-50%); white-space: nowrap; font: italic 800 0.78em/1.2 Georgia, serif; color: #5c3a1f;
+                             background: rgba(255,248,231,0.88); border: 1px solid #c9a874; border-radius: 10px; padding: 1px 9px; pointer-events: none; }
+    .carte-vl .rose { position: absolute; right: 6px; bottom: 4px; font: 900 0.7em Georgia, serif; color: #8a6a46; opacity: 0.8; pointer-events: none; }
+    .vl-cible { animation: vl-palpite 1.2s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+    .vl-moi { animation: vl-palpite 1.6s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+    @keyframes vl-palpite { 50% { transform: scale(1.35); opacity: 0.7; } }
+
+    /* L'écran du lieu où je suis (11 × 9 cases) */
+    .ecran-vl { flex: none; position: relative; width: 100%; aspect-ratio: 11 / 9; border-radius: 12px; overflow: hidden; border: 3px solid #5c3a1f; box-sizing: border-box;
+                box-shadow: 0 6px 16px rgba(0,0,0,0.45); background: #8fcf6b; touch-action: none; }
+    .ecran-vl > svg.fond { position: absolute; inset: 0; width: 100%; height: 100%; }
+    .ent { position: absolute; width: calc(100% / 11); height: calc(100% / 9); transition: left 0.19s linear, top 0.19s linear; pointer-events: none; z-index: 2; }
+    .ent.saut { transition: none; }
+    .ent .sp { position: absolute; left: -35%; bottom: 0; width: 170%; height: 170%; }
+    .ent .sp svg { width: 100%; height: 100%; display: block; }
+    .ent.gauche .sp svg { transform: scaleX(-1); }
+    .ent.joueur:before { content: ''; position: absolute; left: 12%; right: 12%; bottom: 4%; height: 22%; border-radius: 50%; background: rgba(0,0,0,0.25); }
+    .ent .boussole { display: flex; align-items: flex-end; justify-content: center; font-size: 22px; }
+    .ent.marche .sp { animation: vl-trot 0.19s ease-in-out infinite alternate; }
+    @keyframes vl-trot { to { transform: translateY(-2px); } }
+    .fondu-vl { position: absolute; inset: 0; background: #000; pointer-events: none; z-index: 5; animation: vl-fondu 0.45s ease-out forwards; }
+    @keyframes vl-fondu { from { opacity: 0.85; } to { opacity: 0; } }
+    .lieu-vl { position: absolute; left: 50%; top: 8px; transform: translateX(-50%); z-index: 6; white-space: nowrap; pointer-events: none;
+               font: italic 900 1.05em/1.2 Georgia, serif; color: #fff8e7; background: rgba(44,74,52,0.82); border: 1.5px solid #c9a874; border-radius: 12px; padding: 4px 12px;
+               animation: vl-lieu 2.6s ease-in-out forwards; }
+    .lieu-vl small { display: block; text-align: center; font: 800 0.62em system-ui, sans-serif; color: #ffd43b; font-style: normal; letter-spacing: 0.5px; text-transform: uppercase; }
+    @keyframes vl-lieu { 0% { opacity: 0; transform: translate(-50%, -6px); } 12%, 75% { opacity: 1; transform: translate(-50%, 0); } 100% { opacity: 0; } }
+    .noir-vl { position: fixed; inset: 0; background: #000; z-index: 90; animation: vl-noir 0.35s ease-in forwards; }
+    @keyframes vl-noir { from { opacity: 0; } }
+    /* Petites animations du décor */
+    .vl-respire { animation: vl-respire 2.4s ease-in-out infinite; transform-box: fill-box; transform-origin: 50% 100%; }
+    @keyframes vl-respire { 50% { transform: scaleY(1.03); } }
+    .vl-bulle { animation: vl-flotte 0.9s ease-in-out infinite alternate; }
+    @keyframes vl-flotte { to { transform: translateY(-2.5px); } }
+    .vl-fumee { animation: vl-fumee 3s ease-in-out infinite; }
+    @keyframes vl-fumee { 50% { transform: translate(2px, -3px); opacity: 0.7; } }
+    .vl-vague { animation: vl-vague 2s ease-in-out infinite alternate; }
+    @keyframes vl-vague { to { transform: translateX(3px); } }
+    .vl-fleche { animation: vl-fleche 1.1s ease-in-out infinite; }
+    @keyframes vl-fleche { 50% { opacity: 0.35; } }
+    .vl-scintille, .vl-brille { animation: vl-scintille 1.3s ease-in-out infinite; }
+    @keyframes vl-scintille { 50% { opacity: 0.55; } }
+    .vl-lueur { animation: vl-scintille 1.8s ease-in-out infinite; }
+    .vl-braise { animation: vl-scintille 0.9s ease-in-out infinite; }
+    .vl-yeux { animation: vl-yeux 4.5s infinite; }
+    @keyframes vl-yeux { 0%, 44%, 50%, 100% { opacity: 1; } 47% { opacity: 0; } }
+    @media (prefers-reduced-motion: reduce) { .vl-respire, .vl-bulle, .vl-fumee, .vl-vague, .vl-fleche, .vl-scintille, .vl-brille, .vl-lueur, .vl-yeux, .vl-cible, .vl-moi, .fondu-vl, .ent.marche .sp { animation: none; } }
+
+    /* Commandes : la croix du Donjon, et un panneau pour les annonces */
+    .commandes-vl { flex: none; display: flex; align-items: center; gap: 8px; }
+    .commandes-vl.inverse { flex-direction: row-reverse; }
+    .pad { position: relative; width: 128px; height: 128px; border-radius: 50%; touch-action: none; flex-shrink: 0;
+           background: radial-gradient(circle at 50% 40%, #5c4430, #3b2a1d); box-shadow: inset 0 3px 10px rgba(0,0,0,0.6), 0 0 0 2px #8a6a46; }
+    .pad span { position: absolute; width: 42px; height: 42px; border-radius: 11px; display: flex; align-items: center; justify-content: center; font-size: 17px;
+                background: linear-gradient(#8a6a46, #6d4f33); color: #ffe8c2; box-shadow: 0 3px 0 #2b1d12; }
+    .pad span.actif { background: linear-gradient(#f08c00, #c86b00); color: #fff; box-shadow: none; transform: translateY(2px); }
+    .pad .h { left: 43px; top: 3px; } .pad .b { left: 43px; bottom: 3px; } .pad .g { left: 3px; top: 43px; } .pad .d { right: 3px; top: 43px; }
+    .milieu-vl { flex: 1; min-width: 0; align-self: stretch; display: flex; flex-direction: column; justify-content: center; gap: 5px; text-align: center; color: #e9dcc0; font-size: 0.8em; line-height: 1.3; }
+    .milieu-vl .ici-vl { font: italic 800 1.1em Georgia, serif; color: #fff8e7; }
+    .milieu-vl .aide-vl { color: #c9b896; }
+    .annonces-vl { display: flex; flex-direction: column; gap: 4px; text-align: left; pointer-events: none; }
+    .annonces-vl div { background: rgba(255,248,231,0.95); color: #2b2118; border-radius: 10px; padding: 5px 8px; font-size: 1.04em; font-weight: 700; line-height: 1.25; animation: vl-arrive 0.25s ease-out; }
+    .annonces-vl div:not(:last-child) { opacity: 0.7; font-size: 0.92em; }
+    @keyframes vl-arrive { from { transform: translateY(-6px); opacity: 0; } }
+    .petit-btn { align-self: center; border: 1px solid #8a6a46; background: rgba(255,248,231,0.12); color: #e9dcc0; border-radius: 10px; padding: 3px 12px; font: inherit; font-weight: 700; cursor: pointer; }
+
+    /* Fenêtres (parchemin) */
+    .voile-vl { position: fixed; inset: 0; z-index: 50; background: rgba(20,32,22,0.6); display: flex; align-items: flex-end; justify-content: center; padding: 10px; box-sizing: border-box; }
+    .voile-vl.centre { align-items: center; }
+    .fen-vl { width: 100%; max-width: 440px; max-height: calc(100dvh - 30px); overflow: auto; box-sizing: border-box; background: #fff8e7; border: 3px solid #8a6a46; border-radius: 18px; padding: 14px;
+              box-shadow: 0 10px 30px rgba(0,0,0,0.45); animation: vl-monte 0.22s ease-out; }
+    @keyframes vl-monte { from { transform: translateY(16px); opacity: 0; } }
+    .fen-vl h2 { margin: 0 0 8px; font: 900 1.25em Georgia, serif; color: #5c3a1f; }
+    .fen-vl p { margin: 6px 0; line-height: 1.4; }
+    .dial-tete { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+    .dial-tete .portrait { width: 64px; height: 70px; flex: none; background: radial-gradient(circle at 50% 60%, #f3e2c0, #fff8e7 70%); border-radius: 14px; display: flex; align-items: flex-end; justify-content: center; }
+    .dial-tete b { display: block; font: 900 1.15em Georgia, serif; color: #5c3a1f; }
+    .dial-tete small { color: #8a6a46; font-weight: 700; }
+    .dial-texte { font-size: 1.02em; line-height: 1.45; background: #fff; border: 1.5px solid #e2cfa6; border-radius: 12px; padding: 10px 12px; position: relative; }
+    .dial-texte:before { content: ''; position: absolute; left: 26px; top: -9px; border: 8px solid transparent; border-bottom-color: #e2cfa6; border-top: 0; }
+    .boutons-vl { display: flex; flex-direction: column; gap: 7px; margin-top: 10px; }
+    .btn-vl { border: none; border-radius: 12px; padding: 11px 12px; font: inherit; font-weight: 800; font-size: 1em; cursor: pointer; background: #efe2c6; color: #5c3a1f; }
+    .btn-vl.principal { background: #e8590c; color: #fff; box-shadow: 0 3px 0 #a3400a; }
+    .btn-vl.vert { background: #2f9e44; color: #fff; box-shadow: 0 3px 0 #1f6e2f; }
+    .btn-vl.rouge { background: #fff0f0; color: #c0392b; }
+    .btn-vl:disabled { opacity: 0.45; }
+    .liste-q { display: flex; flex-direction: column; gap: 7px; margin-top: 10px; }
+    .ligne-q { display: flex; gap: 9px; align-items: flex-start; background: #fff; border: 1.5px solid #e2cfa6; border-radius: 12px; padding: 8px 10px; }
+    .ligne-q .ico { font-size: 1.5em; line-height: 1; flex: none; }
+    .ligne-q b { display: block; color: #3b2a1d; }
+    .ligne-q small { display: block; color: #6d5a44; line-height: 1.3; margin-top: 2px; }
+    .ligne-q .etat { flex: none; margin-left: auto; font-size: 0.75em; font-weight: 900; border-radius: 8px; padding: 2px 7px; white-space: nowrap; }
+    .etat.dispo { background: #fff3bf; color: #a35f00; } .etat.cours { background: #e7f5ff; color: #1864ab; } .etat.rendre { background: #d3f9d8; color: #2b8a3e; } .etat.finie { background: #f1f3f5; color: #868e96; }
+    .ligne-q.finie { opacity: 0.65; }
+    .avis-vl { background: #fffdf5; border: 2px dashed #c9a874; border-radius: 10px; padding: 10px; font: italic 600 0.98em/1.4 Georgia, serif; color: #4a3426; transform: rotate(-0.6deg); }
+    .article-vl { display: flex; align-items: center; gap: 10px; background: #fff; border: 1.5px solid #e2cfa6; border-radius: 12px; padding: 8px 10px; margin-top: 7px; }
+    .article-vl .ico { font-size: 1.9em; width: 44px; height: 44px; border-radius: 12px; background: #fff3d6; display: flex; align-items: center; justify-content: center; flex: none; }
+    .article-vl b { display: block; } .article-vl small { color: #6d5a44; }
+    .article-vl .btn-vl { margin-left: auto; padding: 8px 10px; font-size: 0.9em; white-space: nowrap; }
+    .solde-vl { display: inline-flex; align-items: center; gap: 4px; font-weight: 900; color: #7a5600; background: #fff3bf; border-radius: 10px; padding: 2px 9px; }
+    .solde-vl svg { width: 15px; height: 15px; }
+    .grande-ico { font-size: 54px; text-align: center; line-height: 1.1; margin: 4px 0 6px; }
+    .menu-liste { display: flex; flex-direction: column; gap: 6px; }
+    .menu-liste .btn-vl { display: flex; align-items: center; gap: 10px; text-align: left; }
+    .menu-liste .btn-vl i { font-style: normal; width: 24px; text-align: center; }
+    .menu-liste .btn-vl .pastille { margin-left: auto; background: #e03131; color: #fff; border-radius: 10px; font-size: 0.8em; padding: 1px 7px; }
+    .aide-liste { padding-left: 18px; margin: 6px 0 0; line-height: 1.45; font-size: 0.95em; }
+    .aide-liste li { margin-bottom: 5px; }
+
+    /* Téléphone peu haut (360 × 640) : tout se resserre */
+    @media (max-height: 700px) {
+      .vl { gap: 5px; }
+      .fiche-vl { padding: 3px 5px 3px 3px; }
+      .portrait-vl { width: 42px; height: 42px; } .portrait-vl svg { width: 44px; height: 46px; }
+      .menu-vl { width: 36px; height: 36px; }
+      .pad { width: 116px; height: 116px; }
+      .pad span { width: 38px; height: 38px; font-size: 15px; }
+      .pad .h { left: 39px; } .pad .b { left: 39px; } .pad .g { top: 39px; } .pad .d { top: 39px; }
+      .milieu-vl { font-size: 0.75em; }
+    }
+  </style>
+</head>
+<body class="vl-page">
+  <div id="app" v-cloak>
+    <div class="vl" @contextmenu.prevent>
+      <!-- Fiche du haut : mon compagnon, la quête que je suis, mes étoiles, le menu -->
+      <div class="fiche-vl">
+        <button class="portrait-vl" @click="entrer('compagnon/')" :aria-label="animal ? 'Chez ' + animal.nom : 'Ma maison'">
+          <svg v-if="animal" viewBox="0 -6 200 216" v-html="dessinMoi"></svg>
+          <span v-else class="boussole">🧭</span>
+        </button>
+        <div class="infos-vl">
+          <div class="nom-vl">{{ animal ? animal.nom : 'Explorateur' }}<span v-if="pouvoir" class="pouvoir-vl">{{ POUVOIRS[pouvoir].ico }} {{ POUVOIRS[pouvoir].nom }}</span></div>
+          <div class="quete-vl" :class="{ rendre: queteSuivie && etatQ(queteSuivie) === 'rendre' }" @click="fenetre = 'quetes'">
+            <template v-if="queteSuivie"><span class="q-ico">{{ QUETES[queteSuivie].ico }}</span><span>{{ consigne(queteSuivie) }}</span></template>
+            <template v-else><span class="q-ico">📜</span><span>{{ quetesDispo ? quetesDispo + ' quête' + (quetesDispo > 1 ? 's' : '') + ' à prendre' : 'Toutes les quêtes sont finies !' }}</span></template>
+          </div>
+        </div>
+        <span class="etoiles-vl"><span v-html="ETOILE"></span>{{ etoiles }}</span>
+        <button class="menu-vl" @click="fenetre = 'menu'" aria-label="Menu">☰<i v-if="nonLus"></i></button>
+      </div>
+
+      <!-- La carte du monde, sous le brouillard -->
+      <div class="carte-vl" @click="fenetre = 'quetes'">
+        <svg :viewBox="'0 0 ' + VL.LARG * 10 + ' ' + VL.HAUT * 10" preserveAspectRatio="xMidYMid meet"><g v-html="carteSvg"></g><g v-html="carteDessus"></g></svg>
+        <div class="titre-carte">La Vallée de Désdale · {{ explore }} % exploré</div>
+        <div class="rose">N ↑</div>
+      </div>
+
+      <!-- Le lieu où je suis -->
+      <div class="ecran-vl" ref="ecran">
+        <svg class="fond" viewBox="0 0 352 288" preserveAspectRatio="none" v-html="ecranSvg"></svg>
+        <div class="fondu-vl" :key="'f' + ecranCle"></div>
+        <div class="ent joueur" :class="{ gauche: sens === 'g', saut: saut, marche: !!dir }" :style="posMoi">
+          <span class="sp" v-if="animal" v-html="'<svg viewBox=&quot;0 -6 200 216&quot;>' + dessinMoi + '</svg>'"></span>
+          <span class="sp boussole" v-else>🧭</span>
+        </div>
+        <div class="lieu-vl" v-if="lieuMontre" :key="'l' + ecranCle">{{ lieuMontre.ico }} {{ lieuMontre.nom }}<small v-if="lieuMontre.neuf">Nouveau lieu découvert</small></div>
+      </div>
+
+      <!-- La croix (comme au Donjon) et les annonces -->
+      <div class="commandes-vl" :class="{ inverse: inverse }">
+        <div class="pad" @pointerdown="padDebut" @pointermove="padBouger" @pointerup="padFin" @pointercancel="padFin" @lostpointercapture="padFin">
+          <span class="h" :class="{ actif: dir === 'h' }">▲</span><span class="b" :class="{ actif: dir === 'b' }">▼</span>
+          <span class="g" :class="{ actif: dir === 'g' }">◀</span><span class="d" :class="{ actif: dir === 'd' }">▶</span>
+        </div>
+        <div class="milieu-vl">
+          <div class="annonces-vl" v-if="annoncesVues.length"><div v-for="a in annoncesVues" :key="a.id">{{ a.t }}</div></div>
+          <template v-else>
+            <div class="ici-vl">{{ ici.ico }} {{ ici.nom }}</div>
+            <div class="aide-vl">{{ astuce }}</div>
+          </template>
+          <button class="petit-btn" @click="inverser">⇄ Croix à {{ inverse ? 'gauche' : 'droite' }}</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== Fenêtres ===== -->
+    <!-- Conversation avec un habitant -->
+    <div class="voile-vl" v-if="fenetre === 'dialogue' && dialogue" @click.self="fermer">
+      <div class="fen-vl">
+        <div class="dial-tete">
+          <div class="portrait" v-html="portrait(dialogue.qui)"></div>
+          <div><b>{{ dialogue.nom }}</b><small>{{ dialogue.titre }}</small></div>
+        </div>
+        <div class="dial-texte">{{ dialogue.texte }}</div>
+        <div class="boutons-vl">
+          <button v-for="(b, k) in dialogue.boutons" :key="k" class="btn-vl" :class="{ principal: b.principal }" @click="choisir(b.a)">{{ b.t }}</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Le tableau de quêtes -->
+    <div class="voile-vl" v-if="fenetre === 'tableau'" @click.self="fermer">
+      <div class="fen-vl">
+        <h2>📜 Tableau de quêtes</h2>
+        <div class="avis-vl">{{ tableauVue.avis }}</div>
+        <div class="boutons-vl" v-if="tableauVue.boutons.length">
+          <button v-for="(b, k) in tableauVue.boutons" :key="k" class="btn-vl" :class="{ principal: b.principal }" @click="choisir(b.a, true)">{{ b.t }}</button>
+        </div>
+        <div class="liste-q">
+          <div v-for="q in tableauVue.quetes" :key="q.id" class="ligne-q" :class="q.etat">
+            <span class="ico">{{ q.ico }}</span>
+            <div><b>{{ q.nom }}</b><small>{{ q.etat === 'dispo' ? q.prendre : q.consigne }}</small></div>
+            <span class="etat" :class="q.etat">{{ LIBELLES[q.etat] }}</span>
+          </div>
+        </div>
+        <div class="boutons-vl"><button class="btn-vl" @click="fermer">Fermer</button></div>
+      </div>
+    </div>
+
+    <!-- Mes quêtes (toucher la carte ou la ligne de quête) -->
+    <div class="voile-vl" v-if="fenetre === 'quetes'" @click.self="fermer">
+      <div class="fen-vl">
+        <h2>🗺️ Mes quêtes</h2>
+        <p style="margin-top:0;color:#6d5a44;font-size:0.92em">{{ explore }} % de la Vallée exploré. L'anneau orange, sur la carte, montre où aller pour la quête suivie.</p>
+        <div class="liste-q">
+          <div v-for="q in tableauVue.quetes" :key="q.id" class="ligne-q" :class="q.etat">
+            <span class="ico">{{ q.ico }}</span>
+            <div><b>{{ q.nom }}</b><small>{{ q.etat === 'dispo' ? q.prendre : q.consigne }}</small></div>
+            <span class="etat" :class="q.etat">{{ LIBELLES[q.etat] }}</span>
+          </div>
+        </div>
+        <div class="boutons-vl"><button class="btn-vl" @click="fermer">Fermer</button></div>
+      </div>
+    </div>
+
+    <!-- L'étal de Pipa -->
+    <div class="voile-vl" v-if="fenetre === 'marchand'" @click.self="fermer">
+      <div class="fen-vl">
+        <div class="dial-tete">
+          <div class="portrait" v-html="portrait('pipa')"></div>
+          <div><b>Pipa</b><small>la marchande</small></div>
+          <span class="solde-vl" style="margin-left:auto"><span v-html="ETOILE"></span>{{ etoiles }}</span>
+        </div>
+        <div class="dial-texte">{{ animal ? 'Miaou ! Des trésors de la Vallée, rien que pour la maison de ' + animal.nom + '. On ne les trouve nulle part ailleurs !' : 'Miaou ! Mes trésors sont pour la maison d\'un compagnon. Adopte-en un, et reviens me voir !' }}</div>
+        <div v-for="a in vente" :key="a.id" class="article-vl">
+          <span class="ico">{{ a.ico }}</span>
+          <div><b>{{ a.nom }}</b><small>{{ a.possede ? 'Dans la maison' : a.prix + ' étoiles' }}</small></div>
+          <button v-if="!a.possede" class="btn-vl" :class="achat === a.id ? 'vert' : 'principal'" :disabled="!animal || etoiles < a.prix" @click="acheter(a)">{{ achat === a.id ? '✓ Confirmer' : a.prix + ' ⭐' }}</button>
+          <span v-else style="margin-left:auto;font-weight:900;color:#2b8a3e">✓</span>
+        </div>
+        <div class="boutons-vl">
+          <button class="btn-vl" v-if="animal" @click="entrer('compagnon/?onglet=boutique')">🛍️ La boutique de {{ animal.nom }}</button>
+          <button class="btn-vl" @click="fermer">Au revoir !</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Message à lire (coffre, récompense, crypte…) -->
+    <div class="voile-vl centre" v-if="fenetre === 'lire' && aLire" @click.self="aLire.boutons ? null : fermer()">
+      <div class="fen-vl" style="text-align:center">
+        <div class="grande-ico">{{ aLire.ico }}</div>
+        <h2 v-if="aLire.titre">{{ aLire.titre }}</h2>
+        <p>{{ aLire.texte }}</p>
+        <div class="boutons-vl">
+          <template v-if="aLire.boutons"><button v-for="(b, k) in aLire.boutons" :key="k" class="btn-vl" :class="{ principal: b.principal }" @click="b.f()">{{ b.t }}</button></template>
+          <button v-else class="btn-vl principal" @click="fermer">OK</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Menu ☰ -->
+    <div class="voile-vl" v-if="fenetre === 'menu'" @click.self="fermer">
+      <div class="fen-vl">
+        <h2>La Vallée de Désdale</h2>
+        <div class="menu-liste">
+          <button class="btn-vl principal" @click="fermer"><i>▶</i>Continuer</button>
+          <button class="btn-vl" @click="fenetre = 'quetes'"><i>📜</i>Mes quêtes</button>
+          <button class="btn-vl" @click="discuter"><i>💬</i>Discuter<span v-if="nonLus" class="pastille">{{ nonLus }}</span></button>
+          <button class="btn-vl" @click="entrer('compagnon/')"><i>🏠</i>{{ animal ? 'Chez ' + animal.nom : 'Adopter un compagnon' }}</button>
+          <button class="btn-vl" @click="sonActif = !sonActif"><i>{{ sonActif ? '🔊' : '🔇' }}</i>Son : {{ sonActif ? 'oui' : 'non' }}</button>
+          <button class="btn-vl" @click="inverser"><i>⇄</i>Croix à {{ inverse ? 'gauche' : 'droite' }}</button>
+          <button class="btn-vl" @click="basculerPleinEcran"><i>⛶</i>{{ pleinEcran ? 'Garder les barres du téléphone' : 'Cacher les barres du téléphone' }}</button>
+          <button class="btn-vl" @click="fenetre = 'aide'"><i>❓</i>Comment jouer</button>
+          <button class="btn-vl rouge" @click="versAccueil"><i>🏁</i>Retour à l'accueil</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Comment jouer -->
+    <div class="voile-vl" v-if="fenetre === 'aide'" @click.self="fermer">
+      <div class="fen-vl">
+        <h2>❓ Comment jouer</h2>
+        <ul class="aide-liste">
+          <li><b>Marcher</b> : glisse le doigt sur la croix (ou les flèches du clavier). Sors par un bord, là où une flèche blanche clignote, pour changer de lieu.</li>
+          <li><b>Entrer</b> dans une maison ou dans la crypte : fonce dans la porte. <b>Parler</b> à un habitant : fonce dans lui.</li>
+          <li><b>!</b> au-dessus d'un habitant : il a une quête pour toi. <b>?</b> : il attend ce que tu lui rapportes.</li>
+          <li><b>Pouvoir de ton compagnon</b> : ronces 🔥, rocher 💪, trou 🦘, buisson très épais 👃. Fonce dans l'obstacle qui va avec ton pouvoir pour l'ouvrir.</li>
+          <li><b>La carte</b> se dévoile au fil de tes pas. L'anneau orange montre où aller pour ta quête.</li>
+          <li><b>La crypte</b>, au nord du village, mène au Donjon des compagnons. Ta maison est la maison de ton compagnon.</li>
+          <li>Ta progression est gardée sur ce téléphone et dans ta sauvegarde.</li>
+        </ul>
+        <div class="boutons-vl"><button class="btn-vl principal" @click="fermer">Compris !</button></div>
+      </div>
+    </div>
+
+    <div class="noir-vl" v-if="sortie"></div>
+  </div>
+
+  <script src="joueur.js"></script>
+  <script src="commun.js"></script>
+  <script src="etoiles.js"></script>
+  <script src="compagnon/compagnon-commun.js"></script>
+  <script src="vallee/vallee-regles.js"></script>
+  <script src="vallee/vallee-dessins.js"></script>
+  <script>
+    if (!ACCES.memorise()) location.replace('index.html');
+
+    const CLE = 'vallee-etat';
+    const ETOILE = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.8l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 16.8l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z" fill="#f5b81f" stroke="#c98c0a" stroke-width="1.3" stroke-linejoin="round"/></svg>';
+    const LIBELLES = { dispo: 'À prendre', cours: 'En cours', rendre: 'À rendre', finie: 'Finie' };
+    // Petites phrases de la fontaine et des maisons
+    const FONTAINE = ['Tu fais un vœu… plouf ! 🪙', 'L\'eau est fraîche et claire. 💧', 'Un poisson rouge te fait des bulles. 🐟'];
+    var etat = VL.charger(lireStockage(CLE));
+
+    new Vue({
+      el: '#app',
+      data: {
+        VL: VL, POUVOIRS: VL.POUVOIRS, QUETES: VL.QUETES, ETOILE: ETOILE, LIBELLES: LIBELLES,
+        v: 0,                       // monte à chaque changement de l'état (le dessin se recalcule)
+        dir: null, sens: etat.dir === 'g' ? 'g' : 'd', saut: false, ecranCle: 0, lieuMontre: null,
+        animal: lireStockage('compagnon-animal'), etoiles: Etoiles.solde(), nonLus: 0,
+        fenetre: null, dialogue: null, aLire: null, achat: null, sortie: false,
+        annonces: [], maintenant: Date.now(),
+        inverse: lireStockage('donjon-inverse') === true,
+        sonActif: lireStockage('brillant-son') !== false,
+        pleinEcran: lireStockage('vallee-plein-ecran') !== false
+      },
+      computed: {
+        e: function() { this.v; return etat; },
+        pouvoir: function() { return this.animal && VL.POUVOIR_ESPECE[this.animal.espece] || null; },
+        ctx: function() { this.v; return { pouvoir: this.pouvoir, bossTotal: (lireStockage('donjon-stats') || {}).boss | 0, nom: this.animal ? this.animal.nom : '' }; },
+        dessinMoi: function() {
+          if (!this.animal) return '';
+          var n = CP.niveaux(this.animal), h = CP.humeur(n);
+          return CP.dessin(this.animal, h === 'triste' ? 'triste' : 'content', false);
+        },
+        ecranCoord: function() { return VL.ecranDe(this.e.x, this.e.y); },
+        ici: function() { this.v; return VL.ecran(etat.x, etat.y); },
+        marques: function() {
+          this.v; var m = {};
+          Object.keys(VL.HABITANTS).forEach(id => { m[id] = VL.marque(etat, id, this.ctx); });
+          return m;
+        },
+        tableauMarque: function() { this.v; var s = VL.etatQuete(etat, 'gardien'); return s === 'dispo' ? '!' : s === 'rendre' ? '?' : ''; },
+        ecranSvg: function() {
+          this.v;
+          var c = this.ecranCoord;
+          // On ne redessine l'écran que s'il a changé (pas à chaque pas)
+          var cle = [c.ex, c.ey, JSON.stringify(etat.ouverts), JSON.stringify(etat.pris), etat.coffre, VL.etatQuete(etat, 'herbes'), JSON.stringify(this.marques), this.tableauMarque, this.animal && this.animal.nom].join('|');
+          if (cle === this._cleEcran) return this._svgEcran;
+          this._cleEcran = cle;
+          return this._svgEcran = VLD.ecranSvg(etat, c.ex, c.ey, { flair: this.pouvoir === 'flair', plaque: this.animal ? 'Chez ' + this.animal.nom : 'Ma maison', marques: this.marques, tableauMarque: this.tableauMarque });
+        },
+        queteSuivie: function() { this.v; return VL.queteSuivie(etat); },
+        quetesDispo: function() { this.v; return VL.ORDRE_QUETES.filter(id => VL.etatQuete(etat, id) === 'dispo').length; },
+        carteSvg: function() {
+          this.v;
+          var cle = [etat.vu, JSON.stringify(etat.ouverts), JSON.stringify(this.marques), this.tableauMarque].join('|');
+          if (cle === this._cleCarte) return this._svgCarte;
+          this._cleCarte = cle;
+          return this._svgCarte = VLD.carteSvg(etat, { marques: this.marques, tableauMarque: this.tableauMarque });
+        },
+        carteDessus: function() { this.v; return VLD.carteDessus(etat, { cible: VL.cible(etat, this.queteSuivie, this.ctx) }); },
+        explore: function() { this.v; return Math.round(VL.partVue(etat) * 100); },
+        posMoi: function() {
+          this.v; var c = this.ecranCoord;
+          return { left: ((etat.x - c.ex * VL.W) * 100 / VL.W) + '%', top: ((etat.y - c.ey * VL.H) * 100 / VL.H) + '%' };
+        },
+        annoncesVues: function() { return this.annonces.filter(a => this.maintenant - a.t0 < 4500).slice(-2); },
+        astuce: function() {
+          var q = this.queteSuivie;
+          if (etat.pas < 6) return 'Glisse sur la croix pour marcher.';
+          if (q) return 'Suis l\'anneau orange sur la carte.';
+          if (this.quetesDispo) return 'Un « ! » : quelqu\'un a besoin de toi.';
+          return 'La crypte, au nord, mène au Donjon.';
+        },
+        tableauVue: function() { this.v; return VL.tableau(etat); },
+        vente: function() {
+          this.v; var possede = (this.animal && this.animal.possede) || {};
+          return VL.VENTE.map(x => { var a = CP.art(x.id); return { id: x.id, nom: a.nom, ico: a.ico, prix: x.prix, possede: !!possede[x.id] }; });
+        }
+      },
+      watch: {
+        sonActif: function(v) { ecrireStockage('brillant-son', v); },
+        fenetre: function(f) { if (f) { this.dir = null; this._bloque = true; } this.achat = null; }
+      },
+      created: function() {
+        // Une victoire au Donjon depuis la dernière visite (quête du gardien) : on le dit tout de suite
+        if (VL.verifier(etat, this.ctx)) { this.sauver(); this.annoncer('⚔️ La garde a appris ta victoire ! Va voir le tableau de quêtes.'); }
+        this.montrerLieu(false);
+        this._bloque = false; this._dernierPas = 0; this._annId = 0;
+        // Une boucle : un pas toutes les 0,19 s tant que la croix est tenue
+        setInterval(() => {
+          this.maintenant = Date.now();
+          if (this.dir && !this.fenetre && !this.sortie && Date.now() - this._dernierPas >= 190) this.avancer(this.dir);
+        }, 40);
+        setInterval(() => {
+          this.etoiles = Etoiles.solde();
+          try { this.nonLus = SalonGlobal.nonLus(); } catch (e) {}
+        }, 1500);
+        // Clavier : flèches
+        var touches = { ArrowUp: 'h', ArrowDown: 'b', ArrowLeft: 'g', ArrowRight: 'd' };
+        document.addEventListener('keydown', ev => { var d = touches[ev.key]; if (!d || this.fenetre) return; ev.preventDefault(); if (this.dir !== d) { this.dir = d; this._dernierPas = 0; } });
+        document.addEventListener('keyup', ev => { if (touches[ev.key] === this.dir) this.dir = null; });
+        // Plein écran du navigateur (comme au Donjon) : demandé au premier toucher
+        document.addEventListener('pointerdown', () => { if (this.pleinEcran && !this._fsDemande) { this._fsDemande = true; this.pleinEcranNavigateur(); } }, true);
+        // De retour d'une autre page (bouton « précédent ») : on enlève le voile noir et on relit ce qui a pu changer
+        window.addEventListener('pageshow', () => { this.sortie = false; this.animal = lireStockage('compagnon-animal'); this.etoiles = Etoiles.solde(); if (VL.verifier(etat, this.ctx)) { this.sauver(); this.annoncer('⚔️ La garde a appris ta victoire ! Va voir le tableau de quêtes.'); } this.v++; });
+        if (!lireStockage('vallee-accueil-vu')) {
+          ecrireStockage('vallee-accueil-vu', true);
+          this.lire({ ico: '🏞️', titre: 'Bienvenue dans la Vallée !', texte: (this.animal ? 'Te voilà devant chez ' + this.animal.nom + '. ' : 'Te voilà au village. ') +
+            'Glisse le doigt sur la croix pour marcher, fonce dans une porte pour entrer, et dans un habitant pour lui parler. Les « ! » t\'attendent !' });
+        }
+      },
+      methods: {
+        son: function(nom) { if (this.sonActif) try { Sons.jouer(nom); } catch (e) {} },
+        vibre: function(m) { if (lireStockage('brillant-vibration') !== false) vibrer(m); },
+        sauver: function() { ecrireStockage(CLE, etat); },
+        etatQ: function(id) { this.v; return VL.etatQuete(etat, id); },
+        consigne: function(id) { this.v; return VL.consigne(etat, id); },
+        annoncer: function(t) { this.annonces.push({ id: ++this._annId, t: t, t0: Date.now() }); this.annonces = this.annonces.slice(-4); this.maintenant = Date.now(); },
+        portrait: function(qui) { var H = VL.HABITANTS[qui]; return H ? VLD.habitant(H.espece, 58) : ''; },
+        montrerLieu: function(neuf) {
+          var E = VL.ecran(etat.x, etat.y);
+          this.lieuMontre = { ico: E.ico, nom: E.nom, neuf: neuf };
+          clearTimeout(this._lieuT); this._lieuT = setTimeout(() => { this.lieuMontre = null; }, 2700);
+        },
+
+        // ---------- Déplacements ----------
+        padDebut: function(ev) {
+          ev.preventDefault();
+          if (this.fenetre) return;
+          this._bloque = false;
+          this._pad = ev.currentTarget;
+          try { this._pad.setPointerCapture(ev.pointerId); } catch (e) {}
+          this.padBouger(ev, true);
+        },
+        padBouger: function(ev, debut) {
+          if (!this._pad || this._bloque || (!debut && !ev.buttons && ev.pointerType === 'mouse')) return;
+          var r = this._pad.getBoundingClientRect(), dx = ev.clientX - (r.left + r.width / 2), dy = ev.clientY - (r.top + r.height / 2);
+          if (Math.hypot(dx, dy) < 14) return;
+          var d = Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 'd' : 'g') : (dy > 0 ? 'b' : 'h');
+          if (d !== this.dir) { this.dir = d; this._dernierPas = 0; }
+        },
+        padFin: function() { this._pad = null; this.dir = null; this._bloque = false; },
+        avancer: function(d) {
+          this._dernierPas = Date.now();
+          if (d === 'g' || d === 'd') this.sens = d;
+          var r = VL.pas(etat, d, this.ctx);
+          if (r.bouge) {
+            if (r.ecran) {
+              this.saut = true; this.ecranCle++;
+              var E = VL.ecran(etat.x, etat.y), vus = lireStockage('vallee-lieux') || [];
+              var neuf = vus.indexOf(E.id) < 0;
+              if (neuf) { vus.push(E.id); ecrireStockage('vallee-lieux', vus); this.son('toc'); }
+              this.montrerLieu(neuf);
+              this.$nextTick(() => requestAnimationFrame(() => { this.saut = false; }));
+            }
+            if (r.ramasse === 'champignon') {
+              this.son('toc'); this.vibre(30);
+              if (VL.etatQuete(etat, 'herbes') === 'rendre') this.annoncer('🍄 Cinq champignons ! Retourne voir Mme Sauge.');
+              else this.annoncer('🍄 Un champignon ! ' + r.n + ' / ' + VL.QUETES.herbes.but);
+            }
+            this.v++; this.sauver();
+            return;
+          }
+          if (r.parler) return this.parler(r.parler);
+          if (r.action) return this.action(r.action);
+          if (r.ouvre) {
+            var P = VL.POUVOIRS[r.ouvre];
+            this.annoncer(P.ico + ' ' + (this.animal ? this.animal.nom : 'Ton compagnon') + ' ' + P.fait + ' !');
+            this.son('choc'); this.vibre([40, 40, 60]);
+            this.v++; this.sauver();
+            return;
+          }
+          if (r.obstacle) {
+            var Q = VL.POUVOIRS[r.obstacle], k = r.x + ',' + r.y;
+            if (this._obstacleVu === k && Date.now() - this._obstacleT < 2500) return;
+            this._obstacleVu = k; this._obstacleT = Date.now();
+            var t = r.obstacle === 'flair' ? 'Un buisson très épais. Rien à faire…' : 'Il y a ' + Q.obstacle + ' ici.';
+            if (!this.pouvoir) t += ' Un compagnon au pouvoir ' + Q.ico + ' ' + Q.nom + ' saurait passer.';
+            else if (r.obstacle !== 'flair') t += ' Il faudrait le pouvoir ' + Q.ico + ' ' + Q.nom + '.';
+            this.annoncer(t);
+            this.vibre(20);
+          }
+        },
+
+        // ---------- Conversations et lieux ----------
+        parler: function(qui) {
+          var H = VL.HABITANTS[qui], d = VL.parler(etat, qui, this.ctx);
+          this.dialogue = Object.assign({ nom: H.nom, titre: H.titre }, d);
+          this.fenetre = 'dialogue'; this.son('toc');
+        },
+        choisir: function(a, depuisTableau) {
+          if (!a || a === 'fermer') return this.fermer();
+          var r = VL.agir(etat, a, this.ctx);
+          this.sauver(); this.v++;
+          if (r.accepte) {
+            var Q = VL.QUETES[r.quete];
+            this.fermer();
+            this.annoncer(Q.ico + ' Nouvelle quête : ' + Q.nom);
+            this.son('toc');
+            return;
+          }
+          if (r.reponse) { this.fermer(); this.annoncer('✉️ Tu as la réponse de Papi Tortue. Retourne voir M. Bubo !'); return; }
+          if (r.recompense) return this.recompenser(r.recompense);
+          if (depuisTableau) return;
+          this.fermer();
+        },
+        recompenser: function(rc) {
+          var Q = VL.QUETES[rc.quete], texte, ico = '🎁';
+          if (rc.etoiles) {
+            Etoiles.ajouter(rc.etoiles, 'Vallée : ' + Q.nom, true);
+            texte = '+' + rc.etoiles + ' étoiles ⭐';
+          } else if (rc.deco) {
+            var art = CP.art(rc.deco), a = lireStockage('compagnon-animal');
+            ico = art.ico || '🎁';
+            if (a && a.espece) {
+              a.possede = a.possede || {}; a.porte = a.porte || {};
+              a.possede[art.id] = 1; a.porte[art.slot] = art.id;
+              ecrireStockage('compagnon-animal', a); this.animal = a;
+              texte = art.nom + ' : installée dans le salon de ' + a.nom + '.';
+            } else {
+              Etoiles.ajouter(6, 'Vallée : ' + Q.nom, true);
+              texte = 'Sans compagnon, pas de maison à décorer : la récompense devient 6 étoiles ⭐.';
+            }
+          }
+          this.etoiles = Etoiles.solde();
+          this.son('victoire'); this.vibre([60, 50, 120]);
+          this.lire({ ico: ico, titre: 'Quête réussie : ' + Q.nom, texte: texte });
+        },
+        action: function(id) {
+          var c = this.ctx;
+          if (id === 'maison') return this.entrer('compagnon/');
+          if (id === 'marchand') { this.fenetre = 'marchand'; this.son('toc'); return; }
+          if (id === 'tableau') { this.fenetre = 'tableau'; this.son('toc'); return; }
+          if (id === 'crypte') {
+            var s = lireStockage('donjon-solo'), enCours = s && s.phase === 'jeu';
+            return this.lire({ ico: '🗝️', titre: 'La vieille crypte', texte: enCours ? 'Ton exploration t\'attend à l\'étage ' + (s.etage | 0 || 1) + '. Tu descends ?'
+                              : 'Un escalier s\'enfonce dans le noir… C\'est l\'entrée du Donjon des compagnons. Tu descends ?',
+              boutons: [{ t: '⬇️ Descendre', principal: true, f: () => this.entrer('donjon/') }, { t: 'Plus tard', f: () => this.fermer() }] });
+          }
+          if (id === 'fontaine') { this._fontaine = ((this._fontaine | 0) + 1) % FONTAINE.length; return this.annoncer(FONTAINE[this._fontaine]); }
+          if (id === 'hutte') return this.annoncer('🌿 La hutte de Mme Sauge. Ça sent bon le thym.');
+          if (id === 'forge') return this.annoncer(VL.etatQuete(etat, 'cle') === 'finie' ? '⚒️ Tchac ! Tchac ! La forge de Bruno tourne.' : '⚒️ La forge est froide : Bruno a perdu sa clé.');
+          if (id === 'cabane') return this.annoncer('🐢 La cabane de Papi Tortue. Une tisane fume sur le rebord.');
+          if (id === 'coffre' || id === 'chene') {
+            var r = VL.fouiller(etat, id, c);
+            this.sauver(); this.v++;
+            if (r.etoiles) { Etoiles.ajouter(r.etoiles, 'Vallée : coffre du bosquet', true); this.etoiles = Etoiles.solde(); }
+            if (r.cle || r.etoiles) { this.son('victoire'); this.vibre([50, 40, 90]); return this.lire({ ico: r.cle ? '🔑' : '⭐', titre: id === 'coffre' ? 'Le coffre du bosquet' : 'Le vieux chêne', texte: r.texte }); }
+            return this.annoncer((id === 'coffre' ? '🧰 ' : '🌳 ') + r.texte);
+          }
+        },
+        lire: function(m) { this.aLire = m; this.fenetre = 'lire'; },
+        fermer: function() { this.fenetre = null; this.dialogue = null; this.aLire = null; },
+        acheter: function(a) {
+          if (this.achat !== a.id) { this.achat = a.id; return; }
+          var animal = lireStockage('compagnon-animal'), art = CP.art(a.id);
+          if (!animal || Etoiles.solde() < a.prix) return;
+          Etoiles.ajouter(-a.prix, 'Vallée : ' + art.nom, true);
+          animal.possede = animal.possede || {}; animal.porte = animal.porte || {};
+          animal.possede[art.id] = 1; animal.porte[art.slot] = art.id;
+          ecrireStockage('compagnon-animal', animal); this.animal = animal;
+          this.etoiles = Etoiles.solde(); this.achat = null; this.v++;
+          this.son('victoire'); this.vibre(40);
+          this.annoncer(art.ico + ' ' + art.nom + ' : installé dans le salon !');
+        },
+        // On entre quelque part (maison, crypte, boutique) : au retour, on revient dans la Vallée, devant la porte
+        entrer: function(url) {
+          this.sauver();
+          try { sessionStorage.setItem('desdale-vallee', '1'); } catch (e) {}
+          ecrireStockage('desdale-dernier-jeu', 'vallee');
+          this.fenetre = null; this.sortie = true; this.dir = null;
+          setTimeout(() => { location.href = url; }, 330);
+        },
+        versAccueil: function() {
+          this.sauver();
+          try { sessionStorage.removeItem('desdale-vallee'); } catch (e) {}
+          location.href = 'index.html?choix';
+        },
+        discuter: function() { this.fermer(); try { SalonGlobal.ouvrir(); } catch (e) {} },
+        inverser: function() { this.inverse = !this.inverse; ecrireStockage('donjon-inverse', this.inverse); },
+        pleinEcranNavigateur: function() {
+          var el = document.documentElement, f = el.requestFullscreen || el.webkitRequestFullscreen;
+          if (!f || document.fullscreenElement || document.webkitFullscreenElement) return;
+          try { var p = f.call(el, { navigationUI: 'hide' }); if (p && p.catch) p.catch(() => {}); } catch (e) {}
+        },
+        basculerPleinEcran: function() {
+          this.pleinEcran = !this.pleinEcran; ecrireStockage('vallee-plein-ecran', this.pleinEcran);
+          if (this.pleinEcran) this.pleinEcranNavigateur();
+          else { var f = document.exitFullscreen || document.webkitExitFullscreen; if (f && (document.fullscreenElement || document.webkitFullscreenElement)) try { var p = f.call(document); if (p && p.catch) p.catch(() => {}); } catch (e) {} }
+        }
+      }
+    });
+  </script>
+  <script src="salon-global.js" data-jeu="vallee"></script>
+</body>
+</html>

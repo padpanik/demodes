@@ -3,12 +3,13 @@
 // Les clés de stockage gardent l'ancien préfixe "brillant-" : les réglages déjà faits sont conservés.
 
 // Numéro de version affiché (à augmenter à chaque mise en ligne, avec brilliant/index.html et sw.js)
-const VERSION = '3.47';
+const VERSION = '3.48';
 
 // ---------- Nouveautés (2.87, demandé par l'utilisateur) ----------
 // Une ligne très brève par mise en ligne (la plus récente en haut) : l'accueil les montre une seule fois, dans une petite fenêtre,
 // à qui n'a pas encore vu cette version. [version, jeu ou partie de l'appli, ce qui change]
 const NOUVEAUTES = [
+  ['3.48', 'La Vallée', 'Nouveau : la Vallée de Désdale ! Promène-toi avec ton compagnon, aide les habitants du village, et descends au Donjon par la crypte.'],
   ['3.47', 'Donjon', 'Nouvelles cartes 💫 Assommer (le monstre perd son prochain coup) et 📌 Prévoyance (garder sa main), relique 🔖 Marque-page.'],
   ['3.46', 'Ma sauvegarde', 'Sauvegarde en ligne facultative, chiffrée sur ton téléphone avec ton code de récupération.'],
   ['3.45', 'Ma sauvegarde', '« Envoyer le fichier… » fonctionne aussi sur Android (sinon, le fichier est téléchargé).'],
@@ -139,7 +140,7 @@ oublierSalonsPerimes();   // au chargement de chaque page, avant que l'accueil o
 var DEMENAGEMENT = { ouvert: true, ancienHote: 'padpanik.github.io', nouvelle: 'https://demodes.desdale.workers.dev/' };
 
 var Sauvegarde = (function () {
-  var NOTRES = /^(brillant|desdale|compagnon|expedition|yams2?|bg|assaut|bataille|gribouille|petitbac|agents|quatre|domino|lettres|donjon|joyaux|dix|chinchon|cieljo)-/;
+  var NOTRES = /^(brillant|desdale|compagnon|expedition|yams2?|bg|assaut|bataille|gribouille|petitbac|agents|quatre|domino|lettres|donjon|joyaux|dix|chinchon|cieljo|vallee)-/;
   var EXCLUES = ['brillant-acces', 'brillant-client-id', 'desdale-admin', 'desdale-nuage'];
   function gardee(k) { return NOTRES.test(k) && EXCLUES.indexOf(k) === -1 && !/-sauvegarde(-v1)?$/.test(k) && !/-prive$/.test(k); }
   function cles() { var l = []; try { for (var i = 0; i < localStorage.length; i++) { var k = localStorage.key(i); if (gardee(k)) l.push(k); } } catch (e) {} return l.sort(); }
@@ -548,6 +549,11 @@ function ouvrirProfilPortail(manquant) {
 }
 
 // Vibration : Android uniquement (iPhone ne la propose pas aux pages web)
+// La Vallée de Désdale (3.48) : une page ouverte depuis la Vallée (ma maison, la crypte du Donjon, la boutique) y ramène au lieu de l'accueil.
+// La Vallée pose `desdale-vallee` dans sessionStorage en y entrant ; l'accueil l'efface.
+function depuisVallee() { try { return sessionStorage.getItem('desdale-vallee') === '1'; } catch (e) { return false; } }
+function adresseRetour() { return depuisVallee() ? 'vallee/' : 'index.html?choix'; }
+
 function vibrer(motif) {
   try { if (navigator.vibrate) navigator.vibrate(motif); } catch (e) {}
 }

@@ -86,7 +86,7 @@
       son: { type: Boolean, default: undefined },     // bouton 🔊 pendant le jeu (absent si non fourni)
       connexion: { type: String, default: '' }         // '' : pas de salon ; 'ok' : point vert ; autre : point orange
     },
-    data: function () { return { ONGLETS: ONGLETS, RETOUR: RETOUR, SON: SON, icNeuves: typeof IconesJeux !== 'undefined' }; },
+    data: function () { return { ONGLETS: ONGLETS, RETOUR: RETOUR, SON: SON, icNeuves: typeof IconesJeux !== 'undefined', vallee: typeof depuisVallee === 'function' && depuisVallee() }; },
     computed: { iconeNeuve: function () { return this.jeu && this.icNeuves ? IconesJeux.svg(this.jeu, 64) : ''; } },
     methods: {
       choisir: function (cle) { this.$emit('update:onglet', cle); this.$emit('onglet', cle); },
@@ -101,7 +101,7 @@
         <header class="fj-tete" v-show="onglet !== 'play'">
           <div class="fj-logo" v-if="iconeNeuve" v-html="iconeNeuve"></div><div class="fj-logo" v-else><slot name="logo"></slot></div>
           <div class="fj-titre"><h1>{{ nom }}</h1><p>{{ resume }}</p></div>
-          <a class="fj-retour" href="index.html?choix" title="Retour à la liste des jeux"><span class="fj-retour-ico" v-html="RETOUR"></span>Jeux</a>
+          <a class="fj-retour" :href="vallee ? 'vallee/' : 'index.html?choix'" :title="vallee ? 'Retour dans la Vallée' : 'Retour à la liste des jeux'"><span class="fj-retour-ico" v-html="RETOUR"></span>{{ vallee ? 'Vallée' : 'Jeux' }}</a>
         </header>
         <div class="fj-barre">
           <nav class="fj-onglets">

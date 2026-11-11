@@ -712,7 +712,7 @@
             <div class="aide" v-else>3 étages, un paquet de cartes qui se construit en chemin : il faut souvent plusieurs essais pour vaincre la Liche.</div>
           </section>
         </template>
-        <a class="lien-exp" href="index.html?choix">🏠 Retour à l'accueil</a>
+        <a class="lien-exp" :href="retourAdr()">{{ vientDeVallee() ? '🏞️ Retour dans la Vallée' : '🏠 Retour à l\'accueil' }}</a>
         <p class="version">Désdale · Donjon des compagnons · version {{ version }}</p>
       </template>
 
@@ -1629,6 +1629,9 @@
         window.addEventListener('keyup', ev => this.clavier(ev, false));
       },
       methods: {
+        // Venu de la Vallée (la crypte) : on y retourne au lieu de l'accueil (3.48)
+        retourAdr: function() { return adresseRetour(); },
+        vientDeVallee: function() { return depuisVallee(); },
         ouvrirProfil: function() { ouvrirProfilPortail(false); },
         vibre: function(motif) { if (this.vibrationActive) vibrer(motif); },
         son: function(nom, arg) { if (this.sonActif) try { Sons.jouer(nom, arg); } catch (e) {} },
@@ -1903,7 +1906,7 @@
           ecrireStockage(CLE_SOLO, null); partieHote = null;
           this.solo = false; this.partie = null; this.gains = null; this.direction(null);
           this.soloV++;
-          if (versAccueil === true) { location.href = 'index.html?choix'; return; }
+          if (versAccueil === true) { location.href = adresseRetour(); return; }
           this.onglet = 'config';
         },
         nouveauSolo: function() { ecrireStockage(CLE_SOLO, null); partieHote = null; this.demarrerSolo(); },
@@ -2084,7 +2087,9 @@
           }
           var parDiff = Object.assign({}, this.stats.parDiff || {});
           if (gagne) parDiff[dif] = (parDiff[dif] || 0) + 1;
-          this.stats = { parties: this.stats.parties + 1, gagnes: this.stats.gagnes + (gagne ? 1 : 0), record: Math.max(this.stats.record || 0, gagne ? DJ.NB_ETAGES : p.etage || 1), parDiff: parDiff };
+          this.stats = { parties: this.stats.parties + 1, gagnes: this.stats.gagnes + (gagne ? 1 : 0), record: Math.max(this.stats.record || 0, gagne ? DJ.NB_ETAGES : p.etage || 1), parDiff: parDiff,
+                        // boss vaincus en tout (3.48 : la quête « Le gardien de la crypte » de la Vallée)
+                        boss: (this.stats.boss | 0) + (gagne ? DJ.NB_ETAGES : Math.max(0, (p.etage || 1) - 1)) };
           ecrireStockage('donjon-stats', this.stats);
           ecrireStockage('donjon-recompense', { id: p.id, gains: g });
           this.gains = g;
@@ -2095,13 +2100,13 @@
         rentrer: function() {
           if (this.solo) { ecrireStockage(CLE_SOLO, null); partieHote = null; }
           else if (this.role) this.sortirDuSalon();
-          setTimeout(() => { location.href = this.monCp ? 'compagnon/' : 'index.html?choix'; }, this.role === null ? 450 : 0);
+          setTimeout(() => { location.href = this.monCp ? 'compagnon/' : adresseRetour(); }, this.role === null ? 450 : 0);
         },
         quitterDonjon: function() {
           this.demandeQuitter = false;
-          if (this.solo) { this.sauvegarderPartie(); location.href = 'index.html?choix'; return; }
+          if (this.solo) { this.sauvegarderPartie(); location.href = adresseRetour(); return; }
           this.sortirDuSalon();
-          location.href = 'index.html?choix';
+          location.href = adresseRetour();
         },
 
         envoyerJeu: function(m) {

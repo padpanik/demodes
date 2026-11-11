@@ -26,7 +26,8 @@ var SalonGlobal = (function () {
     dix: { nom: 'Combien sur 10 ?', page: 'dix/', cle: 'dix-sauvegarde' },
     expedition: { nom: 'Expédition', page: 'expedition/' },
     donjon: { nom: 'Donjon des compagnons', page: 'donjon/', cle: 'donjon-sauvegarde' },
-    compagnon: { nom: 'Mon compagnon', page: 'compagnon/' }
+    compagnon: { nom: 'Mon compagnon', page: 'compagnon/' },
+    vallee: { nom: 'La Vallée de Désdale', page: 'vallee/' }
   };
   var COULEURS = ['#e74c3c', '#e67e22', '#f1c40f', '#2ecc71', '#16a085', '#3498db', '#2c3e50', '#9b59b6', '#e84393', '#8d6e63'];
   var EMOJIS = ['😀', '😎', '🤓', '🥳', '😺', '🐶', '🦊', '🐼', '🐸', '🐧', '🦁', '🐙', '🦄', '🐲', '👻', '🤖', '👽', '🎃', '⭐', '🔥', '🌈', '🍕', '🎲', '⚓'];

@@ -373,7 +373,7 @@
 <body>
   <div id="app" v-cloak class="app">
     <div class="barre">
-      <a class="lien-jeux retour-cp" href="index.html?choix" title="Retour à la liste des jeux"><span class="ico" v-html="ICO.retour"></span>Jeux</a>
+      <a class="lien-jeux retour-cp" :href="retourVallee ? 'vallee/' : 'index.html?choix'" :title="retourVallee ? 'Retour dans la Vallée' : 'Retour à la liste des jeux'"><span class="ico" v-html="ICO.retour"></span>{{ retourVallee ? 'Vallée' : 'Jeux' }}</a>
       <div class="barre-infos"><span class="etoiles"><span class="ico" v-html="ICO.etoile"></span>{{ etoiles }}</span></div>
     </div>
 
@@ -841,7 +841,8 @@
         adoption: { espece: '', couleur: '', nom: '' },
         etoiles: Etoiles.solde(),
         journal: [],
-        onglet: 'soins',
+        onglet: ['soins', 'boutique', 'defis'].indexOf(new URLSearchParams(location.search).get('onglet')) >= 0 ? new URLSearchParams(location.search).get('onglet') : 'soins',
+        retourVallee: depuisVallee(),   // venu de la Vallée (ma maison) : on y retourne (3.48)
         enAchat: null,
         reglages: CP.reglagesMessages(),
         notifPossible: 'Notification' in window && 'serviceWorker' in navigator,
