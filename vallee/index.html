@@ -783,6 +783,16 @@
           if (d !== this.dir) { this.dir = d; if (!this.fenetre && !this.sortie) this.avancer(d); }
         },
         padFin: function() { this._pad = null; this.dir = null; this._bloque = false; },
+        // Changement d'écran : le perso se pose d'un coup à sa nouvelle place, sans glisser depuis l'ancienne.
+        // On attend que le navigateur ait vraiment appliqué la place sans transition (lecture forcée de la mise en page,
+        // puis deux images) avant de rendre la transition : sur téléphone, une seule image ne suffisait pas
+        // (signalé en 3.55 : en revenant du quartier, le perso glissait d'un coin à l'autre de l'écran).
+        finirSaut: function() {
+          this.$nextTick(() => {
+            document.querySelectorAll('.ecran-vl .ent').forEach(el => el.offsetWidth);
+            requestAnimationFrame(() => requestAnimationFrame(() => { this.saut = false; }));
+          });
+        },
         avancer: function(d) {
           this._dernierPas = Date.now();
           if (d === 'g' || d === 'd') this.sens = d;
@@ -804,7 +814,7 @@
               var neuf = vus.indexOf(E.id) < 0;
               if (neuf) { vus.push(E.id); ecrireStockage('vallee-lieux', vus); this.son('toc'); }
               this.montrerLieu(neuf);
-              this.$nextTick(() => requestAnimationFrame(() => { this.saut = false; }));
+              this.finirSaut();
             }
             if (r.ramasse === 'champignon') {
               this.son('toc'); this.vibre(30);

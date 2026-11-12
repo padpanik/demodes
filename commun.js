@@ -3,12 +3,13 @@
 // Les clés de stockage gardent l'ancien préfixe "brillant-" : les réglages déjà faits sont conservés.
 
 // Numéro de version affiché (à augmenter à chaque mise en ligne, avec brilliant/index.html et sw.js)
-const VERSION = '3.55';
+const VERSION = '3.56';
 
 // ---------- Nouveautés (2.87, demandé par l'utilisateur) ----------
 // Une ligne très brève par mise en ligne (la plus récente en haut) : l'accueil les montre une seule fois, dans une petite fenêtre,
 // à qui n'a pas encore vu cette version. [version, jeu ou partie de l'appli, ce qui change]
 const NOUVEAUTES = [
+  ['3.56', 'La Vallée', 'En changeant d\'écran, ton compagnon ne glisse plus d\'un bord à l\'autre.'],
   ['3.55', 'La Vallée', 'Les coulisses de la carte se préparent à un monde bien plus grand : rien ne change pour toi.'],
   ['3.54', 'La Vallée', 'La montagne, derrière la cabane de l\'ermite : bats le Yéti au Cieljo pour ouvrir le col, puis aide Gaspard aux alpages.'],
   ['3.53', 'La Vallée', 'Un marais au bout du bosquet : Bruno répare sa passerelle, Rainette la passeuse attend tes lucioles, et un coffre dort sur l\'îlot.'],
