@@ -57,7 +57,7 @@ function accessibles(pouvoir, sansPasserelle) {
 }
 [null, 'ronces', 'force', 'bond', 'flair'].forEach(pv => {
   var r = accessibles(pv);
-  Object.keys(VL.HABITANTS).forEach(id => { var h = VL.HABITANTS[id]; verif(r.touche[h.x + ',' + h.y], id + ' injoignable (' + pv + ')'); });
+  Object.keys(VL.HABITANTS).forEach(id => { var h = VL.HABITANTS[id]; if (!VL.dansTerres(h.x, h.y)) verif(r.touche[h.x + ',' + h.y], id + ' injoignable (' + pv + ')'); });
   var parId = {};
   Object.keys(VL.ACTIONS).forEach(k => { var id = VL.ACTIONS[k].id; parId[id] = parId[id] || !!r.touche[k]; });
   Object.keys(parId).forEach(id => { if (id !== 'coffre' || pv) verif(parId[id], 'action ' + id + ' injoignable (' + pv + ')'); });
@@ -421,6 +421,15 @@ for (var sn = -5; sn < nbSaisons - 5; sn++) {
   I.coffres.forEach(c => { coffresVus++; if (![[1, 0], [-1, 0], [0, 1], [0, -1]].some(v => vu3[(c.x + v[0]) + ',' + (c.y + v[1])])) ok1 = false; });
   if (VL.tuile(I.camp.x, I.camp.y) !== 'O' || !vu3[(I.camp.x + 1) + ',' + I.camp.y]) ok1 = false;
   if (Object.keys(vu3).some(k => !VL.dansTerres.apply(null, k.split(',').map(Number)))) ok1 = false;   // on ne sort pas des Terres à pied
+  // Les lieux de la saison (3.58) : 4 feux (camp compris) dans des écrans différents, la tour, le hameau, chacun atteignable
+  var proche = (x, y) => [[1, 0], [-1, 0], [0, 1], [0, -1]].some(v => vu3[(x + v[0]) + ',' + (y + v[1])]);
+  if (I.feux.length !== 4 || new Set(I.feux.map(F => F.ex + ',' + F.ey)).size !== 4) ok1 = false;
+  I.feux.forEach(F => { if (VL.tuile(F.x, F.y) !== 'f' || !vu3[F.x + ',' + (F.y + 1)] || !vu3[(F.x + 2) + ',' + (F.y + 1)]) ok1 = false; });
+  if (VL.tuile(I.tour.x, I.tour.y) !== 'W' || !proche(I.tour.x, I.tour.y)) ok1 = false;
+  ['colporteur', 'cartographe'].forEach(id => { var h = VL.HABITANTS[id]; if (!VL.dansTerres(h.x, h.y) || !proche(h.x, h.y)) ok1 = false; });
+  if (VL.BATIMENTS.filter(b => b.terres).length !== 2) ok1 = false;
+  VL.BATIMENTS.filter(b => b.terres).forEach(b => { if (!proche(b.x, b.y + 1) || VL.tuile(b.x, b.y) !== 'x') ok1 = false; });
+  if (I.coffres.some(c => [I.hameau, I.tour].concat(I.feux).some(L => L.ex === Math.floor(c.x / 11) && L.ey === Math.floor(c.y / 9)))) ok1 = false;
   if (!ok1) { mauvais++; if (mauvais < 4) console.log('  saison ' + sn + ' incorrecte'); }
 }
 verif(mauvais === 0, nbSaisons + ' saisons générées, toutes justes (' + coffresVus + ' coffres) en ' + (Date.now() - t0) + ' ms');
@@ -457,6 +466,46 @@ VL.traverser(eP, 'retour');
 verif(eP.x === VL.PORTE.x + 2 && eP.y === VL.PORTE.y && !VL.dansTerres(eP.x, eP.y), 'retour devant la porte, dans la Vallée');
 verif(VL.saisonDe(new Date(2026, 10, 9, 12).getTime()) === 0 && VL.saisonDe(new Date(2026, 11, 6, 23).getTime()) === 0 && VL.saisonDe(new Date(2026, 11, 7, 1).getTime()) === 1, 'saisons de 4 semaines (le 7 décembre, saison 2)');
 VL.terresPretes();
+
+// 13. Feux de camp, tour de guet, hameau (3.58)
+var I13 = VL.infoTerres(), eF = VL.nouvelEtat();
+VL.traverser(eF, 'aller');
+verif(JSON.stringify(VL.destinations(eF, 'vallee').map(d => d.id)) === '["camp"]', 'depuis la Vallée : le camp seulement');
+var F1 = I13.feux[1];
+eF.x = F1.x; eF.y = F1.y + 1;
+verif(VL.pas(eF, 'h', {}).action === 'feu' && VL.feuEn(F1.x, F1.y).id === 'f1', 'on fonce dans un feu');
+verif(!VL.feuAllume(eF, F1) && VL.allumer(eF, 'f1').erreur && !eF.terres.feux.f1, 'pas de bûche, pas de feu');
+eF.sac.bois = 2;
+var rA = VL.allumer(eF, 'f1');
+verif(rA.allume === 'f1' && eF.sac.bois === 1 && VL.feuAllume(eF, F1) && !VL.allumer(eF, 'f1').allume, 'feu allumé avec une bûche (une seule fois)');
+verif(JSON.stringify(VL.destinations(eF, 'f1').map(d => d.id)) === '["vallee","camp"]' && VL.destinations(eF, 'vallee').some(d => d.id === 'f1'), 'destinations depuis un feu et depuis la porte');
+VL.voyager(eF, 'vallee'); verif(eF.x === VL.PORTE.x + 2 && !VL.dansTerres(eF.x, eF.y), 'voyage jusqu\'à la Vallée');
+VL.voyager(eF, 'f1'); verif(eF.x === F1.x + 2 && eF.y === F1.y + 1 && VL.libre(eF, eF.x, eF.y) && VL.estVu(eF, F1.x, F1.y), 'voyage jusqu\'au feu, brouillard levé');
+verif(!VL.voyager(eF, 'f2').ecran && eF.x === F1.x + 2, 'pas de voyage vers un feu éteint');
+var eF2 = VL.charger(JSON.parse(JSON.stringify(eF)));
+verif(eF2.terres.feux.f1 && eF2.x === eF.x, 'feux gardés au rechargement');
+// La tour
+var eW = VL.nouvelEtat(); VL.traverser(eW, 'aller'); eW.x = I13.tour.x; eW.y = I13.tour.y + 1;
+verif(VL.pas(eW, 'h', {}).action === 'tour', 'on fonce dans la tour');
+var rW = VL.monterTour(eW);
+verif(rW.premiere && rW.n > 500 && VL.estVu(eW, I13.tour.ex * 11 + 5, I13.tour.ey * 9 + 4) && eW.terres.tour && !VL.monterTour(eW).premiere, 'la tour dévoile ' + rW.n + ' cases autour');
+// Le hameau : troc et carte
+var eH = VL.nouvelEtat(); VL.traverser(eH, 'aller');
+var dC = VL.parler(eH, 'colporteur', {}); verif(dC.boutons.length === 4 && dC.boutons[0].off, 'le colporteur propose ses trocs');
+eH.sac.bois = 9; eH.sac.cristal = 0;
+verif(VL.agir(eH, 'troc:bois', {}).troc && eH.sac.bois === 6 && eH.sac.cristal === 1, 'troc : 3 bois contre 1 cristal');
+VL.agir(eH, 'troc:bois', {}); VL.agir(eH, 'troc:bois', {});
+verif(eH.sac.cristal === 3 && VL.trocsRestants(eH) === 0 && VL.agir(eH, 'troc:pierre', {}).erreur, '3 trocs par jour');
+eH.terres.troc.j = '2000-01-01'; verif(VL.trocsRestants(eH) === 3, 'le lendemain, la hotte est pleine');
+verif(VL.parler(eH, 'cartographe', {}).boutons[0].a === 'carte', 'la cartographe propose sa carte');
+var rC = VL.agir(eH, 'carte', {});
+verif(rC.carte > 3000 && eH.sac.cristal === 0 && eH.terres.carto && VL.partVueTerres(eH) > 0.99 && !VL.agir(eH, 'carte', {}).carte, 'carte achetée : toutes les Terres (' + rC.carte + ' cases)');
+var b0 = VL.BATIMENTS.find(b => b.terres); eH.x = b0.x; eH.y = b0.y + 2;
+verif(VL.pas(eH, 'h', {}).action === 'chaumiere', 'on fonce dans une chaumière');
+// Nouvelle saison : feux éteints, tour et carte oubliées
+var sv13 = JSON.parse(JSON.stringify(eF)); sv13.terres.s = sv13.terres.s - 1; sv13.terres.tour = true; sv13.terres.carto = true;
+var eN13 = VL.charger(sv13); VL.terresPretes();
+verif(!eN13.terres.feux.f1 && !eN13.terres.tour && !eN13.terres.carto, 'nouvelle saison : feux éteints, tour et carte oubliées');
 
 console.log(ok + ' vérifications réussies, ' + ko + ' échec(s)');
 process.exit(ko ? 1 : 0);

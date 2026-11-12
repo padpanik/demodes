@@ -52,6 +52,9 @@
     .carte-vl svg { width: 100%; height: 100%; display: block; overflow: hidden; }
     .carte-vl .titre-carte { position: absolute; left: 50%; top: 4px; transform: translateX(-50%); white-space: nowrap; font: italic 800 0.78em/1.2 Georgia, serif; color: #5c3a1f;
                              background: rgba(255,248,231,0.88); border: 1px solid #c9a874; border-radius: 10px; padding: 1px 9px; pointer-events: none; }
+    .carte-vl .echelle-vl { position: absolute; left: 5px; bottom: 5px; width: 34px; height: 34px; border-radius: 10px; border: 1px solid #8d6a3f; background: rgba(28,20,15,0.85); font-size: 1.05em; line-height: 1; padding: 0; cursor: pointer; }
+    .vl-fanion { animation: vl-fanion 1.6s ease-in-out infinite alternate; transform-box: fill-box; transform-origin: left center; }
+    @keyframes vl-fanion { from { transform: scaleX(1); } to { transform: scaleX(0.82) skewY(4deg); } }
     .carte-vl .rose { position: absolute; right: 6px; bottom: 4px; font: 900 0.7em Georgia, serif; color: #8a6a46; opacity: 0.8; pointer-events: none; }
     .vl-cible { animation: vl-palpite 1.2s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
     .vl-moi { animation: vl-palpite 1.6s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
@@ -100,7 +103,7 @@
     .vl-braise { animation: vl-scintille 0.9s ease-in-out infinite; }
     .vl-yeux { animation: vl-yeux 4.5s infinite; }
     @keyframes vl-yeux { 0%, 44%, 50%, 100% { opacity: 1; } 47% { opacity: 0; } }
-    @media (prefers-reduced-motion: reduce) { .vl-respire, .vl-bulle, .vl-fumee, .vl-vague, .vl-fleche, .vl-scintille, .vl-brille, .vl-lueur, .vl-yeux, .vl-cible, .vl-moi, .fondu-vl, .ent.marche .sp { animation: none; } }
+    @media (prefers-reduced-motion: reduce) { .vl-respire, .vl-bulle, .vl-fumee, .vl-vague, .vl-fleche, .vl-scintille, .vl-brille, .vl-lueur, .vl-yeux, .vl-cible, .vl-moi, .vl-fanion, .fondu-vl, .ent.marche .sp { animation: none; } }
 
     /* Commandes : la croix du Donjon, et un panneau pour les annonces */
     .commandes-vl { flex: none; display: flex; align-items: center; gap: 8px; }
@@ -312,6 +315,7 @@
         <svg :view-box.camel="carteVue" preserveAspectRatio="xMidYMid meet"><g v-html="carteSvg"></g><g v-html="carteDessus"></g></svg>
         <div class="titre-carte">{{ dansTerres ? 'Terres de la saison ' + infoTerres.numero : 'La Vallée de Désdale' }} · {{ explore }} % exploré</div>
         <div class="rose">N ↑</div>
+        <button class="echelle-vl" @click.stop="carteLarge = !carteLarge" :aria-label="carteLarge ? 'Carte de près' : 'Carte entière'">{{ carteLarge ? '🔍' : '🗺️' }}</button>
       </div>
 
       <!-- Le lieu où je suis -->
@@ -360,7 +364,7 @@
         </div>
         <div class="dial-texte">{{ dialogue.texte }}</div>
         <div class="boutons-vl">
-          <button v-for="(b, k) in dialogue.boutons" :key="k" class="btn-vl" :class="{ principal: b.principal }" @click="choisir(b.a)">{{ b.t }}</button>
+          <button v-for="(b, k) in dialogue.boutons" :key="k" class="btn-vl" :class="{ principal: b.principal }" :disabled="b.off" @click="choisir(b.a)">{{ b.t }}</button>
         </div>
       </div>
     </div>
@@ -429,7 +433,7 @@
         <h2 v-if="aLire.titre">{{ aLire.titre }}</h2>
         <p>{{ aLire.texte }}</p>
         <div class="boutons-vl">
-          <template v-if="aLire.boutons"><button v-for="(b, k) in aLire.boutons" :key="k" class="btn-vl" :class="{ principal: b.principal }" @click="b.f()">{{ b.t }}</button></template>
+          <template v-if="aLire.boutons"><button v-for="(b, k) in aLire.boutons" :key="k" class="btn-vl" :class="{ principal: b.principal }" :disabled="b.off" @click="b.f()">{{ b.t }}</button></template>
           <button v-else class="btn-vl principal" @click="fermer">OK</button>
         </div>
       </div>
@@ -527,6 +531,7 @@
           <li><b>Entrer</b> dans une maison ou dans la crypte : fonce dans la porte. <b>Parler</b> à un habitant : fonce dans lui.</li>
           <li><b>!</b> au-dessus d'un habitant : il a une quête pour toi. <b>?</b> : il attend ce que tu lui rapportes.</li>
           <li><b>Pouvoir de ton compagnon</b> : ronces 🔥, rocher 💪, trou 🦘, buisson très épais 👃. Fonce dans l'obstacle qui va avec ton pouvoir pour l'ouvrir.</li>
+          <li><b>Les Terres de la saison</b> : passe la Porte des brumes, au bord ouest du ruisseau. Allume les feux de camp (une bûche 🪵) pour y revenir d'un coup ; grimpe à la tour de guet ; au hameau, Barnabé troque des cristaux et Mlle Taupinette vend sa carte. Le bouton 🗺️ de la carte montre toute la région.</li>
           <li><b>Récolter</b> : marche sur le bois mort 🪵, les cailloux 🪨, les herbes 🌿 et les cristaux 💎. Chaque point repousse le lendemain. Ton sac en garde {{ VL.SAC_MAX }} de chaque. Ton pouvoir double une ressource : 🔥 le bois, 💪 la pierre, 🦘 les plantes ; 👃 montre les cristaux sur la carte.</li>
           <li><b>Fabriquer</b> (après la quête de Bruno) : de la déco à l'établi devant ta maison, des fioles pour le Donjon chez Mme Sauge, des outils à la forge. Fonce dans l'établi, la hutte ou la forge.</li>
           <li><b>La carte</b> se dévoile au fil de tes pas. L'anneau orange montre où aller pour ta quête.</li>
@@ -581,7 +586,7 @@
         dir: null, sens: etat.dir === 'g' ? 'g' : 'd', saut: false, ecranCle: 0, lieuMontre: null,
         animal: lireStockage('compagnon-animal'), etoiles: Etoiles.solde(), nonLus: 0,
         fenetre: null, dialogue: null, aLire: null, achat: null, sortie: false, fabOu: null, fabChoix: null, jour: VL.jourDe(),
-        annonces: [], maintenant: Date.now(), carteAspect: 330 / 270,
+        annonces: [], maintenant: Date.now(), carteAspect: 330 / 270, carteLarge: false,
         inverse: lireStockage('donjon-inverse') === true,
         sonActif: lireStockage('brillant-son') !== false,
         pleinEcran: lireStockage('vallee-plein-ecran') !== false
@@ -654,14 +659,20 @@
         quetesDispo: function() { this.v; return VL.ORDRE_QUETES.filter(id => VL.prenable(etat, id)).length; },
         carteSvg: function() {
           this.v;
-          var cle = [JSON.stringify(etat.brume), JSON.stringify(etat.ouverts), JSON.stringify(this.marques), this.tableauMarque, JSON.stringify(etat.recolte), this.jour, this.pouvoir, JSON.stringify(this.parcelles.map(p => p && p.couleur))].join('|');
+          var cle = [JSON.stringify(etat.brume), JSON.stringify(etat.ouverts), JSON.stringify(this.marques), this.tableauMarque, JSON.stringify(etat.recolte), this.jour, this.pouvoir, JSON.stringify(this.parcelles.map(p => p && p.couleur)), JSON.stringify(etat.terres), this.carteK].join('|');
           if (cle === this._cleCarte) return this._svgCarte;
           this._cleCarte = cle;
-          return this._svgCarte = VLD.carteSvg(etat, { marques: this.marques, tableauMarque: this.tableauMarque, flair: this.pouvoir === 'flair', jour: this.jour, parcelles: this.parcelles });
+          return this._svgCarte = VLD.carteSvg(etat, { marques: this.marques, tableauMarque: this.tableauMarque, flair: this.pouvoir === 'flair', jour: this.jour, parcelles: this.parcelles, k: this.carteK });
         },
         // La partie de la carte du monde montrée : le quartier et le marais en bande, ailleurs les 3 × 3 écrans de l'ouest
         // (sur un écran peu haut, la carte est plus large : on montre plus de monde au lieu de déborder d'un seul côté)
         carteVue: function() {
+          var B0 = VL.regions().find(R => R.id === VL.regionDe(etat.x, etat.y)) || VL.bornes();
+          if (this.carteLarge) {   // la carte entière de la région où l'on est (3.58)
+            var bw = (B0.x1 - B0.x0) * 10, bh = (B0.y1 - B0.y0) * 10, w0 = bw, h0 = bh;
+            if (w0 / h0 < this.carteAspect) w0 = h0 * this.carteAspect; else h0 = w0 / this.carteAspect;
+            return [B0.x0 * 10 - (w0 - bw) / 2, B0.y0 * 10 - (h0 - bh) / 2, w0, h0].map(n => Math.round(n)).join(' ');
+          }
           if (this.vue.defile) return '330 90 330 90';
           // Ce qu'on veut voir (le marais : avec le bosquet et le quartier autour), agrandi à la forme du cadre, sans sortir du monde
           // Hors du cœur du monde (terres à venir) : les 3 × 3 écrans autour de moi
@@ -674,7 +685,13 @@
           var place = (debut, taille, d0, d1, voulu) => taille >= d1 - d0 ? d0 + (d1 - d0 - taille) / 2 : Math.max(d0, Math.min(d1 - taille, debut - (taille - voulu) / 2));
           return [place(R[0], w, B.x0 * 10, B.x1 * 10, R[2]), place(R[1], h, B.y0 * 10, B.y1 * 10, R[3]), w, h].map(n => Math.round(n)).join(' ');
         },
-        carteDessus: function() { this.v; return VLD.carteDessus(etat, { cible: VL.cible(etat, this.queteSuivie, this.ctx), amis: this.amis, x0: this.vue.x0 }); },
+        carteDessus: function() { this.v; return VLD.carteDessus(etat, { cible: VL.cible(etat, this.queteSuivie, this.ctx), amis: this.amis, x0: this.vue.x0, k: this.carteK }); },
+        // Taille des repères sur la carte : plus grands quand on voit toute la région
+        carteK: function() {
+          if (!this.carteLarge) return 1;
+          this.v; var B = VL.regions().find(R => R.id === VL.regionDe(etat.x, etat.y)) || VL.bornes();
+          return Math.max(1.4, Math.round((B.x1 - B.x0) / 33 * 0.7 * 10) / 10);
+        },
         explore: function() { this.v; return Math.round((this.dansTerres ? VL.partVueTerres(etat) : VL.partVue(etat)) * 100); },
         dansTerres: function() { this.v; return VL.dansTerres(etat.x, etat.y); },
         infoTerres: function() { this.v; return VL.infoTerres(); },
@@ -885,6 +902,10 @@
             return;
           }
           if (r.reponse) { this.fermer(); this.annoncer('✉️ Tu as la réponse de Papi Tortue. Retourne voir M. Bubo !'); return; }
+          if (r.erreur) { this.fermer(); return this.annoncer(r.erreur); }
+          if (r.troc) { this.son('toc'); this.vibre(30); this.fermer(); return this.annoncer('🦡 ' + r.texte); }
+          if (r.carte != null) { this.son('victoire'); this.vibre([40, 40, 80]); this.carteLarge = true;
+            return this.lire({ ico: '🗺️', titre: 'La carte de Mlle Taupinette', texte: 'Elle recopie sa carte à toute vitesse, le nez collé au papier… Voilà ! Toutes les Terres de la saison sont sur ta carte : les feux, la tour, les coffres. Touche 🔍 pour revenir à la carte de près.' }); }
           if (r.defi) return this.lancerDefi(r.defi);
           if (r.recompense) return this.recompenser(r.recompense);
           if (depuisTableau) return;
@@ -935,13 +956,25 @@
           }
           // Les Terres de la saison (3.57)
           if (id === 'porte') {
+            VL.changerSaison(etat);
             var it = VL.infoTerres(), fin = it.fin.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' });
-            return this.lire({ ico: '🌀', titre: 'La Porte des brumes', texte: 'Derrière l\'arche, la brume tourne doucement… On dit qu\'elle mène aux Terres de la saison : un monde qui change à chaque saison. Celui-ci (saison ' + it.numero + ') restera jusqu\'au ' + fin + '.',
-              boutons: [{ t: '🌀 Passer la porte', principal: true, f: () => this.traverser('aller') }, { t: 'Plus tard', f: () => this.fermer() }] });
+            var feux = VL.destinations(etat, 'vallee').filter(d => d.id !== 'camp');
+            return this.lire({ ico: '🌀', titre: 'La Porte des brumes', texte: 'Derrière l\'arche, la brume tourne doucement… On dit qu\'elle mène aux Terres de la saison : un monde qui change à chaque saison. Celui-ci (saison ' + it.numero + ') restera jusqu\'au ' + fin + '.' +
+                (feux.length ? ' La brume connaît aussi les feux que tu as allumés.' : ''),
+              boutons: [{ t: '🌀 Passer la porte', principal: true, f: () => this.traverser('aller') }].concat(feux.map(d => ({ t: d.ico + ' ' + d.nom, f: () => this.voyager(d.id) })), [{ t: 'Plus tard', f: () => this.fermer() }]) });
           }
           if (id === 'arche') return this.lire({ ico: '🌀', titre: 'L\'arche du camp', texte: 'L\'arche ramène à la Vallée, au bord du ruisseau. Tu rentres ?',
             boutons: [{ t: '🏡 Rentrer dans la Vallée', principal: true, f: () => this.traverser('retour') }, { t: 'Rester', f: () => this.fermer() }] });
-          if (id === 'feu') return this.annoncer('🔥 Un feu de camp crépite. On raconte que d\'autres feux attendent, plus loin dans les Terres…');
+          // Feux de camp, tour de guet, hameau (3.58)
+          if (id === 'feu') return this.feu(r);
+          if (id === 'tour') {
+            var tw = VL.monterTour(etat);
+            this.sauver(); this.v++;
+            this.son(tw.premiere ? 'victoire' : 'toc'); this.vibre(tw.premiere ? [40, 40, 80] : 20);
+            return this.lire({ ico: '🗼', titre: 'La tour de guet', texte: tw.premiere ? 'Tu grimpes l\'échelle, barreau après barreau… Du haut de la tour, les Terres s\'étendent à perte de vue : tout ce qui t\'entoure se dessine sur ta carte. Regarde bien : des fumées montent ici et là, ce sont peut-être des feux de camp.'
+                                                         : 'Le vent souffle là-haut. Les Terres alentour sont déjà sur ta carte.' });
+          }
+          if (id === 'chaumiere') return this.annoncer(r && r.p === 1 ? '🗺️ La chaumière de Mlle Taupinette. Des cartes sèchent à la fenêtre, et la porte est couverte de terre.' : '🦡 La chaumière de Barnabé. Ça sent le cuir et le bois verni ; sa hotte attend devant la porte.');
           if (id === 'coffreT') {
             var rc = VL.ouvrirCoffreT(etat, r.x, r.y);
             this.sauver(); this.v++;
@@ -973,6 +1006,35 @@
           }
         },
         lire: function(m) { this.aLire = m; this.fenetre = 'lire'; },
+        // Un feu de camp des Terres (3.58) : on l'allume avec une bûche ; allumé, il emmène vers les autres feux et la Vallée
+        feu: function(r) {
+          var F = VL.feuEn(r.x, r.y);
+          if (!F) return;
+          if (!VL.feuAllume(etat, F)) {
+            var bois = etat.sac.bois | 0;
+            return this.lire({ ico: '🪵', titre: F.nom, texte: 'Un vieux cercle de pierres, des cendres froides… Avec une bûche, tu pourrais rallumer ce feu. Une fois allumé, la brume saura t\'y ramener : depuis la Porte des brumes ou depuis un autre feu.' + (bois ? '' : ' Il te faut une bûche 🪵 : du bois mort, dans les forêts.'),
+              boutons: [{ t: '🔥 Allumer (1 🪵)', principal: true, off: !bois, f: () => {
+                var a = VL.allumer(etat, F.id);
+                if (a.erreur) return this.annoncer(a.erreur);
+                this.sauver(); this.v++; this.son('victoire'); this.vibre([40, 30, 70]); this.fermer();
+                this.annoncer('🔥 ' + F.nom + ' : le feu crépite ! Reviens-y d\'un coup depuis un autre feu ou depuis la Porte des brumes.');
+              } }, { t: 'Plus tard', f: () => this.fermer() }] });
+          }
+          var dest = VL.destinations(etat, F.id);
+          this.lire({ ico: '🔥', titre: F.id === 'camp' ? 'Le feu du camp' : F.nom, texte: 'Le feu crépite. Dans ses flammes, la brume dessine les chemins vers les autres feux allumés' + (dest.length > 2 ? '' : ' (allume-en d\'autres pour aller plus loin)') + '. Où veux-tu aller ?',
+            boutons: dest.map((d, k) => ({ t: d.ico + ' ' + d.nom, principal: k === 0, f: () => this.voyager(d.id) })).concat([{ t: 'Rester au chaud', f: () => this.fermer() }]) });
+        },
+        voyager: function(dest) {
+          this.fermer();
+          if (!VL.voyager(etat, dest).ecran) return;
+          this.saut = true; this.ecranCle++;
+          var E = VL.ecran(etat.x, etat.y), vus = lireStockage('vallee-lieux') || [], neuf = vus.indexOf(E.id) < 0;
+          if (neuf) { vus.push(E.id); ecrireStockage('vallee-lieux', vus); }
+          this.son('toc'); this.vibre(40);
+          this.montrerLieu(neuf);
+          this.finirSaut();
+          this.sauver(); this.v++;
+        },
         // Passer la Porte des brumes (aller) ou l'arche du camp (retour) : comme un changement d'écran, avec un fondu
         traverser: function(sens) {
           this.fermer();

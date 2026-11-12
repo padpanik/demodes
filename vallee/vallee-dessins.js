@@ -161,6 +161,49 @@ var VLD = (function () {
         '<circle cx="18.5" cy="16" r=".7" fill="#2a5a1c"/><circle cx="21.5" cy="16" r=".7" fill="#2a5a1c"/>' +
         '<path d="M9.5 9.2L20 1.2L30.5 9.2Q20 12 9.5 9.2Z" fill="#e9c46a" stroke="#7a5a1a" stroke-width="1.1" stroke-linejoin="round"/>' +
         '<path d="M20 1.5L16 9.8M20 1.5L24 9.8M20 1.5L12.5 9.4M20 1.5L27.5 9.4" stroke="#c9a23a" stroke-width=".7"/><path d="M11.5 8.6q8.5 2.4 17 0" stroke="#c0392b" stroke-width="1.4" fill="none"/>';
+    },
+    // Barnabé, le colporteur des Terres (3.58) : un blaireau trapu, sa hotte pleine sur le dos, foulard vert
+    blaireau: function() {
+      return ombre(12) +
+        // la hotte, derrière lui : osier, cristaux et rouleau de tissu qui dépassent
+        '<path d="M6 14h28l-2 20H8z" fill="#b5803f" stroke="#5c3a1f" stroke-width="1.2" stroke-linejoin="round"/>' +
+        '<path d="M7 19h26M7.5 24h25M8 29h24M12 14v20M18 14v20M24 14v20M30 14l-1 20" stroke="#8a5a2b" stroke-width=".8"/>' +
+        '<path d="M9 14l3-7 3 7z" fill="#74c0fc" stroke="#1c5d99" stroke-width=".9"/><path d="M14 14l2.5-5 2.5 5z" fill="#b197fc" stroke="#5f3dc4" stroke-width=".9"/>' +
+        '<rect x="23" y="7" width="9" height="7" rx="3" fill="#e8590c" stroke="#7a2e06" stroke-width=".9"/><path d="M27.5 7v7" stroke="#ffa94d" stroke-width="1"/>' +
+        '<path d="M31.5 9l3-3" stroke="#5c3a1f" stroke-width="1.6" stroke-linecap="round"/><circle cx="35" cy="5.5" r="1.8" fill="#ffd43b" stroke="#a87900" stroke-width=".7"/>' +
+        // le corps, gris, ventre clair
+        '<ellipse cx="20" cy="33" rx="12" ry="10.5" fill="#868e96" stroke="#343a40" stroke-width="1.3"/>' +
+        '<ellipse cx="20" cy="35" rx="7" ry="7" fill="#dee2e6"/>' +
+        '<path d="M8 41q-1 3 3 3.5h6q1.5-2-1-3.5zM32 41q1 3-3 3.5h-6q-1.5-2 1-3.5z" fill="#212529"/>' +
+        '<path d="M8.5 31q-3 4 0 8" stroke="#343a40" stroke-width="4.4" stroke-linecap="round" fill="none"/><path d="M31.5 31q3 4 0 8" stroke="#343a40" stroke-width="4.4" stroke-linecap="round" fill="none"/>' +
+        '<path d="M8 27.5q12 6 24 0l-1 3q-11 5-22 0z" fill="#2f9e44" stroke="#1b5e20" stroke-width=".9"/><path d="M24 30l2 6-3-1.2z" fill="#37b24d" stroke="#1b5e20" stroke-width=".8"/>' +
+        '<path d="M10 30.5l-3 -9" stroke="#5c3a1f" stroke-width="1.5"/><path d="M30 30.5l3 -9" stroke="#5c3a1f" stroke-width="1.5"/>' +
+        // la tête : rayures noires et blanches
+        '<ellipse cx="20" cy="19" rx="10.5" ry="9" fill="#f1f3f5" stroke="#343a40" stroke-width="1.3"/>' +
+        '<circle cx="11.5" cy="12.5" r="3" fill="#495057" stroke="#212529" stroke-width="1"/><circle cx="28.5" cy="12.5" r="3" fill="#495057" stroke="#212529" stroke-width="1"/><circle cx="11.5" cy="12.8" r="1.4" fill="#adb5bd"/><circle cx="28.5" cy="12.8" r="1.4" fill="#adb5bd"/>' +
+        '<path d="M12.5 11.5q3 4 4.5 13.5-4 0-6.5-5 0-5 2-8.5zM27.5 11.5q-3 4-4.5 13.5 4 0 6.5-5 0-5-2-8.5z" fill="#212529"/>' +
+        '<circle cx="15" cy="19" r="1.5" fill="#fff"/><circle cx="25" cy="19" r="1.5" fill="#fff"/><circle cx="15.3" cy="19.2" r=".9" fill="#111"/><circle cx="25.3" cy="19.2" r=".9" fill="#111"/>' +
+        '<ellipse cx="20" cy="25.3" rx="2.4" ry="1.7" fill="#212529"/><circle cx="19.3" cy="24.8" r=".6" fill="#868e96"/><path d="M18 27.4q2 1.2 4 0" stroke="#495057" stroke-width=".8" fill="none"/>';
+    },
+    // Mlle Taupinette, la cartographe des Terres (3.58) : une taupe de velours, lunettes rondes, béret, sa carte roulée sous le bras
+    taupe: function() {
+      return ombre(11) +
+        '<ellipse cx="20" cy="31" rx="12" ry="12.5" fill="#4a4250" stroke="#211b26" stroke-width="1.3"/>' +
+        '<ellipse cx="20" cy="33" rx="7.5" ry="8" fill="#6a6074"/>' +
+        '<path d="M9 42q-1 2.5 2.5 2.5h5q1-2-1-2.5zM31 42q1 2.5-2.5 2.5h-5q-1-2 1-2.5z" fill="#f4a3b1" stroke="#a34a5c" stroke-width=".8"/>' +
+        // la carte roulée, sous le bras gauche
+        '<g transform="rotate(-28 30 32)"><rect x="23" y="29" width="16" height="6" rx="3" fill="#f3dfb4" stroke="#8a6a46" stroke-width=".9"/><ellipse cx="39" cy="32" rx="1.6" ry="3" fill="#e5c690" stroke="#8a6a46" stroke-width=".8"/><path d="M28 29v6M33 29v6" stroke="#c0392b" stroke-width="1"/></g>' +
+        // les grosses pattes roses, en pelle
+        '<path d="M5 30q-2 6 3 7 3-1 2-5z" fill="#f4a3b1" stroke="#a34a5c" stroke-width=".9"/><path d="M5.2 34l-1.5.5M6 36l-1 1.2M8 36.6l-.3 1.5" stroke="#a34a5c" stroke-width=".8"/>' +
+        '<path d="M30 33q5 1 5 5-3 2-6-1z" fill="#f4a3b1" stroke="#a34a5c" stroke-width=".9"/>' +
+        // la tête
+        '<ellipse cx="20" cy="18" rx="10" ry="9" fill="#4a4250" stroke="#211b26" stroke-width="1.3"/>' +
+        '<path d="M15.5 23q4.5-3 9 0l-1.5 4.5q-3 1.8-6 0z" fill="#f4a3b1" stroke="#a34a5c" stroke-width=".9"/><ellipse cx="20" cy="27.3" rx="2.1" ry="1.4" fill="#e8597a"/>' +
+        '<path d="M14 24l-5-1M14 25.5l-5 1M26 24l5-1M26 25.5l5 1" stroke="#c9b8d6" stroke-width=".6"/>' +
+        '<circle cx="15.5" cy="17.5" r="3.6" fill="#e7f5ff" fill-opacity=".55" stroke="#b08900" stroke-width="1.2"/><circle cx="24.5" cy="17.5" r="3.6" fill="#e7f5ff" fill-opacity=".55" stroke="#b08900" stroke-width="1.2"/><path d="M19.1 17.3h1.8" stroke="#b08900" stroke-width="1.1"/>' +
+        '<circle cx="15.5" cy="17.8" r="1" fill="#111"/><circle cx="24.5" cy="17.8" r="1" fill="#111"/><circle cx="15.9" cy="17.4" r=".35" fill="#fff"/><circle cx="24.9" cy="17.4" r=".35" fill="#fff"/>' +
+        '<path d="M10 12q2-8 11-7.5 9 .5 9 6.5-9-3-20 1z" fill="#c2255c" stroke="#7a1438" stroke-width="1"/><circle cx="21" cy="4.6" r="1.4" fill="#c2255c" stroke="#7a1438" stroke-width=".8"/>' +
+        '<circle cx="11.5" cy="21.5" r="1.6" fill="#f4a3b1" opacity=".55"/><circle cx="28.5" cy="21.5" r="1.6" fill="#f4a3b1" opacity=".55"/>';
     }
   };
   function habitant(espece, taille) {
@@ -512,8 +555,13 @@ var VLD = (function () {
       '<path d="M' + (X - 3) + ' ' + (Y + 29) + 'q5-4 9 0M' + (X + 26) + ' ' + (Y + 30) + 'q5-4 9 0M' + (X + 30) + ' ' + (h + 16) + 'q3 6 1 12" stroke="#4c9a3c" stroke-width="2.4" fill="none" stroke-linecap="round"/>';
   }
   // Feu de camp (3.57) : un cercle de pierres, des bûches croisées, des flammes qui dansent
-  function feuCamp(X, Y) {
+  function feuCamp(X, Y, eteint) {
     var cx = X + 16, cy = Y + 22;
+    if (eteint) return '<ellipse cx="' + cx + '" cy="' + cy + '" rx="12" ry="5.5" fill="#4a4038"/>' +
+      [[-11, 0], [-7, 4.5], [0, 6], [7, 4.5], [11, 0], [7, -4], [-7, -4]].map(c => '<ellipse cx="' + (cx + c[0]) + '" cy="' + (cy + c[1]) + '" rx="3.4" ry="2.6" fill="#9e9e9e" stroke="#3a3a3a" stroke-width=".9"/>').join('') +
+      '<ellipse cx="' + cx + '" cy="' + (cy - 0.5) + '" rx="7" ry="3" fill="#2b2622"/><circle cx="' + (cx - 2) + '" cy="' + (cy - 1) + '" r="1.3" fill="#6b5e55"/><circle cx="' + (cx + 3) + '" cy="' + cy + '" r="1" fill="#6b5e55"/>' +
+      '<path d="M' + (cx - 6) + ' ' + (cy + 1) + 'L' + (cx + 5) + ' ' + (cy - 3) + '" stroke="' + OLB + '" stroke-width="4" stroke-linecap="round"/><path d="M' + (cx - 6) + ' ' + (cy + 1) + 'L' + (cx + 5) + ' ' + (cy - 3) + '" stroke="#3d2f25" stroke-width="2.6" stroke-linecap="round"/>' +
+      '<g class="vl-fumee"><circle cx="' + (cx + 1) + '" cy="' + (cy - 8) + '" r="2" fill="#dee2e6" opacity=".45"/><circle cx="' + (cx + 3) + '" cy="' + (cy - 14) + '" r="2.8" fill="#dee2e6" opacity=".3"/></g>';
     return '<circle cx="' + cx + '" cy="' + (cy - 6) + '" r="22" fill="url(#vl-lueur)" class="vl-halo"/>' +
       '<ellipse cx="' + cx + '" cy="' + cy + '" rx="12" ry="5.5" fill="#3b2a1d"/>' +
       [[-11, 0], [-7, 4.5], [0, 6], [7, 4.5], [11, 0], [7, -4], [-7, -4]].map(c => '<ellipse cx="' + (cx + c[0]) + '" cy="' + (cy + c[1]) + '" rx="3.4" ry="2.6" fill="#9e9e9e" stroke="#3a3a3a" stroke-width=".9"/>').join('') +
@@ -522,6 +570,27 @@ var VLD = (function () {
       '<path class="vl-flamme" d="M' + cx + ' ' + (cy - 20) + 'C' + (cx + 7) + ' ' + (cy - 12) + ' ' + (cx + 8) + ' ' + (cy - 6) + ' ' + (cx + 5) + ' ' + (cy - 1) + 'H' + (cx - 5) + 'C' + (cx - 8) + ' ' + (cy - 6) + ' ' + (cx - 5) + ' ' + (cy - 11) + ' ' + cx + ' ' + (cy - 20) + 'Z" fill="#ff922b" stroke="#c2410c" stroke-width=".8"/>' +
       '<path class="vl-flamme" d="M' + cx + ' ' + (cy - 12) + 'C' + (cx + 3.5) + ' ' + (cy - 8) + ' ' + (cx + 4) + ' ' + (cy - 4) + ' ' + (cx + 2) + ' ' + (cy - 1.5) + 'H' + (cx - 2) + 'C' + (cx - 4) + ' ' + (cy - 4) + ' ' + (cx - 3) + ' ' + (cy - 7) + ' ' + cx + ' ' + (cy - 12) + 'Z" fill="#ffe066"/>' +
       '<circle cx="' + (cx + 5) + '" cy="' + (cy - 22) + '" r=".9" fill="#ffd43b" class="vl-scintille"/><circle cx="' + (cx - 4) + '" cy="' + (cy - 26) + '" r=".8" fill="#ffa94d" class="vl-scintille"/>';
+  }
+  // La tour de guet des Terres (3.58) : pilotis de rondins, échelle, plate-forme à toit pointu, fanion ; elle monte haut au-dessus de sa case
+  function tourGuet(X, Y, montee) {
+    var cx = X + 16, haut = Y - 46;
+    return '<ellipse cx="' + cx + '" cy="' + (Y + 30) + '" rx="19" ry="4.5" fill="rgba(10,20,5,.35)"/>' +
+      // les quatre pieds et leurs croisillons
+      '<path d="M' + (X + 1) + ' ' + (Y + 30) + 'L' + (X + 6) + ' ' + (haut + 22) + 'M' + (X + 31) + ' ' + (Y + 30) + 'L' + (X + 26) + ' ' + (haut + 22) + '" stroke="' + OLB + '" stroke-width="5" stroke-linecap="round"/>' +
+      '<path d="M' + (X + 1) + ' ' + (Y + 30) + 'L' + (X + 6) + ' ' + (haut + 22) + 'M' + (X + 31) + ' ' + (Y + 30) + 'L' + (X + 26) + ' ' + (haut + 22) + '" stroke="#9c6b3e" stroke-width="3.2" stroke-linecap="round"/>' +
+      '<path d="M' + (X + 3) + ' ' + (Y + 16) + 'L' + (X + 28) + ' ' + (Y - 12) + 'M' + (X + 29) + ' ' + (Y + 16) + 'L' + (X + 4) + ' ' + (Y - 12) + 'M' + (X + 4) + ' ' + (Y - 14) + 'L' + (X + 27) + ' ' + (haut + 26) + 'M' + (X + 28) + ' ' + (Y - 14) + 'L' + (X + 5) + ' ' + (haut + 26) + '" stroke="#6d4520" stroke-width="2"/>' +
+      // l'échelle
+      '<path d="M' + (cx - 4) + ' ' + (Y + 31) + 'V' + (haut + 24) + 'M' + (cx + 4) + ' ' + (Y + 31) + 'V' + (haut + 24) + '" stroke="#c08a4e" stroke-width="1.8"/>' +
+      [0, 1, 2, 3, 4, 5, 6, 7, 8].map(k => '<path d="M' + (cx - 4) + ' ' + (Y + 27 - k * 7.5) + 'h8" stroke="#c08a4e" stroke-width="1.5"/>').join('') +
+      // la plate-forme, sa rambarde, le toit
+      '<rect x="' + (X - 3) + '" y="' + (haut + 18) + '" width="38" height="6" rx="1" fill="#8d5a2b" stroke="' + OLB + '" stroke-width="1.4"/>' +
+      '<path d="M' + (X - 2) + ' ' + (haut + 18) + 'V' + (haut + 8) + 'M' + (X + 34) + ' ' + (haut + 18) + 'V' + (haut + 8) + 'M' + (X - 2) + ' ' + (haut + 11) + 'h36M' + (X + 8) + ' ' + (haut + 18) + 'v-7M' + (X + 24) + ' ' + (haut + 18) + 'v-7" stroke="' + OLB + '" stroke-width="1.6"/>' +
+      '<path d="M' + (X - 6) + ' ' + (haut + 6) + 'L' + cx + ' ' + (haut - 12) + 'L' + (X + 38) + ' ' + (haut + 6) + 'Z" fill="#a8382f" stroke="' + OLB + '" stroke-width="1.6" stroke-linejoin="round"/>' +
+      '<path d="M' + cx + ' ' + (haut - 11) + 'L' + (X + 36) + ' ' + (haut + 5) + 'H' + cx + 'Z" fill="#7a2620"/>' +
+      '<path d="M' + cx + ' ' + (haut - 12) + 'V' + (haut - 26) + '" stroke="' + OLB + '" stroke-width="1.5"/>' +
+      '<path class="vl-fanion" d="M' + cx + ' ' + (haut - 26) + 'l11 3.5-11 3.5z" fill="' + (montee ? '#ffd43b' : '#f8f9fa') + '" stroke="' + OLB + '" stroke-width=".9"/>' +
+      // une longue-vue posée sur la rambarde
+      '<path d="M' + (X + 26) + ' ' + (haut + 10) + 'l7-4" stroke="#495057" stroke-width="2.6" stroke-linecap="round"/><path d="M' + (X + 30) + ' ' + (haut + 8) + 'l3-1.7" stroke="#e0a83a" stroke-width="2.8" stroke-linecap="round"/>';
   }
   function coffre(X, Y, ouvert) {
     return (ouvert ? '' : '<circle cx="' + (X + 16) + '" cy="' + (Y + 18) + '" r="15" fill="url(#vl-lueur)" class="vl-halo"/>') +
@@ -597,6 +666,22 @@ var VLD = (function () {
         '<path d="M' + (X + 10) + ' ' + (Y + 62) + 'v-18a9 9 0 0 1 18 0v18z" fill="#1a0f08" stroke="' + OLB + '" stroke-width="1.4"/><path d="M' + (X + 12) + ' ' + (Y + 62) + 'v-7q7-7 14 0v7z" fill="#ff922b" class="vl-braise"/><path d="M' + (X + 15) + ' ' + (Y + 62) + 'v-4q4-4 8 0v4z" fill="#ffd43b" class="vl-braise"/>' +
         fenetre(X + 37, Y + 32, 15, 11) +
         '<path d="M' + (X + 34) + ' ' + (Y + 54) + 'h17l-3 4h-4v5h-5v-5h-2z" fill="#495057" stroke="' + OLB + '" stroke-width="1.1"/>';
+    } else if (b.type === 'chaumiere') {   // les chaumières du hameau des Terres (3.58) : pierre, chaume épais ; la hotte du colporteur, l'enseigne de la cartographe
+      s += '<ellipse cx="' + (X + 33) + '" cy="' + (Y + 62) + '" rx="33" ry="4.5" fill="rgba(10,20,5,.34)"/>' +
+        '<rect x="' + (X + (b.n ? 10 : 42)) + '" y="' + (Y - 6) + '" width="9" height="20" fill="#8a847f" stroke="' + OLB + '" stroke-width="1.3"/>' +
+        '<g class="vl-fumee"><circle cx="' + (X + (b.n ? 14 : 46)) + '" cy="' + (Y - 12) + '" r="3.5" fill="#e9ecef" opacity=".75"/><circle cx="' + (X + (b.n ? 17 : 49)) + '" cy="' + (Y - 20) + '" r="4.5" fill="#e9ecef" opacity=".5"/></g>' +
+        '<rect x="' + (X + 5) + '" y="' + (Y + 24) + '" width="54" height="38" fill="#cfc4b4" stroke="' + OLB + '" stroke-width="1.6"/>' +
+        [31, 38, 45, 52, 59].map((yy, k) => '<path d="M' + (X + 5) + ' ' + (Y + yy) + 'h54" stroke="#a69a88" stroke-width=".9"/>' + [0, 1, 2, 3].map(j => '<path d="M' + (X + 11 + j * 13 + (k % 2) * 6) + ' ' + (Y + yy - 7) + 'v7" stroke="#a69a88" stroke-width=".9"/>').join('')).join('') +
+        '<path d="M' + (X - 4) + ' ' + (Y + 30) + 'Q' + (X + 2) + ' ' + (Y + 4) + ' ' + (X + 32) + ' ' + (Y - 2) + 'Q' + (X + 62) + ' ' + (Y + 4) + ' ' + (X + 68) + ' ' + (Y + 30) + 'Q' + (X + 32) + ' ' + (Y + 26) + ' ' + (X - 4) + ' ' + (Y + 30) + 'Z" fill="#c9a050" stroke="' + OLB + '" stroke-width="1.7"/>' +
+        '<path d="M' + (X + 32) + ' ' + (Y) + 'Q' + (X + 58) + ' ' + (Y + 6) + ' ' + (X + 66) + ' ' + (Y + 29) + 'Q' + (X + 48) + ' ' + (Y + 26) + ' ' + (X + 32) + ' ' + (Y + 26) + 'Z" fill="#a8823a" opacity=".7"/>' +
+        '<path d="M' + (X + 2) + ' ' + (Y + 27) + 'q6-14 14-21M' + (X + 18) + ' ' + (Y + 28) + 'q4-14 9-24M' + (X + 46) + ' ' + (Y + 28) + 'q-4-14-9-24M' + (X + 62) + ' ' + (Y + 27) + 'q-6-14-14-21" stroke="#8a6315" stroke-width="1.1" fill="none"/>' +
+        '<path d="M' + (X + 26) + ' ' + (Y + 62) + 'v-17a6 6 0 0 1 12 0v17z" fill="#5c3a1f" stroke="' + OLB + '" stroke-width="1.4"/><circle cx="' + (X + 35) + '" cy="' + (Y + 54) + '" r="1.2" fill="#fcc419"/>' +
+        fenetre(b.n ? X + 44 : X + 9, Y + 36, 12, 10) +
+        (b.n
+          ? '<path d="M' + (X + 8) + ' ' + (Y + 34) + 'h12" stroke="' + OLB + '" stroke-width="1.2"/><path d="M' + (X + 10) + ' ' + (Y + 34) + 'v3M' + (X + 18) + ' ' + (Y + 34) + 'v3" stroke="' + OLB + '" stroke-width=".9"/>' +
+            '<rect x="' + (X + 7) + '" y="' + (Y + 37) + '" width="14" height="10" rx="1" fill="#f3dfb4" stroke="#8a6a46" stroke-width="1"/><path d="M' + (X + 9) + ' ' + (Y + 44) + 'q3-4 5-1t5-3" stroke="#2b8a3e" stroke-width="1" fill="none"/><path d="M' + (X + 16) + ' ' + (Y + 40) + 'l1.5 1.5m0-1.5l-1.5 1.5" stroke="#c0392b" stroke-width=".9"/>'
+          : '<path d="M' + (X + 45) + ' ' + (Y + 62) + 'l2-12h10l2 12z" fill="#b5803f" stroke="#5c3a1f" stroke-width="1.1"/><path d="M' + (X + 46) + ' ' + (Y + 55) + 'h12M' + (X + 47) + ' ' + (Y + 50) + 'v12M' + (X + 52) + ' ' + (Y + 50) + 'v12" stroke="#8a5a2b" stroke-width=".8"/>' +
+            '<path d="M' + (X + 48) + ' ' + (Y + 50) + 'l2-5 2 5z" fill="#74c0fc" stroke="#1c5d99" stroke-width=".7"/><rect x="' + (X + 8) + '" y="' + (Y + 56) + '" width="10" height="6" rx="1" fill="#8d5a2b" stroke="' + OLB + '" stroke-width="1"/>');
     } else if (b.type === 'cabane') {   // la cabane de l'ermite : rondins, toit moussu, lanterne
       s += '<ellipse cx="' + (X + 33) + '" cy="' + (Y + 62) + '" rx="33" ry="4.5" fill="rgba(10,20,5,.32)"/>' +
         '<rect x="' + (X + 6) + '" y="' + (Y + 22) + '" width="52" height="40" fill="#a8703e" stroke="' + OLB + '" stroke-width="1.6"/>' +
@@ -951,7 +1036,8 @@ var VLD = (function () {
       else if (t === 'c') poser(y, coffre(X, Y, e.coffre));
       else if (t === 'Z') poser(y, coffre(X, Y, !!(e.terres && e.terres.ouv[gx2 + ',' + gy2])));
       else if (t === 'O') poser(y + 0.2, arche(X + 3, Y));
-      else if (t === 'f') poser(y, feuCamp(X, Y));
+      else if (t === 'f') poser(y, feuCamp(X, Y, !VL.feuAllume(e, VL.feuEn(gx2, gy2))));
+      else if (t === 'W') poser(y + 0.3, tourGuet(X, Y, !!(e.terres && e.terres.tour)));
       else if (t === 'e') poser(y, etabli(X, Y, ctx.atelier));
       else if (VL.OBSTACLES[t]) poser(y - 0.1, obstacle(t, X, Y, VL.ouvert(e, gx2, gy2), ctx.flair));
       if (t === 'm' && tu(gx2 - 1, gy2) !== 'm') poser(y, etal(X, Y) + bulleQuete(X + 32, Y - 26, ctx.marques && ctx.marques.pipa));
@@ -1028,7 +1114,7 @@ var VLD = (function () {
   // ---------- La carte du monde, sous le brouillard (10 unités par case) ----------
   var COUL = { '.': '#a9d18e', ',': '#b8dc96', ':': '#e7cf9b', '=': '#c08a4e', T: '#5d9b4c', S: '#4b8650', b: '#77b35f', h: '#6aa653', o: '#a9d18e',
                '~': '#7fbde8', x: '#c98a6a', e: '#b07a45', m: '#e8590c', Q: '#b07a45', F: '#9ab', c: '#a9d18e', r: '#3d7a3a', R: '#9e9e9e', v: '#6b5040', s: '#3f7a35',
-               y: '#7d9a4a', '-': '#c08a4e', P: '#a07a52', p: '#9e9e9e', C: '#97b07a', k: '#8a857c', G: '#d7e9f7', B: '#e9c46a', O: '#9775fa', Z: '#a9d18e', f: '#e8590c' };
+               y: '#7d9a4a', '-': '#c08a4e', P: '#a07a52', p: '#9e9e9e', C: '#97b07a', k: '#8a857c', G: '#d7e9f7', B: '#e9c46a', O: '#9775fa', Z: '#a9d18e', f: '#e8590c', W: '#8d5a2b' };
   var COUL_BRUME = { '.': '#8fb987', ',': '#98c190', T: '#467a44', S: '#3d6e46' };
   var COUL_MARAIS = { '.': '#97b47a', ',': '#a3bd86', ':': '#c9b07e', '~': '#5f9a8a', T: '#4f7d3c' };
   var COUL_SOL = { colline: { '.': '#c3d68a', ',': '#cbdc94', T: '#5d9b4c' }, roche: { '.': '#bdb6a6', ',': '#c4bdad', ':': '#d6c49c' }, alpage: { '.': '#a2d47c', ',': '#aedb88', ':': '#e2cf9b' },
@@ -1036,7 +1122,7 @@ var VLD = (function () {
   // ctx = { cible: { x, y }, marques: { habitant: m }, tableauMarque, ecranVu: { 'ex,ey': 1 } }
   function carteSvg(e, ctx) {
     ctx = ctx || {};
-    var U = 10, s = [], b = VL.bits(e), x, y, B = VL.bornes(), W = VL.W, H = VL.H;
+    var U = 10, s = [], b = VL.bits(e), x, y, B = VL.bornes(), W = VL.W, H = VL.H, K = ctx.k || 1;   // K : la carte entière, plus petite, a des icônes plus grandes
     // On ne parcourt que les écrans découverts et leurs voisins (le bord flou du brouillard déborde un peu) : le monde peut être très grand
     var brume = e.brume || {}, proches = VL.ecrans().filter(c => { for (var dy = -1; dy <= 1; dy++) for (var dx = -1; dx <= 1; dx++) if (brume[(c.ex + dx) + ',' + (c.ey + dy)]) return true; return false; });
     s.push('<defs><pattern id="vl-hachure" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(35)"><rect width="8" height="8" fill="#ead8b0"/><path d="M0 0v8" stroke="#dcc597" stroke-width="2"/></pattern>' +
@@ -1057,13 +1143,13 @@ var VLD = (function () {
       if (t === 'T' || t === 'S') terre.push('<circle cx="' + (x * U + 5) + '" cy="' + (y * U + 5) + '" r="4" fill="' + (t === 'S' ? '#3d7344' : '#4d8a3e') + '"/>');
     } });
     VL.BATIMENTS.forEach(bt => terre.push('<rect x="' + (bt.x * U + 1) + '" y="' + (bt.y * U + 1) + '" width="' + (bt.w * U - 2) + '" height="' + (bt.h * U - 2) + '" rx="2" fill="' +
-      (bt.type === 'parcelle' ? ((ctx.parcelles && ctx.parcelles[bt.p] && ctx.parcelles[bt.p].couleur) || '#b7a184') : ({ maison: '#d9534f', hutte: '#d4a24c', forge: '#495057', crypte: '#868e96', cabane: '#6b8e3a', chene: '#3a8435', rainette: '#b99c4a', saule: '#5f8f35', chalet: '#8a5a32', refuge: '#6c675f' })[bt.type]) + '" stroke="rgba(0,0,0,.35)" stroke-width="1"/>'));
+      (bt.type === 'parcelle' ? ((ctx.parcelles && ctx.parcelles[bt.p] && ctx.parcelles[bt.p].couleur) || '#b7a184') : ({ maison: '#d9534f', hutte: '#d4a24c', forge: '#495057', crypte: '#868e96', cabane: '#6b8e3a', chene: '#3a8435', rainette: '#b99c4a', saule: '#5f8f35', chalet: '#8a5a32', refuge: '#6c675f', chaumiere: '#c9a050' })[bt.type]) + '" stroke="rgba(0,0,0,.35)" stroke-width="1"/>'));
     s.push('<g mask="url(#vl-masque)">' + terre.join('') + '</g>');
     // Repères des lieux découverts
-    var ICO = { maison: '🏠', hutte: '🌿', forge: '⚒️', crypte: '🗝️', cabane: '🛖', chene: '🌳', rainette: '🐸', saule: '🌳', chalet: '🏡', refuge: '🏔️' };
+    var ICO = { maison: '🏠', hutte: '🌿', forge: '⚒️', crypte: '🗝️', cabane: '🛖', chene: '🌳', rainette: '🐸', saule: '🌳', chalet: '🏡', refuge: '🏔️', chaumiere: '🏘️' };
     VL.BATIMENTS.forEach(bt => {
       if (!ICO[bt.type] || !VL.estVu(e, bt.x + (bt.w >> 1), bt.y + bt.h - 1, b)) return;
-      s.push('<text x="' + ((bt.x + bt.w / 2) * U) + '" y="' + ((bt.y + bt.h / 2) * U + 5) + '" text-anchor="middle" font-size="13">' + ICO[bt.type] + '</text>');
+      s.push('<text x="' + ((bt.x + bt.w / 2) * U) + '" y="' + ((bt.y + bt.h / 2) * U + 5) + '" text-anchor="middle" font-size="' + f(13 * K) + '">' + ICO[bt.type] + '</text>');
     });
     // Points de récolte encore là aujourd'hui (les cristaux se voient même sous le brouillard avec le Flair)
     var COUL_RES = { bois: '#8d5a2b', pierre: '#868e96', plante: '#40c057', cristal: '#9775fa' };
@@ -1088,20 +1174,27 @@ var VLD = (function () {
     REG.forEach(R => s.push('<rect x="' + (R.x0 * U + 1) + '" y="' + (R.y0 * U + 1) + '" width="' + ((R.x1 - R.x0) * U - 2) + '" height="' + ((R.y1 - R.y0) * U - 2) + '" rx="6" fill="none" stroke="#8a6a46" stroke-width="2"/>'));
     // Les arches de la Porte des brumes et le feu du camp (3.57)
     var IT = VL.infoTerres(), rep = [[VL.PORTE.x, VL.PORTE.y, '🌀'], [IT.camp.x, IT.camp.y, '🌀'], [IT.camp.x + 3, IT.camp.y - 2, '⛺']];
-    rep.forEach(q => { if (VL.estVu(e, q[0], q[1], b)) s.push('<text x="' + (q[0] * U + 5) + '" y="' + (q[1] * U + 9) + '" text-anchor="middle" font-size="13">' + q[2] + '</text>'); });
+    // Les feux (3.58) : allumés 🔥, éteints en cendres ; la tour de guet se voit de loin, même sous la brume
+    IT.feux.forEach(F => { if (F.id !== 'camp') rep.push([F.x, F.y, VL.feuAllume(e, F) ? '🔥' : '', !VL.feuAllume(e, F)]); });
+    rep.push([IT.tour.x, IT.tour.y, '🗼', false, true]);
+    rep.forEach(q => {
+      if (!q[4] && !VL.estVu(e, q[0], q[1], b)) return;
+      if (q[3]) s.push('<circle cx="' + (q[0] * U + 5) + '" cy="' + (q[1] * U + 5) + '" r="' + f(3.6 * K) + '" fill="#5c534c" stroke="#fff" stroke-width="1.2"/>');
+      else s.push('<text x="' + (q[0] * U + 5) + '" y="' + f(q[1] * U + 5 + 4 * K) + '" text-anchor="middle" font-size="' + f(13 * K) + '"' + (q[4] && !VL.estVu(e, q[0], q[1], b) ? ' opacity=".75"' : '') + '>' + q[2] + '</text>');
+    });
     return s.join('');
   }
   // Ce qui bouge à chaque pas (dessiné par-dessus, pour ne pas tout redessiner) : l'écran où je suis, la quête suivie, moi
   function carteDessus(e, ctx) {
     ctx = ctx || {};
-    var U = 10, s = [], ec = VL.ecranDe(e.x, e.y), x0 = ctx.x0 != null ? ctx.x0 : ec.ex * VL.W;   // x0 : la fenêtre de vue (le quartier défile)
+    var U = 10, s = [], ec = VL.ecranDe(e.x, e.y), x0 = ctx.x0 != null ? ctx.x0 : ec.ex * VL.W, K = ctx.k || 1;   // x0 : la fenêtre de vue (le quartier défile)
     s.push('<rect x="' + (x0 * U + 1.5) + '" y="' + (ec.ey * VL.H * U + 1.5) + '" width="' + (VL.W * U - 3) + '" height="' + (VL.H * U - 3) + '" rx="4" fill="none" stroke="#fff" stroke-width="2.5" opacity=".9"/>');
     // La quête suivie : un anneau qui palpite
-    if (ctx.cible) s.push('<circle class="vl-cible" cx="' + (ctx.cible.x * U + 5) + '" cy="' + (ctx.cible.y * U + 5) + '" r="8" fill="none" stroke="#f59f00" stroke-width="2.5"/>');
+    if (ctx.cible) s.push('<circle class="vl-cible" cx="' + (ctx.cible.x * U + 5) + '" cy="' + (ctx.cible.y * U + 5) + '" r="' + f(8 * K) + '" fill="none" stroke="#f59f00" stroke-width="' + f(2.5 * K) + '"/>');
     // Les amis dans la Vallée (3.51) : un point à leur couleur
-    (ctx.amis || []).forEach(a => s.push('<circle cx="' + (a.x * U + 5) + '" cy="' + (a.y * U + 5) + '" r="4.5" fill="' + (a.couleur || '#3498db') + '" stroke="#fff" stroke-width="1.6"/>'));
+    (ctx.amis || []).forEach(a => s.push('<circle cx="' + (a.x * U + 5) + '" cy="' + (a.y * U + 5) + '" r="' + f(4.5 * K) + '" fill="' + (a.couleur || '#3498db') + '" stroke="#fff" stroke-width="1.6"/>'));
     // Moi
-    s.push('<circle cx="' + (e.x * U + 5) + '" cy="' + (e.y * U + 5) + '" r="5.5" fill="#ff922b" stroke="#fff" stroke-width="2" class="vl-moi"/>');
+    s.push('<circle cx="' + (e.x * U + 5) + '" cy="' + (e.y * U + 5) + '" r="' + f(5.5 * K) + '" fill="#ff922b" stroke="#fff" stroke-width="' + f(2 * K) + '" class="vl-moi"/>');
     return s.join('');
   }
 
