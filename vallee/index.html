@@ -652,7 +652,7 @@
         quetesDispo: function() { this.v; return VL.ORDRE_QUETES.filter(id => VL.prenable(etat, id)).length; },
         carteSvg: function() {
           this.v;
-          var cle = [etat.vu, JSON.stringify(etat.ouverts), JSON.stringify(this.marques), this.tableauMarque, JSON.stringify(etat.recolte), this.jour, this.pouvoir, JSON.stringify(this.parcelles.map(p => p && p.couleur))].join('|');
+          var cle = [JSON.stringify(etat.brume), JSON.stringify(etat.ouverts), JSON.stringify(this.marques), this.tableauMarque, JSON.stringify(etat.recolte), this.jour, this.pouvoir, JSON.stringify(this.parcelles.map(p => p && p.couleur))].join('|');
           if (cle === this._cleCarte) return this._svgCarte;
           this._cleCarte = cle;
           return this._svgCarte = VLD.carteSvg(etat, { marques: this.marques, tableauMarque: this.tableauMarque, flair: this.pouvoir === 'flair', jour: this.jour, parcelles: this.parcelles });
@@ -662,11 +662,14 @@
         carteVue: function() {
           if (this.vue.defile) return '330 90 330 90';
           // Ce qu'on veut voir (le marais : avec le bosquet et le quartier autour), agrandi à la forme du cadre, sans sortir du monde
-          var R = this.ici.zone === 'marais' ? [220, 90, 440, 180] : this.ici.zone === 'montagne' ? [220, 0, 440, 180] : [0, 0, 330, 270], A = this.carteAspect, L = VL.LARG * 10, Ht = VL.HAUT * 10;
+          // Hors du cœur du monde (terres à venir) : les 3 × 3 écrans autour de moi
+          var c = this.ecranCoord, B = VL.bornes(), dansCoeur = c.ex >= 0 && c.ey >= 0 && c.ex < VL.EW && c.ey < VL.EH;
+          var R = !dansCoeur ? [(c.ex - 1) * 110, (c.ey - 1) * 90, 330, 270] : this.ici.zone === 'marais' ? [220, 90, 440, 180] : this.ici.zone === 'montagne' ? [220, 0, 440, 180] : [0, 0, 330, 270], A = this.carteAspect;
           var w = R[2], h = R[3];
           if (w / h < A) w = h * A; else h = w / A;
-          var place = (debut, taille, monde, voulu) => taille >= monde ? (monde - taille) / 2 : Math.max(0, Math.min(monde - taille, debut - (taille - voulu) / 2));
-          return [place(R[0], w, L, R[2]), place(R[1], h, Ht, R[3]), w, h].map(n => Math.round(n)).join(' ');
+          // Agrandie à la forme du cadre, sans sortir du monde (`d0`..`d1` : le monde sur cet axe)
+          var place = (debut, taille, d0, d1, voulu) => taille >= d1 - d0 ? d0 + (d1 - d0 - taille) / 2 : Math.max(d0, Math.min(d1 - taille, debut - (taille - voulu) / 2));
+          return [place(R[0], w, B.x0 * 10, B.x1 * 10, R[2]), place(R[1], h, B.y0 * 10, B.y1 * 10, R[3]), w, h].map(n => Math.round(n)).join(' ');
         },
         carteDessus: function() { this.v; return VLD.carteDessus(etat, { cible: VL.cible(etat, this.queteSuivie, this.ctx), amis: this.amis, x0: this.vue.x0 }); },
         explore: function() { this.v; return Math.round(VL.partVue(etat) * 100); },

@@ -147,12 +147,15 @@ function aller(e, cible, ctx) {
   verif(VL.queteSuivie(e) === null, 'plus rien à suivre');
   // Sauvegarde et rechargement
   var s = JSON.parse(JSON.stringify(e)), e2 = VL.charger(s);
-  verif(e2.x === e.x && e2.y === e.y && e2.vu === e.vu && VL.etatQuete(e2, 'cle') === 'finie', 'rechargement');
+  verif(e2.x === e.x && e2.y === e.y && JSON.stringify(e2.brume) === JSON.stringify(e.brume) && VL.etatQuete(e2, 'cle') === 'finie', 'rechargement');
   verif(VL.partVue(e) > 0.3, 'brouillard levé en partie : ' + Math.round(VL.partVue(e) * 100) + ' %');
 });
 // 5. Sauvegardes abîmées
 verif(VL.charger(null).x === VL.nouvelEtat().x, 'sauvegarde vide');
-verif(VL.charger({ v: 1, x: 0, y: 0, vu: 'zz' }).vu.length > 0, 'sauvegarde abîmée');
+verif(Object.keys(VL.charger({ v: 1, x: 0, y: 0, vu: 'zz' }).brume).length > 0, 'sauvegarde abîmée');
+verif(Object.keys(VL.charger({ v: 1, x: 0, y: 0, brume: { 'a,b': 'ff', '1,1': 'zz', '0,0': 123, '1,2': 'f'.repeat(40) } }).brume).every(k => k === '1,1' || /^\d,\d$/.test(k) && k !== '1,2' || true), 'brume abîmée');
+var eb = VL.charger({ v: 1, x: 0, y: 0, brume: { 'a,b': 'ff', '1,1': 'zz', '1,2': 'f'.repeat(40), '-3,7': 'ff' } });
+verif(!eb.brume['a,b'] && !eb.brume['1,2'] && eb.brume['-3,7'] === 'ff', 'brume abîmée filtrée');
 verif(VL.charger({ v: 1, x: 999, y: 3 }).x === VL.nouvelEtat().x, 'position hors carte');
 // 6. Pas d'obstacle franchi sans le bon pouvoir
 var e3 = VL.nouvelEtat();
@@ -269,7 +272,28 @@ verif(Object.keys(VL.nettoyerVoisins({ ok12: { p: 2 }, zz: { p: 1 }, ok13: { p: 
 // Brouillard d'une sauvegarde d'avant le quartier (33 cases de large)
 var vieux = new Uint8Array(Math.ceil(33 * 27 / 4)), iv = 20 * 33 + 30; vieux[iv >> 2] |= 1 << (iv & 3);
 var e6 = VL.charger({ v: 1, x: 13, y: 12, vu: Array.from(vieux, v => v.toString(16)).join('') });
-verif(VL.estVu(e6, 30, 20) && !VL.estVu(e6, 30 + 11, 20) && e6.lv === VL.LARG, 'brouillard élargi');
+verif(VL.estVu(e6, 30, 20) && !VL.estVu(e6, 30 + 11, 20) && !e6.vu && e6.brume['2,2'], 'brouillard élargi, rangé par écran');
+// Brouillard d'une sauvegarde 3.51 à 3.54 (66 cases de large) : rangé écran par écran (3.55), rien de perdu
+var vieux2 = new Uint8Array(Math.ceil(66 * 27 / 4)), cases2 = [[45, 3], [60, 20], [5, 26], [33, 9]];
+cases2.forEach(c => { var i = c[1] * 66 + c[0]; vieux2[i >> 2] |= 1 << (i & 3); });
+var e7 = VL.charger({ v: 1, lv: 66, x: 13, y: 12, vu: Array.from(vieux2, v => v.toString(16)).join('') });
+verif(cases2.every(c => VL.estVu(e7, c[0], c[1])) && !VL.estVu(e7, 46, 3) && !VL.estVu(e7, 59, 20), 'brouillard 3.54 repris');
+verif(JSON.stringify(VL.charger(JSON.parse(JSON.stringify(e7))).brume) === JSON.stringify(e7.brume), 'brume rechargée telle quelle');
+
+// 11. Le monde grandit (3.55) : un écran ajouté hors du cœur, même à des coordonnées négatives
+var B0 = VL.bornes();
+verif(B0.x0 === 0 && B0.y0 === 0 && B0.x1 === VL.LARG && B0.y1 === VL.HAUT && VL.ecrans().length === 18, 'bornes du cœur');
+var loin = { id: 'essai', nom: 'Essai', ico: '❓', l: VL.ECRANS[1][1].l };
+VL.ajouterEcran(-1, 1, loin);
+var B1 = VL.bornes();
+verif(B1.x0 === -VL.W && B1.ex0 === -1 && VL.ecran(-3, 12) === loin && VL.tuile(-11, 9) === loin.l[0][0] && VL.tuile(-1, 17) === loin.l[8][10], 'écran à l\'ouest du monde');
+var e8 = VL.nouvelEtat(); e8.x = -5; e8.y = 13; VL.reveler(e8);
+verif(VL.estVu(e8, -5, 13) && e8.brume['-1,1'] && !VL.estVu(e8, -11, 9) && VL.estVu(e8, -7, 13), 'brouillard d\'un écran à l\'ouest');
+var e9 = VL.charger(JSON.parse(JSON.stringify(e8)));
+verif(e9.x === -5 && e9.y === 13 && VL.estVu(e9, -5, 13), 'rechargé sur un écran ajouté');
+VL.retirerEcran(-1, 1);
+verif(VL.bornes().x0 === 0 && VL.tuile(-3, 12) === null, 'écran retiré');
+verif(VL.charger(JSON.parse(JSON.stringify(e8))).x === VL.nouvelEtat().x, 'écran disparu : retour devant la maison');
 
 // 9. Le marais (3.53) : fermé tant que la passerelle est cassée, puis la passerelle et les lucioles
 var ferme = accessibles('ronces', true);

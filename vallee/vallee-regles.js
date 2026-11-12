@@ -7,8 +7,8 @@
 
 var VL = (function () {
   var W = 11, H = 9;               // un écran = 11 × 9 cases, comme une pièce du Donjon
-  var EW = 6, EH = 3;              // le monde : 3 × 3 écrans (le village au centre), plus le quartier des amis à l'est, 3 écrans de long (3.51)
-  var LARG = W * EW, HAUT = H * EH;
+  var EW = 6, EH = 3;              // le cœur du monde, dessiné à la main : 3 × 3 écrans (le village au centre), le quartier, le marais, la montagne
+  var LARG = W * EW, HAUT = H * EH; // taille du cœur (le monde entier peut être plus grand : voir `bornes`)
   var GRAINE = 20261111;           // graine fixe : mêmes petites variations (arbres, fleurs) pour tout le monde
   var VISION = 3.6;                // rayon de ce que l'on découvre autour de soi (en cases)
 
@@ -380,14 +380,34 @@ var VL = (function () {
     return ((h ^ (h >>> 16)) >>> 0) / 4294967296;
   }
 
+  // ---------- Le monde, écran par écran (3.55) ----------
+  // Chaque écran est rangé à ses coordonnées « ex,ey », qui peuvent sortir du cœur (même négatives) :
+  // c'est là que viendront s'accrocher les terres générées. Le cœur (`ECRANS`) y est recopié au chargement.
+  var MONDE = {}, BORNES = null;
+  function cleE(ex, ey) { return ex + ',' + ey; }
+  function mod(a, n) { return ((a % n) + n) % n; }
+  function ajouterEcran(ex, ey, E) { MONDE[cleE(ex, ey)] = E; BORNES = null; return E; }
+  function retirerEcran(ex, ey) { delete MONDE[cleE(ex, ey)]; BORNES = null; }
+  ECRANS.forEach((ligne, ey) => ligne.forEach((E, ex) => { if (E) ajouterEcran(ex, ey, E); }));
+  function ecranA(ex, ey) { return MONDE[cleE(ex, ey)] || null; }
+  // Tous les écrans : [{ ex, ey, E }]
+  function ecrans() { return Object.keys(MONDE).map(k => { var c = k.split(',').map(Number); return { ex: c[0], ey: c[1], E: MONDE[k] }; }); }
+  // Le rectangle qui contient tout le monde, en écrans (ex0..ex1 compris) et en cases (x0..x1 exclu)
+  function bornes() {
+    if (BORNES) return BORNES;
+    var b = { ex0: Infinity, ey0: Infinity, ex1: -Infinity, ey1: -Infinity };
+    ecrans().forEach(c => { b.ex0 = Math.min(b.ex0, c.ex); b.ey0 = Math.min(b.ey0, c.ey); b.ex1 = Math.max(b.ex1, c.ex); b.ey1 = Math.max(b.ey1, c.ey); });
+    b.x0 = b.ex0 * W; b.y0 = b.ey0 * H; b.x1 = (b.ex1 + 1) * W; b.y1 = (b.ey1 + 1) * H;
+    return BORNES = b;
+  }
+
   // ---------- Lecture de la carte ----------
   function tuile(x, y) {
-    if (x < 0 || y < 0 || x >= LARG || y >= HAUT) return null;
-    var E = ECRANS[Math.floor(y / H)][Math.floor(x / W)];
-    return E ? E.l[y % H][x % W] : null;   // pas d'écran à cet endroit (hors du monde)
+    var E = MONDE[cleE(Math.floor(x / W), Math.floor(y / H))];
+    return E ? E.l[mod(y, H)][mod(x, W)] : null;   // pas d'écran à cet endroit (hors du monde)
   }
   function ecranDe(x, y) { return { ex: Math.floor(x / W), ey: Math.floor(y / H) }; }
-  function ecran(x, y) { var c = ecranDe(x, y); return ECRANS[c.ey] && ECRANS[c.ey][c.ex] || null; }
+  function ecran(x, y) { var c = ecranDe(x, y); return ecranA(c.ex, c.ey); }
   function habitantEn(x, y) {
     for (var id in HABITANTS) { var h = HABITANTS[id]; if (h.x === x && h.y === y && !h.etal) return id; }
     return null;
@@ -411,7 +431,7 @@ var VL = (function () {
   // ---------- État d'un joueur ----------
   function nouvelEtat() {
     var p = g(1, 1, 2, 3);
-    var e = { v: 1, lv: LARG, x: p.x, y: p.y, dir: 'b', vu: '', ouverts: {}, pris: {}, quetes: {}, coffre: false, coffreM: false, cle: false, pas: 0,
+    var e = { v: 1, x: p.x, y: p.y, dir: 'b', brume: {}, ouverts: {}, pris: {}, quetes: {}, coffre: false, coffreM: false, cle: false, pas: 0,
               sac: { bois: 0, pierre: 0, plante: 0, cristal: 0 }, recolte: { j: '', pris: {} }, outils: {}, besace: {} };
     reveler(e);
     return e;
@@ -422,11 +442,13 @@ var VL = (function () {
     if (!s || typeof s !== 'object' || s.v !== 1) return e;
     ['ouverts', 'pris'].forEach(k => { if (s[k] && typeof s[k] === 'object') e[k] = Object.assign({}, s[k]); });
     if (s.quetes && typeof s.quetes === 'object') Object.keys(QUETES).forEach(id => { if (s.quetes[id] && typeof s.quetes[id] === 'object') e.quetes[id] = Object.assign({}, s.quetes[id]); });
-    var au = ecran(s.x | 0, s.y | 0), audela = au && au.zone && (s.x | 0) % W > 0;   // au-delà de la passerelle ou du col
+    var au = ecran(s.x | 0, s.y | 0), audela = au && au.zone && mod(s.x | 0, W) > 0;   // au-delà de la passerelle ou du col
     if (libre(e, s.x | 0, s.y | 0) && (!audela || zoneOuverte(e, au))) { e.x = s.x | 0; e.y = s.y | 0; }
     e.dir = ['h', 'b', 'g', 'd'].indexOf(s.dir) >= 0 ? s.dir : 'b';
-    e.vu = typeof s.vu === 'string' && /^[0-9a-f]*$/.test(s.vu) ? s.vu : '';
-    if (e.vu && (s.lv | 0 || 33) !== LARG) e.vu = elargir(e.vu, s.lv | 0 || 33);   // sauvegarde d'avant le quartier (3 écrans de large)
+    if (s.brume && typeof s.brume === 'object') Object.keys(s.brume).forEach(k => {
+      if (/^-?\d+,-?\d+$/.test(k) && typeof s.brume[k] === 'string' && /^[0-9a-f]{1,25}$/.test(s.brume[k])) e.brume[k] = s.brume[k];
+    });
+    else if (typeof s.vu === 'string' && /^[0-9a-f]*$/.test(s.vu)) depuisVu(e, s.vu, s.lv | 0 || 33);   // sauvegarde d'avant 3.55 (une seule bande)
     e.coffre = !!s.coffre; e.coffreM = !!s.coffreM; e.cle = !!s.cle; e.pas = s.pas | 0;
     if (s.sac && typeof s.sac === 'object') ORDRE_RES.forEach(r => { e.sac[r] = Math.max(0, Math.min(SAC_MAX, s.sac[r] | 0)); });
     if (s.recolte && typeof s.recolte === 'object' && typeof s.recolte.j === 'string') {
@@ -442,37 +464,61 @@ var VL = (function () {
     return e;
   }
 
-  // ---------- Brouillard : une case par bit, en hexadécimal (33 × 27 cases = 223 signes) ----------
-  function bits(e) {
-    var n = LARG * HAUT, b = new Uint8Array(Math.ceil(n / 4)), s = e.vu || '';
-    for (var i = 0; i < b.length && i < s.length; i++) b[i] = parseInt(s[i], 16) || 0;
-    return b;
+  // ---------- Brouillard : un paquet de bits par écran (3.55), en hexadécimal ----------
+  // e.brume = { 'ex,ey': 25 signes } (11 × 9 = 99 cases). Un écran jamais vu n'a pas d'entrée : le monde peut grandir sans fin.
+  var NB = Math.ceil(W * H / 4);
+  // Lecture rapide : `b` garde les écrans déjà décodés (on le passe d'un appel à l'autre pendant un dessin)
+  function bits(e) { return { e: e, m: {} }; }
+  function paquet(b, k, creer) {
+    if (b.m[k]) return b.m[k];
+    var s = b.e.brume[k];
+    if (!s && !creer) return null;
+    var t = new Uint8Array(NB);
+    for (var i = 0; s && i < NB && i < s.length; i++) t[i] = parseInt(s[i], 16) || 0;
+    return b.m[k] = t;
   }
-  // Le brouillard d'une carte plus étroite (ancienne sauvegarde) recopié dans la carte actuelle
-  function elargir(vu, largAvant) {
-    var b = new Uint8Array(Math.ceil(LARG * HAUT / 4));
-    for (var y = 0; y < HAUT; y++) for (var x = 0; x < largAvant && x < LARG; x++) {
-      var i = y * largAvant + x, v = parseInt(vu[i >> 2] || '0', 16) || 0;
-      if (v & (1 << (i & 3))) { var j = y * LARG + x; b[j >> 2] |= 1 << (j & 3); }
-    }
-    return Array.from(b, v => v.toString(16)).join('');
-  }
+  function ecrirePaquet(b, k) { b.e.brume[k] = Array.from(b.m[k], v => v.toString(16)).join(''); }
   function estVu(e, x, y, b) {
     b = b || bits(e);
-    var i = y * LARG + x;
-    return !!(b[i >> 2] & (1 << (i & 3)));
+    var t = paquet(b, cleE(Math.floor(x / W), Math.floor(y / H)));
+    if (!t) return false;
+    var i = mod(y, H) * W + mod(x, W);
+    return !!(t[i >> 2] & (1 << (i & 3)));
+  }
+  // Dévoile une case (seulement si elle fait partie du monde) ; vrai si elle était encore cachée
+  function voir(b, x, y, aEcrire) {
+    if (tuile(x, y) === null) return false;
+    var k = cleE(Math.floor(x / W), Math.floor(y / H)), t = paquet(b, k, true), i = mod(y, H) * W + mod(x, W);
+    if (t[i >> 2] & (1 << (i & 3))) return false;
+    t[i >> 2] |= 1 << (i & 3); aEcrire[k] = 1;
+    return true;
+  }
+  // L'ancien brouillard (une bande de `larg` cases sur toute la carte, avant 3.55) rangé écran par écran
+  function depuisVu(e, vu, larg) {
+    var b = bits(e), aEcrire = {}, n = vu.length * 4;
+    for (var i = 0; i < n; i++) {
+      if (!((parseInt(vu[i >> 2], 16) || 0) & (1 << (i & 3)))) continue;
+      voir(b, i % larg, Math.floor(i / larg), aEcrire);
+    }
+    Object.keys(aEcrire).forEach(k => ecrirePaquet(b, k));
   }
   function reveler(e) {
-    var b = bits(e), r = Math.ceil(VISION), change = false;
+    var b = bits(e), r = Math.ceil(VISION), aEcrire = {};
     for (var dy = -r; dy <= r; dy++) for (var dx = -r; dx <= r; dx++) {
-      var x = e.x + dx, y = e.y + dy;
-      if (x < 0 || y < 0 || x >= LARG || y >= HAUT || Math.hypot(dx, dy) > VISION) continue;
-      var i = y * LARG + x;
-      if (!(b[i >> 2] & (1 << (i & 3)))) { b[i >> 2] |= 1 << (i & 3); change = true; }
+      if (Math.hypot(dx, dy) > VISION) continue;
+      voir(b, e.x + dx, e.y + dy, aEcrire);
     }
-    if (change || !e.vu) e.vu = Array.from(b, v => v.toString(16)).join('');
-    return change;
+    Object.keys(aEcrire).forEach(k => ecrirePaquet(b, k));
+    return Object.keys(aEcrire).length > 0;
   }
+  // Dévoile tout un rectangle de cases (le belvédère)
+  function devoiler(e, x0, y0, x1, y1) {
+    var b = bits(e), aEcrire = {}, n = 0;
+    for (var y = y0; y < y1; y++) for (var x = x0; x < x1; x++) if (voir(b, x, y, aEcrire)) n++;
+    Object.keys(aEcrire).forEach(k => ecrirePaquet(b, k));
+    return n;
+  }
+  // La part explorée : le cœur du monde (les terres générées ne comptent pas, elles changent)
   function partVue(e) {
     var b = bits(e), n = 0, t = 0;
     for (var y = 0; y < HAUT; y++) for (var x = 0; x < LARG; x++) { if (tuile(x, y) === null) continue; t++; if (estVu(e, x, y, b)) n++; }
@@ -756,13 +802,7 @@ var VL = (function () {
   // Le belvédère du sommet : avec les jumelles de Gaspard, on voit la montagne et tout le nord de la Vallée
   function belvedere(e) {
     if (etatQuete(e, 'jumelles') !== 'finie') return { texte: 'Quelle vue… mais tout est si loin. Avec des jumelles, on verrait toute la Vallée. Gaspard en avait, je crois.' };
-    var b = bits(e), n = 0;
-    for (var y = 0; y < 2 * H; y++) for (var x = 2 * W; x < LARG; x++) {
-      if (!tuile(x, y)) continue;
-      var i = y * LARG + x;
-      if (!(b[i >> 2] & (1 << (i & 3)))) { b[i >> 2] |= 1 << (i & 3); n++; }
-    }
-    e.vu = Array.from(b, v => v.toString(16)).join('');
+    var n = devoiler(e, 2 * W, 0, LARG, 2 * H);
     return { panorama: n, texte: n ? 'Tu règles les jumelles de Gaspard… La crypte, le quartier, les alpages, le col : tout le nord de la Vallée se dessine sur ta carte !'
                                    : 'Tu règles les jumelles : le village fume au loin, et les amis bavardent dans le quartier.' };
   }
@@ -924,14 +964,15 @@ var VL = (function () {
     LIEUX_FAB: LIEUX_FAB, RECETTES: RECETTES,
     jourDe: jourDe, pointEn: pointEn, pointOuvert: pointOuvert, pointVisible: pointVisible, prisAujourdhui: prisAujourdhui, gain: gain, recolter: recolter, assezPour: assezPour, besaceTotal: besaceTotal,
     ouvertFab: ouvertFab, recette: recette, etatRecette: etatRecette, fabriquer: fabriquer, prendreFioles: prendreFioles,
-    NB_PARCELLES: NB_PARCELLES, PARCELLES: PARCELLES, placerVoisins: placerVoisins, parcelleDe: parcelleDe, defile: defile, nettoyerVoisins: nettoyerVoisins, parcelles: parcelles, elargir: elargir,
+    NB_PARCELLES: NB_PARCELLES, PARCELLES: PARCELLES, placerVoisins: placerVoisins, parcelleDe: parcelleDe, defile: defile, nettoyerVoisins: nettoyerVoisins, parcelles: parcelles,
     W: W, H: H, EW: EW, EH: EH, LARG: LARG, HAUT: HAUT, GRAINE: GRAINE, VISION: VISION,
     ECRANS: ECRANS, BATIMENTS: BATIMENTS, ACTIONS: ACTIONS, HABITANTS: HABITANTS, CHAMPIGNONS: CHAMPIGNONS, LUCIOLES: LUCIOLES, JUMELLES: JUMELLES, QUETES: QUETES, ORDRE_QUETES: ORDRE_QUETES,
     colOuvert: colOuvert, zoneOuverte: zoneOuverte, jumellesVisibles: jumellesVisibles, gagnerDefi: gagnerDefi, belvedere: belvedere,
     prenable: prenable, lucioleVisible: lucioleVisible, passerelleOk: passerelleOk,
     OBSTACLES: OBSTACLES, POUVOIRS: POUVOIRS, POUVOIR_ESPECE: POUVOIR_ESPECE, VENTE: VENTE,
+    ajouterEcran: ajouterEcran, retirerEcran: retirerEcran, ecranA: ecranA, ecrans: ecrans, bornes: bornes,
     hash: hash, tuile: tuile, ecran: ecran, ecranDe: ecranDe, habitantEn: habitantEn, libre: libre, ouvert: ouvert,
-    nouvelEtat: nouvelEtat, charger: charger, bits: bits, estVu: estVu, reveler: reveler, partVue: partVue,
+    nouvelEtat: nouvelEtat, charger: charger, bits: bits, estVu: estVu, reveler: reveler, devoiler: devoiler, partVue: partVue,
     etatQuete: etatQuete, champignonVisible: champignonVisible, verifier: verifier, accepter: accepter, rendre: rendre, marque: marque,
     queteSuivie: queteSuivie, consigne: consigne, cible: cible, pas: pas, parler: parler, tableau: tableau, agir: agir, fouiller: fouiller
   };

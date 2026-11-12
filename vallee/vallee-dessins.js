@@ -753,7 +753,7 @@ var VLD = (function () {
   function ecranSvg(e, ex, ey, ctx) {
     ctx = ctx || {};
     var x0 = ex * VL.W, y0 = ey * VL.H, s = [], objets = [], x, y, t, X, Y, h;
-    var E = VL.ECRANS[ey][ex], village = E.id === 'village' || E.id === 'quartier';   // pavés au village et dans le quartier
+    var E = VL.ecranA(ex, ey), village = E.id === 'village' || E.id === 'quartier';   // pavés au village et dans le quartier
     var marais = E.zone === 'marais';   // le marais (3.53) : herbe olive, eau trouble, brume et lucioles
     var montagne = E.zone === 'montagne', sol = E.sol;   // la montagne (3.54) : sol de roche, alpage ou neige ; nuages et flocons
     var tu = (xx, yy) => VL.tuile(xx, yy);
@@ -991,23 +991,25 @@ var VLD = (function () {
   // ctx = { cible: { x, y }, marques: { habitant: m }, tableauMarque, ecranVu: { 'ex,ey': 1 } }
   function carteSvg(e, ctx) {
     ctx = ctx || {};
-    var U = 10, s = [], b = VL.bits(e), x, y;
+    var U = 10, s = [], b = VL.bits(e), x, y, B = VL.bornes(), W = VL.W, H = VL.H;
+    // On ne parcourt que les écrans découverts et leurs voisins (le bord flou du brouillard déborde un peu) : le monde peut être très grand
+    var brume = e.brume || {}, proches = VL.ecrans().filter(c => { for (var dy = -1; dy <= 1; dy++) for (var dx = -1; dx <= 1; dx++) if (brume[(c.ex + dx) + ',' + (c.ey + dy)]) return true; return false; });
     s.push('<defs><pattern id="vl-hachure" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(35)"><rect width="8" height="8" fill="#ead8b0"/><path d="M0 0v8" stroke="#dcc597" stroke-width="2"/></pattern>' +
            '<filter id="vl-flou" x="-5%" y="-5%" width="110%" height="110%"><feGaussianBlur stdDeviation="2.2"/></filter></defs>');
-    s.push('<rect width="' + (VL.LARG * U) + '" height="' + (VL.HAUT * U) + '" fill="url(#vl-hachure)"/>');
+    s.push('<rect x="' + (B.x0 * U) + '" y="' + (B.y0 * U) + '" width="' + ((B.x1 - B.x0) * U) + '" height="' + ((B.y1 - B.y0) * U) + '" fill="url(#vl-hachure)"/>');
     // Ce qui est découvert : un masque flou donne un bord de brouillard doux
     var vus = [];
-    for (y = 0; y < VL.HAUT; y++) for (x = 0; x < VL.LARG; x++) if (VL.estVu(e, x, y, b)) vus.push('<rect x="' + (x * U - 1) + '" y="' + (y * U - 1) + '" width="' + (U + 2) + '" height="' + (U + 2) + '" fill="#fff"/>');
-    s.push('<mask id="vl-masque"><rect width="100%" height="100%" fill="#000"/><g filter="url(#vl-flou)">' + vus.join('') + '</g></mask>');
+    proches.forEach(c => { if (brume[c.ex + ',' + c.ey]) for (y = c.ey * H; y < (c.ey + 1) * H; y++) for (x = c.ex * W; x < (c.ex + 1) * W; x++) if (VL.estVu(e, x, y, b)) vus.push('<rect x="' + (x * U - 1) + '" y="' + (y * U - 1) + '" width="' + (U + 2) + '" height="' + (U + 2) + '" fill="#fff"/>'); });
+    s.push('<mask id="vl-masque" maskUnits="userSpaceOnUse" x="' + (B.x0 * U - 20) + '" y="' + (B.y0 * U - 20) + '" width="' + ((B.x1 - B.x0) * U + 40) + '" height="' + ((B.y1 - B.y0) * U + 40) + '"><rect x="' + (B.x0 * U - 20) + '" y="' + (B.y0 * U - 20) + '" width="' + ((B.x1 - B.x0) * U + 40) + '" height="' + ((B.y1 - B.y0) * U + 40) + '" fill="#000"/><g filter="url(#vl-flou)">' + vus.join('') + '</g></mask>');
     var terre = [];
-    for (y = 0; y < VL.HAUT; y++) for (x = 0; x < VL.LARG; x++) {
+    proches.forEach(c => { for (y = c.ey * H; y < (c.ey + 1) * H; y++) for (x = c.ex * W; x < (c.ex + 1) * W; x++) {
       var t = VL.tuile(x, y);
       if (t === null) continue;   // hors du monde (au nord et au sud du quartier)
       if (VL.OBSTACLES[t] && VL.ouvert(e, x, y)) t = '.';
       var EC = VL.ecran(x, y), Z = EC.zone === 'marais' ? COUL_MARAIS[t] : EC.sol ? COUL_SOL[EC.sol][t] : null;
       terre.push('<rect x="' + (x * U) + '" y="' + (y * U) + '" width="' + (U + 0.4) + '" height="' + (U + 0.4) + '" fill="' + (Z || COUL[t] || '#a9d18e') + '"/>');
       if (t === 'T' || t === 'S') terre.push('<circle cx="' + (x * U + 5) + '" cy="' + (y * U + 5) + '" r="4" fill="' + (t === 'S' ? '#3d7344' : '#4d8a3e') + '"/>');
-    }
+    } });
     VL.BATIMENTS.forEach(bt => terre.push('<rect x="' + (bt.x * U + 1) + '" y="' + (bt.y * U + 1) + '" width="' + (bt.w * U - 2) + '" height="' + (bt.h * U - 2) + '" rx="2" fill="' +
       (bt.type === 'parcelle' ? ((ctx.parcelles && ctx.parcelles[bt.p] && ctx.parcelles[bt.p].couleur) || '#b7a184') : ({ maison: '#d9534f', hutte: '#d4a24c', forge: '#495057', crypte: '#868e96', cabane: '#6b8e3a', chene: '#3a8435', rainette: '#b99c4a', saule: '#5f8f35', chalet: '#8a5a32', refuge: '#6c675f' })[bt.type]) + '" stroke="rgba(0,0,0,.35)" stroke-width="1"/>'));
     s.push('<g mask="url(#vl-masque)">' + terre.join('') + '</g>');
@@ -1035,9 +1037,9 @@ var VLD = (function () {
     var tq = VL.ACTIONS && Object.keys(VL.ACTIONS).find(k => VL.ACTIONS[k].id === 'tableau');
     if (tq && ctx.tableauMarque) { var p = tq.split(',').map(Number); if (VL.estVu(e, p[0], p[1], b)) s.push('<text x="' + (p[0] * U + 5) + '" y="' + (p[1] * U - 1) + '" text-anchor="middle" font-size="10" font-weight="900" fill="' + (ctx.tableauMarque === '?' ? '#2f9e44' : '#e67700') + '" stroke="#fff" stroke-width="2.5" paint-order="stroke">' + ctx.tableauMarque + '</text>'); }
     // Grille des écrans
-    VL.ECRANS.forEach((l, ey) => l.forEach((E, ex) => { if (E) s.push('<rect x="' + (ex * VL.W * U) + '" y="' + (ey * VL.H * U) + '" width="' + (VL.W * U) + '" height="' + (VL.H * U) + '" fill="none" stroke="#8a6a46" stroke-width="1" stroke-dasharray="3 4" opacity=".45"/>'); }));
+    VL.ecrans().forEach(c => { var ex = c.ex, ey = c.ey; s.push('<rect x="' + (ex * VL.W * U) + '" y="' + (ey * VL.H * U) + '" width="' + (VL.W * U) + '" height="' + (VL.H * U) + '" fill="none" stroke="#8a6a46" stroke-width="1" stroke-dasharray="3 4" opacity=".45"/>'); });
     // Cadre de vieille carte
-    s.push('<rect x="1" y="1" width="' + (VL.LARG * U - 2) + '" height="' + (VL.HAUT * U - 2) + '" rx="6" fill="none" stroke="#8a6a46" stroke-width="2"/>');
+    s.push('<rect x="' + (B.x0 * U + 1) + '" y="' + (B.y0 * U + 1) + '" width="' + ((B.x1 - B.x0) * U - 2) + '" height="' + ((B.y1 - B.y0) * U - 2) + '" rx="6" fill="none" stroke="#8a6a46" stroke-width="2"/>');
     return s.join('');
   }
   // Ce qui bouge à chaque pas (dessiné par-dessus, pour ne pas tout redessiner) : l'écran où je suis, la quête suivie, moi
