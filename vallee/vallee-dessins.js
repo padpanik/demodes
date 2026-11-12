@@ -212,7 +212,8 @@ var VLD = (function () {
   }
 
   // ---------- Petits morceaux de décor (3.49 : contours sombres, ombrages et lueurs, comme au Donjon) ----------
-  var OL = '#1d2b16', OLB = '#2b1a0e';   // contours : végétation, bois et pierre
+  var OL = '#1d2b16', OLB = '#2b1a0e';
+  function pictoG(nom, cx, cy, t) { return typeof VLP !== 'undefined' ? VLP.g(nom, cx, cy, t) : ''; }   // icônes dessinées (vallee-pictos.js, 3.62)   // contours : végétation, bois et pierre
   // Une forme « en boules » avec un contour commun : on trace d'abord les cercles épaissis dans la couleur du contour
   function boules(l, couleur, contour, ep) {
     return l.map(c => '<circle cx="' + f(c[0]) + '" cy="' + f(c[1]) + '" r="' + f(c[2] + (ep || 1.6)) + '" fill="' + contour + '"/>').join('') +
@@ -636,7 +637,7 @@ var VLD = (function () {
       '<path class="vl-fanion" d="M' + cx + ' ' + (haut - 11) + 'l10 3-10 3z" fill="' + c2 + '" stroke="' + OLB + '" stroke-width=".9"/>' +
       // l'écusson du lieu au-dessus de la porte
       '<circle cx="' + cx + '" cy="' + (bas - 24) + '" r="6.4" fill="#fff8e6" stroke="' + OLB + '" stroke-width="1.2"/>' +
-      '<text x="' + cx + '" y="' + (bas - 20.6) + '" text-anchor="middle" font-size="8.5">' + ((L && L.ico) || '🧭') + '</text>';
+      pictoG((L && L.pic) || 'boussole', cx, bas - 24, 9.5);
   }
   function coffre(X, Y, ouvert) {
     return (ouvert ? '' : '<circle cx="' + (X + 16) + '" cy="' + (Y + 18) + '" r="15" fill="url(#vl-lueur)" class="vl-halo"/>') +
@@ -1194,10 +1195,12 @@ var VLD = (function () {
       (bt.type === 'parcelle' ? ((ctx.parcelles && ctx.parcelles[bt.p] && ctx.parcelles[bt.p].couleur) || '#b7a184') : ({ maison: '#d9534f', hutte: '#d4a24c', forge: '#495057', crypte: '#868e96', cabane: '#6b8e3a', chene: '#3a8435', rainette: '#b99c4a', saule: '#5f8f35', chalet: '#8a5a32', refuge: '#6c675f', chaumiere: '#c9a050' })[bt.type]) + '" stroke="rgba(0,0,0,.35)" stroke-width="1"/>'));
     s.push('<g mask="url(#vl-masque)">' + terre.join('') + '</g>');
     // Repères des lieux découverts
-    var ICO = { maison: '🏠', hutte: '🌿', forge: '⚒️', crypte: '🗝️', cabane: '🛖', chene: '🌳', rainette: '🐸', saule: '🌳', chalet: '🏡', refuge: '🏔️', chaumiere: '🏘️' };
+    // (3.62 : des icônes dessinées sur un petit médaillon de parchemin, plus d'émojis)
+    var ICO = { maison: 'maison', hutte: 'hutte', forge: 'forge', crypte: 'crypte', cabane: 'cabane', chene: 'arbre', rainette: 'nenuphar', saule: 'saule', chalet: 'chalet', refuge: 'montagne', chaumiere: 'chaumiere' };
+    var medaille = (nom, cx, cy, fond) => '<circle cx="' + f(cx) + '" cy="' + f(cy) + '" r="' + f(7.6 * K) + '" fill="' + (fond || '#fff8e7') + '" stroke="#8a6a46" stroke-width="' + f(1.1 * K) + '" opacity=".95"/>' + pictoG(nom, cx, cy, 12.5 * K);
     VL.BATIMENTS.forEach(bt => {
       if (!ICO[bt.type] || !VL.estVu(e, bt.x + (bt.w >> 1), bt.y + bt.h - 1, b)) return;
-      s.push('<text x="' + ((bt.x + bt.w / 2) * U) + '" y="' + ((bt.y + bt.h / 2) * U + 5) + '" text-anchor="middle" font-size="' + f(13 * K) + '">' + ICO[bt.type] + '</text>');
+      s.push(medaille(ICO[bt.type], (bt.x + bt.w / 2) * U, (bt.y + bt.h / 2) * U));
     });
     // Points de récolte encore là aujourd'hui (les cristaux se voient même sous le brouillard avec le Flair)
     var COUL_RES = { bois: '#8d5a2b', pierre: '#868e96', plante: '#40c057', cristal: '#9775fa' };
@@ -1221,16 +1224,16 @@ var VLD = (function () {
     // Cadre de vieille carte
     REG.forEach(R => s.push('<rect x="' + (R.x0 * U + 1) + '" y="' + (R.y0 * U + 1) + '" width="' + ((R.x1 - R.x0) * U - 2) + '" height="' + ((R.y1 - R.y0) * U - 2) + '" rx="6" fill="none" stroke="#8a6a46" stroke-width="2"/>'));
     // Les arches de la Porte des brumes et le feu du camp (3.57)
-    var IT = VL.infoTerres(), rep = [[VL.PORTE.x, VL.PORTE.y, '🌀'], [IT.camp.x, IT.camp.y, '🌀'], [IT.camp.x + 3, IT.camp.y - 2, '⛺']];
-    // Les feux (3.58) : allumés 🔥, éteints en cendres ; la tour de guet se voit de loin, même sous la brume
-    IT.feux.forEach(F => { if (F.id !== 'camp') rep.push([F.x, F.y, VL.feuAllume(e, F) ? '🔥' : '', !VL.feuAllume(e, F)]); });
-    rep.push([IT.tour.x, IT.tour.y, '🗼', false, true]);
-    IT.failles.forEach(F => rep.push([F.x, F.y, VL.failleFermee(e, F) ? '🪨' : '🕳️', false, false]));
-    (IT.expeditions || []).forEach(X => rep.push([X.x, X.y, X.ico, false, false]));
+    var IT = VL.infoTerres(), rep = [[VL.PORTE.x, VL.PORTE.y, 'porte'], [IT.camp.x, IT.camp.y, 'porte'], [IT.camp.x + 3, IT.camp.y - 2, 'tente']];
+    // Les feux (3.58) : allumés ou en cendres ; la tour de guet se voit de loin, même sous la brume
+    IT.feux.forEach(F => { if (F.id !== 'camp') rep.push([F.x, F.y, VL.feuAllume(e, F) ? 'feu' : 'cendres']); });
+    rep.push([IT.tour.x, IT.tour.y, 'tour', null, true]);
+    IT.failles.forEach(F => rep.push([F.x, F.y, VL.failleFermee(e, F) ? 'faillefermee' : 'faille', VL.failleFermee(e, F) ? null : '#e5dbff']));
+    (IT.expeditions || []).forEach(X => rep.push([X.x, X.y, X.pic || 'tente', '#fff3bf']));
     rep.forEach(q => {
-      if (!q[4] && !VL.estVu(e, q[0], q[1], b)) return;
-      if (q[3]) s.push('<circle cx="' + (q[0] * U + 5) + '" cy="' + (q[1] * U + 5) + '" r="' + f(3.6 * K) + '" fill="#5c534c" stroke="#fff" stroke-width="1.2"/>');
-      else s.push('<text x="' + (q[0] * U + 5) + '" y="' + f(q[1] * U + 5 + 4 * K) + '" text-anchor="middle" font-size="' + f(13 * K) + '"' + (q[4] && !VL.estVu(e, q[0], q[1], b) ? ' opacity=".75"' : '') + '>' + q[2] + '</text>');
+      var vu = VL.estVu(e, q[0], q[1], b);
+      if (!q[4] && !vu) return;
+      s.push('<g' + (vu ? '' : ' opacity=".75"') + '>' + medaille(q[2], q[0] * U + 5, q[1] * U + 5, q[3]) + '</g>');
     });
     return s.join('');
   }

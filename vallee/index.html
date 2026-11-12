@@ -234,7 +234,7 @@
     .btn-vl.vert { background: linear-gradient(#2f9e44, #237a34); border-color: #1b5e28; color: #fff; }
     .btn-vl.rouge { background: #fff5f5; border-color: #e03131; color: #c92a2a; }
     .avis-vl { background: #fffaf0; border-color: #8d6a3f; }
-    .article-vl .ico { background: radial-gradient(circle at 50% 40%, #4a3a1a, #241a0c); border: 1.5px solid #c9a66b; }
+    .article-vl .ico { background: radial-gradient(circle at 50% 40%, #fffaf0, #f0dfba); border: 1.5px solid #c9a66b; }   /* 3.62 : clair, pour les icônes dessinées */
     /* Récolte et fabrication (3.50) : le sac dans la fiche, la fenêtre de fabrication */
     .sac-vl { display: flex; align-items: center; gap: 7px; margin-top: 3px; font-size: 0.78em; font-weight: 800; color: #e9dcc0; cursor: pointer; white-space: nowrap; overflow: hidden; }
     .sac-vl span { display: inline-flex; align-items: center; gap: 2px; }
@@ -301,6 +301,22 @@
     .vl-tete-broute { animation: vl-broute 5s ease-in-out infinite; transform-box: fill-box; transform-origin: 0 0; }
     @keyframes vl-broute { 0%, 55%, 100% { transform: none; } 65%, 90% { transform: rotate(32deg) translate(1px, 2px); } }
     @media (prefers-reduced-motion: reduce) { .vl-nuage, .vl-flocon, .vl-fanion, .vl-tete-broute { animation: none; } }
+    /* 3.62 : icônes dessinées (vallee-pictos.js) à la place des émojis */
+    .vlp { display: inline-block; vertical-align: -0.22em; overflow: visible; }
+    .vlp-t { width: 1.2em; height: 1.2em; }
+    .vlp-hab svg { width: 1.45em; height: 1.65em; vertical-align: -0.45em; }
+    i.pi { font-style: normal; display: inline-flex; align-items: center; vertical-align: -0.2em; }
+    i.pi .vlp { vertical-align: 0; }
+    .grande-ico .vlp-t { width: 64px; height: 64px; } .grande-ico .vlp-hab svg { width: 66px; height: 76px; }
+    .article-vl .ico .vlp-t, .ligne-q .ico .vlp-t { width: 30px; height: 30px; } .rumeur-c .ico .vlp { width: 26px; height: 26px; }
+    .menu-liste i .vlp { width: 22px; height: 22px; }
+    h2 i.pi .vlp, h3 i.pi .vlp { width: 1.15em; height: 1.15em; }
+    .carte-vl .echelle-vl { display: flex; align-items: center; justify-content: center; }
+    .portrait-vl .boussole, .ent .boussole { font-size: 0; }
+    /* Sur le bois sombre : un liseré clair pour que le contour se détache */
+    .fiche-vl .vlp, .commandes-vl .vlp, .lieu-vl .vlp, .echelle-vl .vlp { filter: drop-shadow(0 0 1px rgba(255, 244, 220, 0.9)) drop-shadow(0 0 1px rgba(255, 244, 220, 0.6)); }
+    .sac-vl .vlp, .pouvoir-vl .vlp { width: 1.35em; height: 1.35em; }
+    .petit-btn .vlp [stroke="#3a2414"] { stroke: #f3e2c0; }
   </style>
 </head>
 <body class="vl-page">
@@ -310,17 +326,17 @@
       <div class="fiche-vl">
         <button class="portrait-vl" @click="entrer('compagnon/')" :aria-label="animal ? 'Chez ' + animal.nom : 'Ma maison'">
           <svg v-if="animal" viewBox="0 -6 200 216" v-html="dessinMoi"></svg>
-          <span v-else class="boussole">🧭</span>
+          <span v-else class="boussole" v-html="pic('boussole', 32)"></span>
         </button>
         <div class="infos-vl">
-          <div class="nom-vl">{{ animal ? animal.nom : 'Explorateur' }}<span v-if="pouvoir" class="pouvoir-vl">{{ POUVOIRS[pouvoir].ico }} {{ POUVOIRS[pouvoir].nom }}</span></div>
+          <div class="nom-vl">{{ animal ? animal.nom : 'Explorateur' }}<span v-if="pouvoir" class="pouvoir-vl"><i class="pi" v-html="riche(POUVOIRS[pouvoir].ico)"></i> {{ POUVOIRS[pouvoir].nom }}</span></div>
           <div class="quete-vl" :class="{ rendre: queteSuivie && etatQ(queteSuivie) === 'rendre' }" @click="fenetre = 'quetes'">
-            <template v-if="queteSuivie"><span class="q-ico">{{ QUETES[queteSuivie].ico }}</span><span>{{ consigne(queteSuivie) }}</span></template>
-            <template v-else><span class="q-ico">📜</span><span>{{ quetesDispo ? quetesDispo + ' quête' + (quetesDispo > 1 ? 's' : '') + ' à prendre' : 'Toutes les quêtes sont finies !' }}</span></template>
+            <template v-if="queteSuivie"><span class="q-ico" v-html="riche(QUETES[queteSuivie].ico)"></span><span>{{ consigne(queteSuivie) }}</span></template>
+            <template v-else><span class="q-ico" v-html="pic('quete')"></span><span>{{ quetesDispo ? quetesDispo + ' quête' + (quetesDispo > 1 ? 's' : '') + ' à prendre' : 'Toutes les quêtes sont finies !' }}</span></template>
           </div>
           <div class="sac-vl" v-if="sacVisible" @click="fenetre = 'sac'">
-            <span v-for="r in VL.ORDRE_RES" :key="r" :class="{ plein: e.sac[r] >= VL.SAC_MAX }">{{ VL.RESSOURCES[r].ico }} {{ e.sac[r] }}</span>
-            <span class="besace" v-if="besace">🧪 {{ besace }}</span>
+            <span v-for="r in VL.ORDRE_RES" :key="r" :class="{ plein: e.sac[r] >= VL.SAC_MAX }"><i class="pi" v-html="riche(VL.RESSOURCES[r].ico)"></i> {{ e.sac[r] }}</span>
+            <span class="besace" v-if="besace"><i class="pi" v-html="pic('fiole')"></i> {{ besace }}</span>
           </div>
         </div>
         <span class="etoiles-vl"><span v-html="ETOILE"></span>{{ etoiles }}</span>
@@ -332,7 +348,7 @@
         <svg :view-box.camel="carteVue" preserveAspectRatio="xMidYMid meet"><g v-html="carteSvg"></g><g v-html="carteDessus"></g></svg>
         <div class="titre-carte">{{ dansTerres ? 'Terres de la saison ' + infoTerres.numero : 'La Vallée de Désdale' }} · {{ explore }} % exploré</div>
         <div class="rose">N ↑</div>
-        <button class="echelle-vl" @click.stop="carteLarge = !carteLarge" :aria-label="carteLarge ? 'Carte de près' : 'Carte entière'">{{ carteLarge ? '🔍' : '🗺️' }}</button>
+        <button class="echelle-vl" @click.stop="carteLarge = !carteLarge" :aria-label="carteLarge ? 'Carte de près' : 'Carte entière'"><i class="pi" v-html="pic(carteLarge ? 'loupe' : 'carte', 20)"></i></button>
       </div>
 
       <!-- Le lieu où je suis -->
@@ -344,14 +360,14 @@
           <span class="sp" v-if="a.dessin" v-html="a.dessin"></span>
           <span class="av-ami" v-else :style="{ background: a.couleur }">{{ (a.pseudo || '?').charAt(0).toUpperCase() }}</span>
           <span class="nom-ami" v-if="!bulles[a.id]" :style="{ background: a.couleur }">{{ a.pseudo }}</span>
-          <span class="bulle-ent" v-if="bulles[a.id]" :key="bulles[a.id].k"><span class="i">{{ bulles[a.id].ico }}</span>{{ bulles[a.id].txt }}</span>
+          <span class="bulle-ent" v-if="bulles[a.id]" :key="bulles[a.id].k"><span class="i" v-html="riche(bulles[a.id].ico)"></span>{{ bulles[a.id].txt }}</span>
         </div>
         <div class="ent joueur" :class="{ gauche: sens === 'g', saut: saut, marche: !!dir, 'bord-g': e.x - vue.x0 <= 1, 'bord-d': e.x - vue.x0 >= 9 }" :style="posMoi" @click="ouvrirEmotes">
           <span class="sp" v-if="animal" v-html="'<svg viewBox=&quot;0 -6 200 216&quot;>' + dessinMoi + '</svg>'"></span>
-          <span class="sp boussole" v-else>🧭</span>
-          <span class="bulle-ent" v-if="bulles.moi" :key="bulles.moi.k"><span class="i">{{ bulles.moi.ico }}</span>{{ bulles.moi.txt }}</span>
+          <span class="sp boussole" v-else v-html="pic('boussole', 24)"></span>
+          <span class="bulle-ent" v-if="bulles.moi" :key="bulles.moi.k"><span class="i" v-html="riche(bulles.moi.ico)"></span>{{ bulles.moi.txt }}</span>
         </div>
-        <div class="lieu-vl" v-if="lieuMontre" :key="'l' + ecranCle">{{ lieuMontre.ico }} {{ lieuMontre.nom }}<small v-if="lieuMontre.neuf">Nouveau lieu découvert</small></div>
+        <div class="lieu-vl" v-if="lieuMontre" :key="'l' + ecranCle"><i class="pi" v-html="riche(lieuMontre.ico)"></i> {{ lieuMontre.nom }}<small v-if="lieuMontre.neuf">Nouveau lieu découvert</small></div>
       </div>
 
       <!-- La croix (comme au Donjon) et les annonces -->
@@ -361,12 +377,12 @@
           <span class="g" :class="{ actif: dir === 'g' }">◀</span><span class="d" :class="{ actif: dir === 'd' }">▶</span>
         </div>
         <div class="milieu-vl">
-          <div class="annonces-vl" v-if="annoncesVues.length"><div v-for="a in annoncesVues" :key="a.id">{{ a.t }}</div></div>
+          <div class="annonces-vl" v-if="annoncesVues.length"><div v-for="a in annoncesVues" :key="a.id" v-html="riche(a.t)"></div></div>
           <template v-else>
-            <div class="ici-vl">{{ ici.ico }} {{ ici.nom }}</div>
+            <div class="ici-vl"><i class="pi" v-html="riche(ici.ico)"></i> {{ ici.nom }}</div>
             <div class="aide-vl">{{ astuce }}</div>
           </template>
-          <button class="petit-btn" @click="inverser">⇄ Croix à {{ inverse ? 'gauche' : 'droite' }}</button>
+          <button class="petit-btn" @click="inverser"><i class="pi" v-html="pic('inverser')"></i> Croix à {{ inverse ? 'gauche' : 'droite' }}</button>
         </div>
       </div>
     </div>
@@ -379,9 +395,9 @@
           <div class="portrait" v-html="portrait(dialogue.qui)"></div>
           <div><b>{{ dialogue.nom }}</b><small>{{ dialogue.titre }}</small></div>
         </div>
-        <div class="dial-texte">{{ dialogue.texte }}</div>
+        <div class="dial-texte" v-html="riche(dialogue.texte)"></div>
         <div class="boutons-vl">
-          <button v-for="(b, k) in dialogue.boutons" :key="k" class="btn-vl" :class="{ principal: b.principal }" :disabled="b.off" @click="choisir(b.a)">{{ b.t }}</button>
+          <button v-for="(b, k) in dialogue.boutons" :key="k" class="btn-vl" :class="{ principal: b.principal }" :disabled="b.off" @click="choisir(b.a)" v-html="riche(b.t)"></button>
         </div>
       </div>
     </div>
@@ -389,19 +405,19 @@
     <!-- Le tableau de quêtes -->
     <div class="voile-vl" v-if="fenetre === 'tableau'" @click.self="fermer">
       <div class="fen-vl">
-        <h2>📜 Tableau de quêtes</h2>
-        <div class="avis-vl">{{ tableauVue.avis }}</div>
+        <h2><i class="pi" v-html="pic('quete')"></i> Tableau de quêtes</h2>
+        <div class="avis-vl" v-html="riche(tableauVue.avis)"></div>
         <div class="boutons-vl" v-if="tableauVue.boutons.length">
-          <button v-for="(b, k) in tableauVue.boutons" :key="k" class="btn-vl" :class="{ principal: b.principal }" @click="choisir(b.a, true)">{{ b.t }}</button>
+          <button v-for="(b, k) in tableauVue.boutons" :key="k" class="btn-vl" :class="{ principal: b.principal }" @click="choisir(b.a, true)" v-html="riche(b.t)"></button>
         </div>
         <div class="rumeurs-tab">
-          <b>🗣️ Les rumeurs de la semaine</b>
+          <b><i class="pi" v-html="pic('rumeur')"></i> Les rumeurs de la semaine</b>
           <p v-for="R in carnetVue.semaine.rumeurs" :key="R.id" :class="{ trouve: R.trouve }">{{ R.trouve ? '✓ ' : '« ' }}{{ R.texte }}{{ R.trouve ? '' : ' »' }}</p>
           <small>Elles mènent aux Terres de la saison, derrière la Porte des brumes. Nouvelles rumeurs chaque lundi.</small>
         </div>
         <div class="liste-q">
           <div v-for="q in tableauVue.quetes" :key="q.id" class="ligne-q" :class="q.etat">
-            <span class="ico">{{ q.ico }}</span>
+            <span class="ico" v-html="riche(q.ico)"></span>
             <div><b>{{ q.nom }}</b><small>{{ q.etat === 'dispo' ? q.prendre : q.consigne }}</small></div>
             <span class="etat" :class="q.etat">{{ LIBELLES[q.etat] }}</span>
           </div>
@@ -413,14 +429,14 @@
     <!-- Le carnet de voyage (3.59) -->
     <div class="voile-vl" v-if="fenetre === 'carnet'" @click.self="fermer">
       <div class="fen-vl carnet-vl">
-        <h2>📖 Mon carnet de voyage</h2>
-        <h3>🗣️ Rumeurs de la semaine</h3>
+        <h2><i class="pi" v-html="pic('carnet')"></i> Mon carnet de voyage</h2>
+        <h3><i class="pi" v-html="pic('rumeur')"></i> Rumeurs de la semaine</h3>
         <p class="sous">Jusqu'au {{ dateCourte(new Date(carnetVue.semaine.fin.getTime() - 864e5)) }} : de nouvelles rumeurs chaque lundi. Trouve le repère dans les Terres, compte tes pas, marche sur la case.</p>
         <div v-for="R in carnetVue.semaine.rumeurs" :key="R.id" class="rumeur-c" :class="{ trouve: R.trouve }">
-          <span class="ico">{{ R.trouve ? R.ico : '❔' }}</span>
+          <span class="ico" v-html="R.trouve ? riche(R.ico) : pic('aide')"></span>
           <div>{{ R.texte }}<small v-if="R.trouve">Trouvé : {{ R.objet }}</small></div>
         </div>
-        <h3>🌀 Terres de la saison {{ carnetVue.saison.numero }}</h3>
+        <h3><i class="pi" v-html="pic('porte')"></i> Terres de la saison {{ carnetVue.saison.numero }}</h3>
         <p class="sous">Jusqu'au {{ dateCourte(carnetVue.saison.fin) }}. Ensuite, un nouveau monde derrière la Porte des brumes.</p>
         <div class="stats-c">
           <span><b>{{ carnetVue.saison.ecrans }}</b>/{{ carnetVue.saison.total }}<small>lieux visités</small></span>
@@ -432,9 +448,9 @@
           <span><b>{{ carnetVue.saison.failles }}</b>/{{ carnetVue.saison.nbFailles }}<small>failles refermées</small></span>
         </div>
         <template v-if="carnetVue.passees.length">
-          <h3>📚 Saisons passées</h3>
+          <h3><i class="pi" v-html="pic('livres')"></i> Saisons passées</h3>
           <div v-for="a in carnetVue.passees" :key="a.n" class="passee-c">
-            <b>Saison {{ a.n }}</b> · {{ a.ecrans }}/64 lieux · {{ a.feux }} feu{{ a.feux > 1 ? 'x' : '' }} · {{ a.coffres }} coffre{{ a.coffres > 1 ? 's' : '' }} · {{ a.rum }} rumeur{{ a.rum > 1 ? 's' : '' }}{{ a.failles ? ' · ' + a.failles + ' faille' + (a.failles > 1 ? 's' : '') : '' }}{{ a.tour ? ' · 🗼' : '' }}{{ a.carto ? ' · 🗺️' : '' }}
+            <b>Saison {{ a.n }}</b> · {{ a.ecrans }}/64 lieux · {{ a.feux }} feu{{ a.feux > 1 ? 'x' : '' }} · {{ a.coffres }} coffre{{ a.coffres > 1 ? 's' : '' }} · {{ a.rum }} rumeur{{ a.rum > 1 ? 's' : '' }}{{ a.failles ? ' · ' + a.failles + ' faille' + (a.failles > 1 ? 's' : '') : '' }}{{ a.tour ? ' · tour de guet' : '' }}{{ a.carto ? ' · carte' : '' }}
           </div>
         </template>
         <p class="sous" v-if="carnetVue.total" style="margin-top:8px">En tout, {{ carnetVue.total }} rumeur{{ carnetVue.total > 1 ? 's' : '' }} vérifiée{{ carnetVue.total > 1 ? 's' : '' }} de tes propres pattes.</p>
@@ -445,11 +461,11 @@
     <!-- Mes quêtes (toucher la carte ou la ligne de quête) -->
     <div class="voile-vl" v-if="fenetre === 'quetes'" @click.self="fermer">
       <div class="fen-vl">
-        <h2>🗺️ Mes quêtes</h2>
+        <h2><i class="pi" v-html="pic('carte')"></i> Mes quêtes</h2>
         <p style="margin-top:0;color:#6d5a44;font-size:0.92em">{{ explore }} % de la Vallée exploré. L'anneau orange, sur la carte, montre où aller pour la quête suivie.</p>
         <div class="liste-q">
           <div v-for="q in tableauVue.quetes" :key="q.id" class="ligne-q" :class="q.etat">
-            <span class="ico">{{ q.ico }}</span>
+            <span class="ico" v-html="riche(q.ico)"></span>
             <div><b>{{ q.nom }}</b><small>{{ q.etat === 'dispo' ? q.prendre : q.consigne }}</small></div>
             <span class="etat" :class="q.etat">{{ LIBELLES[q.etat] }}</span>
           </div>
@@ -468,13 +484,13 @@
         </div>
         <div class="dial-texte">{{ animal ? 'Miaou ! Des trésors de la Vallée, rien que pour la maison de ' + animal.nom + '. On ne les trouve nulle part ailleurs !' : 'Miaou ! Mes trésors sont pour la maison d\'un compagnon. Adopte-en un, et reviens me voir !' }}</div>
         <div v-for="a in vente" :key="a.id" class="article-vl">
-          <span class="ico">{{ a.ico }}</span>
+          <span class="ico" v-html="riche(a.ico)"></span>
           <div><b>{{ a.nom }}</b><small>{{ a.possede ? 'Dans la maison' : a.prix + ' étoiles' }}</small></div>
-          <button v-if="!a.possede" class="btn-vl" :class="achat === a.id ? 'vert' : 'principal'" :disabled="!animal || etoiles < a.prix" @click="acheter(a)">{{ achat === a.id ? '✓ Confirmer' : a.prix + ' ⭐' }}</button>
+          <button v-if="!a.possede" class="btn-vl" :class="achat === a.id ? 'vert' : 'principal'" :disabled="!animal || etoiles < a.prix" @click="acheter(a)" v-html="achat === a.id ? '✓ Confirmer' : a.prix + ' ' + pic('etoile', 16)"></button>
           <span v-else style="margin-left:auto;font-weight:900;color:#2b8a3e">✓</span>
         </div>
         <div class="boutons-vl">
-          <button class="btn-vl" v-if="animal" @click="entrer('compagnon/?onglet=boutique')">🛍️ La boutique de {{ animal.nom }}</button>
+          <button class="btn-vl" v-if="animal" @click="entrer('compagnon/?onglet=boutique')"><i class="pi" v-html="pic('boutique')"></i> La boutique de {{ animal.nom }}</button>
           <button class="btn-vl" @click="fermer">Au revoir !</button>
         </div>
       </div>
@@ -483,11 +499,11 @@
     <!-- Message à lire (coffre, récompense, crypte…) -->
     <div class="voile-vl centre" v-if="fenetre === 'lire' && aLire" @click.self="aLire.boutons ? null : fermer()">
       <div class="fen-vl" style="text-align:center">
-        <div class="grande-ico">{{ aLire.ico }}</div>
+        <div class="grande-ico" v-html="riche(aLire.ico, 54)"></div>
         <h2 v-if="aLire.titre">{{ aLire.titre }}</h2>
-        <p>{{ aLire.texte }}</p>
+        <p v-html="riche(aLire.texte)"></p>
         <div class="boutons-vl">
-          <template v-if="aLire.boutons"><button v-for="(b, k) in aLire.boutons" :key="k" class="btn-vl" :class="{ principal: b.principal }" :disabled="b.off" @click="b.f()">{{ b.t }}</button></template>
+          <template v-if="aLire.boutons"><button v-for="(b, k) in aLire.boutons" :key="k" class="btn-vl" :class="{ principal: b.principal }" :disabled="b.off" @click="b.f()" v-html="riche(b.t)"></button></template>
           <button v-else class="btn-vl principal" @click="fermer">OK</button>
         </div>
       </div>
@@ -496,15 +512,15 @@
     <!-- Mon sac : ressources, besace (fioles pour le Donjon), outils -->
     <div class="voile-vl" v-if="fenetre === 'sac'" @click.self="fermer">
       <div class="fen-vl">
-        <h2>🎒 Mon sac</h2>
-        <div class="res-l"><span v-for="r in VL.ORDRE_RES" :key="r">{{ VL.RESSOURCES[r].ico }} {{ VL.RESSOURCES[r].nom }} : {{ e.sac[r] }} / {{ VL.SAC_MAX }}</span></div>
+        <h2><i class="pi" v-html="pic('sac')"></i> Mon sac</h2>
+        <div class="res-l"><span v-for="r in VL.ORDRE_RES" :key="r"><i class="pi" v-html="riche(VL.RESSOURCES[r].ico)"></i> {{ VL.RESSOURCES[r].nom }} : {{ e.sac[r] }} / {{ VL.SAC_MAX }}</span></div>
         <p style="color:#6d5a44;font-size:0.9em;margin:6px 0">{{ aujourdhui }}</p>
-        <div class="sac-titre">🧪 Besace ({{ besace }} / {{ VL.BESACE_MAX }})</div>
+        <div class="sac-titre"><i class="pi" v-html="pic('fiole')"></i> Besace ({{ besace }} / {{ VL.BESACE_MAX }})</div>
         <p v-if="!besace" style="color:#6d5a44;font-size:0.9em;margin:4px 0">Pas encore de fiole. Mme Sauge en prépare avec tes plantes{{ VL.ouvertFab(e, 'hutte') ? '' : ', une fois l\'établi de Bruno réparé' }}.</p>
-        <div v-for="(n, f) in e.besace" :key="f" class="article-vl"><span class="ico">{{ VL.FIOLES[f].ico }}</span><div><b>{{ VL.FIOLES[f].nom }} × {{ n }}</b><small>{{ VL.FIOLES[f].texte }}</small></div></div>
+        <div v-for="(n, f) in e.besace" :key="f" class="article-vl"><span class="ico" v-html="riche(VL.FIOLES[f].ico)"></span><div><b>{{ VL.FIOLES[f].nom }} × {{ n }}</b><small>{{ VL.FIOLES[f].texte }}</small></div></div>
         <p v-if="besace" style="color:#6d5a44;font-size:0.88em;margin:6px 0 0">Au Donjon, onglet Partie, choisis les {{ VL.DONJON_MAX }} fioles à emporter.</p>
-        <div class="sac-titre">🛠️ Outils</div>
-        <div v-for="(o, k) in VL.OUTILS" :key="k" class="article-vl" :class="{ fait: !e.outils[k] }"><span class="ico">{{ o.ico }}</span><div><b>{{ o.nom }}</b><small>{{ o.texte }}</small></div><span class="raison">{{ e.outils[k] ? '✓ À toi' : 'À la forge' }}</span></div>
+        <div class="sac-titre"><i class="pi" v-html="pic('outils')"></i> Outils</div>
+        <div v-for="(o, k) in VL.OUTILS" :key="k" class="article-vl" :class="{ fait: !e.outils[k] }"><span class="ico" v-html="riche(o.ico)"></span><div><b>{{ o.nom }}</b><small>{{ o.texte }}</small></div><span class="raison">{{ e.outils[k] ? '✓ À toi' : 'À la forge' }}</span></div>
         <div class="boutons-vl"><button class="btn-vl" @click="fermer">Fermer</button></div>
       </div>
     </div>
@@ -514,14 +530,14 @@
       <div class="fen-vl">
         <div class="dial-tete">
           <div class="portrait" v-if="VL.LIEUX_FAB[fabOu].qui" v-html="portrait(VL.LIEUX_FAB[fabOu].qui)"></div>
-          <div class="portrait" v-else style="font-size:34px;align-items:center">🪚</div>
+          <div class="portrait" v-else style="align-items:center" v-html="pic('scie', 44)"></div>
           <div><b>{{ VL.LIEUX_FAB[fabOu].nom }}</b><small>{{ VL.LIEUX_FAB[fabOu].texte }}</small></div>
         </div>
-        <div class="res-l"><span v-for="r in VL.ORDRE_RES" :key="r">{{ VL.RESSOURCES[r].ico }} {{ e.sac[r] }}</span><span v-if="fabOu === 'hutte'">🧪 {{ besace }} / {{ VL.BESACE_MAX }}</span></div>
+        <div class="res-l"><span v-for="r in VL.ORDRE_RES" :key="r"><i class="pi" v-html="riche(VL.RESSOURCES[r].ico)"></i> {{ e.sac[r] }}</span><span v-if="fabOu === 'hutte'"><i class="pi" v-html="pic('fiole')"></i> {{ besace }} / {{ VL.BESACE_MAX }}</span></div>
         <div v-for="r in recettes" :key="r.id" class="article-vl" :class="{ fait: r.etat.fait }">
-          <span class="ico">{{ r.ico }}</span>
+          <span class="ico" v-html="riche(r.ico)"></span>
           <div style="min-width:0"><b>{{ r.nom }}</b><small>{{ r.texte }}</small>
-            <div class="cout-vl"><span v-for="(n, k) in r.cout" :key="k" :class="{ manque: e.sac[k] < n }">{{ n }} {{ VL.RESSOURCES[k].ico }}</span></div>
+            <div class="cout-vl"><span v-for="(n, k) in r.cout" :key="k" :class="{ manque: e.sac[k] < n }">{{ n }} <i class="pi" v-html="riche(VL.RESSOURCES[k].ico)"></i></span></div>
           </div>
           <button v-if="r.etat.ok" class="btn-vl" :class="fabChoix === r.id ? 'vert' : 'principal'" @click="fabriquer(r)">{{ fabChoix === r.id ? '✓ Sûr ?' : 'Fabriquer' }}</button>
           <span v-else class="raison">{{ r.etat.fait ? '✓ ' : '' }}{{ r.etat.raison }}</span>
@@ -539,9 +555,9 @@
           <div><b>{{ ami.pseudo }}</b><small>{{ ami.cp ? ami.cp.n + ', son compagnon' : 'Sans compagnon' }}</small></div>
         </div>
         <div class="boutons-vl">
-          <button class="btn-vl principal" @click="saluerAmi">👋 Saluer {{ ami.pseudo }}</button>
-          <button class="btn-vl" v-if="ami.cp" @click="entrer('compagnon/?visite=' + encodeURIComponent(ami.id))">🏠 Visiter sa maison</button>
-          <button class="btn-vl" @click="descendreAvec">⚔️ Descendre ensemble au Donjon</button>
+          <button class="btn-vl principal" @click="saluerAmi"><i class="pi" v-html="pic('main')"></i> Saluer {{ ami.pseudo }}</button>
+          <button class="btn-vl" v-if="ami.cp" @click="entrer('compagnon/?visite=' + encodeURIComponent(ami.id))"><i class="pi" v-html="pic('maison')"></i> Visiter sa maison</button>
+          <button class="btn-vl" @click="descendreAvec"><i class="pi" v-html="pic('epees')"></i> Descendre ensemble au Donjon</button>
           <button class="btn-vl" @click="fermer">Fermer</button>
         </div>
       </div>
@@ -563,16 +579,16 @@
         <h2>La Vallée de Désdale</h2>
         <div class="menu-liste">
           <button class="btn-vl principal" @click="fermer"><i>▶</i>Continuer</button>
-          <button class="btn-vl" @click="fenetre = 'quetes'"><i>📜</i>Mes quêtes</button>
-          <button class="btn-vl" @click="fenetre = 'sac'"><i>🎒</i>Mon sac</button>
-          <button class="btn-vl" @click="fenetre = 'carnet'"><i>📖</i>Mon carnet de voyage<span v-if="rumeursAFaire" class="pastille">{{ rumeursAFaire }}</span></button>
-          <button class="btn-vl" @click="discuter"><i>💬</i>Discuter<span v-if="nonLus" class="pastille">{{ nonLus }}</span></button>
-          <button class="btn-vl" @click="entrer('compagnon/')"><i>🏠</i>{{ animal ? 'Chez ' + animal.nom : 'Adopter un compagnon' }}</button>
-          <button class="btn-vl" @click="sonActif = !sonActif"><i>{{ sonActif ? '🔊' : '🔇' }}</i>Son : {{ sonActif ? 'oui' : 'non' }}</button>
-          <button class="btn-vl" @click="inverser"><i>⇄</i>Croix à {{ inverse ? 'gauche' : 'droite' }}</button>
-          <button class="btn-vl" @click="basculerPleinEcran"><i>⛶</i>{{ pleinEcran ? 'Garder les barres du téléphone' : 'Cacher les barres du téléphone' }}</button>
-          <button class="btn-vl" @click="fenetre = 'aide'"><i>❓</i>Comment jouer</button>
-          <button class="btn-vl rouge" @click="versAccueil"><i>🏁</i>Retour à l'accueil</button>
+          <button class="btn-vl" @click="fenetre = 'quetes'"><i v-html="pic('quete')"></i>Mes quêtes</button>
+          <button class="btn-vl" @click="fenetre = 'sac'"><i v-html="pic('sac')"></i>Mon sac</button>
+          <button class="btn-vl" @click="fenetre = 'carnet'"><i v-html="pic('carnet')"></i>Mon carnet de voyage<span v-if="rumeursAFaire" class="pastille">{{ rumeursAFaire }}</span></button>
+          <button class="btn-vl" @click="discuter"><i v-html="pic('bulle')"></i>Discuter<span v-if="nonLus" class="pastille">{{ nonLus }}</span></button>
+          <button class="btn-vl" @click="entrer('compagnon/')"><i v-html="pic('maison')"></i>{{ animal ? 'Chez ' + animal.nom : 'Adopter un compagnon' }}</button>
+          <button class="btn-vl" @click="sonActif = !sonActif"><i v-html="pic(sonActif ? 'son' : 'muet')"></i>Son : {{ sonActif ? 'oui' : 'non' }}</button>
+          <button class="btn-vl" @click="inverser"><i v-html="pic('inverser')"></i>Croix à {{ inverse ? 'gauche' : 'droite' }}</button>
+          <button class="btn-vl" @click="basculerPleinEcran"><i v-html="pic('plein')"></i>{{ pleinEcran ? 'Garder les barres du téléphone' : 'Cacher les barres du téléphone' }}</button>
+          <button class="btn-vl" @click="fenetre = 'aide'"><i v-html="pic('aide')"></i>Comment jouer</button>
+          <button class="btn-vl rouge" @click="versAccueil"><i v-html="pic('drapeau')"></i>Retour à l'accueil</button>
         </div>
       </div>
     </div>
@@ -580,16 +596,16 @@
     <!-- Comment jouer -->
     <div class="voile-vl" v-if="fenetre === 'aide'" @click.self="fermer">
       <div class="fen-vl">
-        <h2>❓ Comment jouer</h2>
+        <h2><i class="pi" v-html="pic('aide')"></i> Comment jouer</h2>
         <ul class="aide-liste">
           <li><b>Marcher</b> : glisse le doigt sur la croix (ou les flèches du clavier). Sors par un bord, là où une flèche blanche clignote, pour changer de lieu.</li>
           <li><b>Entrer</b> dans une maison ou dans la crypte : fonce dans la porte. <b>Parler</b> à un habitant : fonce dans lui.</li>
           <li><b>!</b> au-dessus d'un habitant : il a une quête pour toi. <b>?</b> : il attend ce que tu lui rapportes.</li>
-          <li><b>Pouvoir de ton compagnon</b> : ronces 🔥, rocher 💪, trou 🦘, buisson très épais 👃. Fonce dans l'obstacle qui va avec ton pouvoir pour l'ouvrir.</li>
-          <li><b>Les Terres de la saison</b> : passe la Porte des brumes, au bord ouest du ruisseau. Allume les feux de camp (une bûche 🪵) pour y revenir d'un coup ; grimpe à la tour de guet ; au hameau, Barnabé troque des cristaux et Mlle Taupinette vend sa carte. Le bouton 🗺️ de la carte montre toute la région.</li>
+          <li><b>Pouvoir de ton compagnon</b> : ronces <i class="pi" v-html="pic('flamme')"></i>, rocher <i class="pi" v-html="pic('force')"></i>, trou <i class="pi" v-html="pic('bond')"></i>, buisson très épais <i class="pi" v-html="pic('flair')"></i>. Fonce dans l'obstacle qui va avec ton pouvoir pour l'ouvrir.</li>
+          <li><b>Les Terres de la saison</b> : passe la Porte des brumes, au bord ouest du ruisseau. Allume les feux de camp (une bûche <i class="pi" v-html="pic('bois')"></i>) pour y revenir d'un coup ; grimpe à la tour de guet ; au hameau, Barnabé troque des cristaux et Mlle Taupinette vend sa carte. Le bouton <i class="pi" v-html="pic('carte')"></i> de la carte montre toute la région.</li>
           <li><b>Les rumeurs du lundi</b> : chaque lundi, le tableau de quêtes du village donne 3 rumeurs. Chacune cache un objet à quelques pas d'un repère des Terres (un feu, la tour, un habitant du hameau, un pont) : un pas, c'est une case. Marche dessus pour le trouver. Ton carnet de voyage (menu ☰) les garde, avec le bilan de chaque saison.</li>
           <li><b>Les failles du Donjon</b> : deux par saison, dans les Terres. On y descend pour un seul étage, en Normal, avec son héros de la semaine ; vaincre le boss referme la faille (étoiles et cristaux). La plus lointaine est plus profonde, donc plus dure.</li>
-          <li><b>Récolter</b> : marche sur le bois mort 🪵, les cailloux 🪨, les herbes 🌿 et les cristaux 💎. Chaque point repousse le lendemain. Ton sac en garde {{ VL.SAC_MAX }} de chaque. Ton pouvoir double une ressource : 🔥 le bois, 💪 la pierre, 🦘 les plantes ; 👃 montre les cristaux sur la carte.</li>
+          <li><b>Récolter</b> : marche sur le bois mort <i class="pi" v-html="pic('bois')"></i>, les cailloux <i class="pi" v-html="pic('pierre')"></i>, les herbes <i class="pi" v-html="pic('plante')"></i> et les cristaux <i class="pi" v-html="pic('cristal')"></i>. Chaque point repousse le lendemain. Ton sac en garde {{ VL.SAC_MAX }} de chaque. Ton pouvoir double une ressource : <i class="pi" v-html="pic('flamme')"></i> le bois, <i class="pi" v-html="pic('force')"></i> la pierre, <i class="pi" v-html="pic('bond')"></i> les plantes ; <i class="pi" v-html="pic('flair')"></i> montre les cristaux sur la carte.</li>
           <li><b>Fabriquer</b> (après la quête de Bruno) : de la déco à l'établi devant ta maison, des fioles pour le Donjon chez Mme Sauge, des outils à la forge. Fonce dans l'établi, la hutte ou la forge.</li>
           <li><b>La carte</b> se dévoile au fil de tes pas. L'anneau orange montre où aller pour ta quête.</li>
           <li><b>Les amis</b> connectés qui sont dans la Vallée apparaissent sur ton écran et en points sur la carte. Touche un ami pour le saluer, visiter sa maison ou descendre ensemble au Donjon. Touche ton compagnon pour envoyer une émotion. À l'est de la clairière, <b>le quartier des amis</b> : chacun y a sa maison.</li>
@@ -610,6 +626,7 @@
   <script src="etoiles.js"></script>
   <script src="compagnon/compagnon-commun.js"></script>
   <script src="vallee/vallee-regles.js"></script>
+  <script src="vallee/vallee-pictos.js"></script>
   <script src="vallee/vallee-dessins.js"></script>
   <script>
     if (!ACCES.memorise()) location.replace('index.html');
@@ -841,6 +858,9 @@
         consigne: function(id) { this.v; return VL.consigne(etat, id); },
         annoncerUneFois: function(k, t) { if (this._unefois === k && Date.now() - this._unefoisT < 6000) return; this._unefois = k; this._unefoisT = Date.now(); this.annoncer(t); },
         annoncer: function(t) { this.annonces.push({ id: ++this._annId, t: t, t0: Date.now() }); this.annonces = this.annonces.slice(-4); this.maintenant = Date.now(); },
+        // 3.62 : icônes dessinées à la place des émojis (vallee-pictos.js)
+        pic: function(nom, t) { return VLP.svg(nom, t || 20); },
+        riche: function(t, taille) { return VLP.riche(t, taille); },
         portrait: function(qui) { var H = VL.HABITANTS[qui]; return H ? VLD.habitant(H.espece, 58) : ''; },
         montrerLieu: function(neuf) {
           var E = VL.ecran(etat.x, etat.y);

@@ -170,6 +170,7 @@
     .entree-vallee .pastille-vl { align-self: flex-start; max-width: 100%; box-sizing: border-box; margin-top: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 0.76em; font-weight: 800;
                                   border-radius: 10px; padding: 3px 9px; background: #ffd43b; color: #3d2e00; }
     .entree-vallee .pastille-vl.calme { background: rgba(255,255,255,0.16); color: #f4ffe9; }
+    .entree-vallee .pastille-vl .vlp { width: 1.25em; height: 1.25em; vertical-align: -0.28em; filter: drop-shadow(0 0 1px rgba(255,255,255,.8)); }
     .entree-vallee .etoiles-vl { position: absolute; top: 7px; right: 8px; display: inline-flex; align-items: center; gap: 3px; background: rgba(255,255,255,0.92); color: #7a5600; font-weight: 900;
                                  border-radius: 11px; padding: 2px 8px; font-size: 0.88em; }
     .entree-vallee .etoiles-vl svg { width: 15px; height: 15px; }
@@ -293,7 +294,7 @@
             <span class="surtitre-vl">La Vallée de Désdale</span>
             <span class="accroche-vl">{{ compagnon ? compagnon.nom : 'Entre dans la Vallée' }}<small v-if="compagnon"> {{ compagnon.age }}</small><small v-if="compagnon && compagnon.defis" class="defis-vl">🏆 {{ compagnon.defis }}</small></span>
             <span class="etat-vl">{{ compagnon ? compagnon.etat : 'Adopte un compagnon, il t\'attend au village' }}</span>
-            <span class="pastille-vl" :class="{ calme: !valleeAccueil.vive }">{{ valleeAccueil.pastille }}</span>
+            <span class="pastille-vl" :class="{ calme: !valleeAccueil.vive }" v-html="valleeAccueil.pastilleHtml"></span>
           </span>
           <span class="etoiles-vl"><span v-html="etoile"></span> {{ compagnon ? compagnon.etoiles : etoiles }}</span>
         </a>
@@ -470,6 +471,7 @@
   <script src="icones-jeux.js"></script>
   <script src="donjon/donjon-dessins.js"></script>
   <script src="vallee/vallee-regles.js"></script>
+  <script src="vallee/vallee-pictos.js"></script>
   <script src="vallee/vallee-dessins.js"></script>
   <script>
     // ---------- Entrée du donjon sur l'accueil ----------
@@ -681,11 +683,12 @@
           this.maj;
           var a = lireStockage('compagnon-animal'), sv = lireStockage('vallee-etat'), r = { vive: true };
           r.scene = VLD.sceneAccueil(a && typeof CP !== 'undefined' ? CP.dessin(a, 'content', false) : '');
-          if (!sv) { r.pastille = 'Nouveau · Entrer ›'; return r; }
+          if (!sv) { r.pastille = r.pastilleHtml = 'Nouveau · Entrer ›'; return r; }
           var e = VL.charger(sv), q = VL.queteSuivie(e), dispo = VL.ORDRE_QUETES.filter(id => VL.prenable(e, id)).length;
           if (q) r.pastille = VL.QUETES[q].ico + ' ' + VL.consigne(e, q);
           else if (dispo) r.pastille = dispo + ' quête' + (dispo > 1 ? 's' : '') + ' à prendre ›';
           else { r.pastille = 'Entrer ›'; r.vive = false; }
+          r.pastilleHtml = typeof VLP !== 'undefined' ? VLP.riche(r.pastille) : r.pastille.replace(/</g, '&lt;');   // 3.62 : icône dessinée de la quête
           return r;
         },
         // Entrée du donjon : texte selon mon compagnon (son pouvoir = sa classe de cartes), mon exploration en cours et mon record

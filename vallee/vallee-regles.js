@@ -1007,8 +1007,8 @@ var VL = (function () {
   // Les lieux d'expédition prêts (3.61 : on n'y part plus que depuis les Terres). Identifiants, noms et couleurs recopiés
   // d'expedition/expedition-regles.js (EX.LIEUX, ceux qui ont `pret: true`) : à tenir ensemble.
   var LIEUX_EXPEDITION = [
-    { id: 'cinema', nom: 'Studio de cinéma', ico: '🎬', theme: 'Cinéma', boss: 'le Fantôme du studio', jeu: 'au Quatre en ligne', c1: '#c92a2a', c2: '#f4c430' },
-    { id: 'sciences', nom: 'Laboratoire', ico: '🔬', theme: 'Sciences', boss: 'le Savant fou', jeu: 'à la Bataille navale', c1: '#1c7ed6', c2: '#66d9e8' }
+    { id: 'cinema', nom: 'Studio de cinéma', ico: '🎬', pic: 'clap', theme: 'Cinéma', boss: 'le Fantôme du studio', jeu: 'au Quatre en ligne', c1: '#c92a2a', c2: '#f4c430' },
+    { id: 'sciences', nom: 'Laboratoire', ico: '🔬', pic: 'microscope', theme: 'Sciences', boss: 'le Savant fou', jeu: 'à la Bataille navale', c1: '#1c7ed6', c2: '#66d9e8' }
   ];
   // Les lieux du Donjon qu'une faille peut ouvrir, par étage (identifiants et noms de donjon/donjon-donnees.js, à tenir ensemble)
   var LIEUX_FAILLE = {
