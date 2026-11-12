@@ -123,6 +123,28 @@
     .fenetre .boutons button { flex: 1; }
     .annuler { background: #e8eef3; color: #1d2b36; }
     .confirmer { background: #c0392b; color: #fff; }
+    /* Décompte avant la mesure suivante */
+    body.avec-decompte { padding-bottom: calc(110px + env(safe-area-inset-bottom)); }
+    .decompte {
+      position: fixed; left: 10px; right: 10px; bottom: calc(10px + env(safe-area-inset-bottom));
+      max-width: 540px; margin: 0 auto; background: #1d2b36; color: #fff; border-radius: 14px;
+      padding: 12px 14px; display: none; align-items: center; gap: 12px; z-index: 5;
+      box-shadow: 0 4px 16px rgba(0,0,0,.25);
+    }
+    .decompte.vu { display: flex; }
+    .decompte .temps { font-size: 30px; font-weight: 700; font-variant-numeric: tabular-nums; min-width: 82px; }
+    .decompte .txt { flex: 1; font-size: 13.5px; line-height: 1.3; }
+    .decompte .txt b { display: block; font-size: 15px; }
+    .decompte .barre-d { height: 4px; border-radius: 2px; background: rgba(255,255,255,.2); margin-top: 6px; overflow: hidden; }
+    .decompte .barre-d i { display: block; height: 100%; background: #7cc4a0; }
+    .decompte button {
+      flex: none; border: 0; border-radius: 10px; padding: 10px 12px; font-size: 14px; font-weight: 600;
+      background: rgba(255,255,255,.14); color: #fff; cursor: pointer;
+    }
+    .decompte.fini { background: #2e8b57; animation: appel 1s ease-in-out infinite alternate; }
+    .decompte.fini button { background: #fff; color: #2e8b57; }
+    @keyframes appel { from { transform: scale(1); } to { transform: scale(1.02); } }
+    @media (prefers-reduced-motion: reduce) { .decompte.fini { animation: none; } }
     .toast {
       position: fixed; left: 50%; bottom: calc(20px + env(safe-area-inset-bottom)); transform: translateX(-50%);
       background: #1d2b36; color: #fff; padding: 10px 16px; border-radius: 10px; font-size: 14px;
@@ -190,6 +212,13 @@
       </ol>
       <div class="boutons"><button class="gros copier" id="okIos">Compris</button></div>
     </div>
+  </div>
+
+  <div class="decompte" id="decompte">
+    <div class="temps" id="decTemps">5:00</div>
+    <div class="txt"><b id="decTitre">Prochaine mesure</b><span id="decSous"></span>
+      <div class="barre-d"><i id="decBarre"></i></div></div>
+    <button id="decBouton">Passer</button>
   </div>
 
   <div class="toast" id="toast"></div>
@@ -326,6 +355,7 @@
       const inp = e.target, k = inp.dataset.k, c = inp.dataset.c;
       const v = parseInt(inp.value, 10);
       const m = donnees.m[k] || {};
+      const etaitOk = verifier(donnees.m[k] ? Object.assign({}, donnees.m[k]) : null).ok;
       if (v > 0) m[c] = v; else delete m[c];
       if (!m.sys && !m.dia && !m.pouls) {
         delete donnees.m[k];
@@ -336,6 +366,10 @@
       ecrire();
       majLigne(k);
       majResume();
+      preparerSon();
+      // Saisie de la mesure attendue : le décompte s'arrête ; mesure qui vient d'être complète : il démarre
+      if (decompte && decompte.k === k) arreterDecompte();
+      if (!etaitOk && verifier(donnees.m[k]).ok) lancerDecompte(k);
       // Passage automatique au champ suivant quand la valeur est complète
       const lg = inp.value.length;
       if ((c === 'sys' && lg >= 3) || (c !== 'sys' && lg >= 2 && v >= 40)) {
@@ -438,6 +472,7 @@
     document.getElementById('oui').addEventListener('click', () => {
       donnees = { v: 1, m: {} };
       ecrire();
+      arreterDecompte();
       voile.classList.remove('ouvert');
       construire();
       window.scrollTo(0, 0);
@@ -532,6 +567,7 @@
       donnees = { v: 1, m: aImporter.m };
       aImporter = null;
       ecrire();
+      arreterDecompte();
       voileImport.classList.remove('ouvert');
       construire();
       window.scrollTo(0, 0);
@@ -586,12 +622,146 @@
       navigator.serviceWorker.register('sw.js', { scope: './' }).catch(() => {});
     }
 
+    // ---- Décompte avant la mesure suivante de la séance ----
+    // Gardé à part (tension-decompte), hors sauvegarde : l'heure de fin suffit à le retrouver après une fermeture.
+    const DELAI = 5 * 60 * 1000;
+    const CLE_DEC = 'tension-decompte';
+    let decompte = null; // { fin, k: mesure attendue, sonne: déjà sonné }
+    let minuterie = null, verrou = null, audio = null;
+    try { decompte = JSON.parse(localStorage.getItem(CLE_DEC)); } catch (e) {}
+
+    function ecrireDecompte() {
+      try {
+        if (decompte) localStorage.setItem(CLE_DEC, JSON.stringify(decompte)); else localStorage.removeItem(CLE_DEC);
+      } catch (e) {}
+    }
+
+    function lancerDecompte(k) {
+      const [j, s, n] = k.split('-');
+      if (+n >= MESURES) return; // dernière mesure de la séance : rien à attendre
+      const suivante = cle(j, s, +n + 1);
+      if (donnees.m[suivante]) return; // déjà remplie (correction d'une ancienne mesure)
+      decompte = { fin: Date.now() + DELAI, k: suivante };
+      ecrireDecompte();
+      garderEcran();
+      majDecompte();
+    }
+
+    function arreterDecompte() {
+      decompte = null;
+      ecrireDecompte();
+      lacherEcran();
+      majDecompte();
+    }
+
+    function nomMesure(k) {
+      const [j, s, n] = k.split('-');
+      return 'Jour ' + j + ' · ' + s + ' · n° ' + n;
+    }
+
+    function majDecompte() {
+      const bloc = document.getElementById('decompte');
+      clearInterval(minuterie); minuterie = null;
+      if (!decompte || donnees.m[decompte.k]) {
+        if (decompte) { decompte = null; ecrireDecompte(); lacherEcran(); }
+        bloc.classList.remove('vu', 'fini');
+        document.body.classList.remove('avec-decompte');
+        return;
+      }
+      bloc.classList.add('vu');
+      document.body.classList.add('avec-decompte');
+      const reste = decompte.fin - Date.now();
+      if (reste > 0) {
+        const sec = Math.ceil(reste / 1000);
+        bloc.classList.remove('fini');
+        document.getElementById('decTemps').textContent = Math.floor(sec / 60) + ':' + String(sec % 60).padStart(2, '0');
+        document.getElementById('decTitre').textContent = 'Mesure suivante';
+        document.getElementById('decSous').textContent = nomMesure(decompte.k);
+        document.getElementById('decBarre').style.width = Math.round(100 * (1 - reste / DELAI)) + '%';
+        document.getElementById('decBouton').textContent = 'Passer';
+        minuterie = setInterval(majDecompte, 1000);
+      } else {
+        bloc.classList.add('fini');
+        document.getElementById('decTemps').textContent = '⏰';
+        document.getElementById('decTitre').textContent = "C'est l'heure !";
+        document.getElementById('decSous').textContent = nomMesure(decompte.k);
+        document.getElementById('decBarre').style.width = '100%';
+        document.getElementById('decBouton').textContent = 'Mesurer';
+        lacherEcran();
+        if (!decompte.sonne && document.visibilityState === 'visible') {
+          decompte.sonne = true;
+          ecrireDecompte();
+          sonner();
+        }
+      }
+    }
+
+    document.getElementById('decBouton').addEventListener('click', () => {
+      if (!decompte) return;
+      const k = decompte.k;
+      const fini = decompte.fin <= Date.now();
+      arreterDecompte();
+      if (fini) {
+        const champ = document.querySelector('input[data-k="' + k + '"][data-c="sys"]');
+        if (champ) {
+          champ.scrollIntoView({ block: 'center', behavior: 'smooth' });
+          champ.focus({ preventScroll: true });
+        }
+      }
+    });
+
+    // Retour sur la page : le décompte est recalculé (les minuteries dorment en arrière-plan)
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') {
+        if (decompte && decompte.fin > Date.now()) garderEcran();
+        majDecompte();
+      }
+    });
+
+    // Écran allumé pendant le décompte (sinon le téléphone se met en veille et l'alerte ne sonne pas)
+    async function garderEcran() {
+      if (!('wakeLock' in navigator) || verrou) return;
+      try {
+        verrou = await navigator.wakeLock.request('screen');
+        verrou.addEventListener('release', () => { verrou = null; });
+      } catch (e) { verrou = null; }
+    }
+    function lacherEcran() {
+      if (verrou) { verrou.release().catch(() => {}); verrou = null; }
+    }
+
+    // Son : le navigateur ne l'autorise qu'après un geste, d'où la préparation pendant la saisie
+    function preparerSon() {
+      try {
+        if (!audio) audio = new (window.AudioContext || window.webkitAudioContext)();
+        if (audio.state === 'suspended') audio.resume();
+      } catch (e) { audio = null; }
+    }
+    function sonner() {
+      try { if (navigator.vibrate) navigator.vibrate([300, 150, 300, 150, 300]); } catch (e) {}
+      if (!audio) return;
+      try {
+        const t0 = audio.currentTime + 0.05;
+        [0, 0.35, 0.7].forEach(d => {
+          const o = audio.createOscillator(), g = audio.createGain();
+          o.type = 'sine'; o.frequency.value = 880;
+          g.gain.setValueAtTime(0.0001, t0 + d);
+          g.gain.exponentialRampToValueAtTime(0.35, t0 + d + 0.02);
+          g.gain.exponentialRampToValueAtTime(0.0001, t0 + d + 0.25);
+          o.connect(g); g.connect(audio.destination);
+          o.start(t0 + d); o.stop(t0 + d + 0.3);
+        });
+      } catch (e) {}
+    }
+
     // Sortie d'un champ : afficher l'éventuel message de la ligne
     document.addEventListener('focusout', e => {
       if (e.target.dataset && e.target.dataset.k) setTimeout(() => majLigne(e.target.dataset.k), 0);
     });
 
     construire();
+    majDecompte();
+    if (decompte && decompte.fin > Date.now()) garderEcran();
   </script>
 </body>
 </html>
