@@ -109,6 +109,7 @@
               <button v-for="n in NIVEAUX" :key="n.id" :class="{ actif: niveau === n.id }" @click="niveau = n.id">{{ n.nom }}</button>
             </div>
             <button class="btn principal" style="width:100%" @click="demarrerSolo">🤖 {{ soloEnCours ? 'Reprendre la partie' : 'Jouer seul' }}</button>
+            <abandon-solo v-if="soloEnCours" @abandonner="abandonnerSolo"></abandon-solo>
             <div class="aide" v-if="statsSolo.parties">Contre l'ordinateur : {{ statsSolo.gagnees }} gagnée{{ statsSolo.gagnees > 1 ? 's' : '' }} sur {{ statsSolo.parties }}.<span v-if="meilleureSerie > 1"> Record au niveau {{ NIVEAUX.find(n => n.id === niveau).nom }} : {{ meilleureSerie }} victoires d'affilée.</span></div>
           </section>
         </template>
@@ -247,7 +248,7 @@
         onglet: 'config',
         pub: null,
         joueurs: [],
-        solo: false,
+        solo: false, v: 0,
         boss: null,        // défi d'un boss d'expédition (lu dans expedition-boss quand on arrive avec ?boss)
         niveau: lireStockage('quatre-niveau') || 'normal',
         statsSolo: lireStockage('quatre-stats') || { parties: 0, gagnees: 0 },
@@ -270,7 +271,7 @@
         meilleureSerie: function() { this.majSerie; return Etoiles.meilleureSerie('quatre-' + this.niveau); },
         vibrationSupportee: function() { return typeof navigator.vibrate === 'function'; },
         connexionTexte: function() { return { ok: 'en ligne', connexion: 'connexion…', perdue: 'reconnexion…', aucune: 'hors ligne' }[this.connexion]; },
-        soloEnCours: function() { var s = lireStockage('quatre-solo'); return !!(s && s.phase === 'jeu' && s.coups.length); },
+        soloEnCours: function() { this.v; this.solo; this.pub && this.pub.coups && this.pub.coups.length; var s = lireStockage('quatre-solo'); return !!(s && s.phase === 'jeu' && s.coups.length); },
         estConnecteVue: function() {
           var r = {};
           if (this.pub) this.pub.ordre.forEach(x => { var j = this.joueurs.find(y => y.pseudo === x); r[x] = this.solo || x === this.moi || !j || j.connecte !== false; });
@@ -377,6 +378,7 @@
           this.tourOrdi();
         },
         retourExpedition: function() { location.href = 'expedition/'; },
+        abandonnerSolo: function() { localStorage.removeItem('quatre-solo'); this.solo = false; this.pub = null; this.v++; },
         quitterSolo: function() { this.sauverSolo(); this.solo = false; this.pub = null; this.onglet = 'config'; },
         tourOrdi: function() {
           var e = this.pub;

@@ -333,6 +333,7 @@
               <div class="aide" style="margin-top:0">{{ aideFaces(facesChoisies) }}</div>
             </template>
             <button class="btn principal" style="width:100%" @click="demarrerSolo">{{ soloEnCours ? 'Reprendre la partie (' + (soloEnCours === 'duel' ? 'duel' : 'classique') + ')' : 'Jouer seul' }}</button>
+            <abandon-solo v-if="soloEnCours" @abandonner="abandonnerSolo"></abandon-solo>
             <button v-if="soloEnCours" class="btn" style="width:100%;margin-top:6px" @click="nouveauSolo">Nouvelle partie ({{ modeChoisi === 'duel' ? 'duel' : 'classique' }})</button>
             <div class="aide" v-if="serieRecord > 1">Record : {{ serieRecord }} parties gagnées d'affilée contre l'ordinateur.</div>
           </section>
@@ -1367,6 +1368,7 @@
           ecrireStockage('joyaux-solo', etatSolo);
           this.majSoloEnCours();
         },
+        abandonnerSolo: function() { localStorage.removeItem('joyaux-solo'); if (this.solo) this.quitterSolo(); else { etatSolo = null; this.majSoloEnCours(); } },
         quitterSolo: function() { clearTimeout(this._timerRes); clearTimeout(this._timerDuel); this.solo = false; this.pub = null; etatSolo = null; this.onglet = 'config'; this.majSoloEnCours(); },
         // Les ordinateurs choisissent dès que le tour commence
         jouerRobots: function(e) {

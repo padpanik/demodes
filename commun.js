@@ -3,12 +3,13 @@
 // Les clés de stockage gardent l'ancien préfixe "brillant-" : les réglages déjà faits sont conservés.
 
 // Numéro de version affiché (à augmenter à chaque mise en ligne, avec brilliant/index.html et sw.js)
-const VERSION = '3.73';
+const VERSION = '3.74';
 
 // ---------- Nouveautés (2.87, demandé par l'utilisateur) ----------
 // Une ligne très brève par mise en ligne (la plus récente en haut) : l'accueil les montre une seule fois, dans une petite fenêtre,
 // à qui n'a pas encore vu cette version. [version, jeu ou partie de l'appli, ce qui change]
 const NOUVEAUTES = [
+  ['3.74', 'Jeux', 'Onglet Partie : bouton « Abandonner la partie en cours » pour le jeu seul, le même partout.'],
   ['3.73', 'Yams', 'Bouton pour abandonner la partie (seul) ou quitter le salon, en haut de l\'écran de jeu.'],
   ['3.72', 'Donjon', 'Le bouton Fin du tour annonce l\'armure de la Cape de voyage et du Cœur de pierre.'],
   ['3.71', 'Les Terres', 'Sanctuaire au boss de la semaine, composants rares, et le Grimoire : cartes rares pour le Donjon.'],

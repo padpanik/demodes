@@ -170,6 +170,7 @@ Pas d'étape de construction, pas de dépendance à ajouter.
   toujours **deux blocs**, « À plusieurs / À deux, chacun sur son téléphone » (pseudo, nom du salon, bouton « Entrer dans le salon »)
   **en haut**, puis « Seul » / « Seul contre l'ordinateur » (ses options et le bouton « Jouer seul ») **en bas**. Les options qui servent
   aux deux (niveau de Brilliant, format d'Assaut, jeu Dominos / Triominos et points des Dominos) restent au-dessus des deux blocs.
+  **Abandonner la partie solo, composant commun `<abandon-solo>`** (`fiche-jeu.js`, 3.74, demandé par l'utilisateur : « penser générique et commun quand c'est possible, pour ne pas y penser à chaque nouveau jeu ») : sous « Reprendre la partie » du bloc Seul, `<abandon-solo v-if="soloEnCours" @abandonner="abandonnerSolo">` (deux touchers : le second confirme, 4 s). La page écrit seulement `abandonnerSolo` (efface sa partie solo, sauvegarde comprise). En place dans Yams, Dominos, Chinchón, Cieljo, Lettres croisées, 7 piliers, Quatre en ligne, Assaut et Bataille navale (pour ces deux-là : en pleine partie = défaite comme « Abandonner » de l'écran de jeu, pendant le placement = annulée ; pas en mode boss). **Tout nouveau jeu avec un solo qui se reprend l'utilise.** Le salon a déjà son « Quitter » dans la carte du salon en cours. Brilliant n'a pas de partie solo à reprendre.
   Les **options de règles** (Bataille navale : navires qui se touchent, rejouer tant qu'on touche ; Assaut : garder les pièces adverses révélées)
   sont dans l'onglet **Règles**, en tête (« Options de la partie », choisies par l'hôte en salon), au-dessus du texte des règles.
 - Réglages : `<reglages-base :son.sync :vibration.sync :voix.sync :ecran.sync>` (on ne passe que ceux du jeu ; chacun s'affiche
@@ -265,7 +266,7 @@ Bataille navale : `bataille-boss` (partie contre un boss d'expédition), `batail
   Yams : total + 50. Chance + et Chance − : total des dés, la Chance − strictement inférieure à la Chance + de la
   même colonne, sinon la case inscrite en second vaut 0 (pas de contrainte si l'une des deux est barrée).
 - Un Yams compte comme carré mais pas comme full (confirmé par l'utilisateur).
-- **Quitter en cours de partie** (3.73, demandé par l'utilisateur) : petite pastille rouge en haut de l'écran de jeu, dans la bande des joueurs (`quitterPartie`) : seul « 🏳️ Abandonner » (partie perdue, après confirmation) ; en salon « 🏳️ Quitter » (= quitter le salon, les autres continuent). Retour à l'onglet Partie. Pas en bas : l'écran tient tout juste à 360 × 800 et le bouton serait à côté de « Lancer ».
+- **Quitter en cours de partie** (3.73, demandé par l'utilisateur ; depuis 3.74 aussi dans l'onglet Partie par `<abandon-solo>`) : petite pastille rouge en haut de l'écran de jeu, dans la bande des joueurs (`quitterPartie`) : seul « 🏳️ Abandonner » (partie perdue, après confirmation) ; en salon « 🏳️ Quitter » (= quitter le salon, les autres continuent). Retour à l'onglet Partie. Pas en bas : l'écran tient tout juste à 360 × 800 et le bouton serait à côté de « Lancer ».
 
 ### Backgammon
 - À deux uniquement (un 3e est refusé), pas de solo. Règles courantes : videau, gammon ×2, backgammon ×3,

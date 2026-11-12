@@ -149,6 +149,7 @@
               <button v-for="n in [1, 2, 3]" :key="n" :class="{ actif: nbOrdis === n }" @click="nbOrdis = n">🤖 {{ n }}</button>
             </div>
             <button class="btn principal" style="width:100%" @click="demarrerSolo">🤖 {{ soloEnCours ? 'Reprendre la partie' : 'Jouer seul' }}</button>
+            <abandon-solo v-if="soloEnCours" @abandonner="abandonnerSolo"></abandon-solo>
             <button v-if="soloEnCours" class="btn" style="width:100%;margin-top:6px" @click="nouveauSolo">Nouvelle partie ({{ NOMS[jeuChoisi] }})</button>
             <div class="aide" v-if="serieRecord > 1">Record : {{ serieRecord }} parties gagnées d'affilée contre l'ordinateur.</div>
           </section>
@@ -534,6 +535,7 @@
           ecrireStockage('domino-solo', etatSolo);
           this.majSoloEnCours();
         },
+        abandonnerSolo: function() { localStorage.removeItem('domino-solo'); if (this.solo) this.quitterSolo(); else { etatSolo = null; this.majSoloEnCours(); } },
         quitterSolo: function() { clearTimeout(this._timerOrdi); this.solo = false; this.pub = null; etatSolo = null; this.onglet = 'config'; this.majSoloEnCours(); },
         tourOrdi: function() {
           clearTimeout(this._timerOrdi);

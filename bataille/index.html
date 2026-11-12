@@ -281,6 +281,7 @@
             </div>
             <button class="btn principal" style="width:100%" @click="nouvellePartie">🤖 {{ partieEnCours ? 'Nouvelle partie' : 'Jouer seul' }}</button>
             <button class="btn" style="width:100%;margin-top:6px" v-if="partieEnCours" @click="onglet = 'play'">Reprendre la partie en cours</button>
+            <abandon-solo v-if="partieEnCours && !boss" @abandonner="abandonnerSolo"></abandon-solo>
             <div class="aide" v-if="statsTexte">{{ statsTexte }}</div>
           </section>
         </template>
@@ -1242,8 +1243,14 @@
           this.ajouterLog((moi ? 'Tu tires en ' : lui + ' tire en ') + BN.nomCase(j.i) + ' : ' +
                           (j.res === 'eau' ? 'à l\'eau.' : j.res === 'touche' ? 'touché.' : 'coulé (' + nav.toLowerCase() + ') !'));
         },
-        abandonner: function() {
-          if (!confirm('Abandonner la partie ?')) return;
+        // Depuis l'onglet Partie (abandon-solo) : en pleine partie, c'est une défaite comme le bouton de l'écran de jeu ; pendant le placement, on annule simplement
+        abandonnerSolo: function() {
+          if (this.role) return;
+          if (this.phase === 'jeu') return this.abandonner(true);
+          clearTimeout(this._timerIA); partie = null; this.phase = null; this.flotte = [null, null, null, null, null]; this.sauvegarder();
+        },
+        abandonner: function(sansConfirmer) {
+          if (sansConfirmer !== true && !confirm('Abandonner la partie ?')) return;
           if (this.role) return this.envoyerJeu({ type: 'ABANDON' });
           clearTimeout(this._timerIA);
           clearTimeout(this._timerTir);

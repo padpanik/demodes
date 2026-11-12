@@ -45,6 +45,8 @@
   .lien-profil { border: none; background: #eef4ff; color: #1c5fb0; font: inherit; font-weight: 700; font-size: 0.88em; border-radius: 9px; padding: 4px 10px; cursor: pointer; }
   .carte.regles ul { padding-left: 18px; margin: 8px 0 0; font-size: 0.92em; line-height: 1.5; color: #3b4b57; }
   .petit-titre { font-size: 0.85em; font-weight: 700; color: #5b6b78; margin: 6px 0 4px; }
+  .fj-abandon { width: 100%; margin-top: 6px; padding: 9px; border-radius: 10px; border: 1px dashed #e8a1a1; background: #fff5f5; color: #b02a2a; font: inherit; font-weight: 700; font-size: 0.9em; cursor: pointer; }
+  .fj-abandon.confirme { border-style: solid; background: #e03131; color: #fff; }
   .fj-reglages-base label { display: flex; align-items: center; gap: 8px; padding: 5px 0; cursor: pointer; }
   `;
   var style = document.createElement('style');
@@ -118,6 +120,23 @@
         <div v-show="onglet === 'reglages'"><slot name="reglages"></slot></div>
         <div v-show="onglet === 'regles'"><slot name="regles"></slot></div>
       </div>`
+  });
+
+  // Abandonner la partie solo en cours, depuis l'onglet Partie (3.74, demandé par l'utilisateur : « générique et commun »,
+  // pour ne pas avoir à y penser dans chaque nouveau jeu). Deux touchers : le second confirme (4 s pour le faire).
+  //   <abandon-solo v-if="soloEnCours" @abandonner="abandonnerSolo"></abandon-solo>
+  // La page efface sa partie solo dans abandonnerSolo (sauvegarde comprise).
+  Vue.component('abandon-solo', {
+    props: { texte: { type: String, default: 'Abandonner la partie en cours' } },
+    data: function () { return { confirme: false }; },
+    methods: {
+      toucher: function () {
+        if (!this.confirme) { this.confirme = true; clearTimeout(this._t); this._t = setTimeout(() => { this.confirme = false; }, 4000); return; }
+        clearTimeout(this._t); this.confirme = false; this.$emit('abandonner');
+      }
+    },
+    beforeDestroy: function () { clearTimeout(this._t); },
+    template: `<button type="button" class="fj-abandon" :class="{ confirme: confirme }" @click="toucher">{{ confirme ? '⚠️ Touche encore pour confirmer' : '🏳️ ' + texte }}</button>`
   });
 
   // Réglages de base, les mêmes dans tous les jeux : on ne passe que ceux que le jeu utilise (.sync)

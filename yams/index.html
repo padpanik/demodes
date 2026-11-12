@@ -163,6 +163,7 @@
           <section class="carte">
             <div class="titre-carte">Seul</div>
             <button class="btn principal" style="width:100%" @click="demarrerSolo">🎲 {{ soloEnCours ? 'Reprendre la partie' : 'Jouer seul' }}</button>
+            <abandon-solo v-if="soloEnCours" @abandonner="abandonnerSolo"></abandon-solo>
             <button class="btn" style="width:100%;margin-top:6px" @click="ouvrirTop">🏆 Top 10 solo</button>
             <div class="aide" v-if="record">Ton record solo : {{ record }} pts</div>
           </section>
@@ -1147,11 +1148,15 @@
             this.sortirDuSalon();
           } else {
             if (!confirm('Abandonner la partie ? Elle sera perdue.')) return;
-            jeuHote = null; this.etat = null; this.selection = null;
-            this.ajouterLog('Partie abandonnée.', true);
-            this.sauvegarder();
+            this.abandonnerSolo();
           }
           this.onglet = 'config';
+        },
+        abandonnerSolo: function() {
+          if (this.role) return;
+          jeuHote = null; this.etat = null; this.selection = null;
+          this.ajouterLog('Partie abandonnée.', true);
+          this.sauvegarder();
         },
         quitterSalon: function() {
           if (!confirm('Quitter le salon ?')) return;
