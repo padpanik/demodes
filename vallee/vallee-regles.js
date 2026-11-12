@@ -1446,9 +1446,43 @@ var VL = (function () {
     return n / t;
   }
 
+  // ---------- Le livre des trésors (3.66, demandé par l'utilisateur : « un livre des trésors trouvés et à trouver ») ----------
+  // Tous les souvenirs qu'on peut rapporter à la maison : expéditions, Donjon, Vallée. Trouvé = dans animal.possede.
+  // articles = CP.ARTICLES (compagnon-commun.js), passé par la page.
+  var SOUVENIRS_DONJON = ['cle-donjon', 'coffre-tresor', 'bouclier', 'couronne-gluant'];   // recopiés de donjon/index.html (SOUVENIRS), à tenir ensemble
+  var PIC_TRESOR = { clap: 'clap', popcorn: 'popcorn', bobine: 'bobine', projecteur: 'projecteur', microscope: 'microscope', eprouvettes: 'fiole', telescope: 'longuevue', aimant: 'aimant',
+    blason: 'bouclier', etendard: 'drapeau', chandelier: 'chandelier', heaume: 'heaume', mappemonde: 'mappemonde', boussole: 'boussole', coquillage: 'coquillage', ancre: 'ancre',
+    'cle-donjon': 'cle', 'coffre-tresor': 'coffre', bouclier: 'bouclier', 'couronne-gluant': 'couronne',
+    'val-lanterne': 'lanterne', 'val-banniere': 'drapeau', 'val-champi': 'champignon', 'val-hibou': 'hibou', 'val-lucioles': 'luciole', 'val-edelweiss': 'fleur', 'val-carte': 'carte',
+    'fab-tabouret': 'tabouret', 'fab-bouquet': 'bouquet', 'fab-nichoir': 'nichoir', 'fab-statuette': 'statue', 'fab-muret': 'pierre', 'fab-lampe': 'cristal', 'fab-vitrine': 'cristal', 'fab-bassin': 'fontaine' };
+  function coutEnMots(cout) {
+    return Object.keys(cout).map(k => cout[k] + ' ' + RESSOURCES[k].ico).join(' + ');
+  }
+  function livreTresors(possede, articles) {
+    possede = possede || {}; articles = articles || [];
+    var art = id => articles.find(a => a.id === id);
+    var item = (id, indice) => { var a = art(id); return a ? { id: id, nom: a.nom, ico: a.ico, pic: PIC_TRESOR[id] || null, trouve: !!possede[id], indice: indice, phrase: a.phrase || '' } : null; };
+    var chap = [];
+    LIEUX_EXPEDITION.forEach(L => {
+      var l = articles.filter(a => a.souvenir === L.id).map(a => item(a.id, 'Dans un coffre de l\'expédition « ' + L.nom + ' » (son campement est dans les Terres).'));
+      if (l.length) chap.push({ id: 'exp-' + L.id, titre: L.nom, pic: L.pic, sous: 'Expédition : ' + L.theme.toLowerCase(), items: l });
+    });
+    chap.push({ id: 'donjon', titre: 'Le Donjon', pic: 'crypte', sous: 'Un trésor par donjon gagné',
+      items: SOUVENIRS_DONJON.map(id => item(id, 'Gagne un donjon entier (bats la Liche, ou le boss du dernier étage) : un trésor par victoire.')).filter(x => x) });
+    var vallee = [];
+    ORDRE_QUETES.forEach(id => { var Q = QUETES[id]; if (Q.recompense && Q.recompense.deco) vallee.push(item(Q.recompense.deco, 'Récompense de la quête « ' + Q.nom + ' ».')); });
+    VENTE.forEach(v => vallee.push(item(v.id, 'À l\'étal de Pipa, au village : ' + v.prix + ' ⭐.')));
+    chap.push({ id: 'vallee', titre: 'La Vallée', pic: 'maison', sous: 'Quêtes et étal de Pipa', items: vallee.filter(x => x) });
+    chap.push({ id: 'etabli', titre: 'L\'établi', pic: 'scie', sous: 'À fabriquer devant ta maison',
+      items: RECETTES.filter(R => R.type === 'deco').map(R => item(R.id, 'À fabriquer à l\'établi, devant ta maison : ' + coutEnMots(R.cout) + '.')).filter(x => x) });
+    chap.forEach(C => { C.n = C.items.filter(x => x.trouve).length; });
+    var tous = [].concat.apply([], chap.map(C => C.items));
+    return { chapitres: chap, n: tous.filter(x => x.trouve).length, total: tous.length };
+  }
+
   return {
     RESSOURCES: RESSOURCES, ORDRE_RES: ORDRE_RES, SAC_MAX: SAC_MAX, RECOLTE: RECOLTE, OUTILS: OUTILS, FIOLES: FIOLES, BESACE_MAX: BESACE_MAX, DONJON_MAX: DONJON_MAX,
-    LIEUX_FAB: LIEUX_FAB, RECETTES: RECETTES,
+    LIEUX_FAB: LIEUX_FAB, RECETTES: RECETTES, livreTresors: livreTresors, PIC_TRESOR: PIC_TRESOR,
     jourDe: jourDe, pointEn: pointEn, pointOuvert: pointOuvert, pointVisible: pointVisible, prisAujourdhui: prisAujourdhui, gain: gain, recolter: recolter, assezPour: assezPour, besaceTotal: besaceTotal,
     ouvertFab: ouvertFab, recette: recette, etatRecette: etatRecette, fabriquer: fabriquer, prendreFioles: prendreFioles,
     NB_PARCELLES: NB_PARCELLES, PARCELLES: PARCELLES, placerVoisins: placerVoisins, parcelleDe: parcelleDe, defile: defile, nettoyerVoisins: nettoyerVoisins, parcelles: parcelles,

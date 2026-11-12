@@ -163,6 +163,25 @@
     .rumeur-c .ico { font-size: 1.4em; font-style: normal; line-height: 1; }
     .rumeur-c small { display: block; font: 700 0.85em system-ui, sans-serif; color: #2f7a3a; margin-top: 3px; }
     .rumeur-c.trouve { background: #ebfbee; border-color: #8ce99a; }
+    .livre-vl .jauge-l { position: relative; height: 24px; background: #ead9b5; border: 1.5px solid #c9a96e; border-radius: 12px; overflow: hidden; margin: 2px 0 8px; }
+    .livre-vl .jauge-l div { position: absolute; inset: 0 auto 0 0; background: linear-gradient(#ffd43b, #f59f00); }
+    .livre-vl .jauge-l span { position: relative; display: block; text-align: center; font: 800 0.85em/21px system-ui, sans-serif; color: #4a3426; }
+    .livre-vl h3 small { font: 700 0.75em system-ui, sans-serif; color: #8a7255; margin-left: 4px; }
+    .grille-l { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+    .tresor-l { position: relative; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 6px 2px 5px; background: #e9dcc0; border: 1.5px dashed #b89c6c; border-radius: 10px; font: inherit; cursor: pointer; min-width: 0; }
+    .tresor-l .dessin-l { width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; filter: brightness(0) opacity(0.22); }
+    .tresor-l .dessin-l svg { width: 40px; height: 40px; }
+    .tresor-l .nom-l { font: 700 0.66em/1.15 system-ui, sans-serif; color: #8a7255; text-align: center; min-height: 2.3em; display: flex; align-items: center; }
+    .tresor-l.trouve { background: #fffaf0; border: 1.5px solid #e0b13f; box-shadow: 0 1px 3px rgba(92, 58, 31, 0.25); }
+    .tresor-l.trouve .dessin-l { filter: none; }
+    .tresor-l.trouve .nom-l { color: #4a3426; }
+    .tresor-l.choisi { outline: 2.5px solid #e8590c; outline-offset: 1px; }
+    .tresor-l .coche-l { position: absolute; top: 3px; right: 4px; width: 16px; height: 16px; border-radius: 50%; background: #2f9e44; color: #fff; font: 900 0.7em/16px system-ui; }
+    .detail-l { margin: 6px 0 2px; background: #fff; border: 1.5px solid #e2cfa6; border-radius: 10px; padding: 7px 9px; font-size: 0.86em; color: #4a3426; line-height: 1.35; }
+    .detail-l b { display: block; font: 800 1em Georgia, serif; }
+    .detail-l span { display: block; }
+    .detail-l.trouve { border-color: #8ce99a; background: #f4fdf5; }
+    .btn-vl .compte-l { margin-left: auto; font: 800 0.8em system-ui; color: #8a7255; }
     .stats-c { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
     .stats-c span { background: #fff; border: 1.5px solid #e2cfa6; border-radius: 10px; padding: 6px 4px; text-align: center; color: #4a3426; font-size: 0.95em; }
     .stats-c b { font: 900 1.25em Georgia, serif; }
@@ -458,6 +477,32 @@
       </div>
     </div>
 
+    <!-- Le livre des trésors (3.66) : tout ce qu'on peut rapporter à la maison, trouvé ou encore à trouver -->
+    <div class="voile-vl" v-if="fenetre === 'livre'" @click.self="fermer">
+      <div class="fen-vl carnet-vl livre-vl">
+        <h2><i class="pi" v-html="pic('coffre')"></i> Mon livre des trésors</h2>
+        <div class="jauge-l"><div :style="{ width: Math.round(100 * livre.n / livre.total) + '%' }"></div><span>{{ livre.n }} trésor{{ livre.n > 1 ? 's' : '' }} trouvé{{ livre.n > 1 ? 's' : '' }} sur {{ livre.total }}</span></div>
+        <p class="sous" v-if="!animal">Les trésors vont dans la maison d'un compagnon : adopte-en un pour commencer ta collection.</p>
+        <p class="sous" v-else>Touche un trésor pour savoir où le trouver. Ceux que tu as sont dans la maison de {{ animal.nom }}.</p>
+        <div v-for="C in livre.chapitres" :key="C.id" class="chap-l">
+          <h3><i class="pi" v-html="pic(C.pic)"></i> {{ C.titre }} <small>{{ C.n }}/{{ C.items.length }}</small></h3>
+          <div class="grille-l">
+            <button v-for="T in C.items" :key="T.id" class="tresor-l" :class="{ trouve: T.trouve, choisi: livreSel === T.id }" @click="livreSel = livreSel === T.id ? null : T.id">
+              <span class="dessin-l" v-html="dessinTresor(T)"></span>
+              <span class="nom-l">{{ T.trouve ? T.nom : '???' }}</span>
+              <span v-if="T.trouve" class="coche-l">✓</span>
+            </button>
+          </div>
+          <div v-for="T in C.items" :key="'d' + T.id" v-if="livreSel === T.id" class="detail-l" :class="{ trouve: T.trouve }">
+            <b>{{ T.trouve ? T.nom : 'Trésor à trouver' }}</b>
+            <span v-if="T.trouve && T.phrase">« {{ T.phrase.replace(/\s*[^\p{L}\p{N}!?.…»]+$/u, '') }} »</span>
+            <span v-html="riche((T.trouve ? 'Trouvé ! ' : '') + T.indice, 16)"></span>
+          </div>
+        </div>
+        <div class="boutons-vl"><button class="btn-vl" @click="fermer">Fermer</button></div>
+      </div>
+    </div>
+
     <!-- Mes quêtes (toucher la carte ou la ligne de quête) -->
     <div class="voile-vl" v-if="fenetre === 'quetes'" @click.self="fermer">
       <div class="fen-vl">
@@ -581,6 +626,7 @@
           <button class="btn-vl principal" @click="fermer"><i>▶</i>Continuer</button>
           <button class="btn-vl" @click="fenetre = 'quetes'"><i v-html="pic('quete')"></i>Mes quêtes</button>
           <button class="btn-vl" @click="fenetre = 'sac'"><i v-html="pic('sac')"></i>Mon sac</button>
+          <button class="btn-vl" @click="ouvrirLivre"><i v-html="pic('coffre')"></i>Mon livre des trésors<span class="compte-l">{{ livre.n }}/{{ livre.total }}</span></button>
           <button class="btn-vl" @click="fenetre = 'carnet'"><i v-html="pic('carnet')"></i>Mon carnet de voyage<span v-if="rumeursAFaire" class="pastille">{{ rumeursAFaire }}</span></button>
           <button class="btn-vl" @click="discuter"><i v-html="pic('bulle')"></i>Discuter<span v-if="nonLus" class="pastille">{{ nonLus }}</span></button>
           <button class="btn-vl" @click="entrer('compagnon/')"><i v-html="pic('maison')"></i>{{ animal ? 'Chez ' + animal.nom : 'Adopter un compagnon' }}</button>
@@ -658,7 +704,7 @@
         VL: VL, POUVOIRS: VL.POUVOIRS, QUETES: VL.QUETES, ETOILE: ETOILE, LIBELLES: LIBELLES,
         v: 0,                       // monte à chaque changement de l'état (le dessin se recalcule)
         dir: null, sens: etat.dir === 'g' ? 'g' : 'd', saut: false, ecranCle: 0, lieuMontre: null,
-        animal: lireStockage('compagnon-animal'), etoiles: Etoiles.solde(), nonLus: 0,
+        animal: lireStockage('compagnon-animal'), etoiles: Etoiles.solde(), nonLus: 0, livreSel: null,
         fenetre: null, dialogue: null, aLire: null, achat: null, sortie: false, fabOu: null, fabChoix: null, jour: VL.jourDe(),
         annonces: [], maintenant: Date.now(), carteAspect: 330 / 270, carteLarge: false,
         inverse: lireStockage('donjon-inverse') === true,
@@ -783,6 +829,8 @@
         },
         tableauVue: function() { this.v; return VL.tableau(etat); },
         carnetVue: function() { this.v; return VL.carnet(etat); },
+        // Le livre des trésors (3.66)
+        livre: function() { this.v; this.animal; return VL.livreTresors(this.animal && this.animal.possede, CP.ARTICLES); },
         rumeursAFaire: function() { return this.carnetVue.semaine.rumeurs.filter(R => !R.trouve).length; },
         vente: function() {
           this.v; var possede = (this.animal && this.animal.possede) || {};
@@ -860,6 +908,9 @@
         annoncer: function(t) { this.annonces.push({ id: ++this._annId, t: t, t0: Date.now() }); this.annonces = this.annonces.slice(-4); this.maintenant = Date.now(); },
         // 3.62 : icônes dessinées à la place des émojis (vallee-pictos.js)
         pic: function(nom, t) { return VLP.svg(nom, t || 20); },
+        // Un trésor du livre : son icône dessinée (le hibou en bois : le portrait du hibou), grisée tant qu'on ne l'a pas
+        dessinTresor: function(T) { return T.pic === 'hibou' ? VLP.riche('🦉', 40) : T.pic ? VLP.svg(T.pic, 40) : VLP.riche(T.ico, 40); },
+        ouvrirLivre: function() { this.animal = lireStockage('compagnon-animal'); this.livreSel = null; this.fenetre = 'livre'; },
         riche: function(t, taille) { return VLP.riche(t, taille); },
         portrait: function(qui) { var H = VL.HABITANTS[qui]; return H ? VLD.habitant(H.espece, 58) : ''; },
         montrerLieu: function(neuf) {
