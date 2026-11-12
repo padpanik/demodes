@@ -3,12 +3,13 @@
 // Les clés de stockage gardent l'ancien préfixe "brillant-" : les réglages déjà faits sont conservés.
 
 // Numéro de version affiché (à augmenter à chaque mise en ligne, avec brilliant/index.html et sw.js)
-const VERSION = '3.74';
+const VERSION = '3.75';
 
 // ---------- Nouveautés (2.87, demandé par l'utilisateur) ----------
 // Une ligne très brève par mise en ligne (la plus récente en haut) : l'accueil les montre une seule fois, dans une petite fenêtre,
 // à qui n'a pas encore vu cette version. [version, jeu ou partie de l'appli, ce qui change]
 const NOUVEAUTES = [
+  ['3.75', 'Toute l\'appli', 'Le geste retour du téléphone propose l\'accueil au lieu de revenir en arrière et de perdre une avancée.'],
   ['3.74', 'Jeux', 'Onglet Partie : bouton « Abandonner la partie en cours » pour le jeu seul, le même partout.'],
   ['3.73', 'Yams', 'Bouton pour abandonner la partie (seul) ou quitter le salon, en haut de l\'écran de jeu.'],
   ['3.72', 'Donjon', 'Le bouton Fin du tour annonce l\'armure de la Cape de voyage et du Cœur de pierre.'],
@@ -583,6 +584,58 @@ function adresseRetour() { return depuisVallee() ? 'vallee/' : 'index.html?choix
 function vibrer(motif) {
   try { if (navigator.vibrate) navigator.vibrate(motif); } catch (e) {}
 }
+
+// ---------- Geste « retour » du téléphone (3.75, signalé par l'utilisateur : « les back via geste font rollback certains avancements ») ----------
+// 1) Une page revenue du cache du navigateur (bfcache) reprendrait son état d'avant en mémoire et pourrait réécrire des
+//    données plus anciennes par-dessus les nouvelles : on la recharge depuis le stockage, avant que la page ne réagisse
+//    (écouteur posé avant ceux de la page, qui ne sont pas appelés).
+// 2) Sur les pages autres que l'accueil, le geste retour ne quitte plus la page sans prévenir : une petite fenêtre propose
+//    l'accueil (ou la Vallée si l'on vient d'elle), ou de rester. L'entrée d'historique n'est posée qu'au premier toucher
+//    (sans geste, Chrome saute ces entrées).
+(function () {
+  window.addEventListener('pageshow', function (ev) {
+    if (ev.persisted) { ev.stopImmediatePropagation(); location.reload(); }
+  });
+  var base = document.querySelector('base');
+  if (!base || base.getAttribute('href') !== '../') return;   // l'accueil : le retour garde son sens habituel
+  var garde = false, ouverte = null;
+  function poser() {
+    if (garde) return;
+    try { history.pushState({ desdaleRetour: 1 }, '', location.href); garde = true; } catch (e) {}
+  }
+  document.addEventListener('pointerdown', poser, true);
+  function vallee() { try { return sessionStorage.getItem('desdale-vallee') === '1'; } catch (e) { return false; } }
+  function fermer() { if (ouverte) { ouverte.remove(); ouverte = null; } }
+  function aller(adr) { fermer(); location.replace(new URL(adr, document.baseURI).href); }
+  window.addEventListener('popstate', function () {
+    if (!garde) return;
+    garde = false;
+    if (ouverte) return;
+    var st = document.createElement('style');
+    st.textContent = '.dsd-retour{position:fixed;inset:0;z-index:100000;background:rgba(15,20,30,.55);display:flex;align-items:center;justify-content:center;padding:20px;font-family:system-ui,sans-serif}' +
+      '.dsd-retour>div{background:#fff;color:#1f2937;border-radius:16px;padding:18px 16px 14px;width:100%;max-width:330px;box-shadow:0 10px 30px rgba(0,0,0,.3);text-align:center}' +
+      '.dsd-retour b{display:block;font-size:1.1em;margin-bottom:4px}.dsd-retour p{margin:0 0 14px;color:#6b7280;font-size:.92em}' +
+      '.dsd-retour button{display:block;width:100%;margin-top:8px;padding:12px;border-radius:12px;border:1px solid #d1d5db;background:#f3f4f6;font:inherit;font-weight:700;color:#1f2937;cursor:pointer}' +
+      '.dsd-retour button.p{background:#2d3a4b;color:#fff;border-color:#2d3a4b}';
+    var d = document.createElement('div');
+    d.className = 'dsd-retour';
+    var v = vallee();
+    d.innerHTML = '<div><b>Quitter cette page ?</b><p>Ta partie est gardée : tu la retrouveras en revenant.</p>' +
+      (v ? '<button class="p" data-a="vallee/">⛰️ Retour à la Vallée</button>' : '') +
+      '<button class="' + (v ? '' : 'p') + '" data-a="index.html?choix">🏠 Retour à l\'accueil</button>' +
+      '<button data-a="">Rester ici</button></div>';
+    d.appendChild(st);
+    d.addEventListener('click', function (ev) {
+      var b = ev.target.closest('button');
+      if (!b && ev.target !== d) return;
+      var a = b ? b.getAttribute('data-a') : '';
+      if (a) return aller(a);
+      fermer(); poser();
+    });
+    document.body.appendChild(d);
+    ouverte = d;
+  });
+})();
 
 // L'audio et la voix ne démarrent qu'après un geste : chaque toucher les (re)débloque
 document.addEventListener('pointerdown', function () {
