@@ -436,7 +436,7 @@ var VL = (function () {
   function nouvelEtat() {
     var p = g(1, 1, 2, 3);
     var e = { v: 1, x: p.x, y: p.y, dir: 'b', brume: {}, ouverts: {}, pris: {}, quetes: {}, coffre: false, coffreM: false, cle: false, pas: 0,
-              sac: { bois: 0, pierre: 0, plante: 0, cristal: 0 }, recolte: { j: '', pris: {} }, outils: {}, besace: {}, terres: { s: saisonDe(), ouv: {}, feux: {}, tour: false, carto: false, troc: { j: '', n: 0 }, rum: 0 },
+              sac: { bois: 0, pierre: 0, plante: 0, cristal: 0 }, recolte: { j: '', pris: {} }, outils: {}, besace: {}, terres: { s: saisonDe(), ouv: {}, feux: {}, tour: false, carto: false, troc: { j: '', n: 0 }, rum: 0, failles: {} },
               rumeurs: { w: semaineDe(), ok: {} }, carnet: { saisons: [], total: 0 } };
     reveler(e);
     return e;
@@ -458,6 +458,7 @@ var VL = (function () {
       Object.keys(s.terres.ouv || {}).forEach(k => { if (/^-?\d+,-?\d+$/.test(k)) e.terres.ouv[k] = 1; });
       Object.keys(s.terres.feux || {}).forEach(k => { if (/^f\d$/.test(k)) e.terres.feux[k] = 1; });
       e.terres.tour = !!s.terres.tour; e.terres.carto = !!s.terres.carto; e.terres.rum = Math.max(0, s.terres.rum | 0);
+      Object.keys(s.terres.failles || {}).forEach(k => { if (/^[01]$/.test(k)) e.terres.failles[k] = 1; });
       if (s.terres.troc && typeof s.terres.troc.j === 'string') e.terres.troc = { j: s.terres.troc.j, n: Math.max(0, s.terres.troc.n | 0) };
     } else e.terres.s = null;   // sauvegarde d'avant 3.57 : rien dans les Terres
     var au = ecran(s.x | 0, s.y | 0), audela = au && au.zone && au.zone !== 'terres' && mod(s.x | 0, W) > 0;   // au-delà de la passerelle ou du col
@@ -466,7 +467,7 @@ var VL = (function () {
     if (s.carnet && typeof s.carnet === 'object') {
       e.carnet.total = Math.max(0, s.carnet.total | 0);
       if (Array.isArray(s.carnet.saisons)) e.carnet.saisons = s.carnet.saisons.filter(a => a && typeof a === 'object' && typeof a.n === 'number').slice(-12)
-        .map(a => ({ n: a.n | 0, ecrans: a.ecrans | 0, feux: a.feux | 0, coffres: a.coffres | 0, rum: a.rum | 0, tour: !!a.tour, carto: !!a.carto }));
+        .map(a => ({ n: a.n | 0, ecrans: a.ecrans | 0, feux: a.feux | 0, coffres: a.coffres | 0, rum: a.rum | 0, tour: !!a.tour, carto: !!a.carto, failles: a.failles | 0 }));
     }
     if (s.rumeurs && typeof s.rumeurs === 'object' && s.rumeurs.w === semaineDe()) Object.keys(s.rumeurs.ok || {}).forEach(k => { if (/^[0-2]$/.test(k)) e.rumeurs.ok[k] = 1; });
     if (e.terres.s !== saisonDe() && changerSaison(e)) e.nouvelleSaison = true;   // la page l'annonce (et l'efface)
@@ -658,6 +659,7 @@ var VL = (function () {
     if (t === 'Z') return { action: 'coffreT', x: nx, y: ny };
     if (t === 'f') return { action: 'feu', x: nx, y: ny };
     if (t === 'W') return { action: 'tour', x: nx, y: ny };
+    if (t === 'Y') return { action: 'faille', x: nx, y: ny };
     if (TERRES.actions[k]) return { action: TERRES.actions[k].id, x: nx, y: ny, p: TERRES.actions[k].n };
     if (t === 'P' && !passerelleOk(e)) return { action: 'passerelle', x: nx, y: ny };
     if (t === 'G' && !colOuvert(e)) return { action: 'yeti', x: nx, y: ny };
@@ -999,8 +1001,14 @@ var VL = (function () {
   var DEBUT_SAISONS = new Date(2026, 10, 9).getTime();   // lundi 9 novembre 2026, heure du téléphone : la saison 1 commence
   var PORTE = g(0, 1, 0, 4);              // l'arche dans la Vallée, au bord ouest du ruisseau
   var NB_COFFRES = 6;
-  var TERRES = { saison: null, camp: null, coffres: [], ecrans: [], riviere: -1, feux: [], tour: null, hameau: null, actions: {} };
-  var NB_FEUX = 3, TROC_JOUR = 3, PRIX_CARTE = 3;
+  var TERRES = { saison: null, camp: null, coffres: [], ecrans: [], riviere: -1, feux: [], tour: null, hameau: null, actions: {}, failles: [] };
+  var NB_FEUX = 3, TROC_JOUR = 3, PRIX_CARTE = 3, NB_FAILLES = 2;
+  // Les lieux du Donjon qu'une faille peut ouvrir, par étage (identifiants et noms de donjon/donjon-donnees.js, à tenir ensemble)
+  var LIEUX_FAILLE = {
+    1: [{ id: 'caves', nom: 'Les Caves', de: 'des Caves', ico: '🕳️' }, { id: 'champignonniere', nom: 'La Champignonnière', de: 'de la Champignonnière', ico: '🍄', regle: 'Spores' },
+        { id: 'riviere', nom: 'La Rivière souterraine', de: 'de la Rivière souterraine', ico: '🌊', regle: 'Marée' }],
+    2: [{ id: 'catacombes', nom: 'Les Catacombes', de: 'des Catacombes', ico: '⚰️' }, { id: 'glace', nom: 'La Grotte de glace', de: 'de la Grotte de glace', ico: '❄️', regle: 'Engelures' }]
+  };
   function saisonDe(t) {
     var d = new Date(t == null ? Date.now() : t); d.setHours(0, 0, 0, 0);
     return Math.floor(Math.round((d.getTime() - DEBUT_SAISONS) / 864e5) / DUREE_SAISON);
@@ -1068,7 +1076,16 @@ var VL = (function () {
       var mx = cands.reduce((m, q) => q.d > m.d ? q : m, { d: -1 }).c;
       feux.push(mx); pris.push(mx);
     }
-    var special = (cx, cy) => (hameau.x === cx && hameau.y === cy) ? 'hameau' : (tour.x === cx && tour.y === cy) ? 'tour' : feux.findIndex(c => c.x === cx && c.y === cy);
+    // Les failles du Donjon (3.60) : deux, aussi loin que possible ; la plus lointaine descend plus profond.
+    // Leur propre tirage (r2) : le reste des Terres d'une saison ne change pas.
+    var r2 = alea(Math.imul(saison + 101, 0x5f356495) ^ GRAINE), failles = [];
+    for (var nk = 0; nk < NB_FAILLES; nk++) {
+      var cfa = libres().map(c => ({ c: c, d: Math.min.apply(null, pris.map(p => dist(p, c))) + r2() * 0.5 }));
+      var fx = cfa.reduce((m, q) => q.d > m.d ? q : m, { d: -1 }).c;
+      failles.push(fx); pris.push(fx);
+    }
+    failles.sort((a, b) => dist(a, campE) - dist(b, campE));
+    var special = (cx, cy) => failles.some(c => c.x === cx && c.y === cy) ? 'faille' : (hameau.x === cx && hameau.y === cy) ? 'hameau' : (tour.x === cx && tour.y === cy) ? 'tour' : feux.findIndex(c => c.x === cx && c.y === cy);
     // On retire ce que la saison d'avant avait posé (maisons, habitants)
     for (var ib = BATIMENTS.length - 1; ib >= 0; ib--) if (BATIMENTS[ib].terres) BATIMENTS.splice(ib, 1);
     TERRES.actions = {}; TERRES.feux = [];
@@ -1090,7 +1107,7 @@ var VL = (function () {
         for (yy = 0; yy < mh; yy++) for (xx = 0; xx < mw; xx++) if (mo[yy][xx] !== '.') l[py + yy][px + xx] = mo[yy][xx];
       }
       // Les lieux de la saison : une clairière autour (le chemin passe ensuite)
-      var sp = special(cx, cy), vider = (x0, y0, x1, y1) => { for (yy = y0; yy <= y1; yy++) for (xx = x0; xx <= x1; xx++) l[yy][xx] = r() < 0.15 ? ',' : '.'; };
+      var sp = special(cx, cy), vider = (x0, y0, x1, y1, rr) => { for (yy = y0; yy <= y1; yy++) for (xx = x0; xx <= x1; xx++) l[yy][xx] = (rr || r)() < 0.15 ? ',' : '.'; };
       if (sp === 'hameau') {
         vider(1, 1, 9, 5);
         [[1, 1], [2, 1], [1, 2], [2, 2], [8, 1], [9, 1], [8, 2], [9, 2]].forEach(c => { l[c[1]][c[0]] = 'x'; });
@@ -1098,6 +1115,7 @@ var VL = (function () {
       }
       if (sp === 'tour') { vider(5, 2, 8, 4); l[2][7] = 'W'; }
       if (typeof sp === 'number' && sp >= 0) { vider(2, 2, 5, 4); l[2][3] = 'f'; }
+      if (sp === 'faille') { vider(5, 2, 8, 4, r2); l[2][7] = 'Y'; }
       // Les chemins : du centre vers chaque sortie
       var sorties = { h: cy > 0 && lie(cx, cy, cx, cy - 1), b: cy < TH - 1 && lie(cx, cy, cx, cy + 1), g: cx > 0 && lie(cx, cy, cx - 1, cy), d: cx < TW - 1 && lie(cx, cy, cx + 1, cy) };
       l[4][5] = ':';
@@ -1119,7 +1137,7 @@ var VL = (function () {
       ajouterEcran(TX + cx, TY + cy, E);
       TERRES.ecrans.push({ ex: TX + cx, ey: TY + cy });
       // Cases où l'on pourra poser un coffre : de l'herbe qu'on atteint depuis le centre, loin du chemin
-      if (!camp && sp === -1) {
+      if (!camp && (sp === -1 || sp === 'faille')) {   // un coffre peut tomber près d'une faille (hors de sa clairière) : les coffres d'une saison ne bougent pas
         var vu = {}, file = [[5, 4]]; vu['5,4'] = 1;
         while (file.length) {
           var q = file.shift();
@@ -1129,7 +1147,7 @@ var VL = (function () {
             vu[nx + ',' + ny] = 1; file.push([nx, ny]);
           });
         }
-        var cand = Object.keys(vu).map(k => k.split(',').map(Number)).filter(c => (l[c[1]][c[0]] === '.' || l[c[1]][c[0]] === ',') && c[0] !== 5 && c[1] !== 4 && Math.abs(c[0] - 5) + Math.abs(c[1] - 4) >= 3);
+        var cand = Object.keys(vu).map(k => k.split(',').map(Number)).filter(c => (l[c[1]][c[0]] === '.' || l[c[1]][c[0]] === ',') && c[0] !== 5 && c[1] !== 4 && Math.abs(c[0] - 5) + Math.abs(c[1] - 4) >= 3 && !(sp === 'faille' && c[0] >= 4 && c[0] <= 9 && c[1] >= 1 && c[1] <= 5));
         if (cand.length) places.push({ ex: TX + cx, ey: TY + cy, cand: cand });
       }
     }
@@ -1149,6 +1167,12 @@ var VL = (function () {
     TERRES.feux.push({ id: 'camp', nom: 'Feu du camp', x: TX * W + 3, y: (TY + campY) * H + 2, ex: TX, ey: TY + campY });
     feux.forEach((c, k) => TERRES.feux.push({ id: 'f' + (k + 1), nom: 'Feu ' + (biome(c.x, c.y) === 'foret' ? 'de la forêt' : 'des collines') + ' (' + direction(c) + ')',
                                               x: (TX + c.x) * W + 3, y: (TY + c.y) * H + 2, ex: TX + c.x, ey: TY + c.y }));
+    // Les failles : profondeur 1 (la plus proche du camp) et 2, lieu du Donjon tiré parmi ceux de cet étage
+    TERRES.failles = failles.map((c, k) => {
+      var et = k + 1, L = LIEUX_FAILLE[et][Math.floor(r2() * LIEUX_FAILLE[et].length)];
+      return { k: k, id: saison + ':' + k, etage: et, lieu: L.id, nomLieu: L.nom, ico: L.ico, regle: L.regle || '', nom: 'La faille ' + L.de,
+               x: (TX + c.x) * W + 7, y: (TY + c.y) * H + 2, ex: TX + c.x, ey: TY + c.y, etoiles: et === 1 ? 6 : 10, cristaux: et };
+    });
     // Les coffres de la saison, dans des écrans différents
     for (var n = 0; n < NB_COFFRES && places.length; n++) {
       var P = places.splice(ri(places.length), 1)[0], c = P.cand[ri(P.cand.length)], Ec = ecranA(P.ex, P.ey);
@@ -1167,13 +1191,14 @@ var VL = (function () {
     if (e.terres && e.terres.s != null && e.carnet) {
       var vus = Object.keys(e.brume).filter(k => { var c = k.split(',').map(Number); return c[0] >= TX && c[0] < TX + TW && c[1] >= TY && c[1] < TY + TH; }).length;
       if (vus) {
-        e.carnet.saisons.push({ n: e.terres.s + 1, ecrans: vus, feux: Object.keys(e.terres.feux || {}).length, coffres: Object.keys(e.terres.ouv || {}).length, rum: e.terres.rum | 0, tour: !!e.terres.tour, carto: !!e.terres.carto });
+        e.carnet.saisons.push({ n: e.terres.s + 1, ecrans: vus, feux: Object.keys(e.terres.feux || {}).length, coffres: Object.keys(e.terres.ouv || {}).length, rum: e.terres.rum | 0, tour: !!e.terres.tour, carto: !!e.terres.carto,
+                                failles: Object.keys(e.terres.failles || {}).length });
         e.carnet.saisons = e.carnet.saisons.slice(-12);
       }
     }
     Object.keys(e.brume).forEach(k => { var c = k.split(',').map(Number); if (c[0] >= TX && c[0] < TX + TW && c[1] >= TY && c[1] < TY + TH) delete e.brume[k]; });
     var avant = e.terres && e.terres.s;
-    e.terres = { s: n, ouv: {}, feux: {}, tour: false, carto: false, troc: { j: '', n: 0 }, rum: 0 };
+    e.terres = { s: n, ouv: {}, feux: {}, tour: false, carto: false, troc: { j: '', n: 0 }, rum: 0, failles: {} };
     if (dansTerres(e.x, e.y)) { e.x = TERRES.camp.x + 2; e.y = TERRES.camp.y; e.dir = 'd'; }
     reveler(e);
     return avant != null;   // vrai s'il y avait une saison avant (on l'annonce)
@@ -1274,6 +1299,25 @@ var VL = (function () {
     return null;
   }
 
+  // ---------- Les failles du Donjon (3.60) ----------
+  // On fonce dans une faille : on descend (page du Donjon, un seul étage, au lieu de la faille). Le boss vaincu, elle se referme pour la saison.
+  function failleEn(x, y) { return TERRES.failles.find(F => F.x === x && F.y === y) || null; }
+  function failleFermee(e, F) { return !!(F && e.terres && e.terres.failles[F.k]); }
+  // Ce que la page du Donjon reçoit (`vallee-faille`)
+  function defiFaille(F) { return { id: F.id, saison: TERRES.saison, k: F.k, nom: F.nom, lieu: F.lieu, etage: F.etage, ico: F.ico }; }
+  // Le résultat rapporté par le Donjon (`vallee-faille-resultat` = { id, gagne }) : la récompense, une fois par faille et par saison
+  function resultatFaille(e, r) {
+    if (!r || typeof r.id !== 'string') return null;
+    var F = TERRES.failles.find(q => q.id === r.id);
+    if (!F) return { perime: true };
+    if (!r.gagne) return { perdu: true, faille: F };
+    if (failleFermee(e, F)) return { deja: true, faille: F };
+    e.terres.failles[F.k] = 1;
+    var c = Math.min(SAC_MAX - (e.sac.cristal | 0), F.cristaux);
+    e.sac.cristal = (e.sac.cristal | 0) + c;
+    return { gagne: true, faille: F, etoiles: F.etoiles, cristaux: c };
+  }
+
   // ---------- Rumeurs du lundi et carnet de voyage (3.59) ----------
   // Chaque lundi, 3 rumeurs (les mêmes pour tous) : un objet caché à quelques pas d'un repère des Terres (feu, tour, hameau, pont).
   // On ne suit pas de flèche : on lit la rumeur, on trouve le repère, on compte ses pas. Rien n'est dessiné : on le trouve en marchant dessus.
@@ -1360,14 +1404,14 @@ var VL = (function () {
     return {
       semaine: { w: w, debut: debutSemaine(w), fin: debutSemaine(w + 1), rumeurs: rumeursDe(w).map(R => ({ id: R.id, texte: R.texte, trouve: !!e.rumeurs.ok[R.id], ico: R.objet.ico, objet: R.objet.nom })) },
       saison: { numero: it.numero, fin: it.fin, ecrans: vus, total: TW * TH, feux: Object.keys(e.terres.feux).length, nbFeux: NB_FEUX, coffres: Object.keys(e.terres.ouv).length, nbCoffres: NB_COFFRES,
-                tour: !!e.terres.tour, carto: !!e.terres.carto, rum: e.terres.rum | 0 },
+                tour: !!e.terres.tour, carto: !!e.terres.carto, rum: e.terres.rum | 0, failles: Object.keys(e.terres.failles).length, nbFailles: NB_FAILLES },
       passees: e.carnet.saisons.slice().reverse(), total: e.carnet.total | 0
     };
   }
 
   function infoTerres() {
     return { saison: TERRES.saison, numero: TERRES.saison + 1, fin: finSaison(TERRES.saison), camp: Object.assign({}, TERRES.camp), coffres: TERRES.coffres.slice(),
-             feux: TERRES.feux.map(F => Object.assign({}, F)), tour: Object.assign({}, TERRES.tour), hameau: Object.assign({}, TERRES.hameau),
+             feux: TERRES.feux.map(F => Object.assign({}, F)), failles: TERRES.failles.map(F => Object.assign({}, F)), tour: Object.assign({}, TERRES.tour), hameau: Object.assign({}, TERRES.hameau),
              riviere: TERRES.riviere, x0: TX * W, y0: TY * H, x1: (TX + TW) * W, y1: (TY + TH) * H, ex0: TX, ey0: TY, ex1: TX + TW - 1, ey1: TY + TH - 1 };
   }
   // Les régions de la carte du monde (le cœur, les Terres), en cases
@@ -1397,6 +1441,7 @@ var VL = (function () {
     queteSuivie: queteSuivie, consigne: consigne, cible: cible, pas: pas, parler: parler, tableau: tableau, agir: agir, fouiller: fouiller,
     PORTE: PORTE, saisonDe: saisonDe, genererTerres: genererTerres, terresPretes: terresPretes, changerSaison: changerSaison, traverser: traverser,
     semaineDe: semaineDe, rumeursDe: rumeursDe, trouverRumeur: trouverRumeur, carnet: carnet, majRumeurs: majRumeurs,
+    failleEn: failleEn, failleFermee: failleFermee, defiFaille: defiFaille, resultatFaille: resultatFaille, NB_FAILLES: NB_FAILLES,
     feuEn: feuEn, feuAllume: feuAllume, allumer: allumer, destinations: destinations, voyager: voyager, monterTour: monterTour, trocsRestants: trocsRestants, PRIX_CARTE: PRIX_CARTE,
     ouvrirCoffreT: ouvrirCoffreT, infoTerres: infoTerres, dansTerres: dansTerres, regions: regions, regionDe: regionDe, partVueTerres: partVueTerres
   };

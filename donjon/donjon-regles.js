@@ -316,11 +316,20 @@ var DJ = (function () {
               nbJ: noms.length, salles: {}, depart: null, bossSalle: null, carteV: 1, ennemis: [], seq: 0, joueurs: {}, cles: 0, grandeCle: false,
               poussiere: 0, objets: [], effets: [], annonces: [], vues: {}, fin: null, debut: 0, maintenant: 0, pouvoirs: pouvoirs, combats: {},
               lieux: tirerLieux(graine, options.lieux) };
+    // Une faille des Terres de la Vallée (3.60) : un seul étage, au lieu imposé ; vaincre son boss referme la faille
+    if (options.faille && options.faille.etage >= 1 && options.faille.etage <= NB_ETAGES) {
+      var F = options.faille;
+      e.faille = { id: String(F.id || ''), nom: String(F.nom || 'Une faille'), etage: F.etage | 0 };
+      if (F.lieu && D.LIEUX[F.lieu] && (D.LIEUX[F.lieu].etage || D.ETAGES.findIndex(E => E.id === F.lieu) + 1) === e.faille.etage) e.lieux[e.faille.etage - 1] = F.lieu;
+      e.etage = e.faille.etage - 1;
+    }
     var avs = options.avantages || {};
     noms.forEach(n => ajouterJoueur(e, n, joueurs[n], avs[n]));
     etageSuivant(e);
     return e;
   }
+  // Le dernier étage : le 3e, ou celui de la faille
+  function dernierEtage(e) { return !!e.faille || e.etage >= NB_ETAGES; }
   function etageSuivant(e) {
     e.etage++;
     var c = generer(e.graine, e.pouvoirs, e.nbJ, e.etage, lieuDe(e));
@@ -1334,17 +1343,17 @@ var DJ = (function () {
       donnerOr(e, p, or);
       var fiole = rang !== 'boss' && h() < (rang === 'elite' ? 0.5 : 0.35) ? donnerFiole(e, p, null, h) : null;
       var relique = rang === 'elite' ? donnerRelique(e, p, null, h) : null;
-      if (rang === 'boss' && e.etage < NB_ETAGES) {
+      if (rang === 'boss' && !dernierEtage(e)) {
         var bl = melanger(Object.keys(RELIQUES).filter(r => RELIQUES[r].rar === 'boss' && !a(p, r)), h).slice(0, 3);
         if (bl.length) p.menus.push({ type: 'reliqueBoss', choix: bl });
       }
-      if (!(rang === 'boss' && e.etage >= NB_ETAGES)) p.menus.push({ type: 'butin', rang: rang, or: or, fiole: fiole, relique: relique, cartes: tirerCartes(p, a(p, 'de') ? 4 : 3, rang, h) });
+      if (!(rang === 'boss' && dernierEtage(e))) p.menus.push({ type: 'butin', rang: rang, or: or, fiole: fiole, relique: relique, cartes: tirerCartes(p, a(p, 'de') ? 4 : 3, rang, h) });
     });
     if (ensemble) annonce(e, '❤️ Victoire à plusieurs : chacun reprend son souffle (+' + Math.round(D.SOIN_GROUPE * 100) + ' % des PV).');
     if (rang === 'boss') {
-      if (e.etage >= NB_ETAGES) {
+      if (dernierEtage(e)) {
         e.phase = 'fin'; e.fin = { gagne: true, t: e.maintenant, etage: e.etage };
-        annonce(e, '🎉 ' + MONSTRES[lieuDe(e).boss].nom + ' est vaincue ! Le donjon est à vous !');
+        annonce(e, '🎉 ' + MONSTRES[lieuDe(e).boss].nom + (e.faille ? ' est vaincu : la faille se referme !' : ' est vaincue ! Le donjon est à vous !'));
       } else {
         var S = e.salles[c.salle];
         poser(S, CENTRE[0], CENTRE[1], 'E'); e.carteV++;

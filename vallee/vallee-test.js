@@ -430,6 +430,10 @@ for (var sn = -5; sn < nbSaisons - 5; sn++) {
   if (VL.BATIMENTS.filter(b => b.terres).length !== 2) ok1 = false;
   VL.BATIMENTS.filter(b => b.terres).forEach(b => { if (!proche(b.x, b.y + 1) || VL.tuile(b.x, b.y) !== 'x') ok1 = false; });
   if (I.coffres.some(c => [I.hameau, I.tour].concat(I.feux).some(L => L.ex === Math.floor(c.x / 11) && L.ey === Math.floor(c.y / 9)))) ok1 = false;
+  // Les failles (3.60) : deux, profondeur 1 puis 2, dans leurs propres écrans, atteignables
+  if (I.failles.length !== 2 || I.failles[0].etage !== 1 || I.failles[1].etage !== 2) ok1 = false;
+  I.failles.forEach(F => { if (VL.tuile(F.x, F.y) !== 'Y' || !proche(F.x, F.y) || [I.hameau, I.tour].concat(I.feux).some(L => L.ex === F.ex && L.ey === F.ey)) ok1 = false; });
+  if (I.failles[0].ex === I.failles[1].ex && I.failles[0].ey === I.failles[1].ey) ok1 = false;
   if (!ok1) { mauvais++; if (mauvais < 4) console.log('  saison ' + sn + ' incorrecte'); }
 }
 verif(mauvais === 0, nbSaisons + ' saisons générées, toutes justes (' + coffresVus + ' coffres) en ' + (Date.now() - t0) + ' ms');
@@ -542,6 +546,23 @@ var sv15 = JSON.parse(JSON.stringify(eR14)); sv15.terres.s = sv15.terres.s - 1; 
 var e15 = VL.charger(sv15); VL.terresPretes();
 verif(e15.carnet.saisons.length === 1 && e15.carnet.saisons[0].n === sv15.terres.s + 1 && e15.carnet.saisons[0].rum === 3 && e15.carnet.saisons[0].feux === 1 && e15.carnet.saisons[0].ecrans > 0 && e15.terres.rum === 0 && e15.carnet.total === 3, 'saison passée dans le carnet');
 verif(VL.charger({ v: 1, carnet: { total: -3, saisons: [null, { n: 'x' }, { n: 2, ecrans: 9 }] } }).carnet.saisons.length === 1, 'carnet abîmé');
+
+// 15. Les failles du Donjon (3.60)
+VL.terresPretes();
+var IF = VL.infoTerres(), F0 = IF.failles[0], F1 = IF.failles[1], eF15 = VL.nouvelEtat(); VL.traverser(eF15, 'aller');
+eF15.x = F0.x; eF15.y = F0.y + 1;
+verif(VL.pas(eF15, 'h', {}).action === 'faille' && VL.failleEn(F0.x, F0.y).id === F0.id, 'on fonce dans une faille');
+var dF = VL.defiFaille(F0);
+verif(dF.etage === 1 && dF.lieu === F0.lieu && dF.id === F0.id && dF.nom.indexOf('faille') > 0, 'le défi envoyé au Donjon : ' + dF.nom);
+verif(VL.resultatFaille(eF15, { id: F0.id, gagne: false }).perdu && !VL.failleFermee(eF15, F0), 'faille ratée : toujours ouverte');
+eF15.sac.cristal = 0;
+var rF = VL.resultatFaille(eF15, { id: F0.id, gagne: true });
+verif(rF.gagne && rF.etoiles === 6 && eF15.sac.cristal === 1 && VL.failleFermee(eF15, F0) && VL.resultatFaille(eF15, { id: F0.id, gagne: true }).deja, 'faille refermée : une seule récompense');
+verif(VL.resultatFaille(eF15, { id: '99:1', gagne: true }).perime && VL.resultatFaille(eF15, { id: F1.id, gagne: true }).etoiles === 10, 'faille d\'une autre saison ignorée ; profondeur 2 : 10 ⭐');
+verif(VL.carnet(eF15).saison.failles === 2, 'le carnet compte les failles');
+var sv16 = JSON.parse(JSON.stringify(eF15)); verif(VL.failleFermee(VL.charger(sv16), F0), 'failles gardées au rechargement');
+sv16.terres.s--; var e16 = VL.charger(sv16); VL.terresPretes();
+verif(!Object.keys(e16.terres.failles).length && e16.carnet.saisons.slice(-1)[0].failles === 2, 'nouvelle saison : failles rouvertes, archivées dans le carnet');
 
 console.log(ok + ' vérifications réussies, ' + ko + ' échec(s)');
 process.exit(ko ? 1 : 0);

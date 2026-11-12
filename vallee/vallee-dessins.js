@@ -592,6 +592,25 @@ var VLD = (function () {
       // une longue-vue posée sur la rambarde
       '<path d="M' + (X + 26) + ' ' + (haut + 10) + 'l7-4" stroke="#495057" stroke-width="2.6" stroke-linecap="round"/><path d="M' + (X + 30) + ' ' + (haut + 8) + 'l3-1.7" stroke="#e0a83a" stroke-width="2.8" stroke-linecap="round"/>';
   }
+  // Une faille du Donjon dans les Terres (3.60) : une déchirure dans la terre, lueur violette, éclats de roche et poussière qui monte ;
+  // refermée : une cicatrice de pierre scellée de runes éteintes
+  function faille(X, Y, fermee) { var cx = X + 16, cy = Y + 18; return '<g transform="translate(' + cx + ' ' + (cy - 2) + ') scale(1.55) translate(' + (-cx) + ' ' + (-cy) + ')">' + failleBrute(X, Y, fermee) + '</g>'; }
+  function failleBrute(X, Y, fermee) {
+    var cx = X + 16, cy = Y + 18;
+    var bord = 'M' + (cx - 17) + ' ' + (cy + 2) + 'l6-6 5 3 4-7 5 4 6-5 5 6 4-2 -3 8 -6 4 -5 -2 -6 5 -6-3 -5 2z';
+    var cailloux = [[-19, 6, 3.4], [16, -6, 3], [18, 7, 2.6], [-14, -8, 2.4], [6, 11, 2.2]].map(c => '<ellipse cx="' + (cx + c[0]) + '" cy="' + (cy + c[1]) + '" rx="' + c[2] + '" ry="' + (c[2] * 0.75) + '" fill="#8a847c" stroke="' + OLB + '" stroke-width=".9"/>').join('');
+    if (fermee) return '<ellipse cx="' + cx + '" cy="' + (cy + 4) + '" rx="20" ry="7" fill="rgba(10,10,20,.25)"/>' +
+      '<path d="' + bord + '" fill="#6b6460" stroke="' + OLB + '" stroke-width="1.4" stroke-linejoin="round"/>' +
+      '<path d="M' + (cx - 11) + ' ' + cy + 'l5-3 5 2 5-4 6 3" stroke="#4b4542" stroke-width="1.8" fill="none"/>' +
+      [[-8, -1], [0, -3], [8, 0]].map(c => '<path d="M' + (cx + c[0]) + ' ' + (cy + c[1] - 3) + 'v5m-2.5-2.5h5" stroke="#b197fc" stroke-width="1.2" opacity=".55"/>').join('') + cailloux;
+    return '<circle cx="' + cx + '" cy="' + (cy - 4) + '" r="26" fill="url(#vl-portail)" class="vl-halo"/>' +
+      '<ellipse cx="' + cx + '" cy="' + (cy + 4) + '" rx="21" ry="8" fill="rgba(20,5,40,.35)"/>' +
+      '<path d="' + bord + '" fill="#1b0f2e" stroke="' + OLB + '" stroke-width="1.6" stroke-linejoin="round"/>' +
+      '<path d="' + bord + '" fill="none" stroke="#9775fa" stroke-width="1.2" stroke-linejoin="round" class="vl-lueur" transform="translate(' + f(cx * 0.12) + ' ' + f(cy * 0.12) + ') scale(.88)"/>' +
+      '<path d="M' + (cx - 10) + ' ' + (cy + 1) + 'l5-4 4 3 5-5 6 3" stroke="#e5dbff" stroke-width="1.4" fill="none" opacity=".8" class="vl-lueur"/>' +
+      cailloux +
+      '<g class="vl-faille">' + [[-6, -10, 1.6], [4, -16, 1.3], [-1, -22, 1.1], [9, -9, 1.2]].map(c => '<circle cx="' + (cx + c[0]) + '" cy="' + (cy + c[1]) + '" r="' + c[2] + '" fill="#d0bfff"/>').join('') + '</g>';
+  }
   function coffre(X, Y, ouvert) {
     return (ouvert ? '' : '<circle cx="' + (X + 16) + '" cy="' + (Y + 18) + '" r="15" fill="url(#vl-lueur)" class="vl-halo"/>') +
       '<ellipse cx="' + (X + 16) + '" cy="' + (Y + 28) + '" rx="12" ry="3" fill="rgba(0,0,0,.3)"/>' +
@@ -1038,6 +1057,7 @@ var VLD = (function () {
       else if (t === 'O') poser(y + 0.2, arche(X + 3, Y));
       else if (t === 'f') poser(y, feuCamp(X, Y, !VL.feuAllume(e, VL.feuEn(gx2, gy2))));
       else if (t === 'W') poser(y + 0.3, tourGuet(X, Y, !!(e.terres && e.terres.tour)));
+      else if (t === 'Y') poser(y - 0.2, faille(X, Y, VL.failleFermee(e, VL.failleEn(gx2, gy2))));
       else if (t === 'e') poser(y, etabli(X, Y, ctx.atelier));
       else if (VL.OBSTACLES[t]) poser(y - 0.1, obstacle(t, X, Y, VL.ouvert(e, gx2, gy2), ctx.flair));
       if (t === 'm' && tu(gx2 - 1, gy2) !== 'm') poser(y, etal(X, Y) + bulleQuete(X + 32, Y - 26, ctx.marques && ctx.marques.pipa));
@@ -1114,7 +1134,7 @@ var VLD = (function () {
   // ---------- La carte du monde, sous le brouillard (10 unités par case) ----------
   var COUL = { '.': '#a9d18e', ',': '#b8dc96', ':': '#e7cf9b', '=': '#c08a4e', T: '#5d9b4c', S: '#4b8650', b: '#77b35f', h: '#6aa653', o: '#a9d18e',
                '~': '#7fbde8', x: '#c98a6a', e: '#b07a45', m: '#e8590c', Q: '#b07a45', F: '#9ab', c: '#a9d18e', r: '#3d7a3a', R: '#9e9e9e', v: '#6b5040', s: '#3f7a35',
-               y: '#7d9a4a', '-': '#c08a4e', P: '#a07a52', p: '#9e9e9e', C: '#97b07a', k: '#8a857c', G: '#d7e9f7', B: '#e9c46a', O: '#9775fa', Z: '#a9d18e', f: '#e8590c', W: '#8d5a2b' };
+               y: '#7d9a4a', '-': '#c08a4e', P: '#a07a52', p: '#9e9e9e', C: '#97b07a', k: '#8a857c', G: '#d7e9f7', B: '#e9c46a', O: '#9775fa', Z: '#a9d18e', f: '#e8590c', W: '#8d5a2b', Y: '#5f3dc4' };
   var COUL_BRUME = { '.': '#8fb987', ',': '#98c190', T: '#467a44', S: '#3d6e46' };
   var COUL_MARAIS = { '.': '#97b47a', ',': '#a3bd86', ':': '#c9b07e', '~': '#5f9a8a', T: '#4f7d3c' };
   var COUL_SOL = { colline: { '.': '#c3d68a', ',': '#cbdc94', T: '#5d9b4c' }, roche: { '.': '#bdb6a6', ',': '#c4bdad', ':': '#d6c49c' }, alpage: { '.': '#a2d47c', ',': '#aedb88', ':': '#e2cf9b' },
@@ -1177,6 +1197,7 @@ var VLD = (function () {
     // Les feux (3.58) : allumés 🔥, éteints en cendres ; la tour de guet se voit de loin, même sous la brume
     IT.feux.forEach(F => { if (F.id !== 'camp') rep.push([F.x, F.y, VL.feuAllume(e, F) ? '🔥' : '', !VL.feuAllume(e, F)]); });
     rep.push([IT.tour.x, IT.tour.y, '🗼', false, true]);
+    IT.failles.forEach(F => rep.push([F.x, F.y, VL.failleFermee(e, F) ? '🪨' : '🕳️', false, false]));
     rep.forEach(q => {
       if (!q[4] && !VL.estVu(e, q[0], q[1], b)) return;
       if (q[3]) s.push('<circle cx="' + (q[0] * U + 5) + '" cy="' + (q[1] * U + 5) + '" r="' + f(3.6 * K) + '" fill="#5c534c" stroke="#fff" stroke-width="1.2"/>');

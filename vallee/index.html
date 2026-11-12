@@ -54,6 +54,8 @@
                              background: rgba(255,248,231,0.88); border: 1px solid #c9a874; border-radius: 10px; padding: 1px 9px; pointer-events: none; }
     .carte-vl .echelle-vl { position: absolute; left: 5px; bottom: 5px; width: 34px; height: 34px; border-radius: 10px; border: 1px solid #8d6a3f; background: rgba(28,20,15,0.85); font-size: 1.05em; line-height: 1; padding: 0; cursor: pointer; }
     .vl-fanion { animation: vl-fanion 1.6s ease-in-out infinite alternate; transform-box: fill-box; transform-origin: left center; }
+    .vl-faille { animation: vl-faille 2.4s ease-out infinite; }
+    @keyframes vl-faille { from { transform: translateY(4px); opacity: 0; } 30% { opacity: 1; } to { transform: translateY(-10px); opacity: 0; } }
     @keyframes vl-fanion { from { transform: scaleX(1); } to { transform: scaleX(0.82) skewY(4deg); } }
     .carte-vl .rose { position: absolute; right: 6px; bottom: 4px; font: 900 0.7em Georgia, serif; color: #8a6a46; opacity: 0.8; pointer-events: none; }
     .vl-cible { animation: vl-palpite 1.2s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
@@ -103,7 +105,7 @@
     .vl-braise { animation: vl-scintille 0.9s ease-in-out infinite; }
     .vl-yeux { animation: vl-yeux 4.5s infinite; }
     @keyframes vl-yeux { 0%, 44%, 50%, 100% { opacity: 1; } 47% { opacity: 0; } }
-    @media (prefers-reduced-motion: reduce) { .vl-respire, .vl-bulle, .vl-fumee, .vl-vague, .vl-fleche, .vl-scintille, .vl-brille, .vl-lueur, .vl-yeux, .vl-cible, .vl-moi, .vl-fanion, .fondu-vl, .ent.marche .sp { animation: none; } }
+    @media (prefers-reduced-motion: reduce) { .vl-respire, .vl-bulle, .vl-fumee, .vl-vague, .vl-fleche, .vl-scintille, .vl-brille, .vl-lueur, .vl-yeux, .vl-cible, .vl-moi, .vl-fanion, .vl-faille, .fondu-vl, .ent.marche .sp { animation: none; } }
 
     /* Commandes : la croix du Donjon, et un panneau pour les annonces */
     .commandes-vl { flex: none; display: flex; align-items: center; gap: 8px; }
@@ -427,11 +429,12 @@
           <span><b>{{ carnetVue.saison.rum }}</b><small>rumeurs</small></span>
           <span><b>{{ carnetVue.saison.tour ? '✓' : '–' }}</b><small>tour de guet</small></span>
           <span><b>{{ carnetVue.saison.carto ? '✓' : '–' }}</b><small>carte</small></span>
+          <span><b>{{ carnetVue.saison.failles }}</b>/{{ carnetVue.saison.nbFailles }}<small>failles refermées</small></span>
         </div>
         <template v-if="carnetVue.passees.length">
           <h3>📚 Saisons passées</h3>
           <div v-for="a in carnetVue.passees" :key="a.n" class="passee-c">
-            <b>Saison {{ a.n }}</b> · {{ a.ecrans }}/64 lieux · {{ a.feux }} feu{{ a.feux > 1 ? 'x' : '' }} · {{ a.coffres }} coffre{{ a.coffres > 1 ? 's' : '' }} · {{ a.rum }} rumeur{{ a.rum > 1 ? 's' : '' }}{{ a.tour ? ' · 🗼' : '' }}{{ a.carto ? ' · 🗺️' : '' }}
+            <b>Saison {{ a.n }}</b> · {{ a.ecrans }}/64 lieux · {{ a.feux }} feu{{ a.feux > 1 ? 'x' : '' }} · {{ a.coffres }} coffre{{ a.coffres > 1 ? 's' : '' }} · {{ a.rum }} rumeur{{ a.rum > 1 ? 's' : '' }}{{ a.failles ? ' · ' + a.failles + ' faille' + (a.failles > 1 ? 's' : '') : '' }}{{ a.tour ? ' · 🗼' : '' }}{{ a.carto ? ' · 🗺️' : '' }}
           </div>
         </template>
         <p class="sous" v-if="carnetVue.total" style="margin-top:8px">En tout, {{ carnetVue.total }} rumeur{{ carnetVue.total > 1 ? 's' : '' }} vérifiée{{ carnetVue.total > 1 ? 's' : '' }} de tes propres pattes.</p>
@@ -585,6 +588,7 @@
           <li><b>Pouvoir de ton compagnon</b> : ronces 🔥, rocher 💪, trou 🦘, buisson très épais 👃. Fonce dans l'obstacle qui va avec ton pouvoir pour l'ouvrir.</li>
           <li><b>Les Terres de la saison</b> : passe la Porte des brumes, au bord ouest du ruisseau. Allume les feux de camp (une bûche 🪵) pour y revenir d'un coup ; grimpe à la tour de guet ; au hameau, Barnabé troque des cristaux et Mlle Taupinette vend sa carte. Le bouton 🗺️ de la carte montre toute la région.</li>
           <li><b>Les rumeurs du lundi</b> : chaque lundi, le tableau de quêtes du village donne 3 rumeurs. Chacune cache un objet à quelques pas d'un repère des Terres (un feu, la tour, un habitant du hameau, un pont) : un pas, c'est une case. Marche dessus pour le trouver. Ton carnet de voyage (menu ☰) les garde, avec le bilan de chaque saison.</li>
+          <li><b>Les failles du Donjon</b> : deux par saison, dans les Terres. On y descend pour un seul étage, en Normal, avec son héros de la semaine ; vaincre le boss referme la faille (étoiles et cristaux). La plus lointaine est plus profonde, donc plus dure.</li>
           <li><b>Récolter</b> : marche sur le bois mort 🪵, les cailloux 🪨, les herbes 🌿 et les cristaux 💎. Chaque point repousse le lendemain. Ton sac en garde {{ VL.SAC_MAX }} de chaque. Ton pouvoir double une ressource : 🔥 le bois, 💪 la pierre, 🦘 les plantes ; 👃 montre les cristaux sur la carte.</li>
           <li><b>Fabriquer</b> (après la quête de Bruno) : de la déco à l'établi devant ta maison, des fioles pour le Donjon chez Mme Sauge, des outils à la forge. Fonce dans l'établi, la hutte ou la forge.</li>
           <li><b>La carte</b> se dévoile au fil de tes pas. L'anneau orange montre où aller pour ta quête.</li>
@@ -699,7 +703,7 @@
           var atelier = VL.ouvertFab(etat, 'etabli');
           var defile = VL.defile(etat.x, etat.y);
           var cle = [defile ? 'q' : c.ex, c.ey, JSON.stringify(etat.ouverts), JSON.stringify(etat.pris), etat.coffre, etat.coffreM, VL.ORDRE_QUETES.map(id => VL.etatQuete(etat, id)).join(), JSON.stringify(this.marques), this.tableauMarque, this.animal && this.animal.nom,
-                     JSON.stringify(etat.recolte), this.jour, atelier, defile ? JSON.stringify(this.parcelles) : ''].join('|');
+                     JSON.stringify(etat.recolte), JSON.stringify(etat.terres), this.jour, atelier, defile ? JSON.stringify(this.parcelles) : ''].join('|');
           if (cle === this._cleEcran) return this._svgEcran;
           this._cleEcran = cle;
           var ctx = { flair: this.pouvoir === 'flair', plaque: this.animal ? 'Chez ' + this.animal.nom : 'Ma maison', marques: this.marques, tableauMarque: this.tableauMarque, atelier: atelier, jour: this.jour, parcelles: this.parcelles,
@@ -775,7 +779,7 @@
       created: function() {
         // Une victoire au Donjon depuis la dernière visite (quête du gardien) : on le dit tout de suite
         if (VL.verifier(etat, this.ctx)) { this.sauver(); this.annoncer('⚔️ La garde a appris ta victoire ! Va voir le tableau de quêtes.'); }
-        setTimeout(() => this.lireResultatBoss(), 600);
+        setTimeout(() => { this.lireResultatBoss(); this.lireResultatFaille(); }, 600);
         this.verifierSaison();
         this.montrerLieu(false);
         this._bloque = false; this._dernierPas = 0; this._annId = 0;
@@ -818,7 +822,7 @@
         // Plein écran du navigateur (comme au Donjon) : demandé au premier toucher
         document.addEventListener('pointerdown', () => { if (this.pleinEcran && !this._fsDemande) { this._fsDemande = true; this.pleinEcranNavigateur(); } }, true);
         // De retour d'une autre page (bouton « précédent ») : on enlève le voile noir et on relit ce qui a pu changer
-        window.addEventListener('pageshow', () => { this.sortie = false; this.animal = lireStockage('compagnon-animal'); this.etoiles = Etoiles.solde(); if (VL.verifier(etat, this.ctx)) { this.sauver(); this.annoncer('⚔️ La garde a appris ta victoire ! Va voir le tableau de quêtes.'); } this.lireResultatBoss(); this.verifierSaison(); this.v++; });
+        window.addEventListener('pageshow', () => { this.sortie = false; this.animal = lireStockage('compagnon-animal'); this.etoiles = Etoiles.solde(); if (VL.verifier(etat, this.ctx)) { this.sauver(); this.annoncer('⚔️ La garde a appris ta victoire ! Va voir le tableau de quêtes.'); } this.lireResultatBoss(); this.lireResultatFaille(); this.verifierSaison(); this.v++; });
         if (!lireStockage('vallee-accueil-vu')) {
           ecrireStockage('vallee-accueil-vu', true);
           this.lire({ ico: '🏞️', titre: 'Bienvenue dans la Vallée !', texte: (this.animal ? 'Te voilà devant chez ' + this.animal.nom + '. ' : 'Te voilà au village. ') +
@@ -1035,6 +1039,16 @@
             return this.lire({ ico: '🗼', titre: 'La tour de guet', texte: tw.premiere ? 'Tu grimpes l\'échelle, barreau après barreau… Du haut de la tour, les Terres s\'étendent à perte de vue : tout ce qui t\'entoure se dessine sur ta carte. Regarde bien : des fumées montent ici et là, ce sont peut-être des feux de camp.'
                                                          : 'Le vent souffle là-haut. Les Terres alentour sont déjà sur ta carte.' });
           }
+          if (id === 'faille') {   // une faille du Donjon (3.60)
+            var FA = VL.failleEn(r.x, r.y);
+            if (!FA) return;
+            if (VL.failleFermee(etat, FA)) return this.annoncer('🪨 ' + FA.nom + ' est refermée : des runes éteintes la scellent jusqu\'à la prochaine saison.');
+            var enCours = lireStockage('donjon-faille'), autre = enCours && enCours.phase === 'jeu' && enCours.faille && enCours.faille.id !== FA.id;
+            return this.lire({ ico: FA.ico, titre: FA.nom, texte: 'Une déchirure dans la terre, d\'où monte une lueur violette… Elle descend vers ' + FA.nomLieu.charAt(0).toLowerCase() + FA.nomLieu.slice(1) +
+                ' (profondeur ' + FA.etage + (FA.regle ? ', règle : ' + FA.regle : '') + '). Un seul étage, en Normal, avec ton héros de la semaine. Vaincs son boss pour la refermer : ' + FA.etoiles + ' ⭐ et ' + FA.cristaux + ' 💎.' +
+                (FA.etage > 1 ? ' Plus profonde, elle demande un héros déjà aguerri.' : '') + (autre ? ' (Tu quitteras l\'autre faille où tu étais descendu.)' : ''),
+              boutons: [{ t: '⬇️ Descendre', principal: true, f: () => this.descendreFaille(FA) }, { t: 'Plus tard', f: () => this.fermer() }] });
+          }
           if (id === 'chaumiere') return this.annoncer(r && r.p === 1 ? '🗺️ La chaumière de Mlle Taupinette. Des cartes sèchent à la fenêtre, et la porte est couverte de terre.' : '🦡 La chaumière de Barnabé. Ça sent le cuir et le bois verni ; sa hotte attend devant la porte.');
           if (id === 'coffreT') {
             var rc = VL.ouvrirCoffreT(etat, r.x, r.y);
@@ -1208,6 +1222,26 @@
           localStorage.removeItem('vallee-boss-resultat');
           ecrireStockage('vallee-boss', { id: 'yeti', nom: 'Le Yéti', titre: 'gardien du col', ico: '❄️', defi: 'Une manche, le plus petit total gagne. Hou hou !' });
           this.entrer('cieljo/?boss');
+        },
+        descendreFaille: function(FA) {
+          localStorage.removeItem('vallee-faille-resultat');
+          ecrireStockage('vallee-faille', VL.defiFaille(FA));
+          this.entrer('donjon/?faille');
+        },
+        // Retour d'une faille : la récompense si son boss est vaincu (une fois par saison)
+        lireResultatFaille: function() {
+          var r = lireStockage('vallee-faille-resultat');
+          if (!r) return;
+          localStorage.removeItem('vallee-faille-resultat');
+          var rf = VL.resultatFaille(etat, r);
+          if (!rf || rf.perime) return;
+          this.sauver(); this.v++;
+          if (rf.gagne) {
+            Etoiles.ajouter(rf.etoiles, 'Vallée : ' + rf.faille.nom, true); this.etoiles = Etoiles.solde();
+            this.son('victoire'); this.vibre([60, 50, 120]);
+            return this.lire({ ico: '🪨', titre: 'Faille refermée !', texte: 'Le boss vaincu, ' + rf.faille.nom.charAt(0).toLowerCase() + rf.faille.nom.slice(1) + ' se referme dans un grondement. +' + rf.etoiles + ' ⭐' + (rf.cristaux ? ' et ' + rf.cristaux + ' 💎 pour ton sac' : '') + '. Ton héros de la semaine garde ses nouvelles cartes.' });
+          }
+          if (rf.perdu) this.lire({ ico: rf.faille.ico, titre: rf.faille.nom, texte: 'La faille est toujours ouverte… Ton héros se relèvera : reviens quand tu veux, elle t\'attend jusqu\'à la fin de la saison.' });
         },
         lireResultatBoss: function() {
           var r = lireStockage('vallee-boss-resultat');

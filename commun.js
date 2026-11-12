@@ -3,12 +3,13 @@
 // Les clés de stockage gardent l'ancien préfixe "brillant-" : les réglages déjà faits sont conservés.
 
 // Numéro de version affiché (à augmenter à chaque mise en ligne, avec brilliant/index.html et sw.js)
-const VERSION = '3.59';
+const VERSION = '3.60';
 
 // ---------- Nouveautés (2.87, demandé par l'utilisateur) ----------
 // Une ligne très brève par mise en ligne (la plus récente en haut) : l'accueil les montre une seule fois, dans une petite fenêtre,
 // à qui n'a pas encore vu cette version. [version, jeu ou partie de l'appli, ce qui change]
 const NOUVEAUTES = [
+  ['3.60', 'La Vallée', 'Deux failles du Donjon s\'ouvrent dans les Terres à chaque saison : un étage, un boss, une récompense.'],
   ['3.59', 'La Vallée', 'Les rumeurs du lundi : 3 trésors cachés chaque semaine dans les Terres, et ton carnet de voyage (menu ☰).'],
   ['3.58', 'La Vallée', 'Dans les Terres : des feux de camp à allumer pour voyager, une tour de guet, un hameau et sa cartographe ; la carte entière d\'un toucher (🗺️).'],
   ['3.57', 'La Vallée', 'La Porte des brumes, au bord du ruisseau : un monde nouveau à explorer à chaque saison.'],

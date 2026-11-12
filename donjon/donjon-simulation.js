@@ -156,7 +156,7 @@ function gererMenus(e, p, h) {
 
 // ---------- Une partie complète (1 à 4 joueurs automatiques qui avancent ensemble) ----------
 var ESPECE = { ronces: 'dragon', force: 'panda', bond: 'lapin', flair: 'renard', aucune: null };
-function partie(classe, graine, peril, nb, diff, av, risque) {
+function partie(classe, graine, peril, nb, diff, av, risque, faille) {   // faille : { etage, lieu } (3.60, failles des Terres de la Vallée)
   nb = nb || 1;
   var h = DJ.hasard(graine * 31 + 7), classes = Array.isArray(classe) ? classe : [classe], js = {};
   for (var j = 0; j < nb; j++) {
@@ -164,7 +164,7 @@ function partie(classe, graine, peril, nb, diff, av, risque) {
     js[nom] = ESPECE[cl] ? { e: ESPECE[cl], c: '#c8915a', n: nom, p: {} } : null;
   }
   var avs = {}; if (av) Object.keys(js).forEach(n => { avs[n] = av; });
-  var e = DJ.nouvelle(graine, js, 'sim' + graine, { peril: peril, difficulte: diff || 'heroique', avantages: avs, lieux: LIEUX_FORCES });
+  var e = DJ.nouvelle(graine, js, 'sim' + graine, { peril: peril, difficulte: diff || 'heroique', avantages: avs, lieux: LIEUX_FORCES, faille: faille });
   var ps = Object.keys(e.joueurs).map(n => e.joueurs[n]), p = ps[0], combats = 0;
   var resultat = (g, mort) => ({ joueur: p, gagne: g, etage: e.etage, combats: combats, pv: ps.reduce((t, q) => t + (q.fantome ? 0 : q.pv), 0) / nb, paquet: p.paquet.length, mort: mort });
   var RISQUE = { defi: 1, tresor: 1, maudit: 1 };

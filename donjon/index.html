@@ -791,7 +791,7 @@
             <div class="fiche-l2">
               <button v-if="liaison" class="puce-dj liaison-dj" :class="liaison.c" @click="info(liaison.detail)" aria-label="Liaison avec les amis"><i></i>{{ liaison.court }}</button>
               <button class="puce-dj diff-dj" :class="'d-' + difPartie" @click="info(etageInfo)">{{ D.DIFFICULTES[difPartie].ico }}<template v-if="partie.peril"> +{{ partie.peril }}</template></button>
-              <button class="puce-dj" @click="info(etageInfo)">{{ etageIco }} {{ partie.etage }}/{{ DJ.NB_ETAGES }}</button>
+              <button class="puce-dj" @click="info(etageInfo)">{{ etageIco }} {{ partie.faille ? 'faille' : partie.etage + '/' + DJ.NB_ETAGES }}</button>
               <button class="puce-dj or" @click="info('🪙 Or : pour le marchand (cartes, fioles, reliques, retirer une carte).')">🪙 {{ monJ.or }}</button>
               <button class="puce-dj" @click="info('🗝️ Petites clés : ouvrent les portes 🔒. ' + (partie.grandeCle ? '🔑 Tu as la grande clé du boss !' : '🔑 La grande clé du boss est chez l\'élite ⭐.'))">🗝️ {{ partie.cles }}<template v-if="partie.grandeCle"> 🔑</template></button>
               <button class="puce-dj" @click="info('✨ Poussières d\'étoile : 5 = 1 ⭐ à la fin du donjon.')">✨ {{ partie.poussiere }}</button>
@@ -865,7 +865,7 @@
           <template v-else>
           <div class="zone-explo">
           <div class="plan-dj" :class="{ 'avec-regle': regle }" v-if="immersif" @click="info(etageInfo + ' · ' + objectif)">
-            <div class="plan-titre">{{ etageIco }} {{ lieu.nom }}<small>{{ partie.etage }} / {{ DJ.NB_ETAGES }}</small>
+            <div class="plan-titre">{{ etageIco }} {{ lieu.nom }}<small>{{ partie.faille ? 'faille' : partie.etage + ' / ' + DJ.NB_ETAGES }}</small>
               <span class="diff-dj" :class="'d-' + difPartie">{{ D.DIFFICULTES[difPartie].ico }} {{ D.DIFFICULTES[difPartie].nom }}<template v-if="partie.peril"> +{{ partie.peril }}</template></span></div>
             <div class="plan-svg" v-html="planSvg"></div>
             <div v-if="regle" class="plan-regle">{{ regle.ico }} <b>{{ regle.nom }}</b> · {{ regle.court }}</div>
@@ -976,7 +976,7 @@
           <div class="boite-dj">
             <div class="grand">{{ lieu.ico }}</div>
             <div class="titre">{{ lieu.nom }}</div>
-            <div class="aide" style="font-size:0.9em">Étage {{ partie.etage }} sur {{ DJ.NB_ETAGES }} · le boss : {{ DJ.MONSTRES[lieu.boss].nom }}</div>
+            <div class="aide" style="font-size:0.9em">{{ partie.faille ? partie.faille.nom : 'Étage ' + partie.etage + ' sur ' + DJ.NB_ETAGES }} · le boss : {{ DJ.MONSTRES[lieu.boss].nom }}</div>
             <div class="regle-entree grande"><b>{{ regle.ico }} Règle du lieu : {{ regle.nom }}</b>{{ regle.texte }}</div>
             <button class="btn principal" @click="fermerLieu">Compris !</button>
           </div>
@@ -1092,7 +1092,7 @@
             </div>
             <div class="sac-chiffres">
               <span>❤️ {{ monJ.pv }} / {{ monJ.pvMax }}</span><span>🪙 {{ monJ.or }}</span><span>🗝️ {{ partie.cles }}{{ partie.grandeCle ? ' + 🔑' : '' }}</span>
-              <span>✨ {{ partie.poussiere }}</span><span>{{ etageIco }} étage {{ partie.etage }}/{{ DJ.NB_ETAGES }}</span>
+              <span>✨ {{ partie.poussiere }}</span><span>{{ etageIco }} {{ partie.faille ? 'faille' : 'étage ' + partie.etage + '/' + DJ.NB_ETAGES }}</span>
             </div>
             <div class="sac-titre">Fioles ({{ monJ.fioles.length }} / {{ monJ.fiolesMax }})</div>
             <div v-for="(f, i) in monJ.fioles" :key="'sf' + i + f" class="sac-ligne sac-fiole"><span class="ico">{{ D.FIOLES[f].ico }}</span>
@@ -1125,7 +1125,8 @@
         <div class="voile-dj" v-if="partie && partie.phase === 'fin' && gains">
           <div class="boite-dj">
             <div class="grand">{{ partie.fin.gagne ? '🏆' : '👻' }}</div>
-            <div class="titre">{{ partie.fin.gagne ? 'Le donjon est vaincu !' : 'Tout le groupe est KO…' }}</div>
+            <div class="titre">{{ partie.fin.gagne ? (partie.faille ? 'La faille est refermée !' : 'Le donjon est vaincu !') : 'Tout le groupe est KO…' }}</div>
+            <div class="aide" v-if="partie.faille">{{ partie.faille.nom }}{{ partie.fin.gagne ? ' : ta récompense t\'attend dans la Vallée.' : ' reste ouverte : tu pourras y redescendre.' }}</div>
             <div class="aide" v-if="!partie.fin.gagne">Arrivé à l'étage {{ partie.fin.etage || partie.etage }} : {{ DJ.lieu(partie, partie.fin.etage || partie.etage).nom }}.</div>
             <ul>
               <li>✨ {{ gains.poussieres != null ? gains.poussieres : partie.poussiere }} poussière{{ (gains.poussieres != null ? gains.poussieres : partie.poussiere) > 1 ? 's' : '' }} d'étoile<small v-if="gains.mult && gains.mult !== 1"> ({{ partie.poussiere }} × {{ String(gains.mult).replace('.', ',') }}, {{ D.DIFFICULTES[gains.difficulte].nom }})</small><span v-if="gains.etoiles"> → +{{ gains.etoilesDonnees }} ⭐</span> (en réserve : {{ gains.reste }} / 5)</li>
@@ -1142,9 +1143,10 @@
               <div class="aide" v-if="infoRel">{{ infoRel }}</div>
             </div>
             <button v-if="!solo && role === 'hote'" class="btn principal" @click="envoyerJeu({ type: 'NOUVELLE' })">🔁 Nouveau donjon</button>
-            <button v-if="solo" class="btn principal" @click="nouveauSolo">🔁 Nouveau donjon</button>
+            <button v-if="solo && partie.faille" class="btn principal" @click="rentrerFaille">🌀 Retour à la Vallée</button>
+            <button v-if="solo && !partie.faille" class="btn principal" @click="nouveauSolo">🔁 Nouveau donjon</button>
             <div v-if="!solo && role !== 'hote'" class="aide">L'hôte peut relancer un nouveau donjon.</div>
-            <button class="btn" @click="rentrer">{{ monCp ? '🏠 Rentrer à la maison' : '🏠 Retour à l\'accueil' }}</button>
+            <button v-if="!partie.faille" class="btn" @click="rentrer">{{ monCp ? '🏠 Rentrer à la maison' : '🏠 Retour à l\'accueil' }}</button>
           </div>
         </div>
       </template>
@@ -1207,7 +1209,14 @@
     if (!ACCES.memorise()) location.replace('index.html');
 
     const CLE_SAUVEGARDE = 'donjon-sauvegarde';
-    const CLE_SOLO = 'donjon-solo';
+    // Une faille des Terres de la Vallée (3.60) : donjon/?faille + `vallee-faille` = { id, nom, lieu, etage, ico } ;
+    // un seul étage, sauvegardé à part (`donjon-faille`) pour ne pas toucher à l'exploration en cours
+    const FAILLE = (function () {
+      if (!/[?&]faille\b/.test(location.search)) return null;
+      var f = lireStockage('vallee-faille');
+      return f && typeof f.id === 'string' && f.etage >= 1 && f.etage <= DJ.NB_ETAGES ? f : null;
+    })();
+    const CLE_SOLO = FAILLE ? 'donjon-faille' : 'donjon-solo';
     const JEU_RESEAU = 'dj';
     const DELAI_SILENCE = 15000;
     const MAX_SALONS = 8;
@@ -1525,7 +1534,7 @@
         },
         cleLieu: function() { var p = this.partie; return p && p.phase === 'jeu' && this.regle ? p.id + ':' + p.etage + ':' + this.lieu.id : ''; },
         etageIco: function() { var E = this.lieu; return E ? E.ico : '🗝️'; },
-        etageInfo: function() { var p = this.partie, E = this.lieu, R = p && DJ.regleLieu(p); return E ? (R ? R.ico + ' Règle du lieu, ' + R.nom + ' : ' + R.texte + ' · ' : '') + E.ico + ' Étage ' + p.etage + ' sur ' + DJ.NB_ETAGES + ' : ' + E.nom + ' · ' + DJ.D.DIFFICULTES[DJ.D.DIFFICULTES[p.difficulte] ? p.difficulte : 'heroique'].nom + (p.peril ? ' · clé +' + p.peril : '') : ''; },
+        etageInfo: function() { var p = this.partie, E = this.lieu, R = p && DJ.regleLieu(p); return E ? (R ? R.ico + ' Règle du lieu, ' + R.nom + ' : ' + R.texte + ' · ' : '') + E.ico + (p.faille ? ' ' + p.faille.nom + ' (un seul étage)' : ' Étage ' + p.etage + ' sur ' + DJ.NB_ETAGES) + ' : ' + E.nom + ' · ' + DJ.D.DIFFICULTES[DJ.D.DIFFICULTES[p.difficulte] ? p.difficulte : 'heroique'].nom + (p.peril ? ' · clé +' + p.peril : '') : ''; },
         objectif: function() {
           var p = this.partie;
           if (!p) return '';
@@ -1641,6 +1650,7 @@
         window.addEventListener('desdale-profil', () => { if (!this.role) this.pseudoInput = pseudoPortail(); });
         if (!ACCES.cleSalon) return;
         this.restaurer();
+        if (FAILLE && !this.role) this.$nextTick(() => this.demarrerSolo());   // descendu par une faille de la Vallée : on y entre tout de suite
         setInterval(() => this.battement(), 4000);
         setInterval(() => { if (!this.solo && this.role && this.partie) this.diagT = Date.now(); }, 1000);
         setInterval(() => this.boucle(), 100);
@@ -1916,7 +1926,8 @@
           this.solo = true; this.gains = null;
           this.panne = false; this._erreurs = 0;
           if (s && !DJ.compatible(s)) { ecrireStockage(CLE_SOLO, null); s = null; }   // exploration d'une ancienne version : on repart de zéro
-          partieHote = s && s.phase === 'jeu' ? s : DJ.nouvelle(Math.floor(Math.random() * 1e9), { Moi: this.monCp }, nouvelId(), { peril: this.peril, difficulte: this.difficulte, avantages: { Moi: this.avSemaine }, lieux: lireStockage('donjon-lieux-essai') });   // donjon-lieux-essai : lieux imposés pour un essai (tests), absent en jeu
+          if (s && FAILLE && !(s.faille && s.faille.id === FAILLE.id)) s = null;   // une autre faille : on repart de zéro
+          partieHote = s && s.phase === 'jeu' ? s : FAILLE ? DJ.nouvelle(Math.floor(Math.random() * 1e9), { Moi: this.monCp }, nouvelId(), { difficulte: 'normal', avantages: { Moi: this.avSemaine }, faille: FAILLE }) : DJ.nouvelle(Math.floor(Math.random() * 1e9), { Moi: this.monCp }, nouvelId(), { peril: this.peril, difficulte: this.difficulte, avantages: { Moi: this.avSemaine }, lieux: lireStockage('donjon-lieux-essai') });   // donjon-lieux-essai : lieux imposés pour un essai (tests), absent en jeu
           if (partieHote.joueurs.Moi) { partieHote.joueurs.Moi.cp = this.monCp; partieHote.joueurs.Moi.surnom = 'L\'explorateur'; }
           this.sel = null;
           partieHote.maintenant = 0;   // l'horloge repart (l'exploration a pu être reprise plus tard)
@@ -2077,6 +2088,7 @@
           var gagne = !!(p.fin && p.fin.gagne), multi = !this.solo && Object.keys(p.joueurs).length > 1;
           var deja = lireStockage('donjon-recompense');
           if (deja && deja.id === p.id) { this.gains = deja.gains; this.choixRel = (deja.gains && deja.gains.choixRel) || []; return; }
+          if (p.faille) return this.finirFaille(p, gagne);
           // Poussières d'étoile multipliées selon la difficulté (3.23)
           var dif = DJ.D.DIFFICULTES[p.difficulte] ? p.difficulte : 'heroique', mult = DJ.D.DIFFICULTES[dif].poussieres;
           var pous = Math.round((p.poussiere || 0) * mult);
@@ -2141,6 +2153,35 @@
           this.gains = g;
           if (gagne) { setTimeout(() => this.son('victoire'), 300); this.vibre([100, 60, 100, 60, 250]); } else this.vibre(200);
           if (this.solo) this.sauvegarderPartie(); else this.sauvegarder();
+        },
+        // Fin d'une faille (3.60) : poussières comme d'habitude, le héros de la semaine garde son paquet ; rien pour la semaine du Donjon
+        // (ni éclats, ni difficulté ouverte, ni record) ; l'issue part à la Vallée, qui donne la récompense de la faille
+        finirFaille: function(p, gagne) {
+          var pous = Math.round((p.poussiere || 0) * DJ.D.DIFFICULTES.normal.poussieres);
+          var conv = EX.convertirPoussiere(lireStockage('expedition-poussiere'), pous);
+          ecrireStockage('expedition-poussiere', conv.reste);
+          var avant = Etoiles.gagneesAujourdhui();
+          Etoiles.recompenseJeu(conv.etoiles, 'Donjon des compagnons · ' + p.faille.nom);
+          Etoiles.finDePartie('Donjon', gagne, false, p.id, { lieu: 'faille' });
+          var g = { etoiles: conv.etoiles, etoilesDonnees: Etoiles.gagneesAujourdhui() - avant, reste: conv.reste, partie: '', souvenir: null, peril: 0, poussieres: pous, mult: 1, difficulte: 'normal', faille: true };
+          var moiJ = p.joueurs && p.joueurs[this.moi];
+          if (moiJ && DJ.D.CLASSES[moiJ.classe]) {
+            var hero = DJ.heroSemaine(moiJ);
+            this.majSemaine(s => { s.hero = hero; });
+            g.hero = hero; g.reliquesDispo = (moiJ.reliques || []).filter(r => DJ.D.RELIQUES[r]); g.choixRel = hero.reliques.slice();
+            this.choixRel = hero.reliques.slice();
+          }
+          ecrireStockage('vallee-faille-resultat', { id: p.faille.id, gagne: gagne });
+          ecrireStockage('donjon-recompense', { id: p.id, gains: g });
+          this.gains = g;
+          if (gagne) { setTimeout(() => this.son('victoire'), 300); this.vibre([100, 60, 100, 60, 250]); } else this.vibre(200);
+          this.sauvegarderPartie();
+        },
+        // Retour à la Vallée après une faille
+        rentrerFaille: function() {
+          ecrireStockage(CLE_SOLO, null); partieHote = null;
+          try { sessionStorage.setItem('desdale-vallee', '1'); } catch (e) {}
+          location.href = 'vallee/';
         },
         // Donjon fini : on quitte le salon (au retour, on retrouve le choix seul / à plusieurs)
         rentrer: function() {
