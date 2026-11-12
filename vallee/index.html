@@ -151,6 +151,21 @@
     .ligne-q .etat { flex: none; margin-left: auto; font-size: 0.75em; font-weight: 900; border-radius: 8px; padding: 2px 7px; white-space: nowrap; }
     .etat.dispo { background: #fff3bf; color: #a35f00; } .etat.cours { background: #e7f5ff; color: #1864ab; } .etat.rendre { background: #d3f9d8; color: #2b8a3e; } .etat.finie { background: #f1f3f5; color: #868e96; }
     .ligne-q.finie { opacity: 0.65; }
+    .rumeurs-tab { margin: 10px 0 4px; background: #f3e6c8; border: 1.5px solid #c9a874; border-radius: 10px; padding: 8px 10px; color: #4a3426; }
+    .rumeurs-tab p { margin: 6px 0; font: italic 600 0.9em/1.35 Georgia, serif; }
+    .rumeurs-tab p.trouve { color: #2f7a3a; font-style: normal; text-decoration: line-through; text-decoration-color: rgba(47,122,58,.5); }
+    .rumeurs-tab small { color: #7a6448; font-size: 0.8em; }
+    .carnet-vl h3 { margin: 14px 0 4px; font: 800 1em Georgia, serif; color: #5c3a1f; }
+    .carnet-vl .sous { margin: 0 0 6px; color: #6d5a44; font-size: 0.86em; line-height: 1.35; }
+    .rumeur-c { display: flex; gap: 8px; align-items: flex-start; background: #fff; border: 1.5px solid #e2cfa6; border-radius: 10px; padding: 7px 9px; margin-bottom: 6px; font: italic 600 0.9em/1.35 Georgia, serif; color: #4a3426; }
+    .rumeur-c .ico { font-size: 1.4em; font-style: normal; line-height: 1; }
+    .rumeur-c small { display: block; font: 700 0.85em system-ui, sans-serif; color: #2f7a3a; margin-top: 3px; }
+    .rumeur-c.trouve { background: #ebfbee; border-color: #8ce99a; }
+    .stats-c { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+    .stats-c span { background: #fff; border: 1.5px solid #e2cfa6; border-radius: 10px; padding: 6px 4px; text-align: center; color: #4a3426; font-size: 0.95em; }
+    .stats-c b { font: 900 1.25em Georgia, serif; }
+    .stats-c small { display: block; font-size: 0.72em; color: #7a6448; }
+    .passee-c { background: #fff; border: 1.5px solid #e2cfa6; border-radius: 10px; padding: 6px 9px; margin-bottom: 5px; font-size: 0.86em; color: #4a3426; }
     .avis-vl { background: #fffdf5; border: 2px dashed #c9a874; border-radius: 10px; padding: 10px; font: italic 600 0.98em/1.4 Georgia, serif; color: #4a3426; transform: rotate(-0.6deg); }
     .article-vl { display: flex; align-items: center; gap: 10px; background: #fff; border: 1.5px solid #e2cfa6; border-radius: 12px; padding: 8px 10px; margin-top: 7px; }
     .article-vl .ico { font-size: 1.9em; width: 44px; height: 44px; border-radius: 12px; background: #fff3d6; display: flex; align-items: center; justify-content: center; flex: none; }
@@ -377,6 +392,11 @@
         <div class="boutons-vl" v-if="tableauVue.boutons.length">
           <button v-for="(b, k) in tableauVue.boutons" :key="k" class="btn-vl" :class="{ principal: b.principal }" @click="choisir(b.a, true)">{{ b.t }}</button>
         </div>
+        <div class="rumeurs-tab">
+          <b>🗣️ Les rumeurs de la semaine</b>
+          <p v-for="R in carnetVue.semaine.rumeurs" :key="R.id" :class="{ trouve: R.trouve }">{{ R.trouve ? '✓ ' : '« ' }}{{ R.texte }}{{ R.trouve ? '' : ' »' }}</p>
+          <small>Elles mènent aux Terres de la saison, derrière la Porte des brumes. Nouvelles rumeurs chaque lundi.</small>
+        </div>
         <div class="liste-q">
           <div v-for="q in tableauVue.quetes" :key="q.id" class="ligne-q" :class="q.etat">
             <span class="ico">{{ q.ico }}</span>
@@ -384,6 +404,37 @@
             <span class="etat" :class="q.etat">{{ LIBELLES[q.etat] }}</span>
           </div>
         </div>
+        <div class="boutons-vl"><button class="btn-vl" @click="fermer">Fermer</button></div>
+      </div>
+    </div>
+
+    <!-- Le carnet de voyage (3.59) -->
+    <div class="voile-vl" v-if="fenetre === 'carnet'" @click.self="fermer">
+      <div class="fen-vl carnet-vl">
+        <h2>📖 Mon carnet de voyage</h2>
+        <h3>🗣️ Rumeurs de la semaine</h3>
+        <p class="sous">Jusqu'au {{ dateCourte(new Date(carnetVue.semaine.fin.getTime() - 864e5)) }} : de nouvelles rumeurs chaque lundi. Trouve le repère dans les Terres, compte tes pas, marche sur la case.</p>
+        <div v-for="R in carnetVue.semaine.rumeurs" :key="R.id" class="rumeur-c" :class="{ trouve: R.trouve }">
+          <span class="ico">{{ R.trouve ? R.ico : '❔' }}</span>
+          <div>{{ R.texte }}<small v-if="R.trouve">Trouvé : {{ R.objet }}</small></div>
+        </div>
+        <h3>🌀 Terres de la saison {{ carnetVue.saison.numero }}</h3>
+        <p class="sous">Jusqu'au {{ dateCourte(carnetVue.saison.fin) }}. Ensuite, un nouveau monde derrière la Porte des brumes.</p>
+        <div class="stats-c">
+          <span><b>{{ carnetVue.saison.ecrans }}</b>/{{ carnetVue.saison.total }}<small>lieux visités</small></span>
+          <span><b>{{ carnetVue.saison.feux }}</b>/{{ carnetVue.saison.nbFeux }}<small>feux allumés</small></span>
+          <span><b>{{ carnetVue.saison.coffres }}</b>/{{ carnetVue.saison.nbCoffres }}<small>coffres</small></span>
+          <span><b>{{ carnetVue.saison.rum }}</b><small>rumeurs</small></span>
+          <span><b>{{ carnetVue.saison.tour ? '✓' : '–' }}</b><small>tour de guet</small></span>
+          <span><b>{{ carnetVue.saison.carto ? '✓' : '–' }}</b><small>carte</small></span>
+        </div>
+        <template v-if="carnetVue.passees.length">
+          <h3>📚 Saisons passées</h3>
+          <div v-for="a in carnetVue.passees" :key="a.n" class="passee-c">
+            <b>Saison {{ a.n }}</b> · {{ a.ecrans }}/64 lieux · {{ a.feux }} feu{{ a.feux > 1 ? 'x' : '' }} · {{ a.coffres }} coffre{{ a.coffres > 1 ? 's' : '' }} · {{ a.rum }} rumeur{{ a.rum > 1 ? 's' : '' }}{{ a.tour ? ' · 🗼' : '' }}{{ a.carto ? ' · 🗺️' : '' }}
+          </div>
+        </template>
+        <p class="sous" v-if="carnetVue.total" style="margin-top:8px">En tout, {{ carnetVue.total }} rumeur{{ carnetVue.total > 1 ? 's' : '' }} vérifiée{{ carnetVue.total > 1 ? 's' : '' }} de tes propres pattes.</p>
         <div class="boutons-vl"><button class="btn-vl" @click="fermer">Fermer</button></div>
       </div>
     </div>
@@ -511,6 +562,7 @@
           <button class="btn-vl principal" @click="fermer"><i>▶</i>Continuer</button>
           <button class="btn-vl" @click="fenetre = 'quetes'"><i>📜</i>Mes quêtes</button>
           <button class="btn-vl" @click="fenetre = 'sac'"><i>🎒</i>Mon sac</button>
+          <button class="btn-vl" @click="fenetre = 'carnet'"><i>📖</i>Mon carnet de voyage<span v-if="rumeursAFaire" class="pastille">{{ rumeursAFaire }}</span></button>
           <button class="btn-vl" @click="discuter"><i>💬</i>Discuter<span v-if="nonLus" class="pastille">{{ nonLus }}</span></button>
           <button class="btn-vl" @click="entrer('compagnon/')"><i>🏠</i>{{ animal ? 'Chez ' + animal.nom : 'Adopter un compagnon' }}</button>
           <button class="btn-vl" @click="sonActif = !sonActif"><i>{{ sonActif ? '🔊' : '🔇' }}</i>Son : {{ sonActif ? 'oui' : 'non' }}</button>
@@ -532,6 +584,7 @@
           <li><b>!</b> au-dessus d'un habitant : il a une quête pour toi. <b>?</b> : il attend ce que tu lui rapportes.</li>
           <li><b>Pouvoir de ton compagnon</b> : ronces 🔥, rocher 💪, trou 🦘, buisson très épais 👃. Fonce dans l'obstacle qui va avec ton pouvoir pour l'ouvrir.</li>
           <li><b>Les Terres de la saison</b> : passe la Porte des brumes, au bord ouest du ruisseau. Allume les feux de camp (une bûche 🪵) pour y revenir d'un coup ; grimpe à la tour de guet ; au hameau, Barnabé troque des cristaux et Mlle Taupinette vend sa carte. Le bouton 🗺️ de la carte montre toute la région.</li>
+          <li><b>Les rumeurs du lundi</b> : chaque lundi, le tableau de quêtes du village donne 3 rumeurs. Chacune cache un objet à quelques pas d'un repère des Terres (un feu, la tour, un habitant du hameau, un pont) : un pas, c'est une case. Marche dessus pour le trouver. Ton carnet de voyage (menu ☰) les garde, avec le bilan de chaque saison.</li>
           <li><b>Récolter</b> : marche sur le bois mort 🪵, les cailloux 🪨, les herbes 🌿 et les cristaux 💎. Chaque point repousse le lendemain. Ton sac en garde {{ VL.SAC_MAX }} de chaque. Ton pouvoir double une ressource : 🔥 le bois, 💪 la pierre, 🦘 les plantes ; 👃 montre les cristaux sur la carte.</li>
           <li><b>Fabriquer</b> (après la quête de Bruno) : de la déco à l'établi devant ta maison, des fioles pour le Donjon chez Mme Sauge, des outils à la forge. Fonce dans l'établi, la hutte ou la forge.</li>
           <li><b>La carte</b> se dévoile au fil de tes pas. L'anneau orange montre où aller pour ta quête.</li>
@@ -708,6 +761,8 @@
           return 'La crypte, au nord, mène au Donjon.';
         },
         tableauVue: function() { this.v; return VL.tableau(etat); },
+        carnetVue: function() { this.v; return VL.carnet(etat); },
+        rumeursAFaire: function() { return this.carnetVue.semaine.rumeurs.filter(R => !R.trouve).length; },
         vente: function() {
           this.v; var possede = (this.animal && this.animal.possede) || {};
           return VL.VENTE.map(x => { var a = CP.art(x.id); return { id: x.id, nom: a.nom, ico: a.ico, prix: x.prix, possede: !!possede[x.id] }; });
@@ -843,6 +898,12 @@
               this.son('toc'); this.vibre(30);
               if (VL.etatQuete(etat, 'herbes') === 'rendre') this.annoncer('🍄 Cinq champignons ! Retourne voir Mme Sauge.');
               else this.annoncer('🍄 Un champignon ! ' + r.n + ' / ' + VL.QUETES.herbes.but);
+            }
+            if (r.rumeur) {   // une rumeur de la semaine (3.59)
+              var ru = r.rumeur;
+              Etoiles.ajouter(ru.etoiles, 'Vallée : rumeur de la semaine', true); this.etoiles = Etoiles.solde();
+              this.son('victoire'); this.vibre([50, 40, 90, 40, 120]); this.dir = null;
+              this.lire({ ico: ru.objet.ico, titre: 'Une rumeur de la semaine', texte: ru.texte });
             }
             if (r.ramasse === 'jumelles') { this.son('victoire'); this.vibre([30, 40, 60]); this.annoncer('🔭 Les jumelles de Gaspard, dans la neige ! Rapporte-les-lui.'); }
             if (r.ramasse === 'luciole') {
@@ -1006,6 +1067,7 @@
           }
         },
         lire: function(m) { this.aLire = m; this.fenetre = 'lire'; },
+        dateCourte: function(d) { return new Date(d).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' }); },
         // Un feu de camp des Terres (3.58) : on l'allume avec une bûche ; allumé, il emmène vers les autres feux et la Vallée
         feu: function(r) {
           var F = VL.feuEn(r.x, r.y);

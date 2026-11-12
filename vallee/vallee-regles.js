@@ -436,7 +436,8 @@ var VL = (function () {
   function nouvelEtat() {
     var p = g(1, 1, 2, 3);
     var e = { v: 1, x: p.x, y: p.y, dir: 'b', brume: {}, ouverts: {}, pris: {}, quetes: {}, coffre: false, coffreM: false, cle: false, pas: 0,
-              sac: { bois: 0, pierre: 0, plante: 0, cristal: 0 }, recolte: { j: '', pris: {} }, outils: {}, besace: {}, terres: { s: saisonDe(), ouv: {}, feux: {}, tour: false, carto: false, troc: { j: '', n: 0 } } };
+              sac: { bois: 0, pierre: 0, plante: 0, cristal: 0 }, recolte: { j: '', pris: {} }, outils: {}, besace: {}, terres: { s: saisonDe(), ouv: {}, feux: {}, tour: false, carto: false, troc: { j: '', n: 0 }, rum: 0 },
+              rumeurs: { w: semaineDe(), ok: {} }, carnet: { saisons: [], total: 0 } };
     reveler(e);
     return e;
   }
@@ -456,11 +457,18 @@ var VL = (function () {
       e.terres.s = s.terres.s;
       Object.keys(s.terres.ouv || {}).forEach(k => { if (/^-?\d+,-?\d+$/.test(k)) e.terres.ouv[k] = 1; });
       Object.keys(s.terres.feux || {}).forEach(k => { if (/^f\d$/.test(k)) e.terres.feux[k] = 1; });
-      e.terres.tour = !!s.terres.tour; e.terres.carto = !!s.terres.carto;
+      e.terres.tour = !!s.terres.tour; e.terres.carto = !!s.terres.carto; e.terres.rum = Math.max(0, s.terres.rum | 0);
       if (s.terres.troc && typeof s.terres.troc.j === 'string') e.terres.troc = { j: s.terres.troc.j, n: Math.max(0, s.terres.troc.n | 0) };
     } else e.terres.s = null;   // sauvegarde d'avant 3.57 : rien dans les Terres
     var au = ecran(s.x | 0, s.y | 0), audela = au && au.zone && au.zone !== 'terres' && mod(s.x | 0, W) > 0;   // au-delà de la passerelle ou du col
     if (libre(e, s.x | 0, s.y | 0) && (!audela || zoneOuverte(e, au))) { e.x = s.x | 0; e.y = s.y | 0; }
+    // Le carnet de voyage et les rumeurs de la semaine (3.59)
+    if (s.carnet && typeof s.carnet === 'object') {
+      e.carnet.total = Math.max(0, s.carnet.total | 0);
+      if (Array.isArray(s.carnet.saisons)) e.carnet.saisons = s.carnet.saisons.filter(a => a && typeof a === 'object' && typeof a.n === 'number').slice(-12)
+        .map(a => ({ n: a.n | 0, ecrans: a.ecrans | 0, feux: a.feux | 0, coffres: a.coffres | 0, rum: a.rum | 0, tour: !!a.tour, carto: !!a.carto }));
+    }
+    if (s.rumeurs && typeof s.rumeurs === 'object' && s.rumeurs.w === semaineDe()) Object.keys(s.rumeurs.ok || {}).forEach(k => { if (/^[0-2]$/.test(k)) e.rumeurs.ok[k] = 1; });
     if (e.terres.s !== saisonDe() && changerSaison(e)) e.nouvelleSaison = true;   // la page l'annonce (et l'efface)
     e.coffre = !!s.coffre; e.coffreM = !!s.coffreM; e.cle = !!s.cle; e.pas = s.pas | 0;
     if (s.sac && typeof s.sac === 'object') ORDRE_RES.forEach(r => { e.sac[r] = Math.max(0, Math.min(SAC_MAX, s.sac[r] | 0)); });
@@ -682,6 +690,7 @@ var VL = (function () {
     }
     var pt = pointEn(nx, ny);
     if (pt) Object.assign(r, recolter(e, pt, ctx));
+    if (dansTerres(nx, ny)) { var ru = trouverRumeur(e, nx, ny); if (ru) r.rumeur = ru; }
     return r;
   }
 
@@ -996,6 +1005,12 @@ var VL = (function () {
     var d = new Date(t == null ? Date.now() : t); d.setHours(0, 0, 0, 0);
     return Math.floor(Math.round((d.getTime() - DEBUT_SAISONS) / 864e5) / DUREE_SAISON);
   }
+  // La semaine (du lundi, 3.59) : les rumeurs changent chaque lundi ; 4 semaines font une saison
+  function semaineDe(t) {
+    var d = new Date(t == null ? Date.now() : t); d.setHours(0, 0, 0, 0);
+    return Math.floor(Math.round((d.getTime() - DEBUT_SAISONS) / 864e5) / 7);
+  }
+  function debutSemaine(w) { var d = new Date(DEBUT_SAISONS); d.setDate(d.getDate() + w * 7); return d; }
   // La date de fin de la saison (le dernier jour), pour l'annoncer
   function finSaison(n) { var d = new Date(DEBUT_SAISONS); d.setDate(d.getDate() + (n + 1) * DUREE_SAISON - 1); return d; }
   function dansTerres(x, y) { var c = ecranDe(x, y); return c.ex >= TX && c.ex < TX + TW && c.ey >= TY && c.ey < TY + TH; }
@@ -1148,9 +1163,17 @@ var VL = (function () {
   function changerSaison(e, t) {
     var n = terresPretes(t);
     if (e.terres && e.terres.s === n) return false;
+    // La saison qui s'achève part dans le carnet de voyage
+    if (e.terres && e.terres.s != null && e.carnet) {
+      var vus = Object.keys(e.brume).filter(k => { var c = k.split(',').map(Number); return c[0] >= TX && c[0] < TX + TW && c[1] >= TY && c[1] < TY + TH; }).length;
+      if (vus) {
+        e.carnet.saisons.push({ n: e.terres.s + 1, ecrans: vus, feux: Object.keys(e.terres.feux || {}).length, coffres: Object.keys(e.terres.ouv || {}).length, rum: e.terres.rum | 0, tour: !!e.terres.tour, carto: !!e.terres.carto });
+        e.carnet.saisons = e.carnet.saisons.slice(-12);
+      }
+    }
     Object.keys(e.brume).forEach(k => { var c = k.split(',').map(Number); if (c[0] >= TX && c[0] < TX + TW && c[1] >= TY && c[1] < TY + TH) delete e.brume[k]; });
     var avant = e.terres && e.terres.s;
-    e.terres = { s: n, ouv: {}, feux: {}, tour: false, carto: false, troc: { j: '', n: 0 } };
+    e.terres = { s: n, ouv: {}, feux: {}, tour: false, carto: false, troc: { j: '', n: 0 }, rum: 0 };
     if (dansTerres(e.x, e.y)) { e.x = TERRES.camp.x + 2; e.y = TERRES.camp.y; e.dir = 'd'; }
     reveler(e);
     return avant != null;   // vrai s'il y avait une saison avant (on l'annonce)
@@ -1243,11 +1266,103 @@ var VL = (function () {
     if (qui === 'cartographe') {
       if (e.terres.carto) return { qui: qui, texte: ['Ma carte te plaît ? Je l\'ai dessinée à la lueur des feux, mon nez dans la boue.',
         'Les Terres changent à chaque saison. Moi, je redessine tout. C\'est mon métier !',
-        'Tu as vu la tour de guet ? Du haut, même une taupe y voit quelque chose.'][e.pas % 3], boutons: [ok] };
+        'Tu as vu la tour de guet ? Du haut, même une taupe y voit quelque chose.',
+        'Les rumeurs du tableau du village ? Un pas, c\'est une case. Trouve le repère, puis compte bien.'][e.pas % 4], boutons: [ok] };
       return { qui: qui, texte: 'Oh ! Un visiteur ! Je suis Mlle Taupinette, cartographe. J\'ai fouillé toutes les Terres de cette saison, galerie par galerie. Pour ' + PRIX_CARTE + ' cristaux, je te recopie ma carte : tu verras tout, les feux, la tour, les coffres…',
                boutons: [{ t: '🗺️ Ma carte pour ' + PRIX_CARTE + ' 💎', a: 'carte', principal: (e.sac.cristal | 0) >= PRIX_CARTE, off: (e.sac.cristal | 0) < PRIX_CARTE }, ok] };
     }
     return null;
+  }
+
+  // ---------- Rumeurs du lundi et carnet de voyage (3.59) ----------
+  // Chaque lundi, 3 rumeurs (les mêmes pour tous) : un objet caché à quelques pas d'un repère des Terres (feu, tour, hameau, pont).
+  // On ne suit pas de flèche : on lit la rumeur, on trouve le repère, on compte ses pas. Rien n'est dessiné : on le trouve en marchant dessus.
+  var OBJETS_RUMEUR = [
+    { nom: 'une bourse oubliée', ico: '👛', etoiles: 3 },
+    { nom: 'un éclat de cristal', ico: '💎', etoiles: 1, res: 'cristal', n: 2 },
+    { nom: 'une vieille boîte à musique', ico: '🎶', etoiles: 3 },
+    { nom: 'un sac de graines rares', ico: '🌱', etoiles: 2, res: 'plante', n: 4 },
+    { nom: 'une pierre qui chante', ico: '🪨', etoiles: 2, res: 'pierre', n: 4 },
+    { nom: 'une flûte de berger', ico: '🪈', etoiles: 3 },
+    { nom: 'un fagot de bois d\'if', ico: '🪵', etoiles: 2, res: 'bois', n: 4 },
+    { nom: 'une lettre d\'amour jamais envoyée', ico: '💌', etoiles: 3 }
+  ];
+  var VOIX_RUMEUR = ['Un voyageur jure qu\'on a caché', 'On murmure au village qu\'on a enterré', 'Le vent du lundi raconte qu\'on a perdu', 'Un corbeau bavard prétend qu\'on a laissé tomber', 'Une vieille chouette hulule qu\'on a oublié'];
+  var RUMEURS = { w: null, l: [] };
+  // Cases où l'on marche dans un écran, atteintes depuis son centre
+  function casesDe(ex, ey) {
+    var x0 = ex * W, y0 = ey * H, vu = {}, file = [[5, 4]], l = [];
+    vu['5,4'] = 1;
+    while (file.length) {
+      var q = file.shift(); l.push(q);
+      [[1, 0], [-1, 0], [0, 1], [0, -1]].forEach(v => {
+        var nx = q[0] + v[0], ny = q[1] + v[1], t = tuile(x0 + nx, y0 + ny);
+        if (nx < 0 || ny < 0 || nx >= W || ny >= H || vu[nx + ',' + ny] || !MARCHE[t] || habitantEn(x0 + nx, y0 + ny)) return;
+        vu[nx + ',' + ny] = 1; file.push([nx, ny]);
+      });
+    }
+    return l.map(c => ({ x: x0 + c[0], y: y0 + c[1] }));
+  }
+  function pasEnMots(dx, dy) {
+    var m = n => n + ' pas';
+    var l = [];
+    if (dy) l.push(m(Math.abs(dy)) + ' au ' + (dy < 0 ? 'nord' : 'sud'));
+    if (dx) l.push(m(Math.abs(dx)) + (dx < 0 ? ' à l\'ouest' : ' à l\'est'));
+    return l.join(' et ');
+  }
+  function rumeursDe(w) {
+    var sw = Math.floor(w / 4);   // 4 semaines par saison (les deux commencent le lundi 9 novembre 2026)
+    if (TERRES.saison !== sw) genererTerres(sw);
+    if (RUMEURS.w === w && RUMEURS.s === TERRES.saison) return RUMEURS.l;
+    var r = alea(Math.imul(w + 13, 0x2c1b3c6d) ^ Math.imul(GRAINE, 0x297a2d39)), ri = n => Math.floor(r() * n);
+    // Les repères de la saison
+    var reperes = [];
+    TERRES.feux.forEach(F => { if (F.id !== 'camp') reperes.push({ de: 'du ' + F.nom.charAt(0).toLowerCase() + F.nom.slice(1), x: F.x, y: F.y, evite: [[F.x + 2, F.y + 1]] }); });
+    reperes.push({ de: 'de la tour de guet', x: TERRES.tour.x, y: TERRES.tour.y });
+    // Les habitants du hameau ne bougent pas : on compte ses pas depuis eux
+    reperes.push({ de: 'de Barnabé, le colporteur du hameau', x: HABITANTS.colporteur.x, y: HABITANTS.colporteur.y });
+    reperes.push({ de: 'de Mlle Taupinette, la cartographe du hameau', x: HABITANTS.cartographe.x, y: HABITANTS.cartographe.y });
+    var ponts = [];
+    TERRES.ecrans.forEach(c => { var E = ecranA(c.ex, c.ey); E.l.forEach((rg, y) => rg.split('').forEach((t, x) => { if (t === '=') ponts.push({ x: c.ex * W + x, y: c.ey * H + y }); })); });
+    ponts.sort((a, b) => a.x - b.x);
+    if (ponts.length > 1) { reperes.push(Object.assign({ de: 'du pont le plus à l\'ouest de la rivière' }, ponts[0])); reperes.push(Object.assign({ de: 'du pont le plus à l\'est de la rivière' }, ponts[ponts.length - 1])); }
+    else if (ponts.length) reperes.push(Object.assign({ de: 'du pont de la rivière' }, ponts[0]));
+    var l = [], objets = OBJETS_RUMEUR.slice(), voix = VOIX_RUMEUR.slice(), pris = {};
+    TERRES.coffres.forEach(c => { pris[c.x + ',' + c.y] = 1; });
+    for (var k = 0; k < 3 && reperes.length; k++) {
+      var R = reperes.splice(ri(reperes.length), 1)[0], c0 = ecranDe(R.x, R.y);
+      var cand = casesDe(c0.ex, c0.ey).filter(c => { var d = Math.abs(c.x - R.x) + Math.abs(c.y - R.y); return d >= 2 && d <= 4 && !pris[c.x + ',' + c.y] && !(R.evite || []).some(v => v[0] === c.x && v[1] === c.y); });
+      if (!cand.length) { k--; continue; }
+      var C = cand[ri(cand.length)], O = objets.splice(ri(objets.length), 1)[0], V = voix.splice(ri(voix.length), 1)[0];
+      pris[C.x + ',' + C.y] = 1;
+      l.push({ id: k, x: C.x, y: C.y, objet: O, texte: V + ' ' + O.nom + ' ' + pasEnMots(C.x - R.x, C.y - R.y) + ' ' + R.de + '.' });
+    }
+    RUMEURS.w = w; RUMEURS.s = TERRES.saison; RUMEURS.l = l;
+    return l;
+  }
+  function majRumeurs(e) { var w = semaineDe(); if (!e.rumeurs || e.rumeurs.w !== w) e.rumeurs = { w: w, ok: {} }; return w; }
+  // On marche sur la case d'une rumeur de la semaine : la récompense
+  function trouverRumeur(e, x, y) {
+    var w = majRumeurs(e), R = rumeursDe(w).find(q => q.x === x && q.y === y);
+    if (!R || e.rumeurs.ok[R.id]) return null;
+    e.rumeurs.ok[R.id] = 1; e.terres.rum = (e.terres.rum | 0) + 1; e.carnet.total = (e.carnet.total | 0) + 1;
+    var O = R.objet, res = 0;
+    if (O.res) { res = Math.min(SAC_MAX - (e.sac[O.res] | 0), O.n); e.sac[O.res] = (e.sac[O.res] | 0) + res; }
+    var toutes = rumeursDe(w).every(q => e.rumeurs.ok[q.id]);
+    return { id: R.id, objet: O, etoiles: O.etoiles + (toutes ? 5 : 0), bonus: toutes, res: O.res, n: res,
+             texte: 'La rumeur disait vrai ! ' + O.nom.charAt(0).toUpperCase() + O.nom.slice(1) + ', juste là' + (res ? ', et ' + res + ' ' + RESSOURCES[O.res].ico + ' pour ton sac' : '') + '. +' + O.etoiles + ' ⭐' +
+                    (toutes ? ' Et voilà les trois rumeurs de la semaine résolues : +5 ⭐ de plus !' : '') };
+  }
+  // Ce que montre le carnet de voyage
+  function carnet(e) {
+    var w = majRumeurs(e), it = infoTerres();
+    var vus = Object.keys(e.brume).filter(k => { var c = k.split(',').map(Number); return c[0] >= TX && c[0] < TX + TW && c[1] >= TY && c[1] < TY + TH; }).length;
+    return {
+      semaine: { w: w, debut: debutSemaine(w), fin: debutSemaine(w + 1), rumeurs: rumeursDe(w).map(R => ({ id: R.id, texte: R.texte, trouve: !!e.rumeurs.ok[R.id], ico: R.objet.ico, objet: R.objet.nom })) },
+      saison: { numero: it.numero, fin: it.fin, ecrans: vus, total: TW * TH, feux: Object.keys(e.terres.feux).length, nbFeux: NB_FEUX, coffres: Object.keys(e.terres.ouv).length, nbCoffres: NB_COFFRES,
+                tour: !!e.terres.tour, carto: !!e.terres.carto, rum: e.terres.rum | 0 },
+      passees: e.carnet.saisons.slice().reverse(), total: e.carnet.total | 0
+    };
   }
 
   function infoTerres() {
@@ -1281,6 +1396,7 @@ var VL = (function () {
     etatQuete: etatQuete, champignonVisible: champignonVisible, verifier: verifier, accepter: accepter, rendre: rendre, marque: marque,
     queteSuivie: queteSuivie, consigne: consigne, cible: cible, pas: pas, parler: parler, tableau: tableau, agir: agir, fouiller: fouiller,
     PORTE: PORTE, saisonDe: saisonDe, genererTerres: genererTerres, terresPretes: terresPretes, changerSaison: changerSaison, traverser: traverser,
+    semaineDe: semaineDe, rumeursDe: rumeursDe, trouverRumeur: trouverRumeur, carnet: carnet, majRumeurs: majRumeurs,
     feuEn: feuEn, feuAllume: feuAllume, allumer: allumer, destinations: destinations, voyager: voyager, monterTour: monterTour, trocsRestants: trocsRestants, PRIX_CARTE: PRIX_CARTE,
     ouvrirCoffreT: ouvrirCoffreT, infoTerres: infoTerres, dansTerres: dansTerres, regions: regions, regionDe: regionDe, partVueTerres: partVueTerres
   };

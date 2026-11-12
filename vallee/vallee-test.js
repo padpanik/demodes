@@ -507,5 +507,41 @@ var sv13 = JSON.parse(JSON.stringify(eF)); sv13.terres.s = sv13.terres.s - 1; sv
 var eN13 = VL.charger(sv13); VL.terresPretes();
 verif(!eN13.terres.feux.f1 && !eN13.terres.tour && !eN13.terres.carto, 'nouvelle saison : feux éteints, tour et carte oubliées');
 
+// 14. Rumeurs du lundi et carnet de voyage (3.59)
+var mauvaises = 0, nbR = 0, t14 = Date.now();
+for (var wk = -8; wk < 200; wk++) {
+  var L = VL.rumeursDe(wk), I14 = VL.infoTerres(), eT14 = VL.nouvelEtat(), vu14 = {}, f14 = [[I14.camp.x + 1, I14.camp.y]]; vu14[f14[0].join()] = 1;
+  while (f14.length) { var q14 = f14.shift(); [[1, 0], [-1, 0], [0, 1], [0, -1]].forEach(v => { var nx = q14[0] + v[0], ny = q14[1] + v[1], k = nx + ',' + ny; if (!vu14[k] && VL.libre(eT14, nx, ny)) { vu14[k] = 1; f14.push([nx, ny]); } }); }
+  var okw = L.length === 3 && new Set(L.map(R => R.x + ',' + R.y)).size === 3 && I14.saison === Math.floor(wk / 4);
+  L.forEach(R => { nbR++; if (!vu14[R.x + ',' + R.y] || !/ pas (au|à)/.test(R.texte) || I14.coffres.some(c => c.x === R.x && c.y === R.y)) okw = false; });
+  if (!okw) { mauvaises++; if (mauvaises < 4) console.log('  semaine ' + wk + ' incorrecte', L.map(R => R.texte)); }
+}
+verif(mauvaises === 0, '208 semaines de rumeurs, toutes atteignables (' + nbR + ' rumeurs) en ' + (Date.now() - t14) + ' ms');
+verif(JSON.stringify(VL.rumeursDe(5)) === JSON.stringify(VL.rumeursDe(5)) && VL.rumeursDe(5)[0].texte !== VL.rumeursDe(6)[0].texte, 'mêmes rumeurs pour tous, nouvelles chaque lundi');
+verif(VL.semaineDe(new Date(2026, 10, 15, 22).getTime()) === 0 && VL.semaineDe(new Date(2026, 10, 16, 1).getTime()) === 1, 'la semaine change le lundi');
+VL.terresPretes();
+var wNow = VL.semaineDe(), LR = VL.rumeursDe(wNow), eR14 = VL.nouvelEtat(); VL.traverser(eR14, 'aller');
+eR14.x = LR[0].x - 1; eR14.y = LR[0].y;
+var r14 = VL.trouverRumeur(eR14, LR[0].x, LR[0].y);
+verif(r14 && r14.etoiles === LR[0].objet.etoiles && !r14.bonus && eR14.rumeurs.ok[0] && !VL.trouverRumeur(eR14, LR[0].x, LR[0].y), 'rumeur trouvée une fois : ' + r14.texte);
+VL.trouverRumeur(eR14, LR[1].x, LR[1].y); var r3b = VL.trouverRumeur(eR14, LR[2].x, LR[2].y);
+verif(r3b.bonus && r3b.etoiles === LR[2].objet.etoiles + 5 && eR14.terres.rum === 3 && eR14.carnet.total === 3, 'les trois rumeurs : bonus');
+verif(!VL.trouverRumeur(eR14, LR[0].x + 50, LR[0].y), 'rien ailleurs');
+// En marchant dessus
+var eM = VL.nouvelEtat(); VL.traverser(eM, 'aller');
+var R0 = LR[1], dirs = [['g', 1, 0], ['d', -1, 0], ['h', 0, 1], ['b', 0, -1]].find(d => VL.libre(eM, R0.x + d[1], R0.y + d[2]));
+eM.x = R0.x + dirs[1]; eM.y = R0.y + dirs[2];
+verif(VL.pas(eM, dirs[0], {}).rumeur && eM.rumeurs.ok[1], 'on trouve une rumeur en marchant dessus');
+var C14 = VL.carnet(eR14);
+verif(C14.semaine.rumeurs.every(q => q.trouve) && C14.total === 3 && C14.saison.rum === 3, 'le carnet montre les rumeurs trouvées');
+// Rechargement, semaine suivante, saison suivante : archive
+var sv14 = JSON.parse(JSON.stringify(eR14)); var e14b = VL.charger(sv14);
+verif(e14b.rumeurs.ok[2] && e14b.carnet.total === 3 && e14b.terres.rum === 3, 'rumeurs gardées au rechargement');
+sv14.rumeurs.w = wNow - 1; verif(!Object.keys(VL.charger(sv14).rumeurs.ok).length, 'semaine suivante : nouvelles rumeurs');
+var sv15 = JSON.parse(JSON.stringify(eR14)); sv15.terres.s = sv15.terres.s - 1; sv15.terres.feux = { f1: 1 };
+var e15 = VL.charger(sv15); VL.terresPretes();
+verif(e15.carnet.saisons.length === 1 && e15.carnet.saisons[0].n === sv15.terres.s + 1 && e15.carnet.saisons[0].rum === 3 && e15.carnet.saisons[0].feux === 1 && e15.carnet.saisons[0].ecrans > 0 && e15.terres.rum === 0 && e15.carnet.total === 3, 'saison passée dans le carnet');
+verif(VL.charger({ v: 1, carnet: { total: -3, saisons: [null, { n: 'x' }, { n: 2, ecrans: 9 }] } }).carnet.saisons.length === 1, 'carnet abîmé');
+
 console.log(ok + ' vérifications réussies, ' + ko + ' échec(s)');
 process.exit(ko ? 1 : 0);
