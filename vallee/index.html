@@ -595,7 +595,7 @@
             <div class="cout-vl"><span v-for="(n, k) in r.cout" :key="k" :class="{ manque: e.sac[k] < n }">{{ n }} <i class="pi" v-html="riche(VL.RESSOURCES[k].ico)"></i></span></div>
           </div>
           <button v-if="r.etat.ok" class="btn-vl" :class="fabChoix === r.id ? 'vert' : 'principal'" @click="fabriquer(r)">{{ fabChoix === r.id ? '✓ Sûr ?' : 'Fabriquer' }}</button>
-          <span v-else class="raison">{{ r.etat.fait ? '✓ ' : '' }}{{ r.etat.raison }}</span>
+          <span v-else class="raison" v-html="richeLie((r.etat.fait ? '✓ ' : '') + (r.etat.raison || ''))"></span>
         </div>
         <div class="boutons-vl"><button class="btn-vl" @click="fermer">Fermer</button></div>
       </div>
@@ -938,6 +938,8 @@
         dessinTresor: function(T) { return T.pic === 'hibou' ? VLP.riche('🦉', 40) : T.pic ? VLP.svg(T.pic, 40) : VLP.riche(T.ico, 40); },
         ouvrirLivre: function() { this.animal = lireStockage('compagnon-animal'); this.livreSel = null; this.fenetre = 'livre'; },
         riche: function(t, taille) { return VLP.riche(t, taille); },
+        // Comme riche, mais « 2 + icône » ne se coupe jamais en fin de ligne (insécable avant l'icône)
+        richeLie: function(t) { return VLP.riche(t).replace(/(\d+)\u00a0(<svg[\s\S]*?<\/svg>)/g, '<span style="white-space:nowrap">$1 $2</span>'); },
         portrait: function(qui) { var H = VL.HABITANTS[qui]; return H ? VLD.habitant(H.espece, 58) : ''; },
         montrerLieu: function(neuf) {
           var E = VL.ecran(etat.x, etat.y);

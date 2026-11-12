@@ -991,7 +991,7 @@ var VL = (function () {
     }
     if (r.type === 'outil' && e.outils[r.id]) return { ok: false, fait: true, raison: 'Déjà forgé' };
     if (r.type === 'fiole' && besaceTotal(e) >= BESACE_MAX) return { ok: false, raison: 'Besace pleine (' + BESACE_MAX + ')' };
-    if (!assezPour(e, r.cout)) return { ok: false, raison: 'Il manque ' + ORDRE_RES.filter(k => (r.cout[k] | 0) > e.sac[k]).map(k => (r.cout[k] - e.sac[k]) + ' ' + RESSOURCES[k].ico).join(' ') };
+    if (!assezPour(e, r.cout)) return { ok: false, raison: 'Il manque ' + ORDRE_RES.filter(k => (r.cout[k] | 0) > e.sac[k]).map(k => (r.cout[k] - e.sac[k]) + '\u00a0' + RESSOURCES[k].ico).join(' ') };
     return { ok: true };
   }
   function fabriquer(e, id, ctx) {

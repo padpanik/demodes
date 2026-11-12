@@ -3,12 +3,13 @@
 // Les clés de stockage gardent l'ancien préfixe "brillant-" : les réglages déjà faits sont conservés.
 
 // Numéro de version affiché (à augmenter à chaque mise en ligne, avec brilliant/index.html et sw.js)
-const VERSION = '3.76';
+const VERSION = '3.77';
 
 // ---------- Nouveautés (2.87, demandé par l'utilisateur) ----------
 // Une ligne très brève par mise en ligne (la plus récente en haut) : l'accueil les montre une seule fois, dans une petite fenêtre,
 // à qui n'a pas encore vu cette version. [version, jeu ou partie de l'appli, ce qui change]
 const NOUVEAUTES = [
+  ['3.77', 'Vallée', 'Hutte et établi : « Il manque » montre les vrais dessins des ingrédients.'],
   ['3.75', 'Toute l\'appli', 'Le geste retour du téléphone propose l\'accueil au lieu de revenir en arrière et de perdre une avancée.'],
   ['3.74', 'Jeux', 'Onglet Partie : bouton « Abandonner la partie en cours » pour le jeu seul, le même partout.'],
   ['3.73', 'Yams', 'Bouton pour abandonner la partie (seul) ou quitter le salon, en haut de l\'écran de jeu.'],
