@@ -94,6 +94,7 @@
     .actions .btn { padding: 12px 8px; }
     .btn.valider { background: #2f8a5b; border-color: #2f8a5b; color: #fff; }
     .btn.valider.nul { background: #b04a4a; border-color: #b04a4a; }
+    .joueur.quitter-j { color: #b02a2a; border-color: #f0b4b4; background: #fff5f5; font-weight: 700; }
     .petit-btn { width: 100%; margin-top: 8px; padding: 9px; border-radius: 10px; border: 1px dashed #c9a24a; background: #fffaf0; font-weight: 600; color: #7a5a10; font-size: 0.9em; }
 
     .fin-box ol.classement { text-align: left; margin: 10px auto; max-width: 260px; padding-left: 22px; }
@@ -188,10 +189,12 @@
               {{ etat.tour.joueur === j.pseudo ? '🎲 ' : '' }}{{ j.pseudo }}<strong>{{ j.total }}</strong>
             </button>
             <span v-for="s in spectateurs" :key="'s' + s" class="joueur spectateur">👀 {{ s }}</span>
+            <button v-if="!etat.fin" class="joueur quitter-j" @click="quitterPartie">🏳️ Quitter</button>
           </div>
           <div class="joueurs-bande" v-else>
             <span class="joueur moi">Tour <strong>{{ Math.min(nbCases, casesRemplies(etat.feuilles[pseudoVue]) + 1) }}</strong>/{{ nbCases }}</span>
             <span class="joueur" v-if="record">🏆 <strong>{{ record }}</strong></span>
+            <button v-if="!etat.fin" class="joueur quitter-j" @click="quitterPartie">🏳️ Abandonner</button>
           </div>
 
           <div class="consigne" :class="{ alerte: !!message }">{{ message || consigne }}</div>
@@ -1136,6 +1139,19 @@
           if (++e.essais >= 4) return this.finEntree(false, 'Impossible d\'entrer dans le salon pour le moment.\n\nSi vous êtes sur le même Wi-Fi (location, hôtel, Wi-Fi invité…), il empêche souvent les téléphones de se parler : passe l\'un des deux en 4G/5G (Wi-Fi coupé), puis réessaie.');
           this.entreeEnCours = e.essais + 1;   // « essai 2/4 » sur le bouton
           setTimeout(() => { if (this._entree === e && !this.role) this.creerPartie(false); }, 1200);
+        },
+        // Quitter la partie depuis l'écran de jeu (demandé par l'utilisateur) : en solo, la partie est abandonnée ; en salon, on quitte le salon (les autres continuent)
+        quitterPartie: function() {
+          if (this.role) {
+            if (!confirm('Quitter le salon ? Les autres pourront continuer sans toi.')) return;
+            this.sortirDuSalon();
+          } else {
+            if (!confirm('Abandonner la partie ? Elle sera perdue.')) return;
+            jeuHote = null; this.etat = null; this.selection = null;
+            this.ajouterLog('Partie abandonnée.', true);
+            this.sauvegarder();
+          }
+          this.onglet = 'config';
         },
         quitterSalon: function() {
           if (!confirm('Quitter le salon ?')) return;

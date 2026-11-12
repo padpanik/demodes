@@ -265,6 +265,7 @@ Bataille navale : `bataille-boss` (partie contre un boss d'expédition), `batail
   Yams : total + 50. Chance + et Chance − : total des dés, la Chance − strictement inférieure à la Chance + de la
   même colonne, sinon la case inscrite en second vaut 0 (pas de contrainte si l'une des deux est barrée).
 - Un Yams compte comme carré mais pas comme full (confirmé par l'utilisateur).
+- **Quitter en cours de partie** (3.73, demandé par l'utilisateur) : petite pastille rouge en haut de l'écran de jeu, dans la bande des joueurs (`quitterPartie`) : seul « 🏳️ Abandonner » (partie perdue, après confirmation) ; en salon « 🏳️ Quitter » (= quitter le salon, les autres continuent). Retour à l'onglet Partie. Pas en bas : l'écran tient tout juste à 360 × 800 et le bouton serait à côté de « Lancer ».
 
 ### Backgammon
 - À deux uniquement (un 3e est refusé), pas de solo. Règles courantes : videau, gammon ×2, backgammon ×3,
