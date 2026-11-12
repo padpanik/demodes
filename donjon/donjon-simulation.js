@@ -46,6 +46,10 @@ function valeurCarte(e, p, id, ms, besoin) {
     if (f.special === 'catalyse') v += ms.reduce((s, m) => Math.max(s, (m.etats.poison || 0) * 2), 0);
     if (f.special === 'assommer') { var dm = menaceMax(e, p, ms); v += dm ? dm.v * 1.1 : 0; }
     if (f.special === 'prevoyance') v += 1;
+    // Terres (3.71) : esquive, écho, invocations
+    if (f.buff === 'esquive') v += Math.min(Math.max(besoin, 0), 12) * f.n + 1;
+    if (f.buff === 'echo') v += 8;
+    if (f.special === 'invoque') v += f.inv === 'golem' ? f.n * 0.8 : f.n * (f.x || 3) * 0.8;
   });
   return v / Math.max(0.6, cout);
 }

@@ -217,7 +217,7 @@ VL.RECETTES.forEach(r => { verif(VL.LIEUX_FAB[r.ou], 'recette ' + r.id + ' : lie
   e.sac.cristal = 0;
   verif(VL.recolter(e, VL.RECOLTE.find(k => k.filon), ctx).filon, 'filon sans pioche');
   // Fabrication
-  e.sac = { bois: 20, pierre: 20, plante: 20, cristal: 20 };
+  e.sac = { bois: 20, pierre: 20, plante: 20, cristal: 20, brumelle: 0, ambre: 0, ecaille: 0, coeur: 0 };
   var f = VL.fabriquer(e, 'fab-tabouret', ctx);
   verif(pv ? f.ok && f.deco === 'fab-tabouret' && e.sac.bois === 17 : !!f.erreur, 'tabouret (' + pv + ')');
   verif(VL.etatRecette(e, VL.recette('fab-tabouret'), { compagnon: true, possede: { 'fab-tabouret': 1 } }).fait, 'déco déjà faite');
@@ -438,6 +438,12 @@ for (var sn = -5; sn < nbSaisons - 5; sn++) {
   if (I.expeditions.length !== VL.LIEUX_EXPEDITION.length) ok1 = false;
   I.expeditions.forEach(X => { if (VL.tuile(X.x, X.y) !== 'X' || !proche(X.x, X.y) || [I.hameau, I.tour].concat(I.feux, I.failles).some(L => L.ex === X.ex && L.ey === X.ey)) ok1 = false; });
   if (new Set(I.expeditions.map(X => X.ex + ',' + X.ey)).size !== I.expeditions.length || new Set(I.expeditions.map(X => X.id)).size !== I.expeditions.length) ok1 = false;
+  // Le sanctuaire (3.71) : dans son propre écran, atteignable ; les composants rares atteignables, au bon endroit, jamais sur un coffre
+  var S = I.sanct, biomesSaison = {};
+  for (var eyb = I.ey0; eyb <= I.ey1; eyb++) for (var exb = I.ex0; exb <= I.ex1; exb++) biomesSaison[VL.ecranA(exb, eyb).biome] = (biomesSaison[VL.ecranA(exb, eyb).biome] || 0) + 1;
+  if (!S || VL.tuile(S.x, S.y) !== 'N' || !proche(S.x, S.y) || [I.hameau, I.tour].concat(I.feux, I.failles, I.expeditions).some(L => L.ex === S.ex && L.ey === S.ey)) { ok1 = false; if (mauvais < 3) console.log('  sanctuaire', sn); }
+  if (I.recolte.length < 6 || I.recolte.some(p => !vu3[p.x + ',' + p.y] || I.coffres.some(c => c.x === p.x && c.y === p.y))) { ok1 = false; if (mauvais < 3) console.log('  rares', sn, I.recolte.length); }
+  I.recolte.forEach(p => { var E = VL.ecran(p.x, p.y); if ((p.res === 'brumelle' && E.biome !== 'foret' && biomesSaison.foret > 2) || (p.res === 'ambre' && E.biome !== 'collines' && biomesSaison.collines > 2)) ok1 = false; });
   if (!ok1) { mauvais++; if (mauvais < 4) console.log('  saison ' + sn + ' incorrecte'); }
 }
 verif(mauvais === 0, nbSaisons + ' saisons générées, toutes justes (' + coffresVus + ' coffres) en ' + (Date.now() - t0) + ' ms');
@@ -574,6 +580,33 @@ var IX = VL.infoTerres(), X0 = IX.expeditions[0], eX = VL.nouvelEtat(); VL.trave
 eX.x = X0.x; eX.y = X0.y + 1;
 verif(VL.pas(eX, 'h', {}).action === 'expedition' && VL.expeditionEn(X0.x, X0.y).id === X0.id, 'on fonce dans un campement d\'expédition : ' + X0.nom);
 verif(IX.expeditions.map(X => X.id).sort().join() === 'cinema,geo,histoire,sciences', 'les lieux prêts sont dans les Terres');
+
+// 17. Le sanctuaire, les composants rares, le cœur de faille (3.71)
+VL.terresPretes();
+var IS = VL.infoTerres(), eS = VL.nouvelEtat(); VL.traverser(eS, 'aller');
+eS.x = IS.sanct.x; eS.y = IS.sanct.y + 1;
+verif(VL.pas(eS, 'h', {}).action === 'sanctuaire', 'on fonce dans le sanctuaire');
+var dS = VL.defiSanct();
+verif(dS.sanct && dS.carte && dS.boss === VL.bossSemaine().boss && dS.id === 'sanct:' + VL.semaineDe(), 'le défi du sanctuaire : ' + dS.nom);
+verif(VL.resultatFaille(eS, { id: dS.id, gagne: false }).perdu && !VL.sanctVaincu(eS), 'sanctuaire perdu : il attend');
+var rS = VL.resultatFaille(eS, { id: dS.id, gagne: true });
+verif(rS.gagne && rS.etoiles === 5 && VL.sanctVaincu(eS) && VL.resultatFaille(eS, { id: dS.id, gagne: true }).deja, 'sanctuaire gagné : une seule récompense par semaine');
+verif(VL.resultatFaille(eS, { id: 'sanct:' + (VL.semaineDe() - 1), gagne: true }).perime, 'résultat d\'une autre semaine ignoré');
+verif(VL.sanctVaincu(VL.charger(JSON.parse(JSON.stringify(eS)))), 'sanctuaire gardé au rechargement');
+var vieux = JSON.parse(JSON.stringify(eS)); vieux.sanct.w--; verif(!VL.sanctVaincu(VL.charger(vieux)), 'nouvelle semaine : nouveau gardien');
+var bossVus = {}; for (var w = 0; w < 6; w++) bossVus[VL.bossSemaine(w).boss] = 1;
+verif(Object.keys(bossVus).length === 6, 'six gardiens tour à tour');
+var pR = IS.recolte[0], eR = VL.nouvelEtat(); VL.traverser(eR, 'aller');
+var rr = VL.recolter(eR, pR, {});
+verif(rr.recolte === pR.res && eR.sac[pR.res] === 1 && VL.pointEn(pR.x, pR.y).id === pR.id, 'on ramasse un composant rare : ' + pR.res);
+verif(VL.charger(JSON.parse(JSON.stringify(eR))).recolte.pris[pR.id] === 1, 'point rare pris gardé au rechargement');
+var eF = VL.nouvelEtat(), rF2 = VL.resultatFaille(eF, { id: IS.failles[1].id, gagne: true });
+verif(rF2.coeur === 1 && eF.sac.coeur === 1 && rF2.carte && VL.defiFaille(IS.failles[1]).carte && !VL.defiFaille(IS.failles[0]).carte, 'faille : un cœur de faille, une carte rare à la profondeur 2');
+eF.sac.coeur = 1; eF.sac.cristal = 1; eF.recolte.j = 'x';
+var ctxF = { jour: VL.jourDe() };
+eF.quetes = { atelier: { etat: 'finie' } };
+var fab = VL.fabriquer(eF, 'essence', ctxF);
+verif(fab.ok && eF.besace.essence === 1 && eF.sac.coeur === 0, 'Essence de faille fabriquée chez Mme Sauge');
 
 console.log(ok + ' vérifications réussies, ' + ko + ' échec(s)');
 process.exit(ko ? 1 : 0);

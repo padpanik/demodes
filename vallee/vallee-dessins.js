@@ -466,7 +466,36 @@ var VLD = (function () {
     var iris = (x, y) => '<path d="M' + x + ' ' + y + 'l-3.2-2.4 3.2-4 3.2 4z" fill="#5c7cfa" stroke="#22307a" stroke-width=".8"/><path d="M' + x + ' ' + y + 'l-4 1.6M' + x + ' ' + y + 'l4 1.6" stroke="#4263eb" stroke-width="2" stroke-linecap="round"/><circle cx="' + x + '" cy="' + (y - 1.6) + '" r=".9" fill="#ffd43b"/>';
     return '<ellipse cx="' + (X + 16) + '" cy="' + (Y + 27) + '" rx="11" ry="2.8" fill="rgba(5,20,10,.3)"/>' + j + iris(X + 10, Y + 8) + iris(X + 22, Y + 6);
   }
+  // Les composants rares des Terres (3.71) : une étincelle dorée plus grosse, ils valent le détour
+  var etincelleRare = (X, Y) => '<g class="vl-scintille"><path d="M' + (X + 26) + ' ' + (Y + 3) + 'l1.3 3.2 3.2 1.3-3.2 1.3-1.3 3.2-1.3-3.2-3.2-1.3 3.2-1.3z" fill="#ffe066" stroke="#8a6a00" stroke-width=".5"/></g>';
+  function brumelle(X, Y) {
+    var fleur = (x, y, t) => [0, 72, 144, 216, 288].map(a => '<ellipse cx="' + x + '" cy="' + (y - 2.6 * t) + '" rx="' + (1.7 * t) + '" ry="' + (2.8 * t) + '" fill="#e5dbff" stroke="#5f3dc4" stroke-width=".7" transform="rotate(' + a + ' ' + x + ' ' + y + ')"/>').join('') +
+      '<circle cx="' + x + '" cy="' + y + '" r="' + (1.3 * t) + '" fill="#be4bdb" stroke="#5f3dc4" stroke-width=".5"/>';
+    return '<ellipse cx="' + (X + 16) + '" cy="' + (Y + 27) + '" rx="10" ry="2.6" fill="rgba(5,10,20,.3)"/>' +
+      '<circle cx="' + (X + 16) + '" cy="' + (Y + 14) + '" r="12" fill="#d0bfff" opacity=".22" class="vl-halo"/>' +
+      '<path d="M' + (X + 16) + ' ' + (Y + 27) + 'q-1-7 -5-12M' + (X + 16) + ' ' + (Y + 27) + 'q1-8 4-15M' + (X + 16) + ' ' + (Y + 27) + 'q0-4 0-6" stroke="' + OL + '" stroke-width="2.6" fill="none" stroke-linecap="round"/>' +
+      '<path d="M' + (X + 16) + ' ' + (Y + 27) + 'q-1-7 -5-12M' + (X + 16) + ' ' + (Y + 27) + 'q1-8 4-15" stroke="#69a85a" stroke-width="1.3" fill="none" stroke-linecap="round"/>' +
+      '<path d="M' + (X + 13) + ' ' + (Y + 26) + 'q-6-1 -7-5q5 0 7 5zM' + (X + 19) + ' ' + (Y + 26) + 'q6-1 7-5q-5 0-7 5z" fill="#5c940d" stroke="' + OL + '" stroke-width=".8"/>' +
+      fleur(X + 11, Y + 14, 1) + fleur(X + 20, Y + 11, 1.15);
+  }
+  function ambre(X, Y) {
+    return '<ellipse cx="' + (X + 16) + '" cy="' + (Y + 27) + '" rx="12" ry="3" fill="rgba(20,10,0,.3)"/>' +
+      '<path d="M' + (X + 4) + ' ' + (Y + 26) + 'q-1-9 6-13q6-3 12 0q7 4 6 13z" fill="#9c8f78" stroke="' + OLB + '" stroke-width="1.4"/>' +
+      '<path d="M' + (X + 7) + ' ' + (Y + 22) + 'q4-6 10-6" stroke="#cfc4ae" stroke-width="1.2" fill="none"/>' +
+      '<path d="M' + (X + 14) + ' ' + (Y + 21) + 'q-4-1 -3-6q1-4 4-6q3 2 4 6q1 5-3 6z" fill="#f59f00" stroke="#7a3d00" stroke-width="1.1"/>' +
+      '<path d="M' + (X + 13) + ' ' + (Y + 17) + 'q0-3 2-5" stroke="#ffe8a1" stroke-width="1.2" fill="none" stroke-linecap="round"/>' +
+      '<circle cx="' + (X + 21) + '" cy="' + (Y + 22) + '" r="2.4" fill="#fab005" stroke="#7a3d00" stroke-width=".9"/><circle cx="' + (X + 20.4) + '" cy="' + (Y + 21.3) + '" r=".7" fill="#fff3bf"/>';
+  }
+  function ecaille(X, Y) {
+    var e1 = (x, y, a) => '<path d="M' + x + ' ' + y + 'q-4-1 -4-5q0-4 4-5q4 1 4 5q0 4-4 5z" fill="#dee2e6" stroke="#495057" stroke-width="1" transform="rotate(' + a + ' ' + x + ' ' + (y - 5) + ')"/>' +
+      '<path d="M' + (x - 2) + ' ' + (y - 6) + 'q2-2 4 0M' + (x - 2) + ' ' + (y - 3.6) + 'q2-2 4 0" stroke="#74c0fc" stroke-width=".8" fill="none" transform="rotate(' + a + ' ' + x + ' ' + (y - 5) + ')"/>';
+    return '<ellipse cx="' + (X + 16) + '" cy="' + (Y + 27) + '" rx="11" ry="2.6" fill="rgba(5,15,25,.3)"/>' +
+      '<path d="M' + (X + 4) + ' ' + (Y + 27) + 'q12-5 24 0" fill="#a8925f" stroke="' + OLB + '" stroke-width="1"/>' +
+      e1(X + 11, Y + 25, -25) + e1(X + 20, Y + 24, 20) + e1(X + 15, Y + 19, 5) +
+      '<circle cx="' + (X + 14) + '" cy="' + (Y + 13) + '" r=".9" fill="#fff"/><circle cx="' + (X + 22) + '" cy="' + (Y + 17) + '" r=".7" fill="#fff"/>';
+  }
   function pointRecolte(p, X, Y, ctx) {
+    if (p.res === 'brumelle' || p.res === 'ambre' || p.res === 'ecaille') return { brumelle: brumelle, ambre: ambre, ecaille: ecaille }[p.res](X, Y) + etincelleRare(X, Y);
     if (p.filon) return filon(X, Y);
     if (p.res === 'cristal') return cristaux(X, Y, ctx.flair);
     var E = VL.ecran(p.x, p.y);
@@ -611,6 +640,25 @@ var VLD = (function () {
       '<path d="M' + (cx - 10) + ' ' + (cy + 1) + 'l5-4 4 3 5-5 6 3" stroke="#e5dbff" stroke-width="1.4" fill="none" opacity=".8" class="vl-lueur"/>' +
       cailloux +
       '<g class="vl-faille">' + [[-6, -10, 1.6], [4, -16, 1.3], [-1, -22, 1.1], [9, -9, 1.2]].map(c => '<circle cx="' + (cx + c[0]) + '" cy="' + (cy + c[1]) + '" r="' + c[2] + '" fill="#d0bfff"/>').join('') + '</g>';
+  }
+  // Le sanctuaire des Terres (3.71) : un cercle de menhirs gravés autour d'un autel où brûle une flamme violette (le boss de la semaine t'attend) ;
+  // vaincu cette semaine : la flamme devient dorée et paisible
+  function sanctuaire(X, Y, vaincu) { var cx = X + 16, by = Y + 26; return '<g transform="translate(' + cx + ' ' + by + ') scale(1.6) translate(' + (-cx) + ' ' + (-by) + ')">' + sanctuaireBrut(X, Y, vaincu) + '</g>'; }
+  function sanctuaireBrut(X, Y, vaincu) {
+    var cx = X + 16, cy = Y + 22, fl = vaincu ? ['#ffd43b', '#fff3bf', '#e67700'] : ['#9775fa', '#e5dbff', '#5f3dc4'];
+    var menhir = (x, y, h, l) => '<path d="M' + (x - l) + ' ' + y + 'q-1-' + (h * 0.6) + ' ' + (l * 0.4) + '-' + h + 'q' + (l * 0.6) + '-2 ' + (l * 1.2) + ' 0q' + (l * 0.6) + ' ' + (h * 0.4) + ' ' + (l * 0.4) + ' ' + h + 'z" fill="#8f8a80" stroke="' + OLB + '" stroke-width="1.2"/>' +
+      '<path d="M' + (x - l * 0.5) + ' ' + (y - h * 0.75) + 'q' + (l * 0.3) + '-' + (h * 0.12) + ' ' + (l * 0.2) + ' ' + (h * 0.4) + '" stroke="#c9c2b2" stroke-width=".9" fill="none"/>' +
+      '<path d="M' + x + ' ' + (y - h * 0.62) + 'l-1.2 2 1.2 2 1.2-2z" fill="none" stroke="' + fl[0] + '" stroke-width=".9"' + (vaincu ? '' : ' class="vl-scintille"') + '/>';
+    return '<ellipse cx="' + cx + '" cy="' + (cy + 5) + '" rx="19" ry="5.5" fill="rgba(10,10,20,.35)"/>' +
+      '<ellipse cx="' + cx + '" cy="' + (cy + 3) + '" rx="15" ry="4.5" fill="#b8ad96" stroke="' + OLB + '" stroke-width="1"/>' +
+      '<ellipse cx="' + cx + '" cy="' + (cy + 3) + '" rx="10" ry="2.8" fill="none" stroke="#8a7f68" stroke-width=".8" stroke-dasharray="2 2"/>' +
+      menhir(X + 3, cy + 1, 15, 3.2) + menhir(X + 29, cy + 1, 15, 3.2) + menhir(X + 8, cy - 3, 11, 2.6) + menhir(X + 24, cy - 3, 11, 2.6) +
+      '<circle cx="' + cx + '" cy="' + (cy - 9) + '" r="11" fill="' + fl[1] + '" opacity=".28" class="vl-halo"/>' +
+      '<path d="M' + (cx - 6) + ' ' + (cy + 3) + 'v-6h12v6z" fill="#a39a88" stroke="' + OLB + '" stroke-width="1.2"/><path d="M' + (cx - 7.5) + ' ' + (cy - 3) + 'h15v-2.4h-15z" fill="#c9c2b2" stroke="' + OLB + '" stroke-width="1.1"/>' +
+      '<path d="M' + (cx - 3) + ' ' + cy + 'h6" stroke="' + fl[2] + '" stroke-width="1" opacity=".8"/>' +
+      '<path class="vl-flamme" d="M' + cx + ' ' + (cy - 17) + 'C' + (cx + 5) + ' ' + (cy - 11) + ' ' + (cx + 5) + ' ' + (cy - 7) + ' ' + (cx + 3) + ' ' + (cy - 5.4) + 'H' + (cx - 3) + 'C' + (cx - 5) + ' ' + (cy - 7) + ' ' + (cx - 4) + ' ' + (cy - 11) + ' ' + cx + ' ' + (cy - 17) + 'Z" fill="' + fl[0] + '" stroke="' + fl[2] + '" stroke-width=".8"/>' +
+      '<path class="vl-flamme" d="M' + cx + ' ' + (cy - 12) + 'C' + (cx + 2.4) + ' ' + (cy - 9) + ' ' + (cx + 2.4) + ' ' + (cy - 7) + ' ' + (cx + 1.4) + ' ' + (cy - 5.6) + 'H' + (cx - 1.4) + 'C' + (cx - 2.4) + ' ' + (cy - 7) + ' ' + (cx - 2) + ' ' + (cy - 9) + ' ' + cx + ' ' + (cy - 12) + 'Z" fill="' + fl[1] + '"/>' +
+      (vaincu ? '' : '<g class="vl-faille"><circle cx="' + (cx - 5) + '" cy="' + (cy - 16) + '" r="1" fill="#d0bfff"/><circle cx="' + (cx + 6) + '" cy="' + (cy - 20) + '" r=".9" fill="#d0bfff"/></g>');
   }
   // Un campement d'expédition dans les Terres (3.61) : une tente rayée aux couleurs du lieu, son emblème sur un écusson, un fanion
   function campExpedition(X, Y, L) { var cx = X + 16, by = Y + 29; return '<g transform="translate(' + cx + ' ' + by + ') scale(1.5) translate(' + (-cx) + ' ' + (-by) + ')">' + tenteBrute(X, Y, L) + '</g>'; }
@@ -1086,6 +1134,7 @@ var VLD = (function () {
       else if (t === 'f') poser(y, feuCamp(X, Y, !VL.feuAllume(e, VL.feuEn(gx2, gy2))));
       else if (t === 'W') poser(y + 0.3, tourGuet(X, Y, !!(e.terres && e.terres.tour)));
       else if (t === 'X') poser(y + 0.2, campExpedition(X, Y, VL.expeditionEn(gx2, gy2)));
+      else if (t === 'N') poser(y + 0.2, sanctuaire(X, Y, VL.sanctVaincu(e)));
       else if (t === 'Y') poser(y - 0.2, faille(X, Y, VL.failleFermee(e, VL.failleEn(gx2, gy2))));
       else if (t === 'e') poser(y, etabli(X, Y, ctx.atelier));
       else if (VL.OBSTACLES[t]) poser(y - 0.1, obstacle(t, X, Y, VL.ouvert(e, gx2, gy2), ctx.flair));
@@ -1101,7 +1150,7 @@ var VLD = (function () {
       var k = VL.ecranDe(c.x, c.y);
       if (k.ex === ex && k.ey === ey && VL.champignonVisible(e, c)) poser(c.y - y0 - 0.05, champignon((c.x - x0) * T, (c.y - y0) * T));
     });
-    VL.RECOLTE.forEach(p => {
+    VL.points().forEach(p => {
       var k = VL.ecranDe(p.x, p.y);
       if (k.ex === ex && k.ey === ey && VL.pointVisible(e, p, ctx)) poser(p.y - y0 - 0.05, pointRecolte(p, (p.x - x0) * T, (p.y - y0) * T, ctx));
     });
@@ -1203,8 +1252,8 @@ var VLD = (function () {
       s.push(medaille(ICO[bt.type], (bt.x + bt.w / 2) * U, (bt.y + bt.h / 2) * U));
     });
     // Points de récolte encore là aujourd'hui (les cristaux se voient même sous le brouillard avec le Flair)
-    var COUL_RES = { bois: '#8d5a2b', pierre: '#868e96', plante: '#40c057', cristal: '#9775fa' };
-    VL.RECOLTE.forEach(p => {
+    var COUL_RES = { bois: '#8d5a2b', pierre: '#868e96', plante: '#40c057', cristal: '#9775fa', brumelle: '#cc5de8', ambre: '#f59f00', ecaille: '#a5d8ff' };
+    VL.points().forEach(p => {
       if (!VL.pointVisible(e, p, ctx)) return;
       var vu = VL.estVu(e, p.x, p.y, b);
       if (!vu && !(ctx.flair && p.res === 'cristal')) return;
@@ -1230,6 +1279,7 @@ var VLD = (function () {
     rep.push([IT.tour.x, IT.tour.y, 'tour', null, true]);
     IT.failles.forEach(F => rep.push([F.x, F.y, VL.failleFermee(e, F) ? 'faillefermee' : 'faille', VL.failleFermee(e, F) ? null : '#e5dbff']));
     (IT.expeditions || []).forEach(X => rep.push([X.x, X.y, X.pic || 'tente', '#fff3bf']));
+    if (IT.sanct) rep.push([IT.sanct.x, IT.sanct.y, 'sanctuaire', VL.sanctVaincu(e) ? '#fff3bf' : '#e5dbff']);
     rep.forEach(q => {
       var vu = VL.estVu(e, q[0], q[1], b);
       if (!q[4] && !vu) return;

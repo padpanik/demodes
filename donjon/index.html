@@ -194,6 +194,19 @@
     .carte-c.t-attaque { border-top-color: #e8590c; } .carte-c.t-defense { border-top-color: #1c7ed6; } .carte-c.t-competence { border-top-color: #2f9e44; }
     .carte-c.t-pouvoir { border-top-color: #9c36b5; background: #fbf4ff; } .carte-c.t-malediction { border-top-color: #212529; background: #e9ecef; }
     .carte-c.r-u { outline: 2px solid #74c0fc; outline-offset: -2px; } .carte-c.r-r { outline: 2px solid #fab005; outline-offset: -2px; }
+    /* Cartes rares des Terres (3.71) : liseré violet et or */
+    .carte-c.r-l { outline: 2px solid #b197fc; outline-offset: -2px; box-shadow: 0 0 10px rgba(177,151,252,0.55); }
+    .moi-c .invoc-m { flex: none; background: #5f3dc4; color: #fff; border-radius: 8px; padding: 0 5px; font-weight: 900; font-size: 0.8em; }
+    .grim-dj .cartes-gr { display: flex; flex-wrap: wrap; gap: 10px 6px; margin-top: 10px; }
+    .grim-dj .cartes-gr .carte-c { width: calc(33.3% - 4px); height: 150px; cursor: pointer; }
+    .grim-dj .cartes-gr .carte-c.choisie { transform: translateY(-4px); box-shadow: 0 0 0 3px #7048e8, 0 4px 12px rgba(112,72,232,0.5); }
+    .grim-dj .aucune-gr { width: calc(33.3% - 4px); height: 150px; border: 2px dashed #ced4da; border-radius: 10px; background: #f8f9fa; font-weight: 800; color: #868e96; font-size: 0.8em; }
+    .grim-dj .aucune-gr.choisie { border-color: #7048e8; color: #5f3dc4; }
+    .rares-fin { margin: 8px 0 4px; }
+    .rares-fin .titre-tr { margin: 0 0 6px; line-height: 1.25; }
+    .rares-fin .cartes-gr { display: flex; gap: 6px; justify-content: center; padding-top: 8px; }
+    .rares-fin .carte-c { width: 31%; height: 132px; cursor: pointer; }
+    .rares-fin .carte-c.choisie { box-shadow: 0 0 0 3px #7048e8, 0 0 14px rgba(112,72,232,0.7); transform: translateY(-4px); }
     .carte-c.plus .cc-nom { color: #2b8a3e; }
     .cc-cout { position: absolute; left: -3px; top: -9px; width: 22px; height: 22px; border-radius: 50%; background: #ffd43b; color: #2a211b; font-weight: 900; font-size: 0.85em; display: flex; align-items: center; justify-content: center; box-shadow: 0 1px 3px rgba(0,0,0,0.4); }
     .cc-ico { font-size: 22px; line-height: 1.05; }
@@ -293,7 +306,8 @@
     .carte-c { background: linear-gradient(#fffaf0, #f1dfbf); border: 2px solid #8d6a3f; border-top-width: 2px; color: #3b2a1e; box-shadow: 0 3px 0 #1b130e, inset 0 0 0 2px rgba(255,255,255,0.5); }
     .carte-c.t-attaque { border-color: #c2410c; } .carte-c.t-defense { border-color: #1864ab; } .carte-c.t-competence { border-color: #2b8a3e; }
     .carte-c.t-pouvoir { border-color: #862e9c; background: linear-gradient(#fdf5ff, #ead3f2); } .carte-c.t-malediction { border-color: #343a40; background: linear-gradient(#e9ecef, #ced4da); }
-    .carte-c.r-u, .carte-c.r-r { outline: none; }
+    .carte-c.r-u, .carte-c.r-r, .carte-c.r-l { outline: none; }
+    .carte-c.r-l .cc-ico { box-shadow: 0 0 0 2px #b197fc, 0 0 9px rgba(177,151,252,0.9); }
     .carte-c.r-u .cc-ico { box-shadow: 0 0 0 2px #74c0fc; } .carte-c.r-r .cc-ico { box-shadow: 0 0 0 2px #fab005, 0 0 8px rgba(250,176,5,0.8); }
     .cc-ico { width: 1.55em; height: 1.55em; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: #ffe8cc; border: 2px solid #c2410c; line-height: 1; margin-bottom: 2px; }
     .main-c .cc-ico { font-size: 20px; } .grande .cc-ico { font-size: 22px; } .paquet-grille .cc-ico { font-size: 18px; }
@@ -640,6 +654,20 @@
             </div>
         </section>
 
+        <!-- Grimoire des Terres (3.71) : les cartes rares gagnées dans les Terres ; on en glisse une dans son paquet au départ -->
+        <section class="carte grim-dj" v-if="!soloEnCours && (!partie || partie.phase !== 'jeu')">
+          <div class="titre-carte">📖 Grimoire des Terres<small>{{ grim.c.length }} / {{ D.LEGENDAIRES.length }} carte{{ grim.c.length > 1 ? 's' : '' }}</small></div>
+          <template v-if="grim.c.length">
+            <div class="aide">Touche la carte rare à glisser dans ton paquet pour le prochain donjon (elle ne reste pas dans le héros de la semaine).</div>
+            <div class="cartes-gr">
+              <button class="aucune-gr" :class="{ choisie: !grimChoix }" @click="choisirGrimoire(null)">Aucune</button>
+              <carte-dj v-for="id in grim.c" :key="id" :id="id" :class="{ choisie: grimChoix === id }" @click.native="choisirGrimoire(id)"></carte-dj>
+            </div>
+            <div class="aide" v-if="grimChoix">Dans ton paquet au départ : <b>{{ DJ.carte(grimChoix).nom }}</b> · {{ DJ.carte(grimChoix).texte }}</div>
+          </template>
+          <div v-else class="aide">Des cartes rares aux pouvoirs inconnus (esquive, écho, cartes qui mûrissent, alliés invoqués) : gagne-les contre le boss de la semaine, au sanctuaire des Terres, ou en refermant une faille profonde. Elles restent pour toujours.</div>
+        </section>
+
         <!-- Fioles de la Vallée (3.50) : fabriquées chez Mme Sauge, on en emporte 2 au plus dans le donjon -->
         <section class="carte fioles-v" v-if="besaceTotal && !soloEnCours && (!partie || partie.phase !== 'jeu')">
           <div class="titre-carte">🧪 Fioles de la Vallée<small>{{ fiolesPrises.length }} / {{ VL.DONJON_MAX }} emportée{{ fiolesPrises.length > 1 ? 's' : '' }}</small></div>
@@ -846,7 +874,7 @@
                 <span class="moi-av" :class="{ touche: toucheC(moi) }" v-if="monJ.cp" v-html="dessinSvg(monJ.cp)"></span>
                 <div class="corps">
                   <span class="pv-dj"><i :style="{ width: pct(monJ.pv, monJ.pvMax) }"></i><b>❤️ {{ monJ.pv }} / {{ monJ.pvMax }}</b></span>
-                  <span class="etats-c"><span v-if="monJ.armure" class="armure-m">🛡️ {{ monJ.armure }}</span><span v-if="monJ.garderTout" @click.stop="info('📌 Prévoyance : à la fin du tour, tu gardes ta main pour le tour suivant.')">📌</span><span v-if="regle" class="regle-c" :class="regleAlerte.cl" @click.stop="info(regle.ico + ' Règle du lieu, ' + regle.nom + ' : ' + regle.texte)">{{ regle.ico }}{{ regleAlerte.txt }}</span><span v-for="(n, et) in monJ.etats" :key="et" v-show="et !== 'maree'" @click.stop="infoEtat(et, n)">{{ D.ETATS[et] ? D.ETATS[et].ico : '' }}{{ n }}</span></span>
+                  <span class="etats-c"><span v-if="monJ.armure" class="armure-m">🛡️ {{ monJ.armure }}</span><span v-if="monJ.garderTout" @click.stop="info('📌 Prévoyance : à la fin du tour, tu gardes ta main pour le tour suivant.')">📌</span><span v-for="(v, iv) in (monJ.invoc || [])" :key="'inv' + iv" class="invoc-m" @click.stop="info(v.t === 'golem' ? '🗿 Golem de pierre : ' + v.pv + ' PV. Il prend les coups à ta place, après ton armure.' : '✨ Feu follet : ' + v.n + ' dégâts à un monstre au hasard au début de tes ' + v.x + ' prochains tours.')">{{ v.t === 'golem' ? '🗿' + v.pv : '✨' + v.x }}</span><span v-if="regle" class="regle-c" :class="regleAlerte.cl" @click.stop="info(regle.ico + ' Règle du lieu, ' + regle.nom + ' : ' + regle.texte)">{{ regle.ico }}{{ regleAlerte.txt }}</span><span v-for="(n, et) in monJ.etats" :key="et" v-show="et !== 'maree'" @click.stop="infoEtat(et, n)">{{ D.ETATS[et] ? D.ETATS[et].ico : '' }}{{ n }}</span></span>
                 </div>
                 <span v-for="k in fxSur(moi)" :key="'x' + k.id" class="coup-flottant" :class="k.cl">{{ k.v }}</span>
               </div>
@@ -1127,8 +1155,13 @@
         <div class="voile-dj" v-if="partie && partie.phase === 'fin' && gains">
           <div class="boite-dj">
             <div class="grand">{{ partie.fin.gagne ? '🏆' : '👻' }}</div>
-            <div class="titre">{{ partie.fin.gagne ? (partie.faille ? 'La faille est refermée !' : 'Le donjon est vaincu !') : 'Tout le groupe est KO…' }}</div>
-            <div class="aide" v-if="partie.faille">{{ partie.faille.nom }}{{ partie.fin.gagne ? ' : ta récompense t\'attend dans la Vallée.' : ' reste ouverte : tu pourras y redescendre.' }}</div>
+            <div class="titre">{{ partie.fin.gagne ? (partie.faille ? (partie.faille.sanct ? 'Le gardien du sanctuaire est vaincu !' : 'La faille est refermée !') : 'Le donjon est vaincu !') : 'Tout le groupe est KO…' }}</div>
+            <div class="aide" v-if="partie.faille">{{ partie.faille.nom }}{{ partie.fin.gagne ? ' : ta récompense t\'attend dans la Vallée.' : partie.faille.sanct ? ' : le gardien t\'attend encore, tu pourras revenir.' : ' reste ouverte : tu pourras y redescendre.' }}</div>
+            <div class="rares-fin" v-if="gains.rares">
+              <div class="titre-tr">📖 {{ gains.rareChoisie ? 'Ta carte rare, rangée dans ton Grimoire :' : 'Choisis une carte rare pour ton Grimoire des Terres' }}</div>
+              <div class="cartes-gr"><carte-dj v-for="id in gains.rares" :key="'rf' + id" :id="id" v-show="!gains.rareChoisie || gains.rareChoisie === id" :class="{ choisie: gains.rareChoisie === id }" @click.native="choisirRare(id)"></carte-dj></div>
+              <div class="aide">{{ gains.rareChoisie ? 'Tu pourras l\'emporter au départ de chaque donjon (onglet Partie).' : 'Une carte que tu as déjà revient améliorée. Touche celle que tu veux garder.' }}</div>
+            </div>
             <div class="aide" v-if="!partie.fin.gagne">Arrivé à l'étage {{ partie.fin.etage || partie.etage }} : {{ DJ.lieu(partie, partie.fin.etage || partie.etage).nom }}.</div>
             <ul>
               <li>✨ {{ gains.poussieres != null ? gains.poussieres : partie.poussiere }} poussière{{ (gains.poussieres != null ? gains.poussieres : partie.poussiere) > 1 ? 's' : '' }} d'étoile<small v-if="gains.mult && gains.mult !== 1"> ({{ partie.poussiere }} × {{ String(gains.mult).replace('.', ',') }}, {{ D.DIFFICULTES[gains.difficulte].nom }})</small><span v-if="gains.etoiles"> → +{{ gains.etoilesDonnees }} ⭐</span> (en réserve : {{ gains.reste }} / 5)</li>
@@ -1189,6 +1222,7 @@
             <li>À plusieurs : chacun a ses cartes, son or et ses reliques ; les monstres ont plus de PV et frappent plus fort selon la difficulté et le nombre de joueurs <strong>présents dans le combat</strong> (seul dans la pièce, on les affronte comme en solo) ; leurs coups de zone ne sont pas renforcés ; le poison les ronge moins. Après un combat gagné ensemble, chacun reprend 10 % de ses PV. Une grille ⛓️ s'ouvre à deux sur les dalles. Un ami KO revient en fin de combat gagné, avec un Trèfle, ou si un ami reste 2 s à côté de lui. Tout le groupe KO : fin.</li>
             <li><strong>Ma semaine</strong> (du lundi au dimanche) : lundi, seul Normal est ouvert. Gagner un donjon en Normal ouvre Héroïque, gagner en Héroïque ouvre Mythique (entre amis, la victoire compte pour chacun). <strong>Ton héros grandit toute la semaine</strong> : à la fin de chaque donjon, gagné ou perdu, il garde son paquet (sans les malédictions), jusqu'à {{ D.SEMAINE.reliquesMax }} reliques (dont une seule de boss) et les PV max gagnés (+{{ D.SEMAINE.pvMax }} au plus), et repart avec dans le donjon suivant. Héroïque et Mythique sont taillés pour un héros déjà construit : avec un paquet neuf, c'est presque impossible. Chaque boss vaincu donne des <strong>éclats</strong> ({{ D.SEMAINE.eclats.normal }} en Normal, {{ D.SEMAINE.eclats.heroique }} en Héroïque, {{ D.SEMAINE.eclats.mythique }} en Mythique) : bonus de départ, ou travail du paquet entre deux donjons. Lundi, tout repart de zéro.</li>
             <li><strong>Clé mythique</strong> : gagner un donjon en Mythique avec la clé +N donne la clé +N+1 pour la semaine (jusqu'à +{{ D.PERILS.length - 1 }}). Chaque clé rend tous les monstres un peu plus forts (+{{ Math.round(D.CLE_PAR_NIVEAU.pv * 100) }} % de PV et +{{ Math.round(D.CLE_PAR_NIVEAU.deg * 100) }} % de dégâts par clé) et ajoute une épreuve ; elles se cumulent : <template v-for="(t, k) in D.PERILS.slice(1)">{{ k ? ' ; ' : '' }}+{{ k + 1 }} {{ t.charAt(0).toLowerCase() + t.slice(1) }}</template>.</li>
+            <li><strong>Grimoire des Terres</strong> : des cartes rares à gagner dans la Vallée, contre le gardien du sanctuaire (un boss différent chaque semaine) ou en refermant une faille profonde. Elles restent pour toujours ; au départ d'un donjon, tu en glisses une dans ton paquet. Nouvelles mécaniques : 💨 <strong>Esquive</strong> (le prochain coup reçu ne te touche pas), 🔔 <strong>Écho</strong> (ta prochaine carte se joue deux fois), 🌱 cartes qui <strong>mûrissent</strong> (gardées en main d'un tour à l'autre, plus fortes à chaque tour), et <strong>alliés invoqués</strong> (✨ feu follet qui frappe seul, 🗿 golem qui prend les coups à ta place).</li>
             <li>À la fin, chacun garde les poussières d'étoile (5 poussières = 1 ⭐, comme en expédition). Donjon vaincu : un souvenir pour la maison de ton compagnon.</li>
           </ul>
         </section>
@@ -1260,6 +1294,11 @@
       return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
     }
     // La besace de la Vallée (fioles fabriquées chez Mme Sauge)
+    // Grimoire des Terres (3.71) : cartes rares gagnées (permanent), et celle choisie pour le prochain donjon
+    function lireGrimoire() {
+      var g = lireStockage('donjon-grimoire') || {}, c = (Array.isArray(g.c) ? g.c : []).filter(id => { var k = DJ.carte(id); return k && k.rar === 'l'; });
+      return { c: c, choix: c.indexOf(g.choix) >= 0 ? g.choix : null };
+    }
     function lireBesace() {
       try { return Object.assign({}, VL.charger(lireStockage('vallee-etat')).besace); } catch (e) { return {}; }
     }
@@ -1307,6 +1346,7 @@
         sem: lireSemaine(),   // ma semaine (3.29) : difficulté ouverte, clé, trophées, éclats et bonus
         VL: VL, besaceV: lireBesace(), fiolesV: lireStockage('donjon-fioles-vallee') || [],   // fioles de la Vallée (3.50)
         trSel: null, choixRel: [], atelier: false, carteAt: null,
+        grim: lireGrimoire(),   // Grimoire des Terres (3.71) : { c: cartes rares, choix }
         peril: Math.min(lireStockage('donjon-peril-choisi') || 0, lireSemaine().cle),
         vuCombat: null,
         D: DJ.D, MONSTRES: DJ.MONSTRES,
@@ -1351,7 +1391,8 @@
         },
         difPartie: function() { var d = this.partie && this.partie.difficulte; return DJ.D.DIFFICULTES[d] ? d : 'heroique'; },
         perilMax: function() { return this.sem.cle || 0; },   // clé mythique obtenue cette semaine
-        avSemaine: function() { return Object.assign({ b: this.sem.b, v: this.fiolesPrises }, this.sem.hero || {}); },
+        avSemaine: function() { return Object.assign({ b: this.sem.b, v: this.fiolesPrises, g: this.grimChoix }, this.sem.hero || {}); },
+        grimChoix: function() { return this.grim.c.indexOf(this.grim.choix) >= 0 ? this.grim.choix : null; },
         besaceTotal: function() { return Object.values(this.besaceV).reduce((a, n) => a + n, 0); },
         // Les fioles choisies qui sont encore dans la besace
         fiolesPrises: function() {
@@ -1632,6 +1673,7 @@
           ecrireStockage('donjon-fioles-vallee', v);
           if (this.role === 'client') this.envoyerHote({ action: 'AV', av: this.avSemaine });
         },
+        grimChoix: function() { if (this.role === 'client') this.envoyerHote({ action: 'AV', av: this.avSemaine }); },
         sem: { immediate: true, handler: function() {
           if (!this.ouverte(this.difficulte)) this.difficulte = this.sem.ouvert;
           if (this.peril > this.perilMax) this.peril = this.perilMax;
@@ -1762,10 +1804,16 @@
         jouable: function(id) { var k = DJ.carte(id); return !!(k && !k.injouable && this.monJ && DJ.cout(this.partie, this.monJ, id) <= this.monJ.energie && this.combat && !this.combat.fini[this.moi]); },
         // Dégâts réels d'une attaque (force, faiblesse, vulnérabilité du seul monstre) quand ils diffèrent de la carte
         badgeCarte: function(id) {
-          var k = DJ.carte(id), f = k && k.fx.find(x => x.deg !== undefined && !x.fixe);
+          var k = DJ.carte(id);
+          if (k && k.murit && this.monJ) {   // Mûrir (3.71) : ce qu'elle vaut après les tours gardés en main
+            var n = (this.monJ.murs || {})[k.base] || 0;
+            if (!n) return null;
+            if (k.murit.armure) return '🛡️' + (k.fx[0].armure + n * k.murit.armure);
+          }
+          var f = k && this.monJ && DJ.fxMuri(this.monJ, k).find(x => x.deg !== undefined && !x.fixe);
           if (!f || !this.monJ) return null;
           var m = this.monstresCombat.length === 1 ? this.monstresCombat[0] : null, d = DJ.calculer(this.monJ, m || { etats: {} }, f.deg);
-          return d !== f.deg ? d : null;
+          return d !== k.fx.find(x => x.deg !== undefined).deg ? d : null;
         },
         // ---------- Combat : toucher une carte la montre, la toucher encore la joue (ou toucher sa cible) ----------
         toucherCarte: function(i) {
@@ -2088,6 +2136,26 @@
           this.son('toc'); this.vibre(30);
         },
 
+        // Grimoire des Terres (3.71)
+        choisirGrimoire: function(id) {
+          this.grim = { c: this.grim.c, choix: id };
+          ecrireStockage('donjon-grimoire', this.grim);
+          this.son('toc'); this.vibre(20);
+        },
+        // Une carte rare gagnée : nouvelle, ou la version améliorée de celle qu'on avait
+        choisirRare: function(id) {
+          var g = this.gains;
+          if (!g || !g.rares || g.rareChoisie || g.rares.indexOf(id) < 0) return;
+          var gr = lireGrimoire(), base = id.replace(/\+$/, ''), i = gr.c.indexOf(base);
+          if (i >= 0) gr.c.splice(i, 1, id); else if (gr.c.indexOf(id) < 0) gr.c.push(id);
+          if (gr.choix === base) gr.choix = id;
+          ecrireStockage('donjon-grimoire', gr); this.grim = gr;
+          this.gains = Object.assign({}, g, { rareChoisie: id });
+          var deja = lireStockage('donjon-recompense');
+          if (deja && deja.gains) ecrireStockage('donjon-recompense', Object.assign(deja, { gains: this.gains }));
+          this.son('victoire'); this.vibre([60, 40, 120]);
+        },
+
         // ================== FIN : récompenses (une fois par donjon, sur chaque téléphone) ==================
         finir: function(p) {
           var gagne = !!(p.fin && p.fin.gagne), multi = !this.solo && Object.keys(p.joueurs).length > 1;
@@ -2176,6 +2244,8 @@
             g.hero = hero; g.reliquesDispo = (moiJ.reliques || []).filter(r => DJ.D.RELIQUES[r]); g.choixRel = hero.reliques.slice();
             this.choixRel = hero.reliques.slice();
           }
+          // Le sanctuaire et les failles profondes (3.71) : une carte rare au choix parmi 3, pour le Grimoire des Terres
+          if (gagne && p.faille.carte) { var rr = DJ.tirerRares(lireGrimoire().c, 3); if (rr.length) g.rares = rr; }
           ecrireStockage('vallee-faille-resultat', { id: p.faille.id, gagne: gagne });
           ecrireStockage('donjon-recompense', { id: p.id, gains: g });
           this.gains = g;
@@ -2184,6 +2254,7 @@
         },
         // Retour à la Vallée après une faille
         rentrerFaille: function() {
+          if (this.gains && this.gains.rares && !this.gains.rareChoisie) this.choisirRare(this.gains.rares[0]);   // jamais perdue
           ecrireStockage(CLE_SOLO, null); partieHote = null;
           try { sessionStorage.setItem('desdale-vallee', '1'); } catch (e) {}
           location.href = 'vallee/';

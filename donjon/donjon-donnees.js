@@ -29,7 +29,11 @@ var DJD = (function () {
     // Règle du lieu « Marée » (Rivière souterraine) : posé sur tout le monde aux tours de marée haute, retiré à marée basse (pas un état qui dure)
     maree: { nom: 'Marée haute', ico: '🌊', texte: 'Ce tour-ci, ses coups font 25 % de dégâts en moins. Tout le monde est logé à la même enseigne.' },
     // Grotte de glace (3.43) : posé par les monstres du lieu, consommé au début du tour suivant (pas un état qui dure)
-    givre: { nom: 'Givre', ico: '❄️', texte: 'Au début de son prochain tour, {n} carte·s de plus gèle·nt dans sa main' }
+    givre: { nom: 'Givre', ico: '❄️', texte: 'Au début de son prochain tour, {n} carte·s de plus gèle·nt dans sa main' },
+    // Cartes et fioles des Terres (3.71) : nouvelles mécaniques
+    esquive: { nom: 'Esquive', ico: '💨', texte: 'Esquive le prochain coup reçu ({n} coup·s)' },
+    echo: { nom: 'Écho', ico: '🔔', texte: 'La prochaine carte jouée l\'est deux fois' },
+    elan: { nom: 'Élan', ico: '✨', dure: true, texte: '+1 ⚡ au début du tour ({n} tour·s)' }
   };
 
   // ---------- Classes : le pouvoir du compagnon ----------
@@ -133,6 +137,19 @@ var DJD = (function () {
     k('catalyse', 'Catalyse', '⚗️', 'competence', 'flair', 'r', 1, 'monstre', [{ special: 'catalyse', n: 2 }], { fx: [{ special: 'catalyse', n: 3 }] }, { epuise: true, texte: 'Multiplie par {n} le Poison du monstre' }),
     k('fleau', 'Fléau', '🦠', 'pouvoir', 'flair', 'r', 2, 'soi', [{ buff: 'fleau', n: 3 }], { fx: [{ buff: 'fleau', n: 4 }] }),
 
+    // ---------- Cartes rares des Terres (3.71, rar 'l' : légendaires) ----------
+    // On ne les tire jamais au butin ni chez le marchand : on les gagne contre le boss du sanctuaire et dans les failles profondes,
+    // on les range dans le Grimoire des Terres (permanent) et l'on en glisse une dans son paquet au départ de chaque donjon.
+    // Mécaniques (choisies avec l'utilisateur) : Esquive, Écho, Mûrir (la carte reste en main et grandit), Invocation (un allié qui reste en jeu).
+    k('voile', 'Voile de brume', '🌫️', 'defense', null, 'l', 1, 'soi', [{ buff: 'esquive', n: 1 }], { fx: [{ buff: 'esquive', n: 1 }, { pioche: 1 }], texte: 'Esquive le prochain coup reçu, pioche 1' }, { terres: true, texte: 'Esquive le prochain coup reçu' }),
+    k('fantome', 'Pas du fantôme', '👻', 'defense', null, 'l', 2, 'soi', [{ buff: 'esquive', n: 2 }], { cout: 1 }, { terres: true, epuise: true, texte: 'Esquive les 2 prochains coups reçus' }),
+    k('echo', 'Écho des collines', '🔔', 'competence', null, 'l', 1, 'soi', [{ buff: 'echo', n: 1 }], { cout: 0 }, { terres: true, texte: 'La prochaine carte que tu joues l\'est deux fois' }),
+    k('carillon', 'Carillon', '🎐', 'attaque', null, 'l', 2, 'tous', [{ deg: 6, tous: true }, { buff: 'echo', n: 1 }], { fx: [{ deg: 9, tous: true }, { buff: 'echo', n: 1 }], texte: '9 dégâts à tous ; la prochaine carte est jouée deux fois' }, { terres: true, texte: '6 dégâts à tous ; la prochaine carte est jouée deux fois' }),
+    k('graine', 'Graine d\'ambre', '🌰', 'attaque', null, 'l', 1, 'monstre', [{ deg: 6 }], { fx: [{ deg: 8 }], murit: { deg: 5 }, texte: '8 dégâts. Reste en main et mûrit : +5 à chaque tour' }, { terres: true, retenue: true, murit: { deg: 4 }, texte: '6 dégâts. Reste en main et mûrit : +4 à chaque tour' }),
+    k('seve', 'Sève ancienne', '🌳', 'defense', null, 'l', 1, 'soi', [{ armure: 5 }], { fx: [{ armure: 7 }], murit: { armure: 4 }, texte: '+7 armure. Reste en main et mûrit : +4 à chaque tour' }, { terres: true, retenue: true, murit: { armure: 3 }, texte: '+5 armure. Reste en main et mûrit : +3 à chaque tour' }),
+    k('follet', 'Feu follet', '✨', 'competence', null, 'l', 1, 'soi', [{ special: 'invoque', inv: 'follet', n: 5, x: 3 }], { fx: [{ special: 'invoque', inv: 'follet', n: 7, x: 3 }] }, { terres: true, texte: 'Invoque un feu follet : {n} dégâts à un monstre au hasard au début de tes {x} prochains tours' }),
+    k('golem', 'Golem de pierre', '🗿', 'competence', null, 'l', 2, 'soi', [{ special: 'invoque', inv: 'golem', n: 15 }], { fx: [{ special: 'invoque', inv: 'golem', n: 22 }] }, { terres: true, epuise: true, texte: 'Invoque un golem de {n} PV qui prend les coups à ta place (après l\'armure)' }),
+
     // Malédiction (posée par des monstres ou des événements)
     k('blessure', 'Blessure', '🩹', 'malediction', null, 'x', null, 'soi', [], {}, { injouable: true, texte: 'Injouable. Encombre la main.' }),
     // Malédictions du coffre maudit (3.40) : finMain = ce qu'elles font si elles sont encore en main à la fin du tour.
@@ -152,7 +169,12 @@ var DJD = (function () {
     energie: { nom: 'Fiole d\'énergie', ico: '⚡', texte: '+2 ⚡ ce tour', cible: 'soi', fx: [{ energie: 2 }] },
     poison: { nom: 'Fiole de poison', ico: '☠️', texte: 'Poison 7 sur un monstre', cible: 'monstre', fx: [{ etat: 'poison', n: 7 }] },
     vive: { nom: 'Fiole vive', ico: '🌀', texte: 'Pioche 3 cartes', cible: 'soi', fx: [{ pioche: 3 }] },
-    faible: { nom: 'Fiole de brume', ico: '🌫️', texte: 'Faible 2 sur tous les monstres', cible: 'tous', fx: [{ etat: 'faible', n: 2, tous: true }] }
+    faible: { nom: 'Fiole de brume', ico: '🌫️', texte: 'Faible 2 sur tous les monstres', cible: 'tous', fx: [{ etat: 'faible', n: 2, tous: true }] },
+    // Fioles des Terres (3.71) : fabriquées chez Mme Sauge avec les composants rares ; jamais au butin ni chez le marchand (vallee: true)
+    voile: { nom: 'Fiole de voile', ico: '🫧', texte: 'Esquive les 2 prochains coups reçus', cible: 'soi', fx: [{ buff: 'esquive', n: 2 }], vallee: true },
+    orage: { nom: 'Élixir d\'orage', ico: '⛈️', texte: '8 dégâts et Vulnérable 1 à tous les monstres', cible: 'tous', fx: [{ deg: 8, tous: true, fixe: true }, { etat: 'vuln', n: 1, tous: true }], vallee: true },
+    renouveau: { nom: 'Fiole de renouveau', ico: '🌱', texte: 'Tes Blessures et malédictions quittent le combat, +5 PV', cible: 'soi', fx: [{ special: 'purifier' }, { soin: 5 }], vallee: true },
+    essence: { nom: 'Essence de faille', ico: '🔮', texte: '+1 ⚡ maintenant et au début de tes 2 tours suivants', cible: 'soi', fx: [{ energie: 1 }, { buff: 'elan', n: 3 }], vallee: true }
   };
 
   // ---------- Reliques (effets passifs, gardées tout le donjon) ----------
@@ -593,7 +615,16 @@ var DJD = (function () {
   // ---------- Prix chez le marchand ----------
   var PRIX = { c: 45, u: 70, r: 120, fiole: 40, relique: 150, retrait: 70 };
 
+  // ---------- Les Terres de la Vallée (3.71) ----------
+  // LEGENDAIRES : les cartes rares, dans l'ordre du Grimoire. SANCTUAIRE : le boss de la semaine, seul dans sa salle
+  // (pv : ses PV, car on l'affronte sans avoir traversé un étage). BOSS_SANCTUAIRE : ceux qui tournent, une semaine chacun.
+  var LEGENDAIRES = L.filter(function (c) { return c.rar === 'l'; }).map(function (c) { return c.id; });
+  // pv : multiplicateur des PV de chaque boss (mesuré au joueur automatique, Normal, paquet de départ : ~65 à 75 % de victoires)
+  var SANCTUAIRE = { etoiles: 5 };
+  var BOSS_SANCTUAIRE = [['roi', 'caves', 1.4], ['reine', 'catacombes', 0.6], ['mycelium', 'champignonniere', 1.5], ['dragongivre', 'glace', 0.55], ['pieuvre', 'riviere', 1.4], ['archiviste', 'bibliotheque', 0.33]];
+
   return { ETATS: ETATS, CLASSES: CLASSES, CARTES: CARTES, FIOLES: FIOLES, RELIQUES: RELIQUES, MONSTRES: MONSTRES,
-           ETAGES: ETAGES, LIEUX: LIEUX, REGLES_LIEU: REGLES_LIEU, PERILS: PERILS, DIFFICULTES: DIFFICULTES, ORDRE_DIFFICULTES: ORDRE_DIFFICULTES, POISON_GROUPE: POISON_GROUPE, SOIN_GROUPE: SOIN_GROUPE, SEMAINE: SEMAINE, CLE_PAR_NIVEAU: CLE_PAR_NIVEAU, EVENEMENTS: EVENEMENTS, RISQUES: RISQUES, PRIX: PRIX };
+           ETAGES: ETAGES, LIEUX: LIEUX, REGLES_LIEU: REGLES_LIEU, PERILS: PERILS, DIFFICULTES: DIFFICULTES, ORDRE_DIFFICULTES: ORDRE_DIFFICULTES, POISON_GROUPE: POISON_GROUPE, SOIN_GROUPE: SOIN_GROUPE, SEMAINE: SEMAINE, CLE_PAR_NIVEAU: CLE_PAR_NIVEAU, EVENEMENTS: EVENEMENTS, RISQUES: RISQUES, PRIX: PRIX,
+           LEGENDAIRES: LEGENDAIRES, SANCTUAIRE: SANCTUAIRE, BOSS_SANCTUAIRE: BOSS_SANCTUAIRE };
 })();
 if (typeof module !== 'undefined') module.exports = DJD;

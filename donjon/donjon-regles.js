@@ -79,6 +79,7 @@ var DJ = (function () {
       if (p.fx) c.fx = p.fx;
       if (p.epuise !== undefined) c.epuise = p.epuise;
       if (p.texte) c.texte = p.texte;
+      if (p.murit) c.murit = p.murit;
     }
     c.texte = texteCarte(c);
     return (cacheCartes[id] = c);
@@ -159,6 +160,16 @@ var DJ = (function () {
       return construire(h, p, boss, pouvoirs, humains || 1, etage, risque, lieu);
     }
     throw new Error('Donjon impossible à générer');
+  }
+  // Le sanctuaire des Terres (3.71) : deux pièces, l'entrée et la salle du boss (sans porte à grande clé)
+  function genererSanctuaire(graine, humains, etage, lieu, boss) {
+    var h = hasard((graine >>> 0) + 7177 * etage), salles = {};
+    salles['1,3'] = { id: '1,3', x: 1, y: 3, parent: null, prof: 0, portes: { h: '1,2' } };
+    salles['1,2'] = { id: '1,2', x: 1, y: 2, parent: '1,3', prof: 1, portes: { b: '1,3' } };
+    var c = construire(h, { salles: salles, liste: ['1,3', '1,2'], depart: '1,3' }, '1,2', [], humains || 1, etage, null, Object.assign({}, lieu, { boss: boss }));
+    var S = c.salles['1,3'], P = PORTE.h;
+    if (tuile(S, P[0], P[1]) === 'B') poser(S, P[0], P[1], '.');
+    return c;
   }
   function construire(h, p, boss, pouvoirs, humains, etage, risque, lieu) {
     var S = p.salles, enfants = p.liste.filter(id => id !== p.depart), porte = {};
@@ -320,6 +331,9 @@ var DJ = (function () {
     if (options.faille && options.faille.etage >= 1 && options.faille.etage <= NB_ETAGES) {
       var F = options.faille;
       e.faille = { id: String(F.id || ''), nom: String(F.nom || 'Une faille'), etage: F.etage | 0 };
+      // Le sanctuaire des Terres (3.71) : le boss de la semaine, seul dans sa salle ; une carte rare au bout (comme une faille profonde)
+      if (F.sanct && MONSTRES[F.boss] && MONSTRES[F.boss].rang === 'boss') { e.faille.sanct = true; e.faille.boss = F.boss; }
+      if (F.carte || e.faille.sanct) e.faille.carte = true;
       if (F.lieu && D.LIEUX[F.lieu] && (D.LIEUX[F.lieu].etage || D.ETAGES.findIndex(E => E.id === F.lieu) + 1) === e.faille.etage) e.lieux[e.faille.etage - 1] = F.lieu;
       e.etage = e.faille.etage - 1;
     }
@@ -332,10 +346,14 @@ var DJ = (function () {
   function dernierEtage(e) { return !!e.faille || e.etage >= NB_ETAGES; }
   function etageSuivant(e) {
     e.etage++;
-    var c = generer(e.graine, e.pouvoirs, e.nbJ, e.etage, lieuDe(e));
+    var c = e.faille && e.faille.sanct ? genererSanctuaire(e.graine, e.nbJ, e.etage, lieuDe(e), e.faille.boss) : generer(e.graine, e.pouvoirs, e.nbJ, e.etage, lieuDe(e));
     e.salles = c.salles; e.depart = c.depart; e.bossSalle = c.boss; e.carteV++;
     e.ennemis = []; e.cles = 0; e.grandeCle = false; e.objets = []; e.vues = {}; e.combats = {};
-    c.ennemis.forEach(m => creerMonstre(e, m.type, m.salle, m.x, m.y, c.h));
+    c.ennemis.forEach(m => {
+      var mo = creerMonstre(e, m.type, m.salle, m.x, m.y, c.h);
+      // Le boss du sanctuaire : on l'affronte sans avoir traversé d'étage, il est un peu moins solide
+      if (e.faille && e.faille.sanct && MONSTRES[m.type].rang === 'boss') { var bs = D.BOSS_SANCTUAIRE.find(x => x[0] === m.type), k = bs ? bs[2] : 1; mo.pv = mo.pvMax = Math.round(mo.pvMax * k); mo.pvBase *= k; }
+    });
     e.vues[c.depart] = 1;
     Object.values(e.joueurs).forEach((p, i) => {
       var d = DEPARTS[i % DEPARTS.length];
@@ -379,13 +397,15 @@ var DJ = (function () {
   var VALLEE_FIOLES = 2;
   function nettoyerAvantages(av) {
     if (!av || typeof av !== 'object') return null;
-    if (av.hero && !av.classe) av = Object.assign({ b: av.b, v: av.v }, av.hero);   // déjà vérifié une fois (chez l'hôte) : même forme
+    if (av.hero && !av.classe) av = Object.assign({ b: av.b, v: av.v, g: av.g }, av.hero);   // déjà vérifié une fois (chez l'hôte) : même forme
     var S = D.SEMAINE, b = {}, hero = null;
     // Fioles fabriquées dans la Vallée (3.50) : 2 au plus, parmi les fioles connues
     var v = (Array.isArray(av.v) ? av.v : []).map(String).filter(f => FIOLES[f]).slice(0, VALLEE_FIOLES);
+    // Une carte du Grimoire des Terres (3.71) : une carte rare, glissée dans le paquet pour ce donjon
+    var gk = typeof av.g === 'string' && carte(av.g), g = gk && gk.rar === 'l' ? av.g : null;
     Object.keys(S.bonus).forEach(k => { var n = av.b && av.b[k] | 0; if (n > 0) b[k] = Math.min(n, S.bonus[k].max); });
     if (av.classe && CLASSES[av.classe] && Array.isArray(av.paquet)) {
-      var paquet = av.paquet.slice(0, S.paquetMax).map(String).filter(id => { var c = carte(id); return c && c.type !== 'malediction'; });
+      var paquet = av.paquet.slice(0, S.paquetMax).map(String).filter(id => { var c = carte(id); return c && c.type !== 'malediction' && c.rar !== 'l'; });
       var reliques = [], boss = 0;
       (Array.isArray(av.reliques) ? av.reliques : []).forEach(r => {
         if (!RELIQUES[r] || reliques.indexOf(r) >= 0 || reliques.length >= S.reliquesMax) return;
@@ -394,7 +414,7 @@ var DJ = (function () {
       });
       if (paquet.length >= 5) hero = { classe: av.classe, paquet: paquet, reliques: reliques, pv: Math.max(0, Math.min(S.pvMax, av.pv | 0)) };
     }
-    return { b: b, hero: hero, v: v };
+    return { b: b, hero: hero, v: v, g: g };
   }
   function appliquerAvantages(e, p, av) {
     av = nettoyerAvantages(av);
@@ -413,6 +433,7 @@ var DJ = (function () {
     for (var i = 0; i < (b.fiole || 0); i++) donnerFiole(e, p, null, h);
     // Fioles de la Vallée : celles qui tiennent dans le sac ; le téléphone du joueur les retire de sa besace (p.vallee)
     p.vallee = (av.v || []).filter(f => donnerFiole(e, p, f, h));
+    if (av.g) { p.paquet.push(av.g); p.grimoire = av.g; }
     p.semaine = { hero: !!(H && H.classe === p.classe), b: Object.keys(b).length };
   }
   // Le héros à garder pour la semaine, à la fin d'un donjon : le paquet sans malédiction (le repos les efface), les reliques,
@@ -430,7 +451,8 @@ var DJ = (function () {
   }
   function heroSemaine(p, choix) {
     var reliques = Array.isArray(choix) ? choix.filter(r => (p.reliques || []).indexOf(r) >= 0) : reliquesParDefaut(p);
-    return { classe: p.classe, paquet: (p.paquet || []).filter(id => { var c = carte(id); return c && c.type !== 'malediction'; }),
+    // Ni malédiction (le repos les efface), ni carte du Grimoire (on la choisit à chaque donjon)
+    return { classe: p.classe, paquet: (p.paquet || []).filter(id => { var c = carte(id); return c && c.type !== 'malediction' && c.rar !== 'l'; }),
              reliques: reliques, pv: Math.max(0, Math.min(D.SEMAINE.pvMax, (p.pvMax || 0) - CLASSES[p.classe].pv - (p.bonusPv || 0))) };
   }
   // Commandes reçues : direction tenue (ou null au lâcher)
@@ -462,7 +484,7 @@ var DJ = (function () {
   // ---------- Butin ----------
   function donnerOr(e, p, n) { p.or += n; }
   function donnerFiole(e, p, id, h) {
-    id = id || auHasard(Object.keys(FIOLES), h);
+    id = id || auHasard(Object.keys(FIOLES).filter(f => !FIOLES[f].vallee), h);
     if (p.fioles.length >= p.fiolesMax) return null;
     p.fioles.push(id);
     return id;
@@ -482,6 +504,12 @@ var DJ = (function () {
     if (id === 'grimoire') p.paquet.push('blessure');
     if (id === 'pierre' && !sansPv) melanger(p.paquet.map((c, k) => k).filter(k => ameliorable(p.paquet[k])), h || Math.random).slice(0, 3).forEach(k => { p.paquet[k] += '+'; });
     return id;
+  }
+  // Cartes rares des Terres (3.71) : 3 au choix ; une carte déjà au Grimoire revient améliorée (« + »), une carte améliorée ne revient plus
+  function tirerRares(possedees, n, h) {
+    possedees = possedees || [];
+    var l = D.LEGENDAIRES.map(id => possedees.indexOf(id + '+') >= 0 ? null : possedees.indexOf(id) >= 0 ? id + '+' : id).filter(Boolean);
+    return melanger(l, h || Math.random).slice(0, n || 3);
   }
   // Trois cartes au choix : surtout de la classe du compagnon ; les élites et les boss donnent des cartes plus rares
   var CHANCES = { normal: { c: 0.6, u: 0.33 }, elite: { c: 0.35, u: 0.45 }, boss: { c: 0, u: 0 }, grimoire: { c: 0, u: 0.7 }, voyageur: { c: 0, u: 0.4 } };
@@ -565,7 +593,7 @@ var DJ = (function () {
   function creerBoutique(e, p, h) {
     var x = remise(p);
     var cartes = tirerCartes(p, 5, 'elite', h).map(id => ({ id: id, prix: Math.round(D.PRIX[CARTES[id].rar] * (0.9 + h() * 0.2) * x), vendu: false }));
-    var fioles = melanger(Object.keys(FIOLES), h).slice(0, 2).map(id => ({ id: id, prix: Math.round(D.PRIX.fiole * x), vendu: false }));
+    var fioles = melanger(Object.keys(FIOLES).filter(f => !FIOLES[f].vallee), h).slice(0, 2).map(id => ({ id: id, prix: Math.round(D.PRIX.fiole * x), vendu: false }));
     var rl = Object.keys(RELIQUES).filter(r => RELIQUES[r].rar !== 'boss' && !a(p, r));
     return { cartes: cartes, fioles: fioles, relique: rl.length ? { id: auHasard(rl, h), prix: Math.round(D.PRIX.relique * x), vendu: false } : null };
   }
@@ -918,6 +946,7 @@ var DJ = (function () {
     if (a(p, 'gant')) ajouterEtat(p, 'force', 1);
     if (a(p, 'collier')) ajouterEtat(p, 'epines', 3);
     p.dentPrete = a(p, 'dent'); p.amulettePrete = a(p, 'amulette'); p.reserve = 0;
+    p.murs = {}; p.invoc = [];   // 3.71 : cartes qui mûrissent, alliés invoqués
     monstresDe(e, c).forEach(m => {
       if (a(p, 'monocle') && !m.etats.vuln) ajouterEtat(m, 'vuln', 1);
       if (a(p, 'clochette') && !m.etats.faible) ajouterEtat(m, 'faible', 1);
@@ -989,6 +1018,7 @@ var DJ = (function () {
     if (p.fantome) return;
     var en = ENERGIE + (p.etats.accel || 0) + (a(p, 'couronne') ? 1 : 0) + (a(p, 'lampe') ? 1 : 0) + (a(p, 'grimoire') ? 1 : 0) + (a(p, 'masque') ? 1 : 0) + (a(p, 'balance') ? 1 : 0);
     if (p.reserve) { en += p.reserve; p.reserve = 0; }   // Gemme d'énergie
+    if (p.etats.elan) en++;   // Essence de faille (3.71)
     if (premier && a(p, 'lanterne')) en++;
     if (a(p, 'sablier') && p.tourCombat % 3 === 0) en++;
     p.energie = en; p.joues = 0;
@@ -1002,6 +1032,13 @@ var DJ = (function () {
     geler(e, c, p, h);
     if (p.etats.brasier) { ouvrir(c, ETATS.brasier.ico, nomCp(p), ETATS.brasier.nom); monstresDe(e, c).forEach(m => infliger(e, c, m, p.etats.brasier, null)); fermer(); }
     if (p.etats.fleau) { ouvrir(c, ETATS.fleau.ico, nomCp(p), ETATS.fleau.nom); monstresDe(e, c).forEach(m => { ajouterEtat(m, 'poison', p.etats.fleau); noter(nomMonstre(m), '☠️+' + p.etats.fleau, 'etat', m.id); }); fermer(); }
+    // Feux follets invoqués (3.71) : chacun frappe un monstre au hasard, puis s'use
+    (p.invoc || []).filter(v => v.t === 'follet').forEach(v => {
+      var l = monstresDe(e, c); if (!l.length) return;
+      ouvrir(c, '✨', 'Feu follet de ' + nomCp(p), 'flamme'); infliger(e, c, auHasard(l, h), v.n, null, false); fermer();
+      v.x--;
+    });
+    if (p.invoc) p.invoc = p.invoc.filter(v => v.t !== 'follet' || v.x > 0);
   }
   // Poison et brûlure au début du tour de qui les porte
   function tickDot(e, c, x) {
@@ -1032,8 +1069,18 @@ var DJ = (function () {
   function infliger(e, c, cible, n, source, attaque) {
     if (cible.paquet ? cible.fantome : cible.pv <= 0) return 0;
     if (attaque && source && source.dentPrete) { n += 8; source.dentPrete = false; }   // Dent de dragon : le premier coup du combat
+    // Esquive (3.71) : un coup de monstre esquivé ne fait rien du tout (ni dégâts, ni épines)
+    if (attaque && source && cible.paquet && cible.etats.esquive > 0 && n > 0) { ajouterEtat(cible, 'esquive', -1); fx(e, c, cible.nom, '💨 esquivé', 'neutre'); return 0; }
     var bloque = Math.min(cible.armure || 0, n), reste = n - bloque;
     cible.armure -= bloque;
+    // Golem de pierre (3.71) : après l'armure, il prend les coups à la place de son maître
+    var golem = cible.paquet && reste > 0 && (cible.invoc || []).find(v => v.t === 'golem');
+    if (golem) {
+      var pris = Math.min(golem.pv, reste); golem.pv -= pris; reste -= pris;
+      if (golem.pv <= 0) { cible.invoc = cible.invoc.filter(v => v !== golem); journal(c, '🗿 Le golem de ' + nomCp(cible) + ' s\'effondre.'); }
+      if (reste) noter(nomQui(e, cible.nom), '🗿' + pris + ' pris par le golem', 'neutre', cible.nom);
+      if (!reste) { fx(e, c, cible.nom, '🗿' + pris, 'neutre'); if (attaque && source && cible.etats.epines) infliger(e, c, source, cible.etats.epines, null, false); return 0; }
+    }
     cible.pv -= reste;
     var qui = cible.paquet ? cible.nom : cible.id;
     fx(e, c, qui, reste ? '−' + reste : bloque ? '🛡️' + bloque : '0', reste ? 'mal' : 'neutre');
@@ -1051,7 +1098,7 @@ var DJ = (function () {
     defausserTout(p);
     if (p.glace && p.glace.length) { p.defausse = p.defausse.concat(p.glace); p.glace = []; }
     if (p.gardees && p.gardees.length) { p.defausse = p.defausse.concat(p.gardees); p.gardees = []; }
-    p.marque = null; p.garderTout = false;
+    p.marque = null; p.garderTout = false; p.invoc = []; p.murs = {};
     journal(c, '👻 ' + nomCp(p) + ' est KO !');
     annonce(e, '👻 ' + nomCp(p) + ' est KO' + (Object.keys(e.joueurs).length > 1 ? ' : un Trèfle ou un ami à côté de lui hors combat le ranime !' : '…'));
   }
@@ -1121,6 +1168,21 @@ var DJ = (function () {
         if (vivant(m) && m.intention && !m.intention.assomme) { m.intention = { nom: '💫 Assommé', assomme: true, avant: m.intention.nom }; fx(e, c, m.id, '💫', 'etat'); }
         break;
       case 'prevoyance': p.garderTout = true; noter(nomCp(p), '📌 garde sa main', 'etat'); break;
+      // Invocation (3.71) : un feu follet (x tours) ou un golem (n PV, ses PV s'ajoutent si l'on en a déjà un)
+      case 'invoque':
+        p.invoc = p.invoc || [];
+        if (f.inv === 'golem') {
+          var gl = p.invoc.find(v => v.t === 'golem');
+          if (gl) { gl.pv += f.n; gl.pvMax = Math.max(gl.pvMax, gl.pv); } else p.invoc.push({ t: 'golem', pv: f.n, pvMax: f.n });
+          noter(nomCp(p), '🗿 golem ' + f.n + ' PV', 'bouclier');
+        } else { p.invoc.push({ t: 'follet', n: f.n, x: f.x || 3 }); noter(nomCp(p), '✨ feu follet', 'etat'); }
+        break;
+      // Fiole de renouveau (3.71) : Blessures et malédictions quittent le combat
+      case 'purifier':
+        var mau = id => { var kk = carte(id); return kk && kk.type === 'malediction'; }, nb = 0;
+        ['main', 'pioche', 'defausse'].forEach(t => { p[t] = p[t].filter(id => { if (mau(id)) { p.epuisees.push(id); nb++; return false; } return true; }); });
+        noter(nomCp(p), nb ? '🌱 ' + nb + ' malédiction' + (nb > 1 ? 's' : '') + ' chassée' + (nb > 1 ? 's' : '') : '🌱 rien à chasser', 'etat');
+        break;
       case 'catalyse': if (vivant(m) && m.etats.poison) { m.etats.poison *= f.n; fx(e, c, m.id, '☠️' + m.etats.poison, 'etat'); } break;
     }
   }
@@ -1133,6 +1195,12 @@ var DJ = (function () {
     var R = regleLieu(e);
     if (R && R.gratuite && p && (p.joues || 0) === R.gratuite - 1 && e.combats[p.salle]) return 0;
     return k.cout;
+  }
+  // Les effets d'une carte, mûrie s'il y a lieu : +murit.deg (ou .armure) par tour gardée en main
+  function fxMuri(p, k) {
+    var n = k.murit && p.murs ? p.murs[k.base] || 0 : 0;
+    if (!n) return k.fx;
+    return k.fx.map(f => f.deg !== undefined && k.murit.deg ? Object.assign({}, f, { deg: f.deg + n * k.murit.deg }) : f.armure && k.murit.armure ? Object.assign({}, f, { armure: f.armure + n * k.murit.armure }) : f);
   }
   function jouerCarte(e, nom, i, cibleId, h) {
     LIGNE = null;
@@ -1156,8 +1224,19 @@ var DJ = (function () {
     p.energie -= cout;
     p.main.splice(i, 1);
     if (p.marque === id && p.main.indexOf(id) < 0) p.marque = null;
-    ouvrir(c, k.ico, nomCp(p), k.nom + (cout === 0 && k.cout > 0 ? ' (📖 gratuite)' : ''));
-    appliquer(e, c, p, k.fx, cible, h, false);
+    // Mûrir (3.71) : la carte a grandi pendant les tours où on l'a gardée en main
+    var fxs = fxMuri(p, k), mur = p.murs && p.murs[k.base] || 0;
+    if (p.murs) delete p.murs[k.base];
+    ouvrir(c, k.ico, nomCp(p), k.nom + (mur ? ' (mûrie +' + mur * (k.murit.deg || k.murit.armure) + ')' : '') + (cout === 0 && k.cout > 0 ? ' (📖 gratuite)' : ''));
+    appliquer(e, c, p, fxs, cible, h, false);
+    // Écho (3.71) : la carte est jouée une seconde fois (pas celle qui donne l'Écho)
+    if (p.etats.echo > 0 && !k.fx.some(f => f.buff === 'echo') && !p.fantome) {
+      ajouterEtat(p, 'echo', -1); noter(nomCp(p), '🔔 écho', 'etat');
+      if (k.cible !== 'monstre' || (cible && e.ennemis.indexOf(cible) >= 0) || monstresDe(e, c).length) {
+        if (k.cible === 'monstre' && (!cible || e.ennemis.indexOf(cible) < 0)) cible = monstresDe(e, c)[0];
+        appliquer(e, c, p, fxs, cible, h, false);
+      }
+    }
     p.joues++; p.jouesTotal = (p.jouesTotal || 0) + 1;
     if (p.etats.rythme && p.joues >= 4) { var l = monstresDe(e, c); if (l.length) { var x = auHasard(l, h); infliger(e, c, x, p.etats.rythme, null, false); } }
     // Rage : une carte qui n'est pas une attaque met les monstres enragés en colère
@@ -1237,6 +1316,9 @@ var DJ = (function () {
     if (p.garderTout) p.main = p.main.filter(id => { var kk = carte(id); if (kk && kk.type !== 'malediction') { gardees.push(id); return false; } return true; });
     else if (p.marque && a(p, 'marquepage')) { var jm = p.main.indexOf(p.marque); if (jm >= 0) gardees.push(p.main.splice(jm, 1)[0]); }
     p.marque = null; p.garderTout = false;
+    // Les cartes qui mûrissent (3.71) restent en main et prennent un tour de plus
+    p.main = p.main.filter(id => { var kk = carte(id); if (kk && kk.retenue) { gardees.push(id); return false; } return true; });
+    gardees.forEach(id => { var kk = carte(id); if (kk && kk.retenue) { p.murs = p.murs || {}; p.murs[kk.base] = (p.murs[kk.base] || 0) + 1; } });
     if (gardees.length) {
       p.gardees = (p.gardees || []).concat(gardees);
       ouvrir(c, '🔖', nomCp(p), 'garde'); noter(nomCp(p), gardees.map(id => carte(id).nom).join(', '), 'etat'); fermer();
@@ -1333,7 +1415,7 @@ var DJ = (function () {
     h = h || Math.random;
     delete e.combats[c.salle];
     var joueurs = c.joueurs.map(n => e.joueurs[n]).filter(p => p && p.salle === c.salle && !(e.combats[p.salle] && e.combats[p.salle] !== c));
-    joueurs.forEach(p => { p.armure = 0; p.etats = {}; p.main = []; p.glace = []; p.gardees = []; p.marque = null; p.garderTout = false; p.pioche = []; p.defausse = []; p.epuisees = []; p.energie = 0; p.tourCombat = 0; });
+    joueurs.forEach(p => { p.armure = 0; p.etats = {}; p.main = []; p.glace = []; p.gardees = []; p.marque = null; p.garderTout = false; p.pioche = []; p.defausse = []; p.epuisees = []; p.energie = 0; p.tourCombat = 0; p.invoc = []; p.murs = {}; });
     e.dernierCombat = { salle: c.salle, gagne: gagne, journal: c.journal.slice(-4), t: e.maintenant, id: c.id };
     if (!gagne) {
       monstresDe(e, c).forEach(m => { m.armure = 0; m.etats = {}; m.intention = null; });
@@ -1438,7 +1520,7 @@ var DJ = (function () {
   }
   // Dégâts qu'une carte d'attaque simple ferait sur ce monstre (affichage)
   function degatsCarte(p, id, m) {
-    var k = carte(id), f = k && k.fx.find(x => x.deg !== undefined);
+    var k = carte(id), f = k && fxMuri(p, k).find(x => x.deg !== undefined);
     if (!f) return null;
     return calculer(p, m || { etats: {} }, f.deg) + (p.dentPrete ? 8 : 0);
   }
@@ -1448,7 +1530,7 @@ var DJ = (function () {
            pouvoirDe: pouvoirDe, cout: coutCarte, hasard: hasard, generer: generer, lieu: lieuDe, regleLieu: regleLieu, tirerLieux: tirerLieux, nouvelle: nouvelle, ajouterJoueur: ajouterJoueur, entree: entree,
            jouerCarte: jouerCarte, finTour: finTour, marquer: marquer, utiliserFiole: utiliserFiole, jeterFiole: jeterFiole, choisir: choisir, demarrerCombat: demarrerCombat,
            interagir: interagir, ouvrirCoffre: ouvrirCoffre, ouvrirTresor: ouvrirTresor, decouvrir: decouvrir, tourMonstres: tourMonstres, etageSuivant: etageSuivant, tirerCartes: tirerCartes, donnerRelique: donnerRelique,
-           degatsIntention: degatsIntention, degatsCarte: degatsCarte, calculer: calculer,
+           degatsIntention: degatsIntention, degatsCarte: degatsCarte, calculer: calculer, tirerRares: tirerRares, fxMuri: fxMuri, genererSanctuaire: genererSanctuaire,
            tick: tick, tuile: tuile, compatible: compatible, FORMAT: FORMAT, idx: idx, etatMobile: etatMobile, pieces: pieces };
 })();
 if (typeof module !== 'undefined') module.exports = DJ;

@@ -364,7 +364,7 @@
             <template v-else><span class="q-ico" v-html="pic('quete')"></span><span>{{ quetesDispo ? quetesDispo + ' quête' + (quetesDispo > 1 ? 's' : '') + ' à prendre' : 'Toutes les quêtes sont finies !' }}</span></template>
           </div>
           <div class="sac-vl" v-if="sacVisible" @click="fenetre = 'sac'">
-            <span v-for="r in VL.ORDRE_RES" :key="r" :class="{ plein: e.sac[r] >= VL.SAC_MAX }"><i class="pi" v-html="riche(VL.RESSOURCES[r].ico)"></i> {{ e.sac[r] }}</span>
+            <span v-for="r in VL.ORDRE_RES" v-if="!VL.RESSOURCES[r].rare || e.sac[r] > 0" :key="r" :class="{ plein: e.sac[r] >= VL.SAC_MAX }"><i class="pi" v-html="riche(VL.RESSOURCES[r].ico)"></i> {{ e.sac[r] }}</span>
             <span class="besace" v-if="besace"><i class="pi" v-html="pic('fiole')"></i> {{ besace }}</span>
           </div>
         </div>
@@ -672,7 +672,9 @@
           <li><b>Pouvoir de ton compagnon</b> : ronces <i class="pi" v-html="pic('flamme')"></i>, rocher <i class="pi" v-html="pic('force')"></i>, trou <i class="pi" v-html="pic('bond')"></i>, buisson très épais <i class="pi" v-html="pic('flair')"></i>. Fonce dans l'obstacle qui va avec ton pouvoir pour l'ouvrir.</li>
           <li><b>Les Terres de la saison</b> : passe la Porte des brumes, au bord ouest du ruisseau. Allume les feux de camp (une bûche <i class="pi" v-html="pic('bois')"></i>) pour y revenir d'un coup ; grimpe à la tour de guet ; au hameau, Barnabé troque des cristaux et Mlle Taupinette vend sa carte. Le bouton <i class="pi" v-html="pic('carte')"></i> de la carte montre toute la région.</li>
           <li><b>Les rumeurs du lundi</b> : chaque lundi, le tableau de quêtes du village donne 3 rumeurs. Chacune cache un objet à quelques pas d'un repère des Terres (un feu, la tour, un habitant du hameau, un pont) : un pas, c'est une case. Marche dessus pour le trouver. Ton carnet de voyage (menu ☰) les garde, avec le bilan de chaque saison.</li>
-          <li><b>Les failles du Donjon</b> : deux par saison, dans les Terres. On y descend pour un seul étage, en Normal, avec son héros de la semaine ; vaincre le boss referme la faille (étoiles et cristaux). La plus lointaine est plus profonde, donc plus dure.</li>
+          <li><b>Les failles du Donjon</b> : deux par saison, dans les Terres. On y descend pour un seul étage, en Normal, avec son héros de la semaine ; vaincre le boss referme la faille (étoiles, cristaux et un cœur de faille <i class="pi" v-html="pic('coeurfaille')"></i>). La plus lointaine est plus profonde, donc plus dure, et rapporte en plus une carte rare pour ton Grimoire.</li>
+          <li><b>Le sanctuaire</b> <i class="pi" v-html="pic('sanctuaire')"></i> : quelque part dans les Terres, un gardien différent chaque lundi. Vaincs-le (une fois par semaine) : des étoiles et une carte rare au choix parmi 3. Les cartes rares vont dans ton <b>Grimoire</b> : au Donjon, tu en glisses une dans ton paquet au départ.</li>
+          <li><b>Les composants rares</b>, seulement dans les Terres : la brumelle <i class="pi" v-html="pic('brumelle')"></i> dans la forêt brumeuse, l'ambre <i class="pi" v-html="pic('ambre')"></i> dans les collines, les écailles d'argent <i class="pi" v-html="pic('ecaille')"></i> au bord de la rivière. Mme Sauge en fait des fioles que rien d'autre n'égale (esquive, orage, renouveau, essence de faille).</li>
           <li><b>Récolter</b> : marche sur le bois mort <i class="pi" v-html="pic('bois')"></i>, les cailloux <i class="pi" v-html="pic('pierre')"></i>, les herbes <i class="pi" v-html="pic('plante')"></i> et les cristaux <i class="pi" v-html="pic('cristal')"></i>. Chaque point repousse le lendemain. Ton sac en garde {{ VL.SAC_MAX }} de chaque. Ton pouvoir double une ressource : <i class="pi" v-html="pic('flamme')"></i> le bois, <i class="pi" v-html="pic('force')"></i> la pierre, <i class="pi" v-html="pic('bond')"></i> les plantes ; <i class="pi" v-html="pic('flair')"></i> montre les cristaux sur la carte.</li>
           <li><b>Fabriquer</b> (après la quête de Bruno) : de la déco à l'établi devant ta maison, des fioles pour le Donjon chez Mme Sauge, des outils à la forge. Fonce dans l'établi, la hutte ou la forge.</li>
           <li><b>La carte</b> se dévoile au fil de tes pas. L'anneau orange montre où aller pour ta quête.</li>
@@ -750,7 +752,7 @@
         sacVisible: function() { this.v; return VL.etatQuete(etat, 'atelier') !== 'dispo' || VL.ORDRE_RES.some(r => etat.sac[r] > 0); },
         besace: function() { this.v; return VL.besaceTotal(etat); },
         aujourdhui: function() {
-          this.v; var n = VL.RECOLTE.filter(p => VL.pointVisible(etat, p, this.ctx) && VL.pointOuvert(etat, p)).length;
+          this.v; var n = VL.points().filter(p => VL.pointVisible(etat, p, this.ctx) && VL.pointOuvert(etat, p)).length;
           return n ? n + ' point' + (n > 1 ? 's' : '') + ' de récolte t\'attend' + (n > 1 ? 'ent' : '') + ' encore aujourd\'hui. Tout repousse demain.' : 'Tu as tout ramassé aujourd\'hui ! Tout repousse demain.';
         },
         recettes: function() {
@@ -1140,9 +1142,19 @@
             if (VL.failleFermee(etat, FA)) return this.annoncer('🪨 ' + FA.nom + ' est refermée : des runes éteintes la scellent jusqu\'à la prochaine saison.');
             var enCours = lireStockage('donjon-faille'), autre = enCours && enCours.phase === 'jeu' && enCours.faille && enCours.faille.id !== FA.id;
             return this.lire({ ico: FA.ico, titre: FA.nom, texte: 'Une déchirure dans la terre, d\'où monte une lueur violette… Elle descend vers ' + FA.nomLieu.charAt(0).toLowerCase() + FA.nomLieu.slice(1) +
-                ' (profondeur ' + FA.etage + (FA.regle ? ', règle : ' + FA.regle : '') + '). Un seul étage, en Normal, avec ton héros de la semaine. Vaincs son boss pour la refermer : ' + FA.etoiles + ' ⭐ et ' + FA.cristaux + ' 💎.' +
+                ' (profondeur ' + FA.etage + (FA.regle ? ', règle : ' + FA.regle : '') + '). Un seul étage, en Normal, avec ton héros de la semaine. Vaincs son boss pour la refermer : ' + FA.etoiles + ' ⭐, ' + FA.cristaux + ' 💎 et un cœur de faille 💠' + (FA.etage > 1 ? ', et une carte rare pour ton Grimoire.' : '.') +
                 (FA.etage > 1 ? ' Plus profonde, elle demande un héros déjà aguerri.' : '') + (autre ? ' (Tu quitteras l\'autre faille où tu étais descendu.)' : ''),
               boutons: [{ t: '⬇️ Descendre', principal: true, f: () => this.descendreFaille(FA) }, { t: 'Plus tard', f: () => this.fermer() }] });
+          }
+          if (id === 'sanctuaire') {   // le sanctuaire des Terres (3.71) : le boss de la semaine
+            var BS = VL.bossSemaine(), fin = new Date(); fin.setDate(fin.getDate() + ((8 - fin.getDay()) % 7 || 7));
+            var jour = fin.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
+            if (VL.sanctVaincu(etat)) return this.lire({ ico: '⛩️', titre: 'Le sanctuaire', texte: 'La flamme de l\'autel brûle doré et tranquille : tu as vaincu ' + BS.nom.charAt(0).toLowerCase() + BS.nom.slice(1) + ' cette semaine. Un autre gardien viendra s\'y installer ' + jour + '.' });
+            var enS = lireStockage('donjon-faille'), autreS = enS && enS.phase === 'jeu' && enS.faille && enS.faille.id !== VL.defiSanct().id;
+            return this.lire({ ico: '⛩️', titre: 'Le sanctuaire', texte: 'Des menhirs gravés entourent un autel où danse une flamme violette. Cette semaine, ' + BS.nom.charAt(0).toLowerCase() + BS.nom.slice(1) + ' ' + BS.ico + ' y attend ses adversaires. ' +
+                'Un combat seul, en Normal, avec ton héros de la semaine. Vaincu : ' + VL.SANCT_ETOILES + ' ⭐ et une carte rare au choix parmi 3 pour ton Grimoire : elle t\'accompagnera dans tes donjons. Le gardien change ' + jour + '.' +
+                (autreS ? ' (Tu quitteras la faille où tu étais descendu.)' : ''),
+              boutons: [{ t: '⚔️ Affronter le gardien', principal: true, f: () => this.descendreSanct() }, { t: 'Plus tard', f: () => this.fermer() }] });
           }
           if (id === 'expedition') {   // un campement d'expédition (3.61)
             var XL = VL.expeditionEn(r.x, r.y);
@@ -1345,6 +1357,11 @@
           ecrireStockage('vallee-faille', VL.defiFaille(FA));
           this.entrer('donjon/?faille');
         },
+        descendreSanct: function() {
+          localStorage.removeItem('vallee-faille-resultat');
+          ecrireStockage('vallee-faille', VL.defiSanct());
+          this.entrer('donjon/?faille');
+        },
         // Retour d'une faille : la récompense si son boss est vaincu (une fois par saison)
         lireResultatFaille: function() {
           var r = lireStockage('vallee-faille-resultat');
@@ -1353,10 +1370,19 @@
           var rf = VL.resultatFaille(etat, r);
           if (!rf || rf.perime) return;
           this.sauver(); this.v++;
+          if (rf.sanct) {
+            if (rf.gagne) {
+              Etoiles.ajouter(rf.etoiles, 'Vallée : le sanctuaire', true); this.etoiles = Etoiles.solde();
+              this.son('victoire'); this.vibre([60, 50, 120]);
+              return this.lire({ ico: '⛩️', titre: 'Le gardien est vaincu !', texte: rf.boss.nom + ' s\'efface dans un tourbillon de runes. +' + rf.etoiles + ' ⭐. La carte rare que tu as choisie est dans ton Grimoire (onglet Partie du Donjon).' });
+            }
+            if (rf.perdu) this.lire({ ico: '⛩️', titre: 'Le sanctuaire', texte: rf.boss.nom + ' garde le sanctuaire… Reviens quand tu veux cette semaine pour une revanche.' });
+            return;
+          }
           if (rf.gagne) {
             Etoiles.ajouter(rf.etoiles, 'Vallée : ' + rf.faille.nom, true); this.etoiles = Etoiles.solde();
             this.son('victoire'); this.vibre([60, 50, 120]);
-            return this.lire({ ico: '🪨', titre: 'Faille refermée !', texte: 'Le boss vaincu, ' + rf.faille.nom.charAt(0).toLowerCase() + rf.faille.nom.slice(1) + ' se referme dans un grondement. +' + rf.etoiles + ' ⭐' + (rf.cristaux ? ' et ' + rf.cristaux + ' 💎 pour ton sac' : '') + '. Ton héros de la semaine garde ses nouvelles cartes.' });
+            return this.lire({ ico: '🪨', titre: 'Faille refermée !', texte: 'Le boss vaincu, ' + rf.faille.nom.charAt(0).toLowerCase() + rf.faille.nom.slice(1) + ' se referme dans un grondement. +' + rf.etoiles + ' ⭐' + (rf.cristaux ? ', ' + rf.cristaux + ' 💎' : '') + (rf.coeur ? ' et un cœur de faille 💠' : '') + ' pour ton sac. Ton héros de la semaine garde ses nouvelles cartes' + (rf.carte ? ', et ta carte rare rejoint ton Grimoire' : '') + '.' });
           }
           if (rf.perdu) this.lire({ ico: rf.faille.ico, titre: rf.faille.nom, texte: 'La faille est toujours ouverte… Ton héros se relèvera : reviens quand tu veux, elle t\'attend jusqu\'à la fin de la saison.' });
         },

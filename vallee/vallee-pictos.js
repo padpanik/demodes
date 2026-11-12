@@ -150,7 +150,17 @@ var VLP = (function () {
     ile: () => p('M1.5 19q5-2.6 10.5-2.6T22.5 19q-5 3-10.5 3t-10.5-3z', '#4dabf7') + p('M5 18.6q2.5-4.5 7-4.5t7 4.5q-3.5 1.2-7 1.2t-7-1.2z', '#f3d48a') +
       p('M12.5 15.2q-.4-5 1.6-9.4', 'none', 1.8, ' stroke="#8a5a2b"') + p('M14 6q-4-2.4-8 .4 4.2-.6 6 1.8M14 6q4.5-2 8 1.4-4-.8-6.2.6M14 6q-1.2-3.6-4.6-4.4 2.8 2.2 3 4.6M14 6q2.6-3.4 6.4-3-3 1-4.6 3.4', '#40c057', 1) +
       c(13.6, 7.3, 1.1, '#8a5a2b', 0.8) + l('M7.5 17.4q1.2-.8 2.4 0', '#fff3bf', 1),
-        moi: () => c(12, 12, 8.5, '#ff922b') + c(12, 12, 3.5, '#fff', 1)
+        moi: () => c(12, 12, 8.5, '#ff922b') + c(12, 12, 3.5, '#fff', 1),
+    // ---------- Composants rares des Terres et sanctuaire (3.71) ----------
+    brumelle: () => l('M12 22v-9M12 18q-4-1-5-4M12 18q4-1 5-3', '#2b8a3e', 1.6) +
+      [0, 72, 144, 216, 288].map(a => '<ellipse cx="12" cy="5.4" rx="2.6" ry="3.6" fill="#e5dbff" stroke="' + K + '" stroke-width="1" transform="rotate(' + a + ' 12 9)"/>').join('') + c(12, 9, 1.8, '#be4bdb', 0.9),
+    ambre: () => p('M12 2.5q4.8 5.5 6 10.5q.8 5.5-6 8.5q-6.8-3-6-8.5q1.2-5 6-10.5z', '#f59f00') + p('M12 6q2.4 3 3.4 6.4', 'none', 1.6, ' stroke="#ffe8a1"') + c(10, 15, 1.2, '#fff3bf', 0),
+    ecaille: () => p('M12 21q-7-1.5-7-8.5Q5 5 12 3q7 2 7 9.5T12 21z', '#dee2e6') + l('M8 9q4-3 8 0M7.4 13q4.6-3.4 9.2 0M8 17q4-3 8 0', '#74c0fc', 1.2) + c(9.5, 6.5, 0.9, '#fff', 0),
+    coeurfaille: () => p('M12 2l7 10-7 10-7-10z', '#5f3dc4') + p('M12 2l3 10-3 10-3-10z', '#9775fa', 1) + p('M5 12h14', 'none', 1) + c(12, 12, 1.6, '#e5dbff', 0),
+    sanctuaire: () => p('M3 21l1-12 3-1 1 13z', '#8f8a80') + p('M21 21l-1-12-3-1-1 13z', '#8f8a80') + p('M8.5 21v-4h7v4z', '#a39a88') + p('M7.5 17h9v-2h-9z', '#c9c2b2') +
+      p('M12 4q3.5 4 2.6 8.6q-.8 2-2.6 2q-1.8 0-2.6-2Q8.5 8 12 4z', '#9775fa') + p('M12 8.4q1.5 2 1 3.8q-.3.8-1 .8t-1-.8q-.5-1.8 1-3.8z', '#e5dbff', 0),
+    bulles: () => c(9, 13, 6, '#d0ebff') + c(16.5, 7.5, 3.6, '#e7f5ff') + c(17, 17.5, 2.6, '#e7f5ff') + l('M6.2 10.4q1.4-2 3.6-2.2', '#fff', 1.4),
+    orage: () => p('M5 13q-3 0-3-3t3.4-3.2Q6.6 3 11 3q4 0 5.2 3.2Q21.8 6 22 10q0 3-3.4 3z', '#868e96') + p('M12.5 12l-3 5.5h3l-2 5 5.5-7h-3.2l2-3.5z', '#ffd43b', 1)
   };
 
   // Les émojis remplacés (une icône par émoji ; une même icône peut en couvrir plusieurs)
@@ -164,7 +174,8 @@ var VLP = (function () {
     '🎬': 'clap', '🏰': 'chateau', '🏝️': 'ile', '🔬': 'microscope', '👛': 'bourse', '🎶': 'musique', '🌱': 'graines', '🪈': 'flute', '💬': 'bulle', '🗣️': 'rumeur', '🔊': 'son', '🔇': 'muet', '⇄': 'inverser',
     '⛶': 'plein', '❓': 'aide', '❔': 'aide', '🏁': 'drapeau', '🚩': 'drapeau', '🧭': 'boussole', '👋': 'main', '🛍️': 'boutique', '😴': 'sommeil', '🏞️': 'paysage',
     '⚠️': 'attention', '🐟': 'poisson', '🪑': 'tabouret', '💐': 'bouquet', '🐦': 'nichoir', '🗿': 'statue', '🌷': 'tulipe', '🔮': 'boule', '⛲': 'fontaine',
-    '⬇️': 'descendre', '▶️': 'jouer'
+    '⬇️': 'descendre', '▶️': 'jouer',
+    '🪻': 'brumelle', '🟠': 'ambre', '🐚': 'ecaille', '💠': 'coeurfaille', '⛩️': 'sanctuaire', '🫧': 'bulles', '⛈️': 'orage'
   };
   // Les habitants : leur portrait dessiné (vallee-dessins.js)
   var HAB = { '🦉': 'hibou', '🦔': 'herisson', '🐻': 'ours', '🐢': 'tortue', '🐱': 'chat', '🐸': 'grenouille', '🐐': 'bouquetin', '🦡': 'blaireau' };
