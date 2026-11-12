@@ -809,6 +809,7 @@
         // La partie de la carte du monde montrée : le quartier et le marais en bande, ailleurs les 3 × 3 écrans de l'ouest
         // (sur un écran peu haut, la carte est plus large : on montre plus de monde au lieu de déborder d'un seul côté)
         carteVue: function() {
+          this.v; this.ecranCoord;   // à recalculer quand on change de région, carte entière comprise (sinon elle restait sur les Terres après la Porte)
           var B0 = VL.regions().find(R => R.id === VL.regionDe(etat.x, etat.y)) || VL.bornes();
           if (this.carteLarge) {   // la carte entière de la région où l'on est (3.58)
             var bw = (B0.x1 - B0.x0) * 10, bh = (B0.y1 - B0.y0) * 10, w0 = bw, h0 = bh;
