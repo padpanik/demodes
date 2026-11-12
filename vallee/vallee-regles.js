@@ -1202,6 +1202,13 @@ var VL = (function () {
       TERRES.coffres.push({ x: P.ex * W + c[0], y: P.ey * H + c[1] });
     }
   }
+  // Un petit nom pour les Terres de chaque saison (le même pour tous ; 24 noms, pas de redite avant 24 saisons)
+  var NOMS_TERRES = ['Le Val des Brumes', 'Les Landes d\'Ambre', 'Le Bois-Murmure', 'Les Hauts-Chardons', 'La Combe aux Lucioles', 'Les Prés-Lanternes',
+    'Le Vallon des Hiboux', 'La Forêt d\'Argent', 'Les Collines Rousses', 'Le Pays des Fougères', 'La Lande aux Loups', 'Les Terres Moussues',
+    'Le Bocage des Fées', 'Les Coteaux du Vent', 'La Vallée Perdue', 'Le Bois-Dormant', 'Les Marches de Brume', 'La Combe des Échos',
+    'Les Hautes-Bruyères', 'Le Val des Songes', 'Les Prés de Lune', 'Le Bois des Mille Pas', 'Les Landes Grises', 'Le Pays des Sources'];
+  // n = numéro interne de la saison (0 = la première)
+  function nomTerres(n) { n = Math.max(0, n | 0); return NOMS_TERRES[(n * 7) % NOMS_TERRES.length]; }
   function terresPretes(t) { var n = saisonDe(t); if (TERRES.saison !== n) genererTerres(n); return n; }
   terresPretes();
   // Une nouvelle saison : on oublie ce qu'on avait vu et ouvert dans les Terres ; si l'on y était, on se retrouve au camp
@@ -1426,14 +1433,14 @@ var VL = (function () {
     var vus = Object.keys(e.brume).filter(k => { var c = k.split(',').map(Number); return c[0] >= TX && c[0] < TX + TW && c[1] >= TY && c[1] < TY + TH; }).length;
     return {
       semaine: { w: w, debut: debutSemaine(w), fin: debutSemaine(w + 1), rumeurs: rumeursDe(w).map(R => ({ id: R.id, texte: R.texte, trouve: !!e.rumeurs.ok[R.id], ico: R.objet.ico, objet: R.objet.nom })) },
-      saison: { numero: it.numero, fin: it.fin, ecrans: vus, total: TW * TH, feux: Object.keys(e.terres.feux).length, nbFeux: NB_FEUX, coffres: Object.keys(e.terres.ouv).length, nbCoffres: NB_COFFRES,
+      saison: { numero: it.numero, nom: it.nom, fin: it.fin, ecrans: vus, total: TW * TH, feux: Object.keys(e.terres.feux).length, nbFeux: NB_FEUX, coffres: Object.keys(e.terres.ouv).length, nbCoffres: NB_COFFRES,
                 tour: !!e.terres.tour, carto: !!e.terres.carto, rum: e.terres.rum | 0, failles: Object.keys(e.terres.failles).length, nbFailles: NB_FAILLES },
       passees: e.carnet.saisons.slice().reverse(), total: e.carnet.total | 0
     };
   }
 
   function infoTerres() {
-    return { saison: TERRES.saison, numero: TERRES.saison + 1, fin: finSaison(TERRES.saison), camp: Object.assign({}, TERRES.camp), coffres: TERRES.coffres.slice(),
+    return { saison: TERRES.saison, numero: TERRES.saison + 1, nom: nomTerres(TERRES.saison), fin: finSaison(TERRES.saison), camp: Object.assign({}, TERRES.camp), coffres: TERRES.coffres.slice(),
              feux: TERRES.feux.map(F => Object.assign({}, F)), failles: TERRES.failles.map(F => Object.assign({}, F)), expeditions: TERRES.expeditions.map(X => Object.assign({}, X)), tour: Object.assign({}, TERRES.tour), hameau: Object.assign({}, TERRES.hameau),
              riviere: TERRES.riviere, x0: TX * W, y0: TY * H, x1: (TX + TW) * W, y1: (TY + TH) * H, ex0: TX, ey0: TY, ex1: TX + TW - 1, ey1: TY + TH - 1 };
   }
@@ -1496,7 +1503,7 @@ var VL = (function () {
     nouvelEtat: nouvelEtat, charger: charger, bits: bits, estVu: estVu, reveler: reveler, devoiler: devoiler, partVue: partVue,
     etatQuete: etatQuete, champignonVisible: champignonVisible, verifier: verifier, accepter: accepter, rendre: rendre, marque: marque,
     queteSuivie: queteSuivie, consigne: consigne, cible: cible, pas: pas, parler: parler, tableau: tableau, agir: agir, fouiller: fouiller,
-    PORTE: PORTE, saisonDe: saisonDe, genererTerres: genererTerres, terresPretes: terresPretes, changerSaison: changerSaison, traverser: traverser,
+    PORTE: PORTE, nomTerres: nomTerres, saisonDe: saisonDe, genererTerres: genererTerres, terresPretes: terresPretes, changerSaison: changerSaison, traverser: traverser,
     semaineDe: semaineDe, rumeursDe: rumeursDe, trouverRumeur: trouverRumeur, carnet: carnet, majRumeurs: majRumeurs,
     expeditionEn: expeditionEn, LIEUX_EXPEDITION: LIEUX_EXPEDITION, failleEn: failleEn, failleFermee: failleFermee, defiFaille: defiFaille, resultatFaille: resultatFaille, NB_FAILLES: NB_FAILLES,
     feuEn: feuEn, feuAllume: feuAllume, allumer: allumer, destinations: destinations, voyager: voyager, monterTour: monterTour, trocsRestants: trocsRestants, PRIX_CARTE: PRIX_CARTE,

@@ -3,12 +3,13 @@
 // Les clés de stockage gardent l'ancien préfixe "brillant-" : les réglages déjà faits sont conservés.
 
 // Numéro de version affiché (à augmenter à chaque mise en ligne, avec brilliant/index.html et sw.js)
-const VERSION = '3.68';
+const VERSION = '3.69';
 
 // ---------- Nouveautés (2.87, demandé par l'utilisateur) ----------
 // Une ligne très brève par mise en ligne (la plus récente en haut) : l'accueil les montre une seule fois, dans une petite fenêtre,
 // à qui n'a pas encore vu cette version. [version, jeu ou partie de l'appli, ce qui change]
 const NOUVEAUTES = [
+  ['3.69', 'La Vallée', 'Les Terres ont un nom à chaque saison ; le titre ne cache plus la carte.'],
   ['3.68', 'La Vallée', 'Menu : tuile « Accueil de Désdale » ; Discuter passe dans Options.'],
   ['3.67', 'La Vallée', 'Menu ☰ en tuiles dessinées ; son, croix et plein écran rangés dans Options.'],
   ['3.66', 'La Vallée', 'Mon livre des trésors (menu ☰) : tous les souvenirs trouvés, et des indices pour ceux qui restent.'],

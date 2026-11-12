@@ -49,8 +49,9 @@
     /* La carte du monde : une vieille carte, sous le brouillard */
     .carte-vl { flex: 1; min-height: 0; position: relative; display: flex; align-items: center; justify-content: center; background: #ead8b0; border: 2px solid #8a6a46; border-radius: 14px;
                 box-shadow: inset 0 0 18px rgba(138,106,70,0.45), 0 3px 10px rgba(0,0,0,0.25); overflow: hidden; cursor: pointer; }
+    .carte-vl { padding-top: 24px; }
     .carte-vl svg { width: 100%; height: 100%; display: block; overflow: hidden; }
-    .carte-vl .titre-carte { position: absolute; left: 50%; top: 4px; transform: translateX(-50%); white-space: nowrap; font: italic 800 0.78em/1.2 Georgia, serif; color: #5c3a1f;
+    .carte-vl .titre-carte { position: absolute; left: 50%; top: 2px; transform: translateX(-50%); white-space: nowrap; font: italic 800 0.78em/1.2 Georgia, serif; color: #5c3a1f;
                              background: rgba(255,248,231,0.88); border: 1px solid #c9a874; border-radius: 10px; padding: 1px 9px; pointer-events: none; }
     .carte-vl .echelle-vl { position: absolute; left: 5px; bottom: 5px; width: 34px; height: 34px; border-radius: 10px; border: 1px solid #8d6a3f; background: rgba(28,20,15,0.85); font-size: 1.05em; line-height: 1; padding: 0; cursor: pointer; }
     .vl-fanion { animation: vl-fanion 1.6s ease-in-out infinite alternate; transform-box: fill-box; transform-origin: left center; }
@@ -374,7 +375,7 @@
       <!-- La carte du monde, sous le brouillard -->
       <div class="carte-vl" ref="carte" @click="fenetre = 'quetes'">
         <svg :view-box.camel="carteVue" preserveAspectRatio="xMidYMid meet"><g v-html="carteSvg"></g><g v-html="carteDessus"></g></svg>
-        <div class="titre-carte">{{ dansTerres ? 'Terres de la saison ' + infoTerres.numero : 'La Vallée de Désdale' }} · {{ explore }} % exploré</div>
+        <div class="titre-carte">{{ dansTerres ? infoTerres.nom : 'La Vallée de Désdale' }} · {{ explore }} % exploré</div>
         <div class="rose">N ↑</div>
         <button class="echelle-vl" @click.stop="carteLarge = !carteLarge" :aria-label="carteLarge ? 'Carte de près' : 'Carte entière'"><i class="pi" v-html="pic(carteLarge ? 'loupe' : 'carte', 20)"></i></button>
       </div>
@@ -464,8 +465,8 @@
           <span class="ico" v-html="R.trouve ? riche(R.ico) : pic('aide')"></span>
           <div>{{ R.texte }}<small v-if="R.trouve">Trouvé : {{ R.objet }}</small></div>
         </div>
-        <h3><i class="pi" v-html="pic('porte')"></i> Terres de la saison {{ carnetVue.saison.numero }}</h3>
-        <p class="sous">Jusqu'au {{ dateCourte(carnetVue.saison.fin) }}. Ensuite, un nouveau monde derrière la Porte des brumes.</p>
+        <h3><i class="pi" v-html="pic('porte')"></i> {{ carnetVue.saison.nom }}</h3>
+        <p class="sous">Les Terres de la saison {{ carnetVue.saison.numero }}, jusqu'au {{ dateCourte(carnetVue.saison.fin) }}. Ensuite, un nouveau monde derrière la Porte des brumes.</p>
         <div class="stats-c">
           <span><b>{{ carnetVue.saison.ecrans }}</b>/{{ carnetVue.saison.total }}<small>lieux visités</small></span>
           <span><b>{{ carnetVue.saison.feux }}</b>/{{ carnetVue.saison.nbFeux }}<small>feux allumés</small></span>
@@ -478,7 +479,7 @@
         <template v-if="carnetVue.passees.length">
           <h3><i class="pi" v-html="pic('livres')"></i> Saisons passées</h3>
           <div v-for="a in carnetVue.passees" :key="a.n" class="passee-c">
-            <b>Saison {{ a.n }}</b> · {{ a.ecrans }}/64 lieux · {{ a.feux }} feu{{ a.feux > 1 ? 'x' : '' }} · {{ a.coffres }} coffre{{ a.coffres > 1 ? 's' : '' }} · {{ a.rum }} rumeur{{ a.rum > 1 ? 's' : '' }}{{ a.failles ? ' · ' + a.failles + ' faille' + (a.failles > 1 ? 's' : '') : '' }}{{ a.tour ? ' · tour de guet' : '' }}{{ a.carto ? ' · carte' : '' }}
+            <b>{{ nomTerres(a.n - 1) }}</b> (saison {{ a.n }}) · {{ a.ecrans }}/64 lieux · {{ a.feux }} feu{{ a.feux > 1 ? 'x' : '' }} · {{ a.coffres }} coffre{{ a.coffres > 1 ? 's' : '' }} · {{ a.rum }} rumeur{{ a.rum > 1 ? 's' : '' }}{{ a.failles ? ' · ' + a.failles + ' faille' + (a.failles > 1 ? 's' : '') : '' }}{{ a.tour ? ' · tour de guet' : '' }}{{ a.carto ? ' · carte' : '' }}
           </div>
         </template>
         <p class="sous" v-if="carnetVue.total" style="margin-top:8px">En tout, {{ carnetVue.total }} rumeur{{ carnetVue.total > 1 ? 's' : '' }} vérifiée{{ carnetVue.total > 1 ? 's' : '' }} de tes propres pattes.</p>
@@ -916,10 +917,11 @@
         }
       },
       mounted: function() {
-        var mesure = () => { var c = this.$refs.carte; if (c && c.clientHeight) this.carteAspect = c.clientWidth / c.clientHeight; };
+        var mesure = () => { var c = this.$refs.carte; if (c && c.clientHeight > 24) this.carteAspect = c.clientWidth / (c.clientHeight - 24); };   // 24 = la bande du titre
         mesure(); window.addEventListener('resize', mesure); setTimeout(mesure, 300);
       },
       methods: {
+        nomTerres: function (n) { return VL.nomTerres(n); },
         son: function(nom) { if (this.sonActif) try { Sons.jouer(nom); } catch (e) {} },
         vibre: function(m) { if (lireStockage('brillant-vibration') !== false) vibrer(m); },
         sauver: function() { ecrireStockage(CLE, etat); },
@@ -1116,7 +1118,7 @@
             VL.changerSaison(etat);
             var it = VL.infoTerres(), fin = it.fin.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' });
             var feux = VL.destinations(etat, 'vallee').filter(d => d.id !== 'camp');
-            return this.lire({ ico: '🌀', titre: 'La Porte des brumes', texte: 'Derrière l\'arche, la brume tourne doucement… On dit qu\'elle mène aux Terres de la saison : un monde qui change à chaque saison. Celui-ci (saison ' + it.numero + ') restera jusqu\'au ' + fin + '.' +
+            return this.lire({ ico: '🌀', titre: 'La Porte des brumes', texte: 'Derrière l\'arche, la brume tourne doucement… On dit qu\'elle mène aux Terres de la saison : un monde qui change à chaque saison. Celui-ci, ' + it.nom.charAt(0).toLowerCase() + it.nom.slice(1) + ' (saison ' + it.numero + '), restera jusqu\'au ' + fin + '.' +
                 (feux.length ? ' La brume connaît aussi les feux que tu as allumés.' : ''),
               boutons: [{ t: '🌀 Passer la porte', principal: true, f: () => this.traverser('aller') }].concat(feux.map(d => ({ t: d.ico + ' ' + d.nom, f: () => this.voyager(d.id) })), [{ t: 'Plus tard', f: () => this.fermer() }]) });
           }
