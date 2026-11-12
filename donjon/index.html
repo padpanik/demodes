@@ -186,6 +186,7 @@
     .pied-c button.fiole-c.choisie { box-shadow: 0 0 0 3px #ffd43b; }
     .fin-tour { border: none; background: #ff922b; color: #fff; font: inherit; font-weight: 900; border-radius: 12px; padding: 9px 12px; cursor: pointer; box-shadow: 0 3px 0 #c75f00; }
     .fin-tour:disabled { background: #6b5a4c; box-shadow: none; }
+    .fin-tour .fin-armure { display: block; font-size: 0.72em; font-weight: 800; color: #fff3bf; margin-top: 1px; }
     .fin-tour.pousse { animation: appel-c 0.7s ease-in-out infinite alternate; }
 
     /* Une carte (main, butin, marchand, paquet) */
@@ -886,7 +887,7 @@
               <div class="pied-c">
                 <span class="piles">🂠 {{ monJ.pioche.length }} à piocher<br>♻️ {{ monJ.defausse.length }} défaussée{{ monJ.defausse.length > 1 ? 's' : '' }}</span>
                 <button v-for="(f, i) in monJ.fioles" :key="'fc' + i + f" class="fiole-c" :class="{ choisie: sel && sel.k === 'fiole' && sel.i === i }" @click="toucherFioleCombat(i)">{{ D.FIOLES[f].ico }}</button>
-                <button class="fin-tour" :class="{ pousse: !combat.fini[moi] && !rienAJouer }" :disabled="!!combat.fini[moi]" @click="finirTour">{{ combat.fini[moi] ? '✓ On attend…' : 'Fin du tour ▶' }}</button>
+                <button class="fin-tour" :class="{ pousse: !combat.fini[moi] && !rienAJouer }" :disabled="!!combat.fini[moi]" @click="finirTour"><template v-if="combat.fini[moi]">✓ On attend…</template><template v-else>Fin du tour ▶<small v-if="armureFin" class="fin-armure">+{{ armureFin }} 🛡️</small></template></button>
               </div>
             </template>
             <div v-else class="aide" style="text-align:center;color:#ffd8a8">{{ monJ && monJ.fantome ? '👻 Tu es KO : un ami peut te ranimer avec un Trèfle.' : 'Tu regardes le combat.' }}</div>
@@ -1528,6 +1529,14 @@
         },
         // Masque aveugle (relique de boss, 3.40) : je ne vois plus ce que préparent les monstres
         aveugle: function() { return !!(this.monJ && this.monJ.reliques && this.monJ.reliques.indexOf('masque') >= 0); },
+        // Armure reçue en touchant « Fin du tour » (Cape de voyage, Cœur de pierre, Métal), annoncée sur le bouton : elle protège pendant le tour des monstres
+        armureFin: function() {
+          var p = this.monJ; if (!p || p.fantome) return 0;
+          var a = id => (p.reliques || []).indexOf(id) >= 0, n = p.etats && p.etats.metal || 0;
+          if (a('coeurpierre') && !p.armure && !n) n += 6;
+          if (a('cape') && p.energie > 0) n += 3 * p.energie;
+          return n;
+        },
         rienAJouer: function() { return !this.monJ || !this.monJ.main.some(id => this.jouable(id)); },
         degatsAnnonces: function() {
           var p = this.monJ;
