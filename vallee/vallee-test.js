@@ -1,7 +1,7 @@
 // Tests du moteur de la Vallée (Node seulement, pas publié) : node vallee/vallee-test.js
 var VL = require('./vallee-regles.js');
 var ok = 0, ko = 0;
-function verif(c, m) { if (c) ok++; else { ko++; console.log('✗ ' + m); } }
+function verif(c, m) { if (c) ok++; else { ko++; console.log('✗ ' + m); } if (process.env.DIRE && /saisons|coffre des Terres/.test(m)) console.log('· ' + m); }
 
 // 1. Les écrans ont la bonne taille, les bords du monde sont fermés, les passages entre écrans se font face
 VL.ECRANS.forEach((ligne, ey) => ligne.forEach((E, ex) => {
@@ -282,7 +282,8 @@ verif(JSON.stringify(VL.charger(JSON.parse(JSON.stringify(e7))).brume) === JSON.
 
 // 11. Le monde grandit (3.55) : un écran ajouté hors du cœur, même à des coordonnées négatives
 var B0 = VL.bornes();
-verif(B0.x0 === 0 && B0.y0 === 0 && B0.x1 === VL.LARG && B0.y1 === VL.HAUT && VL.ecrans().length === 18, 'bornes du cœur');
+var I0 = VL.infoTerres();
+verif(B0.x0 === 0 && B0.y0 === 0 && B0.x1 === Math.max(VL.LARG, I0.x1) && B0.y1 === I0.y1 && VL.ecrans().length === 18 + 64, 'bornes du cœur et des Terres');
 var loin = { id: 'essai', nom: 'Essai', ico: '❓', l: VL.ECRANS[1][1].l };
 VL.ajouterEcran(-1, 1, loin);
 var B1 = VL.bornes();
@@ -394,6 +395,68 @@ verif(VL.charger({ v: 1, x: 3 * 11 + 5, y: 4 }).x === VL.nouvelEtat().x, 'pas da
 // Une sauvegarde posée sur la passerelle sans qu'elle soit réparée : retour devant la maison
 verif(VL.charger({ v: 1, x: 3 * 11 + 2, y: 2 * 9 + 4 }).x === VL.nouvelEtat().x, 'pas sur la passerelle cassée');
 verif(VL.charger({ v: 1, x: 3 * 11 + 7, y: 2 * 9 + 4 }).x === VL.nouvelEtat().x, 'pas dans le marais sans la passerelle');
+
+// 12. Les Terres de la saison (3.57) : un monde généré par saison derrière la Porte des brumes
+var t0 = Date.now(), nbSaisons = 300, mauvais = 0, coffresVus = 0, biomesVus = {};
+for (var sn = -5; sn < nbSaisons - 5; sn++) {
+  VL.genererTerres(sn);
+  var I = VL.infoTerres(), ok1 = true;
+  if (I.saison !== sn || I.coffres.length !== 6) ok1 = false;
+  // Liens cohérents entre écrans voisins, bord extérieur fermé
+  for (var ey3 = I.ey0; ey3 <= I.ey1; ey3++) for (var ex3 = I.ex0; ex3 <= I.ex1; ex3++) {
+    var E3 = VL.ecranA(ex3, ey3); if (!E3 || E3.l.length !== 9 || E3.l.some(r => r.length !== 11)) { ok1 = false; continue; }
+    biomesVus[E3.biome] = 1;
+    if (ex3 < I.ex1) { var a1 = VL.tuile(ex3 * 11 + 10, ey3 * 9 + 4), b1 = VL.tuile(ex3 * 11 + 11, ey3 * 9 + 4); if (marche(a1) !== marche(b1)) ok1 = false; }
+    if (ey3 < I.ey1) { var a2 = VL.tuile(ex3 * 11 + 5, ey3 * 9 + 8), b2 = VL.tuile(ex3 * 11 + 5, ey3 * 9 + 9); if (marche(a2) !== marche(b2)) ok1 = false; }
+  }
+  for (var xb = I.x0; xb < I.x1; xb++) if (marche(VL.tuile(xb, I.y0)) || marche(VL.tuile(xb, I.y1 - 1))) ok1 = false;
+  for (var yb = I.y0; yb < I.y1; yb++) if (marche(VL.tuile(I.x0, yb)) || marche(VL.tuile(I.x1 - 1, yb))) ok1 = false;
+  // Tout est atteignable depuis le camp, sans pouvoir : le centre de chaque écran, chaque coffre, l'arche du retour
+  var eT = VL.nouvelEtat(), vu3 = {}, file3 = [[I.camp.x + 1, I.camp.y]]; vu3[file3[0].join()] = 1;
+  while (file3.length) {
+    var q3 = file3.shift();
+    [[1, 0], [-1, 0], [0, 1], [0, -1]].forEach(v => { var nx = q3[0] + v[0], ny = q3[1] + v[1], k = nx + ',' + ny; if (!vu3[k] && VL.libre(eT, nx, ny)) { vu3[k] = 1; file3.push([nx, ny]); } });
+  }
+  for (ey3 = I.ey0; ey3 <= I.ey1; ey3++) for (ex3 = I.ex0; ex3 <= I.ex1; ex3++) if (!vu3[(ex3 * 11 + 5) + ',' + (ey3 * 9 + 4)]) ok1 = false;
+  I.coffres.forEach(c => { coffresVus++; if (![[1, 0], [-1, 0], [0, 1], [0, -1]].some(v => vu3[(c.x + v[0]) + ',' + (c.y + v[1])])) ok1 = false; });
+  if (VL.tuile(I.camp.x, I.camp.y) !== 'O' || !vu3[(I.camp.x + 1) + ',' + I.camp.y]) ok1 = false;
+  if (Object.keys(vu3).some(k => !VL.dansTerres.apply(null, k.split(',').map(Number)))) ok1 = false;   // on ne sort pas des Terres à pied
+  if (!ok1) { mauvais++; if (mauvais < 4) console.log('  saison ' + sn + ' incorrecte'); }
+}
+verif(mauvais === 0, nbSaisons + ' saisons générées, toutes justes (' + coffresVus + ' coffres) en ' + (Date.now() - t0) + ' ms');
+verif(biomesVus.foret && biomesVus.collines, 'forêt brumeuse et collines');
+// Même saison = même monde
+VL.genererTerres(7); var A7 = JSON.stringify(VL.ecrans().filter(c => VL.dansTerres(c.ex * 11, c.ey * 9)).map(c => c.E.l));
+VL.genererTerres(8); VL.genererTerres(7); verif(JSON.stringify(VL.ecrans().filter(c => VL.dansTerres(c.ex * 11, c.ey * 9)).map(c => c.E.l)) === A7, 'même graine, même monde');
+VL.genererTerres(8); verif(JSON.stringify(VL.ecrans().filter(c => VL.dansTerres(c.ex * 11, c.ey * 9)).map(c => c.E.l)) !== A7, 'autre saison, autre monde');
+// La porte, l'aller, le retour
+var nS = VL.terresPretes(), IS = VL.infoTerres(), eP = VL.nouvelEtat();
+eP.x = VL.PORTE.x + 1; eP.y = VL.PORTE.y;
+verif(VL.pas(eP, 'g', {}).action === 'porte', 'on fonce dans la Porte des brumes');
+VL.traverser(eP, 'aller');
+verif(eP.x === IS.camp.x + 2 && eP.y === IS.camp.y && VL.dansTerres(eP.x, eP.y) && eP.brume[Math.floor(eP.x / 11) + ',' + Math.floor(eP.y / 9)], 'arrivée au camp, brouillard levé autour');
+eP.x--; verif(VL.pas(eP, 'g', {}).action === 'arche', 'l\'arche du camp');
+// Un coffre : son contenu, puis vide ; le même pour un autre joueur
+var cT = IS.coffres[0], e1 = VL.nouvelEtat(), e2 = VL.nouvelEtat();
+var r1 = VL.ouvrirCoffreT(e1, cT.x, cT.y), r2 = VL.ouvrirCoffreT(e2, cT.x, cT.y), r3 = VL.ouvrirCoffreT(e1, cT.x, cT.y);
+verif((r1.etoiles || r1.n) && JSON.stringify(r1) === JSON.stringify(r2) && !r3.etoiles && !r3.n && e1.terres.ouv[cT.x + ',' + cT.y], 'coffre des Terres : ' + r1.texte);
+verif(!VL.ouvrirCoffreT(e1, 3, 3).texte, 'pas de coffre ailleurs');
+// Sauvegarde dans les Terres : on y reste ; à la saison suivante, retour au camp, brouillard des Terres oublié, Vallée gardée
+var sv = JSON.parse(JSON.stringify(eP)); sv.x = eP.x + 1;
+var eR = VL.charger(sv);
+verif(eR.x === sv.x && eR.y === sv.y && !eR.nouvelleSaison, 'rechargé dans les Terres');
+var cleCoeur = Object.keys(eR.brume).find(k => +k.split(',')[1] < 3), cleTerres = Object.keys(eR.brume).find(k => +k.split(',')[1] >= 10);
+var sv2 = JSON.parse(JSON.stringify(eR)); sv2.terres.s = nS - 1; sv2.terres.ouv = { '1,2': 1 };
+var eN = VL.charger(sv2), IN = VL.infoTerres();
+verif(eN.nouvelleSaison && eN.terres.s === nS && !eN.terres.ouv['1,2'] && eN.brume[cleCoeur] && eN.x === IN.camp.x + 2 && eN.y === IN.camp.y, 'nouvelle saison : retour au camp, Terres oubliées, Vallée gardée');
+verif(Object.keys(eN.brume).filter(k => +k.split(',')[1] >= 10).every(k => { var c = k.split(',').map(Number); return Math.abs(c[0] - Math.floor(eN.x / 11)) <= 1 && Math.abs(c[1] - Math.floor(eN.y / 9)) <= 1; }), 'brouillard des Terres effacé (seul le camp est vu)');
+// Une sauvegarde d'avant 3.57 (sans « terres ») : rien d'annoncé
+var eV = VL.charger({ v: 1, x: 13, y: 12 });
+verif(eV.terres.s === nS && !eV.nouvelleSaison && VL.charger(JSON.parse(JSON.stringify(eV))).terres.s === nS, 'sauvegarde d\'avant les Terres');
+VL.traverser(eP, 'retour');
+verif(eP.x === VL.PORTE.x + 2 && eP.y === VL.PORTE.y && !VL.dansTerres(eP.x, eP.y), 'retour devant la porte, dans la Vallée');
+verif(VL.saisonDe(new Date(2026, 10, 9, 12).getTime()) === 0 && VL.saisonDe(new Date(2026, 11, 6, 23).getTime()) === 0 && VL.saisonDe(new Date(2026, 11, 7, 1).getTime()) === 1, 'saisons de 4 semaines (le 7 décembre, saison 2)');
+VL.terresPretes();
 
 console.log(ok + ' vérifications réussies, ' + ko + ' échec(s)');
 process.exit(ko ? 1 : 0);

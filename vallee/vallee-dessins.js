@@ -297,7 +297,7 @@ var VLD = (function () {
   }
   // ---------- La montagne (3.54) : rochers, sapins enneigés, le col gardé, le belvédère, les jumelles ----------
   // Un bloc de rocher (les falaises de la montagne) ; un chapeau de neige au sommet et sur les rochers du col
-  function rocher(X, Y, h, neige) {
+  function rocher(X, Y, h, neige, sansNeige) {
     var m = h > 0.5, c = m ? ['#958f84', '#77726a', '#b7b1a5'] : ['#8a857b', '#6c675f', '#aea89c'];
     var p = m ? [[1, 30], [0, 15], [7, 3], [19, -1], [30, 6], [33, 20], [32, 30]] : [[0, 30], [2, 11], [12, 1], [24, 3], [33, 14], [32, 30]];
     var d = 'M' + p.map(q => (X + q[0]) + ' ' + (Y + q[1])).join('L') + 'Z';
@@ -309,7 +309,7 @@ var VLD = (function () {
       '<path d="M' + (X + 6) + ' ' + (Y + 13) + 'l7-8M' + (X + 4) + ' ' + (Y + 21) + 'l6-4" stroke="' + c[2] + '" stroke-width="2" stroke-linecap="round"/>' +
       '<path d="M' + (X + 13 + h * 6) + ' ' + (Y + 17) + 'l3 5-2 4M' + (X + 24) + ' ' + (Y + 18) + 'l-2 6" stroke="#4a453e" stroke-width="1.1" fill="none" stroke-linecap="round"/>' +
       '<path d="' + d + '" fill="none" stroke="#2f2a24" stroke-width="1.7" stroke-linejoin="round"/>';
-    if (neige || h > 0.8) r += '<path d="M' + (X + (m ? 4 : 5)) + ' ' + (Y + (m ? 9 : 7)) + 'Q' + (X + 12) + ' ' + (Y - 1) + ' ' + (X + 19) + ' ' + (Y + (m ? -1 : 1)) + 'Q' + (X + 27) + ' ' + (Y + 2) + ' ' + (X + 30) + ' ' + (Y + 8) +
+    if (neige || (!sansNeige && h > 0.8)) r += '<path d="M' + (X + (m ? 4 : 5)) + ' ' + (Y + (m ? 9 : 7)) + 'Q' + (X + 12) + ' ' + (Y - 1) + ' ' + (X + 19) + ' ' + (Y + (m ? -1 : 1)) + 'Q' + (X + 27) + ' ' + (Y + 2) + ' ' + (X + 30) + ' ' + (Y + 8) +
       'q-3 3-6 1-3 3-6 0-4 3-7 0-4 3-7 0z" fill="#f4f8fb" stroke="#5f7486" stroke-width="1.1" stroke-linejoin="round"/><path d="M' + (X + 20) + ' ' + (Y + 3) + 'q5 1 8 4" stroke="#c4d4e2" stroke-width="1.6" fill="none"/>';
     else if (h < 0.25) r += '<path d="M' + (X + 3) + ' ' + (Y + 28) + 'q4-4 8 0" stroke="#6f8f45" stroke-width="2.2" fill="none" stroke-linecap="round"/>';
     return r;
@@ -487,6 +487,41 @@ var VLD = (function () {
         '<circle cx="' + (X + 12) + '" cy="' + (Y + 4) + '" r="3" fill="#58a847"/><path d="M' + (X + 15) + ' ' + (Y + 14) + 'l2 6-2 5" stroke="#163d13" stroke-width="1.3" fill="none"/>' +
         (flair ? '<g class="vl-scintille"><path d="M' + (X + 16) + ' ' + (Y + 7) + 'l1.6 4 4 1.6-4 1.6-1.6 4-1.6-4-4-1.6 4-1.6z" fill="#ffe066"/><circle cx="' + (X + 8) + '" cy="' + (Y + 22) + '" r="1.4" fill="#fff9db"/><circle cx="' + (X + 25) + '" cy="' + (Y + 21) + '" r="1.4" fill="#fff9db"/></g>' : '');
     return '';
+  }
+  // L'arche de la Porte des brumes (3.57) : deux piliers de pierre, une voûte gravée, un voile de brume qui tourne
+  function arche(X, Y) {
+    // Plus haute qu'une case : la voûte monte jusqu'à la case du dessus (on la voit de loin)
+    var cx = X + 16, h = Y - 22;
+    var tour = (x1, x2) => '<path d="M' + x1 + ' ' + (Y + 31) + 'V' + (h + 12) + 'h' + (x2 - x1) + 'V' + (Y + 31) + 'z" fill="#8f8a9e" stroke="' + OLB + '" stroke-width="1.6"/>' +
+      '<path d="M' + (x2 - 3) + ' ' + (Y + 30) + 'V' + (h + 13) + '" stroke="#6b6680" stroke-width="3"/>' +
+      [10, 20, 30, 40].map(k => '<path d="M' + x1 + ' ' + (h + 12 + k) + 'h' + (x2 - x1) + '" stroke="#5a5570" stroke-width="1"/>').join('');
+    return '<ellipse cx="' + cx + '" cy="' + (Y + 31) + '" rx="20" ry="4.5" fill="rgba(10,10,30,.35)"/>' +
+      '<circle cx="' + cx + '" cy="' + (Y + 2) + '" r="30" fill="url(#vl-portail)" class="vl-halo"/>' +
+      // le voile de brume, dans l'ouverture
+      '<path d="M' + (X + 5) + ' ' + (Y + 31) + 'V' + (h + 18) + 'a11 11 0 0 1 22 0V' + (Y + 31) + 'z" fill="#2f2560"/>' +
+      '<path d="M' + (X + 5) + ' ' + (Y + 31) + 'V' + (h + 18) + 'a11 11 0 0 1 22 0V' + (Y + 31) + 'z" fill="url(#vl-portail)"/>' +
+      '<g class="vl-portail" style="transform-origin:' + cx + 'px ' + (Y + 4) + 'px"><path d="M' + cx + ' ' + (Y + 4) + 'm-8 0a8 8 0 1 1 8 8a5 5 0 1 1-5-5a2.6 2.6 0 1 1 2.6 2.6" stroke="#d0bfff" stroke-width="1.8" fill="none" opacity=".95"/>' +
+      '<path d="M' + cx + ' ' + (Y + 4) + 'm7 6a10 10 0 0 1-14 1M' + cx + ' ' + (Y + 4) + 'm-6-8a10 10 0 0 1 12-1" stroke="#f3f0ff" stroke-width="1.2" fill="none" opacity=".7"/></g>' +
+      '<circle cx="' + (X + 10) + '" cy="' + (Y + 22) + '" r="1.2" fill="#f3f0ff" class="vl-scintille"/><circle cx="' + (X + 22) + '" cy="' + (Y - 6) + '" r="1.1" fill="#f3f0ff" class="vl-scintille"/><circle cx="' + (X + 13) + '" cy="' + (Y - 12) + '" r=".9" fill="#e5dbff" class="vl-scintille"/>' +
+      // les deux piliers et la voûte gravée
+      tour(X - 2, X + 5) + tour(X + 27, X + 34) +
+      '<path d="M' + (X - 3) + ' ' + (h + 14) + 'a19 19 0 0 1 38 0h-7a12 12 0 0 0-24 0z" fill="#9c97ab" stroke="' + OLB + '" stroke-width="1.6" stroke-linejoin="round"/>' +
+      '<path d="M' + (X + 1) + ' ' + (h + 9) + 'a15 15 0 0 1 30 0" stroke="#c7c2d6" stroke-width="1.4" fill="none"/>' +
+      '<path d="M' + cx + ' ' + (h - 8) + 'l3 4-3 4-3-4z" fill="#d0bfff" stroke="#5f3dc4" stroke-width=".9" class="vl-scintille"/>' +
+      '<path d="M' + (X - 1) + ' ' + (h + 26) + 'l2.5-3 2.5 3M' + (X + 28) + ' ' + (h + 26) + 'l2.5-3 2.5 3M' + (X - 1) + ' ' + (h + 40) + 'h5M' + (X + 28) + ' ' + (h + 40) + 'h5" stroke="#b197fc" stroke-width="1.3" fill="none"/>' +
+      '<path d="M' + (X - 3) + ' ' + (Y + 29) + 'q5-4 9 0M' + (X + 26) + ' ' + (Y + 30) + 'q5-4 9 0M' + (X + 30) + ' ' + (h + 16) + 'q3 6 1 12" stroke="#4c9a3c" stroke-width="2.4" fill="none" stroke-linecap="round"/>';
+  }
+  // Feu de camp (3.57) : un cercle de pierres, des bûches croisées, des flammes qui dansent
+  function feuCamp(X, Y) {
+    var cx = X + 16, cy = Y + 22;
+    return '<circle cx="' + cx + '" cy="' + (cy - 6) + '" r="22" fill="url(#vl-lueur)" class="vl-halo"/>' +
+      '<ellipse cx="' + cx + '" cy="' + cy + '" rx="12" ry="5.5" fill="#3b2a1d"/>' +
+      [[-11, 0], [-7, 4.5], [0, 6], [7, 4.5], [11, 0], [7, -4], [-7, -4]].map(c => '<ellipse cx="' + (cx + c[0]) + '" cy="' + (cy + c[1]) + '" rx="3.4" ry="2.6" fill="#9e9e9e" stroke="#3a3a3a" stroke-width=".9"/>').join('') +
+      '<path d="M' + (cx - 8) + ' ' + (cy + 2) + 'L' + (cx + 8) + ' ' + (cy - 3) + 'M' + (cx - 8) + ' ' + (cy - 3) + 'L' + (cx + 8) + ' ' + (cy + 2) + '" stroke="' + OLB + '" stroke-width="4.6" stroke-linecap="round"/>' +
+      '<path d="M' + (cx - 8) + ' ' + (cy + 2) + 'L' + (cx + 8) + ' ' + (cy - 3) + 'M' + (cx - 8) + ' ' + (cy - 3) + 'L' + (cx + 8) + ' ' + (cy + 2) + '" stroke="#8d5a2b" stroke-width="3" stroke-linecap="round"/>' +
+      '<path class="vl-flamme" d="M' + cx + ' ' + (cy - 20) + 'C' + (cx + 7) + ' ' + (cy - 12) + ' ' + (cx + 8) + ' ' + (cy - 6) + ' ' + (cx + 5) + ' ' + (cy - 1) + 'H' + (cx - 5) + 'C' + (cx - 8) + ' ' + (cy - 6) + ' ' + (cx - 5) + ' ' + (cy - 11) + ' ' + cx + ' ' + (cy - 20) + 'Z" fill="#ff922b" stroke="#c2410c" stroke-width=".8"/>' +
+      '<path class="vl-flamme" d="M' + cx + ' ' + (cy - 12) + 'C' + (cx + 3.5) + ' ' + (cy - 8) + ' ' + (cx + 4) + ' ' + (cy - 4) + ' ' + (cx + 2) + ' ' + (cy - 1.5) + 'H' + (cx - 2) + 'C' + (cx - 4) + ' ' + (cy - 4) + ' ' + (cx - 3) + ' ' + (cy - 7) + ' ' + cx + ' ' + (cy - 12) + 'Z" fill="#ffe066"/>' +
+      '<circle cx="' + (cx + 5) + '" cy="' + (cy - 22) + '" r=".9" fill="#ffd43b" class="vl-scintille"/><circle cx="' + (cx - 4) + '" cy="' + (cy - 26) + '" r=".8" fill="#ffa94d" class="vl-scintille"/>';
   }
   function coffre(X, Y, ouvert) {
     return (ouvert ? '' : '<circle cx="' + (X + 16) + '" cy="' + (Y + 18) + '" r="15" fill="url(#vl-lueur)" class="vl-halo"/>') +
@@ -755,13 +790,15 @@ var VLD = (function () {
     var x0 = ex * VL.W, y0 = ey * VL.H, s = [], objets = [], x, y, t, X, Y, h;
     var E = VL.ecranA(ex, ey), village = E.id === 'village' || E.id === 'quartier';   // pavés au village et dans le quartier
     var marais = E.zone === 'marais';   // le marais (3.53) : herbe olive, eau trouble, brume et lucioles
-    var montagne = E.zone === 'montagne', sol = E.sol;   // la montagne (3.54) : sol de roche, alpage ou neige ; nuages et flocons
+    var montagne = E.zone === 'montagne', sol = E.sol;
+    var brumeuse = !!E.brume;   // les Terres de la saison (3.57) : la forêt brumeuse (les collines ont leur sol)   // la montagne (3.54) : sol de roche, alpage ou neige ; nuages et flocons
     var tu = (xx, yy) => VL.tuile(xx, yy);
-    var chemin = c => c === ':' || c === '=' || c === 'F' || c === '-' || c === 'P' || c === 'G';   // la fontaine est posée sur les pavés de la place
+    var chemin = c => c === ':' || c === '=' || c === 'F' || c === '-' || c === 'P' || c === 'G' || c === 'O';   // la fontaine est posée sur les pavés de la place
     var foret = c => c === 'T' || c === 'S' || c === 'k';
     s.push('<defs><radialGradient id="vl-lueur"><stop offset="0" stop-color="#ffd27a" stop-opacity=".75"/><stop offset=".55" stop-color="#ffb347" stop-opacity=".28"/><stop offset="1" stop-color="#ff922b" stop-opacity="0"/></radialGradient>' +
            '<radialGradient id="vl-braise"><stop offset="0" stop-color="#ff8a3d" stop-opacity=".7"/><stop offset="1" stop-color="#ff5a1f" stop-opacity="0"/></radialGradient>' +
            '<radialGradient id="vl-cristal"><stop offset="0" stop-color="#d0bfff" stop-opacity=".75"/><stop offset="1" stop-color="#9775fa" stop-opacity="0"/></radialGradient>' +
+           '<radialGradient id="vl-portail"><stop offset="0" stop-color="#b197fc" stop-opacity=".7"/><stop offset=".6" stop-color="#7950f2" stop-opacity=".22"/><stop offset="1" stop-color="#5f3dc4" stop-opacity="0"/></radialGradient>' +
            '<radialGradient id="vl-magie"><stop offset="0" stop-color="#fff3bf" stop-opacity=".7"/><stop offset="1" stop-color="#ffe066" stop-opacity="0"/></radialGradient>' +
            '<radialGradient id="vl-luc"><stop offset="0" stop-color="#f4ff9a" stop-opacity=".85"/><stop offset=".45" stop-color="#d8f56a" stop-opacity=".3"/><stop offset="1" stop-color="#b8e04a" stop-opacity="0"/></radialGradient>' +
            '<linearGradient id="vl-mont" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e7f5ff" stop-opacity=".2"/><stop offset=".5" stop-color="#e7f5ff" stop-opacity="0"/><stop offset="1" stop-color="#1d2b3a" stop-opacity=".22"/></linearGradient>' +
@@ -773,6 +810,8 @@ var VLD = (function () {
       : sol === 'roche' ? ['#a39b8a', '#9d9584', '#eef3f7', '#7d8a5a', '#4b4844', '#524f4a']
       : sol === 'neige' ? ['#edf2f6', '#e6edf3', '#d3e0ea', '#c9d6e0', '#4f5b66', '#56626c']
       : sol === 'alpage' ? ['#7fbf5a', '#79b855', '#8ccb63', '#5a9a3b', '#3d4f3a', '#435640']
+      : sol === 'colline' ? ['#a3bf5f', '#9cb85a', '#b3c96f', '#728f3a', '#4f5a33', '#566238']
+      : brumeuse ? ['#5f9a54', '#5a944f', '#6aa35e', '#4a8040', '#22412a', '#264730']
       : ['#77b052', '#71a94d', '#679e45', '#5a913b', '#2f5a28', '#33612b'];
     s.push('<rect width="352" height="288" fill="' + HERBE[0] + '"/>');
     for (y = 0; y < VL.H; y++) for (x = 0; x < VL.W; x++) {
@@ -839,7 +878,7 @@ var VLD = (function () {
         fond = village ? '#b9b0a2' : marais ? '#b49a66' : sol === 'neige' ? '#dde7ef' : sol === 'roche' ? '#c9b48a' : '#d6b47a';
     [[bord, 14.5, 29], [fond, 12.5, 25]].forEach(st => {
       for (y = 0; y < VL.H; y++) for (x = 0; x < VL.W; x++) {
-        t = tu(x0 + x, y0 + y); if (t !== ':' && t !== 'F') continue;
+        t = tu(x0 + x, y0 + y); if (t !== ':' && t !== 'F' && t !== 'O') continue;
         X = x * T + 16; Y = y * T + 16;
         s.push('<rect x="' + f(X - st[1]) + '" y="' + f(Y - st[1]) + '" width="' + st[2] + '" height="' + st[2] + '" rx="' + (village ? 4 : st[1]) + '" fill="' + st[0] + '"/>');
         // Coin rentrant (trois cases de chemin autour) : on remplit le quart de case, sinon un petit carré d'herbe reste
@@ -898,7 +937,7 @@ var VLD = (function () {
     for (y = 0; y < VL.H; y++) for (x = 0; x < VL.W; x++) {
       var gx2 = x0 + x, gy2 = y0 + y; t = tu(gx2, gy2); X = x * T; Y = y * T; h = VL.hash(gx2, gy2, 1);
       if (t === 'T') poser(y, marais ? (h > 0.62 ? cypres(X, Y, h) : saule(X, Y, h)) : montagne ? (sol === 'alpage' ? sapin(X, Y, h) : sapinNeige(X, Y, h)) : arbre(X, Y, h));
-      else if (t === 'k') poser(y, rocher(X, Y, h, sol === 'neige'));
+      else if (t === 'k') poser(y, rocher(X, Y, h, sol === 'neige', sol === 'colline'));
       else if (t === 'B') poser(y, belvedere(X, Y));
       else if (t === 'G') poser(y, VL.colOuvert(e) ? empreintes(X, Y) : colGarde(X, Y));
       else if (t === 'y') poser(y, roseaux(X, Y, h));
@@ -910,6 +949,9 @@ var VLD = (function () {
       else if (t === 'F') poser(y, fontaine(X, Y));
       else if (t === 'Q') poser(y, tableau(X, Y) + bulleQuete(X + 16, Y - 9, ctx.tableauMarque));
       else if (t === 'c') poser(y, coffre(X, Y, e.coffre));
+      else if (t === 'Z') poser(y, coffre(X, Y, !!(e.terres && e.terres.ouv[gx2 + ',' + gy2])));
+      else if (t === 'O') poser(y + 0.2, arche(X + 3, Y));
+      else if (t === 'f') poser(y, feuCamp(X, Y));
       else if (t === 'e') poser(y, etabli(X, Y, ctx.atelier));
       else if (VL.OBSTACLES[t]) poser(y - 0.1, obstacle(t, X, Y, VL.ouvert(e, gx2, gy2), ctx.flair));
       if (t === 'm' && tu(gx2 - 1, gy2) !== 'm') poser(y, etal(X, Y) + bulleQuete(X + 32, Y - 26, ctx.marques && ctx.marques.pipa));
@@ -967,6 +1009,8 @@ var VLD = (function () {
         s.push('<circle class="vl-flocon" style="animation-delay:-' + f(fk * 0.7) + 's;animation-duration:' + f(7 + (fk % 4)) + 's" cx="' + f(fx) + '" cy="' + f(fy) + '" r="' + (fk % 3 ? 1.4 : 2) + '" fill="#fff" opacity=".9"/>');
       }
     }
+    // Au marais et dans la forêt brumeuse, la brume qui traîne
+    if (brumeuse) [[50, 0], [130, 1], [210, 2], [262, 3]].forEach((b, k) => s.push('<ellipse class="vl-brume" style="animation-delay:-' + (k * 4) + 's" cx="' + (120 + k * 45) + '" cy="' + b[0] + '" rx="200" ry="' + (18 + k * 3) + '" fill="#eef2f6" opacity=".2"/>'));
     // Au marais, la brume qui traîne et des lucioles qui dansent
     if (marais) {
       [[60, 0.0], [150, 0.33], [236, 0.66]].forEach((b, k) => s.push('<ellipse class="vl-brume" style="animation-delay:-' + (k * 5) + 's" cx="' + (150 + k * 40) + '" cy="' + b[0] + '" rx="190" ry="' + (16 + k * 4) + '" fill="#e6f2e0" opacity=".13"/>'));
@@ -977,16 +1021,17 @@ var VLD = (function () {
     }
     // Lumière de fin d'après-midi et bords plus sombres, comme dans les pièces du Donjon
     // Lumière et bords assombris (sauf dans le quartier qui défile : la page les pose sur la fenêtre de vue)
-    if (!ctx.sansVoile) s.push('<rect width="352" height="288" fill="url(#' + (marais ? 'vl-mar' : montagne ? 'vl-mont' : 'vl-soleil') + ')"/><rect width="352" height="288" fill="url(#vl-vig)"/>');
+    if (!ctx.sansVoile) s.push('<rect width="352" height="288" fill="url(#' + (marais || brumeuse ? 'vl-mar' : montagne ? 'vl-mont' : 'vl-soleil') + ')"/><rect width="352" height="288" fill="url(#vl-vig)"/>');
     return s.join('');
   }
 
   // ---------- La carte du monde, sous le brouillard (10 unités par case) ----------
   var COUL = { '.': '#a9d18e', ',': '#b8dc96', ':': '#e7cf9b', '=': '#c08a4e', T: '#5d9b4c', S: '#4b8650', b: '#77b35f', h: '#6aa653', o: '#a9d18e',
                '~': '#7fbde8', x: '#c98a6a', e: '#b07a45', m: '#e8590c', Q: '#b07a45', F: '#9ab', c: '#a9d18e', r: '#3d7a3a', R: '#9e9e9e', v: '#6b5040', s: '#3f7a35',
-               y: '#7d9a4a', '-': '#c08a4e', P: '#a07a52', p: '#9e9e9e', C: '#97b07a', k: '#8a857c', G: '#d7e9f7', B: '#e9c46a' };
+               y: '#7d9a4a', '-': '#c08a4e', P: '#a07a52', p: '#9e9e9e', C: '#97b07a', k: '#8a857c', G: '#d7e9f7', B: '#e9c46a', O: '#9775fa', Z: '#a9d18e', f: '#e8590c' };
+  var COUL_BRUME = { '.': '#8fb987', ',': '#98c190', T: '#467a44', S: '#3d6e46' };
   var COUL_MARAIS = { '.': '#97b47a', ',': '#a3bd86', ':': '#c9b07e', '~': '#5f9a8a', T: '#4f7d3c' };
-  var COUL_SOL = { roche: { '.': '#bdb6a6', ',': '#c4bdad', ':': '#d6c49c' }, alpage: { '.': '#a2d47c', ',': '#aedb88', ':': '#e2cf9b' },
+  var COUL_SOL = { colline: { '.': '#c3d68a', ',': '#cbdc94', T: '#5d9b4c' }, roche: { '.': '#bdb6a6', ',': '#c4bdad', ':': '#d6c49c' }, alpage: { '.': '#a2d47c', ',': '#aedb88', ':': '#e2cf9b' },
                    neige: { '.': '#f1f5f8', ',': '#e9eff4', ':': '#d6e2ec', T: '#4f7d64' } };
   // ctx = { cible: { x, y }, marques: { habitant: m }, tableauMarque, ecranVu: { 'ex,ey': 1 } }
   function carteSvg(e, ctx) {
@@ -996,7 +1041,8 @@ var VLD = (function () {
     var brume = e.brume || {}, proches = VL.ecrans().filter(c => { for (var dy = -1; dy <= 1; dy++) for (var dx = -1; dx <= 1; dx++) if (brume[(c.ex + dx) + ',' + (c.ey + dy)]) return true; return false; });
     s.push('<defs><pattern id="vl-hachure" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(35)"><rect width="8" height="8" fill="#ead8b0"/><path d="M0 0v8" stroke="#dcc597" stroke-width="2"/></pattern>' +
            '<filter id="vl-flou" x="-5%" y="-5%" width="110%" height="110%"><feGaussianBlur stdDeviation="2.2"/></filter></defs>');
-    s.push('<rect x="' + (B.x0 * U) + '" y="' + (B.y0 * U) + '" width="' + ((B.x1 - B.x0) * U) + '" height="' + ((B.y1 - B.y0) * U) + '" fill="url(#vl-hachure)"/>');
+    var REG = VL.regions();   // le cœur et les Terres de la saison : chacun son fond de vieille carte et son cadre
+    REG.forEach(R => s.push('<rect x="' + (R.x0 * U) + '" y="' + (R.y0 * U) + '" width="' + ((R.x1 - R.x0) * U) + '" height="' + ((R.y1 - R.y0) * U) + '" fill="url(#vl-hachure)"/>'));
     // Ce qui est découvert : un masque flou donne un bord de brouillard doux
     var vus = [];
     proches.forEach(c => { if (brume[c.ex + ',' + c.ey]) for (y = c.ey * H; y < (c.ey + 1) * H; y++) for (x = c.ex * W; x < (c.ex + 1) * W; x++) if (VL.estVu(e, x, y, b)) vus.push('<rect x="' + (x * U - 1) + '" y="' + (y * U - 1) + '" width="' + (U + 2) + '" height="' + (U + 2) + '" fill="#fff"/>'); });
@@ -1006,7 +1052,7 @@ var VLD = (function () {
       var t = VL.tuile(x, y);
       if (t === null) continue;   // hors du monde (au nord et au sud du quartier)
       if (VL.OBSTACLES[t] && VL.ouvert(e, x, y)) t = '.';
-      var EC = VL.ecran(x, y), Z = EC.zone === 'marais' ? COUL_MARAIS[t] : EC.sol ? COUL_SOL[EC.sol][t] : null;
+      var EC = VL.ecran(x, y), Z = EC.zone === 'marais' ? COUL_MARAIS[t] : EC.sol ? COUL_SOL[EC.sol][t] : EC.brume ? COUL_BRUME[t] : null;
       terre.push('<rect x="' + (x * U) + '" y="' + (y * U) + '" width="' + (U + 0.4) + '" height="' + (U + 0.4) + '" fill="' + (Z || COUL[t] || '#a9d18e') + '"/>');
       if (t === 'T' || t === 'S') terre.push('<circle cx="' + (x * U + 5) + '" cy="' + (y * U + 5) + '" r="4" fill="' + (t === 'S' ? '#3d7344' : '#4d8a3e') + '"/>');
     } });
@@ -1039,7 +1085,10 @@ var VLD = (function () {
     // Grille des écrans
     VL.ecrans().forEach(c => { var ex = c.ex, ey = c.ey; s.push('<rect x="' + (ex * VL.W * U) + '" y="' + (ey * VL.H * U) + '" width="' + (VL.W * U) + '" height="' + (VL.H * U) + '" fill="none" stroke="#8a6a46" stroke-width="1" stroke-dasharray="3 4" opacity=".45"/>'); });
     // Cadre de vieille carte
-    s.push('<rect x="' + (B.x0 * U + 1) + '" y="' + (B.y0 * U + 1) + '" width="' + ((B.x1 - B.x0) * U - 2) + '" height="' + ((B.y1 - B.y0) * U - 2) + '" rx="6" fill="none" stroke="#8a6a46" stroke-width="2"/>');
+    REG.forEach(R => s.push('<rect x="' + (R.x0 * U + 1) + '" y="' + (R.y0 * U + 1) + '" width="' + ((R.x1 - R.x0) * U - 2) + '" height="' + ((R.y1 - R.y0) * U - 2) + '" rx="6" fill="none" stroke="#8a6a46" stroke-width="2"/>'));
+    // Les arches de la Porte des brumes et le feu du camp (3.57)
+    var IT = VL.infoTerres(), rep = [[VL.PORTE.x, VL.PORTE.y, '🌀'], [IT.camp.x, IT.camp.y, '🌀'], [IT.camp.x + 3, IT.camp.y - 2, '⛺']];
+    rep.forEach(q => { if (VL.estVu(e, q[0], q[1], b)) s.push('<text x="' + (q[0] * U + 5) + '" y="' + (q[1] * U + 9) + '" text-anchor="middle" font-size="13">' + q[2] + '</text>'); });
     return s.join('');
   }
   // Ce qui bouge à chaque pas (dessiné par-dessus, pour ne pas tout redessiner) : l'écran où je suis, la quête suivie, moi

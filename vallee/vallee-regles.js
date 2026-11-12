@@ -20,6 +20,7 @@ var VL = (function () {
   // Le marais (3.53) : y  roseaux   -  ponton (on le traverse de gauche à droite)   p  pierres de gué   C  coffre du marais
   //                    P  la passerelle cassée : on y marche une fois réparée par Bruno (quête « La passerelle du marais »)
   // La montagne (3.54) : k  rochers et falaises   G  le col, gardé par le Yéti tant qu'on ne l'a pas battu au Cieljo   B  le belvédère
+  // Les Terres de la saison (3.57) : O  l'arche de la Porte des brumes (on fonce dedans pour passer)   Z  coffre de la saison   f  feu de camp
   var ECRANS = [
     [ { id: 'sapins', nom: 'Bois des sapins', ico: '🌲', l: [
         'SSSSSSSSSSS',
@@ -88,7 +89,7 @@ var VL = (function () {
         'T..,.:..b.T',
         '~~~~~=~~~~T',
         'T.b..:..,.T',
-        'T....::::::',
+        'O::::::::::',
         'T.,..:....T',
         'Tb...:..o.T',
         'T..,.:...bT',
@@ -432,7 +433,7 @@ var VL = (function () {
   function nouvelEtat() {
     var p = g(1, 1, 2, 3);
     var e = { v: 1, x: p.x, y: p.y, dir: 'b', brume: {}, ouverts: {}, pris: {}, quetes: {}, coffre: false, coffreM: false, cle: false, pas: 0,
-              sac: { bois: 0, pierre: 0, plante: 0, cristal: 0 }, recolte: { j: '', pris: {} }, outils: {}, besace: {} };
+              sac: { bois: 0, pierre: 0, plante: 0, cristal: 0 }, recolte: { j: '', pris: {} }, outils: {}, besace: {}, terres: { s: saisonDe(), ouv: {} } };
     reveler(e);
     return e;
   }
@@ -442,13 +443,19 @@ var VL = (function () {
     if (!s || typeof s !== 'object' || s.v !== 1) return e;
     ['ouverts', 'pris'].forEach(k => { if (s[k] && typeof s[k] === 'object') e[k] = Object.assign({}, s[k]); });
     if (s.quetes && typeof s.quetes === 'object') Object.keys(QUETES).forEach(id => { if (s.quetes[id] && typeof s.quetes[id] === 'object') e.quetes[id] = Object.assign({}, s.quetes[id]); });
-    var au = ecran(s.x | 0, s.y | 0), audela = au && au.zone && mod(s.x | 0, W) > 0;   // au-delà de la passerelle ou du col
-    if (libre(e, s.x | 0, s.y | 0) && (!audela || zoneOuverte(e, au))) { e.x = s.x | 0; e.y = s.y | 0; }
     e.dir = ['h', 'b', 'g', 'd'].indexOf(s.dir) >= 0 ? s.dir : 'b';
     if (s.brume && typeof s.brume === 'object') Object.keys(s.brume).forEach(k => {
       if (/^-?\d+,-?\d+$/.test(k) && typeof s.brume[k] === 'string' && /^[0-9a-f]{1,25}$/.test(s.brume[k])) e.brume[k] = s.brume[k];
     });
     else if (typeof s.vu === 'string' && /^[0-9a-f]*$/.test(s.vu)) depuisVu(e, s.vu, s.lv | 0 || 33);   // sauvegarde d'avant 3.55 (une seule bande)
+    // Les Terres de la saison (3.57) : ce qu'on y a ouvert ne vaut que pour sa saison
+    if (s.terres && typeof s.terres === 'object' && typeof s.terres.s === 'number') {
+      e.terres.s = s.terres.s;
+      Object.keys(s.terres.ouv || {}).forEach(k => { if (/^-?\d+,-?\d+$/.test(k)) e.terres.ouv[k] = 1; });
+    } else e.terres.s = null;   // sauvegarde d'avant 3.57 : rien dans les Terres
+    var au = ecran(s.x | 0, s.y | 0), audela = au && au.zone && au.zone !== 'terres' && mod(s.x | 0, W) > 0;   // au-delà de la passerelle ou du col
+    if (libre(e, s.x | 0, s.y | 0) && (!audela || zoneOuverte(e, au))) { e.x = s.x | 0; e.y = s.y | 0; }
+    if (e.terres.s !== saisonDe() && changerSaison(e)) e.nouvelleSaison = true;   // la page l'annonce (et l'efface)
     e.coffre = !!s.coffre; e.coffreM = !!s.coffreM; e.cle = !!s.cle; e.pas = s.pas | 0;
     if (s.sac && typeof s.sac === 'object') ORDRE_RES.forEach(r => { e.sac[r] = Math.max(0, Math.min(SAC_MAX, s.sac[r] | 0)); });
     if (s.recolte && typeof s.recolte === 'object' && typeof s.recolte.j === 'string') {
@@ -633,6 +640,9 @@ var VL = (function () {
     var hab = habitantEn(nx, ny);
     if (hab) return { parler: hab };
     if (ACTIONS[k]) return { action: ACTIONS[k].id, x: nx, y: ny, p: ACTIONS[k].p };
+    if (t === 'O') return { action: dansTerres(nx, ny) ? 'arche' : 'porte', x: nx, y: ny };
+    if (t === 'Z') return { action: 'coffreT', x: nx, y: ny };
+    if (t === 'f') return { action: 'feu', x: nx, y: ny };
     if (t === 'P' && !passerelleOk(e)) return { action: 'passerelle', x: nx, y: ny };
     if (t === 'G' && !colOuvert(e)) return { action: 'yeti', x: nx, y: ny };
     if (OBSTACLES[t] && !ouvert(e, nx, ny)) {
@@ -959,6 +969,172 @@ var VL = (function () {
     return l;
   }
 
+  // ================== Les Terres de la saison (3.57) ==================
+  // Au bord ouest de la Vallée, la Porte des brumes mène à un monde GÉNÉRÉ qui change à chaque saison (4 semaines) :
+  // le même pour tous les amis (graine = numéro de la saison), rangé loin du cœur dans les coordonnées.
+  // Première version : 8 × 8 écrans, forêt brumeuse et collines, une rivière, des coffres. Feux de camp, tour de guet et hameau viendront ensuite.
+  var TX = 0, TY = 10, TW = 8, TH = 8;   // en écrans : les Terres vont de (0, 10) à (7, 17)
+  var DUREE_SAISON = 28;                  // en jours
+  var DEBUT_SAISONS = new Date(2026, 10, 9).getTime();   // lundi 9 novembre 2026, heure du téléphone : la saison 1 commence
+  var PORTE = g(0, 1, 0, 4);              // l'arche dans la Vallée, au bord ouest du ruisseau
+  var NB_COFFRES = 6;
+  var TERRES = { saison: null, camp: null, coffres: [], ecrans: [], riviere: -1 };
+  function saisonDe(t) {
+    var d = new Date(t == null ? Date.now() : t); d.setHours(0, 0, 0, 0);
+    return Math.floor(Math.round((d.getTime() - DEBUT_SAISONS) / 864e5) / DUREE_SAISON);
+  }
+  // La date de fin de la saison (le dernier jour), pour l'annoncer
+  function finSaison(n) { var d = new Date(DEBUT_SAISONS); d.setDate(d.getDate() + (n + 1) * DUREE_SAISON - 1); return d; }
+  function dansTerres(x, y) { var c = ecranDe(x, y); return c.ex >= TX && c.ex < TX + TW && c.ey >= TY && c.ey < TY + TH; }
+  // Un tirage reproductible (mulberry32)
+  function alea(graine) {
+    var a = graine >>> 0;
+    return function () { a = (a + 0x6D2B79F5) >>> 0; var t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+  }
+  // Petits motifs dessinés à la main, posés au hasard dans les écrans (« . » = on ne touche pas la case)
+  var MORCEAUX = {
+    foret: [['TT', 'TT'], ['.T.', 'TTT'], ['SS', 'S.'], ['~~', '~~'], ['b.b', '.o.'], ['TS', '.T'], ['T.T'], ['bb'], ['.~', '~~'], ['S', 'S']],
+    collines: [['kk', 'k.'], ['k.k'], ['.k', 'kk'], ['bb', '.b'], ['~~'], ['T.', 'Tk'], ['k'], ['b.k'], [',,,', ',,,'], ['T', 'T']]
+  };
+  var BIOMES = {
+    foret: { nom: 'La forêt brumeuse', ico: '🌫️' },
+    collines: { nom: 'Les collines', ico: '⛰️' }
+  };
+  // Le monde de la saison : plan d'ensemble (biomes, liens entre écrans, rivière), puis chaque écran, puis les coffres
+  function genererTerres(saison) {
+    TERRES.ecrans.forEach(c => retirerEcran(c.ex, c.ey));
+    var r = alea(Math.imul(GRAINE ^ 0x5bd1e995, 2654435761) ^ Math.imul(saison + 1, 0x9e3779b1)), ri = n => Math.floor(r() * n);
+    var campY = 2 + ri(TH - 4);
+    // Les liens entre écrans : un arbre qui passe partout (Prim au hasard), plus quelques boucles
+    var lien = {}, dans = {}, front = [];
+    var cle = (x, y) => x + ',' + y, lier = (a, b, c, d) => { lien[cle(a, b) + '>' + cle(c, d)] = 1; lien[cle(c, d) + '>' + cle(a, b)] = 1; };
+    var lie = (a, b, c, d) => !!lien[cle(a, b) + '>' + cle(c, d)];
+    function ajouter(x, y) {
+      dans[cle(x, y)] = 1;
+      [[1, 0], [-1, 0], [0, 1], [0, -1]].forEach(v => { var nx = x + v[0], ny = y + v[1]; if (nx >= 0 && ny >= 0 && nx < TW && ny < TH && !dans[cle(nx, ny)]) front.push([x, y, nx, ny]); });
+    }
+    ajouter(0, campY);
+    while (front.length) {
+      var f = front.splice(ri(front.length), 1)[0];
+      if (dans[cle(f[2], f[3])]) continue;
+      lier(f[0], f[1], f[2], f[3]); ajouter(f[2], f[3]);
+    }
+    for (var y = 0; y < TH; y++) for (var x = 0; x < TW; x++) {
+      if (x + 1 < TW && !lie(x, y, x + 1, y) && r() < 0.14) lier(x, y, x + 1, y);
+      if (y + 1 < TH && !lie(x, y, x, y + 1) && r() < 0.14) lier(x, y, x, y + 1);
+    }
+    // Les biomes : quelques centres, chaque écran prend celui du centre le plus proche (au moins une forêt et des collines)
+    var centres = [0, 1, 2, 3].map(i => ({ x: ri(TW), y: ri(TH), b: i === 0 ? 'foret' : i === 1 ? 'collines' : (r() < 0.5 ? 'foret' : 'collines') }));
+    var biome = (x, y) => centres.reduce((m, c) => { var d = Math.abs(c.x - x) + Math.abs(c.y - y) + c.x * 0.001; return d < m.d ? { d: d, b: c.b } : m; }, { d: 1e9 }).b;
+    var riviere = 1 + ri(TH - 2);   // une rivière d'ouest en est, sur une ligne d'écrans
+    TERRES.saison = saison; TERRES.riviere = riviere; TERRES.ecrans = []; TERRES.coffres = [];
+    TERRES.camp = { x: TX * W, y: (TY + campY) * H + 4 };
+    TERRES.plan = { lie: lie, biome: biome, campY: campY };
+    var places = [];   // pour les coffres : cases possibles par écran
+    for (var cy = 0; cy < TH; cy++) for (var cx = 0; cx < TW; cx++) {
+      var bi = biome(cx, cy), camp = cx === 0 && cy === campY;
+      var bordure = () => bi === 'foret' ? (r() < 0.35 ? 'S' : 'T') : (r() < 0.55 ? 'k' : r() < 0.6 ? 'T' : 'b');
+      var l = [];
+      for (var yy = 0; yy < H; yy++) { l.push([]); for (var xx = 0; xx < W; xx++) l[yy].push(xx === 0 || yy === 0 || xx === W - 1 || yy === H - 1 ? bordure() : r() < 0.1 ? ',' : '.'); }
+      // Lisière irrégulière
+      for (yy = 1; yy < H - 1; yy++) for (xx = 1; xx < W - 1; xx++) if ((xx === 1 || yy === 1 || xx === W - 2 || yy === H - 2) && r() < 0.28) l[yy][xx] = bordure();
+      // Les petits motifs
+      var nm = camp ? 1 : 2 + ri(3), lm = MORCEAUX[bi];
+      for (var m = 0; m < nm; m++) {
+        var mo = lm[ri(lm.length)], mh = mo.length, mw = mo[0].length, px = 1 + ri(W - 2 - mw), py = 1 + ri(H - 2 - mh);
+        for (yy = 0; yy < mh; yy++) for (xx = 0; xx < mw; xx++) if (mo[yy][xx] !== '.') l[py + yy][px + xx] = mo[yy][xx];
+      }
+      // Les chemins : du centre vers chaque sortie
+      var sorties = { h: cy > 0 && lie(cx, cy, cx, cy - 1), b: cy < TH - 1 && lie(cx, cy, cx, cy + 1), g: cx > 0 && lie(cx, cy, cx - 1, cy), d: cx < TW - 1 && lie(cx, cy, cx + 1, cy) };
+      l[4][5] = ':';
+      if (sorties.h) for (yy = 0; yy <= 4; yy++) l[yy][5] = ':';
+      if (sorties.b) for (yy = 4; yy < H; yy++) l[yy][5] = ':';
+      if (sorties.g) for (xx = 0; xx <= 5; xx++) l[4][xx] = ':';
+      if (sorties.d) for (xx = 5; xx < W; xx++) l[4][xx] = ':';
+      // Le camp : l'arche au bord ouest, le chemin jusqu'à elle, un feu de camp au calme
+      if (camp) {
+        for (xx = 1; xx <= 5; xx++) l[4][xx] = ':';
+        l[4][0] = 'O';
+        [[2, 2], [3, 2], [4, 2], [2, 3], [3, 3], [4, 3]].forEach(c => { if (l[c[1]][c[0]] !== ':') l[c[1]][c[0]] = '.'; });
+        l[2][3] = 'f';
+      }
+      // La rivière, avec un pont là où passe le chemin du sud
+      if (cy === riviere) for (xx = 0; xx < W; xx++) l[6][xx] = xx === 5 && sorties.b ? '=' : '~';
+      var E = { id: camp ? 't-camp' : 't-' + bi, nom: camp ? 'Le camp des brumes' : BIOMES[bi].nom, ico: camp ? '⛺' : BIOMES[bi].ico, zone: 'terres', biome: bi,
+                sol: bi === 'collines' ? 'colline' : undefined, brume: bi === 'foret', l: l.map(rg => rg.join('')) };
+      ajouterEcran(TX + cx, TY + cy, E);
+      TERRES.ecrans.push({ ex: TX + cx, ey: TY + cy });
+      // Cases où l'on pourra poser un coffre : de l'herbe qu'on atteint depuis le centre, loin du chemin
+      if (!camp) {
+        var vu = {}, file = [[5, 4]]; vu['5,4'] = 1;
+        while (file.length) {
+          var q = file.shift();
+          [[1, 0], [-1, 0], [0, 1], [0, -1]].forEach(v => {
+            var nx = q[0] + v[0], ny = q[1] + v[1];
+            if (nx < 1 || ny < 1 || nx > W - 2 || ny > H - 2 || vu[nx + ',' + ny] || !(MARCHE[l[ny][nx]] || l[ny][nx] === '=')) return;
+            vu[nx + ',' + ny] = 1; file.push([nx, ny]);
+          });
+        }
+        var cand = Object.keys(vu).map(k => k.split(',').map(Number)).filter(c => (l[c[1]][c[0]] === '.' || l[c[1]][c[0]] === ',') && c[0] !== 5 && c[1] !== 4 && Math.abs(c[0] - 5) + Math.abs(c[1] - 4) >= 3);
+        if (cand.length) places.push({ ex: TX + cx, ey: TY + cy, cand: cand });
+      }
+    }
+    // Les coffres de la saison, dans des écrans différents
+    for (var n = 0; n < NB_COFFRES && places.length; n++) {
+      var P = places.splice(ri(places.length), 1)[0], c = P.cand[ri(P.cand.length)], Ec = ecranA(P.ex, P.ey);
+      var rows = Ec.l.map(rg => rg.split(''));
+      rows[c[1]][c[0]] = 'Z'; Ec.l = rows.map(rg => rg.join(''));
+      TERRES.coffres.push({ x: P.ex * W + c[0], y: P.ey * H + c[1] });
+    }
+  }
+  function terresPretes(t) { var n = saisonDe(t); if (TERRES.saison !== n) genererTerres(n); return n; }
+  terresPretes();
+  // Une nouvelle saison : on oublie ce qu'on avait vu et ouvert dans les Terres ; si l'on y était, on se retrouve au camp
+  function changerSaison(e, t) {
+    var n = terresPretes(t);
+    if (e.terres && e.terres.s === n) return false;
+    Object.keys(e.brume).forEach(k => { var c = k.split(',').map(Number); if (c[0] >= TX && c[0] < TX + TW && c[1] >= TY && c[1] < TY + TH) delete e.brume[k]; });
+    var avant = e.terres && e.terres.s;
+    e.terres = { s: n, ouv: {} };
+    if (dansTerres(e.x, e.y)) { e.x = TERRES.camp.x + 2; e.y = TERRES.camp.y; e.dir = 'd'; }
+    reveler(e);
+    return avant != null;   // vrai s'il y avait une saison avant (on l'annonce)
+  }
+  // Passer la Porte des brumes (aller) ou l'arche du camp (retour)
+  function traverser(e, sens) {
+    // On arrive deux cases devant l'arche, pour la voir en entier
+    if (sens === 'aller') { changerSaison(e); e.x = TERRES.camp.x + 2; e.y = TERRES.camp.y; e.dir = 'd'; }
+    else { e.x = PORTE.x + 2; e.y = PORTE.y; e.dir = 'd'; }
+    reveler(e);
+    return { ecran: true };
+  }
+  // Un coffre de la saison : son contenu est tiré de la saison et de sa place (le même pour tous)
+  function ouvrirCoffreT(e, x, y) {
+    var k = x + ',' + y;
+    if (!TERRES.coffres.some(c => c.x === x && c.y === y)) return {};
+    if (e.terres.ouv[k]) return { texte: 'Le coffre est vide. Quelqu\'un est passé par là… toi !' };
+    e.terres.ouv[k] = 1;
+    var r = alea(Math.imul(TERRES.saison + 7, 73856093) ^ Math.imul(x, 19349663) ^ Math.imul(y, 83492791)), tir = r();
+    if (tir < 0.4) { var et = r() < 0.4 ? 2 : 1; return { etoiles: et, texte: 'Le coffre s\'ouvre en grinçant : ' + et + ' ⭐ !' }; }
+    var res = tir < 0.55 ? 'cristal' : ['bois', 'pierre', 'plante'][Math.floor(r() * 3)], nb = res === 'cristal' ? 1 : 2 + Math.floor(r() * 2);
+    var place = Math.min(SAC_MAX - (e.sac[res] | 0), nb);
+    e.sac[res] = (e.sac[res] | 0) + place;
+    var mot = { bois: ['bûche', 'bûches'], pierre: ['pierre', 'pierres'], plante: ['brin de plantes', 'brins de plantes'], cristal: ['cristal', 'cristaux'] }[res];
+    return { res: res, n: place, texte: place ? 'Dans le coffre : ' + place + ' ' + mot[place > 1 ? 1 : 0] + ' ' + RESSOURCES[res].ico + ' pour ton sac !' : 'Dans le coffre : des ' + mot[1] + ' ' + RESSOURCES[res].ico + '… mais ton sac en est plein.' };
+  }
+  function infoTerres() {
+    return { saison: TERRES.saison, numero: TERRES.saison + 1, fin: finSaison(TERRES.saison), camp: Object.assign({}, TERRES.camp), coffres: TERRES.coffres.slice(),
+             riviere: TERRES.riviere, x0: TX * W, y0: TY * H, x1: (TX + TW) * W, y1: (TY + TH) * H, ex0: TX, ey0: TY, ex1: TX + TW - 1, ey1: TY + TH - 1 };
+  }
+  // Les régions de la carte du monde (le cœur, les Terres), en cases
+  function regions() { return [{ id: 'coeur', x0: 0, y0: 0, x1: LARG, y1: HAUT }, Object.assign({ id: 'terres' }, (function () { var i = infoTerres(); return { x0: i.x0, y0: i.y0, x1: i.x1, y1: i.y1 }; })())]; }
+  function regionDe(x, y) { return dansTerres(x, y) ? 'terres' : 'coeur'; }
+  function partVueTerres(e) {
+    var b = bits(e), n = 0, t = 0, i = infoTerres();
+    for (var y = i.y0; y < i.y1; y++) for (var x = i.x0; x < i.x1; x++) { if (tuile(x, y) === null) continue; t++; if (estVu(e, x, y, b)) n++; }
+    return n / t;
+  }
+
   return {
     RESSOURCES: RESSOURCES, ORDRE_RES: ORDRE_RES, SAC_MAX: SAC_MAX, RECOLTE: RECOLTE, OUTILS: OUTILS, FIOLES: FIOLES, BESACE_MAX: BESACE_MAX, DONJON_MAX: DONJON_MAX,
     LIEUX_FAB: LIEUX_FAB, RECETTES: RECETTES,
@@ -974,7 +1150,9 @@ var VL = (function () {
     hash: hash, tuile: tuile, ecran: ecran, ecranDe: ecranDe, habitantEn: habitantEn, libre: libre, ouvert: ouvert,
     nouvelEtat: nouvelEtat, charger: charger, bits: bits, estVu: estVu, reveler: reveler, devoiler: devoiler, partVue: partVue,
     etatQuete: etatQuete, champignonVisible: champignonVisible, verifier: verifier, accepter: accepter, rendre: rendre, marque: marque,
-    queteSuivie: queteSuivie, consigne: consigne, cible: cible, pas: pas, parler: parler, tableau: tableau, agir: agir, fouiller: fouiller
+    queteSuivie: queteSuivie, consigne: consigne, cible: cible, pas: pas, parler: parler, tableau: tableau, agir: agir, fouiller: fouiller,
+    PORTE: PORTE, saisonDe: saisonDe, genererTerres: genererTerres, terresPretes: terresPretes, changerSaison: changerSaison, traverser: traverser,
+    ouvrirCoffreT: ouvrirCoffreT, infoTerres: infoTerres, dansTerres: dansTerres, regions: regions, regionDe: regionDe, partVueTerres: partVueTerres
   };
 })();
 if (typeof module !== 'undefined') module.exports = VL;
