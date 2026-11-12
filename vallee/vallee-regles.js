@@ -19,6 +19,7 @@ var VL = (function () {
   // r  ronces (🔥)   R  rocher (💪)   v  trou (🦘)   s  passage secret (👃) : le pouvoir du compagnon les ouvre
   // Le marais (3.53) : y  roseaux   -  ponton (on le traverse de gauche à droite)   p  pierres de gué   C  coffre du marais
   //                    P  la passerelle cassée : on y marche une fois réparée par Bruno (quête « La passerelle du marais »)
+  // La montagne (3.54) : k  rochers et falaises   G  le col, gardé par le Yéti tant qu'on ne l'a pas battu au Cieljo   B  le belvédère
   var ECRANS = [
     [ { id: 'sapins', nom: 'Bois des sapins', ico: '🌲', l: [
         'SSSSSSSSSSS',
@@ -45,11 +46,43 @@ var VL = (function () {
         'TT..,.xx.TT',
         'T.....xx..T',
         'T.~~..:...T',
-        '::~~:::...T',
+        '::~~:::::::',
         'T...:..,..T',
         'Tb..:...b.T',
         'TT..:..TTTT',
-        'TTTTT:TTTTT'] }, null, null, null ],
+        'TTTTT:TTTTT'] },
+      // La montagne (3.54, demandée par l'utilisateur ; le boss du col se bat au Cieljo, une manche) : 3 écrans au nord-est,
+      // après la cabane de l'ermite. Le Yéti garde le col ; derrière, les alpages de Gaspard et le sommet enneigé.
+      { id: 'montagne1', nom: 'Le col du Yéti', ico: '❄️', zone: 'montagne', sol: 'roche', l: [
+        'kkkkkkkkkkk',
+        'kkT..kk.Tkk',
+        'kT..,.k...k',
+        'k.....k.,.k',
+        ':G:::::::::',
+        'k..,..k...k',
+        'kT..kkk.,Tk',
+        'kkT..kkTTkk',
+        'kkkkkkkkkkk'] },
+      { id: 'montagne2', nom: 'Les alpages', ico: '🐐', zone: 'montagne', sol: 'alpage', l: [
+        'kkkkkkkkkkk',
+        'kT.,.~~~~.k',
+        'k..xx~~~~,k',
+        'k..xx.~~..k',
+        ':::::::::::',
+        'k.,......,k',
+        'kT...,..T.k',
+        'kkT.....Tkk',
+        'kkkkkkkkkkk'] },
+      { id: 'montagne3', nom: 'Le sommet', ico: '🏔️', zone: 'montagne', sol: 'neige', l: [
+        'kkkkkkkkkkk',
+        'kkk..B..kkk',
+        'kk...:...kk',
+        'kT..::..xxk',
+        '::::::..xxk',
+        'kT...:...Tk',
+        'kk..,....kk',
+        'kkkT...Tkkk',
+        'kkkkkkkkkkk'] } ],
     [ { id: 'ruisseau', nom: 'Le ruisseau', ico: '💧', l: [
         'TTTTT:TTTTT',
         'T..,.:..b.T',
@@ -199,7 +232,9 @@ var VL = (function () {
     Object.assign({ type: 'cabane', w: 2, h: 2 }, g(2, 0, 6, 1)),
     Object.assign({ type: 'chene', w: 2, h: 2 }, g(0, 2, 3, 2)),
     Object.assign({ type: 'rainette', w: 2, h: 2 }, g(3, 2, 7, 2)),
-    Object.assign({ type: 'saule', w: 2, h: 2 }, g(5, 2, 3, 1))
+    Object.assign({ type: 'saule', w: 2, h: 2 }, g(5, 2, 3, 1)),
+    Object.assign({ type: 'chalet', w: 2, h: 2 }, g(4, 0, 3, 2)),
+    Object.assign({ type: 'refuge', w: 2, h: 2 }, g(5, 0, 8, 3))
   ];
   // Les parcelles du quartier : 3 maisons par écran en haut de la rue, 3 en bas (porte en bas de chaque maison), sur 3 écrans
   var NB_PARCELLES = 18;
@@ -227,6 +262,9 @@ var VL = (function () {
   [7, 8].forEach(x => action(g(3, 2, x, 3), { id: 'rainette' }));
   [3, 4].forEach(x => action(g(5, 2, x, 2), { id: 'saule' }));
   action(g(5, 2, 9, 4), { id: 'coffreM' });
+  [3, 4].forEach(x => action(g(4, 0, x, 3), { id: 'chalet' }));
+  [8, 9].forEach(x => action(g(5, 0, x, 4), { id: 'refuge' }));
+  action(g(5, 0, 5, 1), { id: 'belvedere' });
   PARCELLES.forEach(P => { action({ x: P.x, y: P.y + 1 }, { id: 'parcelle', p: P.p }); action({ x: P.x + 1, y: P.y + 1 }, { id: 'parcelle', p: P.p }); });
 
   // ---------- Les habitants ----------
@@ -236,7 +274,9 @@ var VL = (function () {
     bruno: Object.assign({ nom: 'Bruno', titre: 'le forgeron', espece: 'ours', ico: '🐻' }, g(1, 1, 7, 6)),
     tortue: Object.assign({ nom: 'Papi Tortue', titre: 'l\'ermite', espece: 'tortue', ico: '🐢' }, g(2, 0, 8, 2)),
     pipa: Object.assign({ nom: 'Pipa', titre: 'la marchande', espece: 'chat', ico: '🐱', etal: true }, g(1, 1, 7, 1)),
-    rainette: Object.assign({ nom: 'Rainette', titre: 'la passeuse du marais', espece: 'grenouille', ico: '🐸' }, g(3, 2, 6, 3))
+    rainette: Object.assign({ nom: 'Rainette', titre: 'la passeuse du marais', espece: 'grenouille', ico: '🐸' }, g(3, 2, 6, 3)),
+    yeti: Object.assign({ nom: 'Le Yéti', titre: 'gardien du col', espece: 'yeti', ico: '❄️' }, g(3, 0, 1, 3)),
+    gaspard: Object.assign({ nom: 'Gaspard', titre: 'le guide de montagne', espece: 'bouquetin', ico: '🐐' }, g(4, 0, 2, 3))
   };
   // Les champignons de Mme Sauge (on en garde 5 ; ils n'apparaissent que pendant la quête)
   var CHAMPIGNONS = [
@@ -246,6 +286,8 @@ var VL = (function () {
   var LUCIOLES = [
     g(3, 2, 6, 6), g(3, 2, 9, 2), g(4, 2, 2, 1), g(4, 2, 6, 7), g(4, 2, 9, 3), g(5, 2, 2, 1), g(5, 2, 4, 6), g(5, 2, 8, 4)
   ].map((p, k) => Object.assign({ id: 'lu' + k }, p));
+  // Les jumelles de Gaspard, tombées dans la neige du sommet (visibles pendant sa quête)
+  var JUMELLES = Object.assign({ id: 'ju' }, g(5, 0, 2, 6));
 
   // ---------- Les quêtes ----------
   var QUETES = {
@@ -263,9 +305,14 @@ var VL = (function () {
     passerelle: { nom: 'La passerelle du marais', ico: '🛶', qui: 'bruno', apres: 'atelier', recompense: { etoiles: 3, passerelle: true }, but: { bois: 8, pierre: 4 },
                   resume: 'Rapporter 8 bois et 4 pierres à Bruno pour réparer la passerelle du marais, à l\'est du bosquet.' },
     lucioles: { nom: 'La lanterne de Rainette', ico: '✨', qui: 'rainette', apres: 'passerelle', but: 5, recompense: { deco: 'val-lucioles', etoiles: 3 },
-                resume: 'Attraper 5 lucioles dans le marais pour rallumer la lanterne de Rainette.' }
+                resume: 'Attraper 5 lucioles dans le marais pour rallumer la lanterne de Rainette.' },
+    // La montagne (3.54) : le Yéti garde le col et défie au Cieljo (une manche, sur la page du jeu), puis Gaspard a perdu ses jumelles
+    yeti: { nom: 'Le défi du Yéti', ico: '❄️', qui: 'yeti', recompense: { etoiles: 8, col: true },
+            resume: 'Battre le Yéti au Cieljo, en une manche, pour ouvrir le col de la montagne (au-delà de la cabane de l\'ermite).' },
+    jumelles: { nom: 'Les jumelles de Gaspard', ico: '🔭', qui: 'gaspard', apres: 'yeti', recompense: { deco: 'val-edelweiss', etoiles: 3 },
+                resume: 'Retrouver dans la neige du sommet les jumelles de Gaspard, le guide de montagne.' }
   };
-  var ORDRE_QUETES = ['lettre', 'atelier', 'herbes', 'cle', 'passerelle', 'lucioles', 'gardien'];
+  var ORDRE_QUETES = ['lettre', 'atelier', 'herbes', 'cle', 'passerelle', 'lucioles', 'yeti', 'jumelles', 'gardien'];
   // Déco de la Vallée (articles « souvenir: 'vallee' » de compagnon-commun.js) : vendue par Pipa, ou offerte par une quête
   var VENTE = [{ id: 'val-champi', prix: 15 }, { id: 'val-hibou', prix: 20 }, { id: 'val-carte', prix: 25 }];
 
@@ -287,7 +334,9 @@ var VL = (function () {
     [1, 2, 1, 1, 'plante'], [1, 2, 7, 3, 'plante'], [1, 2, 4, 5, 'plante'], [1, 2, 9, 5, 'plante'], [2, 1, 2, 3, 'plante'], [0, 2, 2, 5, 'plante'], [0, 1, 8, 5, 'plante'], [2, 2, 2, 2, 'plante'],
     [2, 0, 9, 3, 'cristal'], [2, 2, 1, 7, 'cristal'], [1, 0, 1, 2, 'cristal', true], [2, 2, 9, 2, 'cristal', true],
     // Le marais (3.53) : bois flotté, joncs, galets et un cristal sur la berge du vieux saule
-    [3, 2, 8, 1, 'bois'], [3, 2, 9, 6, 'plante'], [4, 2, 9, 1, 'plante'], [4, 2, 4, 6, 'bois'], [5, 2, 4, 5, 'pierre'], [5, 2, 5, 7, 'plante'], [5, 2, 1, 3, 'cristal']
+    [3, 2, 8, 1, 'bois'], [3, 2, 9, 6, 'plante'], [4, 2, 9, 1, 'plante'], [4, 2, 4, 6, 'bois'], [5, 2, 4, 5, 'pierre'], [5, 2, 5, 7, 'plante'], [5, 2, 1, 3, 'cristal'],
+    // La montagne (3.54) : surtout de la pierre et des cristaux (un filon de plus), un edelweiss, du bois de sapin
+    [3, 0, 8, 2, 'pierre'], [3, 0, 2, 5, 'cristal', true], [4, 0, 2, 6, 'plante'], [4, 0, 9, 6, 'bois'], [5, 0, 7, 6, 'cristal'], [5, 0, 6, 2, 'pierre']
   ].map((r, k) => Object.assign({ id: 'r' + k, res: r[4], filon: !!r[5] }, g(r[0], r[1], r[2], r[3])));
   var OUTILS = {
     hache: { nom: 'Hache', ico: '🪓', texte: '+1 bois à chaque récolte' },
@@ -345,12 +394,16 @@ var VL = (function () {
   }
   function ouvert(e, x, y) { return !!(e.ouverts && e.ouverts[x + ',' + y]); }
   function passerelleOk(e) { return !!(e.quetes && e.quetes.passerelle && e.quetes.passerelle.etat === 'finie'); }
+  function colOuvert(e) { return !!(e.quetes && e.quetes.yeti && e.quetes.yeti.etat === 'finie'); }
+  // Une zone fermée par un passage : le marais (passerelle), la montagne (le col du Yéti)
+  function zoneOuverte(e, E) { return !E || !E.zone || (E.zone === 'marais' ? passerelleOk(e) : E.zone === 'montagne' ? colOuvert(e) : true); }
   // Une case où l'on peut marcher (obstacle déjà ouvert compris)
   function libre(e, x, y) {
     var t = tuile(x, y);
     if (t === null) return false;
     if (habitantEn(x, y)) return false;
     if (t === 'P') return passerelleOk(e);
+    if (t === 'G') return colOuvert(e);
     if (OBSTACLES[t]) return ouvert(e, x, y);
     return !!MARCHE[t];
   }
@@ -369,8 +422,8 @@ var VL = (function () {
     if (!s || typeof s !== 'object' || s.v !== 1) return e;
     ['ouverts', 'pris'].forEach(k => { if (s[k] && typeof s[k] === 'object') e[k] = Object.assign({}, s[k]); });
     if (s.quetes && typeof s.quetes === 'object') Object.keys(QUETES).forEach(id => { if (s.quetes[id] && typeof s.quetes[id] === 'object') e.quetes[id] = Object.assign({}, s.quetes[id]); });
-    var dansMarais = (ecran(s.x | 0, s.y | 0) || {}).zone === 'marais' && (s.x | 0) % W > 0;   // au-delà de la passerelle
-    if (libre(e, s.x | 0, s.y | 0) && (!dansMarais || passerelleOk(e))) { e.x = s.x | 0; e.y = s.y | 0; }
+    var au = ecran(s.x | 0, s.y | 0), audela = au && au.zone && (s.x | 0) % W > 0;   // au-delà de la passerelle ou du col
+    if (libre(e, s.x | 0, s.y | 0) && (!audela || zoneOuverte(e, au))) { e.x = s.x | 0; e.y = s.y | 0; }
     e.dir = ['h', 'b', 'g', 'd'].indexOf(s.dir) >= 0 ? s.dir : 'b';
     e.vu = typeof s.vu === 'string' && /^[0-9a-f]*$/.test(s.vu) ? s.vu : '';
     if (e.vu && (s.lv | 0 || 33) !== LARG) e.vu = elargir(e.vu, s.lv | 0 || 33);   // sauvegarde d'avant le quartier (3 écrans de large)
@@ -430,6 +483,7 @@ var VL = (function () {
   function etatQuete(e, id) { var q = e.quetes[id]; return q ? q.etat : 'dispo'; }
   function champignonVisible(e, c) { return etatQuete(e, 'herbes') === 'cours' && !e.pris[c.id]; }
   function lucioleVisible(e, c) { return etatQuete(e, 'lucioles') === 'cours' && !e.pris[c.id]; }
+  function jumellesVisibles(e) { return etatQuete(e, 'jumelles') === 'cours' && !e.pris.ju; }
   // Une quête qu'on peut déjà prendre (certaines viennent après une autre)
   function prenable(e, id) { var Q = QUETES[id]; return !!Q && etatQuete(e, id) === 'dispo' && (!Q.apres || etatQuete(e, Q.apres) === 'finie'); }
   // ctx.bossTotal : nombre de boss du Donjon vaincus jusqu'ici (donjon-stats.boss)
@@ -471,6 +525,7 @@ var VL = (function () {
       else if (Q.qui === qui && prenable(e, id) && !m) m = '!';
     });
     if (qui === 'tortue' && e.quetes.lettre && e.quetes.lettre.etat === 'cours' && e.quetes.lettre.etape === 'porter') m = '?';
+    if (qui === 'yeti' && etatQuete(e, 'yeti') === 'cours') m = '!';   // il attend sa revanche
     if (qui === 'bubo' && e.quetes.lettre && e.quetes.lettre.etape === 'reponse' && e.quetes.lettre.etat === 'rendre') m = '?';
     return m;
   }
@@ -493,6 +548,8 @@ var VL = (function () {
     if (id === 'atelier') return 'Pour Bruno : bois ' + Math.min(3, e.sac.bois) + '/3, pierres ' + Math.min(3, e.sac.pierre) + '/3';
     if (id === 'passerelle') return 'Pour la passerelle : bois ' + Math.min(8, e.sac.bois) + '/8, pierres ' + Math.min(4, e.sac.pierre) + '/4';
     if (id === 'lucioles') return 'Lucioles : ' + (q.n | 0) + ' / ' + QUETES.lucioles.but;
+    if (id === 'yeti') return 'Bats le Yéti au Cieljo, au col';
+    if (id === 'jumelles') return 'Cherche les jumelles au sommet';
     return '';
   }
   // Où aller pour la quête suivie (une case), pour la flèche sur la carte
@@ -513,6 +570,8 @@ var VL = (function () {
       return c || null;
     }
     if (id === 'lucioles') return LUCIOLES.filter(k => !e.pris[k.id]).sort((a, b) => Math.hypot(a.x - e.x, a.y - e.y) - Math.hypot(b.x - e.x, b.y - e.y))[0] || null;
+    if (id === 'yeti') return HABITANTS.yeti;
+    if (id === 'jumelles') return JUMELLES;
     return null;
   }
 
@@ -529,6 +588,7 @@ var VL = (function () {
     if (hab) return { parler: hab };
     if (ACTIONS[k]) return { action: ACTIONS[k].id, x: nx, y: ny, p: ACTIONS[k].p };
     if (t === 'P' && !passerelleOk(e)) return { action: 'passerelle', x: nx, y: ny };
+    if (t === 'G' && !colOuvert(e)) return { action: 'yeti', x: nx, y: ny };
     if (OBSTACLES[t] && !ouvert(e, nx, ny)) {
       var besoin = OBSTACLES[t];
       if (ctx && ctx.pouvoir === besoin) { e.ouverts[k] = 1; return { ouvre: besoin, x: nx, y: ny }; }
@@ -545,6 +605,10 @@ var VL = (function () {
       e.pris[c.id] = 1; e.quetes.herbes.n = (e.quetes.herbes.n | 0) + 1;
       r.ramasse = 'champignon'; r.n = e.quetes.herbes.n;
       verifier(e, ctx);
+    }
+    if (JUMELLES.x === nx && JUMELLES.y === ny && jumellesVisibles(e)) {
+      e.pris.ju = 1; e.quetes.jumelles.etat = 'rendre';
+      r.ramasse = 'jumelles';
     }
     var lu = LUCIOLES.find(c => c.x === nx && c.y === ny && lucioleVisible(e, c));
     if (lu) {
@@ -592,7 +656,8 @@ var VL = (function () {
         'Bonjour, petit. Ici, on prend le temps. Écoute le vent dans les sapins…',
         'On dit qu\'un coffre dort au fond du bosquet, au sud-est. Seul un compagnon sait l\'ouvrir.',
         'Quand j\'étais jeune, la crypte n\'avait qu\'un étage. Enfin… je crois.',
-        'Au bout du bosquet commence le marais. Brumeux, mais si joli quand les lucioles s\'allument.'][e.pas % 4], boutons: [ok] };
+        'Au bout du bosquet commence le marais. Brumeux, mais si joli quand les lucioles s\'allument.',
+        'Derrière ma cabane, le chemin monte au col. Le Yéti y garde le passage… il adore les cartes, ce grand sentimental.'][e.pas % 5], boutons: [ok] };
     }
     if (qui === 'bruno') {
       s = etatQuete(e, 'cle');
@@ -615,6 +680,29 @@ var VL = (function () {
       if (sa === 'cours') return { qui: qui, texte: 'Il me faut encore ' + manque(QUETES.atelier.but) + ' pour l\'établi. Fonce dans le bois mort et les cailloux pour les ramasser.', boutons: [ok] };
       if (sp === 'cours') return { qui: qui, texte: 'Pour la passerelle, il me faut encore ' + manque(QUETES.passerelle.but) + '. Ton sac en garde ' + SAC_MAX + ' de chaque, et tout repousse demain si tu manques de bois.', boutons: [ok] };
       return { qui: qui, texte: 'Ding ! Dong ! La forge tourne à nouveau. Fonce dans l\'enclume si tu veux un outil, l\'ami !', boutons: [ok] };
+    }
+    if (qui === 'yeti') {
+      s = etatQuete(e, 'yeti');
+      if (s === 'dispo') return { qui: qui, texte: 'GRRROUH ! Halte, petit voyageur. Ce col est à moi. Qui veut passer doit me battre au Cieljo : une seule manche, le plus petit total gagne. Tu oses ?',
+                                  boutons: [{ t: '❄️ Relever le défi', a: 'defi:yeti', principal: true }, plusTard] };
+      if (s === 'cours') return { qui: qui, texte: 'Encore toi ? Hou hou ! J\'adore les revanches. Une manche, comme la dernière fois ?',
+                                  boutons: [{ t: '❄️ Revanche !', a: 'defi:yeti', principal: true }, plusTard] };
+      return { qui: qui, texte: [
+        'Le col est à toi, champion. Mais un jour, je veux ma revanche !',
+        'Tu sais pourquoi je garde ce col ? Pour avoir de la visite. Personne ne monte jamais jouer aux cartes…',
+        'Brrr… non, je n\'ai pas froid. C\'est mon rire.'][e.pas % 3], boutons: [ok] };
+    }
+    if (qui === 'gaspard') {
+      s = etatQuete(e, 'jumelles');
+      if (s === 'dispo') return { qui: qui, texte: 'Bêêh, bonjour ! Gaspard, guide de montagne. Tu as battu le Yéti ? Chapeau ! Dis, le vent du sommet m\'a arraché mes jumelles hier. Sans elles, le belvédère ne sert à rien. Tu me les retrouves ? Elles sont quelque part dans la neige, là-haut.',
+                                  boutons: [{ t: '🔭 Je monte les chercher', a: 'accepter:jumelles', principal: true }, plusTard] };
+      if (s === 'cours') return { qui: qui, texte: 'Elles ont dû glisser du côté ouest du sommet, en contrebas du belvédère. Regarde bien dans la neige !', boutons: [ok] };
+      if (s === 'rendre') return { qui: qui, texte: 'Mes jumelles ! Bêêh, merci ! Tiens, un edelweiss de mon jardin, pour ta maison. Et garde les jumelles un moment : file au belvédère, la vue est à couper le souffle.',
+                                   boutons: [{ t: '🔭 Rendre les jumelles', a: 'rendre:jumelles', principal: true }] };
+      return { qui: qui, texte: [
+        'Le lac est si clair qu\'on y voit les nuages deux fois.',
+        'Mes chèvres connaissent chaque caillou de ces pentes. Moi aussi, presque.',
+        'Au belvédère, cherche la crypte : par beau temps, on voit même fumer la forge de Bruno.'][e.pas % 3], boutons: [ok] };
     }
     if (qui === 'rainette') {
       s = etatQuete(e, 'lucioles');
@@ -655,8 +743,28 @@ var VL = (function () {
     var m = /^(accepter|rendre):(\w+)$/.exec(a || '');
     if (m && m[1] === 'accepter') return { accepte: accepter(e, m[2], ctx), quete: m[2] };
     if (m && m[1] === 'rendre') return { recompense: rendre(e, m[2]) };
+    if (a === 'defi:yeti' && !colOuvert(e)) { if (etatQuete(e, 'yeti') === 'dispo') accepter(e, 'yeti', ctx); return { defi: 'yeti' }; }
     if (a === 'reponse' && e.quetes.lettre && e.quetes.lettre.etape === 'porter') { e.quetes.lettre.etape = 'reponse'; e.quetes.lettre.etat = 'rendre'; return { reponse: true }; }
     return {};
+  }
+  // Le défi d'un boss gagné sur la page du jeu (le Yéti, au Cieljo) : la quête est finie, le passage s'ouvre
+  function gagnerDefi(e, id) {
+    if (id !== 'yeti' || colOuvert(e)) return null;
+    e.quetes.yeti = { etat: 'finie', t: (e.quetes.yeti && e.quetes.yeti.t) || Date.now(), fin: Date.now() };
+    return Object.assign({ quete: id }, QUETES.yeti.recompense);
+  }
+  // Le belvédère du sommet : avec les jumelles de Gaspard, on voit la montagne et tout le nord de la Vallée
+  function belvedere(e) {
+    if (etatQuete(e, 'jumelles') !== 'finie') return { texte: 'Quelle vue… mais tout est si loin. Avec des jumelles, on verrait toute la Vallée. Gaspard en avait, je crois.' };
+    var b = bits(e), n = 0;
+    for (var y = 0; y < 2 * H; y++) for (var x = 2 * W; x < LARG; x++) {
+      if (!tuile(x, y)) continue;
+      var i = y * LARG + x;
+      if (!(b[i >> 2] & (1 << (i & 3)))) { b[i >> 2] |= 1 << (i & 3); n++; }
+    }
+    e.vu = Array.from(b, v => v.toString(16)).join('');
+    return { panorama: n, texte: n ? 'Tu règles les jumelles de Gaspard… La crypte, le quartier, les alpages, le col : tout le nord de la Vallée se dessine sur ta carte !'
+                                   : 'Tu règles les jumelles : le village fume au loin, et les amis bavardent dans le quartier.' };
   }
   // On fonce dans le coffre du bosquet, ou dans le vieux chêne (sans compagnon, la clé y est cachée)
   function fouiller(e, ou, ctx) {
@@ -749,7 +857,7 @@ var VL = (function () {
   function prisAujourdhui(e, p, jour) { return e.recolte.j === (jour || jourDe()) && !!e.recolte.pris[p.id]; }
   function pointVisible(e, p, ctx) { return !prisAujourdhui(e, p, ctx && ctx.jour); }
   // Un point qu'on peut atteindre (ceux du marais attendent la passerelle)
-  function pointOuvert(e, p) { var E = ecran(p.x, p.y); return !(E && E.zone === 'marais') || passerelleOk(e); }
+  function pointOuvert(e, p) { return zoneOuverte(e, ecran(p.x, p.y)); }
   // Combien un point donne : la base, ×2 avec le pouvoir qui va avec, +1 avec l'outil
   function gain(e, res, ctx) {
     var R = RESSOURCES[res], n = R.base;
@@ -818,7 +926,8 @@ var VL = (function () {
     ouvertFab: ouvertFab, recette: recette, etatRecette: etatRecette, fabriquer: fabriquer, prendreFioles: prendreFioles,
     NB_PARCELLES: NB_PARCELLES, PARCELLES: PARCELLES, placerVoisins: placerVoisins, parcelleDe: parcelleDe, defile: defile, nettoyerVoisins: nettoyerVoisins, parcelles: parcelles, elargir: elargir,
     W: W, H: H, EW: EW, EH: EH, LARG: LARG, HAUT: HAUT, GRAINE: GRAINE, VISION: VISION,
-    ECRANS: ECRANS, BATIMENTS: BATIMENTS, ACTIONS: ACTIONS, HABITANTS: HABITANTS, CHAMPIGNONS: CHAMPIGNONS, LUCIOLES: LUCIOLES, QUETES: QUETES, ORDRE_QUETES: ORDRE_QUETES,
+    ECRANS: ECRANS, BATIMENTS: BATIMENTS, ACTIONS: ACTIONS, HABITANTS: HABITANTS, CHAMPIGNONS: CHAMPIGNONS, LUCIOLES: LUCIOLES, JUMELLES: JUMELLES, QUETES: QUETES, ORDRE_QUETES: ORDRE_QUETES,
+    colOuvert: colOuvert, zoneOuverte: zoneOuverte, jumellesVisibles: jumellesVisibles, gagnerDefi: gagnerDefi, belvedere: belvedere,
     prenable: prenable, lucioleVisible: lucioleVisible, passerelleOk: passerelleOk,
     OBSTACLES: OBSTACLES, POUVOIRS: POUVOIRS, POUVOIR_ESPECE: POUVOIR_ESPECE, VENTE: VENTE,
     hash: hash, tuile: tuile, ecran: ecran, ecranDe: ecranDe, habitantEn: habitantEn, libre: libre, ouvert: ouvert,

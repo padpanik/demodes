@@ -22,8 +22,8 @@ for (var ex = 0; ex < VL.EW; ex++) for (var ey = 0; ey < VL.EH; ey++) {
   // passage à droite : la dernière colonne et la première de l'écran voisin, ligne 4
   if (!VL.ECRANS[ey][ex]) continue;
   if (ex < VL.EW - 1 && VL.ECRANS[ey][ex + 1]) { var a = VL.tuile(ex * 11 + 10, ey * 9 + 4), b = VL.tuile(ex * 11 + 11, ey * 9 + 4); verif(marche(a) && marche(b), 'passage ' + ex + ',' + ey + ' → droite'); }
-  // (le quartier et le marais, l'un au-dessus de l'autre, ne communiquent pas : un bord fermé des deux côtés est voulu)
-  if (ey < VL.EH - 1 && VL.ECRANS[ey + 1][ex]) { var c = VL.tuile(ex * 11 + 5, ey * 9 + 8), d = VL.tuile(ex * 11 + 5, ey * 9 + 9); if (marche(c) || marche(d) || !VL.ECRANS[ey][ex].defile) verif(marche(c) && marche(d), 'passage ' + ex + ',' + ey + ' → bas'); }
+  // (le quartier, le marais et la montagne, empilés, ne communiquent pas : un bord fermé des deux côtés est voulu)
+  if (ey < VL.EH - 1 && VL.ECRANS[ey + 1][ex]) { var c = VL.tuile(ex * 11 + 5, ey * 9 + 8), d = VL.tuile(ex * 11 + 5, ey * 9 + 9); var A = VL.ECRANS[ey][ex], Bs = VL.ECRANS[ey + 1][ex]; if (marche(c) || marche(d) || !(A.defile || A.zone || Bs.zone)) verif(marche(c) && marche(d), 'passage ' + ex + ',' + ey + ' → bas'); }
 }
 // Pas d'autre ouverture que les passages prévus sur les bords d'écran
 for (var x2 = 0; x2 < VL.LARG; x2++) for (var y2 = 0; y2 < VL.HAUT; y2++) {
@@ -40,7 +40,7 @@ for (var x2 = 0; x2 < VL.LARG; x2++) for (var y2 = 0; y2 < VL.HAUT; y2++) {
 // (la passerelle du marais est réparée : sinon le marais est fermé, vérifié plus bas)
 function accessibles(pouvoir, sansPasserelle) {
   var e = VL.nouvelEtat(), vus = {}, file = [[e.x, e.y]], touche = {};
-  if (!sansPasserelle) e.quetes.passerelle = { etat: 'finie' };
+  if (!sansPasserelle) { e.quetes.passerelle = { etat: 'finie' }; e.quetes.yeti = { etat: 'finie' }; }
   vus[e.x + ',' + e.y] = 1;
   while (file.length) {
     var p = file.shift();
@@ -240,7 +240,7 @@ verif(VL.besaceTotal(e4) === VL.BESACE_MAX && !e4.besace.poison && e4.outils.hac
 // 8. Le quartier des amis (3.51) : 3 écrans qui défilent, 18 parcelles fixes
 verif(VL.ECRANS[1][3] && VL.ECRANS[1][3].id === 'quartier' && VL.ECRANS[1][5].id === 'quartier', 'quartier à l\'est de la clairière, sur 3 écrans');
 verif(VL.defile(3 * 11 + 5, 13) && VL.defile(5 * 11 + 5, 13) && !VL.defile(2 * 11 + 5, 13), 'le quartier défile, pas la clairière');
-verif(VL.tuile(3 * 11 + 5, 2) === null && VL.tuile(4 * 11 + 5, 18) === 'T', 'rien au nord du quartier, le marais au sud');
+verif(VL.tuile(4 * 11 + 5, 8) === 'k' && VL.tuile(4 * 11 + 5, 18) === 'T', 'la montagne au nord du quartier, le marais au sud, fermés de ce côté');
 verif(VL.PARCELLES.length === 18, '18 parcelles');
 var acc0 = accessibles(null);
 VL.PARCELLES.forEach(P => verif(acc0.touche[P.x + ',' + (P.y + 1)], 'porte de la parcelle ' + P.p + ' injoignable'));
@@ -332,6 +332,41 @@ VL.LUCIOLES.forEach(c => {
   var e7 = VL.charger(JSON.parse(JSON.stringify(e)));
   verif(e7.coffreM && VL.passerelleOk(e7) && e7.x === e.x && e7.y === e.y, 'rechargement dans le marais');
 });
+// 10. La montagne (3.54) : le col gardé par le Yéti (défi au Cieljo, gagné sur la page du jeu), Gaspard et ses jumelles, le belvédère
+verif(!Object.keys(ferme.vus).some(k => { var p = k.split(','); return VL.ecran(+p[0], +p[1]).zone === 'montagne' && +p[0] % 11 > 0; }), 'montagne fermée avant le Yéti');
+VL.RECOLTE.filter(p => VL.ecran(p.x, p.y).zone === 'montagne').forEach(p => verif(!VL.pointOuvert(VL.nouvelEtat(), p), 'point ' + p.id + ' fermé avant le Yéti'));
+verif(accessibles(null).vus[VL.JUMELLES.x + ',' + VL.JUMELLES.y], 'jumelles joignables');
+[null, 'ronces', 'force', 'bond', 'flair'].forEach(pv => {
+  var e = VL.nouvelEtat(), ctx = { pouvoir: pv, bossTotal: 0, jour: '2026-11-12', compagnon: !!pv, possede: {} };
+  verif(VL.marque(e, 'yeti') === '!' && VL.prenable(e, 'yeti') && !VL.prenable(e, 'jumelles'), 'Yéti : défi à prendre');
+  var r = aller(e, { x: 3 * 11 + 1, y: 4 }, ctx);
+  verif(r && r.action === 'yeti', 'le col est gardé (' + pv + ') : ' + JSON.stringify(r));
+  var d = VL.parler(e, 'yeti', ctx);
+  verif(d.boutons[0].a === 'defi:yeti', 'le Yéti défie');
+  verif(VL.agir(e, 'defi:yeti', ctx).defi === 'yeti' && VL.etatQuete(e, 'yeti') === 'cours', 'défi accepté');
+  verif(VL.parler(e, 'yeti', ctx).boutons[0].t.indexOf('Revanche') >= 0 && VL.marque(e, 'yeti') === '!', 'revanche proposée');
+  verif(!VL.libre(e, 3 * 11 + 1, 4), 'col encore fermé (défi perdu)');
+  var rc = VL.gagnerDefi(e, 'yeti');
+  verif(rc && rc.etoiles === 8 && rc.col && VL.colOuvert(e) && VL.libre(e, 3 * 11 + 1, 4), 'Yéti battu : col ouvert');
+  verif(VL.gagnerDefi(e, 'yeti') === null, 'pas deux fois la récompense');
+  r = aller(e, VL.HABITANTS.gaspard, ctx); verif(r && r.parler === 'gaspard', 'parler à Gaspard (' + pv + ')');
+  verif(VL.marque(e, 'gaspard') === '!', 'Gaspard : !');
+  verif(VL.belvedere(e).panorama === undefined, 'belvédère sans jumelles');
+  VL.agir(e, 'accepter:jumelles', ctx);
+  var c = VL.cible(e, 'jumelles', ctx), l = chemin(e, c, pv);
+  verif(l, 'chemin vers les jumelles'); if (l) l.forEach(dd => { var q = VL.pas(e, dd, ctx); if (q.ouvre) VL.pas(e, dd, ctx); });
+  verif(VL.etatQuete(e, 'jumelles') === 'rendre', 'jumelles trouvées');
+  aller(e, VL.HABITANTS.gaspard, ctx);
+  rc = VL.agir(e, 'rendre:jumelles', ctx).recompense;
+  verif(rc && rc.deco === 'val-edelweiss' && rc.etoiles === 3, 'edelweiss de Gaspard');
+  r = aller(e, { x: 5 * 11 + 5, y: 1 }, ctx); verif(r && r.action === 'belvedere', 'on fonce dans le belvédère (' + pv + ')');
+  var avant = VL.partVue(e), b = VL.belvedere(e);
+  verif(b.panorama > 0 && VL.partVue(e) > avant, 'le belvédère dévoile le nord');
+  verif(!VL.belvedere(e).panorama, 'rien de plus la 2e fois');
+  var e8 = VL.charger(JSON.parse(JSON.stringify(e)));
+  verif(VL.colOuvert(e8) && e8.x === e.x && e8.y === e.y, 'rechargement dans la montagne');
+});
+verif(VL.charger({ v: 1, x: 3 * 11 + 5, y: 4 }).x === VL.nouvelEtat().x, 'pas dans la montagne sans battre le Yéti');
 // Une sauvegarde posée sur la passerelle sans qu'elle soit réparée : retour devant la maison
 verif(VL.charger({ v: 1, x: 3 * 11 + 2, y: 2 * 9 + 4 }).x === VL.nouvelEtat().x, 'pas sur la passerelle cassée');
 verif(VL.charger({ v: 1, x: 3 * 11 + 7, y: 2 * 9 + 4 }).x === VL.nouvelEtat().x, 'pas dans le marais sans la passerelle');

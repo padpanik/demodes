@@ -98,6 +98,47 @@ var VLD = (function () {
         '<path d="M19 18.5h2l-1 1.2z" fill="#e8879b"/><path d="M20 19.7v1.3M20 21q-1.5 1-3 0M20 21q1.5 1 3 0" stroke="#7a3f12" stroke-width=".8" fill="none"/>' +
         '<path d="M8 18h-5M8 20l-5 1M32 18h5M32 20l5 1" stroke="#7a3f12" stroke-width=".6"/>';
     },
+    // Le Yéti du col (3.54) : grosse fourrure bleutée (pas de blanc à plat), bonnet rouge à pompon, grand sourire à deux dents, un éventail de cartes
+    yeti: function() {
+      var poil = (x, y, l, a) => '<path d="M' + x + ' ' + y + 'q' + f(l * 0.35) + ' ' + f(l * 0.55) + ' ' + f(l * a) + ' ' + l + '" stroke="#9fb4c7" stroke-width="1" fill="none" stroke-linecap="round"/>';
+      return ombre(15) +
+        '<path d="M8 43q-3-1-2-5l2-6h8l1 11zM32 43q3-1 2-5l-2-6h-8l-1 11z" fill="#d6e2ec" stroke="#2f4256" stroke-width="1.2"/><path d="M5.5 43.5h11M23.5 43.5h11" stroke="#2f4256" stroke-width="1.2"/>' +
+        '<path d="M6 31Q4 17 12 13Q20 9 28 13Q36 17 34 31Q33 41 20 42Q7 41 6 31Z" fill="#e3edf5" stroke="#2f4256" stroke-width="1.5"/>' +
+        '<path d="M22 13Q33 15 34 28Q34 39 22 41Q31 33 22 13Z" fill="#c4d4e2"/>' +
+        poil(9, 22, 6, 0.1) + poil(12, 30, 6, -0.1) + poil(29, 24, 6, 0.1) + poil(27, 33, 5, -0.2) + poil(16, 36, 4, 0) +
+        '<ellipse cx="20" cy="31" rx="7" ry="7.5" fill="#f4f8fb" opacity=".85"/>' +
+        '<path d="M7 25q-6 2-5 10q2 2 4 0q0-5 3-7z" fill="#e3edf5" stroke="#2f4256" stroke-width="1.2"/>' +
+        '<path d="M31 24q5-1 6 5" stroke="#2f4256" stroke-width="5.6" stroke-linecap="round" fill="none"/><path d="M31 24q5-1 6 5" stroke="#e3edf5" stroke-width="3.8" stroke-linecap="round" fill="none"/>' +
+        '<g transform="rotate(14 35 26)"><rect x="31.5" y="19" width="5.5" height="8" rx="1" fill="#4dabf7" stroke="#1c3a5a" stroke-width=".8" transform="rotate(-18 34 23)"/><rect x="33" y="18.5" width="5.5" height="8" rx="1" fill="#ffd43b" stroke="#5c4500" stroke-width=".8"/><rect x="34.5" y="19" width="5.5" height="8" rx="1" fill="#ff8787" stroke="#6a1a1a" stroke-width=".8" transform="rotate(18 37 23)"/></g>' +
+        '<circle cx="36.5" cy="29" r="2.6" fill="#e3edf5" stroke="#2f4256" stroke-width="1.1"/>' +
+        '<ellipse cx="20" cy="17" rx="8.6" ry="7.2" fill="#6f879e" stroke="#2f4256" stroke-width="1.3"/>' +
+        '<circle cx="16.6" cy="15.6" r="1.6" fill="#1b2633"/><circle cx="23.4" cy="15.6" r="1.6" fill="#1b2633"/><circle cx="17.1" cy="15.1" r=".6" fill="#fff"/><circle cx="23.9" cy="15.1" r=".6" fill="#fff"/>' +
+        '<path d="M14.5 13.4l3-1M25.5 13.4l-3-1" stroke="#1b2633" stroke-width="1.1" stroke-linecap="round"/>' +
+        '<path d="M14.5 19q5.5 5 11 0q-5.5 2-11 0z" fill="#3a1f2a" stroke="#1b2633" stroke-width=".9"/><path d="M17.5 19.6v1.6h1.7v-1.4M20.8 19.8v1.4h1.7v-1.6" fill="#fff" stroke="#9aa" stroke-width=".4"/>' +
+        '<circle cx="13.5" cy="18.5" r="1.5" fill="#f4a3b1" opacity=".6"/><circle cx="26.5" cy="18.5" r="1.5" fill="#f4a3b1" opacity=".6"/>' +
+        '<path d="M10.5 11Q11 2 20 2Q29 2 29.5 11Z" fill="#e03131" stroke="#6a1010" stroke-width="1.2"/><path d="M13 5.5h14M11.5 8.3h17" stroke="#ff8787" stroke-width="1.1"/>' +
+        '<rect x="9.5" y="9.6" width="21" height="3.6" rx="1.6" fill="#f8f9fa" stroke="#6a1010" stroke-width="1"/><path d="M12 9.8v3.2M15 9.8v3.2M18 9.8v3.2M21 9.8v3.2M24 9.8v3.2M27 9.8v3.2" stroke="#ced4da" stroke-width=".7"/>' +
+        '<circle cx="20" cy="1.6" r="2.6" fill="#f8f9fa" stroke="#6a1010" stroke-width="1"/>';
+    },
+    // Gaspard, le guide de montagne (3.54) : un bouquetin aux grandes cornes annelées, barbiche, foulard à carreaux et bâton de marche
+    bouquetin: function() {
+      var anneaux = '<path d="M13 9l-2.6 .6M11.4 6l-2.6 .2M10 3.3l-2.2-.4M27 9l2.6 .6M28.6 6l2.6 .2M30 3.3l2.2-.4" stroke="#5c4026" stroke-width="1" stroke-linecap="round"/>';   // les anneaux des cornes
+      return ombre(12) +
+        '<path d="M5 44L8 8" stroke="#4a2e17" stroke-width="3" stroke-linecap="round"/><path d="M5 44L8 8" stroke="#a87447" stroke-width="1.5" stroke-linecap="round"/><circle cx="8" cy="8" r="2" fill="#c0392b" stroke="#4a2e17" stroke-width=".8"/>' +
+        '<path d="M13 44v-6h4v6zM23 44v-6h4v6z" fill="#8a5a32" stroke="#3a2416" stroke-width="1.1"/><path d="M12.6 44h5M22.6 44h5" stroke="#2b1a10" stroke-width="2.2"/>' +
+        '<ellipse cx="20" cy="32" rx="10.5" ry="9.5" fill="#b07b4a" stroke="#3a2416" stroke-width="1.3"/><path d="M24 24q7 4 6 12q-2 5-8 6q6-7 2-18z" fill="#8c5d35"/>' +
+        '<ellipse cx="20" cy="34" rx="5.5" ry="6" fill="#ecd9bd"/>' +
+        '<rect x="27" y="25" width="6" height="11" rx="2" fill="#5c7cfa" stroke="#22307a" stroke-width="1"/><path d="M27 29h6" stroke="#22307a" stroke-width=".8"/>' +
+        '<path d="M10 28q-4 1-4 6" stroke="#3a2416" stroke-width="4.6" stroke-linecap="round" fill="none"/><path d="M10 28q-4 1-4 6" stroke="#b07b4a" stroke-width="3" stroke-linecap="round" fill="none"/><circle cx="6.4" cy="33" r="2" fill="#5c4026" stroke="#3a2416" stroke-width=".8"/>' +
+        '<path d="M11 22.5q9 5 18 0l-1 3.6q-8 3.6-16 0z" fill="#c92a2a" stroke="#6a1010" stroke-width=".9"/><path d="M13.5 23.6v3M17 24.6v3M20.5 25v3M24 24.6v3M27 23.6v3" stroke="#fff" stroke-width=".9" opacity=".8"/>' +
+        '<path d="M14 13Q4 9 8 1Q12 4 15.5 10Z" fill="#c8a77a" stroke="#3a2416" stroke-width="1.2"/><path d="M26 13Q36 9 32 1Q28 4 24.5 10Z" fill="#c8a77a" stroke="#3a2416" stroke-width="1.2"/>' + anneaux +
+        '<path d="M9.5 13.5l-5-2 1.5 4z M30.5 13.5l5-2-1.5 4z" fill="#a8743f" stroke="#3a2416" stroke-width="1"/>' +
+        '<path d="M14 12Q20 9 26 12L25 21Q20 25 15 21Z" fill="#b98652" stroke="#3a2416" stroke-width="1.3"/>' +
+        '<path d="M16.5 20.5Q20 23 23.5 20.5L22 26Q20 29 18 26Z" fill="#ecd9bd" stroke="#3a2416" stroke-width="1"/><path d="M18.5 25.5l1.5 4 1.5-4" fill="#d9c4a3" stroke="#3a2416" stroke-width=".8"/>' +
+        '<ellipse cx="17" cy="15.6" rx="1.4" ry="1.6" fill="#2b1a10"/><ellipse cx="23" cy="15.6" rx="1.4" ry="1.6" fill="#2b1a10"/><circle cx="17.4" cy="15.1" r=".5" fill="#fff"/><circle cx="23.4" cy="15.1" r=".5" fill="#fff"/>' +
+        '<path d="M15.5 13.6l2.6-.6M24.5 13.6l-2.6-.6" stroke="#5c4026" stroke-width=".9" stroke-linecap="round"/>' +
+        '<path d="M18.6 20.4q1.4 1 2.8 0" stroke="#3a2416" stroke-width=".9" fill="none"/><circle cx="19" cy="18.6" r=".6" fill="#3a2416"/><circle cx="21" cy="18.6" r=".6" fill="#3a2416"/>';
+    },
     // Rainette, la passeuse du marais (3.53) : une rainette verte au chapeau de paille, foulard rouge, sa perche à la main
     grenouille: function() {
       return ombre(12) +
@@ -253,6 +294,80 @@ var VLD = (function () {
       '<ellipse cx="' + (X + 13) + '" cy="' + (Y + 12) + '" rx="4" ry="2.4" fill="#fff" opacity=".75" transform="rotate(-30 ' + (X + 13) + ' ' + (Y + 12) + ')"/><ellipse cx="' + (X + 19) + '" cy="' + (Y + 12) + '" rx="4" ry="2.4" fill="#fff" opacity=".75" transform="rotate(30 ' + (X + 19) + ' ' + (Y + 12) + ')"/>' +
       '<ellipse cx="' + (X + 16) + '" cy="' + (Y + 14) + '" rx="2.6" ry="3.4" fill="#3b2a1a" stroke="' + OLB + '" stroke-width=".7"/><circle cx="' + (X + 16) + '" cy="' + (Y + 18.5) + '" r="3" fill="#f4ff8a" stroke="#9ab52a" stroke-width=".8"/>' +
       '<path d="M' + (X + 15) + ' ' + (Y + 11) + 'l-2-3M' + (X + 17) + ' ' + (Y + 11) + 'l2-3" stroke="' + OLB + '" stroke-width=".7"/></g>';
+  }
+  // ---------- La montagne (3.54) : rochers, sapins enneigés, le col gardé, le belvédère, les jumelles ----------
+  // Un bloc de rocher (les falaises de la montagne) ; un chapeau de neige au sommet et sur les rochers du col
+  function rocher(X, Y, h, neige) {
+    var m = h > 0.5, c = m ? ['#958f84', '#77726a', '#b7b1a5'] : ['#8a857b', '#6c675f', '#aea89c'];
+    var p = m ? [[1, 30], [0, 15], [7, 3], [19, -1], [30, 6], [33, 20], [32, 30]] : [[0, 30], [2, 11], [12, 1], [24, 3], [33, 14], [32, 30]];
+    var d = 'M' + p.map(q => (X + q[0]) + ' ' + (Y + q[1])).join('L') + 'Z';
+    var face = m ? 'M' + (X + 19) + ' ' + (Y - 1) + 'L' + (X + 30) + ' ' + (Y + 6) + 'L' + (X + 33) + ' ' + (Y + 20) + 'L' + (X + 32) + ' ' + (Y + 30) + 'L' + (X + 18) + ' ' + (Y + 30) + 'L' + (X + 21) + ' ' + (Y + 14) + 'Z'
+                 : 'M' + (X + 24) + ' ' + (Y + 3) + 'L' + (X + 33) + ' ' + (Y + 14) + 'L' + (X + 32) + ' ' + (Y + 30) + 'L' + (X + 17) + ' ' + (Y + 30) + 'L' + (X + 20) + ' ' + (Y + 13) + 'Z';
+    var r = '<ellipse cx="' + (X + 16) + '" cy="' + (Y + 30) + '" rx="16" ry="3.6" fill="rgba(20,20,30,.3)"/>' +
+      '<path d="' + d + '" fill="' + c[0] + '" stroke="#2f2a24" stroke-width="1.7" stroke-linejoin="round"/>' +
+      '<path d="' + face + '" fill="' + c[1] + '"/>' +
+      '<path d="M' + (X + 6) + ' ' + (Y + 13) + 'l7-8M' + (X + 4) + ' ' + (Y + 21) + 'l6-4" stroke="' + c[2] + '" stroke-width="2" stroke-linecap="round"/>' +
+      '<path d="M' + (X + 13 + h * 6) + ' ' + (Y + 17) + 'l3 5-2 4M' + (X + 24) + ' ' + (Y + 18) + 'l-2 6" stroke="#4a453e" stroke-width="1.1" fill="none" stroke-linecap="round"/>' +
+      '<path d="' + d + '" fill="none" stroke="#2f2a24" stroke-width="1.7" stroke-linejoin="round"/>';
+    if (neige || h > 0.8) r += '<path d="M' + (X + (m ? 4 : 5)) + ' ' + (Y + (m ? 9 : 7)) + 'Q' + (X + 12) + ' ' + (Y - 1) + ' ' + (X + 19) + ' ' + (Y + (m ? -1 : 1)) + 'Q' + (X + 27) + ' ' + (Y + 2) + ' ' + (X + 30) + ' ' + (Y + 8) +
+      'q-3 3-6 1-3 3-6 0-4 3-7 0-4 3-7 0z" fill="#f4f8fb" stroke="#5f7486" stroke-width="1.1" stroke-linejoin="round"/><path d="M' + (X + 20) + ' ' + (Y + 3) + 'q5 1 8 4" stroke="#c4d4e2" stroke-width="1.6" fill="none"/>';
+    else if (h < 0.25) r += '<path d="M' + (X + 3) + ' ' + (Y + 28) + 'q4-4 8 0" stroke="#6f8f45" stroke-width="2.2" fill="none" stroke-linecap="round"/>';
+    return r;
+  }
+  // Sapin sous la neige : les étages du sapin habituel, un bourrelet de neige sur chacun
+  function sapinNeige(X, Y, h) {
+    var etages = [[Y - 13, Y + 3, 9], [Y - 5, Y + 14, 12], [Y + 4, Y + 25, 14.5]];
+    return sapin(X, Y, h) + etages.map(e => '<path d="M' + (X + 16) + ' ' + (e[0] - 0.5) + 'L' + f(X + 16 + e[2] * 0.55) + ' ' + f(e[0] + (e[1] - e[0]) * 0.55) + 'q-3 2-5 0-3 2-5.5 0-3 2-5 0L' + (X + 16) + ' ' + (e[0] - 0.5) + 'Z" fill="#f4f8fb" stroke="#5f7486" stroke-width=".9" stroke-linejoin="round"/>' +
+      '<path d="M' + f(X + 16 + e[2] - 1) + ' ' + f(e[1] - 1) + 'q-3-1.5-5 0" stroke="#f4f8fb" stroke-width="2.2" stroke-linecap="round"/>').join('');
+  }
+  // Le col gardé : un mur de blocs de glace et une pancarte, tant que le Yéti n'est pas battu
+  function colGarde(X, Y) {
+    var bloc = (x, y, w, hh) => '<rect x="' + (X + x) + '" y="' + (Y + y) + '" width="' + w + '" height="' + hh + '" rx="3" fill="#cfe8f7" stroke="#2f5a7a" stroke-width="1.3"/><path d="M' + (X + x + 2) + ' ' + (Y + y + 3) + 'h' + (w * 0.5) + '" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/><path d="M' + (X + x + w - 3) + ' ' + (Y + y + 4) + 'v' + (hh - 7) + '" stroke="#9cc6e0" stroke-width="1.4"/>';
+    return '<ellipse cx="' + (X + 16) + '" cy="' + (Y + 29) + '" rx="17" ry="3.6" fill="rgba(20,40,60,.3)"/>' +
+      bloc(-2, 14, 15, 15) + bloc(12, 15, 16, 14) + bloc(25, 13, 10, 16) + bloc(3, 2, 13, 13) + bloc(15, 0, 14, 16) +
+      '<path d="M' + (X + 8) + ' ' + (Y + 4) + 'q8-6 18-2" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round"/>' +
+      '<path d="M' + (X + 27) + ' ' + (Y - 2) + 'v-12" stroke="' + OLB + '" stroke-width="3"/><path d="M' + (X + 27) + ' ' + (Y - 2) + 'v-12" stroke="#8d5a2b" stroke-width="1.6"/>' +
+      '<rect x="' + (X + 17) + '" y="' + (Y - 21) + '" width="20" height="10" rx="1.5" fill="#c9a874" stroke="' + OLB + '" stroke-width="1.2" transform="rotate(-6 ' + (X + 27) + ' ' + (Y - 16) + ')"/>' +
+      '<text x="' + (X + 27) + '" y="' + (Y - 13.5) + '" text-anchor="middle" font-size="7.5" font-weight="900" fill="#5c3a1f" font-family="system-ui,sans-serif" transform="rotate(-6 ' + (X + 27) + ' ' + (Y - 16) + ')">STOP</text>';
+  }
+  // Les empreintes du Yéti dans la neige du col ouvert
+  function empreintes(X, Y) {
+    return [[6, 10, -10], [14, 20, 8], [22, 8, -6], [28, 19, 10]].map(q => '<g transform="rotate(' + q[2] + ' ' + (X + q[0]) + ' ' + (Y + q[1]) + ')"><ellipse cx="' + (X + q[0]) + '" cy="' + (Y + q[1]) + '" rx="2.6" ry="4" fill="#b8c9d8" opacity=".75"/>' +
+      [-2, 0, 2].map(d => '<circle cx="' + (X + q[0] + d) + '" cy="' + (Y + q[1] - 5) + '" r=".9" fill="#b8c9d8" opacity=".75"/>').join('') + '</g>').join('');
+  }
+  // Le belvédère : une plate-forme de pierre à garde-corps, une longue-vue sur pied, un fanion
+  function belvedere(X, Y) {
+    return '<ellipse cx="' + (X + 16) + '" cy="' + (Y + 29) + '" rx="17" ry="4" fill="rgba(20,30,40,.3)"/>' +
+      '<path d="M' + (X - 2) + ' ' + (Y + 29) + 'L' + X + ' ' + (Y + 14) + 'H' + (X + 32) + 'L' + (X + 34) + ' ' + (Y + 29) + 'Z" fill="#a39d90" stroke="#2f2a24" stroke-width="1.5" stroke-linejoin="round"/>' +
+      '<path d="M' + X + ' ' + (Y + 20) + 'H' + (X + 32) + 'M' + (X + 1) + ' ' + (Y + 25) + 'H' + (X + 31) + 'M' + (X + 10) + ' ' + (Y + 14) + 'v6M' + (X + 21) + ' ' + (Y + 14) + 'v6M' + (X + 5) + ' ' + (Y + 20) + 'v5M' + (X + 16) + ' ' + (Y + 20) + 'v5M' + (X + 27) + ' ' + (Y + 20) + 'v5" stroke="#6c675f" stroke-width="1"/>' +
+      '<path d="M' + (X + 2) + ' ' + (Y + 14) + 'v-9M' + (X + 30) + ' ' + (Y + 14) + 'v-9M' + (X + 2) + ' ' + (Y + 6) + 'H' + (X + 30) + '" stroke="' + OLB + '" stroke-width="3" stroke-linecap="round"/><path d="M' + (X + 2) + ' ' + (Y + 14) + 'v-9M' + (X + 30) + ' ' + (Y + 14) + 'v-9M' + (X + 2) + ' ' + (Y + 6) + 'H' + (X + 30) + '" stroke="#8d5a2b" stroke-width="1.5" stroke-linecap="round"/>' +
+      '<path d="M' + (X + 16) + ' ' + (Y + 15) + 'l-4 6M' + (X + 16) + ' ' + (Y + 15) + 'l4 6M' + (X + 16) + ' ' + (Y + 15) + 'v6" stroke="#3a2a1d" stroke-width="1.4"/>' +
+      '<g transform="rotate(-22 ' + (X + 16) + ' ' + (Y + 11) + ')"><rect x="' + (X + 7) + '" y="' + (Y + 8.5) + '" width="17" height="5" rx="2" fill="#c9a227" stroke="#5c4500" stroke-width="1.1"/><rect x="' + (X + 22.5) + '" y="' + (Y + 7.6) + '" width="4" height="6.8" rx="1" fill="#8a6a10" stroke="#5c4500" stroke-width="1"/><circle cx="' + (X + 26.5) + '" cy="' + (Y + 11) + '" r="1.4" fill="#a5d8ff"/></g>' +
+      '<path d="M' + (X + 30) + ' ' + (Y + 5) + 'v-14" stroke="' + OLB + '" stroke-width="1.6"/><path class="vl-fanion" d="M' + (X + 30) + ' ' + (Y - 9) + 'l9 3-9 3z" fill="#e03131" stroke="#6a1010" stroke-width=".8"/>';
+  }
+  // Les jumelles de Gaspard, à moitié dans la neige
+  function jumellesDessin(X, Y) {
+    return '<g class="vl-luciole-q"><circle cx="' + (X + 16) + '" cy="' + (Y + 16) + '" r="13" fill="url(#vl-magie)" class="vl-brille"/>' +
+      '<ellipse cx="' + (X + 16) + '" cy="' + (Y + 24) + '" rx="12" ry="3.5" fill="#dfe8ef"/>' +
+      '<g transform="rotate(-14 ' + (X + 16) + ' ' + (Y + 17) + ')"><rect x="' + (X + 6) + '" y="' + (Y + 12) + '" width="8.5" height="11" rx="2.6" fill="#343a40" stroke="#111" stroke-width="1"/><rect x="' + (X + 17.5) + '" y="' + (Y + 12) + '" width="8.5" height="11" rx="2.6" fill="#343a40" stroke="#111" stroke-width="1"/>' +
+      '<rect x="' + (X + 13.5) + '" y="' + (Y + 14) + '" width="5" height="4" fill="#c9a227" stroke="#5c4500" stroke-width=".8"/><circle cx="' + (X + 10.2) + '" cy="' + (Y + 21) + '" r="2.6" fill="#74c0fc" stroke="#c9a227" stroke-width="1"/><circle cx="' + (X + 21.8) + '" cy="' + (Y + 21) + '" r="2.6" fill="#74c0fc" stroke="#c9a227" stroke-width="1"/>' +
+      '<circle cx="' + (X + 9.4) + '" cy="' + (Y + 20.2) + '" r=".9" fill="#fff"/><circle cx="' + (X + 21) + '" cy="' + (Y + 20.2) + '" r=".9" fill="#fff"/></g>' +
+      '<path d="M' + (X + 4) + ' ' + (Y + 25) + 'q6-3 12 0t12 0" fill="#f4f8fb" stroke="#c4d4e2" stroke-width=".8"/></g>';
+  }
+  // Une chèvre des alpages (décor) et un edelweiss
+  function chevre(X, Y, sens) {
+    return '<g class="vl-broute" transform="translate(' + (X + 16) + ' ' + (Y + 18) + ') scale(' + (sens < 0 ? -1 : 1) + ' 1)">' +
+      '<ellipse cx="0" cy="10" rx="11" ry="2.6" fill="rgba(10,20,5,.28)"/>' +
+      '<path d="M-7 4v6M-4 4v6M4 4v6M7 4v6" stroke="#3a2a1d" stroke-width="1.8" stroke-linecap="round"/>' +
+      '<ellipse cx="0" cy="1" rx="9" ry="5.5" fill="#f1ece2" stroke="#3a2a1d" stroke-width="1.2"/><path d="M-3 -3q4 3 9 1" stroke="#d6cfc0" stroke-width="2" fill="none"/>' +
+      '<path d="M-8 -1q-2-4 0-6" stroke="#3a2a1d" stroke-width="1.1" fill="none"/>' +
+      '<g class="vl-tete-broute"><ellipse cx="9" cy="-3" rx="4" ry="3.2" fill="#f1ece2" stroke="#3a2a1d" stroke-width="1.1"/><path d="M8 -6q2-4 5-4M10 -6q1-3 4-3" stroke="#7a5a3a" stroke-width="1.2" fill="none" stroke-linecap="round"/>' +
+      '<circle cx="10" cy="-3.5" r=".8" fill="#222"/><path d="M11 0q.5 2-1 3" stroke="#d6cfc0" stroke-width="1.2" fill="none"/></g></g>';
+  }
+  function edelweiss(X, Y) {
+    var p = '';
+    for (var k = 0; k < 6; k++) { var a = k * Math.PI / 3; p += '<ellipse cx="' + f(X + Math.cos(a) * 3) + '" cy="' + f(Y + Math.sin(a) * 3) + '" rx="2.4" ry="1.2" fill="#f8f9fa" stroke="#adb5bd" stroke-width=".5" transform="rotate(' + (k * 60) + ' ' + f(X + Math.cos(a) * 3) + ' ' + f(Y + Math.sin(a) * 3) + ')"/>'; }
+    return '<path d="M' + X + ' ' + (Y + 2) + 'v6" stroke="#6f8f45" stroke-width="1.2"/>' + p + '<circle cx="' + X + '" cy="' + Y + '" r="1.6" fill="#ffe066"/>';
   }
   // ---------- Points de récolte (3.50) : on fonce dedans pour ramasser ----------
   function boisMort(X, Y) {   // deux bûches coupées et une branche
@@ -524,6 +639,35 @@ var VLD = (function () {
         '<path d="M' + (X + 24) + ' ' + (Y + 14) + 'v26M' + (X + 40) + ' ' + (Y + 14) + 'v26" stroke="#c9a874" stroke-width="1.2"/><rect x="' + (X + 22) + '" y="' + (Y + 40) + '" width="20" height="3.6" rx="1" fill="#a87447" stroke="' + OLB + '" stroke-width="1"/>' +
         '<g class="vl-saule">' + mech.map(m => trait(m, OL, 4.2)).join('') + mech.map(m => trait(m, m[2], 2.4)).join('') + '</g>' +
         '<circle cx="' + (X + 14) + '" cy="' + (Y + 30) + '" r="1.5" fill="#fff8e7"/><circle cx="' + (X + 52) + '" cy="' + (Y + 34) + '" r="1.5" fill="#ffd6e7"/>';
+    } else if (b.type === 'chalet') {   // le chalet de Gaspard : soubassement de pierre, rondins, grand toit, balcon fleuri de géraniums
+      s += '<ellipse cx="' + (X + 32) + '" cy="' + (Y + 62) + '" rx="32" ry="5" fill="rgba(10,20,5,.34)"/>' +
+        '<rect x="' + (X + 5) + '" y="' + (Y + 46) + '" width="54" height="16" fill="#9a9488" stroke="' + OLB + '" stroke-width="1.5"/>' +
+        [[8, 48], [20, 47], [33, 48], [45, 47], [12, 55], [27, 55], [40, 55], [52, 54]].map(q => '<rect x="' + (X + q[0]) + '" y="' + (Y + q[1]) + '" width="10" height="6" rx="2" fill="#b3ad9f" stroke="#6c675f" stroke-width=".8"/>').join('') +
+        '<rect x="' + (X + 6) + '" y="' + (Y + 18) + '" width="52" height="29" fill="#b0743f" stroke="' + OLB + '" stroke-width="1.5"/>' +
+        [22, 26, 30, 34, 38, 42].map(y => '<path d="M' + (X + 6) + ' ' + (Y + y) + 'H' + (X + 58) + '" stroke="#7a4a26" stroke-width="1.1"/>').join('') +
+        [6, 58].map(x => '<circle cx="' + (X + x) + '" cy="' + (Y + 24) + '" r="2" fill="#d9a066" stroke="#7a4a26" stroke-width=".8"/><circle cx="' + (X + x) + '" cy="' + (Y + 36) + '" r="2" fill="#d9a066" stroke="#7a4a26" stroke-width=".8"/>').join('') +
+        '<path d="M' + (X - 3) + ' ' + (Y + 21) + 'L' + (X + 32) + ' ' + (Y - 6) + 'L' + (X + 67) + ' ' + (Y + 21) + 'Z" fill="#6b3f22" stroke="' + OLB + '" stroke-width="1.8" stroke-linejoin="round"/>' +
+        '<path d="M' + (X + 32) + ' ' + (Y - 6) + 'L' + (X + 67) + ' ' + (Y + 21) + 'H' + (X + 50) + 'Z" fill="#552f18"/>' +
+        '<path d="M' + (X + 5) + ' ' + (Y + 15) + 'L' + (X + 32) + ' ' + (Y - 1) + 'L' + (X + 59) + ' ' + (Y + 15) + 'M' + (X + 13) + ' ' + (Y + 10) + 'L' + (X + 32) + ' ' + (Y + 4) + 'L' + (X + 51) + ' ' + (Y + 10) + '" stroke="#8a5a32" stroke-width="1" fill="none"/>' +
+        '<path d="M' + (X + 26) + ' ' + (Y + 5) + 'l6 4 6-4" fill="none" stroke="#e9c46a" stroke-width="1.6"/><path d="M' + (X + 30) + ' ' + (Y + 13) + 'q2-3 4 0q-2 3-4 0z" fill="#e03131"/>' +
+        [[10, 24], [44, 24]].map(q => '<rect x="' + (X + q[0]) + '" y="' + (Y + q[1]) + '" width="10" height="9" fill="#ffd77a" stroke="' + OLB + '" stroke-width="1.2"/><path d="M' + (X + q[0] + 5) + ' ' + (Y + q[1]) + 'v9M' + (X + q[0]) + ' ' + (Y + q[1] + 4.5) + 'h10" stroke="' + OLB + '" stroke-width=".9"/>' +
+          '<rect x="' + (X + q[0] - 4) + '" y="' + (Y + q[1]) + '" width="4" height="9" fill="#2f9e44" stroke="' + OLB + '" stroke-width=".9"/><rect x="' + (X + q[0] + 10) + '" y="' + (Y + q[1]) + '" width="4" height="9" fill="#2f9e44" stroke="' + OLB + '" stroke-width=".9"/>' +
+          '<rect x="' + (X + q[0] - 1) + '" y="' + (Y + q[1] + 9) + '" width="12" height="3.4" fill="#7a4a26" stroke="' + OLB + '" stroke-width=".8"/>' + [1, 4, 7, 10].map(d => '<circle cx="' + (X + q[0] + d) + '" cy="' + (Y + q[1] + 8.5) + '" r="1.5" fill="#e03131"/>').join('')).join('') +
+        '<path d="M' + (X + 26) + ' ' + (Y + 47) + 'v-15h12v15z" fill="#5c3a1f" stroke="' + OLB + '" stroke-width="1.3"/><path d="M' + (X + 32) + ' ' + (Y + 33) + 'v13" stroke="#3a2416" stroke-width=".9"/><circle cx="' + (X + 36) + '" cy="' + (Y + 40) + '" r=".9" fill="#fcc419"/>' +
+        '<path d="M' + (X + 32) + ' ' + (Y + 26) + 'v3" stroke="' + OLB + '" stroke-width="1"/><path d="M' + (X + 29.5) + ' ' + (Y + 29) + 'h5l-1 4h-3z" fill="#c9a227" stroke="#5c4500" stroke-width=".8"/>';
+    } else if (b.type === 'refuge') {   // le refuge du sommet : pierres sèches, toit enneigé, cheminée qui fume, lanterne
+      s += '<ellipse cx="' + (X + 32) + '" cy="' + (Y + 62) + '" rx="31" ry="4.5" fill="rgba(20,30,40,.32)"/>' +
+        '<rect x="' + (X + 6) + '" y="' + (Y + 20) + '" width="52" height="42" rx="2" fill="#a39d90" stroke="' + OLB + '" stroke-width="1.5"/>' +
+        [[8, 23, 12], [21, 22, 14], [36, 23, 10], [47, 22, 10], [9, 31, 9], [19, 31, 13], [33, 31, 11], [45, 31, 12], [8, 40, 13], [22, 40, 10], [42, 40, 14], [9, 49, 10], [20, 50, 8], [44, 49, 12], [10, 56, 12], [43, 56, 12]].map(q => '<rect x="' + (X + q[0]) + '" y="' + (Y + q[1]) + '" width="' + q[2] + '" height="7" rx="2.4" fill="#bcb6aa" stroke="#6c675f" stroke-width=".8"/>').join('') +
+        '<rect x="' + (X + 44) + '" y="' + (Y - 4) + '" width="9" height="14" fill="#8a857b" stroke="' + OLB + '" stroke-width="1.3"/>' +
+        '<path d="M' + (X + 1) + ' ' + (Y + 23) + 'L' + (X + 32) + ' ' + (Y + 2) + 'L' + (X + 63) + ' ' + (Y + 23) + 'Z" fill="#5c4a3a" stroke="' + OLB + '" stroke-width="1.8" stroke-linejoin="round"/>' +
+        '<path d="M' + X + ' ' + (Y + 22) + 'L' + (X + 32) + ' ' + Y + 'L' + (X + 64) + ' ' + (Y + 22) + 'q-4 3-8 0-4 3-8 0-4 3-8 0-4 3-8 0-4 3-8 0-4 3-8 0-4 3-8 0-4 3-8 0z" fill="#f4f8fb" stroke="#5f7486" stroke-width="1.2" stroke-linejoin="round"/>' +
+        '<path d="M' + (X + 34) + ' ' + (Y + 2) + 'L' + (X + 62) + ' ' + (Y + 20) + '" stroke="#c4d4e2" stroke-width="2"/>' +
+        '<g class="vl-fumee"><circle cx="' + (X + 49) + '" cy="' + (Y - 9) + '" r="3.5" fill="#dee2e6" opacity=".8"/><circle cx="' + (X + 53) + '" cy="' + (Y - 16) + '" r="4.5" fill="#dee2e6" opacity=".6"/><circle cx="' + (X + 50) + '" cy="' + (Y - 24) + '" r="5" fill="#dee2e6" opacity=".4"/></g>' +
+        '<rect x="' + (X + 12) + '" y="' + (Y + 30) + '" width="11" height="10" fill="#ffd77a" stroke="' + OLB + '" stroke-width="1.3"/><path d="M' + (X + 17.5) + ' ' + (Y + 30) + 'v10M' + (X + 12) + ' ' + (Y + 35) + 'h11" stroke="' + OLB + '" stroke-width=".9"/>' +
+        '<path d="M' + (X + 28) + ' ' + (Y + 62) + 'v-17a5 5 0 0 1 10 0v17z" fill="#5c3a1f" stroke="' + OLB + '" stroke-width="1.3"/><circle cx="' + (X + 36) + '" cy="' + (Y + 54) + '" r=".9" fill="#fcc419"/>' +
+        '<rect x="' + (X + 40) + '" y="' + (Y + 26) + '" width="16" height="7" rx="1" fill="#c9a874" stroke="' + OLB + '" stroke-width="1"/><text x="' + (X + 48) + '" y="' + (Y + 31.6) + '" text-anchor="middle" font-size="5.2" font-weight="800" fill="#5c3a1f" font-family="system-ui,sans-serif">REFUGE</text>' +
+        '<circle cx="' + (X + 45) + '" cy="' + (Y + 44) + '" r="11" fill="url(#vl-lueur)" class="vl-halo"/><rect x="' + (X + 42.5) + '" y="' + (Y + 40) + '" width="5" height="7" rx="1.6" fill="#ffd43b" stroke="' + OLB + '" stroke-width="1" class="vl-flamme"/>';
     } else if (b.type === 'parcelle') {
       s += maisonAmi(X, Y, ctx.parcelles && ctx.parcelles[b.p]);
     }
@@ -611,19 +755,25 @@ var VLD = (function () {
     var x0 = ex * VL.W, y0 = ey * VL.H, s = [], objets = [], x, y, t, X, Y, h;
     var E = VL.ECRANS[ey][ex], village = E.id === 'village' || E.id === 'quartier';   // pavés au village et dans le quartier
     var marais = E.zone === 'marais';   // le marais (3.53) : herbe olive, eau trouble, brume et lucioles
+    var montagne = E.zone === 'montagne', sol = E.sol;   // la montagne (3.54) : sol de roche, alpage ou neige ; nuages et flocons
     var tu = (xx, yy) => VL.tuile(xx, yy);
-    var chemin = c => c === ':' || c === '=' || c === 'F' || c === '-' || c === 'P';   // la fontaine est posée sur les pavés de la place
-    var foret = c => c === 'T' || c === 'S';
+    var chemin = c => c === ':' || c === '=' || c === 'F' || c === '-' || c === 'P' || c === 'G';   // la fontaine est posée sur les pavés de la place
+    var foret = c => c === 'T' || c === 'S' || c === 'k';
     s.push('<defs><radialGradient id="vl-lueur"><stop offset="0" stop-color="#ffd27a" stop-opacity=".75"/><stop offset=".55" stop-color="#ffb347" stop-opacity=".28"/><stop offset="1" stop-color="#ff922b" stop-opacity="0"/></radialGradient>' +
            '<radialGradient id="vl-braise"><stop offset="0" stop-color="#ff8a3d" stop-opacity=".7"/><stop offset="1" stop-color="#ff5a1f" stop-opacity="0"/></radialGradient>' +
            '<radialGradient id="vl-cristal"><stop offset="0" stop-color="#d0bfff" stop-opacity=".75"/><stop offset="1" stop-color="#9775fa" stop-opacity="0"/></radialGradient>' +
            '<radialGradient id="vl-magie"><stop offset="0" stop-color="#fff3bf" stop-opacity=".7"/><stop offset="1" stop-color="#ffe066" stop-opacity="0"/></radialGradient>' +
            '<radialGradient id="vl-luc"><stop offset="0" stop-color="#f4ff9a" stop-opacity=".85"/><stop offset=".45" stop-color="#d8f56a" stop-opacity=".3"/><stop offset="1" stop-color="#b8e04a" stop-opacity="0"/></radialGradient>' +
+           '<linearGradient id="vl-mont" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e7f5ff" stop-opacity=".2"/><stop offset=".5" stop-color="#e7f5ff" stop-opacity="0"/><stop offset="1" stop-color="#1d2b3a" stop-opacity=".22"/></linearGradient>' +
            '<linearGradient id="vl-mar" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1c3a4a" stop-opacity=".26"/><stop offset=".55" stop-color="#2a4a3a" stop-opacity=".06"/><stop offset="1" stop-color="#0f2214" stop-opacity=".3"/></linearGradient>' +
            '<radialGradient id="vl-vig" cx="50%" cy="52%" r="72%"><stop offset="58%" stop-color="#1a1208" stop-opacity="0"/><stop offset="100%" stop-color="#1a1208" stop-opacity=".55"/></radialGradient>' +
            '<linearGradient id="vl-soleil" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff2c4" stop-opacity=".18"/><stop offset=".5" stop-color="#fff2c4" stop-opacity="0"/><stop offset="1" stop-color="#3a2410" stop-opacity=".16"/></linearGradient></defs>');
     // Herbe : deux verts en damier très doux, taches plus sombres, brins et petites fleurs ; sous-bois sombre sous les arbres
-    var HERBE = marais ? ['#6a9446', '#648c43', '#7a6c42', '#4d7a33', '#2a4a2c', '#2e5030'] : ['#77b052', '#71a94d', '#679e45', '#5a913b', '#2f5a28', '#33612b'];
+    var HERBE = marais ? ['#6a9446', '#648c43', '#7a6c42', '#4d7a33', '#2a4a2c', '#2e5030']
+      : sol === 'roche' ? ['#a39b8a', '#9d9584', '#eef3f7', '#7d8a5a', '#4b4844', '#524f4a']
+      : sol === 'neige' ? ['#edf2f6', '#e6edf3', '#d3e0ea', '#c9d6e0', '#4f5b66', '#56626c']
+      : sol === 'alpage' ? ['#7fbf5a', '#79b855', '#8ccb63', '#5a9a3b', '#3d4f3a', '#435640']
+      : ['#77b052', '#71a94d', '#679e45', '#5a913b', '#2f5a28', '#33612b'];
     s.push('<rect width="352" height="288" fill="' + HERBE[0] + '"/>');
     for (y = 0; y < VL.H; y++) for (x = 0; x < VL.W; x++) {
       var gx = x0 + x, gy = y0 + y; t = tu(gx, gy); X = x * T; Y = y * T; h = VL.hash(gx, gy);
@@ -631,9 +781,16 @@ var VLD = (function () {
       if ((x + y) % 2) s.push('<rect x="' + X + '" y="' + Y + '" width="32" height="32" fill="' + HERBE[1] + '"/>');
       if (h < 0.3) s.push('<ellipse cx="' + f(X + 8 + h * 50) + '" cy="' + f(Y + 10 + h * 40) + '" rx="' + f(7 + h * 10) + '" ry="' + f(4 + h * 6) + '" fill="' + HERBE[2] + '" opacity="' + (marais ? '.5' : '.8') + '"/>');
       var h2 = VL.hash(gx, gy, 9);
+      if (sol === 'neige') {   // la neige : des creux bleutés et des paillettes, pas de brins d'herbe
+        if (h2 > 0.55) s.push('<path d="M' + f(X + 3 + h * 10) + ' ' + f(Y + 20) + 'q8-5 16 0" stroke="#c4d4e2" stroke-width="1.6" fill="none" stroke-linecap="round"/>');
+        if (h2 < 0.3) s.push('<circle cx="' + f(X + 8 + h2 * 50) + '" cy="' + f(Y + 9 + h * 12) + '" r=".9" fill="#fff"/><circle cx="' + f(X + 22 - h * 10) + '" cy="' + f(Y + 25 - h2 * 12) + '" r=".7" fill="#fff"/>');
+        continue;
+      }
+      if (sol === 'roche' && h2 < 0.35) s.push('<circle cx="' + f(X + 7 + h2 * 50) + '" cy="' + f(Y + 22 - h * 10) + '" r="1.6" fill="#8a857b" stroke="#5c574f" stroke-width=".6"/><circle cx="' + f(X + 12 + h2 * 40) + '" cy="' + f(Y + 25 - h * 8) + '" r="1.1" fill="#b7b1a5"/>');
+      if (sol === 'alpage' && h2 > 0.9) { s.push(edelweiss(X + 10 + h * 12, Y + 12 + h2 * 6)); continue; }
       s.push('<path d="M' + f(X + 4 + h2 * 20) + ' ' + f(Y + 26 - h * 14) + 'l1.5-4.5 1.5 4.5 1.5-3.5M' + f(X + 18 - h * 10) + ' ' + f(Y + 12 + h2 * 14) + 'l1.5-4 1.5 4" stroke="' + HERBE[3] + '" stroke-width="1.2" fill="none" stroke-linecap="round"/>');
       if (marais && h2 < 0.14) s.push('<ellipse cx="' + f(X + 10 + h * 12) + '" cy="' + f(Y + 22 - h * 8) + '" rx="5" ry="2.4" fill="#4d6a5a" opacity=".55"/><ellipse cx="' + f(X + 9 + h * 12) + '" cy="' + f(Y + 21.5 - h * 8) + '" rx="2" ry=".8" fill="#9cc9b4" opacity=".6"/>');   // une flaque
-      if (h2 > 0.88) s.push('<circle cx="' + f(X + 6 + h * 20) + '" cy="' + f(Y + 6 + h2 * 16) + '" r="1.3" fill="' + (marais ? '#e9e3ff' : '#fff8e7') + '"/>');
+      if (h2 > 0.88) s.push('<circle cx="' + f(X + 6 + h * 20) + '" cy="' + f(Y + 6 + h2 * 16) + '" r="1.3" fill="' + (marais ? '#e9e3ff' : sol === 'alpage' ? '#ffd43b' : '#fff8e7') + '"/>');
     }
     // Ombre du sous-bois sur l'herbe qui le touche (les bois font comme les murs du Donjon)
     for (y = 0; y < VL.H; y++) for (x = 0; x < VL.W; x++) {
@@ -644,7 +801,9 @@ var VLD = (function () {
     }
     // Eau (ruisseau, mare) : formes arrondies comme les chemins, berge de sable, profonde au milieu, nénuphars
     var eau = c => c === null || !!MARCHE_EAU[c];
-    (marais ? [['#3d3020', 17.5, 35, 13], ['#6b5a3a', 16, 32, 12], ['#3e6f62', 13, 26, 9]] : [['#8a6a46', 17.5, 35, 13], ['#d9c08a', 16, 32, 12], ['#3f8ccc', 13, 26, 9]]).forEach(st => {
+    (marais ? [['#3d3020', 17.5, 35, 13], ['#6b5a3a', 16, 32, 12], ['#3e6f62', 13, 26, 9]]
+      : montagne ? [['#4a4a48', 17.5, 35, 13], ['#c9c2b0', 16, 32, 12], ['#4fa6c9', 13, 26, 9]]
+      : [['#8a6a46', 17.5, 35, 13], ['#d9c08a', 16, 32, 12], ['#3f8ccc', 13, 26, 9]]).forEach(st => {
       for (y = 0; y < VL.H; y++) for (x = 0; x < VL.W; x++) {
         t = tu(x0 + x, y0 + y); if (!MARCHE_EAU[t]) continue;
         X = x * T + 16; Y = y * T + 16;
@@ -663,19 +822,21 @@ var VLD = (function () {
     for (y = 0; y < VL.H; y++) for (x = 0; x < VL.W; x++) {
       t = tu(x0 + x, y0 + y); if (!MARCHE_EAU[t]) continue;
       X = x * T; Y = y * T; h = VL.hash(x0 + x, y0 + y, 3);
-      s.push('<ellipse cx="' + (X + 16) + '" cy="' + (Y + 16) + '" rx="10" ry="7" fill="' + (marais ? '#2b564b' : '#2f74b2') + '" opacity=".55"/>');
+      s.push('<ellipse cx="' + (X + 16) + '" cy="' + (Y + 16) + '" rx="10" ry="7" fill="' + (marais ? '#2b564b' : montagne ? '#3b8bb0' : '#2f74b2') + '" opacity=".55"/>');
+      if (montagne && h > 0.6) s.push('<path d="M' + f(X + 7 + h * 6) + ' ' + (Y + 22) + 'l5-7 4 4 3-3 5 6z" fill="#e7f5ff" opacity=".35"/>');   // le reflet des sommets
       s.push('<path class="vl-vague" d="M' + f(X + 5 + h * 10) + ' ' + f(Y + 10 + h * 8) + 'q3-3 6 0t6 0" stroke="' + (marais ? '#9cc9b4' : '#bfe3fb') + '" stroke-width="1.4" fill="none" opacity="' + (marais ? '.6' : '.85') + '"/>');
       if (marais && t === '~') {   // lentilles d'eau, nénuphars en fleur
         if (h < 0.45) [[6, 8], [9, 10], [22, 24], [25, 21], [12, 26], [20, 6]].forEach((q, k) => { if (VL.hash(x0 + x, y0 + y, 20 + k) < 0.6) s.push('<circle cx="' + (X + q[0]) + '" cy="' + (Y + q[1]) + '" r="1.3" fill="#8fbf4a"/>'); });
         if (h > 0.5) s.push('<path d="M' + f(X + 9 + h * 10) + ' ' + f(Y + 19) + 'm-5.5 0a5.5 3.6 0 1 0 11 0a5.5 3.6 0 1 0-11 0" fill="#5a9a3a" stroke="' + OL + '" stroke-width=".9"/><path d="M' + f(X + 9 + h * 10) + ' ' + f(Y + 19) + 'l5-1.4" stroke="#2b564b" stroke-width="1.4"/>' +
           (h > 0.78 ? '<path d="M' + f(X + 8 + h * 10) + ' ' + f(Y + 17.5) + 'l-2.4-3 2.4 1 1.6-2.6 1.6 2.6 2.4-1-2.4 3z" fill="#ffe3ef" stroke="#c2255c" stroke-width=".6"/><circle cx="' + f(X + 9.6 + h * 10) + '" cy="' + f(Y + 16.6) + '" r=".9" fill="#ffd43b"/>' : ''));
       }
-      if (!marais && h > 0.72 && t === '~') s.push('<ellipse cx="' + f(X + 10 + h * 8) + '" cy="' + f(Y + 20) + '" rx="4.5" ry="3" fill="#4c9a3c" stroke="' + OL + '" stroke-width=".8"/><path d="M' + f(X + 10 + h * 8) + ' ' + (Y + 20) + 'l4-1.5" stroke="#3f8ccc" stroke-width="1.2"/><circle cx="' + f(X + 12 + h * 8) + '" cy="' + (Y + 18.5) + '" r="1.6" fill="#f783ac"/>');
+      if (!marais && !montagne && h > 0.72 && t === '~') s.push('<ellipse cx="' + f(X + 10 + h * 8) + '" cy="' + f(Y + 20) + '" rx="4.5" ry="3" fill="#4c9a3c" stroke="' + OL + '" stroke-width=".8"/><path d="M' + f(X + 10 + h * 8) + ' ' + (Y + 20) + 'l4-1.5" stroke="#3f8ccc" stroke-width="1.2"/><circle cx="' + f(X + 12 + h * 8) + '" cy="' + (Y + 18.5) + '" r="1.6" fill="#f783ac"/>');
       if (!eau(tu(x0 + x, y0 + y + 1))) s.push('<circle cx="' + f(X + 6 + h * 20) + '" cy="' + (Y + 30) + '" r="1.8" fill="#9e9e9e" stroke="#4a4a4a" stroke-width=".6"/>');
       if (!eau(tu(x0 + x, y0 + y - 1))) s.push('<circle cx="' + f(X + 24 - h * 16) + '" cy="' + (Y + 2) + '" r="1.6" fill="#9e9e9e" stroke="#4a4a4a" stroke-width=".6"/>');
     }
     // Chemins : terre battue dans la forêt, pavés au village (comme le sol du Donjon)
-    var bord = village ? '#6f675b' : marais ? '#6e5a36' : '#9c7a48', fond = village ? '#b9b0a2' : marais ? '#b49a66' : '#d6b47a';
+    var bord = village ? '#6f675b' : marais ? '#6e5a36' : sol === 'neige' ? '#a9bccb' : sol === 'roche' ? '#7a6a50' : '#9c7a48',
+        fond = village ? '#b9b0a2' : marais ? '#b49a66' : sol === 'neige' ? '#dde7ef' : sol === 'roche' ? '#c9b48a' : '#d6b47a';
     [[bord, 14.5, 29], [fond, 12.5, 25]].forEach(st => {
       for (y = 0; y < VL.H; y++) for (x = 0; x < VL.W; x++) {
         t = tu(x0 + x, y0 + y); if (t !== ':' && t !== 'F') continue;
@@ -736,7 +897,10 @@ var VLD = (function () {
     function poser(rang, svg) { objets.push([rang, svg]); }
     for (y = 0; y < VL.H; y++) for (x = 0; x < VL.W; x++) {
       var gx2 = x0 + x, gy2 = y0 + y; t = tu(gx2, gy2); X = x * T; Y = y * T; h = VL.hash(gx2, gy2, 1);
-      if (t === 'T') poser(y, marais ? (h > 0.62 ? cypres(X, Y, h) : saule(X, Y, h)) : arbre(X, Y, h));
+      if (t === 'T') poser(y, marais ? (h > 0.62 ? cypres(X, Y, h) : saule(X, Y, h)) : montagne ? (sol === 'alpage' ? sapin(X, Y, h) : sapinNeige(X, Y, h)) : arbre(X, Y, h));
+      else if (t === 'k') poser(y, rocher(X, Y, h, sol === 'neige'));
+      else if (t === 'B') poser(y, belvedere(X, Y));
+      else if (t === 'G') poser(y, VL.colOuvert(e) ? empreintes(X, Y) : colGarde(X, Y));
       else if (t === 'y') poser(y, roseaux(X, Y, h));
       else if (t === 'C') poser(y, coffre(X, Y, e.coffreM));
       else if (t === 'S') poser(y, sapin(X, Y, h));
@@ -764,6 +928,10 @@ var VLD = (function () {
       var k = VL.ecranDe(p.x, p.y);
       if (k.ex === ex && k.ey === ey && VL.pointVisible(e, p, ctx)) poser(p.y - y0 - 0.05, pointRecolte(p, (p.x - x0) * T, (p.y - y0) * T, ctx));
     });
+    var J = VL.JUMELLES, kj = VL.ecranDe(J.x, J.y);
+    if (kj.ex === ex && kj.ey === ey && VL.jumellesVisibles(e)) poser(J.y - y0 + 0.4, jumellesDessin((J.x - x0) * T, (J.y - y0) * T));
+    // Les alpages : deux chèvres qui broutent
+    if (sol === 'alpage') [[7, 6, 1], [6, 5, -1]].forEach(q => poser(q[1] + 0.2, chevre(q[0] * T, q[1] * T, q[2])));
     VL.LUCIOLES.forEach(c => {
       var k = VL.ecranDe(c.x, c.y);
       if (k.ex === ex && k.ey === ey && VL.lucioleVisible(e, c)) poser(c.y - y0 + 0.4, luciole((c.x - x0) * T, (c.y - y0) * T));
@@ -791,6 +959,14 @@ var VLD = (function () {
         bulleQuete(hx + 16, hy - 24, ctx.marques && ctx.marques[id]));
     });
     objets.sort((a, b) => a[0] - b[0]).forEach(o => s.push(o[1]));
+    // À la montagne, des nuages bas qui passent, et des flocons au col et au sommet
+    if (montagne) {
+      [[40, 0], [230, 1]].forEach((n, k) => s.push('<g class="vl-nuage" style="animation-delay:-' + (k * 11) + 's"><g opacity=".55">' + boules([[n[0], 40 + k * 120, 16], [n[0] + 20, 34 + k * 120, 20], [n[0] + 42, 42 + k * 120, 15]], '#f8fbff', '#c4d4e2', 1.2) + '</g></g>'));
+      if (sol !== 'alpage') for (var fk = 0; fk < 14; fk++) {
+        var fx = 8 + VL.hash(ex, ey, 60 + fk) * 336, fy = -20 + VL.hash(ex, ey, 80 + fk) * 120;
+        s.push('<circle class="vl-flocon" style="animation-delay:-' + f(fk * 0.7) + 's;animation-duration:' + f(7 + (fk % 4)) + 's" cx="' + f(fx) + '" cy="' + f(fy) + '" r="' + (fk % 3 ? 1.4 : 2) + '" fill="#fff" opacity=".9"/>');
+      }
+    }
     // Au marais, la brume qui traîne et des lucioles qui dansent
     if (marais) {
       [[60, 0.0], [150, 0.33], [236, 0.66]].forEach((b, k) => s.push('<ellipse class="vl-brume" style="animation-delay:-' + (k * 5) + 's" cx="' + (150 + k * 40) + '" cy="' + b[0] + '" rx="190" ry="' + (16 + k * 4) + '" fill="#e6f2e0" opacity=".13"/>'));
@@ -801,15 +977,17 @@ var VLD = (function () {
     }
     // Lumière de fin d'après-midi et bords plus sombres, comme dans les pièces du Donjon
     // Lumière et bords assombris (sauf dans le quartier qui défile : la page les pose sur la fenêtre de vue)
-    if (!ctx.sansVoile) s.push('<rect width="352" height="288" fill="url(#' + (marais ? 'vl-mar' : 'vl-soleil') + ')"/><rect width="352" height="288" fill="url(#vl-vig)"/>');
+    if (!ctx.sansVoile) s.push('<rect width="352" height="288" fill="url(#' + (marais ? 'vl-mar' : montagne ? 'vl-mont' : 'vl-soleil') + ')"/><rect width="352" height="288" fill="url(#vl-vig)"/>');
     return s.join('');
   }
 
   // ---------- La carte du monde, sous le brouillard (10 unités par case) ----------
   var COUL = { '.': '#a9d18e', ',': '#b8dc96', ':': '#e7cf9b', '=': '#c08a4e', T: '#5d9b4c', S: '#4b8650', b: '#77b35f', h: '#6aa653', o: '#a9d18e',
                '~': '#7fbde8', x: '#c98a6a', e: '#b07a45', m: '#e8590c', Q: '#b07a45', F: '#9ab', c: '#a9d18e', r: '#3d7a3a', R: '#9e9e9e', v: '#6b5040', s: '#3f7a35',
-               y: '#7d9a4a', '-': '#c08a4e', P: '#a07a52', p: '#9e9e9e', C: '#97b07a' };
+               y: '#7d9a4a', '-': '#c08a4e', P: '#a07a52', p: '#9e9e9e', C: '#97b07a', k: '#8a857c', G: '#d7e9f7', B: '#e9c46a' };
   var COUL_MARAIS = { '.': '#97b47a', ',': '#a3bd86', ':': '#c9b07e', '~': '#5f9a8a', T: '#4f7d3c' };
+  var COUL_SOL = { roche: { '.': '#bdb6a6', ',': '#c4bdad', ':': '#d6c49c' }, alpage: { '.': '#a2d47c', ',': '#aedb88', ':': '#e2cf9b' },
+                   neige: { '.': '#f1f5f8', ',': '#e9eff4', ':': '#d6e2ec', T: '#4f7d64' } };
   // ctx = { cible: { x, y }, marques: { habitant: m }, tableauMarque, ecranVu: { 'ex,ey': 1 } }
   function carteSvg(e, ctx) {
     ctx = ctx || {};
@@ -826,15 +1004,15 @@ var VLD = (function () {
       var t = VL.tuile(x, y);
       if (t === null) continue;   // hors du monde (au nord et au sud du quartier)
       if (VL.OBSTACLES[t] && VL.ouvert(e, x, y)) t = '.';
-      var Z = VL.ecran(x, y).zone === 'marais' && COUL_MARAIS[t];
+      var EC = VL.ecran(x, y), Z = EC.zone === 'marais' ? COUL_MARAIS[t] : EC.sol ? COUL_SOL[EC.sol][t] : null;
       terre.push('<rect x="' + (x * U) + '" y="' + (y * U) + '" width="' + (U + 0.4) + '" height="' + (U + 0.4) + '" fill="' + (Z || COUL[t] || '#a9d18e') + '"/>');
       if (t === 'T' || t === 'S') terre.push('<circle cx="' + (x * U + 5) + '" cy="' + (y * U + 5) + '" r="4" fill="' + (t === 'S' ? '#3d7344' : '#4d8a3e') + '"/>');
     }
     VL.BATIMENTS.forEach(bt => terre.push('<rect x="' + (bt.x * U + 1) + '" y="' + (bt.y * U + 1) + '" width="' + (bt.w * U - 2) + '" height="' + (bt.h * U - 2) + '" rx="2" fill="' +
-      (bt.type === 'parcelle' ? ((ctx.parcelles && ctx.parcelles[bt.p] && ctx.parcelles[bt.p].couleur) || '#b7a184') : ({ maison: '#d9534f', hutte: '#d4a24c', forge: '#495057', crypte: '#868e96', cabane: '#6b8e3a', chene: '#3a8435', rainette: '#b99c4a', saule: '#5f8f35' })[bt.type]) + '" stroke="rgba(0,0,0,.35)" stroke-width="1"/>'));
+      (bt.type === 'parcelle' ? ((ctx.parcelles && ctx.parcelles[bt.p] && ctx.parcelles[bt.p].couleur) || '#b7a184') : ({ maison: '#d9534f', hutte: '#d4a24c', forge: '#495057', crypte: '#868e96', cabane: '#6b8e3a', chene: '#3a8435', rainette: '#b99c4a', saule: '#5f8f35', chalet: '#8a5a32', refuge: '#6c675f' })[bt.type]) + '" stroke="rgba(0,0,0,.35)" stroke-width="1"/>'));
     s.push('<g mask="url(#vl-masque)">' + terre.join('') + '</g>');
     // Repères des lieux découverts
-    var ICO = { maison: '🏠', hutte: '🌿', forge: '⚒️', crypte: '🗝️', cabane: '🛖', chene: '🌳', rainette: '🐸', saule: '🌳' };
+    var ICO = { maison: '🏠', hutte: '🌿', forge: '⚒️', crypte: '🗝️', cabane: '🛖', chene: '🌳', rainette: '🐸', saule: '🌳', chalet: '🏡', refuge: '🏔️' };
     VL.BATIMENTS.forEach(bt => {
       if (!ICO[bt.type] || !VL.estVu(e, bt.x + (bt.w >> 1), bt.y + bt.h - 1, b)) return;
       s.push('<text x="' + ((bt.x + bt.w / 2) * U) + '" y="' + ((bt.y + bt.h / 2) * U + 5) + '" text-anchor="middle" font-size="13">' + ICO[bt.type] + '</text>');

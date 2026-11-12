@@ -269,6 +269,16 @@
     .vl-libellule { animation: vl-libellule 7s ease-in-out infinite; }
     @keyframes vl-libellule { 0%, 100% { transform: translate(0, 0); } 30% { transform: translate(26px, -8px); } 35% { transform: translate(26px, -8px); } 65% { transform: translate(-18px, 6px); } 70% { transform: translate(-18px, 6px); } }
     @media (prefers-reduced-motion: reduce) { .vl-saule, .vl-brume, .vl-luc, .vl-luciole-q, .vl-grenouille, .vl-libellule { animation: none; } }
+    /* La montagne (3.54) : nuages bas, flocons, fanion du belvédère, chèvres qui broutent */
+    .vl-nuage { animation: vl-nuage 22s ease-in-out infinite alternate; }
+    @keyframes vl-nuage { from { transform: translateX(-40px); } to { transform: translateX(60px); } }
+    .vl-flocon { animation: vl-flocon 8s linear infinite; }
+    @keyframes vl-flocon { from { transform: translate(0, 0); } 50% { transform: translate(8px, 150px); } to { transform: translate(-4px, 300px); } }
+    .vl-fanion { animation: vl-fanion 1.4s ease-in-out infinite alternate; transform-box: fill-box; transform-origin: 0 50%; }
+    @keyframes vl-fanion { to { transform: scaleX(0.75) skewY(8deg); } }
+    .vl-tete-broute { animation: vl-broute 5s ease-in-out infinite; transform-box: fill-box; transform-origin: 0 0; }
+    @keyframes vl-broute { 0%, 55%, 100% { transform: none; } 65%, 90% { transform: rotate(32deg) translate(1px, 2px); } }
+    @media (prefers-reduced-motion: reduce) { .vl-nuage, .vl-flocon, .vl-fanion, .vl-tete-broute { animation: none; } }
   </style>
 </head>
 <body class="vl-page">
@@ -519,6 +529,7 @@
           <li><b>Fabriquer</b> (après la quête de Bruno) : de la déco à l'établi devant ta maison, des fioles pour le Donjon chez Mme Sauge, des outils à la forge. Fonce dans l'établi, la hutte ou la forge.</li>
           <li><b>La carte</b> se dévoile au fil de tes pas. L'anneau orange montre où aller pour ta quête.</li>
           <li><b>Les amis</b> connectés qui sont dans la Vallée apparaissent sur ton écran et en points sur la carte. Touche un ami pour le saluer, visiter sa maison ou descendre ensemble au Donjon. Touche ton compagnon pour envoyer une émotion. À l'est de la clairière, <b>le quartier des amis</b> : chacun y a sa maison.</li>
+          <li><b>La montagne</b>, derrière la cabane de l'ermite : le Yéti garde le col et défie les voyageurs au Cieljo, en une manche.</li>
           <li><b>Le marais</b>, au bout du bosquet (sud-est) : sa passerelle est cassée. Bruno saura la réparer, une fois son établi remis debout.</li>
           <li><b>La crypte</b>, au nord du village, mène au Donjon des compagnons. Ta maison est la maison de ton compagnon.</li>
           <li>Ta progression est gardée sur ce téléphone et dans ta sauvegarde.</li>
@@ -651,7 +662,7 @@
         carteVue: function() {
           if (this.vue.defile) return '330 90 330 90';
           // Ce qu'on veut voir (le marais : avec le bosquet et le quartier autour), agrandi à la forme du cadre, sans sortir du monde
-          var R = this.ici.zone === 'marais' ? [220, 90, 440, 180] : [0, 0, 330, 270], A = this.carteAspect, L = VL.LARG * 10, Ht = VL.HAUT * 10;
+          var R = this.ici.zone === 'marais' ? [220, 90, 440, 180] : this.ici.zone === 'montagne' ? [220, 0, 440, 180] : [0, 0, 330, 270], A = this.carteAspect, L = VL.LARG * 10, Ht = VL.HAUT * 10;
           var w = R[2], h = R[3];
           if (w / h < A) w = h * A; else h = w / A;
           var place = (debut, taille, monde, voulu) => taille >= monde ? (monde - taille) / 2 : Math.max(0, Math.min(monde - taille, debut - (taille - voulu) / 2));
@@ -684,6 +695,7 @@
       created: function() {
         // Une victoire au Donjon depuis la dernière visite (quête du gardien) : on le dit tout de suite
         if (VL.verifier(etat, this.ctx)) { this.sauver(); this.annoncer('⚔️ La garde a appris ta victoire ! Va voir le tableau de quêtes.'); }
+        setTimeout(() => this.lireResultatBoss(), 600);
         this.montrerLieu(false);
         this._bloque = false; this._dernierPas = 0; this._annId = 0;
         // Une boucle : un pas toutes les 0,19 s tant que la croix est tenue
@@ -725,7 +737,7 @@
         // Plein écran du navigateur (comme au Donjon) : demandé au premier toucher
         document.addEventListener('pointerdown', () => { if (this.pleinEcran && !this._fsDemande) { this._fsDemande = true; this.pleinEcranNavigateur(); } }, true);
         // De retour d'une autre page (bouton « précédent ») : on enlève le voile noir et on relit ce qui a pu changer
-        window.addEventListener('pageshow', () => { this.sortie = false; this.animal = lireStockage('compagnon-animal'); this.etoiles = Etoiles.solde(); if (VL.verifier(etat, this.ctx)) { this.sauver(); this.annoncer('⚔️ La garde a appris ta victoire ! Va voir le tableau de quêtes.'); } this.v++; });
+        window.addEventListener('pageshow', () => { this.sortie = false; this.animal = lireStockage('compagnon-animal'); this.etoiles = Etoiles.solde(); if (VL.verifier(etat, this.ctx)) { this.sauver(); this.annoncer('⚔️ La garde a appris ta victoire ! Va voir le tableau de quêtes.'); } this.lireResultatBoss(); this.v++; });
         if (!lireStockage('vallee-accueil-vu')) {
           ecrireStockage('vallee-accueil-vu', true);
           this.lire({ ico: '🏞️', titre: 'Bienvenue dans la Vallée !', texte: (this.animal ? 'Te voilà devant chez ' + this.animal.nom + '. ' : 'Te voilà au village. ') +
@@ -796,6 +808,7 @@
               if (VL.etatQuete(etat, 'herbes') === 'rendre') this.annoncer('🍄 Cinq champignons ! Retourne voir Mme Sauge.');
               else this.annoncer('🍄 Un champignon ! ' + r.n + ' / ' + VL.QUETES.herbes.but);
             }
+            if (r.ramasse === 'jumelles') { this.son('victoire'); this.vibre([30, 40, 60]); this.annoncer('🔭 Les jumelles de Gaspard, dans la neige ! Rapporte-les-lui.'); }
             if (r.ramasse === 'luciole') {
               this.son('toc'); this.vibre([20, 30, 20]);
               if (VL.etatQuete(etat, 'lucioles') === 'rendre') this.annoncer('✨ Cinq lucioles ! Rapporte-les à Rainette.');
@@ -853,6 +866,7 @@
             return;
           }
           if (r.reponse) { this.fermer(); this.annoncer('✉️ Tu as la réponse de Papi Tortue. Retourne voir M. Bubo !'); return; }
+          if (r.defi) return this.lancerDefi(r.defi);
           if (r.recompense) return this.recompenser(r.recompense);
           if (depuisTableau) return;
           this.fermer();
@@ -874,6 +888,7 @@
           }
           if (rc.etoiles) { Etoiles.ajouter(rc.etoiles, 'Vallée : ' + Q.nom, true); l.push('+' + rc.etoiles + ' étoiles ⭐'); }
           if (rc.atelier) { ico = '🪚'; l.unshift('L\'établi est réparé, devant ta maison : fonce dedans pour fabriquer de la déco. Mme Sauge t\'attend aussi dans sa hutte pour les fioles.'); }
+          if (rc.col) { ico = '❄️'; l.unshift('Le Yéti s\'écarte en grognant de plaisir : le col est ouvert ! Derrière lui, les alpages de Gaspard et le sommet enneigé.'); }
           if (rc.passerelle) { ico = '🛶'; l.unshift('La passerelle du marais est réparée ! Le marais t\'attend au bout du bosquet, au sud-est. Rainette, la passeuse, guette ton arrivée.'); }
           texte = l.join(' ');
           this.etoiles = Etoiles.solde();
@@ -902,6 +917,16 @@
           if (id === 'cabane') return this.annoncer('🐢 La cabane de Papi Tortue. Une tisane fume sur le rebord.');
           // Le marais (3.53)
           if (id === 'passerelle') return this.parler('rainette');
+          // La montagne (3.54)
+          if (id === 'yeti') return this.parler('yeti');
+          if (id === 'chalet') return this.annoncer('🐐 Le chalet de Gaspard. Des cloches de chèvres pendent sous l\'avant-toit.');
+          if (id === 'refuge') return this.annoncer('🏔️ Le refuge du sommet. Une couverture, un poêle, et une odeur de soupe aux orties.');
+          if (id === 'belvedere') {
+            var bv = VL.belvedere(etat);
+            this.sauver(); this.v++;
+            if (bv.panorama) { this.son('victoire'); this.vibre([40, 40, 80]); return this.lire({ ico: '🔭', titre: 'Le belvédère', texte: bv.texte }); }
+            return this.annoncer('🔭 ' + bv.texte);
+          }
           if (id === 'rainette') return this.annoncer(VL.etatQuete(etat, 'lucioles') === 'finie' ? '🐸 La maison de Rainette. Sa lanterne brille au bout de sa perche.' : '🐸 La maison de Rainette, perchée sur pilotis. Un filet de pêche sèche au soleil.');
           if (id === 'saule') { this._saule = ((this._saule | 0) + 1) % SAULE.length; return this.annoncer(SAULE[this._saule]); }
           if (id === 'coffre' || id === 'chene' || id === 'coffreM') {
@@ -999,6 +1024,25 @@
           this.etoiles = Etoiles.solde(); this.achat = null; this.v++;
           this.son('victoire'); this.vibre(40);
           this.annoncer(art.ico + ' ' + art.nom + ' : installé dans le salon !');
+        },
+        // Un boss de la Vallée défie au jeu (le Yéti, au Cieljo) : la partie se joue sur la page du jeu, l'issue revient dans vallee-boss-resultat
+        lancerDefi: function(id) {
+          if (id !== 'yeti') return this.fermer();
+          localStorage.removeItem('vallee-boss-resultat');
+          ecrireStockage('vallee-boss', { id: 'yeti', nom: 'Le Yéti', titre: 'gardien du col', ico: '❄️', defi: 'Une manche, le plus petit total gagne. Hou hou !' });
+          this.entrer('cieljo/?boss');
+        },
+        lireResultatBoss: function() {
+          var r = lireStockage('vallee-boss-resultat');
+          if (!r || r.id !== 'yeti') return;
+          localStorage.removeItem('vallee-boss-resultat');
+          if (r.issue === 'gagne') {
+            var rc = VL.gagnerDefi(etat, 'yeti');
+            this.sauver(); this.v++;
+            if (rc) { this.son('victoire'); this.vibre([60, 50, 120]); this.recompenser(rc); }
+            return;
+          }
+          this.lire({ ico: '❄️', titre: 'Le Yéti', texte: r.issue === 'nul' ? 'Égalité ! « Hou hou, pas mal… mais le col reste à moi. Reviens quand tu veux ! »' : '« Hou hou hou ! Le col reste à moi. » Le Yéti t\'attend pour une revanche, au col.' });
         },
         // On entre quelque part (maison, crypte, boutique) : au retour, on revient dans la Vallée, devant la porte
         entrer: function(url) {

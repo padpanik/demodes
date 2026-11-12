@@ -41,8 +41,10 @@ var CJ = (function () {
   }
 
   // ---------- Début d'une partie, d'une manche ----------
-  function nouvellePartie(joueurs, hasard) {
+  // opts.uneManche : la partie s'arrête après la 1re manche (défi d'un boss de la Vallée), le plus petit total gagne
+  function nouvellePartie(joueurs, hasard, opts) {
     var e = { joueurs: joueurs.slice(), scores: {}, manche: 0, phase: 'depart', journal: [], partieId: null, premier: null, vainqueurs: [] };
+    if (opts && opts.uneManche) e.uneManche = true;
     joueurs.forEach(function (j) { e.scores[j] = 0; });
     distribuer(e, hasard);
     return e;
@@ -136,7 +138,7 @@ var CJ = (function () {
     e.resultat = { details: details, finisseur: e.finisseur };
     e.premier = e.finisseur;
     e.etape = null;
-    var fini = e.joueurs.some(function (j) { return e.scores[j] >= LIMITE; });
+    var fini = e.uneManche || e.joueurs.some(function (j) { return e.scores[j] >= LIMITE; });
     if (fini) {
       var min = Math.min.apply(null, e.joueurs.map(function (j) { return e.scores[j]; }));
       e.vainqueurs = e.joueurs.filter(function (j) { return e.scores[j] === min; });

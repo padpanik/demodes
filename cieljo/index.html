@@ -102,6 +102,12 @@
     .attente-cj .presents span { background: #eef4ff; border-radius: 12px; padding: 4px 10px; font-weight: 700; font-size: 0.9em; }
     .attente-cj .presents span.absent { opacity: 0.45; }
     .attente-cj .presents button { border: none; background: none; cursor: pointer; font: inherit; padding: 0 0 0 4px; color: #5b6b78; }
+    /* Défi d'un boss de la Vallée (3.54 : le Yéti du col, une manche) */
+    .bandeau-boss { display: flex; align-items: center; gap: 10px; background: linear-gradient(135deg, #24476b, #3d6f99); color: #fff; border-radius: 14px; padding: 7px 12px; margin: 0 0 6px; box-shadow: 0 2px 6px rgba(20, 40, 70, .25); }
+    .bandeau-boss .ico { font-size: 1.8em; line-height: 1; }
+    .bandeau-boss b { font-size: 0.98em; }
+    .bandeau-boss small { display: block; font-size: 0.78em; opacity: 0.88; line-height: 1.3; }
+    @media (max-height: 700px) { .bandeau-boss { padding: 4px 10px; margin-bottom: 4px; } .bandeau-boss .ico { font-size: 1.3em; } .bandeau-boss small { display: none; } }
   </style>
 </head>
 <body>
@@ -178,6 +184,8 @@
         </section>
 
         <template v-else-if="e">
+          <!-- Défi d'un boss de la Vallée : une manche, puis retour dans la Vallée -->
+          <div v-if="boss" class="bandeau-boss"><span class="ico">{{ boss.ico }}</span><span><b>{{ boss.nom }}, {{ boss.titre }}</b><small>« {{ boss.defi }} »</small></span></div>
           <!-- Fin de manche / de partie -->
           <div class="fin-cj" v-if="(e.phase === 'finManche' || e.phase === 'finPartie') && !scoresVus">
             <div class="titre">Manche {{ e.manche }} : tout est dévoilé</div>
@@ -204,8 +212,10 @@
             </div>
             <div class="actions-cj">
               <button v-if="e.phase === 'finManche' && (solo || estJoueur)" class="btn principal" @click="mancheSuivante">Manche suivante</button>
-              <button v-if="e.phase === 'finPartie' && (solo || estJoueur)" class="btn principal" @click="nouvellePartie">Nouvelle partie</button>
-              <button v-if="solo" class="btn" @click="quitterSolo">Arrêter</button>
+              <button v-if="boss && e.phase === 'finPartie'" class="btn principal" @click="retourVallee">⛰️ Retour à la Vallée</button>
+              <button v-if="boss && e.phase === 'finPartie' && issueBoss !== 'gagne'" class="btn" @click="nouvellePartie">{{ boss.ico }} Revanche</button>
+              <button v-if="!boss && e.phase === 'finPartie' && (solo || estJoueur)" class="btn principal" @click="nouvellePartie">Nouvelle partie</button>
+              <button v-if="solo && !boss" class="btn" @click="quitterSolo">Arrêter</button>
               <button v-if="!solo && role === 'hote'" class="btn" @click="envoyerJeu({ type: 'ARRETER' })">Salle d'attente</button>
             </div>
             <button class="lien-fin" @click="finVue = null">← Revoir les grilles dévoilées</button>
@@ -242,13 +252,13 @@
                   <div v-else :key="k + '-partie'" class="case-cj partie"></div>
                 </template>
               </div>
-              <div class="bas-cj"><span>Visible : <b>{{ monVisible }}</b> pts</span><span>Total : <b>{{ e.scores[moiJ] }}</b> / {{ LIMITE }} · manche {{ e.manche }}</span></div>
+              <div class="bas-cj"><span>Visible : <b>{{ monVisible }}</b> pts</span><span v-if="boss">Une seule manche : le plus petit total gagne</span><span v-else>Total : <b>{{ e.scores[moiJ] }}</b> / {{ LIMITE }} · manche {{ e.manche }}</span></div>
             </template>
             <div v-else class="aide" style="text-align:center">Tu regardes cette partie.</div>
 
             <div class="actions-cj">
               <button v-if="!solo && role === 'hote' && absentAttendu" class="btn" @click="envoyerJeu({ type: 'REMPLACER' })">Jouer à la place de {{ absentAttendu }}</button>
-              <button v-if="solo" class="btn" @click="quitterSolo">Arrêter</button>
+              <button v-if="solo" class="btn" @click="quitterSolo">{{ boss ? '↩ Plus tard' : 'Arrêter' }}</button>
             </div>
           </template>
         </template>
@@ -296,7 +306,9 @@
     const MAX_JOUEURS = 8;
     const NOM_JEU = 'Cieljo';
     function copie(o) { return JSON.parse(JSON.stringify(o)); }
-    function estOrdi(n) { return estNomOrdi(n); }
+    // Le boss de la Vallée joue comme un ordinateur, sous son nom (« ❄️ Le Yéti »)
+    let nomBoss = '';
+    function estOrdi(n) { return estNomOrdi(n) || (!!nomBoss && n === nomBoss); }
 
     // ================== CARTES (SVG faits par le code) : les couleurs du ciel, de la nuit à l'orage ==================
     function teinte(v) {
@@ -359,7 +371,8 @@
         vibrationActive: lireStockage('brillant-vibration') !== null ? lireStockage('brillant-vibration') !== false : lireStockage('brillant-son') !== false,
         veilleSupportee: false,
         soloEnCours: false,
-        finVue: null      // la fin de manche dont on a déjà ouvert les scores (sinon : les grilles dévoilées d'abord)
+        finVue: null,     // la fin de manche dont on a déjà ouvert les scores (sinon : les grilles dévoilées d'abord)
+        boss: null        // défi d'un boss de la Vallée (lu dans vallee-boss quand on arrive avec ?boss) : une manche contre lui
       },
       computed: {
         moi: function() { return this.pseudoInput.trim() || 'Moi'; },
@@ -417,8 +430,15 @@
           if (d.colonnes && d.colonnes.length) t += ' Colonne de ' + texteValeur(d.colonnes[0].v) + ' partie !';
           return t;
         },
+        // Issue d'un défi de boss : gagne, perdu ou nul (égalité)
+        issueBoss: function() {
+          var e = this.e;
+          if (!this.boss || !e || e.phase !== 'finPartie') return '';
+          return e.vainqueurs.length > 1 ? 'nul' : e.vainqueurs[0] === this.moiJ ? 'gagne' : 'perdu';
+        },
         titreFin: function() {
           var e = this.e, r = e.resultat, moi = this.moiJ;
+          if (this.boss && e.phase === 'finPartie') return { gagne: '🏆 Tu bats ' + this.boss.nom.replace(/^Le /, 'le ') + ' ! Le col est ouvert.', perdu: this.boss.ico + ' ' + this.boss.nom + ' gagne… Revanche ?', nul: '🤝 Égalité ! ' + this.boss.nom + ' réclame une revanche.' }[this.issueBoss];
           if (e.phase === 'finPartie') {
             if (e.vainqueurs.indexOf(moi) !== -1) return e.vainqueurs.length > 1 ? '🏆 Égalité : tu gagnes avec ' + e.vainqueurs.filter(j => j !== moi).join(', ') + ' !' : '🏆 Tu gagnes la partie !';
             return '🏆 ' + e.vainqueurs.join(' et ') + (e.vainqueurs.length > 1 ? ' gagnent' : ' gagne') + ' la partie';
@@ -460,6 +480,7 @@
         // Le pseudo se choisit sur le portail (profil du salon global) ; on le suit tant qu'on n'est pas dans un salon
         window.addEventListener('desdale-profil', () => { if (!this.role) this.pseudoInput = pseudoPortail(); });
         if (!ACCES.cleSalon) return;
+        if (/[?&]boss\b/.test(location.search) && lireStockage('vallee-boss')) return this.demarrerBoss(lireStockage('vallee-boss'));
         this.majSoloEnCours();
         this.restaurer();
         setInterval(() => this.battement(), 4000);
@@ -490,6 +511,23 @@
 
         // ================== SOLO ==================
         majSoloEnCours: function() { var s = lireStockage('cieljo-solo'); this.soloEnCours = !!(s && s.phase !== 'finPartie'); },
+        // ================== DÉFI D'UN BOSS DE LA VALLÉE ==================
+        // La Vallée écrit vallee-boss ({ id, nom, titre, ico, defi }) et ouvre cieljo/?boss ; une seule manche contre lui,
+        // gardée à part (cieljo-boss), sans étoiles ni série ; l'issue repart dans vallee-boss-resultat.
+        demarrerBoss: function(b) {
+          this.boss = b;
+          nomBoss = b.ico + ' ' + b.nom;
+          var s = lireStockage('cieljo-boss');
+          if (s && s.boss === b.id && s.phase !== 'finPartie' && s.uneManche) etatSolo = s;
+          else this.nouveauBoss();
+          this.lancerSolo();
+        },
+        nouveauBoss: function() {
+          etatSolo = CJ.nouvellePartie([this.moi, nomBoss], null, { uneManche: true });
+          etatSolo.partieId = nouvelId();
+          etatSolo.boss = this.boss.id;
+        },
+        retourVallee: function() { clearTimeout(this._timerOrdi); location.href = 'vallee/'; },
         demarrerSolo: function() {
           var s = lireStockage('cieljo-solo');
           if (s && s.phase !== 'finPartie') etatSolo = s;
@@ -511,10 +549,11 @@
           var ancien = this.pub;
           this.pub = { phase: 'jeu', ordre: etatSolo.joueurs, robots: [], partieId: etatSolo.partieId, e: CJ.vuePour(etatSolo) };
           if (!debut && ancien) this.reagir(ancien, this.pub);
+          if (this.boss) return ecrireStockage('cieljo-boss', etatSolo);
           ecrireStockage('cieljo-solo', etatSolo);
           this.majSoloEnCours();
         },
-        quitterSolo: function() { clearTimeout(this._timerOrdi); this.solo = false; this.pub = null; etatSolo = null; this.onglet = 'config'; this.majSoloEnCours(); },
+        quitterSolo: function() { if (this.boss) return this.retourVallee(); clearTimeout(this._timerOrdi); this.solo = false; this.pub = null; etatSolo = null; this.onglet = 'config'; this.majSoloEnCours(); },
         // Les ordinateurs retournent leurs 2 cartes d'un coup au début de la manche, puis jouent étape par étape
         ordiAFaire: function(e) {
           if (e.phase === 'depart') return e.joueurs.some(j => estOrdi(j) && CJ.nbVisibles(e.grilles[j]) < 2);
@@ -572,6 +611,7 @@
           this.envoyerJeu({ type: 'MANCHE' });
         },
         nouvellePartie: function() {
+          if (this.boss) { this.nouveauBoss(); this.majSolo(true); return this.tourOrdi(); }
           if (this.solo) {
             var joueurs = etatSolo.joueurs.slice();
             etatSolo = CJ.nouvellePartie(joueurs);
@@ -666,6 +706,11 @@
           var finie = e.phase === 'finManche' || e.phase === 'finPartie', finieAvant = ea && (ea.phase === 'finManche' || ea.phase === 'finPartie');
           if (finie && !finieAvant && e.resultat && e.resultat.finisseur === moi && !e.resultat.details[moi].double) { setTimeout(() => this.son('victoire'), 300); this.vibre([100, 60, 100]); }
           // Fin de partie : les étoiles du compagnon (une seule fois par partie)
+          if (e.phase === 'finPartie' && (!ea || ea.phase !== 'finPartie') && this.boss) {
+            ecrireStockage('vallee-boss-resultat', { id: this.boss.id, issue: this.issueBoss, partieId: p.partieId, t: Date.now() });
+            if (this.issueBoss === 'gagne') { setTimeout(() => this.son('victoire'), 300); this.vibre([100, 60, 100]); }
+            return;
+          }
           if (e.phase === 'finPartie' && (!ea || ea.phase !== 'finPartie') && e.joueurs.indexOf(moi) !== -1) {
             var gagne = e.vainqueurs.indexOf(moi) !== -1;
             Etoiles.finDePartie(NOM_JEU, gagne, !this.solo && e.joueurs.filter(x => !estOrdi(x)).length > 1, p.partieId, { joueurs: e.joueurs.length });
