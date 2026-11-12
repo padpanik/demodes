@@ -611,6 +611,33 @@ var VLD = (function () {
       cailloux +
       '<g class="vl-faille">' + [[-6, -10, 1.6], [4, -16, 1.3], [-1, -22, 1.1], [9, -9, 1.2]].map(c => '<circle cx="' + (cx + c[0]) + '" cy="' + (cy + c[1]) + '" r="' + c[2] + '" fill="#d0bfff"/>').join('') + '</g>';
   }
+  // Un campement d'expédition dans les Terres (3.61) : une tente rayée aux couleurs du lieu, son emblème sur un écusson, un fanion
+  function campExpedition(X, Y, L) { var cx = X + 16, by = Y + 29; return '<g transform="translate(' + cx + ' ' + by + ') scale(1.5) translate(' + (-cx) + ' ' + (-by) + ')">' + tenteBrute(X, Y, L) + '</g>'; }
+  function tenteBrute(X, Y, L) {
+    var cx = X + 16, bas = Y + 28, haut = Y - 14, g = cx - 22, d = cx + 22, c1 = (L && L.c1) || '#c92a2a', c2 = (L && L.c2) || '#f4c430';
+    var pans = '';
+    for (var i = 0; i < 4; i++) {   // quatre pans rayés, du sommet à la base
+      var x0 = g + i * 11, x1 = x0 + 11;
+      pans += '<path d="M' + cx + ' ' + haut + 'L' + x0 + ' ' + bas + 'H' + x1 + 'z" fill="' + (i % 2 ? c2 : c1) + '"/>';
+    }
+    return '<ellipse cx="' + cx + '" cy="' + (bas + 1) + '" rx="25" ry="5" fill="rgba(0,0,0,.28)"/>' +
+      // piquets et cordes
+      '<path d="M' + (g - 6) + ' ' + (bas + 1) + 'L' + (cx - 9) + ' ' + (haut + 13) + 'M' + (d + 6) + ' ' + (bas + 1) + 'L' + (cx + 9) + ' ' + (haut + 13) + '" stroke="#e9dcc0" stroke-width=".9"/>' +
+      '<path d="M' + (g - 6) + ' ' + (bas - 1) + 'v4M' + (d + 6) + ' ' + (bas - 1) + 'v4" stroke="' + OLB + '" stroke-width="1.6"/>' +
+      pans +
+      '<path d="M' + cx + ' ' + haut + 'L' + g + ' ' + bas + 'H' + d + 'z" fill="none" stroke="' + OLB + '" stroke-width="1.5" stroke-linejoin="round"/>' +
+      // un peu d'ombre sur le côté droit
+      '<path d="M' + cx + ' ' + haut + 'L' + d + ' ' + bas + 'H' + (cx + 9) + 'z" fill="rgba(0,0,0,.16)"/>' +
+      // la porte entrouverte
+      '<path d="M' + cx + ' ' + (bas - 17) + 'L' + (cx - 7) + ' ' + bas + 'H' + (cx + 7) + 'z" fill="#2b1a0c" stroke="' + OLB + '" stroke-width="1"/>' +
+      '<path d="M' + cx + ' ' + (bas - 17) + 'L' + (cx - 10) + ' ' + bas + 'L' + (cx - 5) + ' ' + bas + 'z" fill="' + c2 + '" stroke="' + OLB + '" stroke-width=".8"/>' +
+      // le mât et son fanion
+      '<path d="M' + cx + ' ' + haut + 'V' + (haut - 11) + '" stroke="' + OLB + '" stroke-width="1.5"/>' +
+      '<path class="vl-fanion" d="M' + cx + ' ' + (haut - 11) + 'l10 3-10 3z" fill="' + c2 + '" stroke="' + OLB + '" stroke-width=".9"/>' +
+      // l'écusson du lieu au-dessus de la porte
+      '<circle cx="' + cx + '" cy="' + (bas - 24) + '" r="6.4" fill="#fff8e6" stroke="' + OLB + '" stroke-width="1.2"/>' +
+      '<text x="' + cx + '" y="' + (bas - 20.6) + '" text-anchor="middle" font-size="8.5">' + ((L && L.ico) || '🧭') + '</text>';
+  }
   function coffre(X, Y, ouvert) {
     return (ouvert ? '' : '<circle cx="' + (X + 16) + '" cy="' + (Y + 18) + '" r="15" fill="url(#vl-lueur)" class="vl-halo"/>') +
       '<ellipse cx="' + (X + 16) + '" cy="' + (Y + 28) + '" rx="12" ry="3" fill="rgba(0,0,0,.3)"/>' +
@@ -1057,6 +1084,7 @@ var VLD = (function () {
       else if (t === 'O') poser(y + 0.2, arche(X + 3, Y));
       else if (t === 'f') poser(y, feuCamp(X, Y, !VL.feuAllume(e, VL.feuEn(gx2, gy2))));
       else if (t === 'W') poser(y + 0.3, tourGuet(X, Y, !!(e.terres && e.terres.tour)));
+      else if (t === 'X') poser(y + 0.2, campExpedition(X, Y, VL.expeditionEn(gx2, gy2)));
       else if (t === 'Y') poser(y - 0.2, faille(X, Y, VL.failleFermee(e, VL.failleEn(gx2, gy2))));
       else if (t === 'e') poser(y, etabli(X, Y, ctx.atelier));
       else if (VL.OBSTACLES[t]) poser(y - 0.1, obstacle(t, X, Y, VL.ouvert(e, gx2, gy2), ctx.flair));
@@ -1134,7 +1162,7 @@ var VLD = (function () {
   // ---------- La carte du monde, sous le brouillard (10 unités par case) ----------
   var COUL = { '.': '#a9d18e', ',': '#b8dc96', ':': '#e7cf9b', '=': '#c08a4e', T: '#5d9b4c', S: '#4b8650', b: '#77b35f', h: '#6aa653', o: '#a9d18e',
                '~': '#7fbde8', x: '#c98a6a', e: '#b07a45', m: '#e8590c', Q: '#b07a45', F: '#9ab', c: '#a9d18e', r: '#3d7a3a', R: '#9e9e9e', v: '#6b5040', s: '#3f7a35',
-               y: '#7d9a4a', '-': '#c08a4e', P: '#a07a52', p: '#9e9e9e', C: '#97b07a', k: '#8a857c', G: '#d7e9f7', B: '#e9c46a', O: '#9775fa', Z: '#a9d18e', f: '#e8590c', W: '#8d5a2b', Y: '#5f3dc4' };
+               y: '#7d9a4a', '-': '#c08a4e', P: '#a07a52', p: '#9e9e9e', C: '#97b07a', k: '#8a857c', G: '#d7e9f7', B: '#e9c46a', O: '#9775fa', Z: '#a9d18e', f: '#e8590c', W: '#8d5a2b', Y: '#5f3dc4', X: '#e8590c' };
   var COUL_BRUME = { '.': '#8fb987', ',': '#98c190', T: '#467a44', S: '#3d6e46' };
   var COUL_MARAIS = { '.': '#97b47a', ',': '#a3bd86', ':': '#c9b07e', '~': '#5f9a8a', T: '#4f7d3c' };
   var COUL_SOL = { colline: { '.': '#c3d68a', ',': '#cbdc94', T: '#5d9b4c' }, roche: { '.': '#bdb6a6', ',': '#c4bdad', ':': '#d6c49c' }, alpage: { '.': '#a2d47c', ',': '#aedb88', ':': '#e2cf9b' },
@@ -1198,6 +1226,7 @@ var VLD = (function () {
     IT.feux.forEach(F => { if (F.id !== 'camp') rep.push([F.x, F.y, VL.feuAllume(e, F) ? '🔥' : '', !VL.feuAllume(e, F)]); });
     rep.push([IT.tour.x, IT.tour.y, '🗼', false, true]);
     IT.failles.forEach(F => rep.push([F.x, F.y, VL.failleFermee(e, F) ? '🪨' : '🕳️', false, false]));
+    (IT.expeditions || []).forEach(X => rep.push([X.x, X.y, X.ico, false, false]));
     rep.forEach(q => {
       if (!q[4] && !VL.estVu(e, q[0], q[1], b)) return;
       if (q[3]) s.push('<circle cx="' + (q[0] * U + 5) + '" cy="' + (q[1] * U + 5) + '" r="' + f(3.6 * K) + '" fill="#5c534c" stroke="#fff" stroke-width="1.2"/>');

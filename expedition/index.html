@@ -107,6 +107,8 @@
     .fin-exp { text-align: center; }
     .fin-exp .grand { font-size: 3em; line-height: 1.1; }
     .fin-exp .titre { font-weight: 900; font-size: 1.25em; margin: 4px 0; }
+    .lieu-choisi { display: flex; gap: 10px; align-items: center; }
+    .lieu-choisi .ico { font-size: 40px; line-height: 1; }
     .bilan { list-style: none; padding: 0; margin: 10px 0 0; text-align: left; font-size: 0.92em; color: #3b4b57; }
     .bilan li { padding: 4px 0; border-bottom: 1px solid #f1f3f5; }
   </style>
@@ -129,6 +131,16 @@
         </section>
 
         <template v-else>
+          <!-- Le lieu : choisi en entrant dans un campement des Terres de la saison (Vallée) -->
+          <section class="carte" v-if="lieuSelection">
+            <div class="titre-carte">Ton expédition</div>
+            <div class="lieu-choisi"><span class="ico">{{ lieuSelection.ico }}</span><div><b>{{ lieuSelection.nom }}</b> · {{ lieuSelection.theme }}<div class="aide" style="margin-top:2px">{{ lieuSelection.desc }} Boss : {{ lieuSelection.boss.nom }} ({{ lieuSelection.boss.nomJeu }}).</div></div></div>
+          </section>
+          <section class="carte" v-else>
+            <div class="titre-carte">Où partir en expédition ?</div>
+            <div class="lieu-choisi"><span class="ico">⛺</span><div>Les expéditions partent des <b>campements des Terres de la saison</b> : dans la Vallée, passe la Porte des brumes (au bord du ruisseau) et cherche les tentes rayées <span v-for="l in LIEUX" v-if="l.pret" :key="l.id">{{ l.ico }} </span>sur la carte. Elles changent de place à chaque saison.</div></div>
+            <a class="btn principal" href="vallee/" style="display:block; text-align:center; margin-top:8px; text-decoration:none">⛰️ Aller dans la Vallée</a>
+          </section>
           <section class="carte repos-exp" v-if="fatigue">
             <span class="grand">😴</span>
             <div><b>{{ animal ? animal.nom + ' est trop fatigué' : 'Tu es trop fatigué' }} pour repartir tout de suite.</b>
@@ -149,20 +161,9 @@
               <button v-for="(d, id) in DIFFICULTES" :key="id" :class="{ actif: difficulte === id }" @click="difficulte = id">{{ d.nom }}<small>{{ d.desc }}</small></button>
             </div>
             <div class="coeurs-depart"><span class="rangee"><span v-for="i in COEURS" :key="i" class="coeur-exp" v-html="dessinCoeur(true)"></span></span><span>Tu pars avec 3 cœurs : ne les perds pas en route !</span></div>
-            <button class="btn principal" style="width:100%; margin-top:8px" :disabled="!!fatigue || !lieuSelection" @click="partir">{{ fatigue ? '😴 Encore ' + fatigue + ' min de repos' : lieuSelection ? '🧭 Partir : ' + lieuSelection.nom : '👇 Choisis d\'abord où aller' }}</button>
+            <button class="btn principal" style="width:100%; margin-top:8px" :disabled="!!fatigue || !lieuSelection" @click="partir">{{ fatigue ? '😴 Encore ' + fatigue + ' min de repos' : lieuSelection ? '🧭 Partir : ' + lieuSelection.nom : '⛺ Pars d\'un campement des Terres' }}</button>
             <div class="aide" v-if="stats.parties">Expéditions : {{ stats.reussies }} réussie{{ stats.reussies > 1 ? 's' : '' }} sur {{ stats.parties }} · {{ stats.bonnes }} bonne{{ stats.bonnes > 1 ? 's' : '' }} réponse{{ stats.bonnes > 1 ? 's' : '' }} en tout.</div>
           </section>
-          <section class="carte">
-            <div class="titre-carte">Où aller ?</div>
-            <div class="lieux">
-              <button v-for="l in LIEUX" :key="l.id" class="lieu" :class="{ actif: lieuChoisi === l.id }" :disabled="!l.pret" @click="lieuChoisi = l.id">
-                <div class="ico">{{ l.ico }}</div><div class="nom">{{ l.nom }}</div><div class="theme">{{ l.theme }}</div>
-                <span v-if="!l.pret" class="bientot">Bientôt</span>
-              </button>
-            </div>
-            <div class="aide">{{ lieuSelection ? lieuSelection.desc : 'Touche un lieu pour le choisir.' }}</div>
-          </section>
-
         </template>
         <p class="version">Désdale · Expédition · version {{ version }}</p>
       </template>
@@ -171,7 +172,7 @@
       <template v-slot:jouer>
         <div v-if="!e" class="carte panneau-vide">
           <div class="grand">🧭</div>
-          Choisis un lieu dans l'onglet <b>Partie</b>, puis pars en expédition.
+          Choisis ta difficulté dans l'onglet <b>Partie</b>, puis pars en expédition.
         </div>
         <div v-else class="jeu-exp">
           <div class="barre-exp">
@@ -310,6 +311,7 @@
         <section class="carte regles">
           <div class="titre-carte">Règles</div>
           <ul>
+            <li>On part d'un <strong>campement</strong> des Terres de la saison (dans la Vallée, après la Porte des brumes) : chaque tente mène à un lieu à thème, et les campements changent de place à chaque saison.</li>
             <li>Tu pars en balade avec ton compagnon dans un lieu à thème. Le chemin monte vers le <strong>boss</strong>, avec des fourches ; il est tracé au hasard, différent à chaque expédition. Il est caché : tu ne vois que les prochaines étapes possibles (elles clignotent), à toi de choisir.</li>
             <li><strong>Gardien</strong> : il pose une question (4 réponses). Bonne réponse : des étoiles dans le sac. Mauvaise : tu perds un <strong>cœur</strong>.</li>
             <li>Tu pars avec <strong>3 cœurs</strong> ❤️❤️❤️. Plus de cœur : l'expédition s'arrête.</li>
@@ -317,7 +319,7 @@
             <li><strong>Buvette</strong> : tu récupères un cœur (3 au plus).</li>
             <li><strong>Aide du compagnon</strong>, une fois par expédition : il retire deux mauvaises réponses.</li>
             <li><strong>Boss</strong> : il te défie sur un jeu de la collection, contre l'ordinateur : la partie se joue dans le vrai jeu, puis on revient. Perdu : un cœur en moins et une revanche.</li>
-            <li><strong>🏳️ Quitter</strong>, à tout moment (même face à un gardien ou au boss) : tu gardes la moitié du sac et tes poussières, et tu reviens à l'accueil.</li>
+            <li><strong>🏳️ Quitter</strong>, à tout moment (même face à un gardien ou au boss) : tu gardes la moitié du sac et tes poussières, et tu reviens dans la Vallée.</li>
             <li>Une expédition fatigue : il faut attendre <strong>une heure</strong> avant de repartir.</li>
             <li>Boss vaincu : tu gardes tout le sac (+{{ GAIN_BOSS }} ⭐). Plus de cœurs, ou retour avant la fin : la moitié du sac. Les étoiles comptent dans le plafond du jour.</li>
             <li>Le <strong>Donjon des compagnons</strong> se joue seul ou à plusieurs, sur sa propre page : chaque compagnon y a un pouvoir.</li><li>Bientôt : d'autres lieux (histoire, géographie…).</li>
@@ -371,7 +373,8 @@
         LIEUX: EX.LIEUX, DIFFICULTES: EX.DIFFICULTES, GAIN_BOSS: EX.GAIN_BOSS, COEURS: EX.COEURS, coeurPerdu: 0, demandeQuitter: false,
         onglet: 'config',
         e: lireStockage(CLE),
-        lieuChoisi: null,   // pas de lieu choisi d'office : on choisit à chaque départ
+        // Le lieu vient du campement des Terres où l'on est entré (3.61 : expedition/?lieu=cinema) ; sans lui, on renvoie vers la Vallée
+        lieuChoisi: (function() { var id = new URLSearchParams(location.search).get('lieu'), l = EX.lieu(id); return l && l.pret ? id : null; })(),
         difficulte: lireStockage('expedition-difficulte') || 'balade',
         stats: lireStockage('expedition-stats') || { parties: 0, reussies: 0, bonnes: 0 },
         animal: lireStockage('compagnon-animal'),
@@ -609,7 +612,7 @@
             gain: e.fin.gain, donne: e.fin.donne, poussiere: e.fin.poussiere, souvenirs: e.souvenirs, boss: L.boss.nom, h: Date.now() });
           ecrireStockage('expedition-boss', null); ecrireStockage('expedition-boss-resultat', null);
           this.e = null; ecrireStockage(CLE, null);
-          location.href = 'index.html?choix';
+          location.href = adresseRetour();
         },
         // Tout laisser tomber : ni gain ni repos, on revient au choix du lieu pour une nouvelle expédition
         recommencer: function() {

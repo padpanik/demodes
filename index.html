@@ -710,7 +710,7 @@
         },
         jeux: function() {
           this.maj;   // recalcul après « Quitter »
-          var b = etatJeu('brillant-sauvegarde-v1'), y = etatJeu('yams-sauvegarde'), g = etatJeu('bg-sauvegarde'), a = etatJeu('assaut-sauvegarde'), n = etatJeu('bataille-sauvegarde'), d = etatJeu('gribouille-sauvegarde'), pb = etatJeu('petitbac-sauvegarde'), ag = etatJeu('agents-sauvegarde'), ql = etatJeu('quatre-sauvegarde'), dm = etatJeu('domino-sauvegarde'), lc = etatJeu('lettres-sauvegarde'), jx = etatJeu('joyaux-sauvegarde'), cc = etatJeu('chinchon-sauvegarde'), cj = etatJeu('cieljo-sauvegarde'); var ex = lireStockage('expedition-partie'); var dx = lireStockage('dix-partie'), dxs = etatJeu('dix-sauvegarde');
+          var b = etatJeu('brillant-sauvegarde-v1'), y = etatJeu('yams-sauvegarde'), g = etatJeu('bg-sauvegarde'), a = etatJeu('assaut-sauvegarde'), n = etatJeu('bataille-sauvegarde'), d = etatJeu('gribouille-sauvegarde'), pb = etatJeu('petitbac-sauvegarde'), ag = etatJeu('agents-sauvegarde'), ql = etatJeu('quatre-sauvegarde'), dm = etatJeu('domino-sauvegarde'), lc = etatJeu('lettres-sauvegarde'), jx = etatJeu('joyaux-sauvegarde'), cc = etatJeu('chinchon-sauvegarde'), cj = etatJeu('cieljo-sauvegarde'); var dx = lireStockage('dix-partie'), dxs = etatJeu('dix-sauvegarde');
           return [
             { id: 'brilliant', nom: 'Brilliant', page: 'brilliant/', desc: 'Roll & write : remplis les zones de ta grille.', enCours: b && b.texte },
             { id: 'yams', nom: 'Yams', page: 'yams/', desc: '5 dés, 3 lancers, seul ou à plusieurs.', enCours: y && y.texte },
@@ -726,8 +726,8 @@
             { id: 'chinchon', nom: 'Chinchón', page: 'chinchon/', desc: 'Le jeu de cartes espagnol, seul ou de 2 à 4.', enCours: cc && cc.texte, nouveau: true },
             { id: 'lettres', nom: 'Lettres croisées', page: 'lettres/', desc: 'Des mots sur la grille, seul ou de 2 à 4.', enCours: lc && lc.texte },
             { id: 'dix', nom: 'Combien sur 10 ?', page: 'dix/', desc: 'Quiz en équipes, chacun sur son téléphone : annonce de 1 à 10 combien tu t\'y connais.', enCours: dxs ? dxs.texte : dx && dx.phase !== 'fin' ? '● Partie en cours (mode test)' : '', solo: !dxs, nouveau: true },
-            { id: 'joyaux', nom: '7 piliers', page: 'joyaux/', desc: 'Bâtis ta cité en trois âges, seul ou entre amis.', enCours: jx && jx.texte },
-            { id: 'expedition', nom: 'Expédition', page: 'expedition/', desc: 'Balade avec ton compagnon : questions, coffres et boss.', enCours: ex && !ex.fin ? '● Expédition en cours' : '', solo: true }
+            { id: 'joyaux', nom: '7 piliers', page: 'joyaux/', desc: 'Bâtis ta cité en trois âges, seul ou entre amis.', enCours: jx && jx.texte }
+            // L'Expédition n'est plus un jeu de l'accueil (3.61) : on y part depuis les campements des Terres de la saison, dans la Vallée
           ];
         }
       },

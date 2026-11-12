@@ -434,6 +434,10 @@ for (var sn = -5; sn < nbSaisons - 5; sn++) {
   if (I.failles.length !== 2 || I.failles[0].etage !== 1 || I.failles[1].etage !== 2) ok1 = false;
   I.failles.forEach(F => { if (VL.tuile(F.x, F.y) !== 'Y' || !proche(F.x, F.y) || [I.hameau, I.tour].concat(I.feux).some(L => L.ex === F.ex && L.ey === F.ey)) ok1 = false; });
   if (I.failles[0].ex === I.failles[1].ex && I.failles[0].ey === I.failles[1].ey) ok1 = false;
+  // Les campements d'expédition (3.61) : un par lieu prêt, chacun dans son écran, atteignable
+  if (I.expeditions.length !== VL.LIEUX_EXPEDITION.length) ok1 = false;
+  I.expeditions.forEach(X => { if (VL.tuile(X.x, X.y) !== 'X' || !proche(X.x, X.y) || [I.hameau, I.tour].concat(I.feux, I.failles).some(L => L.ex === X.ex && L.ey === X.ey)) ok1 = false; });
+  if (new Set(I.expeditions.map(X => X.ex + ',' + X.ey)).size !== I.expeditions.length || new Set(I.expeditions.map(X => X.id)).size !== I.expeditions.length) ok1 = false;
   if (!ok1) { mauvais++; if (mauvais < 4) console.log('  saison ' + sn + ' incorrecte'); }
 }
 verif(mauvais === 0, nbSaisons + ' saisons générées, toutes justes (' + coffresVus + ' coffres) en ' + (Date.now() - t0) + ' ms');
@@ -563,6 +567,13 @@ verif(VL.carnet(eF15).saison.failles === 2, 'le carnet compte les failles');
 var sv16 = JSON.parse(JSON.stringify(eF15)); verif(VL.failleFermee(VL.charger(sv16), F0), 'failles gardées au rechargement');
 sv16.terres.s--; var e16 = VL.charger(sv16); VL.terresPretes();
 verif(!Object.keys(e16.terres.failles).length && e16.carnet.saisons.slice(-1)[0].failles === 2, 'nouvelle saison : failles rouvertes, archivées dans le carnet');
+
+// 16. Les campements d'expédition (3.61)
+VL.terresPretes();
+var IX = VL.infoTerres(), X0 = IX.expeditions[0], eX = VL.nouvelEtat(); VL.traverser(eX, 'aller');
+eX.x = X0.x; eX.y = X0.y + 1;
+verif(VL.pas(eX, 'h', {}).action === 'expedition' && VL.expeditionEn(X0.x, X0.y).id === X0.id, 'on fonce dans un campement d\'expédition : ' + X0.nom);
+verif(IX.expeditions.map(X => X.id).sort().join() === 'cinema,sciences', 'les deux lieux prêts sont dans les Terres');
 
 console.log(ok + ' vérifications réussies, ' + ko + ' échec(s)');
 process.exit(ko ? 1 : 0);

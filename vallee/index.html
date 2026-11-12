@@ -1049,6 +1049,23 @@
                 (FA.etage > 1 ? ' Plus profonde, elle demande un héros déjà aguerri.' : '') + (autre ? ' (Tu quitteras l\'autre faille où tu étais descendu.)' : ''),
               boutons: [{ t: '⬇️ Descendre', principal: true, f: () => this.descendreFaille(FA) }, { t: 'Plus tard', f: () => this.fermer() }] });
           }
+          if (id === 'expedition') {   // un campement d'expédition (3.61)
+            var XL = VL.expeditionEn(r.x, r.y);
+            if (!XL) return;
+            var exE = lireStockage('expedition-partie'), exEnCours = exE && !exE.fin ? exE : null;
+            var exAutre = exEnCours && exEnCours.lieu !== XL.id ? VL.LIEUX_EXPEDITION.find(q => q.id === exEnCours.lieu) : null;
+            var depart = lireStockage('expedition-depart'), repos = depart ? Math.max(0, Math.ceil((3600000 - (Date.now() - depart)) / 60000)) : 0;   // EX.REPOS : une heure
+            var qui = this.animal ? this.animal.nom : 'Ton compagnon';
+            var texteX = 'Une tente rayée, et sur l\'écusson : ' + XL.ico + '. C\'est le départ des expéditions « ' + XL.nom + ' » : des questions de ' + XL.theme.toLowerCase() +
+              ' posées par des gardiens, des coffres, une buvette, et pour finir ' + XL.boss + ', qui te défie ' + XL.jeu + '. Tu pars avec 3 cœurs.';
+            var boutonsX;
+            if (exEnCours && !exAutre) { texteX = 'Ton expédition « ' + XL.nom + ' » t\'attend là où tu l\'as laissée.'; boutonsX = [{ t: '▶️ Reprendre', principal: true, f: () => this.partirExpedition(XL) }]; }
+            else if (exAutre) { texteX += ' Mais tu es déjà parti en expédition « ' + exAutre.nom + ' » : finis-la d\'abord (son campement est ailleurs dans les Terres).'; boutonsX = [{ t: '▶️ Reprendre « ' + exAutre.nom + ' »', principal: true, f: () => this.partirExpedition(exAutre) }]; }
+            else if (repos) { texteX += ' ' + (this.animal ? qui + ' se repose' : 'Tu te reposes') + ' de ta dernière balade : encore ' + repos + ' min.'; boutonsX = [{ t: '😴 Encore ' + repos + ' min de repos', off: true }]; }
+            else boutonsX = [{ t: '🧭 Partir en expédition', principal: true, f: () => this.partirExpedition(XL) }];
+            boutonsX.push({ t: 'Plus tard', f: () => this.fermer() });
+            return this.lire({ ico: XL.ico, titre: XL.nom, texte: texteX, boutons: boutonsX });
+          }
           if (id === 'chaumiere') return this.annoncer(r && r.p === 1 ? '🗺️ La chaumière de Mlle Taupinette. Des cartes sèchent à la fenêtre, et la porte est couverte de terre.' : '🦡 La chaumière de Barnabé. Ça sent le cuir et le bois verni ; sa hotte attend devant la porte.');
           if (id === 'coffreT') {
             var rc = VL.ouvrirCoffreT(etat, r.x, r.y);
@@ -1222,6 +1239,11 @@
           localStorage.removeItem('vallee-boss-resultat');
           ecrireStockage('vallee-boss', { id: 'yeti', nom: 'Le Yéti', titre: 'gardien du col', ico: '❄️', defi: 'Une manche, le plus petit total gagne. Hou hou !' });
           this.entrer('cieljo/?boss');
+        },
+        // Vers la page de l'expédition, avec son lieu (elle revient dans la Vallée en finissant)
+        partirExpedition: function(XL) {
+          ecrireStockage('expedition-lieu', XL.id);
+          this.entrer('expedition/?lieu=' + XL.id);
         },
         descendreFaille: function(FA) {
           localStorage.removeItem('vallee-faille-resultat');

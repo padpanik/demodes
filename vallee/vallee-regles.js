@@ -660,6 +660,7 @@ var VL = (function () {
     if (t === 'f') return { action: 'feu', x: nx, y: ny };
     if (t === 'W') return { action: 'tour', x: nx, y: ny };
     if (t === 'Y') return { action: 'faille', x: nx, y: ny };
+    if (t === 'X') return { action: 'expedition', x: nx, y: ny };
     if (TERRES.actions[k]) return { action: TERRES.actions[k].id, x: nx, y: ny, p: TERRES.actions[k].n };
     if (t === 'P' && !passerelleOk(e)) return { action: 'passerelle', x: nx, y: ny };
     if (t === 'G' && !colOuvert(e)) return { action: 'yeti', x: nx, y: ny };
@@ -1001,8 +1002,14 @@ var VL = (function () {
   var DEBUT_SAISONS = new Date(2026, 10, 9).getTime();   // lundi 9 novembre 2026, heure du téléphone : la saison 1 commence
   var PORTE = g(0, 1, 0, 4);              // l'arche dans la Vallée, au bord ouest du ruisseau
   var NB_COFFRES = 6;
-  var TERRES = { saison: null, camp: null, coffres: [], ecrans: [], riviere: -1, feux: [], tour: null, hameau: null, actions: {}, failles: [] };
+  var TERRES = { saison: null, camp: null, coffres: [], ecrans: [], riviere: -1, feux: [], tour: null, hameau: null, actions: {}, failles: [], expeditions: [] };
   var NB_FEUX = 3, TROC_JOUR = 3, PRIX_CARTE = 3, NB_FAILLES = 2;
+  // Les lieux d'expédition prêts (3.61 : on n'y part plus que depuis les Terres). Identifiants, noms et couleurs recopiés
+  // d'expedition/expedition-regles.js (EX.LIEUX, ceux qui ont `pret: true`) : à tenir ensemble.
+  var LIEUX_EXPEDITION = [
+    { id: 'cinema', nom: 'Studio de cinéma', ico: '🎬', theme: 'Cinéma', boss: 'le Fantôme du studio', jeu: 'au Quatre en ligne', c1: '#c92a2a', c2: '#f4c430' },
+    { id: 'sciences', nom: 'Laboratoire', ico: '🔬', theme: 'Sciences', boss: 'le Savant fou', jeu: 'à la Bataille navale', c1: '#1c7ed6', c2: '#66d9e8' }
+  ];
   // Les lieux du Donjon qu'une faille peut ouvrir, par étage (identifiants et noms de donjon/donjon-donnees.js, à tenir ensemble)
   var LIEUX_FAILLE = {
     1: [{ id: 'caves', nom: 'Les Caves', de: 'des Caves', ico: '🕳️' }, { id: 'champignonniere', nom: 'La Champignonnière', de: 'de la Champignonnière', ico: '🍄', regle: 'Spores' },
@@ -1085,7 +1092,14 @@ var VL = (function () {
       failles.push(fx); pris.push(fx);
     }
     failles.sort((a, b) => dist(a, campE) - dist(b, campE));
-    var special = (cx, cy) => failles.some(c => c.x === cx && c.y === cy) ? 'faille' : (hameau.x === cx && hameau.y === cy) ? 'hameau' : (tour.x === cx && tour.y === cy) ? 'tour' : feux.findIndex(c => c.x === cx && c.y === cy);
+    // Les lieux d'expédition (3.61) : un campement par lieu prêt, aussi loin que possible ; leur propre tirage (r3), comme les failles
+    var r3 = alea(Math.imul(saison + 211, 0x2c1b3c6d) ^ GRAINE), expes = [];
+    for (var ne = 0; ne < LIEUX_EXPEDITION.length; ne++) {
+      var cex = libres().map(c => ({ c: c, d: Math.min.apply(null, pris.map(p => dist(p, c))) + r3() * 0.5 }));
+      var ec = cex.reduce((m, q) => q.d > m.d ? q : m, { d: -1 }).c;
+      expes.push(ec); pris.push(ec);
+    }
+    var special = (cx, cy) => expes.some(c => c.x === cx && c.y === cy) ? 'expedition' : failles.some(c => c.x === cx && c.y === cy) ? 'faille' : (hameau.x === cx && hameau.y === cy) ? 'hameau' : (tour.x === cx && tour.y === cy) ? 'tour' : feux.findIndex(c => c.x === cx && c.y === cy);
     // On retire ce que la saison d'avant avait posé (maisons, habitants)
     for (var ib = BATIMENTS.length - 1; ib >= 0; ib--) if (BATIMENTS[ib].terres) BATIMENTS.splice(ib, 1);
     TERRES.actions = {}; TERRES.feux = [];
@@ -1116,6 +1130,7 @@ var VL = (function () {
       if (sp === 'tour') { vider(5, 2, 8, 4); l[2][7] = 'W'; }
       if (typeof sp === 'number' && sp >= 0) { vider(2, 2, 5, 4); l[2][3] = 'f'; }
       if (sp === 'faille') { vider(5, 2, 8, 4, r2); l[2][7] = 'Y'; }
+      if (sp === 'expedition') { vider(2, 2, 5, 3, r3); l[2][3] = 'X'; }
       // Les chemins : du centre vers chaque sortie
       var sorties = { h: cy > 0 && lie(cx, cy, cx, cy - 1), b: cy < TH - 1 && lie(cx, cy, cx, cy + 1), g: cx > 0 && lie(cx, cy, cx - 1, cy), d: cx < TW - 1 && lie(cx, cy, cx + 1, cy) };
       l[4][5] = ':';
@@ -1137,7 +1152,7 @@ var VL = (function () {
       ajouterEcran(TX + cx, TY + cy, E);
       TERRES.ecrans.push({ ex: TX + cx, ey: TY + cy });
       // Cases où l'on pourra poser un coffre : de l'herbe qu'on atteint depuis le centre, loin du chemin
-      if (!camp && (sp === -1 || sp === 'faille')) {   // un coffre peut tomber près d'une faille (hors de sa clairière) : les coffres d'une saison ne bougent pas
+      if (!camp && (sp === -1 || sp === 'faille' || sp === 'expedition')) {   // un coffre peut tomber près d'une faille (hors de sa clairière) : les coffres d'une saison ne bougent pas
         var vu = {}, file = [[5, 4]]; vu['5,4'] = 1;
         while (file.length) {
           var q = file.shift();
@@ -1147,7 +1162,7 @@ var VL = (function () {
             vu[nx + ',' + ny] = 1; file.push([nx, ny]);
           });
         }
-        var cand = Object.keys(vu).map(k => k.split(',').map(Number)).filter(c => (l[c[1]][c[0]] === '.' || l[c[1]][c[0]] === ',') && c[0] !== 5 && c[1] !== 4 && Math.abs(c[0] - 5) + Math.abs(c[1] - 4) >= 3 && !(sp === 'faille' && c[0] >= 4 && c[0] <= 9 && c[1] >= 1 && c[1] <= 5));
+        var cand = Object.keys(vu).map(k => k.split(',').map(Number)).filter(c => (l[c[1]][c[0]] === '.' || l[c[1]][c[0]] === ',') && c[0] !== 5 && c[1] !== 4 && Math.abs(c[0] - 5) + Math.abs(c[1] - 4) >= 3 && !(sp === 'faille' && c[0] >= 4 && c[0] <= 9 && c[1] >= 1 && c[1] <= 5) && !(sp === 'expedition' && c[0] >= 1 && c[0] <= 6 && c[1] >= 1 && c[1] <= 4));
         if (cand.length) places.push({ ex: TX + cx, ey: TY + cy, cand: cand });
       }
     }
@@ -1173,6 +1188,9 @@ var VL = (function () {
       return { k: k, id: saison + ':' + k, etage: et, lieu: L.id, nomLieu: L.nom, ico: L.ico, regle: L.regle || '', nom: 'La faille ' + L.de,
                x: (TX + c.x) * W + 7, y: (TY + c.y) * H + 2, ex: TX + c.x, ey: TY + c.y, etoiles: et === 1 ? 6 : 10, cristaux: et };
     });
+    // Les campements d'expédition : un lieu (Studio de cinéma, Laboratoire…) chacun, ordre tiré au hasard
+    var ordreE = LIEUX_EXPEDITION.map((L, i) => ({ L: L, t: r3() })).sort((a, b) => a.t - b.t).map(o => o.L);
+    TERRES.expeditions = expes.map((c, k) => Object.assign({ k: k }, ordreE[k], { x: (TX + c.x) * W + 3, y: (TY + c.y) * H + 2, ex: TX + c.x, ey: TY + c.y }));
     // Les coffres de la saison, dans des écrans différents
     for (var n = 0; n < NB_COFFRES && places.length; n++) {
       var P = places.splice(ri(places.length), 1)[0], c = P.cand[ri(P.cand.length)], Ec = ecranA(P.ex, P.ey);
@@ -1301,6 +1319,8 @@ var VL = (function () {
 
   // ---------- Les failles du Donjon (3.60) ----------
   // On fonce dans une faille : on descend (page du Donjon, un seul étage, au lieu de la faille). Le boss vaincu, elle se referme pour la saison.
+  // ---------- Les campements d'expédition (3.61) ----------
+  function expeditionEn(x, y) { return TERRES.expeditions.find(X => X.x === x && X.y === y) || null; }
   function failleEn(x, y) { return TERRES.failles.find(F => F.x === x && F.y === y) || null; }
   function failleFermee(e, F) { return !!(F && e.terres && e.terres.failles[F.k]); }
   // Ce que la page du Donjon reçoit (`vallee-faille`)
@@ -1411,7 +1431,7 @@ var VL = (function () {
 
   function infoTerres() {
     return { saison: TERRES.saison, numero: TERRES.saison + 1, fin: finSaison(TERRES.saison), camp: Object.assign({}, TERRES.camp), coffres: TERRES.coffres.slice(),
-             feux: TERRES.feux.map(F => Object.assign({}, F)), failles: TERRES.failles.map(F => Object.assign({}, F)), tour: Object.assign({}, TERRES.tour), hameau: Object.assign({}, TERRES.hameau),
+             feux: TERRES.feux.map(F => Object.assign({}, F)), failles: TERRES.failles.map(F => Object.assign({}, F)), expeditions: TERRES.expeditions.map(X => Object.assign({}, X)), tour: Object.assign({}, TERRES.tour), hameau: Object.assign({}, TERRES.hameau),
              riviere: TERRES.riviere, x0: TX * W, y0: TY * H, x1: (TX + TW) * W, y1: (TY + TH) * H, ex0: TX, ey0: TY, ex1: TX + TW - 1, ey1: TY + TH - 1 };
   }
   // Les régions de la carte du monde (le cœur, les Terres), en cases
@@ -1441,7 +1461,7 @@ var VL = (function () {
     queteSuivie: queteSuivie, consigne: consigne, cible: cible, pas: pas, parler: parler, tableau: tableau, agir: agir, fouiller: fouiller,
     PORTE: PORTE, saisonDe: saisonDe, genererTerres: genererTerres, terresPretes: terresPretes, changerSaison: changerSaison, traverser: traverser,
     semaineDe: semaineDe, rumeursDe: rumeursDe, trouverRumeur: trouverRumeur, carnet: carnet, majRumeurs: majRumeurs,
-    failleEn: failleEn, failleFermee: failleFermee, defiFaille: defiFaille, resultatFaille: resultatFaille, NB_FAILLES: NB_FAILLES,
+    expeditionEn: expeditionEn, LIEUX_EXPEDITION: LIEUX_EXPEDITION, failleEn: failleEn, failleFermee: failleFermee, defiFaille: defiFaille, resultatFaille: resultatFaille, NB_FAILLES: NB_FAILLES,
     feuEn: feuEn, feuAllume: feuAllume, allumer: allumer, destinations: destinations, voyager: voyager, monterTour: monterTour, trocsRestants: trocsRestants, PRIX_CARTE: PRIX_CARTE,
     ouvrirCoffreT: ouvrirCoffreT, infoTerres: infoTerres, dansTerres: dansTerres, regions: regions, regionDe: regionDe, partVueTerres: partVueTerres
   };
