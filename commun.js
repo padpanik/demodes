@@ -3,12 +3,13 @@
 // Les clés de stockage gardent l'ancien préfixe "brillant-" : les réglages déjà faits sont conservés.
 
 // Numéro de version affiché (à augmenter à chaque mise en ligne, avec brilliant/index.html et sw.js)
-const VERSION = '3.64';
+const VERSION = '3.65';
 
 // ---------- Nouveautés (2.87, demandé par l'utilisateur) ----------
 // Une ligne très brève par mise en ligne (la plus récente en haut) : l'accueil les montre une seule fois, dans une petite fenêtre,
 // à qui n'a pas encore vu cette version. [version, jeu ou partie de l'appli, ce qui change]
 const NOUVEAUTES = [
+  ['3.65', 'Expédition', 'Nouveau campement dans les Terres : l\'Île aux trésors, questions de géographie et un boss aux Dominos.'],
   ['3.64', 'Donjon', 'Nouveau lieu à l\'étage 2 : la Bibliothèque interdite, où la 3e carte du tour est gratuite.'],
   ['3.63', 'Expédition', 'Nouveau campement dans les Terres : le Château fort, questions d\'histoire et un boss à l\'Assaut.'],
   ['3.62', 'La Vallée', 'Des icônes dessinées remplacent les émojis sur la carte, dans les menus et les fenêtres.'],

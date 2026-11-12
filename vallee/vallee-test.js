@@ -573,7 +573,7 @@ VL.terresPretes();
 var IX = VL.infoTerres(), X0 = IX.expeditions[0], eX = VL.nouvelEtat(); VL.traverser(eX, 'aller');
 eX.x = X0.x; eX.y = X0.y + 1;
 verif(VL.pas(eX, 'h', {}).action === 'expedition' && VL.expeditionEn(X0.x, X0.y).id === X0.id, 'on fonce dans un campement d\'expédition : ' + X0.nom);
-verif(IX.expeditions.map(X => X.id).sort().join() === 'cinema,histoire,sciences', 'les lieux prêts sont dans les Terres');
+verif(IX.expeditions.map(X => X.id).sort().join() === 'cinema,geo,histoire,sciences', 'les lieux prêts sont dans les Terres');
 
 console.log(ok + ' vérifications réussies, ' + ko + ' échec(s)');
 process.exit(ko ? 1 : 0);

@@ -322,7 +322,7 @@
             <li><strong>🏳️ Quitter</strong>, à tout moment (même face à un gardien ou au boss) : tu gardes la moitié du sac et tes poussières, et tu reviens dans la Vallée.</li>
             <li>Une expédition fatigue : il faut attendre <strong>une heure</strong> avant de repartir.</li>
             <li>Boss vaincu : tu gardes tout le sac (+{{ GAIN_BOSS }} ⭐). Plus de cœurs, ou retour avant la fin : la moitié du sac. Les étoiles comptent dans le plafond du jour.</li>
-            <li>Le <strong>Donjon des compagnons</strong> se joue seul ou à plusieurs, sur sa propre page : chaque compagnon y a un pouvoir.</li><li>Bientôt : d'autres lieux (géographie, musique, nature).</li>
+            <li>Le <strong>Donjon des compagnons</strong> se joue seul ou à plusieurs, sur sa propre page : chaque compagnon y a un pouvoir.</li><li>Bientôt : d'autres lieux (musique, nature).</li>
           </ul>
         </section>
       </template>
@@ -584,7 +584,7 @@
           e.rencontre.attente = id;
           this.sauver();
           ecrireStockage('expedition-boss-resultat', null);
-          ecrireStockage('expedition-boss', { id: id, nom: L.boss.nom, ico: L.boss.ico, defi: L.boss.defi, niveau: EX.DIFFICULTES[e.difficulte].boss });
+          ecrireStockage('expedition-boss', { id: id, nom: L.boss.nom, court: L.boss.court, ico: L.boss.ico, defi: L.boss.defi, niveau: EX.DIFFICULTES[e.difficulte].boss });
           location.href = L.boss.jeu + '/?boss';
         },
         lireResultatBoss: function() {

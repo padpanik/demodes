@@ -74,6 +74,10 @@
     .journal-dm { font-size: 0.78em; color: #6b7a86; text-align: center; margin-top: 6px; min-height: 1.2em; }
 
     /* Fin de manche */
+    .bandeau-boss { display: flex; align-items: center; gap: 10px; background: #3b2a6b; color: #fff; border-radius: 14px; padding: 6px 12px; margin: 0 0 6px; }
+    .bandeau-boss .ico { font-size: 1.8em; line-height: 1; }
+    .bandeau-boss .btn-boss { margin-left: auto; flex: none; background: #ffd43b; color: #2a211b; border: 0; border-radius: 10px; padding: 8px 10px; font-weight: 800; font-size: 0.9em; }
+    .bandeau-boss small { display: block; font-size: 0.78em; opacity: 0.85; line-height: 1.3; }
     .fin-dm { background: #fff; border-radius: 16px; padding: 12px; margin-top: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
     .fin-dm .titre { font-weight: 900; font-size: 1.15em; text-align: center; margin-bottom: 6px; }
     .fin-dm table { width: 100%; border-collapse: collapse; font-size: 0.9em; }
@@ -183,6 +187,9 @@
         </section>
 
         <template v-else-if="e">
+          <!-- Défi d'un boss d'expédition (3.65, Île aux trésors) -->
+          <div v-if="boss && e.phase === 'jeu'" class="bandeau-boss"><span class="ico">{{ boss.ico }}</span><span><b>{{ boss.nom }}</b><small>« {{ boss.defi }} »</small></span></div>
+          <div v-if="boss && e.phase !== 'jeu'" class="bandeau-boss"><span class="ico">{{ boss.ico }}</span><span><b>{{ e.vainqueur === moiJ ? 'Tu as battu ' + (boss.court || 'le boss') + ' !' : (boss.court || boss.nom) + ' a gagné la manche…' }}</b><small>{{ e.vainqueur === moiJ ? 'Ta récompense t\'attend à l\'expédition.' : 'Une revanche t\'attend à l\'expédition.' }}</small></span><button class="btn-boss" @click="retourExpedition">🧭 Retour</button></div>
           <div class="joueurs-dm">
             <div v-for="j in joueursAff" :key="j.nom" class="j" :class="{ actif: j.actif, absent: j.absent }">
               <div class="nom">{{ j.nom }}</div>
@@ -232,7 +239,8 @@
             <button v-if="peutPiocher" class="btn principal" @click="agir({ type: 'piocher' })">🀫 Piocher{{ e.jeu === 'triomino' ? ' (−5)' : '' }}</button>
             <button v-if="peutPasser" class="btn principal" @click="agir({ type: 'passer' })">Passer{{ e.jeu === 'triomino' ? ' (−10)' : '' }}</button>
             <button v-if="!solo && role === 'hote' && joueurDuTourAbsent" class="btn" @click="envoyerJeu({ type: 'REMPLACER' })">Jouer à la place de {{ e.joueurs[e.tour] }}</button>
-            <button v-if="solo" class="btn" @click="quitterSolo">Arrêter</button>
+            <button v-if="solo && !boss" class="btn" @click="quitterSolo">Arrêter</button>
+            <button v-if="boss" class="btn" @click="retourExpedition">↩ Plus tard</button>
           </div>
           <div class="journal-dm">{{ e.journal[e.journal.length - 1] }}</div>
 
@@ -249,7 +257,8 @@
             </table>
             <div class="actions-dm">
               <button v-if="e.phase === 'finManche' && (solo || estJoueur)" class="btn principal" @click="mancheSuivante">Manche suivante</button>
-              <button v-if="e.phase === 'finPartie' && (solo || estJoueur)" class="btn principal" @click="nouvellePartie">Nouvelle partie</button>
+              <button v-if="e.phase === 'finPartie' && boss" class="btn principal" @click="retourExpedition">🧭 Retour à l'expédition</button>
+              <button v-else-if="e.phase === 'finPartie' && (solo || estJoueur)" class="btn principal" @click="nouvellePartie">Nouvelle partie</button>
             </div>
           </div>
           <div class="actions-dm" v-if="!solo && role === 'hote' && e.phase !== 'jeu'">
@@ -312,7 +321,8 @@
     // Couleur de chaque chiffre des triominos (lisibilité)
     const COUL = ['#6b6b6b', '#d64541', '#2c7be5', '#2e9e6b', '#8e44ad', '#e67e22'];
     function copie(o) { return JSON.parse(JSON.stringify(o)); }
-    function estOrdi(n) { return estNomOrdi(n); }   // « 🤖 » + prénom (nomsOrdis, commun.js)
+    let nomBoss = '';         // boss d'expédition (3.65) : il joue comme un ordinateur
+    function estOrdi(n) { return estNomOrdi(n) || (!!nomBoss && n === nomBoss); }   // « 🤖 » + prénom (nomsOrdis, commun.js)
 
     // ================== DESSINS (SVG faits par le code) ==================
     const PIPS = { 0: [], 1: [[.5, .5]], 2: [[.27, .27], [.73, .73]], 3: [[.25, .25], [.5, .5], [.75, .75]], 4: [[.27, .27], [.73, .27], [.27, .73], [.73, .73]],
@@ -370,6 +380,7 @@
         pub: null,
         joueurs: [],
         solo: false,
+        boss: null,            // défi d'un boss d'expédition (3.65 : l'Île aux trésors), lu dans expedition-boss avec ?boss
         jeuChoisi: lireStockage('domino-jeu') || 'domino',
         nbOrdis: lireStockage('domino-ordis') || 1,
         buts: Object.assign({ domino: 100, triomino: 400 }, lireStockage('domino-buts') || {}),
@@ -468,6 +479,7 @@
         // Le pseudo se choisit sur le portail (profil du salon global) ; on le suit tant qu'on n'est pas dans un salon
         window.addEventListener('desdale-profil', () => { if (!this.role) this.pseudoInput = pseudoPortail(); });
         if (!ACCES.cleSalon) return;
+        if (/[?&]boss\b/.test(location.search) && lireStockage('expedition-boss')) { this.demarrerBoss(lireStockage('expedition-boss')); return; }
         this.majSoloEnCours();
         this.restaurer();
         setInterval(() => this.battement(), 4000);
@@ -518,6 +530,7 @@
           var ancien = this.pub;
           this.pub = { phase: 'jeu', ordre: etatSolo.joueurs, jeu: etatSolo.jeu, but: etatSolo.but, partieId: etatSolo.partieId, e: DM.vuePour(etatSolo, etatSolo.joueurs[0]) };
           if (!debut && ancien) this.reagir(ancien, this.pub);
+          if (this.boss) { ecrireStockage('domino-boss', { boss: this.boss.id, etat: etatSolo }); return; }   // à part : la partie solo n'est pas touchée
           ecrireStockage('domino-solo', etatSolo);
           this.majSoloEnCours();
         },
@@ -529,7 +542,7 @@
           this._timerOrdi = setTimeout(() => {
             if (!this.solo || etatSolo !== e || e.phase !== 'jeu') return;
             var j = e.joueurs[e.tour];
-            DM.appliquer(e, j, DM.ordinateur(e, j));
+            DM.appliquer(e, j, DM.ordinateur(e, j, this.boss ? this.boss.niveau : null));
             this.majSolo();
             this.tourOrdi();
           }, 750 + Math.random() * 400);
@@ -587,6 +600,20 @@
         mancheSuivante: function() {
           if (this.solo) { DM.nouvelleManche(etatSolo); this.majSolo(); return this.tourOrdi(); }
           this.envoyerJeu({ type: 'MANCHE' });
+        },
+        // ---------- Mode boss d'expédition (3.65 : le capitaine de l'Île aux trésors) ----------
+        // Dominos à deux, une seule manche ; Balade : il joue souvent au hasard. Ni étoiles ni série ; sauvegarde à part (domino-boss).
+        demarrerBoss: function(b) {
+          this.boss = b;
+          nomBoss = b.ico + ' ' + (b.court || 'Le boss');
+          var s = lireStockage('domino-boss');
+          if (s && s.boss === b.id && s.etat && s.etat.uneManche && s.etat.joueurs[1] === nomBoss) etatSolo = s.etat;
+          else { etatSolo = DM.nouvellePartie('domino', [this.moi, nomBoss], { uneManche: true }); etatSolo.partieId = nouvelId(); }
+          this.lancerSolo();
+        },
+        retourExpedition: function() {
+          clearTimeout(this._timerOrdi);
+          location.href = 'expedition/';
         },
         nouvellePartie: function() {
           if (this.solo) {
@@ -668,6 +695,11 @@
             if (e.resultat && e.resultat.gagnant === moi) { setTimeout(() => this.son('victoire'), 300); this.vibre([100, 60, 100]); }
           }
           // Fin de partie : les étoiles du compagnon (une seule fois par partie)
+          if (e.phase === 'finPartie' && (!ea || ea.phase !== 'finPartie') && e.joueurs.indexOf(moi) !== -1 && this.boss) {
+            // Boss d'expédition : ni étoiles ni série, l'issue repart vers l'expédition
+            ecrireStockage('expedition-boss-resultat', { id: this.boss.id, issue: e.vainqueur === moi ? 'gagne' : 'perdu' });
+            return;
+          }
           if (e.phase === 'finPartie' && (!ea || ea.phase !== 'finPartie') && e.joueurs.indexOf(moi) !== -1) {
             Etoiles.finDePartie(NOMS[e.jeu], e.vainqueur === moi, !this.solo, p.partieId, { jeu: e.jeu, joueurs: e.joueurs.length });
             if (this.solo) Etoiles.serie('domino-' + e.jeu, e.vainqueur === moi, NOMS[e.jeu]);

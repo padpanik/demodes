@@ -122,6 +122,9 @@ var VLP = (function () {
     jouer: () => p('M8 5l11 7-11 7z', '#51cf66'),
     chateau: () => r(4, 10, 16, 11.5, 0.5, '#adb5bd') + r(2.5, 6, 5, 15, 0.5, '#ced4da') + r(16.5, 6, 5, 15, 0.5, '#ced4da') + p('M2.5 6V4h1.6v1.2h1.8V4h1.6v2M16.5 6V4h1.6v1.2h1.8V4h1.6v2', '#ced4da', 1.1) +
       p('M10 21.5v-5q2-2.5 4 0v5z', '#5c3a1f', 1.1) + l('M4 13.5h16M8.5 10v3M15.5 10v3', '#868e96', 0.9) + l('M5 4V1.5', K, 1) + p('M5 1.5l3.5 1-3.5 1z', '#c92a2a', 0.8),
+    ile: () => p('M1.5 19q5-2.6 10.5-2.6T22.5 19q-5 3-10.5 3t-10.5-3z', '#4dabf7') + p('M5 18.6q2.5-4.5 7-4.5t7 4.5q-3.5 1.2-7 1.2t-7-1.2z', '#f3d48a') +
+      p('M12.5 15.2q-.4-5 1.6-9.4', 'none', 1.8, ' stroke="#8a5a2b"') + p('M14 6q-4-2.4-8 .4 4.2-.6 6 1.8M14 6q4.5-2 8 1.4-4-.8-6.2.6M14 6q-1.2-3.6-4.6-4.4 2.8 2.2 3 4.6M14 6q2.6-3.4 6.4-3-3 1-4.6 3.4', '#40c057', 1) +
+      c(13.6, 7.3, 1.1, '#8a5a2b', 0.8) + l('M7.5 17.4q1.2-.8 2.4 0', '#fff3bf', 1),
         moi: () => c(12, 12, 8.5, '#ff922b') + c(12, 12, 3.5, '#fff', 1)
   };
 
@@ -133,7 +136,7 @@ var VLP = (function () {
     '🌀': 'porte', '⛺': 'tente', '🗼': 'tour', '🕳️': 'trou', '⚰️': 'tombe', '🧰': 'coffre', '🎁': 'cadeau', '🔑': 'cle', '🍄': 'champignon', '✨': 'luciole', '🌼': 'fleur',
     '💧': 'goutte', '🌊': 'vague', '🌫️': 'brume', '❄️': 'flocon', '📜': 'quete', '📖': 'carnet', '📚': 'livres', '🗺️': 'carte', '🔍': 'loupe', '🎒': 'sac', '🛠️': 'outils',
     '🪚': 'scie', '🪓': 'hache', '🌾': 'faucille', '⛏️': 'pioche', '✉️': 'lettre', '💌': 'coeurlettre', '⚔️': 'epees', '🔭': 'longuevue', '🏮': 'lanterne', '🛶': 'barque',
-    '🎬': 'clap', '🏰': 'chateau', '🔬': 'microscope', '👛': 'bourse', '🎶': 'musique', '🌱': 'graines', '🪈': 'flute', '💬': 'bulle', '🗣️': 'rumeur', '🔊': 'son', '🔇': 'muet', '⇄': 'inverser',
+    '🎬': 'clap', '🏰': 'chateau', '🏝️': 'ile', '🔬': 'microscope', '👛': 'bourse', '🎶': 'musique', '🌱': 'graines', '🪈': 'flute', '💬': 'bulle', '🗣️': 'rumeur', '🔊': 'son', '🔇': 'muet', '⇄': 'inverser',
     '⛶': 'plein', '❓': 'aide', '❔': 'aide', '🏁': 'drapeau', '🚩': 'drapeau', '🧭': 'boussole', '👋': 'main', '🛍️': 'boutique', '😴': 'sommeil', '🏞️': 'paysage',
     '⚠️': 'attention', '🐟': 'poisson', '🪑': 'tabouret', '💐': 'bouquet', '🐦': 'nichoir', '🗿': 'statue', '🌷': 'tulipe', '🔮': 'boule', '⛲': 'fontaine',
     '⬇️': 'descendre', '▶️': 'jouer'

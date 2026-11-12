@@ -54,6 +54,7 @@ var DM = (function () {
     options = options || {};
     var e = { jeu: jeu === 'triomino' ? 'triomino' : 'domino', joueurs: joueurs.slice(0, 4), scores: {}, manche: 0,
               but: options.but || (jeu === 'triomino' ? 400 : 100), phase: 'jeu', dernierGagnant: null, vainqueur: null };
+    if (options.uneManche) e.uneManche = true;   // boss d'expédition (3.65) : la partie se joue en une seule manche
     e.joueurs.forEach(j => { e.scores[j] = 0; });
     nouvelleManche(e, options.hasard);
     return e;
@@ -202,14 +203,17 @@ var DM = (function () {
     e.resultat = { gagnant: gagnant, points: points, bloque: !!bloque, detail: detail };
     noter(e, gagnant + (bloque ? ' gagne la manche bloquée' : ' a posé sa dernière pièce') + ' : +' + points + '.');
     var meilleur = e.joueurs.slice().sort((a, b) => e.scores[b] - e.scores[a])[0];
-    if (e.scores[meilleur] >= e.but) { e.phase = 'finPartie'; e.vainqueur = meilleur; }
+    if (e.uneManche) { e.phase = 'finPartie'; e.vainqueur = gagnant; }
+    else if (e.scores[meilleur] >= e.but) { e.phase = 'finPartie'; e.vainqueur = meilleur; }
     else e.phase = 'finManche';
   }
 
   // ---------- Ordinateur ----------
   // Dominos : pose la pièce la plus lourde (les doubles d'abord). Triominos : le coup qui rapporte le plus.
-  function ordinateur(e, j) {
+  // niveau 'facile' (boss d'expédition en Balade, 3.65) : 6 fois sur 10, un coup permis au hasard
+  function ordinateur(e, j, niveau) {
     var l = coups(e, j);
+    if (l.length && niveau === 'facile' && Math.random() < 0.6) return { type: 'jouer', coup: l[Math.floor(Math.random() * l.length)] };
     if (l.length) {
       var main = e.mains[j], meilleur = null, note = -Infinity;
       l.forEach(c => {
