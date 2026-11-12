@@ -638,9 +638,9 @@
           <button class="tuile-m" @click="ouvrirLivre"><span class="ic" v-html="pic('coffre', 34)"></span>Trésors<small>{{ livre.n }}/{{ livre.total }}</small></button>
           <button class="tuile-m" @click="fenetre = 'carnet'"><span class="ic" v-html="pic('carnet', 34)"></span>Carnet de voyage<span v-if="rumeursAFaire" class="pastille-m">{{ rumeursAFaire }}</span></button>
           <button class="tuile-m" @click="entrer('compagnon/')"><span class="ic" v-html="pic('maison', 34)"></span>{{ animal ? 'Chez ' + animal.nom : 'Adopter' }}</button>
-          <button class="tuile-m" @click="discuter"><span class="ic" v-html="pic('bulle', 34)"></span>Discuter<span v-if="nonLus" class="pastille-m">{{ nonLus }}</span></button>
+          <button class="tuile-m" @click="versAccueil"><span class="ic" v-html="pic('accueil', 34)"></span>Accueil de Désdale</button>
           <button class="tuile-m" @click="fenetre = 'aide'"><span class="ic" v-html="pic('aide', 34)"></span>Comment jouer</button>
-          <button class="tuile-m" @click="fenetre = 'options'"><span class="ic" v-html="pic('reglages', 34)"></span>Options</button>
+          <button class="tuile-m" @click="fenetre = 'options'"><span class="ic" v-html="pic('reglages', 34)"></span>Options<span v-if="nonLus" class="pastille-m">{{ nonLus }}</span></button>
         </div>
         <button class="btn-vl principal continuer-m" @click="fermer">▶ Continuer l'aventure</button>
       </div>
@@ -654,7 +654,7 @@
           <button class="btn-vl" @click="sonActif = !sonActif"><i v-html="pic(sonActif ? 'son' : 'muet')"></i>Son : {{ sonActif ? 'oui' : 'non' }}</button>
           <button class="btn-vl" @click="inverser"><i v-html="pic('inverser')"></i>Croix à {{ inverse ? 'gauche' : 'droite' }}</button>
           <button class="btn-vl" @click="basculerPleinEcran"><i v-html="pic('plein')"></i>{{ pleinEcran ? 'Garder les barres du téléphone' : 'Cacher les barres du téléphone' }}</button>
-          <button class="btn-vl rouge" @click="versAccueil"><i v-html="pic('drapeau')"></i>Retour à l'accueil de Désdale</button>
+          <button class="btn-vl" @click="discuter"><i v-html="pic('bulle')"></i>Discuter<span v-if="nonLus" class="pastille">{{ nonLus }}</span></button>
         </div>
         <div class="boutons-vl"><button class="btn-vl" @click="fenetre = 'menu'">‹ Menu</button><button class="btn-vl principal" @click="fermer">Continuer</button></div>
       </div>
