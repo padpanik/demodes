@@ -326,6 +326,37 @@ var DJD = (function () {
         return mix(a(14), { nom: 'BLIZZARD', tous: true, deb: { e: 'givre', n: 2, tous: true } });
       } },
 
+    // Étage 2, autre lieu : la Bibliothèque interdite (3.64). Règle du lieu « Savoir » : la 3e carte de chaque tour ne coûte rien.
+    // En échange, ses monstres frappent un peu plus fort, et ses gardiens punissent les longs tours (Faible, malédictions, livres appelés).
+    livre: { nom: 'Livre mordeur', ico: '📕', pv: [19, 22], vitesse: 600, vole: true, chasse: true,
+      ia: function (m, c) { var t = c.k % 3; return t === 0 ? mix(a(6, 2), { nom: 'Claque des pages' }) : t === 1 ? mix(a(11), { nom: 'Morsure reliée' }) : mix(a(3), { nom: 'Se referme', armure: 8 }); } },
+    encrier: { nom: 'Encrier renversé', ico: '🖋️', pv: [19, 22], vitesse: 900,
+      ia: function (m, c) { return c.k % 2 === 0 ? mix(a(5), { nom: 'Tache d\'encre', deb: { e: 'faible', n: 1 } }) : mix(a(5, 2), { nom: 'Éclaboussures' }); } },
+    chandelier: { nom: 'Chandelier hanté', ico: '🕯️', pv: [22, 26], vitesse: 700, vole: true,
+      ia: function (m, c) { var t = c.k % 3; return t === 0 ? mix(a(6), { nom: 'Cire brûlante', deb: { e: 'brule', n: 2 } }) : t === 1 ? mix(a(10), { nom: 'Flamme vive' }) : { nom: 'Se rallume', armure: 7 }; } },
+    armurevide: { nom: 'Armure vide', ico: '🪖', pv: [29, 33], vitesse: 1100,
+      ia: function (m, c) { var t = c.k % 3; return t === 0 ? { nom: 'Se reforme', armure: 9 } : t === 1 ? mix(a(13), { nom: 'Coup de hallebarde' }) : mix(a(7), { nom: 'Garde', armure: 7 }); } },
+    // Élites
+    bibliothecaire: { nom: 'Bibliothécaire spectre', ico: '👻', taille: 2, rang: 'elite', pv: [80, 84], vitesse: 800, vole: true,
+      ia: function (m, c) { var t = c.k % 3; return t === 0 ? { nom: 'Chut !', armure: 8, deb: { e: 'faible', n: 2, tous: true } } : t === 1 ? mix(a(8, 2), { nom: 'Règle en fer' }) : mix(a(18), { nom: 'Rappel de retard' }); } },
+    grimoire: { nom: 'Grimoire géant', ico: '📚', taille: 2, rang: 'elite', pv: [84, 88], vitesse: 1000,
+      ia: function (m, c) {
+        var t = c.k % 3;
+        if (t === 0) return { nom: 'Page maudite (1 Blessure)', maudit: 1, armure: 10 };
+        if (t === 1) return mix(a(15), { nom: 'Claque de couverture' });
+        return c.nb < 3 ? { nom: 'Ouvre un chapitre', appel: { type: 'livre', n: 1 }, armure: 4 } : mix(a(5, 3), { nom: 'Tourbillon de pages' });
+      } },
+    // Boss : il appelle ses livres ; son ARCHIVAGE frappe plus fort pour chaque livre encore debout
+    archiviste: { nom: 'L\'Archiviste', ico: '📜', couronne: true, taille: 2, rang: 'boss', pv: [140, 140], vitesse: 750, chasse: true,
+      ia: function (m, c) {
+        var t = c.k % 5, livres = Math.max(0, c.nb - 1);
+        if (t === 0) return c.nb < 3 ? { nom: 'Ouvre les rayonnages', appel: { type: 'livre', n: 2 }, armure: 6 } : mix(a(6, 2), { nom: 'Volée de livres' });
+        if (t === 1) return mix(a(8, 2), { nom: 'Coups de tampon' });
+        if (t === 2) return { nom: 'SILENCE !', armure: 10, deb: { e: 'faible', n: 2, tous: true } };
+        if (t === 3) return { nom: 'Il consulte l\'index… 💥', prep: true, armure: 10 };
+        return mix(a(12 + 3 * livres), { nom: livres ? 'ARCHIVAGE (' + livres + ' livre' + (livres > 1 ? 's' : '') + ')' : 'Archivage', tous: true });
+      } },
+
     // Étage 2 : les Catacombes
     squelette: { nom: 'Squelette', ico: '💀', pv: [26, 30], vitesse: 760, chasse: true,
       ia: function (m, c) { return c.k % 2 === 0 ? mix(a(9), { nom: 'Coup d\'os' }) : mix(a(4), { nom: 'Bouclier d\'os', armure: 7 }); } },
@@ -415,6 +446,8 @@ var DJD = (function () {
       texte: 'L\'air est plein de spores : qui finit son tour sans armure reçoit Poison 1. Les monstres aussi. Garde toujours un peu d\'armure.' },
     maree: { nom: 'Marée', ico: '🌊', maree: 0.75, court: 'Un tour sur deux : tous les coups −25 %',
       texte: 'La rivière monte un tour sur deux (les tours pairs). À marée haute, tous les coups font 25 % de dégâts en moins, les tiens comme ceux des monstres. Frappe à marée basse ; à marée haute, protège-toi ou prépare la suite. Poison, brûlure et armure ne changent pas.' },
+    savoir: { nom: 'Savoir', ico: '📖', gratuite: 3, court: 'La 3e carte de chaque tour ne coûte rien',
+      texte: 'Les livres murmurent leurs secrets : chaque tour, ta 3e carte jouée ne coûte aucune énergie. Garde une carte chère pour la placer en troisième ! Mais les gardiens de la bibliothèque frappent fort et n\'aiment pas le bruit.' },
     engelures: { nom: 'Engelures', ico: '❄️', gel: 1, court: 'Chaque tour, une carte de ta main gèle',
       texte: 'Il fait si froid qu\'à chaque tour une carte de ta main gèle, au hasard : elle ne se joue pas ce tour-ci, mais tu la gardes et elle dégèle au tour suivant, en plus de ta pioche. Le ❄️ Givre des monstres de la grotte en gèle d\'autres. Les malédictions ne gèlent jamais.' }
   };
@@ -433,7 +466,12 @@ var DJD = (function () {
       sol: ['#5b7286', '#6a8297', '#4b5f71'], mur: ['#2b3d52', '#3a5068', '#1d2a3a'],
       faciles: [['loupneige'], ['harfang', 'harfang'], ['lutin', 'glacon']],
       rencontres: [['loupneige', 'harfang'], ['glacon', 'lutin'], ['loupneige', 'glacon'], ['harfang', 'lutin'], ['loupneige', 'lutin'], ['glacon', 'glacon', 'harfang']],
-      elites: ['yeti', 'golemglace'], boss: 'dragongivre' }
+      elites: ['yeti', 'golemglace'], boss: 'dragongivre' },
+    { id: 'bibliotheque', etage: 2, decor: 'bibliotheque', nom: 'La Bibliothèque interdite', ico: '📚', regle: 'savoir',
+      sol: ['#5a4434', '#644c3a', '#4a382b'], mur: ['#2e2233', '#3d2e44', '#201726'],
+      faciles: [['livre', 'livre'], ['armurevide'], ['encrier', 'chandelier']],
+      rencontres: [['livre', 'encrier'], ['armurevide', 'chandelier'], ['livre', 'livre', 'encrier'], ['chandelier', 'encrier'], ['armurevide', 'livre'], ['chandelier', 'chandelier']],
+      elites: ['bibliothecaire', 'grimoire'], boss: 'archiviste' }
   ];
   var LIEUX = {};
   ETAGES.forEach(function (E, i) { E.etage = i + 1; E.lieux = [E.id]; LIEUX[E.id] = E; });

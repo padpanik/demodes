@@ -412,6 +412,91 @@ var DJS = (function () {
       yeux(15.2, 24.8, 14.6, 2.7, '#1864ab') + l('M11.8 11 L18 12.8 M28.2 11 L22 12.8', O, 1.9) +
       c(31.5, 24.5, 1.1, '#fff').replace('/>', ' opacity=".8"/>') + c(33.5, 22, 0.7, '#fff').replace('/>', ' opacity=".8"/>') + couronne(20, 6.6, 0.9);
   };
+  // ---- La Bibliothèque interdite (3.64) : livres, encrier, chandelier et armure hantés, la bibliothécaire, le grimoire, l'Archiviste ----
+  D.livre = function () {
+    var dents = function (y, d) { var s = ''; for (var x = 10; x < 30; x += 4) s += 'M' + x + ' ' + y + ' l2 ' + (3 * d) + ' l2 ' + (-3 * d) + ' '; return p(s + 'Z', '#fff', 0.8); };
+    return ombre(13) +
+      p('M18 33 L17 39 L19.5 37 L22 39 L21 33 Z', '#e03131', 1) +
+      p('M6 25 L34 25 L32.5 33.5 L7.5 33.5 Z', '#a61e1e', 1.8) + trait('M9 31.5 H31', '#ffd43b', 1.2, .9) +
+      p('M8 22 Q20 31 32 22 L32 25.5 L8 25.5 Z', '#3b0a0a', 1.2) + p('M14 24.5 Q20 28 26 24.5 Q20 26.5 14 24.5 Z', '#e64980', 0) +
+      p('M8 25.5 L32 25.5 L31 28 L9 28 Z', '#f8f1e3', 1) + dents(25.5, -1) +
+      p('M6.5 8 L33.5 8 L35 17 L5 17 Z', '#c92a2a', 1.8) + trait('M8.5 10.5 Q10 9.6 12.5 9.8', '#ffa8a8', 2, .9) +
+      p('M5 17 L35 17 L33 21 L7 21 Z', '#f8f1e3', 1.2) + l('M8 18.5 H32 M9 19.8 H31', '#c9b38f', 0.6) + dents(21, 1) +
+      p('M5.5 8 L9 8 L9 11.5 Z M34.5 8 L31 8 L31 11.5 Z', '#ffd43b', 1) +
+      yeux(15, 25, 12.5, 2.4) + l('M11.5 10 L17 11.2 M28.5 10 L23 11.2', O, 1.6);
+  };
+  D.encrier = function () {
+    return ombre(14) +
+      p('M4 36 Q8 31.5 15 33.5 Q22 31 30 33.5 Q37 33 36.5 36.5 Q20 39.5 4 36 Z', '#1c2b6b', 1.3) + e(28, 35.5, 2.2, 0.9, '#4c6ef5') +
+      p('M26 4 Q33 2 37.5 6 Q33 7.5 31 11 Q28.5 15 24 19 L22.5 17.5 Q25 12 26 4 Z', '#f8f9fa', 1.3) + l('M23 18.5 Q28 11 34 5.5', '#adb5bd', 1) + l('M23.5 17.5 L19 25', '#495057', 1.6) +
+      p('M10 18 Q7 22 7.5 28 Q8.5 34 20 34.5 Q31.5 34 32.5 28 Q33 22 30 18 Z', '#364fc7', 1.8) + trait('M11 21 Q10 26 12 30', '#91a7ff', 2.6, .8) +
+      p('M13.5 13 L26.5 13 L26.5 18.5 L13.5 18.5 Z', '#5c7cfa', 1.5) + e(20, 13, 7, 1.8, '#1c2b6b', 1.2) +
+      l('M26.5 14.5 Q30 16 29 22 Q28 25 30 27', '#1c2b6b', 2.4) +
+      yeux(15.5, 24.5, 24.5, 2.6, '#1c2b6b') + l('M12.5 21.5 L17.5 22.6 M27.5 21.5 L22.5 22.6', O, 1.5) + l('M17 30 Q20 28.5 23 30', O, 1.3);
+  };
+  D.chandelier = function () {
+    var bougie = function (x, y, h) {
+      return p('M' + (x - 2.4) + ' ' + y + ' H' + (x + 2.4) + ' V' + (y - h) + ' H' + (x - 2.4) + ' Z', '#f8f1e3', 1.2) + l('M' + (x - 1.2) + ' ' + (y - h + 1.5) + ' v' + (h - 3), '#fff', 1) +
+        '<path d="M' + x + ' ' + (y - h - 8) + ' C' + (x + 3.8) + ' ' + (y - h - 4) + ' ' + (x + 3) + ' ' + (y - h) + ' ' + x + ' ' + (y - h) + ' C' + (x - 3) + ' ' + (y - h) + ' ' + (x - 3.8) + ' ' + (y - h - 4) + ' ' + x + ' ' + (y - h - 8) + ' Z" fill="#94d82d" stroke="' + O + '" stroke-width="1"/>' +
+        c(x, y - h - 2.6, 1.2, '#e9fac8');
+    };
+    return ombre(11) +
+      '<ellipse cx="20" cy="12" rx="17" ry="9" fill="#94d82d" opacity=".12"/>' +
+      p('M13 37 Q20 32 27 37 Z', '#e0a72e', 1.5) + p('M18.5 34 L18.5 24 H21.5 V34 Z', '#fab005', 1.3) +
+      l('M8 22 Q8 27 14 27 H26 Q32 27 32 22', O, 3.6) + l('M8 22 Q8 27 14 27 H26 Q32 27 32 22', '#fab005', 1.8) +
+      p('M5 22 H11 L10 24 H6 Z M29 22 H35 L34 24 H30 Z M17 21 H23 L22 23.5 H18 Z', '#fab005', 1.2) +
+      bougie(8, 22, 7) + bougie(32, 22, 7) + bougie(20, 21, 9) +
+      luisants(17.4, 22.6, 16.5, 1.3, '#94d82d') + l('M17.5 18.6 Q20 20 22.5 18.6', O, 1.1) +
+      c(5, 6, 0.9, '#c0eb75') + c(35, 8, 0.8, '#c0eb75') + c(14, 3, 0.7, '#c0eb75');
+  };
+  D.armurevide = function () {
+    return ombre(14) +
+      l('M33 6 V37', '#5c3a1f', 2.6) + p('M33 3 L37.5 9 L33 13 L28.5 9 Z', '#adb5bd', 1.3) + p('M33 13 Q38 13 37.5 18 L33 16 Z', '#ced4da', 1.1) +
+      p('M8 37 L10 30 H17 L18 37 Z M22 37 L23 30 H30 L32 37 Z', '#868e96', 1.4) +
+      p('M7 30 Q6 20 12 18 H28 Q34 20 33 30 Q20 33 7 30 Z', '#adb5bd', 1.8) + trait('M9.5 28 Q9 22.5 12.5 20.5', '#e9ecef', 2.4, .9) + l('M20 19 V31 M12 25 Q20 27 28 25', '#868e96', 1.1) +
+      e(8.5, 20, 4, 3.4, '#ced4da', 1.5) + e(31.5, 20, 4, 3.4, '#ced4da', 1.5) +
+      p('M11 13 Q11 3 20 3 Q29 3 29 13 L28 19 H12 Z', '#ced4da', 1.8) + trait('M13.5 11 Q14 5.5 18 4.6', '#f8f9fa', 2.2, .95) +
+      p('M12.5 11 H27.5 V13.5 H12.5 Z', '#212529', 1.2) + l('M14 16.5 h12', '#868e96', 1) + c(16, 16.5, 0.5, O) + c(20, 16.5, 0.5, O) + c(24, 16.5, 0.5, O) +
+      luisants(16.5, 23.5, 12.3, 1.1, '#b197fc') +
+      p('M19 3 Q17 -2 24 0.5 Q22 2 21 3.5 Z', '#c92a2a', 1.1);
+  };
+  D.bibliothecaire = function () {
+    return '<g opacity=".95">' + ombre(13) +
+      p('M8 37 Q5 22 9 14 Q13 5 20 5 Q27 5 31 14 Q35 22 32 37 L28 34.5 L24.5 38 L20 34.5 L15.5 38 L12 34.5 Z', '#e5dbff', 1.8) +
+      trait('M10.5 33 Q8.5 22 12 15', '#fff', 3, .8) + trait('M29 30 Q31 22 29 16', '#b197fc', 2.4, .6) +
+      e(20, 5, 5, 3.6, '#d0bfff', 1.4) + c(20, 2.6, 2.6, '#d0bfff', 1.3) + l('M17 2.5 L23 3.4', '#9775fa', 1) +
+      c(15.2, 14.5, 3.6, 'rgba(255,255,255,.4)', 1.4) + c(24.8, 14.5, 3.6, 'rgba(255,255,255,.4)', 1.4) + l('M18.8 14.3 H21.2 M11.6 13.8 L9.5 12.6 M28.4 13.8 L30.5 12.6', O, 1.2) +
+      c(15.2, 14.8, 1.5, '#5f3dc4') + c(24.8, 14.8, 1.5, '#5f3dc4') + c(15.7, 14.2, 0.5, '#fff') + c(25.3, 14.2, 0.5, '#fff') +
+      l('M12 10 L17.5 11.4 M28 10 L22.5 11.4', O, 1.6) +
+      p('M16.5 21 Q20 19.5 23.5 21 Q20 22.5 16.5 21 Z', '#5f3dc4', 1) +
+      p('M10 26 L19 23.5 L19 31 L10 33 Z', '#1864ab', 1.4) + p('M19 23.5 L28 26 L28 33 L19 31 Z', '#1c7ed6', 1.4) + l('M12 27.5 L17 26.3 M12 29.8 L17 28.6', '#a5d8ff', 0.9) +
+      p('M7.5 27 Q9 23.5 11 25 L10.5 29 Z M32.5 27 Q31 23.5 29 25 L29.5 29 Z', '#e5dbff', 1.3) + '</g>';
+  };
+  D.grimoire = function () {
+    return ombre(16) +
+      p('M5 8 Q5 5 8 5 H31 Q35 5 35 9 V33 Q35 36 31 36 H8 Q5 36 5 33 Z', '#5f3dc4', 1.9) + trait('M7.5 31 V9 Q7.5 7.5 9 7.5', '#9775fa', 2.4, .85) +
+      p('M31 5 H35 V36 H31 Z', '#f8f1e3', 1.4) + l('M32.3 8 V33 M33.7 8 V33', '#c9b38f', 0.7) +
+      p('M5 8 H9 V33 H5 Z', '#3b1f8c', 1.4) + c(7, 12, 0.9, '#ffd43b') + c(7, 20.5, 0.9, '#ffd43b') + c(7, 29, 0.9, '#ffd43b') +
+      p('M10 5 L13.5 5 L13.5 9.5 L10 9.5 Z M10 31.5 H13.5 V36 H10 Z M26 5 H29.5 V9.5 H26 Z M26 31.5 H29.5 V36 H26 Z', '#ffd43b', 1.1) +
+      p('M33 17 H38 Q39.5 17 39.5 18.5 V22.5 Q39.5 24 38 24 H33 Z', '#ffd43b', 1.3) + c(37, 20.5, 1.1, '#5c3a1f') +
+      p('M12 20.5 Q20 11 28 20.5 Q20 30 12 20.5 Z', '#fff3bf', 1.6) + c(20, 20.5, 4.4, '#e64980', 1.3) + c(20, 20.5, 2.1, O) + c(21.4, 19, 0.9, '#fff') +
+      l('M11 13.5 L18 16.2 M29 13.5 L22 16.2', O, 1.9) +
+      p('M13.5 28.5 Q20 33 26.5 28.5 Q20 30.5 13.5 28.5 Z', '#2b1d14', 1.1) + p('M15.6 29.3 L16.5 31.2 L17.3 29.7 Z M24.4 29.3 L23.5 31.2 L22.7 29.7 Z', '#fff', 0.5) +
+      l('M3 12 Q1 16 3 20 Q1 24 3 28', '#868e96', 1.3);
+  };
+  D.archiviste = function () {
+    return ombre(17) +
+      p('M5 38 Q5 22 12 17 H28 Q35 22 35 38 Z', '#4b2c6f', 1.9) + trait('M8 35 Q8 25 12.5 20.5', '#7048e8', 2.6, .7) + l('M20 21 V38', '#2f1a45', 1.2) +
+      p('M28 24 Q36 22 36.5 30 L32 31 Z', '#4b2c6f', 1.5) + p('M30.5 29 h6.5 v4.5 h-6.5 Z', '#c92a2a', 1.2) + p('M32 33.5 h3.5 v2.5 h-3.5 Z', '#5c3a1f', 1) +
+      p('M12 24 Q4 23 4.5 31 L9 31.5 Z', '#4b2c6f', 1.5) + p('M3 30 L10 30 L9.4 36.5 L3.6 36.5 Z', '#f8f1e3', 1.2) + l('M4.5 32.3 h4 M4.5 34.3 h4', '#c9b38f', 0.8) +
+      p('M8.5 18 Q8.5 5.5 20 5 Q31.5 5.5 31.5 18 L28 21 H12 Z', '#3b2157', 1.8) +
+      p('M12.5 12 Q12.5 8 20 8 Q27.5 8 27.5 12 V18 Q20 21 12.5 18 Z', '#f1d3b0', 1.4) +
+      p('M12 17 Q12.5 30.5 20 32 Q27.5 30.5 28 17 Q24 20 20 19 Q16 20 12 17 Z', '#f8f9fa', 1.5) + l('M16.5 22 Q17 27 19 30 M23.5 22 Q23 27 21 30', '#ced4da', 1) +
+      c(16.3, 13.5, 2.7, 'rgba(255,255,255,.5)', 1.2) + c(23.7, 13.5, 2.7, 'rgba(255,255,255,.5)', 1.2) + l('M19 13.4 H21', O, 1.1) +
+      c(16.3, 13.7, 1.2, '#5f3dc4') + c(23.7, 13.7, 1.2, '#5f3dc4') + c(16.7, 13.2, 0.4, '#fff') + c(24.1, 13.2, 0.4, '#fff') +
+      l('M13.5 10.3 L18.3 11.3 M26.5 10.3 L21.7 11.3', '#f8f9fa', 2) + p('M18.5 16.3 Q20 18 21.5 16.3 Q20 17 18.5 16.3 Z', '#c9a07a', 0.8) +
+      couronne(20, 4.2, 0.9);
+  };
   var ALIAS = { gluantgeant: 'gluant', gluantmoyen: 'gluant' };
   var cache = {};
   function monstre(type) {
@@ -428,7 +513,7 @@ var DJS = (function () {
   // sur les côtés pour ne pas se mêler aux annonces des monstres. Identifiants « djc- » : un seul décor à l'écran à la fois.
   // genre : le décor du lieu (« caves », « catacombes », « forteresse », « champignonniere »…) ; absent = celui d'origine de l'étage
   function decor(etage, sol, mur, rang, genre) {
-    var s = '', i, x, y, HZ = 220, g = genre || ['caves', 'catacombes', 'forteresse'][etage - 1] || 'caves', champi = g === 'champignonniere', riviere = g === 'riviere', glace = g === 'glace',
+    var s = '', i, x, y, HZ = 220, g = genre || ['caves', 'catacombes', 'forteresse'][etage - 1] || 'caves', champi = g === 'champignonniere', riviere = g === 'riviere', glace = g === 'glace', biblio = g === 'bibliotheque',
         lueur = champi ? ['#63e6be', '#20c997'] : riviere ? ['#74c0fc', '#339af0'] : glace ? ['#e3fafc', '#66d9e8'] : ['#ffb347', '#ff922b'];   // la lumière du lieu (torches, champignons, cristaux)
     var teinte = rang === 'boss' ? '#9c36b5' : rang === 'elite' ? '#fab005' : '#ffb347';
     s += '<defs><radialGradient id="djc-lueur"><stop offset="0%" stop-color="' + lueur[0] + '" stop-opacity=".55"/><stop offset="100%" stop-color="' + lueur[1] + '" stop-opacity="0"/></radialGradient>' +
@@ -459,6 +544,24 @@ var DJS = (function () {
              '<ellipse cx="' + bx + '" cy="214" rx="24" ry="6" fill="#e7f5ff" opacity=".8"/><ellipse cx="' + (bx - 12 + k * 20) + '" cy="211" rx="9" ry="4" fill="#fff" opacity=".8"/>';
       });
       s += '<rect y="208" width="360" height="12" fill="#339af0" opacity=".35"/>';
+    } else if (biblio) {
+      // Bibliothèque interdite (3.64) : deux hautes étagères garnies de livres, des toiles d'araignée dans les coins
+      var COUL_LIVRES = ['#c92a2a', '#1864ab', '#2b8a3e', '#e67700', '#5f3dc4', '#862e9c', '#a61e1e', '#0b7285'];
+      [84, 276].forEach(function (bx, k) {
+        s += '<rect x="' + (bx - 34) + '" y="96" width="68" height="118" fill="#3b2414" stroke="#120c09" stroke-width="1.6"/><rect x="' + (bx - 30) + '" y="100" width="60" height="110" fill="#22140b"/>';
+        for (var et = 0; et < 4; et++) {
+          var ey = 100 + et * 27.5, xx = bx - 29;
+          while (xx < bx + 27) {
+            var w = 4 + ((xx * 7 + et * 13 + k * 5) % 4), h = 17 + ((xx * 3 + et) % 7);
+            if (xx + w > bx + 29) break;
+            s += '<rect x="' + xx + '" y="' + (ey + 25 - h) + '" width="' + w + '" height="' + h + '" fill="' + COUL_LIVRES[(xx + et * 3 + k) % COUL_LIVRES.length] + '" stroke="#120c09" stroke-width=".8"/>';
+            if ((xx + et) % 3 === 0) s += '<rect x="' + xx + '" y="' + (ey + 28 - h) + '" width="' + w + '" height="1.6" fill="#ffd43b" opacity=".75"/>';
+            xx += w + 0.6;
+          }
+          s += '<rect x="' + (bx - 32) + '" y="' + (ey + 25) + '" width="64" height="3.5" fill="#5c3a1f" stroke="#120c09" stroke-width="1"/>';
+        }
+      });
+      s += '<path d="M0 0 L46 0 Q20 10 0 40 Z M360 0 L314 0 Q340 10 360 40 Z" fill="none" stroke="#c9c2d6" stroke-width="1" opacity=".35"/><path d="M0 18 L30 0 M0 30 L18 0 M360 18 L330 0 M360 30 L342 0" stroke="#c9c2d6" stroke-width=".8" opacity=".3"/>';
     } else if (glace) {
       // Stalactites de glace (longues, claires, avec un reflet), givre sur les pierres, deux coulées gelées sur le mur, neige au pied du mur
       [16, 44, 74, 104, 136, 166, 196, 226, 258, 290, 318, 346].forEach(function (sx, k) {
@@ -521,6 +624,12 @@ var DJS = (function () {
              '<path d="M-8 1 Q-8 -8 0 -8 Q8 -8 8 1 Q0 3.5 -8 1 Z" fill="' + cl + '" stroke="#241812" stroke-width="1.2"/><circle cx="-3" cy="-3" r="1.4" fill="#fff" opacity=".85"/><circle cx="3" cy="-4.5" r="1" fill="#fff" opacity=".85"/></g>';
       });
       [[48, 150], [70, 236], [112, 120], [250, 128], [292, 240], [318, 146], [40, 196], [326, 204]].forEach(function (o, k) { s += '<circle class="djc-braise" style="animation-delay:' + (k * 0.33) + 's" cx="' + o[0] + '" cy="' + o[1] + '" r="' + (1.4 + (k % 3) * 0.5) + '" fill="#d0bfff" opacity=".8"/>'; });
+    }
+    if (biblio) {
+      // Un long tapis rouge qui fuit vers le mur, des livres tombés, des pages qui volent
+      s += '<path d="M150 ' + (HZ + 2) + ' L210 ' + (HZ + 2) + ' L300 440 L60 440 Z" fill="#7a1f2b" opacity=".85"/><path d="M156 ' + (HZ + 2) + ' L204 ' + (HZ + 2) + ' L286 440 L74 440 Z" fill="none" stroke="#e0b13f" stroke-width="2" opacity=".7"/>';
+      [[34, 286, '#1864ab'], [322, 300, '#c92a2a'], [56, 340, '#2b8a3e'], [306, 350, '#5f3dc4']].forEach(function (o, k) { s += '<g transform="rotate(' + (k % 2 ? 14 : -12) + ' ' + o[0] + ' ' + o[1] + ')"><rect x="' + (o[0] - 13) + '" y="' + (o[1] - 5) + '" width="26" height="10" rx="1.5" fill="' + o[2] + '" stroke="#241812" stroke-width="1.2"/><rect x="' + (o[0] - 11) + '" y="' + (o[1] - 3) + '" width="22" height="3" fill="#f8f1e3"/></g>'; });
+      [[60, 140], [112, 112], [250, 120], [298, 150], [44, 200], [318, 196], [152, 90], [214, 98]].forEach(function (o, k) { s += '<rect class="djc-braise" style="animation-delay:' + (k * 0.31) + 's" x="' + o[0] + '" y="' + o[1] + '" width="7" height="9" fill="#f8f1e3" opacity=".85" transform="rotate(' + (k * 23 % 60 - 30) + ' ' + o[0] + ' ' + o[1] + ')"/>'; });
     }
     if (glace) {
       // Plaques de glace sur le sol (reflets), congères sur les bords, flocons qui tombent

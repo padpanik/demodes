@@ -1015,7 +1015,8 @@ var VL = (function () {
   var LIEUX_FAILLE = {
     1: [{ id: 'caves', nom: 'Les Caves', de: 'des Caves', ico: '🕳️' }, { id: 'champignonniere', nom: 'La Champignonnière', de: 'de la Champignonnière', ico: '🍄', regle: 'Spores' },
         { id: 'riviere', nom: 'La Rivière souterraine', de: 'de la Rivière souterraine', ico: '🌊', regle: 'Marée' }],
-    2: [{ id: 'catacombes', nom: 'Les Catacombes', de: 'des Catacombes', ico: '⚰️' }, { id: 'glace', nom: 'La Grotte de glace', de: 'de la Grotte de glace', ico: '❄️', regle: 'Engelures' }]
+    2: [{ id: 'catacombes', nom: 'Les Catacombes', de: 'des Catacombes', ico: '⚰️' }, { id: 'glace', nom: 'La Grotte de glace', de: 'de la Grotte de glace', ico: '❄️', regle: 'Engelures' },
+        { id: 'bibliotheque', nom: 'La Bibliothèque interdite', de: 'de la Bibliothèque interdite', ico: '📚', regle: 'Savoir' }]
   };
   function saisonDe(t) {
     var d = new Date(t == null ? Date.now() : t); d.setHours(0, 0, 0, 0);

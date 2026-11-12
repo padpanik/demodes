@@ -1126,6 +1126,14 @@ var DJ = (function () {
   }
 
   // Un joueur joue la carte n° i de sa main (effet immédiat)
+  // Coût d'une carte pour ce joueur maintenant (3.64) : la règle « Savoir » (Bibliothèque interdite) rend gratuite la 3e carte du tour
+  function coutCarte(e, p, id) {
+    var k = typeof id === 'string' ? carte(id) : id;
+    if (!k || k.cout === null || k.cout === undefined) return k ? k.cout : null;
+    var R = regleLieu(e);
+    if (R && R.gratuite && p && (p.joues || 0) === R.gratuite - 1 && e.combats[p.salle]) return 0;
+    return k.cout;
+  }
   function jouerCarte(e, nom, i, cibleId, h) {
     LIGNE = null;
     h = h || Math.random;
@@ -1135,7 +1143,8 @@ var DJ = (function () {
     var id = p.main[i], k = id && carte(id);
     if (!k) return 'Carte inconnue';
     if (k.injouable) return 'Cette carte ne se joue pas';
-    if (k.cout > p.energie) return 'Pas assez d\'énergie';
+    var cout = coutCarte(e, p, k);
+    if (cout > p.energie) return 'Pas assez d\'énergie';
     var cible = null, ms = monstresDe(e, c);
     if (k.cible === 'monstre') {
       cible = ms.find(m => m.id === cibleId) || (ms.length === 1 ? ms[0] : null);
@@ -1144,10 +1153,10 @@ var DJ = (function () {
       var q = e.joueurs[cibleId], ranime = k.fx.some(f => f.soin);
       cible = q && c.joueurs.indexOf(q.nom) >= 0 && (!q.fantome || ranime) ? q : p;
     }
-    p.energie -= k.cout;
+    p.energie -= cout;
     p.main.splice(i, 1);
     if (p.marque === id && p.main.indexOf(id) < 0) p.marque = null;
-    ouvrir(c, k.ico, nomCp(p), k.nom);
+    ouvrir(c, k.ico, nomCp(p), k.nom + (cout === 0 && k.cout > 0 ? ' (📖 gratuite)' : ''));
     appliquer(e, c, p, k.fx, cible, h, false);
     p.joues++; p.jouesTotal = (p.jouesTotal || 0) + 1;
     if (p.etats.rythme && p.joues >= 4) { var l = monstresDe(e, c); if (l.length) { var x = auHasard(l, h); infliger(e, c, x, p.etats.rythme, null, false); } }
@@ -1436,7 +1445,7 @@ var DJ = (function () {
 
   return { W: W, H: H, GX: GX, GY: GY, PAS: PAS, DX: DX, PORTE: PORTE, MARCHABLE: MARCHABLE, POUVOIRS: POUVOIRS, ESPECES: ESPECES, MONSTRES: MONSTRES,
            D: D, NB_ETAGES: NB_ETAGES, nettoyerAvantages: nettoyerAvantages, heroSemaine: heroSemaine, reliquesParDefaut: reliquesParDefaut, paquetDepart: paquetDepart, carte: carte, ameliorable: ameliorable, prixRetrait: prixRetrait, soinFeu: soinFeu,
-           pouvoirDe: pouvoirDe, hasard: hasard, generer: generer, lieu: lieuDe, regleLieu: regleLieu, tirerLieux: tirerLieux, nouvelle: nouvelle, ajouterJoueur: ajouterJoueur, entree: entree,
+           pouvoirDe: pouvoirDe, cout: coutCarte, hasard: hasard, generer: generer, lieu: lieuDe, regleLieu: regleLieu, tirerLieux: tirerLieux, nouvelle: nouvelle, ajouterJoueur: ajouterJoueur, entree: entree,
            jouerCarte: jouerCarte, finTour: finTour, marquer: marquer, utiliserFiole: utiliserFiole, jeterFiole: jeterFiole, choisir: choisir, demarrerCombat: demarrerCombat,
            interagir: interagir, ouvrirCoffre: ouvrirCoffre, ouvrirTresor: ouvrirTresor, decouvrir: decouvrir, tourMonstres: tourMonstres, etageSuivant: etageSuivant, tirerCartes: tirerCartes, donnerRelique: donnerRelique,
            degatsIntention: degatsIntention, degatsCarte: degatsCarte, calculer: calculer,

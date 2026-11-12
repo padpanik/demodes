@@ -22,7 +22,7 @@ function degatsAttendus(e, p) {
   }, 0);
 }
 function valeurCarte(e, p, id, ms, besoin) {
-  var k = DJ.carte(id), v = 0, cout = k.cout;
+  var k = DJ.carte(id), v = 0, cout = DJ.cout(e, p, id);   // 3.64 : la règle « Savoir » rend la 3e carte gratuite
   if (k.injouable || cout > p.energie) return -1;
   if (k.type === 'pouvoir') return p.tourCombat <= 2 ? 30 : 8;
   var spores = DJ.regleLieu(e);

@@ -540,6 +540,8 @@
     .main-c .carte-c.gelee::after { content: '❄️'; position: absolute; right: -4px; top: -10px; width: 24px; height: 24px; border-radius: 50%; background: #e3fafc; border: 1.5px solid #1c7ed6; display: flex; align-items: center; justify-content: center; font-size: 14px; pointer-events: none; }
     .main-c .carte-c.gelee::before { content: ''; position: absolute; inset: 0; border-radius: 8px; pointer-events: none; background: repeating-linear-gradient(135deg, rgba(255,255,255,0.35) 0 3px, transparent 3px 11px); }
     .main-c .carte-c.gelee .cc-cout { background: #74c0fc; }
+    .carte-c .cc-cout.gratuite { background: radial-gradient(circle at 35% 30%, #d3f9d8, #40c057 55%, #2b8a3e); border-color: #1b4d2a; color: #0b2e13; animation: palpite-c 1.2s ease-in-out infinite alternate; }
+    @keyframes palpite-c { to { box-shadow: 0 0 9px #8ce99a; } }
     /* Marque-page (3.47) : carte gardée pour le tour suivant */
     .main-c .carte-c.marquee { box-shadow: 0 3px 0 #1b130e, 0 0 0 3px #f59f00, 0 0 12px rgba(245,159,0,0.8); }
     .main-c .carte-c.marquee::after { content: '🔖'; position: absolute; right: -4px; top: -10px; width: 24px; height: 24px; border-radius: 50%; background: #fff3bf; border: 1.5px solid #f08c00; display: flex; align-items: center; justify-content: center; font-size: 13px; pointer-events: none; }
@@ -849,7 +851,7 @@
                 <span v-for="k in fxSur(moi)" :key="'x' + k.id" class="coup-flottant" :class="k.cl">{{ k.v }}</span>
               </div>
               <div class="main-c" :class="{ serree: monJ.main.length + gelees.length > 5 }" :style="styleMain">
-                <carte-dj v-for="(id, i) in monJ.main" :key="combat.tour + '-' + i + id" :id="id" :badge="badgeCarte(id)" :class="{ choisie: sel && sel.k === 'carte' && sel.i === i, chere: !jouable(id), marquee: i === indexMarque }" @click.native="toucherCarte(i)"></carte-dj>
+                <carte-dj v-for="(id, i) in monJ.main" :key="combat.tour + '-' + i + id" :id="id" :badge="badgeCarte(id)" :gratuite="savoirGratuit" :class="{ choisie: sel && sel.k === 'carte' && sel.i === i, chere: !jouable(id), marquee: i === indexMarque }" @click.native="toucherCarte(i)"></carte-dj>
                 <carte-dj v-for="(id, i) in gelees" :key="'g' + combat.tour + '-' + i + id" :id="id" class="gelee" @click.native="toucherGelee(id)"></carte-dj>
               </div>
               <div class="desc-c" :class="{ 'avec-garder': peutGarder }"><span>{{ descSel }}</span><button v-if="peutGarder" class="garder-c" :class="{ on: selMarquee }" @click.stop="garderSel">🔖 {{ selMarquee ? 'Gardée' : 'Garder' }}</button></div>
@@ -1168,7 +1170,7 @@
         <section class="carte regles">
           <div class="titre-carte">Règles</div>
           <ul>
-            <li>Le donjon a <strong>3 étages</strong> : 🕳️ les Caves, ⚰️ les Catacombes, 🏰 la Forteresse. <strong>Un étage peut être un autre lieu</strong>, tiré au hasard à chaque donjon, avec ses monstres, son boss et sa <strong>règle</strong> : à la place des Caves, 🍄 la Champignonnière (<em>Spores</em> : qui finit son tour sans armure reçoit ☠️ Poison 1, les monstres aussi ; boss : le Grand Mycélium) ou 🌊 la Rivière souterraine (<em>Marée</em> : un tour sur deux, marée haute, tous les coups font 25 % de dégâts en moins, les tiens comme ceux des monstres ; boss : la Pieuvre des profondeurs, dont il faut couper les tentacules) ; à la place des Catacombes, ❄️ la Grotte de glace (<em>Engelures</em> : à chaque tour, une carte de ta main gèle au hasard ; elle ne se joue pas, mais tu la gardes pour le tour suivant ; le ❄️ Givre des monstres en gèle d'autres ; boss : le Dragon de givre, dont les glaçons gèlent une carte en éclatant). D'autres lieux arrivent. Chaque étage se visite pièce par pièce (la petite carte en haut à droite montre les pièces vues). Un <strong>élite ⭐</strong> garde la grande clé 🔑 qui ouvre la porte du <strong>boss 👑</strong> ; le boss vaincu, un escalier 🪜 descend à l'étage suivant (la moitié des PV perdus revient). Vaincre le boss du dernier étage (la Liche, au fond de la Forteresse) gagne le donjon.</li>
+            <li>Le donjon a <strong>3 étages</strong> : 🕳️ les Caves, ⚰️ les Catacombes, 🏰 la Forteresse. <strong>Un étage peut être un autre lieu</strong>, tiré au hasard à chaque donjon, avec ses monstres, son boss et sa <strong>règle</strong> : à la place des Caves, 🍄 la Champignonnière (<em>Spores</em> : qui finit son tour sans armure reçoit ☠️ Poison 1, les monstres aussi ; boss : le Grand Mycélium) ou 🌊 la Rivière souterraine (<em>Marée</em> : un tour sur deux, marée haute, tous les coups font 25 % de dégâts en moins, les tiens comme ceux des monstres ; boss : la Pieuvre des profondeurs, dont il faut couper les tentacules) ; à la place des Catacombes, ❄️ la Grotte de glace (<em>Engelures</em> : à chaque tour, une carte de ta main gèle au hasard ; elle ne se joue pas, mais tu la gardes pour le tour suivant ; le ❄️ Givre des monstres en gèle d'autres ; boss : le Dragon de givre, dont les glaçons gèlent une carte en éclatant) ou 📚 la Bibliothèque interdite (<em>Savoir</em> : la 3e carte que tu joues dans un tour ne coûte rien ; boss : l'Archiviste, dont l'Archivage frappe plus fort pour chaque livre mordeur sorti des rayons). D'autres lieux arrivent. Chaque étage se visite pièce par pièce (la petite carte en haut à droite montre les pièces vues). Un <strong>élite ⭐</strong> garde la grande clé 🔑 qui ouvre la porte du <strong>boss 👑</strong> ; le boss vaincu, un escalier 🪜 descend à l'étage suivant (la moitié des PV perdus revient). Vaincre le boss du dernier étage (la Liche, au fond de la Forteresse) gagne le donjon.</li>
             <li>La croix fait avancer ton compagnon (garde le doigt pour marcher). Le bouton ⇄ la met de l'autre côté.</li>
             <li><strong>Chaque compagnon a un pouvoir</strong>, qui ouvre un obstacle (fonce dedans) et donne sa <strong>classe de cartes</strong> :
               🔥 <strong>Feu</strong> (dragon, chat, oie : ronces) brûle tous les monstres ·
@@ -1273,10 +1275,10 @@
 
     // Une carte du donjon (main, butin, marchand, paquet)
     Vue.component('carte-dj', {
-      props: { id: String, badge: [Number, String], prix: Number },
+      props: { id: String, badge: [Number, String], prix: Number, gratuite: Boolean },
       computed: { k: function() { return DJ.carte(this.id) || { nom: this.id, type: 'competence', texte: '' }; } },
       template: '<div class="carte-c" :class="[\'t-\' + k.type, \'r-\' + k.rar, { plus: k.plus }]">' +
-        '<span class="cc-cout" v-if="k.cout !== null && k.cout !== undefined">{{ k.cout }}</span>' +
+        '<span class="cc-cout" :class="{ gratuite: gratuite && k.cout > 0 }" v-if="k.cout !== null && k.cout !== undefined">{{ gratuite ? 0 : k.cout }}</span>' +
         '<span class="cc-badge" v-if="badge !== null && badge !== undefined">{{ badge }}</span>' +
         '<span class="cc-ico">{{ k.ico }}</span><span class="cc-nom">{{ k.nom }}</span><span class="cc-txt">{{ k.texte }}</span>' +
         '<span class="cc-prix" v-if="prix">🪙 {{ prix }}</span></div>'
@@ -1470,7 +1472,7 @@
         descSel: function() {
           var k = this.selDef;
           if (!k) return 'Touche une carte pour la lire, encore une fois pour la jouer.';
-          var t = k.ico + ' ' + k.nom + (k.fiole ? '' : ' (' + k.cout + ' ⚡)') + ' : ' + k.texte;
+          var t = k.ico + ' ' + k.nom + (k.fiole ? '' : ' (' + (this.savoirGratuit && k.cout > 0 ? '0 ⚡, 📖 gratuite' : k.cout + ' ⚡') + ')') + ' : ' + k.texte;
           if (!k.fiole && !this.jouable(k.id)) return t + ' · pas assez de ⚡';
           if (this.cibleAttendue === 'monstre') return t + ' · 👆 touche un monstre';
           if (this.cibleAttendue === 'joueur') return t + ' · 👆 touche toi ou un ami';
@@ -1510,12 +1512,15 @@
         sporesMenace: function() { return !!(this.regle && this.regle.poison && this.combat && this.jeJoue && this.monJ && !this.monJ.armure && !this.combat.fini[this.moi]); },
         // Ce que la règle du lieu veut dire maintenant, dans ma ligne de combat : { txt, cl }
         // Engelures (Grotte de glace, 3.43) : mes cartes gelées ce tour-ci (elles dégèlent au tour suivant)
+        // Savoir (Bibliothèque interdite, 3.64) : la prochaine carte jouée ce tour-ci ne coûte rien
+        savoirGratuit: function() { var R = this.regle; return !!(R && R.gratuite && this.combat && this.monJ && (this.monJ.joues || 0) === R.gratuite - 1); },
         gelees: function() { return (this.monJ && this.monJ.glace) || []; },
         regleAlerte: function() {
           var R = this.regle, c = this.combat;
           if (!R || !c) return { txt: '', cl: '' };
           if (R.poison) return this.sporesMenace ? { txt: ' sans armure : ☠️+' + R.poison, cl: 'menace' } : { txt: '', cl: '' };
           if (R.gel) return this.gelees.length ? { txt: ' ' + this.gelees.length + ' gelée' + (this.gelees.length > 1 ? 's' : '') + ' · dégèle' + (this.gelees.length > 1 ? 'nt' : '') + ' au tour suivant', cl: 'haute' } : { txt: '', cl: '' };
+          if (R.gratuite) { var nj = (this.monJ && this.monJ.joues) || 0; return this.savoirGratuit ? { txt: ' la prochaine carte est gratuite !', cl: 'haute' } : nj < R.gratuite - 1 ? { txt: nj ? ' ' + nj + ' jouée' + (nj > 1 ? 's' : '') + ' · la ' + R.gratuite + 'e est gratuite' : ' la ' + R.gratuite + 'e carte du tour est gratuite', cl: '' } : { txt: '', cl: '' }; }
           if (R.maree) return c.maree ? { txt: ' marée haute : coups −25 %', cl: 'haute' } : { txt: ' marée basse · haute au tour suivant', cl: '' };
           return { txt: '', cl: '' };
         },
@@ -1754,7 +1759,7 @@
         toucheC: function(qui) { return this.fxSur(qui).some(k => k.cl === 'mal'); },   // vient de prendre un coup : il tremble
         info: function(t) { this.infoTxt = t; this.infoFiole = null; clearTimeout(this._info); this._info = setTimeout(() => { this.infoTxt = ''; this.infoFiole = null; }, 5000); },
         infoEtat: function(et, n) { var E = DJ.D.ETATS[et]; if (E) this.info(E.ico + ' ' + E.nom + ' ' + n + ' : ' + E.texte.replace('{n}', n).replace('tour·s', n > 1 ? 'tours' : 'tour') + '.'); },
-        jouable: function(id) { var k = DJ.carte(id); return !!(k && !k.injouable && this.monJ && k.cout <= this.monJ.energie && this.combat && !this.combat.fini[this.moi]); },
+        jouable: function(id) { var k = DJ.carte(id); return !!(k && !k.injouable && this.monJ && DJ.cout(this.partie, this.monJ, id) <= this.monJ.energie && this.combat && !this.combat.fini[this.moi]); },
         // Dégâts réels d'une attaque (force, faiblesse, vulnérabilité du seul monstre) quand ils diffèrent de la carte
         badgeCarte: function(id) {
           var k = DJ.carte(id), f = k && k.fx.find(x => x.deg !== undefined && !x.fixe);
@@ -2771,11 +2776,18 @@
         if (q < 0.06) s += '<path d="M' + X2 + ' ' + Y2 + ' l5 4 l-2 5 l6 3" fill="none" stroke="' + so[2] + '" stroke-width="1.6" stroke-linecap="round"/>';
         else if (q < 0.11) s += '<ellipse cx="' + X2 + '" cy="' + Y2 + '" rx="3" ry="2" fill="' + mu[1] + '"/><ellipse cx="' + (X2 + 6) + '" cy="' + (Y2 + 3) + '" rx="2" ry="1.4" fill="' + mu[1] + '"/>';
         else if (deco === 'glace') s += k > 0.5 ? '<ellipse cx="' + (X2 + 2) + '" cy="' + (Y2 + 2) + '" rx="' + (5 + k * 3) + '" ry="' + (2.4 + k) + '" fill="#f1f3f5" opacity="0.75"/><ellipse cx="' + (X2 + 4) + '" cy="' + (Y2 + 1) + '" rx="3" ry="1.2" fill="#fff" opacity="0.9"/>' : '<path d="M' + (X2 - 3) + ' ' + Y2 + ' l4 2 l3 -3 l5 2" fill="none" stroke="#d0ebff" stroke-width="1.4" stroke-linecap="round" opacity="0.8"/><circle cx="' + (X2 + 7) + '" cy="' + (Y2 + 4) + '" r="1.3" fill="#fff" opacity="0.8"/>';
+        else if (deco === 'bibliotheque') s += k > 0.5 ? '<rect x="' + (X2 - 4) + '" y="' + (Y2 - 2) + '" width="9" height="11" fill="#f8f1e3" opacity="0.8" transform="rotate(' + Math.round(k * 50 - 25) + ' ' + X2 + ' ' + Y2 + ')"/>' : '<rect x="' + (X2 - 6) + '" y="' + (Y2 - 3) + '" width="12" height="5" rx="1" fill="' + ['#c92a2a', '#1864ab', '#2b8a3e', '#5f3dc4'][Math.floor(k * 8) % 4] + '" stroke="#241812" stroke-width="0.8"/><rect x="' + (X2 - 5) + '" y="' + (Y2 - 2) + '" width="10" height="1.6" fill="#f8f1e3"/>';
         else if (deco === 'riviere') s += '<ellipse cx="' + (X2 + 2) + '" cy="' + (Y2 + 2) + '" rx="' + (5 + k * 4) + '" ry="' + (2.6 + k * 1.6) + '" fill="#1c7ed6" opacity="0.5"/><ellipse cx="' + X2 + '" cy="' + (Y2 + 1.2) + '" rx="' + (2 + k * 2) + '" ry="1" fill="#a5d8ff" opacity="0.5"/>';
         else if (deco === 'champignonniere') s += '<path d="M' + (X2 - 1) + ' ' + (Y2 + 1) + ' v5 h2 v-5 Z" fill="#f3f0ff"/><path d="M' + (X2 - 5) + ' ' + (Y2 + 1.5) + ' Q' + (X2 - 5) + ' ' + (Y2 - 4) + ' ' + X2 + ' ' + (Y2 - 4) + ' Q' + (X2 + 5) + ' ' + (Y2 - 4) + ' ' + (X2 + 5) + ' ' + (Y2 + 1.5) + ' Z" fill="' + (k > 0.5 ? '#845ef7' : '#e03131') + '" stroke="#241812" stroke-width="0.9"/><circle cx="' + (X2 - 1.6) + '" cy="' + (Y2 - 1.6) + '" r="0.9" fill="#fff" opacity=".85"/>';
         else if (deco === 'catacombes') s += '<path d="M' + X2 + ' ' + Y2 + ' l9 4" stroke="#e9e2d0" stroke-width="2.4" stroke-linecap="round"/><circle cx="' + X2 + '" cy="' + Y2 + '" r="1.8" fill="#e9e2d0"/><circle cx="' + (X2 + 9) + '" cy="' + (Y2 + 4) + '" r="1.8" fill="#e9e2d0"/>';
         else if (deco === 'forteresse') s += '<circle cx="' + X2 + '" cy="' + Y2 + '" r="2.2" fill="#ff6b3d" opacity="0.8"/><circle cx="' + X2 + '" cy="' + Y2 + '" r="5" fill="#ff6b3d" opacity="0.15"/>';
         else s += '<circle cx="' + X2 + '" cy="' + Y2 + '" r="2.6" fill="#5c7a3a" opacity="0.75"/><circle cx="' + (X2 + 4) + '" cy="' + (Y2 - 2) + '" r="1.8" fill="#6f8f45" opacity="0.75"/>';
+      }
+      // Étagères de livres sur le mur du haut (Bibliothèque interdite, 3.64)
+      if (deco === 'bibliotheque') for (var bq = 1; bq < W - 1; bq++) if (S.t[bq] === '#' && bq !== 2 && bq !== 8) {
+        var BX = bq * T + 2;
+        s += '<rect x="' + BX + '" y="3" width="28" height="24" fill="#3b2414" stroke="#120c09" stroke-width="1"/><rect x="' + BX + '" y="13.5" width="28" height="2" fill="#5c3a1f"/>';
+        for (var lb = 0; lb < 6; lb++) { var cl = ['#c92a2a', '#1864ab', '#2b8a3e', '#e67700', '#5f3dc4', '#0b7285'][(bq + lb) % 6]; s += '<rect x="' + (BX + 1.5 + lb * 4.3) + '" y="' + (4.5 + (lb % 2)) + '" width="3.6" height="' + (8.5 - (lb % 2)) + '" fill="' + cl + '"/><rect x="' + (BX + 1.5 + ((lb + 2) % 6) * 4.3) + '" y="' + (16 + (lb % 3 === 0 ? 1 : 0)) + '" width="3.6" height="' + (9.5 - (lb % 3 === 0 ? 1 : 0)) + '" fill="' + ['#a61e1e', '#364fc7', '#5c940d', '#d9480f', '#862e9c', '#1098ad'][(bq * 2 + lb) % 6] + '"/>'; }
       }
       // Glaçons qui pendent du mur du haut (Grotte de glace, 3.43)
       if (deco === 'glace') for (var gq = 1; gq < W - 1; gq++) if (S.t[gq] === '#' && gq % 2 === 1) { var gl = 7 + (gq * 5) % 9, X3 = gq * T + 8 + (gq * 7) % 14; s += '<path d="M' + (X3 - 3.5) + ' ' + T + ' L' + X3 + ' ' + (T + gl) + ' L' + (X3 + 3.5) + ' ' + T + ' Z" fill="#c5f6fa" stroke="#1d2a3a" stroke-width="0.8" opacity="0.9"/>'; }
