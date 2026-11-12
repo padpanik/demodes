@@ -195,6 +195,15 @@
     .solde-vl { display: inline-flex; align-items: center; gap: 4px; font-weight: 900; color: #7a5600; background: #fff3bf; border-radius: 10px; padding: 2px 9px; }
     .solde-vl svg { width: 15px; height: 15px; }
     .grande-ico { font-size: 54px; text-align: center; line-height: 1.1; margin: 4px 0 6px; }
+    .tuiles-m { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+    .tuile-m { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; min-height: 88px; padding: 8px 4px;
+      background: #fffaf0; border: 1.5px solid #d8bf8e; border-radius: 14px; box-shadow: 0 2px 0 #c9a96e; font: 800 0.92em/1.15 Georgia, serif; color: #4a3426; text-align: center; cursor: pointer; }
+    .tuile-m:active { transform: translateY(2px); box-shadow: none; }
+    .tuile-m .ic { width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; }
+    .tuile-m .ic .vlp { width: 36px; height: 36px; }
+    .tuile-m small { font: 700 0.78em system-ui, sans-serif; color: #8a7255; }
+    .tuile-m .pastille-m { position: absolute; top: 6px; right: 8px; min-width: 20px; height: 20px; border-radius: 10px; background: #e03131; color: #fff; font: 800 0.75em/20px system-ui; padding: 0 5px; }
+    .continuer-m { width: 100%; margin-top: 10px; }
     .menu-liste { display: flex; flex-direction: column; gap: 6px; }
     .menu-liste .btn-vl { display: flex; align-items: center; gap: 10px; text-align: left; }
     .menu-liste .btn-vl i { font-style: normal; width: 24px; text-align: center; }
@@ -622,20 +631,32 @@
     <div class="voile-vl" v-if="fenetre === 'menu'" @click.self="fermer">
       <div class="fen-vl">
         <h2>La Vallée de Désdale</h2>
+        <!-- Menu en tuiles (3.67, demandé par l'utilisateur) : l'aventure d'abord ; les réglages du téléphone sont dans Options -->
+        <div class="tuiles-m">
+          <button class="tuile-m" @click="fenetre = 'quetes'"><span class="ic" v-html="pic('quete', 34)"></span>Mes quêtes</button>
+          <button class="tuile-m" @click="fenetre = 'sac'"><span class="ic" v-html="pic('sac', 34)"></span>Mon sac</button>
+          <button class="tuile-m" @click="ouvrirLivre"><span class="ic" v-html="pic('coffre', 34)"></span>Trésors<small>{{ livre.n }}/{{ livre.total }}</small></button>
+          <button class="tuile-m" @click="fenetre = 'carnet'"><span class="ic" v-html="pic('carnet', 34)"></span>Carnet de voyage<span v-if="rumeursAFaire" class="pastille-m">{{ rumeursAFaire }}</span></button>
+          <button class="tuile-m" @click="entrer('compagnon/')"><span class="ic" v-html="pic('maison', 34)"></span>{{ animal ? 'Chez ' + animal.nom : 'Adopter' }}</button>
+          <button class="tuile-m" @click="discuter"><span class="ic" v-html="pic('bulle', 34)"></span>Discuter<span v-if="nonLus" class="pastille-m">{{ nonLus }}</span></button>
+          <button class="tuile-m" @click="fenetre = 'aide'"><span class="ic" v-html="pic('aide', 34)"></span>Comment jouer</button>
+          <button class="tuile-m" @click="fenetre = 'options'"><span class="ic" v-html="pic('reglages', 34)"></span>Options</button>
+        </div>
+        <button class="btn-vl principal continuer-m" @click="fermer">▶ Continuer l'aventure</button>
+      </div>
+    </div>
+
+    <!-- Options (3.67) : tout ce qui touche au téléphone plutôt qu'à l'aventure -->
+    <div class="voile-vl" v-if="fenetre === 'options'" @click.self="fermer">
+      <div class="fen-vl">
+        <h2><i class="pi" v-html="pic('reglages')"></i> Options</h2>
         <div class="menu-liste">
-          <button class="btn-vl principal" @click="fermer"><i>▶</i>Continuer</button>
-          <button class="btn-vl" @click="fenetre = 'quetes'"><i v-html="pic('quete')"></i>Mes quêtes</button>
-          <button class="btn-vl" @click="fenetre = 'sac'"><i v-html="pic('sac')"></i>Mon sac</button>
-          <button class="btn-vl" @click="ouvrirLivre"><i v-html="pic('coffre')"></i>Mon livre des trésors<span class="compte-l">{{ livre.n }}/{{ livre.total }}</span></button>
-          <button class="btn-vl" @click="fenetre = 'carnet'"><i v-html="pic('carnet')"></i>Mon carnet de voyage<span v-if="rumeursAFaire" class="pastille">{{ rumeursAFaire }}</span></button>
-          <button class="btn-vl" @click="discuter"><i v-html="pic('bulle')"></i>Discuter<span v-if="nonLus" class="pastille">{{ nonLus }}</span></button>
-          <button class="btn-vl" @click="entrer('compagnon/')"><i v-html="pic('maison')"></i>{{ animal ? 'Chez ' + animal.nom : 'Adopter un compagnon' }}</button>
           <button class="btn-vl" @click="sonActif = !sonActif"><i v-html="pic(sonActif ? 'son' : 'muet')"></i>Son : {{ sonActif ? 'oui' : 'non' }}</button>
           <button class="btn-vl" @click="inverser"><i v-html="pic('inverser')"></i>Croix à {{ inverse ? 'gauche' : 'droite' }}</button>
           <button class="btn-vl" @click="basculerPleinEcran"><i v-html="pic('plein')"></i>{{ pleinEcran ? 'Garder les barres du téléphone' : 'Cacher les barres du téléphone' }}</button>
-          <button class="btn-vl" @click="fenetre = 'aide'"><i v-html="pic('aide')"></i>Comment jouer</button>
-          <button class="btn-vl rouge" @click="versAccueil"><i v-html="pic('drapeau')"></i>Retour à l'accueil</button>
+          <button class="btn-vl rouge" @click="versAccueil"><i v-html="pic('drapeau')"></i>Retour à l'accueil de Désdale</button>
         </div>
+        <div class="boutons-vl"><button class="btn-vl" @click="fenetre = 'menu'">‹ Menu</button><button class="btn-vl principal" @click="fermer">Continuer</button></div>
       </div>
     </div>
 
