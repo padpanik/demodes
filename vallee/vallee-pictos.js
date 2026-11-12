@@ -120,7 +120,9 @@ var VLP = (function () {
     fontaine: () => p('M3 15h18l-2 6H5z', '#adb5bd') + p('M5 15q1-3 7-3t7 3', '#4dabf7', 1) + r(10.5, 5, 3, 8, 1, '#ced4da') + p('M12 5q-5 0-6 5M12 5q5 0 6 5', 'none', 1.2, ' stroke="#4dabf7"'),
     descendre: () => c(12, 12, 9, '#f3e2c0') + l('M12 6.5v10M7.5 12.5l4.5 4.5 4.5-4.5', K, 2),
     jouer: () => p('M8 5l11 7-11 7z', '#51cf66'),
-    moi: () => c(12, 12, 8.5, '#ff922b') + c(12, 12, 3.5, '#fff', 1)
+    chateau: () => r(4, 10, 16, 11.5, 0.5, '#adb5bd') + r(2.5, 6, 5, 15, 0.5, '#ced4da') + r(16.5, 6, 5, 15, 0.5, '#ced4da') + p('M2.5 6V4h1.6v1.2h1.8V4h1.6v2M16.5 6V4h1.6v1.2h1.8V4h1.6v2', '#ced4da', 1.1) +
+      p('M10 21.5v-5q2-2.5 4 0v5z', '#5c3a1f', 1.1) + l('M4 13.5h16M8.5 10v3M15.5 10v3', '#868e96', 0.9) + l('M5 4V1.5', K, 1) + p('M5 1.5l3.5 1-3.5 1z', '#c92a2a', 0.8),
+        moi: () => c(12, 12, 8.5, '#ff922b') + c(12, 12, 3.5, '#fff', 1)
   };
 
   // Les émojis remplacés (une icône par émoji ; une même icône peut en couvrir plusieurs)
@@ -131,7 +133,7 @@ var VLP = (function () {
     '🌀': 'porte', '⛺': 'tente', '🗼': 'tour', '🕳️': 'trou', '⚰️': 'tombe', '🧰': 'coffre', '🎁': 'cadeau', '🔑': 'cle', '🍄': 'champignon', '✨': 'luciole', '🌼': 'fleur',
     '💧': 'goutte', '🌊': 'vague', '🌫️': 'brume', '❄️': 'flocon', '📜': 'quete', '📖': 'carnet', '📚': 'livres', '🗺️': 'carte', '🔍': 'loupe', '🎒': 'sac', '🛠️': 'outils',
     '🪚': 'scie', '🪓': 'hache', '🌾': 'faucille', '⛏️': 'pioche', '✉️': 'lettre', '💌': 'coeurlettre', '⚔️': 'epees', '🔭': 'longuevue', '🏮': 'lanterne', '🛶': 'barque',
-    '🎬': 'clap', '🔬': 'microscope', '👛': 'bourse', '🎶': 'musique', '🌱': 'graines', '🪈': 'flute', '💬': 'bulle', '🗣️': 'rumeur', '🔊': 'son', '🔇': 'muet', '⇄': 'inverser',
+    '🎬': 'clap', '🏰': 'chateau', '🔬': 'microscope', '👛': 'bourse', '🎶': 'musique', '🌱': 'graines', '🪈': 'flute', '💬': 'bulle', '🗣️': 'rumeur', '🔊': 'son', '🔇': 'muet', '⇄': 'inverser',
     '⛶': 'plein', '❓': 'aide', '❔': 'aide', '🏁': 'drapeau', '🚩': 'drapeau', '🧭': 'boussole', '👋': 'main', '🛍️': 'boutique', '😴': 'sommeil', '🏞️': 'paysage',
     '⚠️': 'attention', '🐟': 'poisson', '🪑': 'tabouret', '💐': 'bouquet', '🐦': 'nichoir', '🗿': 'statue', '🌷': 'tulipe', '🔮': 'boule', '⛲': 'fontaine',
     '⬇️': 'descendre', '▶️': 'jouer'

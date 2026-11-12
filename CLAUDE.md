@@ -222,7 +222,7 @@ Communs : `brillant-acces`, `brillant-client-id` (ce téléphone), `desdale-joue
 Statistiques : `desdale-stats` (toutes les parties terminées). Sauvegarde en ligne : `desdale-nuage` (code et état, propre au téléphone, pas dans le fichier), `desdale-nuage-adresse` (essais seulement). Salon global : `desdale-profil` (pseudo, couleur, émoji, photo), `desdale-chat`, `desdale-chat-lus`, `desdale-bulle-y`.
 Brilliant : `brillant-sauvegarde-v1`, `brillant-dernier-salon`, `brillant-records(-dates)`, `brillant-classements`, `brillant-rejoindre-auto`.
 Yams : `yams-sauvegarde`, `yams-dernier-salon`, `yams2-record`, `yams2-classements` (le « 2 » : barème maison).
-Assaut : `assaut-sauvegarde`, `assaut-prive` (mon armée en salon), `assaut-dernier-salon`, `assaut-mode`, `assaut-memoire`, `assaut-stats`, `assaut-dispositions`, `assaut-apparence`, `assaut-images`, `assaut-numerotation`, `assaut-couleur`.
+Assaut : `assaut-boss` (partie contre le boss du Château fort), `assaut-sauvegarde`, `assaut-prive` (mon armée en salon), `assaut-dernier-salon`, `assaut-mode`, `assaut-memoire`, `assaut-stats`, `assaut-dispositions`, `assaut-apparence`, `assaut-images`, `assaut-numerotation`, `assaut-couleur`.
 Backgammon : `bg-sauvegarde`, `bg-dernier-salon`.
 Gribouille : `gribouille-sauvegarde`, `gribouille-dernier-salon`, `gribouille-duree`, `gribouille-manches`.
 Petit bac : `petitbac-sauvegarde`, `petitbac-dernier-salon`, `petitbac-reglages` (catégories, durée, manches, lettres de l'hôte).
@@ -540,9 +540,10 @@ Bataille navale : `bataille-boss` (partie contre un boss d'expédition), `batail
 ### Expédition (demandée par l'utilisateur : emmener le compagnon en balade, thèmes de culture générale)
 - **Lieux** (`EX.LIEUX`) : un lieu = un thème, ses couleurs, son décor, ses gardiens, sa buvette, son boss (avec `consigne` affichée avant le défi)
   et ses souvenirs. Prêts : **Studio de cinéma** (boss : le Fantôme du studio, au Quatre en ligne) et **Laboratoire** (sciences, ouvert en 2.30 ;
-  boss : le Savant fou, à la Bataille navale ; 56 questions : 30 faciles, 26 moyennes ; souvenirs microscope, éprouvettes, télescope, aimant).
-  Annoncés « Bientôt » : Château fort (histoire),
-  Île aux trésors (géographie), Conservatoire (musique), Forêt enchantée (nature) — chacun prévu avec un boss d'un autre jeu.
+  boss : le Savant fou, à la Bataille navale ; 56 questions : 30 faciles, 26 moyennes ; souvenirs microscope, éprouvettes, télescope, aimant) et **Château fort**
+  (histoire, ouvert en 3.63, « Go pour remplir les Terres » de l'utilisateur ; 55 questions : 30 faciles, 25 moyennes ; gardiens héraut, dame du château, forgeron, archer, moine copiste, fou du roi, sentinelle ;
+  cuisines du château ; boss **le Chevalier noir, à l'Assaut** ; souvenirs `blason`, `etendard`, `chandelier`, `heaume`). Annoncés « Bientôt » :
+  Île aux trésors (géographie), Conservatoire (musique), Forêt enchantée (nature) — chacun prévu avec un boss d'un autre jeu. **Un lieu qui devient prêt** = aussi l'ajouter à `LIEUX_EXPEDITION` de `vallee-regles.js` (son campement dans les Terres) et son icône à `vallee-pictos.js`.
 - **Onglet Partie** : depuis 3.61 (demandé par l'utilisateur : « déplacer les expéditions dans le monde à explorer », dans les Terres, et retirées complètement de l'accueil),
   le lieu vient de l'adresse (`?lieu=cinema`, lu au chargement dans `lieuChoisi`) : carte « Ton expédition » (lieu, thème, boss), compagnon, Difficulté avec le rappel des 3 cœurs et « 🧭 Partir : <lieu> ».
   Sans lieu dans l'adresse : carte « Où partir en expédition ? » qui renvoie vers la Vallée (bouton « ⛰️ Aller dans la Vallée »). Plus de choix « Où aller ? » dans la page.
@@ -576,6 +577,9 @@ Bataille navale : `bataille-boss` (partie contre un boss d'expédition), `batail
   **Mode boss de la Bataille navale** (`bataille/?boss`, `demarrerBoss`) : partie solo contre l'ordinateur au niveau du boss (`niveauOrdi`),
   bandeau du boss pendant le placement, « Mer ennemie » / « Flotte ennemie », sauvegarde à part `bataille-boss`, ni étoiles ni stats ni records,
   boutons « ↩ Plus tard » / « 🧭 Retour à l'expédition » (`retourExpedition`), issue `gagne` / `perdu` dans `expedition-boss-resultat`.
+  **Mode boss de l'Assaut** (3.63, Château fort ; `assaut/?boss`, `demarrerBoss`) : partie solo en **format rapide** (10 pièces, quel que soit le format choisi par le joueur, sans toucher à son réglage), le joueur commence, bandeau du boss,
+  sauvegarde à part `assaut-boss` (la partie solo `assaut-sauvegarde` n'est pas touchée), ni étoiles ni statistiques ni série ; « ↩ Plus tard » / « 🧭 Retour à l'expédition » ; Balade : ordinateur `facile`
+  (`AS.choisirCoup(…, niveau)` : 45 % de coups au hasard parmi les 6 meilleurs, au lieu de 12 % parmi les 3 meilleurs), Aventure : l'ordinateur habituel.
 - **Abandon à tout moment** (demandé par l'utilisateur) : bouton « 🏳️ Quitter » dans la barre de l'écran de jeu, même pendant une rencontre,
   et « 🏳️ Arrêter » sur la carte « Expédition en cours » de l'onglet Partie (ouvre la même fenêtre). Deux choix : « 🏠 Rentrer avec la moitié du sac »
   (`quitter` : bilan compté `finir(false, true)`, résumé laissé au compagnon, repos d'une heure, retour à `index.html?choix`) ou **« 🔄 Repartir de zéro »**
@@ -896,7 +900,7 @@ Demandée par l'utilisateur le 11 novembre 2026 (« il manque un côté aventure
   **Corrigé au passage** : l'écran n'était pas redessiné quand l'état des Terres changeait (coffre ouvert, feu allumé) : `etat.terres` ajouté à la clé de `ecranSvg`.
   Tests : `node vallee/vallee-test.js` (1 702) ; navigateur à 360 × 800 et 360 × 640 (renard, sans compagnon) : faille, descente, donjon d'un étage au bon lieu, victoire, retour, récompense, faille refermée, carnet, exploration normale intacte.
 - **Les campements d'expédition** (3.61, demandé par l'utilisateur ; **choix de l'utilisateur** : dans les Terres, et l'Expédition retirée complètement de l'accueil) :
-  un campement (case `X`, en (3, 2), clairière x 2..5, y 2..3) **par lieu d'expédition prêt** (`LIEUX_EXPEDITION` : Studio de cinéma, Laboratoire ; **identifiants, noms, boss et couleurs recopiés d'`EX.LIEUX`, à tenir ensemble** ; un nouveau lieu prêt = l'ajouter ici aussi),
+  un campement (case `X`, en (3, 2), clairière x 2..5, y 2..3) **par lieu d'expédition prêt** (`LIEUX_EXPEDITION` : Studio de cinéma, Laboratoire, Château fort depuis 3.63 ; **identifiants, noms, boss et couleurs recopiés d'`EX.LIEUX`, à tenir ensemble** ; un nouveau lieu prêt = l'ajouter ici aussi),
   placés à chaque saison aussi loin que possible des autres lieux avec **leur propre tirage** (`r3` : le reste des Terres ne bouge pas ; coffres permis dans leur écran hors de x 1..6, y 1..4). `TERRES.expeditions` = [{ k, id, nom, ico, theme, boss, jeu, c1, c2, x, y, ex, ey }], `VL.expeditionEn(x, y)`.
   Dessin `campExpedition` (tente rayée aux deux couleurs du lieu, écusson à son émoji, fanion, ×1,5) ; l'émoji du lieu sur la carte du monde une fois vu. On fonce dedans : fenêtre (thème, boss) → « 🧭 Partir en expédition » (`partirExpedition` : `expedition-lieu`, puis `expedition/?lieu=<id>` par `entrer`) ;
   expédition en cours : « ▶️ Reprendre » (celle d'un autre lieu se reprend aussi d'ici) ; repos d'une heure (`expedition-depart`, durée recopiée d'`EX.REPOS`) : bouton grisé « 😴 Encore N min ».
@@ -929,7 +933,7 @@ Rappel pour un jeu du commerce : version maison, sans le nom de la marque ni ses
 
 **Idées déjà évoquées** :
 - 7 piliers, Duel : guildes et merveilles à deux faces ; un boss d'expédition sur ce jeu.
-- Expédition : lieux annoncés « Bientôt » (Château fort, Île aux trésors, Conservatoire, Forêt enchantée), sorties en groupe.
+- Expédition : lieux annoncés « Bientôt » (Île aux trésors, Conservatoire, Forêt enchantée), sorties en groupe.
 - Mon compagnon : lui apprendre sa langue pas à pas ; redessiner les autres animaux comme le renard et le dragon.
 - Compagnons en jeu (`compagnons-jeu.js`) : seulement dans Lettres croisées pour l'instant, à poser dans les autres jeux à plusieurs.
 - Hébergement : porte Cloudflare Access ; après le déménagement, retirer la carte « Désdale déménage », l'origine GitHub Pages et rendre les icônes crème définitives.

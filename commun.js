@@ -3,12 +3,13 @@
 // Les clés de stockage gardent l'ancien préfixe "brillant-" : les réglages déjà faits sont conservés.
 
 // Numéro de version affiché (à augmenter à chaque mise en ligne, avec brilliant/index.html et sw.js)
-const VERSION = '3.62';
+const VERSION = '3.63';
 
 // ---------- Nouveautés (2.87, demandé par l'utilisateur) ----------
 // Une ligne très brève par mise en ligne (la plus récente en haut) : l'accueil les montre une seule fois, dans une petite fenêtre,
 // à qui n'a pas encore vu cette version. [version, jeu ou partie de l'appli, ce qui change]
 const NOUVEAUTES = [
+  ['3.63', 'Expédition', 'Nouveau campement dans les Terres : le Château fort, questions d\'histoire et un boss à l\'Assaut.'],
   ['3.62', 'La Vallée', 'Des icônes dessinées remplacent les émojis sur la carte, dans les menus et les fenêtres.'],
   ['3.61', 'Expédition', 'Les expéditions partent maintenant des campements des Terres de la saison, dans la Vallée.'],
   ['3.60', 'La Vallée', 'Deux failles du Donjon s\'ouvrent dans les Terres à chaque saison : un étage, un boss, une récompense.'],

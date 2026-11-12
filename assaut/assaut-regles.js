@@ -224,7 +224,8 @@ const AS = {
     }
     return best;
   },
-  choisirCoup: function(etat, c) {
+  // niveau 'facile' (3.63, boss de la Balade au Château fort) : il choisit plus souvent un coup au hasard parmi les meilleurs
+  choisirCoup: function(etat, c, niveau) {
     var coups = this.coups(etat, c);
     if (!coups.length) return null;
     var avant = c === 'B' ? 1 : -1;
@@ -247,7 +248,8 @@ const AS = {
       return { m: m, note: note + Math.random() * 6 };
     });
     notes.sort((a, b) => b.note - a.note);
-    var choix = Math.random() < 0.12 ? notes[Math.min(notes.length - 1, Math.floor(Math.random() * 3))] : notes[0];
+    var facile = niveau === 'facile';
+    var choix = Math.random() < (facile ? 0.45 : 0.12) ? notes[Math.min(notes.length - 1, Math.floor(Math.random() * (facile ? 6 : 3)))] : notes[0];
     return choix.m;
   },
   // Vue d'un camp sur une partie complète : les grades adverses sont cachés (sauf ceux révélés)

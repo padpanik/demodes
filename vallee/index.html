@@ -1076,7 +1076,7 @@
             var exAutre = exEnCours && exEnCours.lieu !== XL.id ? VL.LIEUX_EXPEDITION.find(q => q.id === exEnCours.lieu) : null;
             var depart = lireStockage('expedition-depart'), repos = depart ? Math.max(0, Math.ceil((3600000 - (Date.now() - depart)) / 60000)) : 0;   // EX.REPOS : une heure
             var qui = this.animal ? this.animal.nom : 'Ton compagnon';
-            var texteX = 'Une tente rayée, et sur l\'écusson : ' + XL.ico + '. C\'est le départ des expéditions « ' + XL.nom + ' » : des questions de ' + XL.theme.toLowerCase() +
+            var texteX = 'Une tente rayée, et sur l\'écusson : ' + XL.ico + '. C\'est le départ des expéditions « ' + XL.nom + ' » : des questions ' + (/^[aeiouhéè]/i.test(XL.theme) ? 'd\'' : 'de ') + XL.theme.toLowerCase() +
               ' posées par des gardiens, des coffres, une buvette, et pour finir ' + XL.boss + ', qui te défie ' + XL.jeu + '. Tu pars avec 3 cœurs.';
             var boutonsX;
             if (exEnCours && !exAutre) { texteX = 'Ton expédition « ' + XL.nom + ' » t\'attend là où tu l\'as laissée.'; boutonsX = [{ t: '▶️ Reprendre', principal: true, f: () => this.partirExpedition(XL) }]; }

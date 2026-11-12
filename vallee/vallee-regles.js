@@ -1008,7 +1008,8 @@ var VL = (function () {
   // d'expedition/expedition-regles.js (EX.LIEUX, ceux qui ont `pret: true`) : à tenir ensemble.
   var LIEUX_EXPEDITION = [
     { id: 'cinema', nom: 'Studio de cinéma', ico: '🎬', pic: 'clap', theme: 'Cinéma', boss: 'le Fantôme du studio', jeu: 'au Quatre en ligne', c1: '#c92a2a', c2: '#f4c430' },
-    { id: 'sciences', nom: 'Laboratoire', ico: '🔬', pic: 'microscope', theme: 'Sciences', boss: 'le Savant fou', jeu: 'à la Bataille navale', c1: '#1c7ed6', c2: '#66d9e8' }
+    { id: 'sciences', nom: 'Laboratoire', ico: '🔬', pic: 'microscope', theme: 'Sciences', boss: 'le Savant fou', jeu: 'à la Bataille navale', c1: '#1c7ed6', c2: '#66d9e8' },
+    { id: 'histoire', nom: 'Château fort', ico: '🏰', pic: 'chateau', theme: 'Histoire', boss: 'le Chevalier noir', jeu: 'à l\'Assaut', c1: '#8b1e24', c2: '#e0b13f' }
   ];
   // Les lieux du Donjon qu'une faille peut ouvrir, par étage (identifiants et noms de donjon/donjon-donnees.js, à tenir ensemble)
   var LIEUX_FAILLE = {
