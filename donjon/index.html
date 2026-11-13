@@ -633,6 +633,27 @@
     .fen-dep .aucune-gr.choisie { border-color: #7048e8; color: #5f3dc4; }
     .fen-dep .champ input { width: 100%; }
     .fen-dep .pseudo-portail { margin: 8px 0; }
+    /* Boss en deux phases (3.79) */
+    .mc-nom .phase-m { display: inline-block; margin-left: 4px; background: #e8590c; color: #fff; border-radius: 6px; padding: 0 4px; font-size: 0.85em; box-shadow: 0 0 6px #ff922b; }
+    /* Choix des reliques en fin de donjon (3.79) */
+    .choix-rel .slots-rel { display: flex; align-items: center; gap: 6px; margin: 8px 0 4px; }
+    .choix-rel .slot-rel { width: 38px; height: 38px; border-radius: 10px; border: 2px dashed #c9b08f; display: flex; align-items: center; justify-content: center; font-size: 1.35em; background: rgba(255,255,255,0.4); }
+    .choix-rel .slot-rel.plein { border: 2px solid #e3c77a; background: #fff9db; cursor: pointer; }
+    .choix-rel .slot-rel.boss { border-color: #f783ac; background: #fff0f6; }
+    .choix-rel .slots-rel small { font-size: 0.75em; font-weight: 800; color: #7a6550; margin-left: 2px; }
+    .choix-rel .msg-rel { font-size: 0.8em; font-weight: 700; color: #a61e4d; background: #fff0f6; border-radius: 8px; padding: 4px 8px; margin-bottom: 4px; }
+    .choix-rel .liste-rel { display: flex; flex-direction: column; gap: 5px; padding: 2px; }
+    .choix-rel .rel-l { display: flex; align-items: center; gap: 8px; width: 100%; text-align: left; font: inherit; color: #3b2a1e; border: 1.5px solid #d8c4a4; background: rgba(255,255,255,0.55); border-radius: 12px; padding: 6px 8px; cursor: pointer; opacity: 0.75; }
+    .choix-rel .rel-l .ico { font-size: 1.5em; flex: none; width: 30px; text-align: center; }
+    .choix-rel .rel-l .txt { flex: 1; min-width: 0; line-height: 1.25; }
+    .choix-rel .rel-l .txt b { font-size: 0.9em; }
+    .choix-rel .rel-l .rar { display: block; font-size: 0.66em; font-weight: 800; color: #7a6550; text-transform: uppercase; letter-spacing: 0.3px; }
+    .choix-rel .rel-l .eff { display: block; font-size: 0.78em; color: #5c4a39; }
+    .choix-rel .rel-l .coche { flex: none; width: 26px; height: 26px; border-radius: 50%; border: 2px solid #c9b08f; display: flex; align-items: center; justify-content: center; font-weight: 900; color: #a08868; }
+    .choix-rel .rel-l.garde { opacity: 1; border-color: #e3a008; background: #fff9db; box-shadow: 0 1px 4px rgba(120,80,0,0.2); }
+    .choix-rel .rel-l.garde .coche { background: #2f9e44; border-color: #2b8a3e; color: #fff; }
+    .choix-rel .rel-l.r-boss.garde { border-color: #e64980; background: #fff0f6; }
+    .choix-rel .rel-l.r-r .rar { color: #b07d00; } .choix-rel .rel-l.r-boss .rar { color: #c2255c; } .choix-rel .rel-l.r-u .rar { color: #1971c2; }
   </style>
 </head>
 <body>
@@ -749,7 +770,7 @@
             </div>
             <div class="sous-sem">📜 Depuis toujours</div>
             <div class="aide" style="margin-top:2px" v-if="stats.parties">Donjons : {{ stats.gagnes }} vaincu{{ stats.gagnes > 1 ? 's' : '' }} sur {{ stats.parties }}<template v-if="stats.record">, record : étage {{ stats.record }}</template>.<template v-if="stats.parDiff && Object.keys(stats.parDiff).length"> Vaincus en <template v-for="(id, k) in D.ORDRE_DIFFICULTES.filter(x => stats.parDiff[x])">{{ k ? ', ' : '' }}{{ D.DIFFICULTES[id].nom }} : {{ stats.parDiff[id] }}</template>.</template></div>
-            <div class="aide" style="margin-top:2px" v-else>3 étages, un paquet de cartes qui se construit en chemin : il faut souvent plusieurs essais pour vaincre la Liche.</div>
+            <div class="aide" style="margin-top:2px" v-else>3 étages, un paquet de cartes qui se construit en chemin : il faut souvent plusieurs essais pour vaincre le boss du 3e étage.</div>
             <div class="aide">Gagner un donjon ouvre la difficulté suivante ; en Mythique, chaque victoire donne une clé de plus. Entre amis, la victoire compte pour chacun.</div>
             <button class="btn principal" @click="fenPartie = null">OK</button>
           </div>
@@ -941,7 +962,7 @@
                 <span class="intention-nom">{{ m.intention && !aveugle ? m.intention.nom : '' }}<template v-if="m.intention && m.intention.avant && !aveugle"> <s>{{ m.intention.avant }}</s></template></span>
                 <span class="mc-des"><span v-html="spriteMonstre(m)"></span><span v-if="m.armure" class="armure-b">🛡️{{ m.armure }}</span>
                   <span v-for="k in fxSur(m.id)" :key="'x' + k.id" class="coup-flottant" :class="k.cl">{{ k.v }}</span></span>
-                <span class="mc-nom">{{ MONSTRES[m.type].nom }}</span>
+                <span class="mc-nom">{{ MONSTRES[m.type].nom }}<b v-if="m.mem && m.mem.phase > 1" class="phase-m" @click.stop="info('🔥 Phase 2 : ' + MONSTRES[m.type].nom + ' a changé de façon de combattre. Lis bien son prochain coup.')">II</b></span>
                 <span class="mc-pv"><i :style="{ width: pct(m.pv, m.pvMax) }"></i><b>{{ Math.max(0, m.pv) }} / {{ m.pvMax }}</b></span>
                 <span class="etats-c"><span v-for="(n, et) in m.etats" :key="et" @click.stop="infoEtat(et, n)">{{ D.ETATS[et] ? D.ETATS[et].ico : '' }}{{ n }}</span></span>
               </button>
@@ -1261,10 +1282,22 @@
               <li v-if="gains.ouvre">🔓 {{ D.DIFFICULTES[gains.ouvre].nom }} est ouvert pour la semaine !</li>
               <li v-if="gains.hero">🧙 Ton héros garde son paquet ({{ gains.hero.paquet.length }} cartes)<template v-if="gains.hero.pv">, +{{ gains.hero.pv }} PV max</template> et {{ gains.hero.reliques.length }} relique{{ gains.hero.reliques.length > 1 ? 's' : '' }} pour le prochain donjon.</li>
             </ul>
-            <div class="trophees-fin" v-if="gains.reliquesDispo && gains.reliquesDispo.length > D.SEMAINE.reliquesMax || nbBossDispo > 1">
-              <div class="titre-tr">🎒 Choisis les reliques que ton héros garde ({{ choixRel.length }}/{{ D.SEMAINE.reliquesMax }}, une seule de boss)</div>
-              <div class="tuiles-tr"><button v-for="r in gains.reliquesDispo" :key="r" :class="{ 'boss-tr': D.RELIQUES[r].rar === 'boss', actif: choixRel.indexOf(r) >= 0, off: choixRel.indexOf(r) < 0 }" @click="basculerRelique(r)">{{ D.RELIQUES[r].ico }} {{ D.RELIQUES[r].nom }}</button></div>
-              <div class="aide" v-if="infoRel">{{ infoRel }}</div>
+            <!-- Choix des reliques que garde le héros de la semaine (refait en 3.79 : emplacements, effet de chaque relique, plus de retrait en silence) -->
+            <div class="trophees-fin choix-rel" v-if="gains.reliquesDispo && gains.reliquesDispo.length > D.SEMAINE.reliquesMax || nbBossDispo > 1">
+              <div class="titre-tr">🎒 Les reliques que ton héros garde</div>
+              <div class="slots-rel">
+                <span v-for="k in D.SEMAINE.reliquesMax" :key="'sl' + k" class="slot-rel" :class="{ plein: choixRel[k - 1], boss: choixRel[k - 1] && D.RELIQUES[choixRel[k - 1]].rar === 'boss' }" @click="choixRel[k - 1] && basculerRelique(choixRel[k - 1])">{{ choixRel[k - 1] ? D.RELIQUES[choixRel[k - 1]].ico : '' }}</span>
+                <small>{{ choixRel.length }}/{{ D.SEMAINE.reliquesMax }} · une seule de boss</small>
+              </div>
+              <div class="msg-rel" v-if="msgRel">{{ msgRel }}</div>
+              <div class="liste-rel">
+                <button v-for="r in reliquesFin" :key="'rl' + r" class="rel-l" :class="['r-' + D.RELIQUES[r].rar, { garde: choixRel.indexOf(r) >= 0 }]" @click="basculerRelique(r)">
+                  <span class="ico">{{ D.RELIQUES[r].ico }}</span>
+                  <span class="txt"><small class="rar">{{ RARETES_REL[D.RELIQUES[r].rar] }}</small><b>{{ D.RELIQUES[r].nom }}</b><span class="eff">{{ D.RELIQUES[r].texte }}</span></span>
+                  <span class="coche">{{ choixRel.indexOf(r) >= 0 ? '✓' : '+' }}</span>
+                </button>
+              </div>
+              <div class="aide">Touche une relique pour la garder ou la laisser. Les autres restent dans ce donjon.</div>
             </div>
             <button v-if="!solo && role === 'hote'" class="btn principal" @click="envoyerJeu({ type: 'NOUVELLE' })">🔁 Nouveau donjon</button>
             <button v-if="solo && partie.faille" class="btn principal" @click="rentrerFaille">🌀 Retour à la Vallée</button>
@@ -1292,7 +1325,7 @@
         <section class="carte regles">
           <div class="titre-carte">Règles</div>
           <ul>
-            <li>Le donjon a <strong>3 étages</strong> : 🕳️ les Caves, ⚰️ les Catacombes, 🏰 la Forteresse. <strong>Un étage peut être un autre lieu</strong>, tiré au hasard à chaque donjon, avec ses monstres, son boss et sa <strong>règle</strong> : à la place des Caves, 🍄 la Champignonnière (<em>Spores</em> : qui finit son tour sans armure reçoit ☠️ Poison 1, les monstres aussi ; boss : le Grand Mycélium) ou 🌊 la Rivière souterraine (<em>Marée</em> : un tour sur deux, marée haute, tous les coups font 25 % de dégâts en moins, les tiens comme ceux des monstres ; boss : la Pieuvre des profondeurs, dont il faut couper les tentacules) ; à la place des Catacombes, ❄️ la Grotte de glace (<em>Engelures</em> : à chaque tour, une carte de ta main gèle au hasard ; elle ne se joue pas, mais tu la gardes pour le tour suivant ; le ❄️ Givre des monstres en gèle d'autres ; boss : le Dragon de givre, dont les glaçons gèlent une carte en éclatant) ou 📚 la Bibliothèque interdite (<em>Savoir</em> : la 3e carte que tu joues dans un tour ne coûte rien ; boss : l'Archiviste, dont l'Archivage frappe plus fort pour chaque livre mordeur sorti des rayons). D'autres lieux arrivent. Chaque étage se visite pièce par pièce (la petite carte en haut à droite montre les pièces vues). Un <strong>élite ⭐</strong> garde la grande clé 🔑 qui ouvre la porte du <strong>boss 👑</strong> ; le boss vaincu, un escalier 🪜 descend à l'étage suivant (la moitié des PV perdus revient). Vaincre le boss du dernier étage (la Liche, au fond de la Forteresse) gagne le donjon.</li>
+            <li>Le donjon a <strong>3 étages</strong> : 🕳️ les Caves, ⚰️ les Catacombes, 🏰 la Forteresse. <strong>Un étage peut être un autre lieu</strong>, tiré au hasard à chaque donjon, avec ses monstres, son boss et sa <strong>règle</strong> : à la place des Caves, 🍄 la Champignonnière (<em>Spores</em> : qui finit son tour sans armure reçoit ☠️ Poison 1, les monstres aussi ; boss : le Grand Mycélium) ou 🌊 la Rivière souterraine (<em>Marée</em> : un tour sur deux, marée haute, tous les coups font 25 % de dégâts en moins, les tiens comme ceux des monstres ; boss : la Pieuvre des profondeurs, dont il faut couper les tentacules) ; à la place des Catacombes, ❄️ la Grotte de glace (<em>Engelures</em> : à chaque tour, une carte de ta main gèle au hasard ; elle ne se joue pas, mais tu la gardes pour le tour suivant ; le ❄️ Givre des monstres en gèle d'autres ; boss : le Dragon de givre, dont les glaçons gèlent une carte en éclatant) ou 📚 la Bibliothèque interdite (<em>Savoir</em> : la 3e carte que tu joues dans un tour ne coûte rien ; boss : l'Archiviste, dont l'Archivage frappe plus fort pour chaque livre mordeur sorti des rayons). À la place de la Forteresse, ⚒️ les Forges (<em>Braises</em> : au début de chaque tour, tu reçois 🔥 Brûlure 1 et chaque monstre Brûlure 3 ; les braises vivantes explosent si on ne les éteint pas avant la fin de leur mèche, et le squelette forgeron renforce tous les monstres ; boss : le Titan de fonte, qui entre en fusion à la moitié de sa vie et change de façon de combattre). D'autres lieux arrivent. Chaque étage se visite pièce par pièce (la petite carte en haut à droite montre les pièces vues). Un <strong>élite ⭐</strong> garde la grande clé 🔑 qui ouvre la porte du <strong>boss 👑</strong> ; le boss vaincu, un escalier 🪜 descend à l'étage suivant (la moitié des PV perdus revient). Vaincre le boss du dernier étage (la Liche au fond de la Forteresse, ou le Titan de fonte au fond des Forges) gagne le donjon.</li>
             <li>La croix fait avancer ton compagnon (garde le doigt pour marcher). Le bouton ⇄ la met de l'autre côté.</li>
             <li><strong>Chaque compagnon a un pouvoir</strong>, qui ouvre un obstacle (fonce dedans) et donne sa <strong>classe de cartes</strong> :
               🔥 <strong>Feu</strong> (dragon, chat, oie : ronces) brûle tous les monstres ·
@@ -1434,7 +1467,8 @@
         infoTxt: '', infoFiole: null,
         sem: lireSemaine(),   // ma semaine (3.29) : difficulté ouverte, clé, trophées, éclats et bonus
         VL: VL, besaceV: lireBesace(), fiolesV: lireStockage('donjon-fioles-vallee') || [],   // fioles de la Vallée (3.50)
-        trSel: null, choixRel: [], atelier: false, carteAt: null,
+        trSel: null, choixRel: [], msgRel: '', atelier: false, carteAt: null,
+        RARETES_REL: { c: 'Commune', u: 'Peu commune', r: 'Rare', boss: 'De boss' },
         fenPartie: null,      // fenêtre de l'onglet Partie (3.78) : 'semaine', 'hero', 'sac' ou 'salon'
         infoClasse: false,    // texte du pouvoir et de la classe, sous le compagnon (3.78)
         grim: lireGrimoire(),   // Grimoire des Terres (3.71) : { c: cartes rares, choix }
@@ -1497,6 +1531,11 @@
           return l.sort((a, b) => { var ca = DJ.carte(a.id) || {}, cb = DJ.carte(b.id) || {}; return (T[ca.type] || 4) - (T[cb.type] || 4) || String(ca.nom).localeCompare(String(cb.nom)); });
         },
         nbBossDispo: function() { var g = this.gains; return g && g.reliquesDispo ? g.reliquesDispo.filter(r => DJ.D.RELIQUES[r] && DJ.D.RELIQUES[r].rar === 'boss').length : 0; },
+        // Reliques du choix de fin, les plus précieuses d'abord (3.79)
+        reliquesFin: function() {
+          var g = this.gains, O = { boss: 1, r: 2, u: 3, c: 4 }, R = DJ.D.RELIQUES;   // pas de 0 : « || 5 » le prendrait pour une valeur absente
+          return g && g.reliquesDispo ? g.reliquesDispo.slice().sort((a, b) => (O[R[a].rar] || 5) - (O[R[b].rar] || 5)) : [];
+        },
         infoRel: function() { var r = this.choixRel[this.choixRel.length - 1]; return r && DJ.D.RELIQUES[r] ? DJ.D.RELIQUES[r].nom + ' : ' + DJ.D.RELIQUES[r].texte : ''; },
         prochaineOuverture: function() {
           var o = this.sem.ouvert;
@@ -1661,6 +1700,7 @@
           if (R.poison) return this.sporesMenace ? { txt: ' sans armure : ☠️+' + R.poison, cl: 'menace' } : { txt: '', cl: '' };
           if (R.gel) return this.gelees.length ? { txt: ' ' + this.gelees.length + ' gelée' + (this.gelees.length > 1 ? 's' : '') + ' · dégèle' + (this.gelees.length > 1 ? 'nt' : '') + ' au tour suivant', cl: 'haute' } : { txt: '', cl: '' };
           if (R.gratuite) { var nj = (this.monJ && this.monJ.joues) || 0; return this.savoirGratuit ? { txt: ' la prochaine carte est gratuite !', cl: 'haute' } : nj < R.gratuite - 1 ? { txt: nj ? ' ' + nj + ' jouée' + (nj > 1 ? 's' : '') + ' · la ' + R.gratuite + 'e est gratuite' : ' la ' + R.gratuite + 'e carte du tour est gratuite', cl: '' } : { txt: '', cl: '' }; }
+          if (R.brule) return { txt: ' +' + R.brule + ' toi · +' + (R.bruleM || R.brule) + ' monstres / tour', cl: '' };
           if (R.maree) return c.maree ? { txt: ' marée haute : coups −25 %', cl: 'haute' } : { txt: ' marée basse · haute au tour suivant', cl: '' };
           return { txt: '', cl: '' };
         },
@@ -1869,8 +1909,10 @@
           if (i.armure) l.push('🛡️' + i.armure);
           if (i.force) l.push('💪+' + i.force);
           if (i.buffE) l.push(E[i.buffE].ico + i.buffN);
+          if (i.armureAllies) l.push('🛡️' + i.armureAllies + ' à tous');   // 3.79 : renforce tous les monstres
+          if (i.forceAllies) l.push('💪+' + i.forceAllies + ' à tous');
           [i.deb, i.deb2].forEach(d => { if (d) l.push(E[d.e].ico + d.n); });
-          if (i.appel) l.push('📣'); if (i.prep) l.push('😤'); if (i.divise) l.push('✂️');
+          if (i.appel) l.push('📣'); if (i.prep) l.push('😤'); if (i.divise) l.push('✂️'); if (i.explose) l.push('💥'); if (i.phase) l.push('🔥');
           if (i.maudit) l.push('🩹' + i.maudit); if (i.vol) l.push('🪙'); if (i.soin || i.soinPar) l.push('💚');
           return l.join(' ') || '💤';
         },
@@ -2219,11 +2261,13 @@
         // Fin d'un donjon avec trop de reliques : on choisit celles que garde le héros (le choix par défaut est déjà enregistré)
         basculerRelique: function(r) {
           var S = DJ.D.SEMAINE, l = this.choixRel.slice(), R = DJ.D.RELIQUES, i = l.indexOf(r);
+          this.msgRel = '';
           if (i >= 0) l.splice(i, 1);
           else {
-            if (R[r].rar === 'boss') l = l.filter(x => R[x].rar !== 'boss');
-            if (l.length >= S.reliquesMax) l.shift();
-            l.push(r);
+            var autreBoss = R[r].rar === 'boss' ? l.find(x => R[x].rar === 'boss') : null;
+            if (autreBoss) { l[l.indexOf(autreBoss)] = r; this.msgRel = R[r].ico + ' ' + R[r].nom + ' remplace ' + R[autreBoss].ico + ' ' + R[autreBoss].nom + ' (une seule relique de boss).'; }
+            else if (l.length >= S.reliquesMax) { this.msgRel = 'Ton héros porte déjà ' + S.reliquesMax + ' reliques : touche-en une ci-dessus pour la laisser, puis choisis ' + R[r].nom + '.'; return; }
+            else l.push(r);
           }
           this.choixRel = l;
           this.majSemaine(s => { if (s.hero) s.hero.reliques = l.slice(); });
@@ -2948,6 +2992,7 @@
         else if (q < 0.11) s += '<ellipse cx="' + X2 + '" cy="' + Y2 + '" rx="3" ry="2" fill="' + mu[1] + '"/><ellipse cx="' + (X2 + 6) + '" cy="' + (Y2 + 3) + '" rx="2" ry="1.4" fill="' + mu[1] + '"/>';
         else if (deco === 'glace') s += k > 0.5 ? '<ellipse cx="' + (X2 + 2) + '" cy="' + (Y2 + 2) + '" rx="' + (5 + k * 3) + '" ry="' + (2.4 + k) + '" fill="#f1f3f5" opacity="0.75"/><ellipse cx="' + (X2 + 4) + '" cy="' + (Y2 + 1) + '" rx="3" ry="1.2" fill="#fff" opacity="0.9"/>' : '<path d="M' + (X2 - 3) + ' ' + Y2 + ' l4 2 l3 -3 l5 2" fill="none" stroke="#d0ebff" stroke-width="1.4" stroke-linecap="round" opacity="0.8"/><circle cx="' + (X2 + 7) + '" cy="' + (Y2 + 4) + '" r="1.3" fill="#fff" opacity="0.8"/>';
         else if (deco === 'bibliotheque') s += k > 0.5 ? '<rect x="' + (X2 - 4) + '" y="' + (Y2 - 2) + '" width="9" height="11" fill="#f8f1e3" opacity="0.8" transform="rotate(' + Math.round(k * 50 - 25) + ' ' + X2 + ' ' + Y2 + ')"/>' : '<rect x="' + (X2 - 6) + '" y="' + (Y2 - 3) + '" width="12" height="5" rx="1" fill="' + ['#c92a2a', '#1864ab', '#2b8a3e', '#5f3dc4'][Math.floor(k * 8) % 4] + '" stroke="#241812" stroke-width="0.8"/><rect x="' + (X2 - 5) + '" y="' + (Y2 - 2) + '" width="10" height="1.6" fill="#f8f1e3"/>';
+        else if (deco === 'forges') s += k > 0.5 ? '<path d="M' + (X2 - 4) + ' ' + Y2 + ' l4 3 l3 -2 l5 3" fill="none" stroke="#ff6b00" stroke-width="2" stroke-linecap="round" opacity="0.85"/><path d="M' + (X2 - 4) + ' ' + Y2 + ' l4 3 l3 -2 l5 3" fill="none" stroke="#ffd43b" stroke-width="0.7" stroke-linecap="round"/>' : '<circle cx="' + X2 + '" cy="' + Y2 + '" r="2.2" fill="#ff922b" opacity="0.85"/><circle cx="' + X2 + '" cy="' + Y2 + '" r="5" fill="#ff6b00" opacity="0.18"/><ellipse cx="' + (X2 + 6) + '" cy="' + (Y2 + 3) + '" rx="3" ry="2" fill="#343a40"/>';
         else if (deco === 'riviere') s += '<ellipse cx="' + (X2 + 2) + '" cy="' + (Y2 + 2) + '" rx="' + (5 + k * 4) + '" ry="' + (2.6 + k * 1.6) + '" fill="#1c7ed6" opacity="0.5"/><ellipse cx="' + X2 + '" cy="' + (Y2 + 1.2) + '" rx="' + (2 + k * 2) + '" ry="1" fill="#a5d8ff" opacity="0.5"/>';
         else if (deco === 'champignonniere') s += '<path d="M' + (X2 - 1) + ' ' + (Y2 + 1) + ' v5 h2 v-5 Z" fill="#f3f0ff"/><path d="M' + (X2 - 5) + ' ' + (Y2 + 1.5) + ' Q' + (X2 - 5) + ' ' + (Y2 - 4) + ' ' + X2 + ' ' + (Y2 - 4) + ' Q' + (X2 + 5) + ' ' + (Y2 - 4) + ' ' + (X2 + 5) + ' ' + (Y2 + 1.5) + ' Z" fill="' + (k > 0.5 ? '#845ef7' : '#e03131') + '" stroke="#241812" stroke-width="0.9"/><circle cx="' + (X2 - 1.6) + '" cy="' + (Y2 - 1.6) + '" r="0.9" fill="#fff" opacity=".85"/>';
         else if (deco === 'catacombes') s += '<path d="M' + X2 + ' ' + Y2 + ' l9 4" stroke="#e9e2d0" stroke-width="2.4" stroke-linecap="round"/><circle cx="' + X2 + '" cy="' + Y2 + '" r="1.8" fill="#e9e2d0"/><circle cx="' + (X2 + 9) + '" cy="' + (Y2 + 4) + '" r="1.8" fill="#e9e2d0"/>';
@@ -2960,6 +3005,8 @@
         s += '<rect x="' + BX + '" y="3" width="28" height="24" fill="#3b2414" stroke="#120c09" stroke-width="1"/><rect x="' + BX + '" y="13.5" width="28" height="2" fill="#5c3a1f"/>';
         for (var lb = 0; lb < 6; lb++) { var cl = ['#c92a2a', '#1864ab', '#2b8a3e', '#e67700', '#5f3dc4', '#0b7285'][(bq + lb) % 6]; s += '<rect x="' + (BX + 1.5 + lb * 4.3) + '" y="' + (4.5 + (lb % 2)) + '" width="3.6" height="' + (8.5 - (lb % 2)) + '" fill="' + cl + '"/><rect x="' + (BX + 1.5 + ((lb + 2) % 6) * 4.3) + '" y="' + (16 + (lb % 3 === 0 ? 1 : 0)) + '" width="3.6" height="' + (9.5 - (lb % 3 === 0 ? 1 : 0)) + '" fill="' + ['#a61e1e', '#364fc7', '#5c940d', '#d9480f', '#862e9c', '#1098ad'][(bq * 2 + lb) % 6] + '"/>'; }
       }
+      // Chaînes et crochets sur le mur du haut (Forges, 3.79)
+      if (deco === 'forges') [2, 5, 8].forEach(tx => { if (S.t[tx] === '#') s += '<path d="M' + (tx * T + 16) + ' 0 V' + (T - 6) + '" stroke="#120c09" stroke-width="3" stroke-dasharray="3 2"/><path d="M' + (tx * T + 16) + ' 0 V' + (T - 6) + '" stroke="#868e96" stroke-width="1.4" stroke-dasharray="3 2"/><path d="M' + (tx * T + 12) + ' ' + (T - 6) + ' q4 6 8 0" fill="none" stroke="#adb5bd" stroke-width="1.6"/>'; });
       // Glaçons qui pendent du mur du haut (Grotte de glace, 3.43)
       if (deco === 'glace') for (var gq = 1; gq < W - 1; gq++) if (S.t[gq] === '#' && gq % 2 === 1) { var gl = 7 + (gq * 5) % 9, X3 = gq * T + 8 + (gq * 7) % 14; s += '<path d="M' + (X3 - 3.5) + ' ' + T + ' L' + X3 + ' ' + (T + gl) + ' L' + (X3 + 3.5) + ' ' + T + ' Z" fill="#c5f6fa" stroke="#1d2a3a" stroke-width="0.8" opacity="0.9"/>'; }
       // Bannières (Forteresse) et torches sur le mur du haut

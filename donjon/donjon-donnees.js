@@ -379,6 +379,53 @@ var DJD = (function () {
         return mix(a(12 + 3 * livres), { nom: livres ? 'ARCHIVAGE (' + livres + ' livre' + (livres > 1 ? 's' : '') + ')' : 'Archivage', tous: true });
       } },
 
+    // Étage 3, autre lieu : les Forges (3.79). Règle du lieu « Braises » : au début de chaque tour, tout le monde reçoit Brûlure (voir REGLES_LIEU).
+    // Nouvelles mécaniques, communes à tout le donjon (moteur) : armureAllies / forceAllies (renforce tous les monstres du combat),
+    // mèche (explose : le monstre saute après son coup), et le boss en deux phases (phase2 : seuil, transition, puis l'ia reçoit c.phase = 2).
+    salamandre: { nom: 'Salamandre', ico: '🦎', pv: [27, 31], vitesse: 550, chasse: true,
+      ia: function (m, c) { var t = c.k % 3; return t === 0 ? mix(a(6), { nom: 'Crache des flammes', deb: { e: 'brule', n: 2 } }) : t === 1 ? mix(a(11), { nom: 'Morsure ardente' }) : { nom: 'Se roule dans les braises', armure: 8, force: 1 }; } },
+    // Le forgeron renforce tous les monstres du combat : à tuer en premier
+    forgeron: { nom: 'Squelette forgeron', ico: '⚒️', pv: [32, 36], vitesse: 900,
+      ia: function (m, c) { var t = c.k % 3; return t === 0 ? { nom: 'Martèle les armures', armureAllies: 6 } : t === 1 ? mix(a(12), { nom: 'Coup de marteau' }) : mix(a(5), { nom: 'Aiguise les lames', forceAllies: 1 }); } },
+    // La braise vivante a une mèche : si on ne l'éteint pas à temps, elle explose sur tout le monde (et disparaît)
+    braise: { nom: 'Braise vivante', ico: '🔥', pv: [16, 19], vitesse: 500, vole: true,
+      ia: function (m, c) {
+        var reste = 3 - c.k;
+        if (reste > 1) return mix(a(4), { nom: '💣 Mèche : ' + reste + ' tours' });
+        if (reste === 1) return mix(a(4), { nom: '💣 Va exploser ! 💥', prep: true });
+        return mix(a(12), { nom: 'EXPLOSION', tous: true, deb: { e: 'brule', n: 2, tous: true }, explose: true });
+      } },
+    // La scorie se hérisse : la frapper fait mal (épines), surtout avec beaucoup de petits coups
+    scorie: { nom: 'Scorie', ico: '🪨', pv: [36, 40], vitesse: 1100,
+      ia: function (m, c) { var t = c.k % 3; return t === 0 ? { nom: 'Se hérisse de scories', armure: 9, buffE: 'epines', buffN: 2 } : t === 1 ? mix(a(13), { nom: 'Coulée' }) : mix(a(7), { nom: 'Éclats brûlants', deb: { e: 'fragile', n: 1 } }); } },
+    // Élites
+    cerbere: { nom: 'Cerbère', ico: '🐕', taille: 2, rang: 'elite', pv: [96, 100], vitesse: 650, chasse: true,
+      ia: function (m, c) { var t = c.k % 3; return t === 0 ? mix(a(5, 3), { nom: 'Trois morsures' }) : t === 1 ? mix(a(6), { nom: 'Souffle de braise', tous: true, deb: { e: 'brule', n: 2, tous: true } }) : { nom: 'Hurlement à trois voix', force: 2, armure: 10 }; } },
+    maitreforgeron: { nom: 'Maître forgeron', ico: '🔨', taille: 2, rang: 'elite', pv: [94, 98], vitesse: 900,
+      ia: function (m, c) {
+        var t = c.k % 3;
+        if (t === 0) return c.nb < 3 ? { nom: 'Forge une braise', appel: { type: 'braise', n: 1 }, armureAllies: 8 } : { nom: 'Trempe l\'acier', armureAllies: 10 };
+        if (t === 1) return mix(a(17), { nom: 'Marteau-pilon' });
+        return mix(a(6, 2), { nom: 'Tenailles', deb: { e: 'vuln', n: 1 } });
+      } },
+    // Boss en deux phases : à la moitié de ses PV, il entre en fusion (se libère de ses états, +3 Force, armure) et change de cycle
+    titan: { nom: 'Le Titan de fonte', ico: '🗿', couronne: true, taille: 2, rang: 'boss', pv: [160, 160], vitesse: 900, chasse: true,
+      phase2: { seuil: 0.5, annonce: '🔥 Le Titan de fonte entre en fusion !', transition: { nom: 'ENTRE EN FUSION (+3 Force)', force: 3, armure: 18, purge: true } },
+      ia: function (m, c) {
+        var t;
+        if (c.phase === 2) {
+          t = c.k % 3;
+          if (t === 0) return c.nb < 3 ? { nom: 'Appelle les braises', appel: { type: 'braise', n: 2 }, armure: 8 } : mix(a(8, 2), { nom: 'Poings en fusion' });
+          if (t === 1) return mix(a(10), { nom: 'Vague de lave', tous: true, deb: { e: 'brule', n: 3, tous: true } });
+          return mix(a(21), { nom: 'COULÉE DE FONTE' });
+        }
+        t = c.k % 4;
+        if (t === 0) return mix(a(14), { nom: 'Poing de fonte' });
+        if (t === 1) return mix(a(6), { nom: 'Pluie d\'étincelles', tous: true, deb: { e: 'brule', n: 3, tous: true } });
+        if (t === 2) return { nom: 'Il chauffe à blanc… 💥', prep: true, armure: 14 };
+        return mix(a(20), { nom: 'ÉRUPTION' });
+      } },
+
     // Étage 2 : les Catacombes
     squelette: { nom: 'Squelette', ico: '💀', pv: [26, 30], vitesse: 760, chasse: true,
       ia: function (m, c) { return c.k % 2 === 0 ? mix(a(9), { nom: 'Coup d\'os' }) : mix(a(4), { nom: 'Bouclier d\'os', armure: 7 }); } },
@@ -471,7 +518,9 @@ var DJD = (function () {
     savoir: { nom: 'Savoir', ico: '📖', gratuite: 3, court: 'La 3e carte de chaque tour ne coûte rien',
       texte: 'Les livres murmurent leurs secrets : chaque tour, ta 3e carte jouée ne coûte aucune énergie. Garde une carte chère pour la placer en troisième ! Mais les gardiens de la bibliothèque frappent fort et n\'aiment pas le bruit.' },
     engelures: { nom: 'Engelures', ico: '❄️', gel: 1, court: 'Chaque tour, une carte de ta main gèle',
-      texte: 'Il fait si froid qu\'à chaque tour une carte de ta main gèle, au hasard : elle ne se joue pas ce tour-ci, mais tu la gardes et elle dégèle au tour suivant, en plus de ta pioche. Le ❄️ Givre des monstres de la grotte en gèle d\'autres. Les malédictions ne gèlent jamais.' }
+      texte: 'Il fait si froid qu\'à chaque tour une carte de ta main gèle, au hasard : elle ne se joue pas ce tour-ci, mais tu la gardes et elle dégèle au tour suivant, en plus de ta pioche. Le ❄️ Givre des monstres de la grotte en gèle d\'autres. Les malédictions ne gèlent jamais.' },
+    braises: { nom: 'Braises', ico: '🔥', brule: 1, bruleM: 3, court: 'Chaque tour : 🔥 Brûlure 1 pour toi, 3 pour chaque monstre',
+      texte: 'Les forges sont brûlantes : au début de chaque tour, tu reçois Brûlure 1 et chaque monstre Brûlure 3. La brûlure fait perdre des PV au début du tour, puis baisse de moitié : la chaleur ronge les monstres plus vite que toi, alors ne traîne pas. Méfie-toi des braises vivantes : éteins-les avant que leur mèche n\'arrive au bout.' }
   };
   var AUTRES_LIEUX = [
     { id: 'champignonniere', etage: 1, decor: 'champignonniere', nom: 'La Champignonnière', ico: '🍄', regle: 'spores',
@@ -493,7 +542,12 @@ var DJD = (function () {
       sol: ['#5a4434', '#644c3a', '#4a382b'], mur: ['#2e2233', '#3d2e44', '#201726'],
       faciles: [['livre', 'livre'], ['armurevide'], ['encrier', 'chandelier']],
       rencontres: [['livre', 'encrier'], ['armurevide', 'chandelier'], ['livre', 'livre', 'encrier'], ['chandelier', 'encrier'], ['armurevide', 'livre'], ['chandelier', 'chandelier']],
-      elites: ['bibliothecaire', 'grimoire'], boss: 'archiviste' }
+      elites: ['bibliothecaire', 'grimoire'], boss: 'archiviste' },
+    { id: 'forges', etage: 3, decor: 'forges', nom: 'Les Forges', ico: '⚒️', regle: 'braises',
+      sol: ['#4a3a32', '#55433a', '#3a2c25'], mur: ['#2a1d18', '#3a2820', '#1c120e'],
+      faciles: [['salamandre'], ['braise', 'braise'], ['forgeron']],
+      rencontres: [['salamandre', 'forgeron'], ['scorie', 'braise'], ['salamandre', 'salamandre'], ['forgeron', 'scorie'], ['braise', 'braise', 'salamandre'], ['scorie', 'salamandre']],
+      elites: ['cerbere', 'maitreforgeron'], boss: 'titan' }
   ];
   var LIEUX = {};
   ETAGES.forEach(function (E, i) { E.etage = i + 1; E.lieux = [E.id]; LIEUX[E.id] = E; });

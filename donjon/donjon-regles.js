@@ -978,6 +978,18 @@ var DJ = (function () {
     if (c.tour > 1) journal(c, haute ? '🌊 Marée haute : tous les coups −25 % ce tour-ci.' : '🏖️ Marée basse : les coups font tous leurs dégâts.');
     c.maree = haute;
   }
+  // Règle du lieu « Braises » (Forges, 3.79) : au début de chaque tour, Brûlure à tout le monde (joueurs vivants et monstres).
+  // Posée avant le début du tour des joueurs : ils la paient aussitôt (tickDot), les monstres au début de leur action.
+  function braises(e, c) {
+    var R = regleLieu(e);
+    if (!R || !R.brule) return;
+    var avant = LIGNE;
+    ouvrir(c, R.ico, 'Les forges', 'braises');
+    vivantsDe(e, c).forEach(q => affaiblir(e, c, q, 'brule', R.brule));
+    var bm = R.bruleM || R.brule;
+    monstresDe(e, c).forEach(m => { ajouterEtat(m, 'brule', bm); noter(nomMonstre(m), '🔥+' + bm, 'etat', m.id); });
+    fermer(); LIGNE = avant;
+  }
   // Règle du lieu « Engelures » (Grotte de glace, 3.43) : au début du tour, après la pioche, une carte de la main gèle (au hasard, jamais une malédiction),
   // plus une par Givre ❄️ posé par les monstres. Gelée = rangée dans p.glace : elle ne se joue pas, ne part pas à la défausse, et revient dans la main au tour suivant.
   function geler(e, c, p, h) {
@@ -1000,11 +1012,14 @@ var DJ = (function () {
     c.joueurs = c.joueurs.filter(n => e.joueurs[n] && e.joueurs[n].salle === c.salle);
     ajusterPv(e, c);
     maree(e, c);
+    braises(e, c);
     // Intentions des monstres (annoncées avant que les joueurs jouent)
     var cibles = vivantsDe(e, c);
     monstresDe(e, c).forEach(m => {
-      var M = MONSTRES[m.type];
-      m.intention = M.ia(m, { k: m.k, h: h, nb: monstresDe(e, c).length, dernier: m.mem.dernier });
+      var M = MONSTRES[m.type], ph = m.mem.phase || 1;
+      // Boss en deux phases (3.79) : sous le seuil de PV, son prochain tour est la transition (annoncée comme un coup), puis l'ia reçoit c.phase = 2
+      if (M.phase2 && ph < 2 && m.pv <= m.pvMax * M.phase2.seuil) m.intention = Object.assign({ phase: 2 }, M.phase2.transition);
+      else m.intention = M.ia(m, { k: m.k, h: h, nb: monstresDe(e, c).length, dernier: m.mem.dernier, phase: ph });
       m.cible = cibles.length ? auHasard(cibles, h).nom : null;
     });
     vivantsDe(e, c).forEach(p => debutTour(e, c, p, h));
@@ -1364,6 +1379,16 @@ var DJ = (function () {
       if (i.force) { ajouterEtat(m, 'force', i.force); noter(nm, '💪+' + i.force, 'etat', m.id); }
       if (i.buffE) { ajouterEtat(m, i.buffE, i.buffN); noter(nm, (ETATS[i.buffE] ? ETATS[i.buffE].ico : '') + '+' + i.buffN, 'etat', m.id); }
       if (i.fureur) m.mem.fureur = 1;
+      // Changement de phase (3.79) : il se libère de ses états néfastes et reprend son cycle au début
+      if (i.phase) {
+        m.mem.phase = i.phase; m.k = -1;   // remis à 0 par m.k++ en fin de tour
+        if (i.purge) { ['poison', 'brule', 'faible', 'vuln', 'fragile', 'maree'].forEach(et => delete m.etats[et]); noter(nm, '✨ se libère de ses maux', 'etat', m.id); }
+        var M2 = MONSTRES[m.type];
+        if (M2.phase2 && M2.phase2.annonce) { journal(c, M2.phase2.annonce); annonce(e, M2.phase2.annonce); }
+      }
+      // Renforce tous les monstres du combat (3.79 : le Squelette forgeron, le Maître forgeron)
+      if (i.armureAllies) monstresDe(e, c).forEach(x => { x.armure += i.armureAllies; noter(nomMonstre(x), '+' + i.armureAllies + ' 🛡️', 'bouclier', x.id); });
+      if (i.forceAllies) monstresDe(e, c).forEach(x => { ajouterEtat(x, 'force', i.forceAllies); noter(nomMonstre(x), '💪+' + i.forceAllies, 'etat', x.id); });
       if (i.soin) { var gm = Math.min(m.pvMax, m.pv + i.soin) - m.pv; m.pv += gm; if (gm) noter(nm, '+' + gm + ' ❤️', 'soin', m.id); }
       if (i.soinPar) {
         var gs = Math.min(m.pvMax, m.pv + i.soinPar.n * monstresDe(e, c).filter(x => x.type === i.soinPar.type).length) - m.pv;
@@ -1395,6 +1420,12 @@ var DJ = (function () {
       }
       // Règle du lieu « Spores » : un monstre qui finit son tour sans armure est empoisonné lui aussi
       if (spores && spores.poison && !m.armure && e.ennemis.indexOf(m) >= 0) { ajouterEtat(m, 'poison', spores.poison); noter(nm, '☠️+' + spores.poison, 'etat', m.id); }
+      // Mèche (3.79, Braise vivante) : après son explosion, le monstre disparaît (sans compter comme vaincu)
+      if (i.explose && e.ennemis.indexOf(m) >= 0) {
+        e.ennemis = e.ennemis.filter(x => x !== m); effet(e, m.salle, m.x, m.y, 'pouf');
+        noter(nm, '💥 explose et disparaît', 'etat', m.id); fermer(); journal(c, '💥 ' + nm + ' a explosé.');
+        return;
+      }
       fermer();
       m.k++; m.mem.dernier = i.nom;
     });
