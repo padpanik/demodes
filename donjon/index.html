@@ -1209,7 +1209,7 @@
               <button class="btn" @click="sonActif = !sonActif">{{ sonActif ? '🔊 Son activé' : '🔇 Son coupé' }}</button>
               <button class="btn" v-if="peutVibrer" @click="vibrationActive = !vibrationActive">{{ vibrationActive ? '📳 Vibrations activées' : '📴 Vibrations coupées' }}</button>
               <button class="btn" @click="inverse = !inverse">⇄ Mettre la croix {{ inverse ? 'à gauche' : 'à droite' }}</button>
-              <button class="btn" @click="basculerPleinEcran">{{ immersionVoulue ? '🗗 Quitter le plein écran' : '⛶ Plein écran' }}</button>
+              <button class="btn" @click="basculerPleinEcran">{{ immersionVoulue ? '↙️ Quitter le plein écran' : '↗️ Plein écran' }}</button>
               <button class="btn" v-if="immersionVoulue" @click="basculerBarres">{{ barresCachees ? '📱 Montrer les barres du tél.' : '📱 Cacher les barres du tél.' }}</button>
               <button class="btn" @click="menuJeu = false; onglet = 'regles'">📖 Règles du donjon</button>
               <button class="btn quitter-menu" @click="menuJeu = false; demandeQuitter = true">🏳️ Quitter le donjon</button>
@@ -2019,10 +2019,23 @@
         // 3.84 (signalé par l'utilisateur : après un passage dans une autre appli, les barres du téléphone revenaient malgré l'option) :
         // le navigateur sort du plein écran quand on quitte l'appli et ne permet d'y revenir qu'après un toucher ;
         // dès qu'on n'est plus en plein écran, le prochain toucher dans le donjon le redemande
-        var finFs = () => { if (!document.fullscreenElement && !document.webkitFullscreenElement) this._fsDemande = false; };
+        var finFs = () => { if (!document.fullscreenElement && !document.webkitFullscreenElement) { this._fsDemande = false; this._hFs = 0; } };
         document.addEventListener('fullscreenchange', finFs);
         document.addEventListener('webkitfullscreenchange', finFs);
         document.addEventListener('visibilitychange', finFs);
+        // 3.85 (signalé par l'utilisateur : en 3.84, toujours les barres au retour) : Chrome sur Android peut garder la page « en plein écran »
+        // tout en réaffichant les barres du téléphone ; la page croit alors n'avoir rien à faire. Si l'écran visible est nettement plus bas
+        // que lors de l'entrée en plein écran, on sort du plein écran nous-mêmes (permis sans toucher) : le prochain toucher le redemande proprement.
+        var barresRevenues = () => {
+          if (document.hidden || !this.barresCachees || !(document.fullscreenElement || document.webkitFullscreenElement)) return;
+          if (!this._hFs) { this._hFs = window.innerHeight; return; }   // 1re mesure après l'entrée en plein écran : la hauteur de référence
+          if (window.innerHeight < this._hFs - 30) { this.sortirPleinEcranNavigateur(); this._fsDemande = false; this._hFs = 0; }
+        };
+        document.addEventListener('fullscreenchange', () => setTimeout(barresRevenues, 400));
+        document.addEventListener('visibilitychange', () => setTimeout(barresRevenues, 400));
+        window.addEventListener('resize', () => setTimeout(barresRevenues, 400));
+        // N'importe quel toucher dans le donjon (fenêtres et menu compris) redemande le plein écran s'il le faut
+        document.addEventListener('pointerdown', () => this.reprendrePleinEcran(), true);
         window.addEventListener('online', () => this.auRetourPremierPlan());
         window.addEventListener('pageshow', () => this.auRetourPremierPlan());
         // Doigt appuyé pendant le jeu (fenêtres comprises) : pas de menu ni de recherche Google
