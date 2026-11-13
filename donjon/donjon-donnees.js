@@ -486,6 +486,56 @@ var DJD = (function () {
         if (t === 3) return mix(a(5, 3), { nom: 'Moisson' });
         if (t === 4) return { nom: 'Le néant approche… 💥', prep: true, armure: 15 };
         return mix(a(26), { nom: 'NÉANT', tous: true });
+      } },
+    // Étage 3, autre lieu : la Tour de l'horloge (3.80). Règle du lieu « Temps détraqué » : 4 ⚡ mais 4 cartes par tour (voir REGLES_LIEU).
+    // Nouvelles mécaniques, communes à tout le donjon (moteur) : c.prec = les types de cartes joués au tour d'avant (l'ia y réagit),
+    // volCarte (le monstre prend des cartes de la pioche de sa cible, rendues à sa mort) et rembobine (il retrouve les PV perdus depuis son dernier tour).
+    // L'automate réagit à tes attaques : beaucoup d'attaques au tour d'avant, il se met en garde
+    automate: { nom: 'Automate', ico: '🤖', pv: [40, 44], vitesse: 900,
+      ia: function (m, c) {
+        if ((c.prec.attaque || 0) >= 3) return mix(a(6), { nom: 'En garde !', armure: 14 });
+        return c.k % 2 === 0 ? mix(a(12), { nom: 'Coup de bielle' }) : mix(a(5, 2), { nom: 'Pistons' });
+      } },
+    rouage: { nom: 'Rouage volant', ico: '⚙️', pv: [21, 24], vitesse: 450, vole: true,
+      ia: function (m, c) { return c.k % 2 === 0 ? mix(a(4, 2), { nom: 'Dents d\'acier' }) : mix(a(9), { nom: 'Tourne à toute allure' }); } },
+    // Le coucou vole une carte de ta pioche : elle revient quand il est vaincu
+    coucou: { nom: 'Coucou', ico: '🐦', pv: [26, 30], vitesse: 600, vole: true,
+      ia: function (m, c) { var t = c.k % 3; return t === 0 ? mix(a(6), { nom: 'Coucou !', volCarte: 1 }) : t === 1 ? mix(a(11), { nom: 'Coup de bec' }) : mix(a(7), { nom: 'Sort de l\'horloge', deb: { e: 'vuln', n: 1 } }); } },
+    // Le sablier vivant remonte le temps : ce que tu lui as fait perdre depuis son dernier tour, il le retrouve (12 PV au plus)
+    sablier: { nom: 'Sablier vivant', ico: '⏳', pv: [34, 38], vitesse: 1000,
+      ia: function (m, c) { var t = c.k % 3; return t === 0 ? mix(a(11), { nom: 'Sable fin' }) : t === 1 ? mix(a(8), { nom: 'Remonte le temps ⏪', rembobine: 14 }) : { nom: 'Se retourne', armure: 7, deb: { e: 'faible', n: 1 } }; } },
+    // Élites
+    horloger: { nom: 'Horloger fou', ico: '🕰️', taille: 2, rang: 'elite', pv: [100, 104], vitesse: 800,
+      ia: function (m, c) {
+        var t = c.k % 3;
+        if (t === 0) return c.nb < 3 ? { nom: 'Remonte un rouage', appel: { type: 'rouage', n: 1 }, armureAllies: 6 } : { nom: 'Graisse les engrenages', armureAllies: 9 };
+        if (t === 1) return mix(a(19), { nom: 'Clé à molette' });
+        return mix(a(7, 2), { nom: 'Dérègle tes aiguilles', volCarte: 1 });
+      } },
+    // Le gardien de bronze punit ce que tu as joué au tour d'avant : trop d'attaques = riposte, trop de défenses = brise-garde
+    gardienbronze: { nom: 'Gardien de bronze', ico: '🛡️', taille: 2, rang: 'elite', pv: [106, 110], vitesse: 1100,
+      ia: function (m, c) {
+        if ((c.prec.attaque || 0) >= 4) return mix(a(9, 2), { nom: 'RIPOSTE !' });
+        if ((c.prec.defense || 0) >= 2) return mix(a(15), { nom: 'Brise-garde', deb: { e: 'fragile', n: 2 } });
+        return c.k % 2 === 0 ? mix(a(18), { nom: 'Masse de bronze' }) : { nom: 'Se cuirasse', armure: 16, force: 1 };
+      } },
+    // Boss en deux phases : sous la moitié de ses PV, il détraque le temps, puis remonte le temps et sonne minuit
+    maitretemps: { nom: 'Le Maître du Temps', ico: '⌛', couronne: true, taille: 2, rang: 'boss', pv: [180, 180], vitesse: 900,
+      phase2: { seuil: 0.5, annonce: '⏳ Le Maître du Temps détraque toutes les horloges !', transition: { nom: 'DÉTRAQUE LE TEMPS (+2 Force)', force: 2, armure: 16, purge: true } },
+      ia: function (m, c) {
+        var t;
+        if (c.phase === 2) {
+          t = c.k % 4;
+          if (t === 0) return c.nb < 3 ? { nom: 'Appelle les rouages', appel: { type: 'rouage', n: 2 }, armure: 8 } : mix(a(8, 2), { nom: 'Aiguilles tranchantes' });
+          if (t === 1) return mix(a(6), { nom: 'Temps figé', tous: true, deb: { e: 'faible', n: 2, tous: true }, deb2: { e: 'fragile', n: 1, tous: true } });
+          if (t === 2) return mix(a(9), { nom: 'Remonte le temps ⏪', rembobine: 25 });
+          return mix(a(26), { nom: 'MINUIT' });
+        }
+        t = c.k % 4;
+        if (t === 0) return mix(a(16), { nom: 'Aiguille des heures' });
+        if (t === 1) return mix(a(7), { nom: 'Vole tes instants', volCarte: 2 });
+        if (t === 2) return { nom: 'Il se remonte… 💥', prep: true, armure: 12 };
+        return mix(a(2, 12), { nom: 'DOUZE COUPS DE MIDI' });
       } }
   };
 
@@ -520,7 +570,9 @@ var DJD = (function () {
     engelures: { nom: 'Engelures', ico: '❄️', gel: 1, court: 'Chaque tour, une carte de ta main gèle',
       texte: 'Il fait si froid qu\'à chaque tour une carte de ta main gèle, au hasard : elle ne se joue pas ce tour-ci, mais tu la gardes et elle dégèle au tour suivant, en plus de ta pioche. Le ❄️ Givre des monstres de la grotte en gèle d\'autres. Les malédictions ne gèlent jamais.' },
     braises: { nom: 'Braises', ico: '🔥', brule: 1, bruleM: 3, court: 'Chaque tour : 🔥 Brûlure 1 pour toi, 3 pour chaque monstre',
-      texte: 'Les forges sont brûlantes : au début de chaque tour, tu reçois Brûlure 1 et chaque monstre Brûlure 3. La brûlure fait perdre des PV au début du tour, puis baisse de moitié : la chaleur ronge les monstres plus vite que toi, alors ne traîne pas. Méfie-toi des braises vivantes : éteins-les avant que leur mèche n\'arrive au bout.' }
+      texte: 'Les forges sont brûlantes : au début de chaque tour, tu reçois Brûlure 1 et chaque monstre Brûlure 3. La brûlure fait perdre des PV au début du tour, puis baisse de moitié : la chaleur ronge les monstres plus vite que toi, alors ne traîne pas. Méfie-toi des braises vivantes : éteins-les avant que leur mèche n\'arrive au bout.' },
+    temps: { nom: 'Temps détraqué', ico: '🕰️', energie: 1, pioche: -1, court: 'Chaque tour : 4 ⚡ mais seulement 4 cartes',
+      texte: 'Les horloges de la tour sont toutes détraquées : à chaque tour, tu as 4 ⚡ au lieu de 3, mais tu ne pioches que 4 cartes au lieu de 5. Moins de choix, plus de force : c\'est le moment des cartes chères. Les monstres de la tour regardent ce que tu as joué au tour d\'avant : après 3 attaques, l\'automate se met en garde ; le gardien de bronze riposte après 4 attaques et brise ta garde après 2 défenses. Le coucou vole une carte de ta pioche (rendue quand il tombe) et le sablier vivant ⏪ remonte le temps : ne le frappe pas le tour où il l\'annonce, sauf pour l\'abattre.' }
   };
   var AUTRES_LIEUX = [
     { id: 'champignonniere', etage: 1, decor: 'champignonniere', nom: 'La Champignonnière', ico: '🍄', regle: 'spores',
@@ -547,7 +599,12 @@ var DJD = (function () {
       sol: ['#4a3a32', '#55433a', '#3a2c25'], mur: ['#2a1d18', '#3a2820', '#1c120e'],
       faciles: [['salamandre'], ['braise', 'braise'], ['forgeron']],
       rencontres: [['salamandre', 'forgeron'], ['scorie', 'braise'], ['salamandre', 'salamandre'], ['forgeron', 'scorie'], ['braise', 'braise', 'salamandre'], ['scorie', 'salamandre']],
-      elites: ['cerbere', 'maitreforgeron'], boss: 'titan' }
+      elites: ['cerbere', 'maitreforgeron'], boss: 'titan' },
+    { id: 'horloge', etage: 3, decor: 'horloge', nom: 'La Tour de l\'horloge', ico: '🕰️', regle: 'temps',
+      sol: ['#4a4038', '#564b41', '#3a312a'], mur: ['#2c2a33', '#3b3844', '#1d1b22'],
+      faciles: [['automate'], ['rouage', 'rouage'], ['coucou', 'rouage']],
+      rencontres: [['automate', 'rouage'], ['coucou', 'sablier'], ['automate', 'coucou'], ['sablier', 'rouage', 'rouage'], ['automate', 'sablier'], ['coucou', 'coucou']],
+      elites: ['horloger', 'gardienbronze'], boss: 'maitretemps' }
   ];
   var LIEUX = {};
   ETAGES.forEach(function (E, i) { E.etage = i + 1; E.lieux = [E.id]; LIEUX[E.id] = E; });

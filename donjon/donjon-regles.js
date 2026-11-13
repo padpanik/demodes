@@ -1011,6 +1011,8 @@ var DJ = (function () {
     Object.values(e.joueurs).forEach(p => { if (p.salle === c.salle && !p.fantome && c.joueurs.indexOf(p.nom) < 0) entrerEnCombat(e, c, p, h); });
     c.joueurs = c.joueurs.filter(n => e.joueurs[n] && e.joueurs[n].salle === c.salle);
     ajusterPv(e, c);
+    // Ce qui a été joué au tour d'avant (3.80) : certains monstres y réagissent (c.prec = { attaque: n, defense: n… })
+    c.prec = c.types || {}; c.types = {};
     maree(e, c);
     braises(e, c);
     // Intentions des monstres (annoncées avant que les joueurs jouent)
@@ -1019,7 +1021,7 @@ var DJ = (function () {
       var M = MONSTRES[m.type], ph = m.mem.phase || 1;
       // Boss en deux phases (3.79) : sous le seuil de PV, son prochain tour est la transition (annoncée comme un coup), puis l'ia reçoit c.phase = 2
       if (M.phase2 && ph < 2 && m.pv <= m.pvMax * M.phase2.seuil) m.intention = Object.assign({ phase: 2 }, M.phase2.transition);
-      else m.intention = M.ia(m, { k: m.k, h: h, nb: monstresDe(e, c).length, dernier: m.mem.dernier, phase: ph });
+      else m.intention = M.ia(m, { k: m.k, h: h, nb: monstresDe(e, c).length, dernier: m.mem.dernier, phase: ph, prec: c.prec });
       m.cible = cibles.length ? auHasard(cibles, h).nom : null;
     });
     vivantsDe(e, c).forEach(p => debutTour(e, c, p, h));
@@ -1035,11 +1037,13 @@ var DJ = (function () {
     if (p.reserve) { en += p.reserve; p.reserve = 0; }   // Gemme d'énergie
     if (p.etats.elan) en++;   // Essence de faille (3.71)
     if (premier && a(p, 'lanterne')) en++;
+    var RT = regleLieu(e);   // « Temps détraqué » (Tour de l'horloge, 3.80) : plus d'énergie, moins de cartes
+    if (RT && RT.energie) en += RT.energie;
     if (a(p, 'sablier') && p.tourCombat % 3 === 0) en++;
     p.energie = en; p.joues = 0;
     if (premier && a(p, 'ancre')) p.armure += 10;
     if (a(p, 'ecu')) p.armure += 2;
-    var n = MAIN + (a(p, 'sceptre') ? 1 : 0) - (a(p, 'couronne') ? 1 : 0) + (premier && a(p, 'sac') ? 2 : 0);
+    var n = MAIN + (a(p, 'sceptre') ? 1 : 0) - (a(p, 'couronne') ? 1 : 0) + (premier && a(p, 'sac') ? 2 : 0) + (RT && RT.pioche || 0);
     if (!p.glace) p.glace = [];
     if (p.glace.length) { p.main = p.main.concat(p.glace); p.glace = []; }   // les cartes gelées au tour d'avant dégèlent
     if (p.gardees && p.gardees.length) { p.main = p.main.concat(p.gardees); p.gardees = []; }   // cartes gardées (Marque-page, Prévoyance)
@@ -1123,6 +1127,7 @@ var DJ = (function () {
     effet(e, m.salle, m.x, m.y, 'pouf');
     journal(c, '💨 ' + nomMonstre(m) + ' est vaincu !');
     var M = MONSTRES[m.type];
+    rendreCartes(e, c, m);
     // Le gobelin rend ce qu'il a volé
     Object.keys(m.mem.vol || {}).forEach(n => { var q = e.joueurs[n]; if (q) { q.or += m.mem.vol[n]; journal(c, '🪙 ' + nomCp(q) + ' récupère ' + m.mem.vol[n] + ' or.'); } });
     c.poussiere += M.rang === 'boss' ? 4 + e.etage : M.rang === 'elite' ? 2 : 1;
@@ -1130,6 +1135,14 @@ var DJ = (function () {
     if (M.mort && M.mort.deb) vivantsDe(e, c).forEach(q => { var manque = M.mort.deb.n - (q.etats[M.mort.deb.e] || 0); if (manque > 0) affaiblir(e, c, q, M.mort.deb.e, manque); });
     // Trophée de chasse : pour ceux dont c'est encore le tour
     if (!c.pret) vivantsDe(e, c).forEach(p => { if (a(p, 'trophee') && !c.fini[p.nom]) { p.energie++; piocher(e, p, 1, Math.random); noter(nomCp(p), '🦌 ⚡+1 🃏+1', 'etat'); } });
+  }
+  // Cartes volées (3.80) : rendues à la défausse de leur propriétaire, s'il est encore dans le combat
+  function rendreCartes(e, c, m) {
+    Object.keys(m.mem.cartes || {}).forEach(n => {
+      var q = e.joueurs[n], l = m.mem.cartes[n];
+      if (q && l.length && c.joueurs.indexOf(n) >= 0) { q.defausse = q.defausse.concat(l); journal(c, '🃏 ' + nomCp(q) + ' récupère ' + l.map(id => carte(id).nom).join(', ') + '.'); }
+    });
+    delete m.mem.cartes;
   }
   function defausserTout(p) { p.defausse = p.defausse.concat(p.main); p.main = []; }
 
@@ -1253,6 +1266,8 @@ var DJ = (function () {
       }
     }
     p.joues++; p.jouesTotal = (p.jouesTotal || 0) + 1;
+    if (!c.types) c.types = {};
+    c.types[k.type] = (c.types[k.type] || 0) + 1;
     if (p.etats.rythme && p.joues >= 4) { var l = monstresDe(e, c); if (l.length) { var x = auHasard(l, h); infliger(e, c, x, p.etats.rythme, null, false); } }
     // Rage : une carte qui n'est pas une attaque met les monstres enragés en colère
     if (k.type !== 'attaque') ms.forEach(m => { if (m.etats.rage && e.ennemis.indexOf(m) >= 0) { ajouterEtat(m, 'force', m.etats.rage); fx(e, c, m.id, '😡+' + m.etats.rage, 'etat'); } });
@@ -1394,12 +1409,33 @@ var DJ = (function () {
         var gs = Math.min(m.pvMax, m.pv + i.soinPar.n * monstresDe(e, c).filter(x => x.type === i.soinPar.type).length) - m.pv;
         m.pv += gs; if (gs) noter(nm, '+' + gs + ' ❤️', 'soin', m.id);
       }
+      // Remonte le temps (3.80, Sablier vivant, Maître du Temps) : il retrouve les PV perdus depuis la fin de son dernier tour (plafonnés)
+      if (i.rembobine && m.mem.pvPrec > m.pv) {
+        var gr = Math.min(i.rembobine, m.mem.pvPrec - m.pv, m.pvMax - m.pv); m.pv += gr;
+        if (gr) noter(nm, '⏪ +' + gr + ' ❤️', 'soin', m.id);
+      }
       if (i.att) {
         for (var x = 0; x < (i.x || 1); x++) cibles.forEach(q => {
           if (q.fantome || e.ennemis.indexOf(m) < 0) return;
           infliger(e, c, q, calculer(m, q, attaqueMonstre(e, i, vivants.length)), m, true);
         });
       }
+      // Vol de cartes (3.80, Coucou, Horloger, Maître du Temps) : le dessus de la pioche (sinon la défausse), jamais une malédiction ; rendues à sa mort
+      if (i.volCarte) cibles.forEach(q => {
+        if (q.fantome) return;
+        var pris = [];
+        for (var v = 0; v < i.volCarte; v++) {
+          var tas = q.pioche.some(id => carte(id) && carte(id).type !== 'malediction') ? q.pioche : q.defausse;
+          var ix = -1;
+          for (var w = tas.length - 1; w >= 0; w--) { var kk = carte(tas[w]); if (kk && kk.type !== 'malediction') { ix = w; break; } }
+          if (ix < 0) break;
+          pris.push(tas.splice(ix, 1)[0]);
+        }
+        if (!pris.length) return;
+        m.mem.cartes = m.mem.cartes || {}; m.mem.cartes[q.nom] = (m.mem.cartes[q.nom] || []).concat(pris);
+        c.fx.push({ id: ++e.seq, qui: q.nom, v: '🃏−' + pris.length, cl: 'etat', t: e.maintenant }); if (c.fx.length > 24) c.fx.shift();
+        noter(nomQui(e, q.nom), '🃏 ' + pris.map(id => carte(id).nom).join(', ') + ' volée' + (pris.length > 1 ? 's' : ''), 'autre', q.nom);
+      });
       if (i.vol) cibles.forEach(q => { var n = Math.min(q.or, i.vol); if (!n) return; q.or -= n; m.mem.vol = m.mem.vol || {}; m.mem.vol[q.nom] = (m.mem.vol[q.nom] || 0) + n; fx(e, c, q.nom, '−' + n + ' 🪙', 'neutre'); });
       [i.deb, i.deb2].forEach(d => {
         if (!d) return;
@@ -1427,7 +1463,7 @@ var DJ = (function () {
         return;
       }
       fermer();
-      m.k++; m.mem.dernier = i.nom;
+      m.k++; m.mem.dernier = i.nom; m.mem.pvPrec = m.pv;
     });
     // Fin du tour : les états qui durent baissent de 1
     var tous = monstresDe(e, c).concat(c.joueurs.map(n => e.joueurs[n]).filter(Boolean));
@@ -1449,7 +1485,7 @@ var DJ = (function () {
     joueurs.forEach(p => { p.armure = 0; p.etats = {}; p.main = []; p.glace = []; p.gardees = []; p.marque = null; p.garderTout = false; p.pioche = []; p.defausse = []; p.epuisees = []; p.energie = 0; p.tourCombat = 0; p.invoc = []; p.murs = {}; });
     e.dernierCombat = { salle: c.salle, gagne: gagne, journal: c.journal.slice(-4), t: e.maintenant, id: c.id };
     if (!gagne) {
-      monstresDe(e, c).forEach(m => { m.armure = 0; m.etats = {}; m.intention = null; });
+      monstresDe(e, c).forEach(m => { m.armure = 0; m.etats = {}; m.intention = null; delete m.mem.cartes; delete m.mem.pvPrec; });
       annonce(e, '👻 Le groupe est KO dans cette pièce… les monstres restent là.');
       return;
     }

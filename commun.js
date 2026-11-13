@@ -3,12 +3,13 @@
 // Les clés de stockage gardent l'ancien préfixe "brillant-" : les réglages déjà faits sont conservés.
 
 // Numéro de version affiché (à augmenter à chaque mise en ligne, avec brilliant/index.html et sw.js)
-const VERSION = '3.79';
+const VERSION = '3.80';
 
 // ---------- Nouveautés (2.87, demandé par l'utilisateur) ----------
 // Une ligne très brève par mise en ligne (la plus récente en haut) : l'accueil les montre une seule fois, dans une petite fenêtre,
 // à qui n'a pas encore vu cette version. [version, jeu ou partie de l'appli, ce qui change]
 const NOUVEAUTES = [
+  ['3.80', 'Donjon', 'La Tour de l\'horloge à l\'étage 3 : 4 ⚡ mais 4 cartes, des monstres qui volent tes cartes ou remontent le temps.'],
   ['3.79', 'Donjon', 'Les Forges à l\'étage 3, un boss en deux phases, et un choix des reliques plus clair en fin de donjon.'],
   ['3.78', 'Donjon', 'Onglet Partie rangé : tout pour partir en haut, Ma semaine et Mon héros en tuiles.'],
   ['3.77', 'Vallée', 'Hutte et établi : « Il manque » montre les vrais dessins des ingrédients.'],

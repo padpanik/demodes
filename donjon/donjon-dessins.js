@@ -597,6 +597,104 @@ var DJS = (function () {
       fente('M16.5 15.2 Q20 16.5 23.5 15.2') +
       couronne(20, 5.2, 0.85) + c(5, 8, 0.8, '#ffd43b') + c(35, 10, 0.7, '#ffa94d') + c(30, 3, 0.6, '#ffd43b');
   };
+  // ---- La Tour de l'horloge (3.80) : automate, rouage volant, coucou, sablier vivant, Horloger fou, Gardien de bronze, le Maître du Temps ----
+  // Un engrenage : n dents autour d'un cercle (cx, cy, r), couleur, avec un moyeu
+  function roue(cx, cy, r, n, fill, ep) {
+    var d = '', k, a0, a1, a2, a3, R = r + r * 0.28;
+    for (k = 0; k < n; k++) {
+      a0 = (k - 0.28) / n * Math.PI * 2; a1 = (k - 0.16) / n * Math.PI * 2; a2 = (k + 0.16) / n * Math.PI * 2; a3 = (k + 0.28) / n * Math.PI * 2;
+      d += (k ? 'L' : 'M') + (cx + r * Math.cos(a0)).toFixed(2) + ' ' + (cy + r * Math.sin(a0)).toFixed(2) + ' L' + (cx + R * Math.cos(a1)).toFixed(2) + ' ' + (cy + R * Math.sin(a1)).toFixed(2) +
+        ' L' + (cx + R * Math.cos(a2)).toFixed(2) + ' ' + (cy + R * Math.sin(a2)).toFixed(2) + ' L' + (cx + r * Math.cos(a3)).toFixed(2) + ' ' + (cy + r * Math.sin(a3)).toFixed(2) + ' ';
+    }
+    return p(d + 'Z', fill, ep === undefined ? 1.3 : ep) + c(cx, cy, r * 0.42, '#5c4a1a', 1) + c(cx, cy, r * 0.16, '#241812');
+  }
+  // Un cadran d'horloge : fond crème, chiffres en traits, deux aiguilles
+  function cadran(cx, cy, r, h, m) {
+    var s = c(cx, cy, r, '#f1e3c0', 1.4), k;
+    for (k = 0; k < 12; k++) { var an = k / 12 * Math.PI * 2; s += l('M' + (cx + r * 0.78 * Math.sin(an)).toFixed(2) + ' ' + (cy - r * 0.78 * Math.cos(an)).toFixed(2) + ' L' + (cx + r * 0.92 * Math.sin(an)).toFixed(2) + ' ' + (cy - r * 0.92 * Math.cos(an)).toFixed(2), '#7a5a12', k % 3 ? 0.6 : 1.1); }
+    s += l('M' + cx + ' ' + cy + ' L' + (cx + r * 0.5 * Math.sin(h)).toFixed(2) + ' ' + (cy - r * 0.5 * Math.cos(h)).toFixed(2), O, 1.4) + l('M' + cx + ' ' + cy + ' L' + (cx + r * 0.75 * Math.sin(m)).toFixed(2) + ' ' + (cy - r * 0.75 * Math.cos(m)).toFixed(2), '#c92a2a', 1) + c(cx, cy, r * 0.12, O);
+    return s;
+  }
+  D.automate = function () {
+    return ombre(14) +
+      p('M12 37 L13 28 H17 L16.5 37 Z M23.5 37 L23 28 H27 L28 37 Z', '#7a5a12', 1.3) + p('M10.5 37 h7 v-2 h-7 Z M22.5 37 h7 v-2 h-7 Z', '#5c4a1a', 1.1) +
+      p('M8 29 Q7 17 11 15 H29 Q33 17 32 29 Q20 31.5 8 29 Z', '#c9a227', 1.8) + trait('M10 26 Q9.6 19 12.5 17', '#ffe066', 2.4, .85) +
+      l('M11 21 H29 M11 25 H29', '#7a5a12', 0.8) + c(12.5, 18, 0.8, '#7a5a12') + c(27.5, 18, 0.8, '#7a5a12') + c(12.5, 27.5, 0.8, '#7a5a12') + c(27.5, 27.5, 0.8, '#7a5a12') +
+      roue(20, 23, 4.2, 8, '#e8590c') +
+      p('M3 18 Q1 24 4 28 L8 26 L8 18 Z M37 18 Q39 24 36 28 L32 26 L32 18 Z', '#a5841f', 1.4) + p('M2 27.5 h5 l-1 4 h-3 Z M33 27.5 h5 l-1 4 h-3 Z', '#5c636a', 1.2) +
+      p('M12.5 15 Q12 6 20 5.5 Q28 6 27.5 15 Z', '#c9a227', 1.7) + trait('M14.5 12 Q14.5 8 18 7.4', '#ffe066', 2, .9) +
+      p('M14 9.5 H26 V13 H14 Z', '#241812', 1.1) + '<rect x="14.5" y="10" width="11" height="2.5" fill="#4dabf7" opacity=".35"/>' + c(17, 11.2, 1.3, '#74c0fc') + c(23, 11.2, 1.3, '#74c0fc') +
+      l('M20 5.5 V2', O, 1.4) + c(20, 1.8, 1.4, '#e03131', 1);
+  };
+  D.rouage = function () {
+    return ombre(10) +
+      p('M8 18 Q1 13 2 8 Q7 12 11 14 Z M32 18 Q39 13 38 8 Q33 12 29 14 Z', '#ced4da', 1.2) + l('M3 9 L9 15 M37 9 L31 15', '#868e96', 0.7) +
+      roue(20, 20, 10, 10, '#c9a227', 1.6) +
+      c(20, 20, 6.2, '#c9a227', 1.2) + trait('M14.5 17 Q15.5 13.8 19 13.4', '#ffe066', 2, .9) +
+      c(17, 19.5, 2, '#fff', 1) + c(23, 19.5, 2, '#fff', 1) + c(17.4, 19.8, 0.9, O) + c(22.6, 19.8, 0.9, O) +
+      l('M14.5 16.5 L18.5 17.5 M25.5 16.5 L21.5 17.5', O, 1.3) + p('M17.2 23.6 L18.2 25.2 L19.2 23.9 L20.2 25.2 L21.2 23.9 L22.2 25.2 L23 23.6 Z', '#fff', 0.8);
+  };
+  D.coucou = function () {
+    return ombre(13) +
+      p('M7 36 V17 L20 6 L33 17 V36 Z', '#8b5a2b', 1.8) + trait('M9 33 V18', '#a47148', 2.4, .8) +
+      p('M4 18 L20 3.5 L36 18 L33 19.5 L20 8 L7 19.5 Z', '#5c3a1f', 1.6) + l('M10 16 L20 7 L30 16', '#3b2414', 0.8) +
+      p('M10 37 h20 v-3 h-20 Z', '#5c3a1f', 1.3) + l('M15 34 V39 M25 34 V39', '#c9a227', 1.2) + c(15, 39, 1.3, '#c9a227', 0.8) + c(25, 39, 1.3, '#c9a227', 0.8) +
+      cadran(20, 27, 5.2, 0.6, 3.4) +
+      p('M15 19.5 H25 V12.5 Q20 10 15 12.5 Z', '#241812', 1.2) +
+      p('M16.5 18 Q16 11 21 11.5 Q25.5 12 24.5 17 Q22 19.5 16.5 18 Z', '#4dabf7', 1.3) + p('M24 14 L30 15 L24.5 16.6 Z', '#fab005', 1.1) +
+      c(21.5, 14, 1.5, '#fff', 0.8) + c(21.9, 14.2, 0.7, O) + p('M16.5 17 Q14 18 13 16 Q15.5 15.5 16.8 15.6 Z', '#1c7ed6', 1) +
+      p('M18 11.5 L19 8.5 L20.5 11.3 Z', '#e03131', 0.8) + l('M3 6 Q5 4 7 5 M33 5 Q35 3 37 5', '#fff', 1) ;
+  };
+  D.sablier = function () {
+    return '<ellipse cx="20" cy="21" rx="15" ry="16" fill="#ffe066" opacity=".1"/>' + ombre(12) +
+      p('M8 4 H32 V7.5 H8 Z M8 32.5 H32 V36 H8 Z', '#8b5a2b', 1.6) + trait('M9 5.4 H31 M9 34 H31', '#a47148', 1.4, .9) +
+      l('M10.5 7.5 V32.5 M29.5 7.5 V32.5', '#5c3a1f', 2.4) + l('M10.5 7.5 V32.5 M29.5 7.5 V32.5', O, 0.6) +
+      p('M12 7.5 H28 Q28 15 21.5 19.5 Q20 20.2 21.5 21 Q28 25 28 32.5 H12 Q12 25 18.5 21 Q20 20.2 18.5 19.5 Q12 15 12 7.5 Z', '#d0ebff', 1.6, ' fill-opacity=".75"') +
+      p('M15 12 H25 Q24 16 20 18.4 Q16 16 15 12 Z', '#e9b949', 0.9) + l('M20 19 V27', '#e9b949', 1.2) +
+      p('M13.5 32 Q14 27 20 26.5 Q26 27 26.5 32 Z', '#e9b949', 1) + trait('M14 10.5 Q14.5 16 17.5 18.5', '#fff', 1.4, .8) +
+      c(16.5, 13.5, 1.6, '#fff', 0.9) + c(23.5, 13.5, 1.6, '#fff', 0.9) + c(16.7, 13.8, 0.75, O) + c(23.3, 13.8, 0.75, O) +
+      l('M17.5 16.2 Q20 17.4 22.5 16.2', O, 0.9) +
+      l('M4 13 Q2 20 4 27 M36 13 Q38 20 36 27', '#ffe066', 1, .6) + p('M3 26 L4 28.5 L5.5 26.5 Z M37 13.5 L36 11 L34.5 13 Z', '#ffe066', 0.6);
+  };
+  D.horloger = function () {
+    return '<ellipse cx="20" cy="23" rx="18" ry="13" fill="#ffe066" opacity=".08"/>' + ombre(16) +
+      p('M10 37 L11 30 H16.5 L17 37 Z M23 37 L23.5 30 H29 L30 37 Z', '#343a40', 1.4) +
+      p('M6 32 Q4 20 10 16 H30 Q36 20 34 32 Q20 35 6 32 Z', '#5f3dc4', 1.9) + trait('M8 29 Q7.5 21 11 18', '#9775fa', 2.4, .8) +
+      p('M13 16.5 H27 L26 33.5 Q20 35 14 33.5 Z', '#f1e3c0', 1.4) + l('M20 17 V33', '#c9a227', 0.8) + c(20, 21, 0.8, '#c9a227') + c(20, 25, 0.8, '#c9a227') + c(20, 29, 0.8, '#c9a227') +
+      l('M14 24 Q11 27 13 30', '#c9a227', 0.9) + c(13, 30.5, 1.6, '#fab005', 0.8) +
+      p('M2.5 22 Q1 28 4 31 L8 29 L7.5 20 Z', '#5f3dc4', 1.5) + roue(4.5, 32, 2.6, 7, '#c9a227', 1) +
+      l('M33 22 Q37.5 16 36 10', O, 4) + l('M33 22 Q37.5 16 36 10', '#5f3dc4', 2.2) + l('M36 10 L35 3', '#868e96', 2.2) + p('M32 0.5 L38.5 2.5 L37 5.5 L33.5 4 Z', '#adb5bd', 1.2) +
+      p('M12 16 Q11 5.5 20 5 Q29 5.5 28 16 Q20 18.5 12 16 Z', '#f8d9b0', 1.7) + trait('M14 12.5 Q14 8 18 7', '#fff', 2, .8) +
+      p('M10 7.5 Q12 1 20 1.5 Q28 1 30 7.5 Q27 5 25 7 Q22 3.5 20 6 Q17 3.5 15 7 Q13 5 10 7.5 Z', '#e9ecef', 1.3) +
+      c(16, 11, 3.2, '#d0ebff', 1.3) + c(24, 11, 2.4, '#d0ebff', 1.3) + l('M19.2 11 H21.6', O, 1) + c(16.3, 11.3, 1.2, O) + c(24, 11.2, 0.9, O) +
+      l('M26.4 11 Q29 13 28 17', '#c9a227', 0.7) + p('M16.5 15 Q20 17.5 23.5 15 Q20 16 16.5 15 Z', '#a61e1e', 0.9);
+  };
+  D.gardienbronze = function () {
+    return '<ellipse cx="20" cy="22" rx="19" ry="14" fill="#c9a227" opacity=".1"/>' + ombre(17) +
+      p('M9 37 L10 29 H17 L17 37 Z M23 37 L23 29 H30 L31 37 Z', '#8a5a1a', 1.5) +
+      p('M6 31 Q4 18 11 14 H29 Q36 18 34 31 Q20 34 6 31 Z', '#b07d2b', 1.9) + trait('M8.5 28 Q8 20 12 16.5', '#e9b949', 2.6, .85) +
+      l('M12 18 Q20 22 28 18 M11 25 Q20 29 29 25', '#7a4f13', 1) + c(20, 22, 2.6, '#4dabf7', 1.1) + c(20, 22, 1.1, '#d0ebff') +
+      p('M0.5 14 Q0 26 5 33 L10 30 Q7 23 8 14 Q4 12.5 0.5 14 Z', '#8a5a1a', 1.6) + c(4.5, 22, 2.4, '#e9b949', 1) +
+      l('M33 20 Q38 16 37 8', O, 4.2) + l('M33 20 Q38 16 37 8', '#b07d2b', 2.4) +
+      l('M37 9 L37 2', '#7a4f13', 2.4) + c(37, 3, 3.2, '#8a5a1a', 1.4) + p('M33.2 3 h-1.8 M40.8 3 h-1.4 M37 -0.6 v-1', 'none', 0) + l('M33.5 1 L32 -0.5 M40.5 1 L42 -0.5 M33.5 5 L32 6.5 M40.5 5 L42 6.5', O, 1.2) +
+      p('M12 14.5 Q11 4 20 3.5 Q29 4 28 14.5 Q20 17 12 14.5 Z', '#b07d2b', 1.8) + trait('M14 11.5 Q14 7 18 6', '#ffe066', 2, .9) +
+      p('M13 9.5 H27 V11.6 H13 Z', '#241812', 1.1) + '<rect x="13.6" y="9.9" width="12.8" height="1.4" fill="#4dabf7" opacity=".8"/>' +
+      l('M20 3.5 V0.5', '#7a4f13', 2) + p('M17.5 0.8 Q20 -1.5 22.5 0.8 Z', '#e03131', 0.9);
+  };
+  D.maitretemps = function () {
+    return '<ellipse cx="20" cy="22" rx="19" ry="16" fill="#9775fa" opacity=".14"/>' + ombre(17) +
+      p('M5 37 Q3 24 9 16 Q14 13 20 13 Q26 13 31 16 Q37 24 35 37 Z', '#3b2f63', 1.9) + trait('M7 34 Q6 24 10 18', '#6741d9', 2.6, .8) +
+      p('M20 13 L13 37 M20 13 L27 37', 'none', 0) + p('M15 37 L20 14 L25 37 Z', '#5f3dc4', 1.3) +
+      l('M8 23 Q4 28 6 33', O, 3.6) + l('M8 23 Q4 28 6 33', '#3b2f63', 2) + p('M2 31 Q6 28 9.5 31.5 Q6 36 2 34 Z', '#f8d9b0', 1.1) +
+      l('M32 23 Q36 19 36 12', O, 3.6) + l('M32 23 Q36 19 36 12', '#3b2f63', 2) + l('M36 13 L36 1', '#c9a227', 1.8) + p('M33.5 3.5 L36 -0.5 L38.5 3.5 Z', '#c9a227', 1) +
+      p('M14 23 Q20 19.5 26 23 Q26 30 20 31 Q14 30 14 23 Z', '#c9a227', 1.3) + cadran(20, 26.2, 3.9, 0, 4.7) +
+      p('M12.5 13.5 Q11.5 3.5 20 3.5 Q28.5 3.5 27.5 13.5 Q20 16.5 12.5 13.5 Z', '#3b2f63', 1.6) +
+      p('M14.5 12.5 Q14 6 20 6 Q26 6 25.5 12.5 Q20 14.5 14.5 12.5 Z', '#c8b8f0', 1.2) +
+      c(17.3, 9.7, 1.7, '#ffe066', 0.8) + c(22.7, 9.7, 1.7, '#ffe066', 0.8) + c(17.3, 9.8, 0.7, O) + c(22.7, 9.8, 0.7, O) +
+      l('M17.5 12.8 Q20 13.6 22.5 12.8', O, 0.8) +
+      roue(5, 9, 2.6, 7, '#c9a227', 1) + roue(31, 31, 2.2, 7, '#c9a227', 1) +
+      couronne(20, 3.6, 0.85);
+  };
   var ALIAS = { gluantgeant: 'gluant', gluantmoyen: 'gluant' };
   var cache = {};
   function monstre(type) {
@@ -613,8 +711,8 @@ var DJS = (function () {
   // sur les côtés pour ne pas se mêler aux annonces des monstres. Identifiants « djc- » : un seul décor à l'écran à la fois.
   // genre : le décor du lieu (« caves », « catacombes », « forteresse », « champignonniere »…) ; absent = celui d'origine de l'étage
   function decor(etage, sol, mur, rang, genre) {
-    var s = '', i, x, y, HZ = 220, g = genre || ['caves', 'catacombes', 'forteresse'][etage - 1] || 'caves', champi = g === 'champignonniere', riviere = g === 'riviere', glace = g === 'glace', biblio = g === 'bibliotheque', forges = g === 'forges',
-        lueur = forges ? ['#ffa94d', '#ff6b00'] : champi ? ['#63e6be', '#20c997'] : riviere ? ['#74c0fc', '#339af0'] : glace ? ['#e3fafc', '#66d9e8'] : ['#ffb347', '#ff922b'];   // la lumière du lieu (torches, champignons, cristaux)
+    var s = '', i, x, y, HZ = 220, g = genre || ['caves', 'catacombes', 'forteresse'][etage - 1] || 'caves', champi = g === 'champignonniere', riviere = g === 'riviere', glace = g === 'glace', biblio = g === 'bibliotheque', forges = g === 'forges', horloge = g === 'horloge',
+        lueur = horloge ? ['#ffe8a3', '#fab005'] : forges ? ['#ffa94d', '#ff6b00'] : champi ? ['#63e6be', '#20c997'] : riviere ? ['#74c0fc', '#339af0'] : glace ? ['#e3fafc', '#66d9e8'] : ['#ffb347', '#ff922b'];   // la lumière du lieu (torches, champignons, cristaux)
     var teinte = rang === 'boss' ? '#9c36b5' : rang === 'elite' ? '#fab005' : '#ffb347';
     s += '<defs><radialGradient id="djc-lueur"><stop offset="0%" stop-color="' + lueur[0] + '" stop-opacity=".55"/><stop offset="100%" stop-color="' + lueur[1] + '" stop-opacity="0"/></radialGradient>' +
          '<radialGradient id="djc-halo"><stop offset="0%" stop-color="' + teinte + '" stop-opacity="' + (rang === 'normal' ? '.22' : '.34') + '"/><stop offset="100%" stop-color="' + teinte + '" stop-opacity="0"/></radialGradient>' +
@@ -656,6 +754,24 @@ var DJS = (function () {
              '<path d="M' + (bx - 30) + ' 150 l-6 -4 M' + (bx - 14) + ' 128 l-3 -6 M' + bx + ' 122 v-7 M' + (bx + 14) + ' 128 l3 -6 M' + (bx + 30) + ' 150 l6 -4" stroke="#120c09" stroke-width="2.4"/>';
       });
       s += '<path d="M180 0 Q176 70 184 120 Q190 170 178 214" fill="none" stroke="#ff6b00" stroke-width="7" opacity=".85"/><path d="M180 0 Q176 70 184 120 Q190 170 178 214" fill="none" stroke="#ffd43b" stroke-width="2.4"/>';
+    } else if (horloge) {
+      // La Tour de l'horloge (3.80) : deux grands cadrans aux balanciers qui oscillent, des engrenages au mur, des tuyaux de laiton
+      [[30, 22, 26], [328, 34, 20], [150, 30, 16], [214, 18, 12]].forEach(function (o, k) {
+        var r = o[2], R = r * 1.25, d = '';
+        for (var n = 0; n < 12; n++) { var a0 = (n - 0.25) / 12 * 6.283, a1 = (n - 0.13) / 12 * 6.283, a2 = (n + 0.13) / 12 * 6.283, a3 = (n + 0.25) / 12 * 6.283; d += (n ? 'L' : 'M') + (o[0] + r * Math.cos(a0)).toFixed(1) + ' ' + (o[1] + r * Math.sin(a0)).toFixed(1) + ' L' + (o[0] + R * Math.cos(a1)).toFixed(1) + ' ' + (o[1] + R * Math.sin(a1)).toFixed(1) + ' L' + (o[0] + R * Math.cos(a2)).toFixed(1) + ' ' + (o[1] + R * Math.sin(a2)).toFixed(1) + ' L' + (o[0] + r * Math.cos(a3)).toFixed(1) + ' ' + (o[1] + r * Math.sin(a3)).toFixed(1) + ' '; }
+        s += '<path d="' + d + 'Z" fill="' + (k % 2 ? '#8a6d1f' : '#a5841f') + '" stroke="#120c09" stroke-width="1.6" opacity=".85"/><circle cx="' + o[0] + '" cy="' + o[1] + '" r="' + (r * 0.4) + '" fill="' + mur[2] + '" stroke="#120c09" stroke-width="1.2"/>';
+      });
+      s += '<path d="M0 70 H40 Q52 70 52 82 V214 M360 92 H322 Q308 92 308 104 V214" fill="none" stroke="#120c09" stroke-width="9"/><path d="M0 70 H40 Q52 70 52 82 V214 M360 92 H322 Q308 92 308 104 V214" fill="none" stroke="#b08a2e" stroke-width="5"/>';
+      [84, 276].forEach(function (bx, k) {
+        var cy = 140;
+        s += '<ellipse cx="' + bx + '" cy="' + cy + '" rx="46" ry="46" fill="#ffe8a3" opacity=".1"/>' +
+             '<rect x="' + (bx - 9) + '" y="' + (cy + 30) + '" width="18" height="44" fill="' + mur[2] + '" stroke="#120c09" stroke-width="1.4"/>' +
+             '<g class="djc-balancier" style="transform-origin:' + bx + 'px ' + (cy + 30) + 'px;animation-delay:' + (k * -0.9) + 's"><path d="M' + bx + ' ' + (cy + 30) + ' V' + (cy + 62) + '" stroke="#c9a227" stroke-width="2"/><circle cx="' + bx + '" cy="' + (cy + 66) + '" r="6" fill="#e9b949" stroke="#120c09" stroke-width="1.4"/></g>' +
+             '<circle cx="' + bx + '" cy="' + cy + '" r="31" fill="#7a5a12" stroke="#120c09" stroke-width="2"/><circle cx="' + bx + '" cy="' + cy + '" r="26" fill="#f1e3c0" stroke="#120c09" stroke-width="1.4"/>';
+        for (var n = 0; n < 12; n++) { var an = n / 12 * 6.283; s += '<path d="M' + (bx + 21 * Math.sin(an)).toFixed(1) + ' ' + (cy - 21 * Math.cos(an)).toFixed(1) + ' L' + (bx + 24.5 * Math.sin(an)).toFixed(1) + ' ' + (cy - 24.5 * Math.cos(an)).toFixed(1) + '" stroke="#7a5a12" stroke-width="' + (n % 3 ? 1.2 : 2.6) + '"/>'; }
+        var h = k ? 2.1 : 5.3, m = k ? 4.6 : 0.4;
+        s += '<path d="M' + bx + ' ' + cy + ' L' + (bx + 12 * Math.sin(h)).toFixed(1) + ' ' + (cy - 12 * Math.cos(h)).toFixed(1) + '" stroke="#241812" stroke-width="3" stroke-linecap="round"/><path d="M' + bx + ' ' + cy + ' L' + (bx + 19 * Math.sin(m)).toFixed(1) + ' ' + (cy - 19 * Math.cos(m)).toFixed(1) + '" stroke="#a61e1e" stroke-width="1.8" stroke-linecap="round"/><circle cx="' + bx + '" cy="' + cy + '" r="2.6" fill="#241812"/>';
+      });
     } else if (biblio) {
       // Bibliothèque interdite (3.64) : deux hautes étagères garnies de livres, des toiles d'araignée dans les coins
       var COUL_LIVRES = ['#c92a2a', '#1864ab', '#2b8a3e', '#e67700', '#5f3dc4', '#862e9c', '#a61e1e', '#0b7285'];
@@ -743,6 +859,12 @@ var DJS = (function () {
       [[34, 300, 1], [326, 306, -1]].forEach(function (o) { var x = o[0], y = o[1]; s += '<path d="M' + (x - 18) + ' ' + y + ' H' + (x + 16) + ' Q' + (x + 20 * o[2]) + ' ' + (y - 6) + ' ' + (x + 16) + ' ' + (y - 9) + ' H' + (x - 14) + ' Z" fill="#495057" stroke="#120c09" stroke-width="1.4"/><path d="M' + (x - 8) + ' ' + y + ' V' + (y + 9) + ' H' + (x - 13) + ' V' + (y + 14) + ' H' + (x + 13) + ' V' + (y + 9) + ' H' + (x + 8) + ' V' + y + ' Z" fill="#343a40" stroke="#120c09" stroke-width="1.4"/>'; });
       [[48, 140], [72, 236], [110, 118], [252, 126], [290, 244], [320, 150], [36, 196], [330, 206], [150, 96], [214, 104]].forEach(function (o, k) { s += '<circle class="djc-braise" style="animation-delay:' + (k * 0.27) + 's" cx="' + o[0] + '" cy="' + o[1] + '" r="' + (1.3 + (k % 3) * 0.6) + '" fill="' + (k % 2 ? '#ffd43b' : '#ff922b') + '"/>'; });
     }
+    if (horloge) {
+      // Un grand engrenage incrusté dans le sol, des boulons, des ressorts et des rouages tombés, de la poussière dorée
+      s += '<ellipse cx="180" cy="318" rx="96" ry="30" fill="none" stroke="#c9a227" stroke-width="4" stroke-dasharray="10 6" opacity=".45"/><ellipse cx="180" cy="318" rx="70" ry="21" fill="none" stroke="#c9a227" stroke-width="2" opacity=".35"/><ellipse cx="180" cy="318" rx="18" ry="6" fill="#c9a227" opacity=".35"/>';
+      [[34, 286, 9], [326, 300, 11], [62, 344, 7], [300, 352, 8]].forEach(function (o, k) { s += '<ellipse cx="' + o[0] + '" cy="' + o[1] + '" rx="' + o[2] + '" ry="' + (o[2] * 0.42) + '" fill="#a5841f" stroke="#120c09" stroke-width="1.2" stroke-dasharray="' + (k % 2 ? '3 1.6' : '0') + '"/><ellipse cx="' + o[0] + '" cy="' + o[1] + '" rx="' + (o[2] * 0.35) + '" ry="' + (o[2] * 0.15) + '" fill="#241812"/>'; });
+      [[48, 140], [72, 230], [112, 110], [252, 120], [290, 240], [320, 150], [36, 196], [330, 206]].forEach(function (o, k) { s += '<circle class="djc-braise" style="animation-delay:' + (k * 0.29) + 's" cx="' + o[0] + '" cy="' + o[1] + '" r="' + (1.1 + (k % 3) * 0.5) + '" fill="#ffe8a3" opacity=".8"/>'; });
+    }
     if (biblio) {
       // Un long tapis rouge qui fuit vers le mur, des livres tombés, des pages qui volent
       s += '<path d="M150 ' + (HZ + 2) + ' L210 ' + (HZ + 2) + ' L300 440 L60 440 Z" fill="#7a1f2b" opacity=".85"/><path d="M156 ' + (HZ + 2) + ' L204 ' + (HZ + 2) + ' L286 440 L74 440 Z" fill="none" stroke="#e0b13f" stroke-width="2" opacity=".7"/>';
@@ -798,8 +920,8 @@ var DJS = (function () {
     });
     s += '<rect width="360" height="440" fill="url(#djc-cote)"/><rect y="' + (HZ + 30) + '" width="360" height="' + (410 - HZ) + '" fill="url(#djc-bas)"/>';
     s += '<style>.djc-flamme{animation:djc-f .35s ease-in-out infinite alternate;transform-box:fill-box;transform-origin:50% 100%}.djc-vacille{animation:djc-v 1.7s ease-in-out infinite alternate}' +
-         '.djc-braise{animation:djc-v 1.3s ease-in-out infinite alternate}@keyframes djc-f{to{transform:scale(1.1,.88)}}@keyframes djc-v{from{opacity:.55}to{opacity:1}}' +
-         '@media (prefers-reduced-motion: reduce){.djc-flamme,.djc-vacille,.djc-braise{animation:none}}</style>';
+         '.djc-braise{animation:djc-v 1.3s ease-in-out infinite alternate}.djc-balancier{animation:djc-b 1s ease-in-out infinite alternate;transform:rotate(-14deg)}@keyframes djc-b{to{transform:rotate(14deg)}}@keyframes djc-f{to{transform:scale(1.1,.88)}}@keyframes djc-v{from{opacity:.55}to{opacity:1}}' +
+         '@media (prefers-reduced-motion: reduce){.djc-flamme,.djc-vacille,.djc-braise,.djc-balancier{animation:none}}</style>';
     return '<svg viewBox="0 0 360 440" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">' + s + '</svg>';
   }
   return { monstre: monstre, decor: decor, TYPES: Object.keys(D).concat(['roi', 'reine', 'gluantgeant', 'gluantmoyen']) };
