@@ -815,14 +815,6 @@
             </div>
           </div>
 
-            <button class="sac-dep" v-if="!partie || partie.phase !== 'jeu'" @click="fenPartie = 'sac'">
-              <span class="ico">🎒</span>
-              <span class="txt"><b>Au départ</b><span class="l">
-                <template v-if="grimChoix || fiolesPrises.length"><template v-if="grimChoix">{{ DJ.carte(grimChoix).ico }} {{ DJ.carte(grimChoix).nom }}</template><template v-if="grimChoix && fiolesPrises.length"> · </template><template v-if="fiolesPrises.length">{{ fiolesPrises.map(f => VL.FIOLES[f].ico).join(' ') }}</template></template>
-                <template v-else>{{ grim.c.length || besaceTotal ? 'rien de plus : touche pour choisir' : 'carte rare du Grimoire et fioles de la Vallée' }}</template>
-              </span></span>
-              <span class="chev">›</span>
-            </button>
           </template>
           <template v-else>
             <!-- Difficulté (3.23) et clé mythique (3.24) -->
@@ -840,16 +832,7 @@
               </div>
             </div>
 
-            <!-- Ce que j'emporte : carte du Grimoire des Terres (3.71) et fioles de la Vallée (3.50) ; aussi dans un salon tant que le donjon n'est pas lancé -->
-            <button class="sac-dep" v-if="!soloEnCours" @click="fenPartie = 'sac'">
-              <span class="ico">🎒</span>
-              <span class="txt"><b>Au départ</b><span class="l">
-                <template v-if="grimChoix || fiolesPrises.length"><template v-if="grimChoix">{{ DJ.carte(grimChoix).ico }} {{ DJ.carte(grimChoix).nom }}</template><template v-if="grimChoix && fiolesPrises.length"> · </template><template v-if="fiolesPrises.length">{{ fiolesPrises.map(f => VL.FIOLES[f].ico).join(' ') }}</template></template>
-                <template v-else>{{ grim.c.length || besaceTotal ? 'rien de plus : touche pour choisir' : 'carte rare du Grimoire et fioles de la Vallée' }}</template>
-              </span></span>
-              <span class="chev">›</span>
-            </button>
-            <button class="btn principal grand-dep" @click="demarrerSolo">🗝️ {{ soloEnCours ? 'Reprendre mon exploration' : 'Explorer seul' }}</button>
+            <button class="btn principal grand-dep" @click="explorer">🗝️ {{ soloEnCours ? 'Reprendre mon exploration' : 'Explorer seul' }}</button>
             <button v-if="soloEnCours" class="lien-profil abandon-dep" @click="demandeAbandon = true">🔄 Abandonner et recommencer à zéro</button>
             <button v-else class="btn grand-dep" @click="fenPartie = 'salon'">👥 Explorer à plusieurs</button>
           </template>
@@ -913,30 +896,6 @@
               <button v-else disabled>✓</button>
             </div>
             <div class="aide">Chaque boss vaincu donne des éclats ({{ D.SEMAINE.eclats.normal }} en Normal, {{ D.SEMAINE.eclats.heroique }} en Héroïque, {{ D.SEMAINE.eclats.mythique }} en Mythique) : bonus de départ ci-dessus, ou travail du paquet ({{ D.SEMAINE.forge }} 💠 pour améliorer une carte, {{ D.SEMAINE.elaguer }} 💠 pour en retirer une). Entre amis, chacun vient avec son héros.</div>
-            <button class="btn principal" @click="fenPartie = null">OK</button>
-          </div>
-        </div>
-
-        <div class="voile-dj fen-dep" v-if="fenPartie === 'sac'" @click.self="fenPartie = null">
-          <div class="boite-dj">
-            <div class="titre">🎒 Au départ</div>
-            <div class="sous-sem">📖 Grimoire des Terres <small>{{ grim.c.length }} / {{ D.LEGENDAIRES.length }}</small></div>
-            <template v-if="grim.c.length">
-              <div class="aide" style="margin-top:2px">Touche la carte rare à glisser dans ton paquet pour le prochain donjon (elle ne reste pas dans le héros de la semaine).</div>
-              <div class="cartes-gr">
-                <button class="aucune-gr" :class="{ choisie: !grimChoix }" @click="choisirGrimoire(null)">Aucune</button>
-                <carte-dj v-for="id in grim.c" :key="id" :id="id" :class="{ choisie: grimChoix === id }" @click.native="choisirGrimoire(id)"></carte-dj>
-              </div>
-            </template>
-            <div v-else class="aide" style="margin-top:2px">Des cartes rares aux pouvoirs inconnus (esquive, écho, cartes qui mûrissent, alliés invoqués) : gagne-les contre le gardien du sanctuaire des Terres, ou en refermant une faille profonde. Elles restent pour toujours.</div>
-            <div class="sous-sem">🧪 Fioles de la Vallée <small>{{ fiolesPrises.length }} / {{ VL.DONJON_MAX }}</small></div>
-            <template v-if="besaceTotal">
-              <div class="tuiles-tr">
-                <button v-for="(n, f) in besaceV" :key="f" :class="{ actif: nbPrises(f) > 0 }" @click="prendreFiole(f)">{{ VL.FIOLES[f].ico }} {{ VL.FIOLES[f].nom }} <b>{{ nbPrises(f) ? nbPrises(f) + ' / ' : '' }}{{ n }}</b></button>
-              </div>
-              <div class="aide">Touche une fiole pour l'emporter ({{ VL.DONJON_MAX }} au plus), touche-la encore pour la reposer. Elle quitte ta besace quand le donjon commence.</div>
-            </template>
-            <div v-else class="aide" style="margin-top:2px">Mme Sauge, l'herboriste du village de la Vallée, fabrique des fioles avec ce que tu récoltes : tu pourras en emporter {{ VL.DONJON_MAX }} par donjon.</div>
             <button class="btn principal" @click="fenPartie = null">OK</button>
           </div>
         </div>
@@ -1011,6 +970,14 @@
           </div>
           <button v-if="role === 'hote'" class="btn principal" style="width:100%;margin-top:12px" @click="lancerSalon">🗝️ Entrer dans le donjon ({{ groupe.length }} joueur{{ groupe.length > 1 ? 's' : '' }})</button>
           <div v-else class="aide">L'hôte lance l'exploration quand tout le monde est là.</div>
+          <button v-if="aEmporter" class="sac-dep" @click="emporter = 'salon'">
+            <span class="ico">🎒</span>
+            <span class="txt"><b>Ce que j'emporte</b><span class="l">
+              <template v-if="grimChoix || fiolesPrises.length"><template v-if="grimChoix">{{ DJ.carte(grimChoix).ico }} {{ DJ.carte(grimChoix).nom }}</template><template v-if="grimChoix && fiolesPrises.length"> · </template><template v-if="fiolesPrises.length">{{ fiolesPrises.map(f => VL.FIOLES[f].ico).join(' ') }}</template></template>
+              <template v-else>rien de plus : touche pour choisir</template>
+            </span></span>
+            <span class="chev">›</span>
+          </button>
           <div class="aide" v-if="pub && Array.isArray(pub.lieux)">🗺️ Les lieux : {{ pub.lieux.map(id => D.LIEUX[id] ? D.LIEUX[id].nom : '?').join(' › ') }} (détail dans l'onglet Partie).</div>
           <div class="aide">Le donjon est tiré au hasard selon les pouvoirs du groupe : il y aura toujours de quoi passer. Les monstres ont plus de PV et frappent plus fort à plusieurs, selon la difficulté.</div>
           <div class="titre-carte" style="margin-top:12px">Difficulté</div>
@@ -1474,6 +1441,35 @@
         </section>
       </template>
     </fiche-jeu>
+
+    <!-- À l'entrée du donjon : ce qu'on emporte (3.88) : carte du Grimoire des Terres et fioles de la Vallée, seulement ce qui est disponible -->
+    <div class="voile-dj fen-dep" v-if="emporter" @click.self="emporter = null">
+      <div class="boite-dj">
+        <div class="grand">🎒</div>
+        <div class="titre">Que veux-tu emporter ?</div>
+        <div class="aide" style="margin-top:2px">{{ emporter === 'faille' ? 'Avant de descendre dans la faille' : emporter === 'salon' ? 'Pour le donjon du salon' : 'Avant d\'entrer dans le donjon' }}, choisis ce que tu prends avec toi.</div>
+        <template v-if="grim.c.length">
+          <div class="sous-sem">📖 Une carte rare du Grimoire</div>
+          <div class="cartes-gr">
+            <button class="aucune-gr" :class="{ choisie: !grimChoix }" @click="choisirGrimoire(null)">Aucune</button>
+            <carte-dj v-for="id in grim.c" :key="id" :id="id" :class="{ choisie: grimChoix === id }" @click.native="choisirGrimoire(id)"></carte-dj>
+          </div>
+          <div class="aide">Elle rejoint ton paquet pour ce donjon seulement.</div>
+        </template>
+        <template v-if="besaceTotal">
+          <div class="sous-sem">🧪 Des fioles de ta besace <small>{{ fiolesPrises.length }} / {{ VL.DONJON_MAX }}</small></div>
+          <div class="tuiles-tr">
+            <button v-for="(n, f) in besaceV" :key="f" :class="{ actif: nbPrises(f) > 0 }" @click="prendreFiole(f)">{{ VL.FIOLES[f].ico }} {{ VL.FIOLES[f].nom }} <b>{{ nbPrises(f) ? nbPrises(f) + ' / ' : '' }}{{ n }}</b></button>
+          </div>
+          <div class="aide">Touche une fiole pour la prendre ({{ VL.DONJON_MAX }} au plus), touche-la encore pour la reposer. Elle quitte ta besace quand le donjon commence.</div>
+        </template>
+        <button v-if="emporter === 'salon'" class="btn principal" @click="emporter = null">✓ C'est prêt</button>
+        <template v-else>
+          <button class="btn principal" @click="entrerAvecSac">🗝️ {{ emporter === 'faille' ? 'Descendre' : 'Entrer dans le donjon' }}</button>
+          <button class="btn" @click="emporter = null">↩ Pas encore</button>
+        </template>
+      </div>
+    </div>
   </div>
 
   <script src="icones-jeux.js"></script>
@@ -1607,7 +1603,8 @@
         VL: VL, besaceV: lireBesace(), fiolesV: lireStockage('donjon-fioles-vallee') || [],   // fioles de la Vallée (3.50)
         trSel: null, choixRel: [], msgRel: '', atelier: false, carteAt: null,
         RARETES_REL: { c: 'Commune', u: 'Peu commune', r: 'Rare', boss: 'De boss' },
-        fenPartie: null,      // fenêtre de l'onglet Partie (3.78) : 'semaine', 'hero', 'sac' ou 'salon'
+        emporter: null,       // fenêtre « Que veux-tu emporter ? » (3.88) : 'solo', 'faille' ou 'salon'
+        fenPartie: null,      // fenêtre de l'onglet Partie (3.78) : 'semaine', 'hero' ou 'salon'
         infoClasse: false,    // texte du pouvoir et de la classe, sous le compagnon (3.78)
         prochain: lireProchain(),   // les 3 lieux du prochain donjon (3.82)
         lieuInfo: null,       // lieu touché dans l'onglet Partie : son texte s'affiche dessous
@@ -1676,6 +1673,8 @@
         perilMax: function() { return this.sem.cle || 0; },   // clé mythique obtenue cette semaine
         avSemaine: function() { return Object.assign({ b: this.sem.b, v: this.fiolesPrises, g: this.grimChoix }, this.sem.hero || {}); },
         grimChoix: function() { return this.grim.c.indexOf(this.grim.choix) >= 0 ? this.grim.choix : null; },
+        aEmporter: function() { return this.grim.c.length > 0 || this.besaceTotal > 0; },
+        salleAttente: function() { return !!(this.role && !this.partie); },
         besaceTotal: function() { return Object.values(this.besaceV).reduce((a, n) => a + n, 0); },
         // Les fioles choisies qui sont encore dans la besace
         fiolesPrises: function() {
@@ -1965,6 +1964,11 @@
       },
       watch: {
         role: function(r) { if (r) this.fenPartie = null; },
+        salleAttente: function(v) {
+          if (!v || !this.aEmporter || this._emporterVu === this.roomCode) return;
+          this._emporterVu = this.roomCode;
+          this.emporter = 'salon';
+        },
         sonActif: function(v) { ecrireStockage('brillant-son', v); },
         inverse: function(v) { ecrireStockage('donjon-inverse', v); },
         vibrationActive: function(v) { ecrireStockage('brillant-vibration', v); if (v) vibrer(40); },
@@ -2009,7 +2013,7 @@
         window.addEventListener('desdale-profil', () => { if (!this.role) this.pseudoInput = pseudoPortail(); });
         if (!ACCES.cleSalon) return;
         this.restaurer();
-        if (FAILLE && !this.role) this.$nextTick(() => this.demarrerSolo());   // descendu par une faille de la Vallée : on y entre tout de suite
+        if (FAILLE && !this.role) this.$nextTick(() => this.explorer());   // descendu par une faille de la Vallée : on y entre tout de suite
         setInterval(() => this.battement(), 4000);
         setInterval(() => { if (!this.solo && this.role && this.partie) this.diagT = Date.now(); }, 1000);
         setInterval(() => this.boucle(), 100);
@@ -2346,6 +2350,15 @@
           if (versAccueil === true) { location.href = adresseRetour(); return; }
           this.onglet = 'config';
         },
+        // « Explorer seul » (et descente dans une faille) : une exploration en cours reprend tout de suite ;
+        // un nouveau donjon demande d'abord ce qu'on emporte, s'il y a quelque chose à emporter (3.88)
+        explorer: function() {
+          var s = lireStockage(CLE_SOLO);
+          var reprise = s && DJ.compatible(s) && s.phase === 'jeu' && (!FAILLE || (s.faille && s.faille.id === FAILLE.id));
+          if (reprise || !this.aEmporter) return this.demarrerSolo();
+          this.emporter = FAILLE ? 'faille' : 'solo';
+        },
+        entrerAvecSac: function() { this.emporter = null; this.demarrerSolo(); },
         nouveauSolo: function() { ecrireStockage(CLE_SOLO, null); partieHote = null; this.demarrerSolo(); },
 
         // ================== BOUCLE (chez l'hôte et en solo) ==================
