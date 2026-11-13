@@ -2016,6 +2016,13 @@
         setInterval(() => this.sauvegarderPartie(), 2000);
         setInterval(() => { this.chatNonLus = window.SalonGlobal && SalonGlobal.nonLus ? SalonGlobal.nonLus() : 0; this.chatVisible = !!(window.SalonGlobal && SalonGlobal.estOuvert && SalonGlobal.estOuvert()); }, 1500);
         document.addEventListener('visibilitychange', () => this.auRetourPremierPlan());
+        // 3.84 (signalé par l'utilisateur : après un passage dans une autre appli, les barres du téléphone revenaient malgré l'option) :
+        // le navigateur sort du plein écran quand on quitte l'appli et ne permet d'y revenir qu'après un toucher ;
+        // dès qu'on n'est plus en plein écran, le prochain toucher dans le donjon le redemande
+        var finFs = () => { if (!document.fullscreenElement && !document.webkitFullscreenElement) this._fsDemande = false; };
+        document.addEventListener('fullscreenchange', finFs);
+        document.addEventListener('webkitfullscreenchange', finFs);
+        document.addEventListener('visibilitychange', finFs);
         window.addEventListener('online', () => this.auRetourPremierPlan());
         window.addEventListener('pageshow', () => this.auRetourPremierPlan());
         // Doigt appuyé pendant le jeu (fenêtres comprises) : pas de menu ni de recherche Google
