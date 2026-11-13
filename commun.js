@@ -3,12 +3,13 @@
 // Les clés de stockage gardent l'ancien préfixe "brillant-" : les réglages déjà faits sont conservés.
 
 // Numéro de version affiché (à augmenter à chaque mise en ligne, avec brilliant/index.html et sw.js)
-const VERSION = '3.86';
+const VERSION = '3.87';
 
 // ---------- Nouveautés (2.87, demandé par l'utilisateur) ----------
 // Une ligne très brève par mise en ligne (la plus récente en haut) : l'accueil les montre une seule fois, dans une petite fenêtre,
 // à qui n'a pas encore vu cette version. [version, jeu ou partie de l'appli, ce qui change]
 const NOUVEAUTES = [
+  ['3.87', 'Donjon', '« Abandonner et recommencer à zéro » remarche dans l'\''onglet Partie'],
   ['3.86', 'Donjon', 'Barres du téléphone : le toucher qui les recache est enfin pris en compte.'],
   ['3.85', 'Donjon', 'Barres du téléphone : meilleure reprise après un passage dans une autre appli.'],
   ['3.84', 'Donjon', 'Les barres du téléphone se recachent au premier toucher après un passage dans une autre appli.'],

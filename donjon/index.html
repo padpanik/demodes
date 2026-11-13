@@ -976,6 +976,16 @@
         </div>
 
 
+        <!-- Abandon depuis l'onglet Partie -->
+        <div class="voile-dj fen-dep" v-if="demandeAbandon" @click.self="demandeAbandon = false">
+          <div class="boite-dj">
+            <div class="grand">🔄</div>
+            <div class="titre">Abandonner ton exploration ?</div>
+            <div class="aide" style="font-size:0.9em">Tu perds la progression de ce donjon (clés, poussières) et tu peux en commencer un nouveau.</div>
+            <button class="btn principal" @click="abandonnerSolo">Abandonner ce donjon</button>
+            <button class="btn" @click="demandeAbandon = false">↩ Garder mon exploration</button>
+          </div>
+        </div>
         <a class="lien-exp" :href="retourAdr()">{{ vientDeVallee() ? '🏞️ Retour dans la Vallée' : '🏠 Retour à l\'accueil' }}</a>
         <p class="version">Désdale · Donjon des compagnons · version {{ version }}</p>
       </template>
@@ -1177,16 +1187,6 @@
           </template>
         </div>
 
-        <!-- Abandon depuis l'onglet Partie -->
-        <div class="voile-dj" v-if="demandeAbandon" @click.self="demandeAbandon = false">
-          <div class="boite-dj">
-            <div class="grand">🔄</div>
-            <div class="titre">Abandonner ton exploration ?</div>
-            <div class="aide" style="font-size:0.9em">Tu perds la progression de ce donjon (clés, poussières) et tu peux en commencer un nouveau.</div>
-            <button class="btn principal" @click="abandonnerSolo">Abandonner ce donjon</button>
-            <button class="btn" @click="demandeAbandon = false">↩ Garder mon exploration</button>
-          </div>
-        </div>
         <!-- Donjon qui ne tourne plus (sauvegarde abîmée) : on propose d'en sortir -->
         <div class="voile-dj" v-if="panne && solo">
           <div class="boite-dj">
