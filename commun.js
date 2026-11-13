@@ -3,12 +3,13 @@
 // Les clés de stockage gardent l'ancien préfixe "brillant-" : les réglages déjà faits sont conservés.
 
 // Numéro de version affiché (à augmenter à chaque mise en ligne, avec brilliant/index.html et sw.js)
-const VERSION = '3.82';
+const VERSION = '3.83';
 
 // ---------- Nouveautés (2.87, demandé par l'utilisateur) ----------
 // Une ligne très brève par mise en ligne (la plus récente en haut) : l'accueil les montre une seule fois, dans une petite fenêtre,
 // à qui n'a pas encore vu cette version. [version, jeu ou partie de l'appli, ce qui change]
 const NOUVEAUTES = [
+  ['3.83', 'Donjon', 'Ma semaine, Mon héros et leurs fenêtres aux couleurs du donjon.'],
   ['3.82', 'Donjon', 'Les 3 lieux du prochain donjon se voient avant de partir, dans une carte de départ toute neuve.'],
   ['3.81', 'Donjon', 'Un ami se bat dans la pièce voisine ? Tu peux le rejoindre tout de suite.'],
   ['3.80', 'Donjon', 'La Tour de l\'horloge à l\'étage 3 : 4 ⚡ mais 4 cartes, des monstres qui volent tes cartes ou remontent le temps.'],

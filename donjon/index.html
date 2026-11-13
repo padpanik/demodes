@@ -665,22 +665,63 @@
     .info-lieu b { display: block; color: #ffe3a8; font-family: Georgia, serif; }
     .info-lieu .regle-l { font-weight: 900; color: #d0bfff; }
     .info-lieu .boss-l { display: block; margin-top: 3px; font-weight: 800; color: #ffc078; }
-    .depart-dj .aide-lieux { margin-top: 5px; text-align: center; }
+    .depart-dj .aide-lieux { margin-top: 4px; text-align: center; font-size: 0.78em; }
     .tuiles-dep { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+    /* 3.83 (demandé par l'utilisateur : « intègre Ma semaine et Mon héros dans le design revu, homogénéise l'intérieur ») :
+       les tuiles passent dans la carte de départ, et les fenêtres de l'onglet Partie prennent la même pierre sombre et or */
+    .depart-dj .tuiles-dep { margin: 10px 0 0; padding-top: 10px; border-top: 1px solid rgba(255,214,140,0.18); }
     .tuiles-dep button { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; border: none; border-radius: 16px; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.08); padding: 10px 12px; font: inherit; color: #2c3e50; text-align: left; cursor: pointer; min-width: 0; }
     .tuiles-dep .t { font-weight: 900; font-size: 0.95em; }
     .tuiles-dep .s { font-size: 0.85em; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
     .tuiles-dep .s2 { font-size: 0.75em; font-weight: 700; color: #7f8c8d; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+    .depart-dj .tuiles-dep button { background: linear-gradient(rgba(255,255,255,0.07), rgba(255,255,255,0.02)); border: 1px solid rgba(255,214,140,0.3); border-radius: 14px;
+                                    color: #f1e6d2; box-shadow: inset 0 1px 0 rgba(255,255,255,0.06), 0 3px 8px rgba(0,0,0,0.3); position: relative; }
+    .depart-dj .tuiles-dep button { padding: 7px 10px; gap: 1px; }
+    .depart-dj .tuiles-dep .t { font-family: Georgia, serif; color: #ffe3a8; font-size: 0.9em; }
+    .depart-dj .tuiles-dep .s { color: #e9dcc5; font-size: 0.78em; }
+    .depart-dj .tuiles-dep .s2 { color: #b8a88f; font-size: 0.72em; }
+    .fen-dep .boite-dj, .atelier-dj .boite-dj { color: #f1e6d2; border: 1.5px solid #6b5537;
+      background: radial-gradient(130% 60% at 50% 0%, #3d3054 0%, #251d35 55%, #181220 100%); box-shadow: 0 0 0 2px #120c18, 0 12px 30px rgba(0,0,0,0.6); }
+    .fen-dep .boite-dj .titre, .atelier-dj .boite-dj .titre { color: #ffe3a8; text-shadow: 0 1px 4px #000; }
+    .fen-dep .boite-dj .aide, .atelier-dj .boite-dj .aide { color: #c2b39a; }
+    .fen-dep .boite-dj .btn, .atelier-dj .boite-dj .btn { background: transparent; border-color: rgba(255,214,140,0.45); color: #ffe3a8; }
+    .fen-dep .boite-dj .btn.principal, .atelier-dj .boite-dj .btn.principal { background: linear-gradient(#f0b04a, #c0731c); border-color: #7a4508; color: #2a1500; }
+    .fen-dep .lien-profil { color: #ffa8a8; background: transparent; box-shadow: none; }
+    .fen-dep .pseudo-portail .lien-profil { color: #ffc46b; }
+    .fen-dep .pseudo-portail { color: #c2b39a; }
+    .fen-dep .pseudo-portail b { color: #ffe3a8; }
+    .fen-dep .etapes-sem span { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.15); color: #a8998a; }
+    .fen-dep .etapes-sem span.fait { background: rgba(81,207,102,0.16); border-color: #51cf66; color: #8ce99a; }
+    .fen-dep .etapes-sem span.ici { background: rgba(255,146,43,0.16); border-color: #ff922b; color: #ffc078; }
+    .fen-dep .etapes-sem span.cle { background: rgba(151,117,250,0.2); border-color: #9775fa; color: #d0bfff; }
+    .fen-dep .record-sem { background: rgba(255,255,255,0.05); border-color: rgba(255,214,140,0.25); color: #e9dcc5; }
+    .fen-dep .record-sem b { color: #ffe3a8; }
+    .fen-dep .record-sem .dernier { color: #b8a88f; }
+    .fen-dep .hero-sem { background: rgba(151,117,250,0.12); border-color: rgba(151,117,250,0.5); }
+    .fen-dep .hero-sem .ligne { color: #e5dbff; }
+    .fen-dep .tuiles-tr button { background: rgba(255,214,140,0.1); border-color: rgba(255,214,140,0.45); color: #ffe3a8; }
+    .fen-dep .tuiles-tr button.boss-tr { background: rgba(247,131,172,0.12); border-color: #f783ac; color: #fcc2d7; }
+    .fen-dep .tuiles-tr button.actif { box-shadow: 0 0 0 2px #ff922b; }
+    .fen-dep .boite-dj .bonus-sem { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,214,140,0.15); }
+    .fen-dep .bonus-sem .txt b { color: #ffe3a8; }
+    .fen-dep .bonus-sem .niv { color: #ffa94d; }
+    .fen-dep .bonus-sem button { background: linear-gradient(#f0b04a, #c0731c); color: #2a1500; }
+    .fen-dep .bonus-sem button:disabled { background: rgba(255,255,255,0.08); color: #8a7c6c; }
+    .fen-dep .champ { color: #c2b39a; }
+    .fen-dep .champ input { background: rgba(255,255,255,0.08); border-color: rgba(255,214,140,0.3); color: #fff; }
+    .fen-dep .salon-puce { background: rgba(255,255,255,0.06); border-color: rgba(255,214,140,0.3); }
+    .fen-dep .salon-puce.actif { background: rgba(255,214,140,0.16); border-color: #ffc46b; }
+    .fen-dep .salon-puce button { color: #f1e6d2; }
+    .fen-dep .salon-puce .oter { color: #a08868; }
     .fen-dep .boite-dj { text-align: left; }
     .fen-dep .boite-dj .titre { text-align: center; }
-    .fen-dep .sous-sem { color: #3b2a1e; }
-    .fen-dep .sous-sem small { font-weight: 700; color: #7a6550; margin-left: 4px; }
-    .fen-dep .bonus-sem { background: rgba(255,255,255,0.6); }
+    .fen-dep .sous-sem { color: #ffc46b; font-family: Georgia, serif; }
+    .fen-dep .sous-sem small { font-weight: 700; color: #b8a88f; margin-left: 4px; }
     .fen-dep .cartes-gr { display: flex; flex-wrap: wrap; gap: 10px 6px; margin-top: 8px; }
     .fen-dep .cartes-gr .carte-c { width: calc(33.3% - 4px); height: 150px; cursor: pointer; }
     .fen-dep .cartes-gr .carte-c.choisie { transform: translateY(-4px); box-shadow: 0 0 0 3px #7048e8, 0 4px 12px rgba(112,72,232,0.5); }
-    .fen-dep .aucune-gr { width: calc(33.3% - 4px); height: 150px; border: 2px dashed #c9b08f; border-radius: 10px; background: rgba(255,255,255,0.5); font: inherit; font-weight: 800; color: #7a6550; font-size: 0.8em; }
-    .fen-dep .aucune-gr.choisie { border-color: #7048e8; color: #5f3dc4; }
+    .fen-dep .aucune-gr { width: calc(33.3% - 4px); height: 150px; border: 2px dashed rgba(255,214,140,0.4); border-radius: 10px; background: rgba(255,255,255,0.05); font: inherit; font-weight: 800; color: #c2b39a; font-size: 0.8em; }
+    .fen-dep .aucune-gr.choisie { border-color: #9775fa; color: #d0bfff; }
     .fen-dep .champ input { width: 100%; }
     .fen-dep .pseudo-portail { margin: 8px 0; }
     /* Boss en deux phases (3.79) */
@@ -812,21 +853,20 @@
             <button v-if="soloEnCours" class="lien-profil abandon-dep" @click="demandeAbandon = true">🔄 Abandonner et recommencer à zéro</button>
             <button v-else class="btn grand-dep" @click="fenPartie = 'salon'">👥 Explorer à plusieurs</button>
           </template>
+            <!-- Ma semaine (3.29) et Mon héros de la semaine (3.30) : un résumé, le détail dans une fenêtre ; dans la carte de départ depuis 3.83 -->
+            <div class="tuiles-dep" v-if="!role">
+              <button @click="fenPartie = 'semaine'">
+                <span class="t">📅 Ma semaine</span>
+                <span class="s">{{ D.DIFFICULTES[sem.ouvert] ? D.DIFFICULTES[sem.ouvert].ico + ' ' + D.DIFFICULTES[sem.ouvert].nom + ' ouverte' : '' }}<template v-if="sem.cle"> · 🗝️+{{ sem.cle }}</template></span>
+                <span class="s2">{{ sem.record ? (sem.record.gagne ? '🏆 ' + sem.record.gagne + ' victoire' + (sem.record.gagne > 1 ? 's' : '') : 'Étage ' + sem.record.etage + '/' + DJ.NB_ETAGES) + ' en ' + D.DIFFICULTES[sem.record.dif].nom : 'Aucun donjon encore' }}</span>
+              </button>
+              <button @click="fenPartie = 'hero'">
+                <span class="t">🧙 Mon héros</span>
+                <span class="s">{{ sem.hero ? '🃏 ' + sem.hero.paquet.length + ' · ' + sem.hero.reliques.map(r => D.RELIQUES[r] ? D.RELIQUES[r].ico : '').join('') : 'Héros neuf' }}</span>
+                <span class="s2">💠 {{ sem.eclats }} éclat{{ sem.eclats > 1 ? 's' : '' }}<template v-if="sem.hero && sem.hero.classe !== maClasse"> · ⚠️ autre classe</template></span>
+              </button>
+            </div>
         </section>
-
-        <!-- Ma semaine (3.29) et Mon héros de la semaine (3.30) : un résumé, le détail dans une fenêtre -->
-        <div class="tuiles-dep" v-if="!role">
-          <button @click="fenPartie = 'semaine'">
-            <span class="t">📅 Ma semaine</span>
-            <span class="s">{{ D.DIFFICULTES[sem.ouvert] ? D.DIFFICULTES[sem.ouvert].ico + ' ' + D.DIFFICULTES[sem.ouvert].nom + ' ouverte' : '' }}<template v-if="sem.cle"> · 🗝️+{{ sem.cle }}</template></span>
-            <span class="s2">{{ sem.record ? (sem.record.gagne ? '🏆 ' + sem.record.gagne + ' victoire' + (sem.record.gagne > 1 ? 's' : '') : 'Étage ' + sem.record.etage + '/' + DJ.NB_ETAGES) + ' en ' + D.DIFFICULTES[sem.record.dif].nom : 'Aucun donjon encore' }}</span>
-          </button>
-          <button @click="fenPartie = 'hero'">
-            <span class="t">🧙 Mon héros</span>
-            <span class="s">{{ sem.hero ? '🃏 ' + sem.hero.paquet.length + ' · ' + sem.hero.reliques.map(r => D.RELIQUES[r] ? D.RELIQUES[r].ico : '').join('') : 'Héros neuf' }}</span>
-            <span class="s2">💠 {{ sem.eclats }} éclat{{ sem.eclats > 1 ? 's' : '' }}<template v-if="sem.hero && sem.hero.classe !== maClasse"> · ⚠️ autre classe</template></span>
-          </button>
-        </div>
 
         <!-- Fenêtres de l'onglet Partie (3.78) -->
         <div class="voile-dj fen-dep" v-if="fenPartie === 'semaine'" @click.self="fenPartie = null">
