@@ -176,15 +176,6 @@
     .entree-vallee .etoiles-vl svg { width: 15px; height: 15px; }
     .scene-vl .vla-fumee { animation: fumeeVl 3s ease-in-out infinite; } @keyframes fumeeVl { 50% { transform: translate(1px, -2px); opacity: 0.6; } }
     .scene-vl .vla-nuage { animation: nuageVl 14s ease-in-out infinite alternate; } @keyframes nuageVl { to { transform: translateX(12px); } }
-    .raccourcis-vl { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 0 0 14px; }
-    .racc-vl { display: flex; align-items: center; gap: 8px; text-decoration: none; color: #2c3e50; background: #fff; border-radius: 14px; padding: 7px 9px;
-               box-shadow: 0 1px 2px rgba(0,0,0,0.05), 0 4px 14px rgba(29,43,54,0.06); min-width: 0; }
-    .racc-vl:active { transform: scale(0.98); }
-    .racc-vl .ico-racc { flex: none; width: 38px; height: 38px; border-radius: 11px; overflow: hidden; }
-    .racc-vl .ico-racc > * { width: 100%; height: 100%; }
-    .racc-vl b { display: block; font-size: 0.95em; }
-    .racc-vl small { display: block; font-size: 0.74em; color: #6b7a86; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .racc-vl > span:last-child { min-width: 0; }
     /* Entrée du Donjon des compagnons, juste sous « Mon compagnon » (3.20) : scène dessinée (mur, porte, torches, monstres, mon compagnon) */
     .entree-donjon { position: relative; display: block; overflow: hidden; height: 132px; border-radius: 18px; margin: 2px 0 14px; text-decoration: none; color: #fff;
                      background: #231c36; box-shadow: 0 2px 4px rgba(20,12,40,0.25), 0 8px 22px rgba(35,28,54,0.28); }
@@ -300,17 +291,17 @@
         </a>
       </div>
 
-      <!-- Raccourcis : ma maison et le Donjon, sans traverser la Vallée -->
-      <div class="raccourcis-vl">
-        <a class="racc-vl" href="compagnon/" @click="retenir('compagnon')">
-          <span class="ico-racc" v-html="icoCompte('maison', 24)"></span>
-          <span><b>Ma maison</b><small>{{ compagnon ? 'Chez ' + compagnon.nom : 'Adopter un compagnon' }}</small></span>
-        </a>
-        <a class="racc-vl donjon" href="donjon/" @click="retenir('donjon')">
-          <span class="ico-racc" v-html="icoCompte('donjon', 24)"></span>
-          <span><b>Donjon</b><small>{{ donjonAccueil.pastille.replace(' ›', '').replace(' · Entrer', '') }}</small></span>
-        </a>
-      </div>
+      <!-- L'entrée du Donjon (3.82, demandé par l'utilisateur : « le menu donjon plus sexy, enlève maison ») : la grande carte dessinée revient
+           à la place des deux raccourcis ; ma maison reste dans la Vallée (on fonce dans sa porte) -->
+      <a class="entree-donjon" href="donjon/" @click="retenir('donjon')">
+        <svg class="scene-dj" viewBox="0 0 158 116" preserveAspectRatio="xMaxYMax slice" aria-hidden="true" v-html="donjonAccueil.scene"></svg>
+        <span class="texte-dj">
+          <span class="surtitre-dj">Le Donjon des compagnons</span>
+          <span class="accroche-dj">{{ donjonAccueil.accroche }}</span>
+          <span class="sous-dj">{{ donjonAccueil.sous }}</span>
+          <span class="pastille-dj" :class="{ calme: !donjonAccueil.enCours }">{{ donjonAccueil.pastille }}</span>
+        </span>
+      </a>
 
       <div class="titre-section">Choisis ton jeu<span class="astuce-tri">{{ glisse ? 'glisse puis lâche' : 'appui long pour trier' }}</span></div>
       <!-- Ordre propre à chaque téléphone : appui long sur une fiche, puis la faire glisser -->
@@ -700,6 +691,9 @@
           if (enCours) r.accroche = a ? nom + ' t\'attend à l\'étage ' + etage : 'Ton exploration t\'attend';
           else r.accroche = a ? nom + ' veut y entrer !' : 'Oseras-tu entrer ?';
           r.sous = cl ? 'Son pouvoir : ' + cl : a ? '3 étages, la Liche au fond' : 'Adopte un compagnon !';
+          // Le prochain donjon (3.82) : le lieu du 1er étage, tiré à l'avance par la page du Donjon
+          var pr = lireStockage('donjon-prochain');
+          if (!enCours && pr && Array.isArray(pr.n) && pr.n[0]) r.sous = 'Étage 1 : ' + String(pr.n[0]).replace(/^(La |Les |Le |L')/, '');
           r.pastille = enCours ? '● Reprendre ›' : st.gagnes ? '🏆 ' + st.gagnes + ' vaincu' + (st.gagnes > 1 ? 's' : '') + ' · Entrer ›'
                      : st.record ? 'Record : étage ' + st.record + ' ›' : 'Entrer ›';
           // Ma semaine au donjon (3.29) : la difficulté ouverte ou la clé de cette semaine

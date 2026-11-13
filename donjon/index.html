@@ -616,6 +616,56 @@
     .sac-dep .chev { font-size: 1.3em; color: #adb5bd; font-weight: 900; }
     .depart-dj .grand-dep { width: 100%; margin-top: 8px; }
     .depart-dj .abandon-dep { display: block; margin: 8px auto 0; }
+    /* 3.82 (demandé par l'utilisateur : « le menu donjon un peu plus sexy ») : la carte de départ prend les couleurs du donjon,
+       pierre sombre et or, avec les 3 lieux du prochain donjon en vignettes (décor de combat + boss) */
+    .depart-dj { color: #f1e6d2; border: 1px solid #5a4630;
+                 background: radial-gradient(130% 70% at 50% 0%, #3d3054 0%, #251d35 55%, #181220 100%);
+                 box-shadow: 0 2px 4px rgba(20,12,40,0.3), 0 10px 26px rgba(35,28,54,0.35); }
+    .depart-dj .id-dep b { font-family: Georgia, serif; color: #ffe3a8; font-size: 1.22em; text-shadow: 0 1px 4px #000; }
+    .depart-dj .cp-dep { filter: drop-shadow(0 3px 5px rgba(0,0,0,0.55)); }
+    .depart-dj .cp-dep.vide { background: rgba(255,255,255,0.08); }
+    .depart-dj .classe-dj { background: rgba(151,117,250,0.22); color: #d0bfff; }
+    .depart-dj .pouvoir { background: rgba(255,146,43,0.2); color: #ffc078; }
+    .depart-dj .aide { color: #c2b39a; }
+    .depart-dj .aide a { color: #ffc46b; }
+    .depart-dj .diffs-dj button { background: rgba(255,255,255,0.05); border-color: rgba(255,226,170,0.16); color: #f1e6d2; }
+    .depart-dj .diffs-dj small { color: #b8a88f; }
+    .depart-dj .diffs-dj button.actif.d-normal { border-color: #51cf66; background: rgba(81,207,102,0.16); }
+    .depart-dj .diffs-dj button.actif.d-heroique { border-color: #ff922b; background: rgba(255,146,43,0.16); }
+    .depart-dj .diffs-dj button.actif.d-mythique { border-color: #9775fa; background: rgba(151,117,250,0.2); }
+    .depart-dj .cle-dj { background: rgba(151,117,250,0.12); border-color: #7950f2; }
+    .depart-dj .cle-dj .titre-cle { color: #d0bfff; }
+    .depart-dj .perils button { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.18); color: #f1e6d2; }
+    .depart-dj .perils button.actif { border-color: #9775fa; color: #e5dbff; background: rgba(151,117,250,0.25); }
+    .depart-dj .sac-dep { background: rgba(255,255,255,0.05); border-color: rgba(255,214,140,0.22); color: #f1e6d2; }
+    .depart-dj .sac-dep .txt .l { color: #c2b39a; }
+    .depart-dj .sac-dep .chev { color: #a08868; }
+    .depart-dj .btn { background: transparent; border-color: rgba(255,214,140,0.45); color: #ffe3a8; }
+    .depart-dj .btn.principal { background: linear-gradient(#f0b04a, #c0731c); border-color: #7a4508; color: #2a1500; box-shadow: 0 2px 10px rgba(240,160,60,0.35); text-shadow: 0 1px 0 rgba(255,255,255,0.3); }
+    .depart-dj .lien-profil { color: #ffa8a8; background: transparent; box-shadow: none; }
+    .depart-dj .salon-role { color: #c2b39a; }
+    .prochain-dep { margin-top: 12px; }
+    .titre-dep { font-size: 0.66em; font-weight: 900; letter-spacing: 1px; text-transform: uppercase; color: #ffc46b; margin-bottom: 6px; }
+    .lieux-dep { display: flex; align-items: center; gap: 3px; }
+    .fleche-dep { flex: none; color: #8a7458; font-weight: 900; font-size: 1.1em; }
+    .lieu-v { position: relative; flex: 1; min-width: 0; aspect-ratio: 0.95; padding: 0; border: 1.5px solid #6b5537; border-radius: 12px; overflow: hidden; background: #000; cursor: pointer; font: inherit;
+              box-shadow: 0 3px 8px rgba(0,0,0,0.45); transition: transform 0.15s, border-color 0.15s; }
+    .lieu-v .dec, .lieu-v .dec svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+    .lieu-v .boss-v { position: absolute; left: 50%; bottom: 31%; width: 46%; transform: translateX(-50%); filter: drop-shadow(0 4px 4px rgba(0,0,0,0.6)); }
+    .lieu-v .boss-v svg { width: 100%; height: auto; display: block; }
+    .lieu-v .num-v { position: absolute; top: 4px; left: 5px; font-family: Georgia, serif; font-weight: 900; font-size: 0.78em; color: #ffe3a8; text-shadow: 0 1px 3px #000; }
+    .lieu-v .regle-v { position: absolute; top: 3px; right: 3px; font-size: 0.8em; background: rgba(20,12,30,0.75); border: 1px solid rgba(255,214,140,0.5); border-radius: 8px; padding: 0 3px; }
+    .lieu-v .fait-v { position: absolute; top: 30%; left: 50%; transform: translateX(-50%); width: 26px; height: 26px; border-radius: 50%; background: #2f9e44; color: #fff; font-weight: 900; line-height: 26px; box-shadow: 0 0 0 2px #fff; }
+    .lieu-v .nom-v { position: absolute; left: 0; right: 0; bottom: 0; padding: 14px 3px 4px; font-size: 0.62em; font-weight: 800; line-height: 1.15; overflow-wrap: anywhere; hyphens: auto; color: #fff; text-align: center;
+                     background: linear-gradient(transparent, rgba(10,6,16,0.92) 45%); text-shadow: 0 1px 2px #000; }
+    .lieu-v.choisi { border-color: #ffc46b; transform: translateY(-2px); box-shadow: 0 0 0 1px #ffc46b, 0 4px 12px rgba(255,196,107,0.35); }
+    .lieu-v.ici { border-color: #ff922b; box-shadow: 0 0 10px rgba(255,146,43,0.6); }
+    .lieu-v.fait { filter: grayscale(0.7) brightness(0.7); }
+    .info-lieu { margin-top: 8px; padding: 7px 10px; border-radius: 10px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,214,140,0.25); font-size: 0.82em; line-height: 1.35; color: #e9dcc5; }
+    .info-lieu b { display: block; color: #ffe3a8; font-family: Georgia, serif; }
+    .info-lieu .regle-l { font-weight: 900; color: #d0bfff; }
+    .info-lieu .boss-l { display: block; margin-top: 3px; font-weight: 800; color: #ffc078; }
+    .depart-dj .aide-lieux { margin-top: 5px; text-align: center; }
     .tuiles-dep { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
     .tuiles-dep button { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; border: none; border-radius: 16px; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.08); padding: 10px 12px; font: inherit; color: #2c3e50; text-align: left; cursor: pointer; min-width: 0; }
     .tuiles-dep .t { font-weight: 900; font-size: 0.95em; }
@@ -681,6 +731,31 @@
           <div class="aide aide-dep" v-if="infoClasse || !monCp">
             <template v-if="monCp">{{ monCp.n }} {{ ESPECES[monCp.e].action }}. En combat : {{ D.CLASSES[monPouvoir].texte.toLowerCase() }}.</template>
             <template v-else>Tu explores sans pouvoir, avec les cartes de base. <a href="compagnon/">Adopter un compagnon</a></template>
+          </div>
+
+          <!-- Les 3 lieux du donjon (3.82, demandé par l'utilisateur : savoir où l'on va avant de partir) : décor, boss, règle ; toucher = le détail -->
+          <div class="prochain-dep" v-if="lieuxDep">
+            <div class="titre-dep">{{ lieuxDep.titre }}</div>
+            <div class="lieux-dep">
+              <template v-for="(v, i) in lieuxDep.liste">
+                <span v-if="i" :key="'f' + i" class="fleche-dep">›</span>
+                <button :key="v.cle" class="lieu-v" :class="[v.etat, { choisi: lieuInfo === v.cle }]" @click="toucherLieu(v)">
+                  <span class="dec" v-html="v.svg"></span>
+                  <span class="boss-v" v-html="v.bossSvg"></span>
+                  <span class="num-v">{{ ['I', 'II', 'III'][i] }}</span>
+                  <span v-if="v.regle" class="regle-v">{{ v.regle.ico }}</span>
+                  <span v-if="v.etat === 'fait'" class="fait-v">✓</span>
+                  <span class="nom-v">{{ v.nom.replace(/^(La |Les |Le )/, '') }}</span>
+                </button>
+              </template>
+            </div>
+            <div class="info-lieu" v-if="lieuChoisi">
+              <b>Étage {{ lieuChoisi.etage }} · {{ lieuChoisi.nom }}</b>
+              <template v-if="lieuChoisi.regle"><span class="regle-l">{{ lieuChoisi.regle.ico }} {{ lieuChoisi.regle.nom }}</span> {{ lieuChoisi.regle.texte }}</template>
+              <template v-else> Pas de règle particulière : le lieu d'origine, sans surprise.</template>
+              <span class="boss-l">👑 Au fond : {{ lieuChoisi.boss }}</span>
+            </div>
+            <div class="aide aide-lieux" v-else>{{ lieuxDep.enCours ? 'Touche un lieu pour revoir sa règle.' : 'Touche un lieu pour lire sa règle avant de partir.' }}</div>
           </div>
 
           <!-- Dans un salon : la difficulté se choisit dans la salle d'attente (onglet Jouer) -->
@@ -886,6 +961,7 @@
           </div>
           <button v-if="role === 'hote'" class="btn principal" style="width:100%;margin-top:12px" @click="lancerSalon">🗝️ Entrer dans le donjon ({{ groupe.length }} joueur{{ groupe.length > 1 ? 's' : '' }})</button>
           <div v-else class="aide">L'hôte lance l'exploration quand tout le monde est là.</div>
+          <div class="aide" v-if="pub && Array.isArray(pub.lieux)">🗺️ Les lieux : {{ pub.lieux.map(id => D.LIEUX[id] ? D.LIEUX[id].nom : '?').join(' › ') }} (détail dans l'onglet Partie).</div>
           <div class="aide">Le donjon est tiré au hasard selon les pouvoirs du groupe : il y aura toujours de quoi passer. Les monstres ont plus de PV et frappent plus fort à plusieurs, selon la difficulté.</div>
           <div class="titre-carte" style="margin-top:12px">Difficulté</div>
           <template v-if="role === 'hote'"><div class="diffs-dj"><button v-for="id in D.ORDRE_DIFFICULTES" :key="id" :class="['d-' + id, { actif: difficulte === id }]" :disabled="!ouverte(id)" @click="difficulte = id">
@@ -1383,6 +1459,20 @@
       return f && typeof f.id === 'string' && f.etage >= 1 && f.etage <= DJ.NB_ETAGES ? f : null;
     })();
     const CLE_SOLO = FAILLE ? 'donjon-faille' : 'donjon-solo';
+    // Le prochain donjon (3.82, demandé par l'utilisateur : « réfléchir avant de partir ») : ses 3 lieux sont tirés à l'avance
+    // et montrés dans l'onglet Partie ; `donjon-prochain` = { l: [identifiants], n: [noms] } (les noms servent à l'accueil)
+    function tirerProchain() {
+      var l = DJ.D.ETAGES.map(E => E.lieux[Math.floor(Math.random() * E.lieux.length)]);
+      var p = { l: l, n: l.map(id => DJ.D.LIEUX[id].nom) };
+      ecrireStockage('donjon-prochain', p);
+      return p;
+    }
+    function lireProchain() {
+      var p = lireStockage('donjon-prochain');
+      var ok = p && Array.isArray(p.l) && p.l.length === DJ.NB_ETAGES && p.l.every((id, i) => DJ.D.LIEUX[id] && DJ.D.ETAGES[i].lieux.indexOf(id) >= 0);
+      return ok ? { l: p.l.slice(), n: p.l.map(id => DJ.D.LIEUX[id].nom) } : tirerProchain();
+    }
+    const _vignettes = {};
     const JEU_RESEAU = 'dj';
     const DELAI_SILENCE = 15000;
     const MAX_SALONS = 8;
@@ -1479,6 +1569,8 @@
         RARETES_REL: { c: 'Commune', u: 'Peu commune', r: 'Rare', boss: 'De boss' },
         fenPartie: null,      // fenêtre de l'onglet Partie (3.78) : 'semaine', 'hero', 'sac' ou 'salon'
         infoClasse: false,    // texte du pouvoir et de la classe, sous le compagnon (3.78)
+        prochain: lireProchain(),   // les 3 lieux du prochain donjon (3.82)
+        lieuInfo: null,       // lieu touché dans l'onglet Partie : son texte s'affiche dessous
         grim: lireGrimoire(),   // Grimoire des Terres (3.71) : { c: cartes rares, choix }
         peril: Math.min(lireStockage('donjon-peril-choisi') || 0, lireSemaine().cle),
         vuCombat: null,
@@ -1516,6 +1608,24 @@
         moi: function() { return this.solo ? 'Moi' : (this.pseudoInput.trim() || 'Moi'); },
         monPouvoir: function() { return DJ.pouvoirDe(this.monCp); },
         connexionTexte: function() { return { ok: 'en ligne', connexion: 'connexion…', perdue: 'reconnexion…', aucune: 'hors ligne' }[this.connexion]; },
+        // Les 3 lieux montrés dans l'onglet Partie (3.82) : l'exploration en cours, la salle d'attente du salon, ou le prochain donjon
+        lieuxDep: function() {
+          var s = null, ids = null, etage = 0, titre = 'Ton prochain donjon';
+          if (this.soloEnCours && !this.role) { s = this.solo && this.partie ? this.partie : lireStockage(CLE_SOLO); titre = 'Ton exploration en cours'; }
+          else if (this.role && this.partie && this.partie.phase === 'jeu') { s = this.partie; titre = 'Le donjon du salon'; }
+          else if (this.role && this.pub && Array.isArray(this.pub.lieux)) { ids = this.pub.lieux; titre = 'Le donjon du salon'; }
+          if (s && s.faille) return null;
+          if (s) etage = s.etage || 1;
+          var liste = DJ.D.ETAGES.map((E, i) => {
+            var L = s ? DJ.lieu(s, i + 1) : (DJ.D.LIEUX[(ids || this.prochain.l)[i]] || E);
+            if (L.etage !== i + 1) L = E;
+            var R = L.regle ? DJ.D.REGLES_LIEU[L.regle] : null, B = DJ.MONSTRES[L.boss];
+            return { cle: (i + 1) + ':' + L.id, etage: i + 1, id: L.id, nom: L.nom, ico: L.ico, regle: R, boss: B ? B.nom : '',
+                     etat: !etage ? '' : i + 1 < etage ? 'fait' : i + 1 === etage ? 'ici' : '', svg: this.vignetteLieu(L, i), bossSvg: L.boss ? DJS.monstre(L.boss) : '' };
+          });
+          return { titre: titre, liste: liste, enCours: !!etage };
+        },
+        lieuChoisi: function() { var L = this.lieuxDep; return L ? L.liste.find(v => v.cle === this.lieuInfo) || null : null; },
         soloEnCours: function() { this.soloV; if (this.solo && this.partie && this.partie.phase === 'jeu') return true; var s = lireStockage(CLE_SOLO); return !!(s && s.phase === 'jeu'); },
         // Difficulté du salon (choisie par l'hôte) ; une partie lancée garde la sienne
         difficulteSalon: function() {
@@ -2137,6 +2247,15 @@
         // Grains de poussière : position et rythme fixes pour chaque grain
         grain: function(k) { return { left: (k * 37 % 100) + '%', animationDuration: (7 + k * 1.3 % 5) + 's', animationDelay: (-k * 1.7) + 's' }; },
 
+        // Lieux imposés au nouveau donjon : ceux d'un essai (`donjon-lieux-essai`, tests seulement), sinon le prochain donjon tiré à l'avance (3.82)
+        lieuxDepart: function(salon) { return lireStockage('donjon-lieux-essai') || (Array.isArray(salon) ? salon.slice() : this.prochain.l.slice()); },
+        // Vignette d'un lieu : le décor de sa salle de combat (identifiants « djc- » renommés : trois décors sur la même page) et son boss devant
+        vignetteLieu: function(L, i) {
+          var k = L.id + ':' + i;
+          _vignettes[k] = _vignettes[k] || DJS.decor(i + 1, L.sol, L.mur, 'boss', L.decor).replace(/(id="|#)djc-/g, '$1djv' + i + '-');
+          return _vignettes[k];
+        },
+        toucherLieu: function(v) { this.lieuInfo = this.lieuInfo === v.cle ? null : v.cle; },
         demarrerSolo: function() {
           if (this.immersionVoulue) { this._fsDemande = true; this.pleinEcranNavigateur(); }
           var s = lireStockage(CLE_SOLO);
@@ -2144,7 +2263,9 @@
           this.panne = false; this._erreurs = 0;
           if (s && !DJ.compatible(s)) { ecrireStockage(CLE_SOLO, null); s = null; }   // exploration d'une ancienne version : on repart de zéro
           if (s && FAILLE && !(s.faille && s.faille.id === FAILLE.id)) s = null;   // une autre faille : on repart de zéro
-          partieHote = s && s.phase === 'jeu' ? s : FAILLE ? DJ.nouvelle(Math.floor(Math.random() * 1e9), { Moi: this.monCp }, nouvelId(), { difficulte: 'normal', avantages: { Moi: this.avSemaine }, faille: FAILLE }) : DJ.nouvelle(Math.floor(Math.random() * 1e9), { Moi: this.monCp }, nouvelId(), { peril: this.peril, difficulte: this.difficulte, avantages: { Moi: this.avSemaine }, lieux: lireStockage('donjon-lieux-essai') });   // donjon-lieux-essai : lieux imposés pour un essai (tests), absent en jeu
+          var neuf = !(s && s.phase === 'jeu') && !FAILLE;
+          partieHote = s && s.phase === 'jeu' ? s : FAILLE ? DJ.nouvelle(Math.floor(Math.random() * 1e9), { Moi: this.monCp }, nouvelId(), { difficulte: 'normal', avantages: { Moi: this.avSemaine }, faille: FAILLE }) : DJ.nouvelle(Math.floor(Math.random() * 1e9), { Moi: this.monCp }, nouvelId(), { peril: this.peril, difficulte: this.difficulte, avantages: { Moi: this.avSemaine }, lieux: this.lieuxDepart() });
+          if (neuf) this.prochain = tirerProchain();   // le donjon suivant se tire dès maintenant
           if (partieHote.joueurs.Moi) { partieHote.joueurs.Moi.cp = this.monCp; partieHote.joueurs.Moi.surnom = 'L\'explorateur'; }
           this.sel = null;
           partieHote.maintenant = 0;   // l'horloge repart (l'exploration a pu être reprise plus tard)
@@ -2471,7 +2592,8 @@
             pubHote.partieId = nouvelId();
             var avs = {};
             Object.keys(presents).forEach(n => { avs[n] = n === monPseudo ? this.avSemaine : avsSalon[n]; });
-            partieHote = DJ.nouvelle(Math.floor(Math.random() * 1e9), presents, pubHote.partieId, { peril: this.peril, difficulte: pubHote.difficulte || this.difficulte, avantages: avs, lieux: lireStockage('donjon-lieux-essai') });
+            partieHote = DJ.nouvelle(Math.floor(Math.random() * 1e9), presents, pubHote.partieId, { peril: this.peril, difficulte: pubHote.difficulte || this.difficulte, avantages: avs, lieux: this.lieuxDepart(pubHote.lieux) });
+            this.prochain = tirerProchain(); pubHote.lieux = this.prochain.l.slice();   // celui d'après, pour « Nouveau donjon »
             pubHote.phase = 'jeu';
             this.carteV = 0;
             this.publier();
@@ -2664,7 +2786,7 @@
               this.onglet = 'play';
               this.finEntree(true);
               salle = { infos: {} };
-              pubHote = { ordre: [monPseudo], cps: {}, phase: 'attente', partieId: null, difficulte: this.difficulte, peril: this.peril };
+              pubHote = { ordre: [monPseudo], cps: {}, phase: 'attente', partieId: null, difficulte: this.difficulte, peril: this.peril, lieux: this.prochain.l.slice() };
               partieHote = null;
             }
             pubHote.cps[monPseudo] = this.monCp;
