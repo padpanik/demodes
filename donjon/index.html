@@ -301,6 +301,19 @@
     .carte-c.t-attaque { border-color: #c2410c; } .carte-c.t-defense { border-color: #1864ab; } .carte-c.t-competence { border-color: #2b8a3e; }
     .carte-c.t-pouvoir { border-color: #862e9c; background: linear-gradient(#fdf5ff, #ead3f2); } .carte-c.t-malediction { border-color: #343a40; background: linear-gradient(#e9ecef, #ced4da); }
     .carte-c.r-u, .carte-c.r-r, .carte-c.r-l { outline: none; }
+    /* Niveau des cartes (3.89) : gemme + cadre intérieur + halo, du plus discret (commune) au plus vif (rare des Terres) */
+    .cc-rar { position: absolute; left: -3px; bottom: -3px; z-index: 2; width: 9px; height: 9px; transform: rotate(45deg); border-radius: 2px; border: 1.5px solid #5c4326; background: #c9b08a; pointer-events: none; }
+    .carte-c.r-u { box-shadow: 0 3px 0 #1b130e, inset 0 0 0 2px #74c0fc, inset 0 -14px 14px -10px rgba(77,171,247,0.55); }
+    .carte-c.r-u .cc-rar { background: radial-gradient(circle at 35% 30%, #e7f5ff, #4dabf7 60%, #1864ab); border-color: #0b3d6e; width: 10px; height: 10px; }
+    .carte-c.r-r { box-shadow: 0 3px 0 #1b130e, 0 0 9px rgba(250,176,5,0.75), inset 0 0 0 2px #fcc419, inset 0 -18px 18px -10px rgba(250,176,5,0.55); }
+    .carte-c.r-r .cc-rar { background: radial-gradient(circle at 35% 30%, #fff9db, #fcc419 55%, #e67700); border-color: #7a4508; width: 11px; height: 11px; box-shadow: 0 0 6px rgba(250,176,5,0.9); }
+    .carte-c.r-r .cc-nom { color: #8a4b00; }
+    .carte-c.r-l { box-shadow: 0 3px 0 #1b130e, 0 0 12px rgba(151,117,250,0.85), inset 0 0 0 2px #b197fc, inset 0 -20px 18px -10px rgba(132,94,247,0.5); animation: aura-l 2.4s ease-in-out infinite alternate; }
+    .carte-c.r-l .cc-rar { background: conic-gradient(#d0bfff, #63e6be, #ffd8a8, #f783ac, #d0bfff); border-color: #5f3dc4; width: 12px; height: 12px; box-shadow: 0 0 7px rgba(151,117,250,1); }
+    .carte-c.r-l .cc-nom { color: #5f3dc4; }
+    @keyframes aura-l { to { box-shadow: 0 3px 0 #1b130e, 0 0 18px rgba(151,117,250,1), inset 0 0 0 2px #d0bfff, inset 0 -20px 18px -10px rgba(132,94,247,0.65); } }
+    @media (prefers-reduced-motion: reduce) { .carte-c.r-l { animation: none; } }
+    .carte-c.plus.r-r .cc-nom, .carte-c.plus.r-l .cc-nom { color: #2b8a3e; }
     .carte-c.r-l .cc-ico { box-shadow: 0 0 0 2px #b197fc, 0 0 9px rgba(177,151,252,0.9); }
     .carte-c.r-u .cc-ico { box-shadow: 0 0 0 2px #74c0fc; } .carte-c.r-r .cc-ico { box-shadow: 0 0 0 2px #fab005, 0 0 8px rgba(250,176,5,0.8); }
     .cc-ico { width: 1.55em; height: 1.55em; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: #ffe8cc; border: 2px solid #c2410c; line-height: 1; margin-bottom: 2px; }
@@ -1428,6 +1441,7 @@
             <li>Chaque monstre <strong>annonce ce qu'il va faire</strong> : ⚔️ 12 = 12 dégâts, ×2 = deux coups, 🛡️ armure, 💪 force, 😤 grosse attaque au prochain tour… Lis-les pour choisir entre attaquer et te protéger.</li>
             <li><strong>Armure 🛡️</strong> : elle prend les coups avant tes PV, puis disparaît au début de ton tour. États : 🎯 Vulnérable (+50 % de dégâts reçus), 🥀 Faible (−25 % de dégâts), 🧊 Fragile (−25 % d'armure), ☠️ Poison et 🔥 Brûlure (PV perdus au début du tour), 💪 Force (+dégâts à chaque coup). Touche un état pour le relire.</li>
             <li>Après chaque combat : de l'or 🪙, parfois une fiole, et <strong>une carte au choix parmi 3</strong> (ou passer : un paquet léger pioche plus souvent tes meilleures cartes). Les élites donnent une <strong>relique</strong> (effet permanent), les boss une relique puissante au choix.</li>
+            <li><strong>Niveau des cartes</strong> : la petite gemme dans le coin en bas à gauche et le cadre de la carte. Sans gemme : carte de départ ; gemme brune : commune ; gemme bleue et cadre bleu : peu commune ; gemme dorée et halo doré : rare ; gemme irisée et halo violet : rare des Terres (Grimoire).</li>
             <li><strong>Salles</strong> : 🔥 feu de camp (se reposer ou améliorer une carte), 🛒 marchand (cartes, fioles, relique, retrait d'une carte), ❓ autel (un choix, parfois risqué). Les coffres sont gardés tant que les monstres de la pièce sont là.</li>
             <li><strong>Choisis ton chemin</strong> : le plan montre déjà ce qu'il y a dans les pièces voisines (⚔️ monstres, ⭐ élite, 🔥, 🛒, ❓, 👑 boss). Seuls l'élite et le boss sont obligatoires. Chaque étage cache aussi une <strong>pièce à risque</strong>, jamais obligatoire : 💀 <strong>salle du défi</strong> (un second élite : une relique de plus), 💰 <strong>trésor piégé</strong> (ouvrir le grand coffre déclenche une embuscade où tu commences Vulnérable ; ensuite, beaucoup d'or, une fiole et des poussières), 🔮 <strong>coffre maudit</strong> (une relique, contre une malédiction dans le paquet : 🏋️ Fardeau ou 🌀 Doute, qu'on peut jouer pour 1 ⚡ pour s'en débarrasser le temps du combat).</li>
             <li><strong>Fioles</strong> (2 emplacements) : à boire pendant ton tour ; la fiole de soin se boit aussi hors combat.</li>
@@ -1569,6 +1583,9 @@
     var cacheDessins = {};
 
     // Une carte du donjon (main, butin, marchand, paquet)
+    // Niveau des cartes (3.89) : une gemme en bas à gauche et un cadre à la couleur du niveau (les cartes de base n'en ont pas)
+    const RAR_CARTES = { c: 'Commune', u: 'Peu commune', r: 'Rare', l: 'Rare des Terres' };
+    Vue.prototype.RAR_CARTES = RAR_CARTES;
     Vue.component('carte-dj', {
       props: { id: String, badge: [Number, String], prix: Number, gratuite: Boolean },
       computed: { k: function() { return DJ.carte(this.id) || { nom: this.id, type: 'competence', texte: '' }; } },
@@ -1576,7 +1593,8 @@
         '<span class="cc-cout" :class="{ gratuite: gratuite && k.cout > 0 }" v-if="k.cout !== null && k.cout !== undefined">{{ gratuite ? 0 : k.cout }}</span>' +
         '<span class="cc-badge" v-if="badge !== null && badge !== undefined">{{ badge }}</span>' +
         '<span class="cc-ico">{{ k.ico }}</span><span class="cc-nom">{{ k.nom }}</span><span class="cc-txt">{{ k.texte }}</span>' +
-        '<span class="cc-prix" v-if="prix">🪙 {{ prix }}</span></div>'
+        '<span class="cc-prix" v-if="prix">🪙 {{ prix }}</span>' +
+        '<span class="cc-rar" v-if="RAR_CARTES[k.rar]" :title="RAR_CARTES[k.rar]"></span></div>'
     });
 
     new Vue({
@@ -1813,7 +1831,7 @@
         descSel: function() {
           var k = this.selDef;
           if (!k) return 'Touche une carte pour la lire, encore une fois pour la jouer.';
-          var t = k.ico + ' ' + k.nom + (k.fiole ? '' : ' (' + (this.savoirGratuit && k.cout > 0 ? '0 ⚡, 📖 gratuite' : k.cout + ' ⚡') + ')') + ' : ' + k.texte;
+          var t = k.ico + ' ' + k.nom + (k.fiole ? '' : ' (' + (this.savoirGratuit && k.cout > 0 ? '0 ⚡, 📖 gratuite' : k.cout + ' ⚡') + (RAR_CARTES[k.rar] ? ', ' + RAR_CARTES[k.rar].toLowerCase() : '') + ')') + ' : ' + k.texte;
           if (!k.fiole && !this.jouable(k.id)) return t + ' · pas assez de ⚡';
           if (this.cibleAttendue === 'monstre') return t + ' · 👆 touche un monstre';
           if (this.cibleAttendue === 'joueur') return t + ' · 👆 touche toi ou un ami';
