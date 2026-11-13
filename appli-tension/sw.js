@@ -1,6 +1,6 @@
 // Service worker du relevé de tension (portée : /tension/ seulement, indépendant de celui de Désdale)
 // Réseau d'abord, copie gardée pour ouvrir la page sans connexion.
-const CACHE = 'tension-4';
+const CACHE = 'tension-5';
 const FICHIERS = ['./', './manifest.webmanifest', './icone-192.png', './icone-512.png', './apple-touch-icon.png'];
 
 self.addEventListener('install', e => {

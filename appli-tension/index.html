@@ -201,7 +201,7 @@
         <button class="gros secondaire" id="exporter">⬇️ Sauvegarder</button>
         <button class="gros secondaire" id="importer">📥 Récupérer</button>
       </div>
-      <input type="file" id="fichier" accept=".json,application/json" hidden>
+      <input type="file" id="fichier" accept=".json,.txt,application/json,text/plain" hidden>
       <button class="gros secondaire" id="installerBas" hidden>📲 Installer l'appli</button>
       <button class="gros zero" id="zero">🗑 Supprimer cette feuille</button>
     </div>
@@ -520,25 +520,83 @@
     }
 
     // ---- Copier le relevé ----
+    // ---- Mail du relevé (texte simple, lisible dans toutes les messageries) ----
+    const TRAIT = '────────────────────';
+    function bornesFeuille() {
+      let t0 = null, t1 = null;
+      Object.values(donnees.m).forEach(m => {
+        if (!m || !m.t || !verifier(m).ok) return;
+        if (!t0 || m.t < t0) t0 = m.t;
+        if (!t1 || m.t > t1) t1 = m.t;
+      });
+      return t0 ? [t0, t1] : null;
+    }
+    function periode(avecJour) {
+      const b = bornesFeuille();
+      const o = avecJour ? { weekday: 'long', day: 'numeric', month: 'long' } : { day: 'numeric', month: 'long' };
+      if (!b) return 'du ' + new Date(debutFeuille(donnees)).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+      const d0 = new Date(b[0]), d1 = new Date(b[1]);
+      const an = d => ' ' + d.getFullYear();
+      if (d0.toDateString() === d1.toDateString()) return 'du ' + d0.toLocaleDateString('fr-FR', o) + an(d0);
+      if (d0.getFullYear() !== d1.getFullYear())
+        return 'du ' + d0.toLocaleDateString('fr-FR', o) + an(d0) + ' au ' + d1.toLocaleDateString('fr-FR', o) + an(d1);
+      const debut = (!avecJour && d0.getMonth() === d1.getMonth()) ? String(d0.getDate()) : d0.toLocaleDateString('fr-FR', o);
+      return 'du ' + debut + ' au ' + d1.toLocaleDateString('fr-FR', o) + an(d1);
+    }
+    function sujetReleve() { return 'Relevé de tension ' + periode(false); }
+    function ligneMoy(nom, r) {
+      if (!r) return '• ' + nom + ' : pas de mesure';
+      return '• ' + nom + ' : ' + r.sys + ' / ' + r.dia + ' mmHg' + (r.pouls ? ', pouls ' + r.pouls : '') +
+        ' (' + r.n + ' mesure' + (r.n > 1 ? 's' : '') + ')';
+    }
     function texteReleve() {
-      const lignes = ['Relevé de tension (automesure), série du ' +
-        new Date(debutFeuille(donnees)).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })];
-      if (donnees.comm && donnees.comm.trim()) lignes.push('Commentaire : ' + donnees.comm.trim());
+      const L = [];
+      L.push('Bonjour,', '',
+        'Voici mon relevé de tension en automesure (3 mesures le matin et 3 le soir, pendant 3 jours), ' + periode(true) + '.', '');
+      L.push(TRAIT, 'RÉSULTAT', TRAIT);
+      L.push(ligneMoy('Moyenne générale', moyenne(valides())));
+      SEANCES.forEach(([s, nom]) => L.push(ligneMoy('Moyenne du ' + nom.toLowerCase(), moyenne(valides((j, x) => x === s)))));
+      L.push('', 'Repère en automesure : moyenne normale sous 135 / 85 mmHg.');
+      if (donnees.comm && donnees.comm.trim()) {
+        L.push('', TRAIT, 'COMMENTAIRE', TRAIT, donnees.comm.trim());
+      }
+      L.push('', TRAIT, 'DÉTAIL DES MESURES', TRAIT);
       for (let j = 1; j <= JOURS; j++) {
-        lignes.push('', 'Jour ' + j + (dateJour(j) ? ' (' + dateJour(j) + ')' : ''));
+        const dj = dateJour(j);
+        L.push('', '▸ Jour ' + j + (dj ? ' · ' + dj : ''));
         SEANCES.forEach(([s, nom]) => {
           const l = [];
           for (let n = 1; n <= MESURES; n++) {
             const m = donnees.m[cle(j, s, n)];
-            if (verifier(m).ok) l.push(m.sys + '/' + m.dia + (m.pouls ? ' (' + m.pouls + ')' : ''));
+            if (!verifier(m).ok) continue;
+            const h = m.t ? new Date(m.t).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) : '--:--';
+            l.push(m);
+            L.push('      ' + h + '   ' + m.sys + ' / ' + m.dia + ' mmHg' + (m.pouls ? '   pouls ' + m.pouls : ''));
           }
-          lignes.push('  ' + nom + ' : ' + (l.length ? l.join(' ; ') : '–'));
+          const r = moyenne(l);
+          // Titre de la séance placé avant ses mesures
+          const titre = '   ' + nom + (r ? ' (moyenne ' + r.sys + ' / ' + r.dia + ')' : ' : pas de mesure');
+          L.splice(L.length - l.length, 0, titre);
         });
       }
-      const tout = moyenne(valides());
-      lignes.push('', 'Moyenne : ' + texteMoy(tout) + ' mmHg' + (tout && tout.pouls ? ', pouls ' + tout.pouls : '') +
-        ' (' + (tout ? tout.n : 0) + ' relevés)');
-      return lignes.join('\n');
+      L.push('', TRAIT,
+        'En pièce jointe : la sauvegarde complète du relevé (fichier .txt), à ouvrir dans l\'appli « Relevé de tension » avec le bouton « Récupérer ».',
+        'https://tension.desdale.workers.dev');
+      return L.join('\n');
+    }
+
+    // Fichier de sauvegarde (tout le classeur). En .txt : Chrome sur Android refuse de partager un .json.
+    function fichierSauvegarde() {
+      const nom = 'sauvegarde-tension-' + aujourdhui() + '.txt';
+      const contenu = JSON.stringify({ appli: 'releve-tension', date: Date.now(), donnees: classeur }, null, 1);
+      return new File([contenu], nom, { type: 'text/plain' });
+    }
+    function telecharger(fichier) {
+      const url = URL.createObjectURL(fichier);
+      const a = document.createElement('a');
+      a.href = url; a.download = fichier.name;
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 2000);
     }
 
     function toast(t) {
@@ -549,16 +607,28 @@
       toast._t = setTimeout(() => el.classList.remove('vu'), 2200);
     }
 
-    document.getElementById('copier').addEventListener('click', () => {
-      const t = texteReleve();
-      if (navigator.share) {
-        navigator.share({ title: 'Relevé de tension', text: t }).catch(() => {});
-        return;
+    document.getElementById('copier').addEventListener('click', async () => {
+      if (!valides().length) { toast('Aucun relevé à envoyer'); return; }
+      const sujet = sujetReleve(), t = texteReleve(), f = fichierSauvegarde();
+      // Mail avec la sauvegarde en pièce jointe (le titre devient l'objet du mail)
+      if (navigator.canShare && navigator.canShare({ files: [f], title: sujet, text: t })) {
+        try { await navigator.share({ files: [f], title: sujet, text: t }); return; }
+        catch (e) { if (e && e.name === 'AbortError') return; }
       }
+      // Sans pièce jointe possible : le texte seul, puis le fichier enregistré à part
+      if (navigator.share) {
+        try {
+          await navigator.share({ title: sujet, text: t });
+          telecharger(f); toast('Sauvegarde enregistrée à part : ' + f.name);
+          return;
+        } catch (e) { if (e && e.name === 'AbortError') return; }
+      }
+      telecharger(f);
       if (navigator.clipboard) {
-        navigator.clipboard.writeText(t).then(() => toast('Relevé copié'), () => toast('Copie impossible'));
+        navigator.clipboard.writeText(sujet + '\n\n' + t).then(
+          () => toast('Texte copié, sauvegarde enregistrée'), () => toast('Sauvegarde enregistrée : ' + f.name));
       } else {
-        toast('Copie impossible sur ce navigateur');
+        toast('Sauvegarde enregistrée : ' + f.name);
       }
     });
 
@@ -604,9 +674,7 @@
     document.getElementById('exporter').addEventListener('click', async () => {
       const n = classeur.f.reduce((s, f) => s + Object.keys(f.m).length, 0);
       if (!n && !classeur.f.some(f => f.comm)) { toast('Aucun relevé à sauvegarder'); return; }
-      const nom = 'tension-releves-' + aujourdhui() + '.json';
-      const contenu = JSON.stringify({ appli: 'releve-tension', date: Date.now(), donnees: classeur }, null, 1);
-      const fichier = new File([contenu], nom, { type: 'application/json' });
+      const fichier = fichierSauvegarde();
       // Sur téléphone : menu de partage (mail, messagerie, Drive…) ; sinon téléchargement
       if (navigator.canShare && navigator.canShare({ files: [fichier] })) {
         try {
@@ -616,12 +684,8 @@
           if (e && e.name === 'AbortError') return;
         }
       }
-      const url = URL.createObjectURL(fichier);
-      const a = document.createElement('a');
-      a.href = url; a.download = nom;
-      document.body.appendChild(a); a.click(); a.remove();
-      setTimeout(() => URL.revokeObjectURL(url), 2000);
-      toast('Fichier enregistré : ' + nom);
+      telecharger(fichier);
+      toast('Fichier enregistré : ' + fichier.name);
     });
 
     // Lecture d'un fichier de sauvegarde : on ne garde que des relevés bien formés
