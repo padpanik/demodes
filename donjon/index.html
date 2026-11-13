@@ -26,8 +26,6 @@
     .lien-exp { display: block; text-align: center; color: #5b6b78; font-weight: 700; text-decoration: none; padding: 8px; font-size: 0.9em; }
 
     /* Mon compagnon et son pouvoir */
-    .moi-cp { display: flex; align-items: center; gap: 12px; }
-    .moi-cp svg { width: 74px; height: 74px; flex-shrink: 0; }
     .pouvoir { display: inline-flex; align-items: center; gap: 4px; background: #fff4e6; color: #a8590f; border-radius: 999px; padding: 2px 10px; font-weight: 800; font-size: 0.85em; margin: 3px 0; }
     .groupe { display: flex; flex-direction: column; gap: 8px; }
     .membre { display: flex; align-items: center; gap: 10px; background: #f6f8fa; border-radius: 12px; padding: 6px 10px; }
@@ -198,11 +196,6 @@
     /* Cartes rares des Terres (3.71) : liseré violet et or */
     .carte-c.r-l { outline: 2px solid #b197fc; outline-offset: -2px; box-shadow: 0 0 10px rgba(177,151,252,0.55); }
     .moi-c .invoc-m { flex: none; background: #5f3dc4; color: #fff; border-radius: 8px; padding: 0 5px; font-weight: 900; font-size: 0.8em; }
-    .grim-dj .cartes-gr { display: flex; flex-wrap: wrap; gap: 10px 6px; margin-top: 10px; }
-    .grim-dj .cartes-gr .carte-c { width: calc(33.3% - 4px); height: 150px; cursor: pointer; }
-    .grim-dj .cartes-gr .carte-c.choisie { transform: translateY(-4px); box-shadow: 0 0 0 3px #7048e8, 0 4px 12px rgba(112,72,232,0.5); }
-    .grim-dj .aucune-gr { width: calc(33.3% - 4px); height: 150px; border: 2px dashed #ced4da; border-radius: 10px; background: #f8f9fa; font-weight: 800; color: #868e96; font-size: 0.8em; }
-    .grim-dj .aucune-gr.choisie { border-color: #7048e8; color: #5f3dc4; }
     .rares-fin { margin: 8px 0 4px; }
     .rares-fin .titre-tr { margin: 0 0 6px; line-height: 1.25; }
     .rares-fin .cartes-gr { display: flex; gap: 6px; justify-content: center; padding-top: 8px; }
@@ -573,7 +566,6 @@
     /* Ma semaine (3.29) */
     .record-sem { background: #fff8ee; border: 1.5px solid #c9b08f; border-radius: 12px; padding: 7px 10px; margin: 8px 0 2px; font-size: 0.88em; line-height: 1.45; }
     .record-sem .dernier { color: #7a6450; font-size: 0.92em; }
-    .semaine-dj .titre-carte small, .fioles-v .titre-carte small { font-weight: 700; color: #7f8c8d; font-size: 0.75em; margin-left: 6px; }
     .etapes-sem { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 4px; }
     .etapes-sem span { border-radius: 999px; padding: 3px 9px; font-weight: 900; font-size: 0.8em; border: 1.5px solid #e3e8ec; background: #f8f9fa; color: #868e96; }
     .etapes-sem span.fait { border-color: #2f9e44; background: #ebfbee; color: #2b8a3e; }
@@ -603,6 +595,44 @@
     .atelier-dj .paquet-grille .carte-c.choisie { box-shadow: 0 0 0 3px #e8590c; }
     .atelier-dj .actions-at { display: flex; gap: 6px; margin-top: 8px; }
     .atelier-dj .actions-at .btn { margin-top: 0; }
+    /* Onglet Partie (3.78) : une carte pour partir, deux tuiles, le détail en fenêtres */
+    .depart-dj .tete-dep { display: flex; align-items: center; gap: 10px; }
+    .depart-dj .cp-dep { width: 58px; height: 58px; flex: none; }
+    .depart-dj .cp-dep.vide { display: flex; align-items: center; justify-content: center; font-size: 1.8em; background: #f1f3f5; border-radius: 50%; }
+    .depart-dj .id-dep { min-width: 0; }
+    .depart-dj .id-dep b { font-size: 1.12em; }
+    .puces-dep { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 2px; }
+    .puces-dep button { border: none; font: inherit; font-size: 0.82em; cursor: pointer; margin: 0; }
+    .depart-dj .aide-dep { margin-top: 6px; }
+    .depart-dj .bloc-dep { margin-top: 10px; }
+    .depart-dj .diffs-dj button { padding: 5px 4px; }
+    .depart-dj .diffs-dj .ico { font-size: 1.2em; }
+    .depart-dj .salon-dep { margin-top: 10px; }
+    .sac-dep { display: flex; align-items: center; gap: 8px; width: 100%; margin-top: 10px; padding: 7px 10px; border: 1.5px solid #e3e8ec; background: #f8f9fa; border-radius: 12px; font: inherit; color: #2c3e50; text-align: left; cursor: pointer; }
+    .sac-dep .ico { font-size: 1.3em; }
+    .sac-dep .txt { flex: 1; min-width: 0; line-height: 1.25; }
+    .sac-dep .txt b { display: block; font-size: 0.9em; }
+    .sac-dep .txt .l { display: block; font-size: 0.82em; color: #5b6b78; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .sac-dep .chev { font-size: 1.3em; color: #adb5bd; font-weight: 900; }
+    .depart-dj .grand-dep { width: 100%; margin-top: 8px; }
+    .depart-dj .abandon-dep { display: block; margin: 8px auto 0; }
+    .tuiles-dep { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+    .tuiles-dep button { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; border: none; border-radius: 16px; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.08); padding: 10px 12px; font: inherit; color: #2c3e50; text-align: left; cursor: pointer; min-width: 0; }
+    .tuiles-dep .t { font-weight: 900; font-size: 0.95em; }
+    .tuiles-dep .s { font-size: 0.85em; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+    .tuiles-dep .s2 { font-size: 0.75em; font-weight: 700; color: #7f8c8d; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+    .fen-dep .boite-dj { text-align: left; }
+    .fen-dep .boite-dj .titre { text-align: center; }
+    .fen-dep .sous-sem { color: #3b2a1e; }
+    .fen-dep .sous-sem small { font-weight: 700; color: #7a6550; margin-left: 4px; }
+    .fen-dep .bonus-sem { background: rgba(255,255,255,0.6); }
+    .fen-dep .cartes-gr { display: flex; flex-wrap: wrap; gap: 10px 6px; margin-top: 8px; }
+    .fen-dep .cartes-gr .carte-c { width: calc(33.3% - 4px); height: 150px; cursor: pointer; }
+    .fen-dep .cartes-gr .carte-c.choisie { transform: translateY(-4px); box-shadow: 0 0 0 3px #7048e8, 0 4px 12px rgba(112,72,232,0.5); }
+    .fen-dep .aucune-gr { width: calc(33.3% - 4px); height: 150px; border: 2px dashed #c9b08f; border-radius: 10px; background: rgba(255,255,255,0.5); font: inherit; font-weight: 800; color: #7a6550; font-size: 0.8em; }
+    .fen-dep .aucune-gr.choisie { border-color: #7048e8; color: #5f3dc4; }
+    .fen-dep .champ input { width: 100%; }
+    .fen-dep .pseudo-portail { margin: 8px 0; }
   </style>
 </head>
 <body>
@@ -613,104 +643,186 @@
 
       <!-- PARTIE : mon compagnon, le salon, explorer seul -->
       <template v-slot:partie>
-        <section class="carte">
-          <div class="titre-carte">Ton compagnon d'aventure</div>
-          <div class="moi-cp" v-if="monCp">
-            <svg viewBox="0 -6 200 216" v-html="dessin(monCp, 'moi')"></svg>
-            <div><b>{{ monCp.n }}</b><br><span class="pouvoir">{{ POUVOIRS[monPouvoir].ico }} {{ POUVOIRS[monPouvoir].nom }}</span>
-              <span class="classe-dj">{{ D.CLASSES[monPouvoir].ico }} {{ D.CLASSES[monPouvoir].nom }} · {{ D.CLASSES[monPouvoir].pv }} PV</span>
-              <div class="aide" style="margin-top:2px">{{ monCp.n }} {{ ESPECES[monCp.e].action }}. En combat : {{ D.CLASSES[monPouvoir].texte.toLowerCase() }}.</div></div>
-          </div>
-          <div v-else class="aide" style="margin-top:0">Sans compagnon, tu explores sans pouvoir, avec les cartes de base ({{ D.CLASSES.aucune.pv }} PV). <a href="compagnon/">Adopter un compagnon</a></div>
-        </section>
-
-        <section class="carte salon-actif" v-if="role">
-          <div class="salon-tete">
-            <span class="pastille" :class="{ attente: connexion !== 'ok' }"></span>
-            <div>
-              <div class="salon-nom">Salon « {{ roomCode }} »</div>
-              <div class="salon-role">Tu explores en tant que {{ moi }} · {{ connexionTexte }}</div>
+        <!-- Onglet Partie refait en 3.78 (demandé par l'utilisateur : « l'interface sous le bouton Donjon devient un peu fouillis ») :
+             tout ce qui sert à partir dans une seule carte en haut ; Ma semaine et Mon héros en tuiles qui ouvrent une fenêtre -->
+        <section class="carte depart-dj">
+          <div class="tete-dep">
+            <svg v-if="monCp" class="cp-dep" viewBox="0 -6 200 216" v-html="dessin(monCp, 'moi')"></svg>
+            <div v-else class="cp-dep vide">🧭</div>
+            <div class="id-dep">
+              <b>{{ monCp ? monCp.n : 'Sans compagnon' }}</b>
+              <div class="puces-dep">
+                <button class="classe-dj" @click="infoClasse = !infoClasse">{{ D.CLASSES[maClasse].ico }} {{ D.CLASSES[maClasse].nom }} · {{ D.CLASSES[maClasse].pv }} PV</button>
+                <button v-if="monCp" class="pouvoir" @click="infoClasse = !infoClasse">{{ POUVOIRS[monPouvoir].ico }} {{ POUVOIRS[monPouvoir].nom }}</button>
+              </div>
             </div>
           </div>
-          <div class="actions-accueil">
-            <button class="btn principal" @click="onglet = 'play'">Jouer →</button>
-            <button class="btn" @click="quitterSalon">Quitter</button>
+          <div class="aide aide-dep" v-if="infoClasse || !monCp">
+            <template v-if="monCp">{{ monCp.n }} {{ ESPECES[monCp.e].action }}. En combat : {{ D.CLASSES[monPouvoir].texte.toLowerCase() }}.</template>
+            <template v-else>Tu explores sans pouvoir, avec les cartes de base. <a href="compagnon/">Adopter un compagnon</a></template>
           </div>
-        </section>
 
-        <!-- Difficulté (3.23, demandé par l'utilisateur) : pour le solo et pour le salon (l'hôte choisit), au-dessus des deux blocs -->
-        <section class="carte" v-if="!role && !soloEnCours">
-          <div class="titre-carte">Difficulté</div>
-          <div class="diffs-dj"><button v-for="id in D.ORDRE_DIFFICULTES" :key="id" :class="['d-' + id, { actif: difficulte === id }]" :disabled="!ouverte(id)" @click="difficulte = id">
-              <span class="ico">{{ ouverte(id) ? D.DIFFICULTES[id].ico : '🔒' }}</span><b>{{ D.DIFFICULTES[id].nom }}</b><small>{{ ouverte(id) ? '✨ ×' + String(D.DIFFICULTES[id].poussieres).replace('.', ',') : 'cette semaine' }}</small></button></div>
-            <div class="aide">{{ D.DIFFICULTES[difficulte].texte }} · poussières d'étoile ×{{ String(D.DIFFICULTES[difficulte].poussieres).replace('.', ',') }} à la fin.<template v-if="prochaineOuverture"> {{ prochaineOuverture }}</template></div>
-            <!-- Clé mythique (3.24) : seulement en Mythique, sous le choix de difficulté -->
-            <div v-if="difficulte === 'mythique'" class="cle-dj">
-              <div class="titre-cle">🗝️ Clé mythique</div>
-              <template v-if="perilMax > 0">
-                <div class="perils"><button v-for="n in perilMax + 1" :key="n" :class="{ actif: peril === n - 1 }" @click="peril = n - 1">+{{ n - 1 }}</button></div>
-                <div class="aide">{{ peril ? 'Clé +' + peril + ' : ' + D.PERILS[peril] + (peril > 1 ? ' (et les épreuves des clés d\'avant)' : '') + '.' : 'Clé +0 : le Mythique tel quel.' }}</div>
-              </template>
-              <div v-else class="aide" style="margin-top:2px">Gagne un donjon en Mythique cette semaine pour obtenir la clé +1 : chaque clé ajoute une épreuve (jusqu'à +{{ D.PERILS.length - 1 }}). Les clés repartent de zéro le lundi.</div>
+          <!-- Dans un salon : la difficulté se choisit dans la salle d'attente (onglet Jouer) -->
+          <template v-if="role">
+          <div class="salon-dep">
+            <div class="salon-tete">
+              <span class="pastille" :class="{ attente: connexion !== 'ok' }"></span>
+              <div>
+                <div class="salon-nom">Salon « {{ roomCode }} »</div>
+                <div class="salon-role">Tu explores en tant que {{ moi }} · {{ connexionTexte }}</div>
+              </div>
             </div>
-        </section>
+            <div class="actions-accueil">
+              <button class="btn principal" @click="onglet = 'play'">Jouer →</button>
+              <button class="btn" @click="quitterSalon">Quitter</button>
+            </div>
+          </div>
 
-        <!-- Grimoire des Terres (3.71) : les cartes rares gagnées dans les Terres ; on en glisse une dans son paquet au départ -->
-        <section class="carte grim-dj" v-if="!soloEnCours && (!partie || partie.phase !== 'jeu')">
-          <div class="titre-carte">📖 Grimoire des Terres<small>{{ grim.c.length }} / {{ D.LEGENDAIRES.length }} carte{{ grim.c.length > 1 ? 's' : '' }}</small></div>
-          <template v-if="grim.c.length">
-            <div class="aide">Touche la carte rare à glisser dans ton paquet pour le prochain donjon (elle ne reste pas dans le héros de la semaine).</div>
-            <div class="cartes-gr">
-              <button class="aucune-gr" :class="{ choisie: !grimChoix }" @click="choisirGrimoire(null)">Aucune</button>
-              <carte-dj v-for="id in grim.c" :key="id" :id="id" :class="{ choisie: grimChoix === id }" @click.native="choisirGrimoire(id)"></carte-dj>
-            </div>
-            <div class="aide" v-if="grimChoix">Dans ton paquet au départ : <b>{{ DJ.carte(grimChoix).nom }}</b> · {{ DJ.carte(grimChoix).texte }}</div>
+            <button class="sac-dep" v-if="!partie || partie.phase !== 'jeu'" @click="fenPartie = 'sac'">
+              <span class="ico">🎒</span>
+              <span class="txt"><b>Au départ</b><span class="l">
+                <template v-if="grimChoix || fiolesPrises.length"><template v-if="grimChoix">{{ DJ.carte(grimChoix).ico }} {{ DJ.carte(grimChoix).nom }}</template><template v-if="grimChoix && fiolesPrises.length"> · </template><template v-if="fiolesPrises.length">{{ fiolesPrises.map(f => VL.FIOLES[f].ico).join(' ') }}</template></template>
+                <template v-else>{{ grim.c.length || besaceTotal ? 'rien de plus : touche pour choisir' : 'carte rare du Grimoire et fioles de la Vallée' }}</template>
+              </span></span>
+              <span class="chev">›</span>
+            </button>
           </template>
-          <div v-else class="aide">Des cartes rares aux pouvoirs inconnus (esquive, écho, cartes qui mûrissent, alliés invoqués) : gagne-les contre le boss de la semaine, au sanctuaire des Terres, ou en refermant une faille profonde. Elles restent pour toujours.</div>
-        </section>
-
-        <!-- Fioles de la Vallée (3.50) : fabriquées chez Mme Sauge, on en emporte 2 au plus dans le donjon -->
-        <section class="carte fioles-v" v-if="besaceTotal && !soloEnCours && (!partie || partie.phase !== 'jeu')">
-          <div class="titre-carte">🧪 Fioles de la Vallée<small>{{ fiolesPrises.length }} / {{ VL.DONJON_MAX }} emportée{{ fiolesPrises.length > 1 ? 's' : '' }}</small></div>
-          <div class="tuiles-tr">
-            <button v-for="(n, f) in besaceV" :key="f" :class="{ actif: nbPrises(f) > 0 }" @click="prendreFiole(f)">{{ VL.FIOLES[f].ico }} {{ VL.FIOLES[f].nom }} <b>{{ nbPrises(f) ? nbPrises(f) + ' / ' : '' }}{{ n }}</b></button>
-          </div>
-          <div class="aide">{{ fiolesPrises.length ? 'Dans ton sac au départ : ' + fiolesPrises.map(f => VL.FIOLES[f].ico).join(' ') + '. Toucher une fiole pour en prendre une de plus ou la reposer.' : 'Touche une fiole pour l\'emporter dans le prochain donjon (' + VL.DONJON_MAX + ' au plus). Elle quitte ta besace quand le donjon commence.' }}</div>
-        </section>
-
-        <!-- Ma semaine (3.29, demandé par l'utilisateur) : progression du lundi au dimanche, trophées et éclats gardés d'un donjon à l'autre -->
-        <section class="carte semaine-dj" v-if="!role">
-          <div class="titre-carte">📅 Ma semaine<small>jusqu'à dimanche soir</small></div>
-          <div class="etapes-sem">
-            <span v-for="id in D.ORDRE_DIFFICULTES" :key="id" :class="etapeSem(id)">{{ etapeSem(id) === 'fait' ? '✓' : etapeSem(id) === 'ici' ? D.DIFFICULTES[id].ico : '🔒' }} {{ D.DIFFICULTES[id].nom }}</span>
-            <span v-if="sem.cle" class="cle">🗝️ clé +{{ sem.cle }}</span>
-          </div>
-          <div class="record-sem" v-if="sem.record">
-            <div><b>🏔️ Plus haut niveau tenté : {{ D.DIFFICULTES[sem.record.dif].ico }} {{ D.DIFFICULTES[sem.record.dif].nom }}<template v-if="sem.record.peril"> +{{ sem.record.peril }}</template></b></div>
-            <div>Meilleur étage atteint : {{ sem.record.etage }}/{{ DJ.NB_ETAGES }} · 💀 {{ sem.record.boss }} boss vaincu{{ sem.record.boss > 1 ? 's' : '' }}<template v-if="sem.record.gagne"> · 🏆 {{ sem.record.gagne }} victoire{{ sem.record.gagne > 1 ? 's' : '' }}</template> · {{ sem.record.essais }} essai{{ sem.record.essais > 1 ? 's' : '' }}</div>
-            <div v-if="sem.dernier" class="dernier">Dernier donjon : {{ D.DIFFICULTES[sem.dernier.dif].nom }}<template v-if="sem.dernier.peril"> +{{ sem.dernier.peril }}</template>, {{ sem.dernier.gagne ? 'gagné 🏆' : 'étage ' + sem.dernier.etage + '/' + DJ.NB_ETAGES + ' atteint' }}</div>
-          </div>
-          <div class="sous-sem">🧙 Mon héros de la semaine</div>
-          <div class="hero-sem" v-if="sem.hero">
-            <div class="ligne">{{ D.CLASSES[sem.hero.classe].ico }} {{ D.CLASSES[sem.hero.classe].nom }} · 🃏 {{ sem.hero.paquet.length }} cartes<template v-if="nbAmeliorees"> ({{ nbAmeliorees }} améliorée{{ nbAmeliorees > 1 ? 's' : '' }})</template><template v-if="sem.hero.pv"> · ❤️ +{{ sem.hero.pv }} PV max</template></div>
-            <div class="tuiles-tr" v-if="sem.hero.reliques.length">
-              <button v-for="r in sem.hero.reliques" :key="r" :class="{ 'boss-tr': D.RELIQUES[r].rar === 'boss', actif: trSel === r }" @click="trSel = trSel === r ? null : r">{{ D.RELIQUES[r].ico }} {{ D.RELIQUES[r].nom }}</button>
+          <template v-else>
+            <!-- Difficulté (3.23) et clé mythique (3.24) -->
+            <div class="bloc-dep" v-if="!soloEnCours">
+              <div class="diffs-dj"><button v-for="id in D.ORDRE_DIFFICULTES" :key="id" :class="['d-' + id, { actif: difficulte === id }]" :disabled="!ouverte(id)" @click="difficulte = id">
+                  <span class="ico">{{ ouverte(id) ? D.DIFFICULTES[id].ico : '🔒' }}</span><b>{{ D.DIFFICULTES[id].nom }}</b><small>{{ ouverte(id) ? '✨ ×' + String(D.DIFFICULTES[id].poussieres).replace('.', ',') : 'cette semaine' }}</small></button></div>
+              <div class="aide">{{ D.DIFFICULTES[difficulte].texte }}.<template v-if="prochaineOuverture"> {{ prochaineOuverture }}</template></div>
+              <div v-if="difficulte === 'mythique'" class="cle-dj">
+                <div class="titre-cle">🗝️ Clé mythique</div>
+                <template v-if="perilMax > 0">
+                  <div class="perils"><button v-for="n in perilMax + 1" :key="n" :class="{ actif: peril === n - 1 }" @click="peril = n - 1">+{{ n - 1 }}</button></div>
+                  <div class="aide">{{ peril ? 'Clé +' + peril + ' : ' + D.PERILS[peril] + (peril > 1 ? ' (et les épreuves des clés d\'avant)' : '') + '.' : 'Clé +0 : le Mythique tel quel.' }}</div>
+                </template>
+                <div v-else class="aide" style="margin-top:2px">Gagne un donjon en Mythique cette semaine pour obtenir la clé +1 : chaque clé ajoute une épreuve (jusqu'à +{{ D.PERILS.length - 1 }}). Les clés repartent de zéro le lundi.</div>
+              </div>
             </div>
-            <div class="aide" v-if="trSel && D.RELIQUES[trSel]">{{ D.RELIQUES[trSel].texte }}</div>
-            <div class="aide" v-if="sem.hero.classe !== maClasse">⚠️ Ton héros est de la classe {{ D.CLASSES[sem.hero.classe].nom }} : avec ton compagnon actuel ({{ D.CLASSES[maClasse].nom }}), tu repartirais d'un paquet neuf.</div>
-            <button class="btn" style="width:100%;margin-top:8px" @click="ouvrirAtelier">🃏 Voir et travailler mon paquet</button>
-            <button class="lien-profil" style="margin-top:6px" @click="nouveauHero">🔄 Repartir d'un héros neuf</button>
-          </div>
-          <div class="aide" v-else>Ton héros grandit toute la semaine : à la fin de chaque donjon, gagné ou perdu, il garde son paquet, jusqu'à {{ D.SEMAINE.reliquesMax }} reliques (dont une de boss) et les PV max gagnés (+{{ D.SEMAINE.pvMax }} au plus). Sans un paquet construit en Normal, Héroïque est presque impossible.</div>
-          <div class="sous-sem">💠 Éclats : {{ sem.eclats }}</div>
-          <div class="bonus-sem" v-for="(B, k) in D.SEMAINE.bonus" :key="k">
-            <span class="ico">{{ B.ico }}</span>
-            <span class="txt"><b>{{ B.nom }} <span class="niv">{{ '●'.repeat(sem.b[k] || 0) + '○'.repeat(B.max - (sem.b[k] || 0)) }}</span></b>{{ B.texte }}{{ B.max > 1 ? ' (par niveau)' : '' }}</span>
-            <button v-if="(sem.b[k] || 0) < B.max" :disabled="sem.eclats < B.prix[sem.b[k] || 0]" @click="acheterBonus(k)">💠 {{ B.prix[sem.b[k] || 0] }}</button>
-            <button v-else disabled>✓</button>
-          </div>
-          <div class="aide">Chaque boss vaincu donne des éclats ({{ D.SEMAINE.eclats.normal }} en Normal, {{ D.SEMAINE.eclats.heroique }} en Héroïque, {{ D.SEMAINE.eclats.mythique }} en Mythique) : bonus de départ ci-dessus, ou travail du paquet ({{ D.SEMAINE.forge }} 💠 pour améliorer une carte, {{ D.SEMAINE.elaguer }} 💠 pour en retirer une). Gagner un donjon ouvre la difficulté suivante. Lundi, tout repart de zéro. Entre amis, chacun vient avec son héros.</div>
+
+            <!-- Ce que j'emporte : carte du Grimoire des Terres (3.71) et fioles de la Vallée (3.50) ; aussi dans un salon tant que le donjon n'est pas lancé -->
+            <button class="sac-dep" v-if="!soloEnCours" @click="fenPartie = 'sac'">
+              <span class="ico">🎒</span>
+              <span class="txt"><b>Au départ</b><span class="l">
+                <template v-if="grimChoix || fiolesPrises.length"><template v-if="grimChoix">{{ DJ.carte(grimChoix).ico }} {{ DJ.carte(grimChoix).nom }}</template><template v-if="grimChoix && fiolesPrises.length"> · </template><template v-if="fiolesPrises.length">{{ fiolesPrises.map(f => VL.FIOLES[f].ico).join(' ') }}</template></template>
+                <template v-else>{{ grim.c.length || besaceTotal ? 'rien de plus : touche pour choisir' : 'carte rare du Grimoire et fioles de la Vallée' }}</template>
+              </span></span>
+              <span class="chev">›</span>
+            </button>
+            <button class="btn principal grand-dep" @click="demarrerSolo">🗝️ {{ soloEnCours ? 'Reprendre mon exploration' : 'Explorer seul' }}</button>
+            <button v-if="soloEnCours" class="lien-profil abandon-dep" @click="demandeAbandon = true">🔄 Abandonner et recommencer à zéro</button>
+            <button v-else class="btn grand-dep" @click="fenPartie = 'salon'">👥 Explorer à plusieurs</button>
+          </template>
         </section>
+
+        <!-- Ma semaine (3.29) et Mon héros de la semaine (3.30) : un résumé, le détail dans une fenêtre -->
+        <div class="tuiles-dep" v-if="!role">
+          <button @click="fenPartie = 'semaine'">
+            <span class="t">📅 Ma semaine</span>
+            <span class="s">{{ D.DIFFICULTES[sem.ouvert] ? D.DIFFICULTES[sem.ouvert].ico + ' ' + D.DIFFICULTES[sem.ouvert].nom + ' ouverte' : '' }}<template v-if="sem.cle"> · 🗝️+{{ sem.cle }}</template></span>
+            <span class="s2">{{ sem.record ? (sem.record.gagne ? '🏆 ' + sem.record.gagne + ' victoire' + (sem.record.gagne > 1 ? 's' : '') : 'Étage ' + sem.record.etage + '/' + DJ.NB_ETAGES) + ' en ' + D.DIFFICULTES[sem.record.dif].nom : 'Aucun donjon encore' }}</span>
+          </button>
+          <button @click="fenPartie = 'hero'">
+            <span class="t">🧙 Mon héros</span>
+            <span class="s">{{ sem.hero ? '🃏 ' + sem.hero.paquet.length + ' · ' + sem.hero.reliques.map(r => D.RELIQUES[r] ? D.RELIQUES[r].ico : '').join('') : 'Héros neuf' }}</span>
+            <span class="s2">💠 {{ sem.eclats }} éclat{{ sem.eclats > 1 ? 's' : '' }}<template v-if="sem.hero && sem.hero.classe !== maClasse"> · ⚠️ autre classe</template></span>
+          </button>
+        </div>
+
+        <!-- Fenêtres de l'onglet Partie (3.78) -->
+        <div class="voile-dj fen-dep" v-if="fenPartie === 'semaine'" @click.self="fenPartie = null">
+          <div class="boite-dj">
+            <div class="titre">📅 Ma semaine</div>
+            <div class="aide" style="margin-top:0">jusqu'à dimanche soir · lundi, tout repart de zéro</div>
+            <div class="etapes-sem">
+              <span v-for="id in D.ORDRE_DIFFICULTES" :key="id" :class="etapeSem(id)">{{ etapeSem(id) === 'fait' ? '✓' : etapeSem(id) === 'ici' ? D.DIFFICULTES[id].ico : '🔒' }} {{ D.DIFFICULTES[id].nom }}</span>
+              <span v-if="sem.cle" class="cle">🗝️ clé +{{ sem.cle }}</span>
+            </div>
+            <div class="aide" v-if="prochaineOuverture">{{ prochaineOuverture }}</div>
+            <div class="record-sem" v-if="sem.record">
+              <div><b>🏔️ Plus haut niveau tenté : {{ D.DIFFICULTES[sem.record.dif].ico }} {{ D.DIFFICULTES[sem.record.dif].nom }}<template v-if="sem.record.peril"> +{{ sem.record.peril }}</template></b></div>
+              <div>Meilleur étage atteint : {{ sem.record.etage }}/{{ DJ.NB_ETAGES }} · 💀 {{ sem.record.boss }} boss vaincu{{ sem.record.boss > 1 ? 's' : '' }}<template v-if="sem.record.gagne"> · 🏆 {{ sem.record.gagne }} victoire{{ sem.record.gagne > 1 ? 's' : '' }}</template> · {{ sem.record.essais }} essai{{ sem.record.essais > 1 ? 's' : '' }}</div>
+              <div v-if="sem.dernier" class="dernier">Dernier donjon : {{ D.DIFFICULTES[sem.dernier.dif].nom }}<template v-if="sem.dernier.peril"> +{{ sem.dernier.peril }}</template>, {{ sem.dernier.gagne ? 'gagné 🏆' : 'étage ' + sem.dernier.etage + '/' + DJ.NB_ETAGES + ' atteint' }}</div>
+            </div>
+            <div class="sous-sem">📜 Depuis toujours</div>
+            <div class="aide" style="margin-top:2px" v-if="stats.parties">Donjons : {{ stats.gagnes }} vaincu{{ stats.gagnes > 1 ? 's' : '' }} sur {{ stats.parties }}<template v-if="stats.record">, record : étage {{ stats.record }}</template>.<template v-if="stats.parDiff && Object.keys(stats.parDiff).length"> Vaincus en <template v-for="(id, k) in D.ORDRE_DIFFICULTES.filter(x => stats.parDiff[x])">{{ k ? ', ' : '' }}{{ D.DIFFICULTES[id].nom }} : {{ stats.parDiff[id] }}</template>.</template></div>
+            <div class="aide" style="margin-top:2px" v-else>3 étages, un paquet de cartes qui se construit en chemin : il faut souvent plusieurs essais pour vaincre la Liche.</div>
+            <div class="aide">Gagner un donjon ouvre la difficulté suivante ; en Mythique, chaque victoire donne une clé de plus. Entre amis, la victoire compte pour chacun.</div>
+            <button class="btn principal" @click="fenPartie = null">OK</button>
+          </div>
+        </div>
+
+        <div class="voile-dj fen-dep" v-if="fenPartie === 'hero'" @click.self="fenPartie = null">
+          <div class="boite-dj">
+            <div class="titre">🧙 Mon héros de la semaine</div>
+            <div class="hero-sem" v-if="sem.hero">
+              <div class="ligne">{{ D.CLASSES[sem.hero.classe].ico }} {{ D.CLASSES[sem.hero.classe].nom }} · 🃏 {{ sem.hero.paquet.length }} cartes<template v-if="nbAmeliorees"> ({{ nbAmeliorees }} améliorée{{ nbAmeliorees > 1 ? 's' : '' }})</template><template v-if="sem.hero.pv"> · ❤️ +{{ sem.hero.pv }} PV max</template></div>
+              <div class="tuiles-tr" v-if="sem.hero.reliques.length">
+                <button v-for="r in sem.hero.reliques" :key="r" :class="{ 'boss-tr': D.RELIQUES[r].rar === 'boss', actif: trSel === r }" @click="trSel = trSel === r ? null : r">{{ D.RELIQUES[r].ico }} {{ D.RELIQUES[r].nom }}</button>
+              </div>
+              <div class="aide" v-if="trSel && D.RELIQUES[trSel]">{{ D.RELIQUES[trSel].texte }}</div>
+              <div class="aide" v-if="sem.hero.classe !== maClasse">⚠️ Ton héros est de la classe {{ D.CLASSES[sem.hero.classe].nom }} : avec ton compagnon actuel ({{ D.CLASSES[maClasse].nom }}), tu repartirais d'un paquet neuf.</div>
+              <button class="btn" style="width:100%;margin-top:8px" @click="ouvrirAtelier">🃏 Voir et travailler mon paquet</button>
+              <button class="lien-profil" style="margin-top:6px" @click="nouveauHero">🔄 Repartir d'un héros neuf</button>
+            </div>
+            <div class="aide" v-else>Ton héros grandit toute la semaine : à la fin de chaque donjon, gagné ou perdu, il garde son paquet, jusqu'à {{ D.SEMAINE.reliquesMax }} reliques (dont une de boss) et les PV max gagnés (+{{ D.SEMAINE.pvMax }} au plus). Sans un paquet construit en Normal, Héroïque est presque impossible.</div>
+            <div class="sous-sem">💠 Éclats : {{ sem.eclats }}</div>
+            <div class="bonus-sem" v-for="(B, k) in D.SEMAINE.bonus" :key="k">
+              <span class="ico">{{ B.ico }}</span>
+              <span class="txt"><b>{{ B.nom }} <span class="niv">{{ '●'.repeat(sem.b[k] || 0) + '○'.repeat(B.max - (sem.b[k] || 0)) }}</span></b>{{ B.texte }}{{ B.max > 1 ? ' (par niveau)' : '' }}</span>
+              <button v-if="(sem.b[k] || 0) < B.max" :disabled="sem.eclats < B.prix[sem.b[k] || 0]" @click="acheterBonus(k)">💠 {{ B.prix[sem.b[k] || 0] }}</button>
+              <button v-else disabled>✓</button>
+            </div>
+            <div class="aide">Chaque boss vaincu donne des éclats ({{ D.SEMAINE.eclats.normal }} en Normal, {{ D.SEMAINE.eclats.heroique }} en Héroïque, {{ D.SEMAINE.eclats.mythique }} en Mythique) : bonus de départ ci-dessus, ou travail du paquet ({{ D.SEMAINE.forge }} 💠 pour améliorer une carte, {{ D.SEMAINE.elaguer }} 💠 pour en retirer une). Entre amis, chacun vient avec son héros.</div>
+            <button class="btn principal" @click="fenPartie = null">OK</button>
+          </div>
+        </div>
+
+        <div class="voile-dj fen-dep" v-if="fenPartie === 'sac'" @click.self="fenPartie = null">
+          <div class="boite-dj">
+            <div class="titre">🎒 Au départ</div>
+            <div class="sous-sem">📖 Grimoire des Terres <small>{{ grim.c.length }} / {{ D.LEGENDAIRES.length }}</small></div>
+            <template v-if="grim.c.length">
+              <div class="aide" style="margin-top:2px">Touche la carte rare à glisser dans ton paquet pour le prochain donjon (elle ne reste pas dans le héros de la semaine).</div>
+              <div class="cartes-gr">
+                <button class="aucune-gr" :class="{ choisie: !grimChoix }" @click="choisirGrimoire(null)">Aucune</button>
+                <carte-dj v-for="id in grim.c" :key="id" :id="id" :class="{ choisie: grimChoix === id }" @click.native="choisirGrimoire(id)"></carte-dj>
+              </div>
+            </template>
+            <div v-else class="aide" style="margin-top:2px">Des cartes rares aux pouvoirs inconnus (esquive, écho, cartes qui mûrissent, alliés invoqués) : gagne-les contre le gardien du sanctuaire des Terres, ou en refermant une faille profonde. Elles restent pour toujours.</div>
+            <div class="sous-sem">🧪 Fioles de la Vallée <small>{{ fiolesPrises.length }} / {{ VL.DONJON_MAX }}</small></div>
+            <template v-if="besaceTotal">
+              <div class="tuiles-tr">
+                <button v-for="(n, f) in besaceV" :key="f" :class="{ actif: nbPrises(f) > 0 }" @click="prendreFiole(f)">{{ VL.FIOLES[f].ico }} {{ VL.FIOLES[f].nom }} <b>{{ nbPrises(f) ? nbPrises(f) + ' / ' : '' }}{{ n }}</b></button>
+              </div>
+              <div class="aide">Touche une fiole pour l'emporter ({{ VL.DONJON_MAX }} au plus), touche-la encore pour la reposer. Elle quitte ta besace quand le donjon commence.</div>
+            </template>
+            <div v-else class="aide" style="margin-top:2px">Mme Sauge, l'herboriste du village de la Vallée, fabrique des fioles avec ce que tu récoltes : tu pourras en emporter {{ VL.DONJON_MAX }} par donjon.</div>
+            <button class="btn principal" @click="fenPartie = null">OK</button>
+          </div>
+        </div>
+
+        <div class="voile-dj fen-dep" v-if="fenPartie === 'salon'" @click.self="fenPartie = null">
+          <div class="boite-dj">
+            <div class="titre">👥 À plusieurs</div>
+            <div class="aide" style="margin-top:0">Chacun sur son téléphone, dans le même salon. Plus on est de compagnons, plus il y a de pouvoirs… et de passages à ouvrir ensemble.</div>
+            <div class="pseudo-portail">Ton pseudo : <b>{{ pseudoInput || '(à choisir)' }}</b><button class="lien-profil" @click="ouvrirProfil">✏️ {{ pseudoInput ? 'Changer' : 'Choisir' }}</button></div>
+            <label class="champ">Nom du salon
+              <input type="text" v-model="channelInput" placeholder="ex : donjon-du-dimanche" autocomplete="off">
+            </label>
+            <div class="salons-connus" v-if="salonsConnus.length">
+              <span v-for="nom in salonsConnus" :key="nom" class="salon-puce" :class="{ actif: estSalonSaisi(nom) }">
+                <button class="nom" @click="channelInput = nom">{{ nom }}</button>
+                <button class="oter" @click="oublierSalon(nom)" aria-label="Retirer de la liste">✕</button>
+              </span>
+            </div>
+            <button class="btn principal" @click="entrerSalon()" :disabled="entreeEnCours">{{ entreeEnCours ? 'Connexion au salon…' + (entreeEnCours > 1 ? ' essai ' + entreeEnCours + '/4' : '') : 'Entrer dans le salon' }}</button>
+            <button class="btn" @click="fenPartie = null">Fermer</button>
+          </div>
+        </div>
         <!-- Atelier du paquet de la semaine (3.30) : améliorer ou retirer des cartes avec les éclats -->
         <div class="voile-dj atelier-dj" v-if="atelier && sem.hero" @click.self="atelier = false">
           <div class="boite-dj">
@@ -728,30 +840,6 @@
         </div>
 
 
-        <template v-if="!role">
-          <section class="carte">
-            <div class="titre-carte">À plusieurs, chacun sur son téléphone</div>
-            <div class="pseudo-portail">Ton pseudo : <b>{{ pseudoInput || '(à choisir)' }}</b><button class="lien-profil" @click="ouvrirProfil">✏️ {{ pseudoInput ? 'Changer' : 'Choisir' }}</button></div>
-            <label class="champ">Nom du salon
-              <input type="text" v-model="channelInput" placeholder="ex : donjon-du-dimanche" autocomplete="off">
-            </label>
-            <div class="salons-connus" v-if="salonsConnus.length">
-              <span v-for="nom in salonsConnus" :key="nom" class="salon-puce" :class="{ actif: estSalonSaisi(nom) }">
-                <button class="nom" @click="channelInput = nom">{{ nom }}</button>
-                <button class="oter" @click="oublierSalon(nom)" aria-label="Retirer de la liste">✕</button>
-              </span>
-            </div>
-            <button class="btn principal" style="width:100%;margin-top:8px" @click="entrerSalon()" :disabled="entreeEnCours">{{ entreeEnCours ? 'Connexion au salon…' + (entreeEnCours > 1 ? ' essai ' + entreeEnCours + '/4' : '') : 'Entrer dans le salon' }}</button>
-            <div class="aide">Plus on est de compagnons, plus il y a de pouvoirs… et de passages à ouvrir ensemble.</div>
-          </section>
-          <section class="carte">
-            <div class="titre-carte">Seul</div>
-            <button class="btn principal" style="width:100%;margin-top:8px" @click="demarrerSolo">🗝️ {{ soloEnCours ? 'Reprendre mon exploration' : 'Explorer seul' }}</button>
-            <button v-if="soloEnCours" class="btn" style="width:100%;margin-top:8px" @click="demandeAbandon = true">🔄 Abandonner et recommencer à zéro</button>
-            <div class="aide" v-if="stats.parties">Donjons : {{ stats.gagnes }} vaincu{{ stats.gagnes > 1 ? 's' : '' }} sur {{ stats.parties }}<template v-if="stats.record">, record : étage {{ stats.record }}</template>.<template v-if="stats.parDiff && Object.keys(stats.parDiff).length"> Vaincus en <template v-for="(id, k) in D.ORDRE_DIFFICULTES.filter(x => stats.parDiff[x])">{{ k ? ', ' : '' }}{{ D.DIFFICULTES[id].nom }} : {{ stats.parDiff[id] }}</template>.</template></div>
-            <div class="aide" v-else>3 étages, un paquet de cartes qui se construit en chemin : il faut souvent plusieurs essais pour vaincre la Liche.</div>
-          </section>
-        </template>
         <a class="lien-exp" :href="retourAdr()">{{ vientDeVallee() ? '🏞️ Retour dans la Vallée' : '🏠 Retour à l\'accueil' }}</a>
         <p class="version">Désdale · Donjon des compagnons · version {{ version }}</p>
       </template>
@@ -1347,6 +1435,8 @@
         sem: lireSemaine(),   // ma semaine (3.29) : difficulté ouverte, clé, trophées, éclats et bonus
         VL: VL, besaceV: lireBesace(), fiolesV: lireStockage('donjon-fioles-vallee') || [],   // fioles de la Vallée (3.50)
         trSel: null, choixRel: [], atelier: false, carteAt: null,
+        fenPartie: null,      // fenêtre de l'onglet Partie (3.78) : 'semaine', 'hero', 'sac' ou 'salon'
+        infoClasse: false,    // texte du pouvoir et de la classe, sous le compagnon (3.78)
         grim: lireGrimoire(),   // Grimoire des Terres (3.71) : { c: cartes rares, choix }
         peril: Math.min(lireStockage('donjon-peril-choisi') || 0, lireSemaine().cle),
         vuCombat: null,
@@ -1384,7 +1474,7 @@
         moi: function() { return this.solo ? 'Moi' : (this.pseudoInput.trim() || 'Moi'); },
         monPouvoir: function() { return DJ.pouvoirDe(this.monCp); },
         connexionTexte: function() { return { ok: 'en ligne', connexion: 'connexion…', perdue: 'reconnexion…', aucune: 'hors ligne' }[this.connexion]; },
-        soloEnCours: function() { this.soloV; var s = lireStockage(CLE_SOLO); return !!(s && s.phase === 'jeu'); },
+        soloEnCours: function() { this.soloV; if (this.solo && this.partie && this.partie.phase === 'jeu') return true; var s = lireStockage(CLE_SOLO); return !!(s && s.phase === 'jeu'); },
         // Difficulté du salon (choisie par l'hôte) ; une partie lancée garde la sienne
         difficulteSalon: function() {
           var d = (this.partie && this.partie.difficulte) || (this.pub && this.pub.difficulte);
@@ -1662,6 +1752,7 @@
         }
       },
       watch: {
+        role: function(r) { if (r) this.fenPartie = null; },
         sonActif: function(v) { ecrireStockage('brillant-son', v); },
         inverse: function(v) { ecrireStockage('donjon-inverse', v); },
         vibrationActive: function(v) { ecrireStockage('brillant-vibration', v); if (v) vibrer(40); },
