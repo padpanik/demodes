@@ -691,7 +691,7 @@ les changer = en parler à l'utilisateur.
   devient une fiche (`.fiche-dj`) : portrait rond du compagnon (toucher = « Mon sac »), nom, classe, grande barre de PV et ☰ ; puis des puces
   (étage, or, petites clés + 🔑, poussières, paquet, petite carte hors plein écran) ; puis **tous les objets en tuiles qui passent à la ligne** (fioles en flacons bleus
   avec emplacements vides, reliques en tuiles dorées, roses pour les reliques de boss), jamais de défilement ; toucher une tuile l'explique (bulle `info` posée
-  sous la fiche). En combat, fiche resserrée (`.en-combat` : sans puces ni fioles, déjà en bas ; reliques en petit). **« 🎒 Tout voir »** ouvre **Mon sac** (`voirSac`) :
+  sous la fiche). En combat, fiche resserrée (`.en-combat` : sans puces ni fioles, déjà en bas ; reliques en petit). **Toucher le portrait** ouvre **Mon sac** (`voirSac` ; petit 🎒 `.sac-badge` dans le coin du portrait, hors du rond dans `.port-wrap` ; la tuile « 🎒 Tout voir » en bout de ligne, qui faisait doublon, est retirée en 3.92) :
   compagnon, classe et son texte, chiffres, fioles (Boire / Jeter), reliques sur deux colonnes avec leur effet, « Voir mon paquet ».
   **Annonces du moteur** (butin, clés, portes, feu, marchand… `annoncesVues`, 4,5 s, 2 au plus) : **dans le panneau à côté de la croix** (`.milieu-dj`, à la place du pouvoir le temps qu'elles durent), **jamais sur la pièce ni sur le plan** (3.21, demandé par l'utilisateur).
   **Main en éventail** : au-delà de 5 cartes, une seule rangée où les cartes se chevauchent (`styleMain`, `--ml`), au lieu d'une 2e rangée qui cassait l'écran.

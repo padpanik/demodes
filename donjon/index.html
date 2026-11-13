@@ -388,7 +388,9 @@
     .plan-svg { position: absolute; left: 6px; right: 6px; top: 28px; bottom: 6px; }
     .plan-svg svg { display: block; width: 100%; height: 100%; }
     .plan-objectif { position: absolute; left: 8px; right: 8px; bottom: 5px; text-align: center; font-size: 0.72em; color: #c9b8a6; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .sac-tuile { margin-left: auto; border-radius: 9px; background: #3f3026; border: 1.5px solid #8d6a3f; }
+    /* Toucher le portrait ouvre « Mon sac » (3.92 : la tuile 🎒 en bout de ligne faisait doublon) ; petit sac dans le coin pour le rappeler. */
+    .port-wrap { flex: none; position: relative; display: flex; }
+    .sac-badge { position: absolute; right: -4px; bottom: -3px; font-size: 11px; line-height: 1; padding: 2px; border-radius: 50%; background: #3f3026; border: 1px solid #8d6a3f; pointer-events: none; }
     .jeu-dj:not(.immersif) .pv-dj { min-width: 46px; }
     .jeu-dj:not(.immersif) .gauche { overflow: hidden; }
     .menu-dj { flex: none; position: relative; width: 38px; height: 38px; border-radius: 10px; border: 1px solid #8d6a3f; background: #1b130e; color: #ffd8a8; font-size: 20px; line-height: 1; cursor: pointer; }
@@ -456,7 +458,7 @@
     /* En combat, dans la fiche du haut : sous mon nom jusqu'à 2 amis, sur toute la largeur à partir de 3 */
     .fiche-l1.avec-allies { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; grid-template-areas: "p id m" "p al m"; column-gap: 7px; row-gap: 3px; align-items: center; }
     .fiche-l1.avec-allies.allies-large { grid-template-areas: "p id m" "al al al"; row-gap: 5px; }
-    .fiche-l1.avec-allies .portrait-dj { grid-area: p; } .fiche-l1.avec-allies .fiche-id { grid-area: id; } .fiche-l1.avec-allies .menu-dj { grid-area: m; } .fiche-l1.avec-allies .allies-dj { grid-area: al; }
+    .fiche-l1.avec-allies .port-wrap { grid-area: p; } .fiche-l1.avec-allies .fiche-id { grid-area: id; } .fiche-l1.avec-allies .menu-dj { grid-area: m; } .fiche-l1.avec-allies .allies-dj { grid-area: al; }
     .allies-dj.combat.n1 { grid-template-columns: minmax(0, 62%); justify-content: center; }
     .allie-dj { position: relative; display: flex; align-items: center; gap: 4px; min-width: 0; padding: 2px 4px 2px 2px; border-radius: 9px; border: 1.5px solid #5c4532; background: linear-gradient(#3f3026, #2e231b); color: #f1e6d6; font: inherit; text-align: left; cursor: pointer; }
     .allie-dj.loin { opacity: 0.55; }
@@ -1006,10 +1008,10 @@
           <!-- Fiche du compagnon : qui, PV, ressources, et tous les objets d'un coup (rien ne défile) -->
           <div class="tete-dj fiche-dj" :class="{ 'en-combat': !!combat }" v-if="monJ">
             <div class="fiche-l1" :class="{ 'avec-allies': alliesHaut, 'allies-large': alliesHaut && allies.length > 2 }">
-              <button class="portrait-dj" :class="{ ko: monJ.fantome }" @click="voirSac = true" aria-label="Mon sac">
+              <span class="port-wrap"><button class="portrait-dj" :class="{ ko: monJ.fantome }" @click="voirSac = true" aria-label="Mon sac">
                 <span v-if="monJ.cp" v-html="dessinSvg(monJ.cp)"></span><span v-else class="sans">🧭</span>
                 <i v-if="monJ.fantome">👻</i>
-              </button>
+              </button><b class="sac-badge" aria-hidden="true">🎒</b></span>
               <div class="fiche-id">
                 <div class="fiche-nom"><b>{{ monJ.cp && monJ.cp.n ? monJ.cp.n : 'Explorateur' }}</b><span>{{ D.CLASSES[monJ.classe].ico }} {{ D.CLASSES[monJ.classe].nom }}<i v-if="combat" class="diff-dj mini" :class="'d-' + difPartie">{{ D.DIFFICULTES[difPartie].ico }} {{ D.DIFFICULTES[difPartie].nom }}<template v-if="partie.peril"> +{{ partie.peril }}</template></i></span></div>
                 <span v-if="!alliesHaut" class="pv-dj"><i :style="{ width: pct(monJ.pv, monJ.pvMax) }"></i><b>{{ monJ.fantome ? '👻 KO' : '❤️ ' + monJ.pv + ' / ' + monJ.pvMax }}</b></span>
@@ -1044,7 +1046,6 @@
               <span class="sep-dj"></span>
               <button v-for="r in monJ.reliques" :key="'r' + r" class="objet-dj relique" :class="{ boss: D.RELIQUES[r].rar === 'boss' }" @click="info(D.RELIQUES[r].ico + ' ' + D.RELIQUES[r].nom + ' : ' + D.RELIQUES[r].texte + '.')">{{ D.RELIQUES[r].ico }}</button>
               <span v-if="!monJ.reliques.length" class="aucune-dj">pas encore de relique</span>
-              <button class="objet-dj sac-tuile" @click="voirSac = true" aria-label="Tout voir">🎒</button>
             </div>
             <div class="info-dj" v-if="infoTxt" @click="infoTxt = ''">{{ infoTxt }}
               <div v-if="infoFiole !== null && monJ && monJ.fioles[infoFiole]"><button v-if="D.FIOLES[monJ.fioles[infoFiole]].dehors && !combat" @click.stop="boireFiole">Boire</button><button @click.stop="jeterFiole">Jeter</button></div>
