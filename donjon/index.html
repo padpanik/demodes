@@ -1172,6 +1172,14 @@
               <button class="btn" :class="{ 'passer-conf': confirmePasser }" @click="passerButin">{{ confirmePasser ? '⚠️ Vraiment passer ? Touche encore pour confirmer' : 'Passer (garder un paquet léger)' }}</button>
             </template>
 
+            <template v-else-if="menu.type === 'rejoindre'">
+              <div class="grand">{{ menu.rang === 'boss' ? '👑' : menu.rang === 'elite' ? '⭐' : '⚔️' }}</div>
+              <div class="titre">Combat à côté !</div>
+              <div class="aide" v-if="renfort">{{ renfort.amis }} {{ renfort.amis.indexOf(' et ') >= 0 ? 'se battent' : 'se bat' }} contre {{ renfort.monstres }} dans la pièce voisine{{ renfort.cote ? ' (' + renfort.cote + ')' : '' }}.</div>
+              <button class="btn principal" @click="menuAction('oui')">⚔️ Le rejoindre tout de suite</button>
+              <button class="btn" @click="menuAction('non')">Rester ici</button>
+              <div class="aide" style="font-size:0.85em">Sinon, tu pourras toujours y entrer à pied : tu regarderas un tour avant de jouer.</div>
+            </template>
             <template v-else-if="menu.type === 'reliqueBoss'">
               <div class="grand">👑</div>
               <div class="titre">Le trésor du boss</div>
@@ -1607,6 +1615,19 @@
         monstresCombat: function() { var c = this.combat; return c ? this.partie.ennemis.filter(m => m.salle === c.salle) : []; },
         equipeCombat: function() { var c = this.combat; return c ? Object.values(this.partie.joueurs).filter(p => p.salle === c.salle && (c.joueurs.indexOf(p.nom) >= 0 || p.fantome)).sort((a, b) => a.ordre - b.ordre) : []; },
         menu: function() { return this.monJ && this.monJ.menus ? this.monJ.menus[0] || null : null; },
+        // Renfort (3.81) : qui se bat dans la pièce voisine, contre quoi, et de quel côté
+        renfort: function() {
+          var m = this.menu, p = this.partie;
+          if (!m || m.type !== 'rejoindre' || !p) return null;
+          var c = p.combats && p.combats[m.salle], S = this.salles && this.salles[m.depuis];
+          var nom = j => j.cp && j.cp.n ? j.cp.n : j.surnom || j.nom;
+          var amis = (c ? c.joueurs : []).map(n => p.joueurs[n]).filter(Boolean).map(nom);
+          var ms = p.ennemis.filter(x => x.salle === m.salle).map(x => (DJ.MONSTRES[x.type] || {}).nom).filter(Boolean);
+          ms = ms.filter((n, i) => ms.indexOf(n) === i);
+          var d = S && Object.keys(S.portes).find(k => S.portes[k] === m.salle);
+          var liste = l => l.length > 1 ? l.slice(0, -1).join(', ') + ' et ' + l[l.length - 1] : l[0] || '';
+          return { amis: liste(amis) || 'Un ami', monstres: liste(ms) || 'des monstres', cote: { h: 'au nord', b: 'au sud', g: 'à l\'ouest', d: 'à l\'est' }[d] || '' };
+        },
         occupeIci: function() { return !!(this.menuJeu || this.voirSac || this.voirPaquet || this.demandeQuitter || this.onglet !== 'play' || this.chatVisible); },
         menuCle: function() { var m = this.menu; return m ? m.type + (m.salle || '') + (m.mode || '') + (m.cartes || m.choix || []).join() + this.monJ.menus.length : ''; },
         boutique: function() { var m = this.menu; return m && m.type === 'marchand' ? (this.monJ.boutiques || {})[m.salle] || { cartes: [], fioles: [], relique: null } : null; },
@@ -1806,7 +1827,7 @@
           vus.cle = v; ecrireStockage('donjon-lieux-vus', vus);
           this.lieuAnnonce = { cle: v, t: Date.now() };
         } },
-        menuCle: function() { this.choixMenu = null; this.confirmePasser = false; this._menuT = Date.now(); },
+        menuCle: function() { this.choixMenu = null; this.confirmePasser = false; this._menuT = Date.now(); if (this.menu && this.menu.type === 'rejoindre') { this.son('choc'); this.vibre([60, 40, 60]); } },
         // Occupé sur mon téléphone (3.33) : l'hôte le note dans la partie pour que les amis voient la bulle 💭
         occupeIci: function(v) { if (!this.solo && this.role && this.partie && this.partie.phase === 'jeu') this.envoyerJeu({ type: 'OCC', v: v }); },
         fiolesPrises: function(v, a) {
@@ -2050,7 +2071,7 @@
         occupation: function(p) {
           var m = p.menus && p.menus[0];
           if (m) return { butin: { ico: '🎁', txt: 'choisit son butin' }, choix: { ico: '📚', txt: 'choisit une carte' }, reliqueBoss: { ico: '👑', txt: 'choisit une relique' },
-            feu: { ico: '🔥', txt: 'au feu de camp' }, marchand: { ico: '🛒', txt: 'chez le marchand' }, autel: { ico: '⛩️', txt: 'à l\'autel' }, paquet: { ico: '🃏', txt: 'trie son paquet' } }[m.type] || { ico: '💭', txt: 'fait un choix' };
+            feu: { ico: '🔥', txt: 'au feu de camp' }, marchand: { ico: '🛒', txt: 'chez le marchand' }, autel: { ico: '⛩️', txt: 'à l\'autel' }, paquet: { ico: '🃏', txt: 'trie son paquet' }, rejoindre: { ico: '⚔️', txt: 'hésite à venir en renfort' } }[m.type] || { ico: '💭', txt: 'fait un choix' };
           if (p.occ) return { ico: '💭', txt: 'regarde ailleurs' };
           return null;
         },

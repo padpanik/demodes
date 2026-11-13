@@ -127,7 +127,8 @@ function gererMenus(e, p, h) {
       // Paquet déjà épais (gardé de la semaine) : on ne prend qu'une carte nettement meilleure que la moyenne du paquet
       var moyP = p.paquet.reduce((t, id) => t + noteCarte(p, id), 0) / Math.max(1, p.paquet.length);
       r = best >= 10 && p.paquet.length < 34 && (p.paquet.length < 20 ? true : p.paquet.length < 26 ? best >= 18 || best >= moyP + 3 : best >= moyP + 6) ? DJ.choisir(e, p.nom, 'prendre', bi, h) : DJ.choisir(e, p.nom, 'passer', null, h);
-    } else if (m.type === 'reliqueBoss') r = DJ.choisir(e, p.nom, 'prendre', 0, h);
+    } else if (m.type === 'rejoindre') r = DJ.choisir(e, p.nom, 'oui', null, h);
+    else if (m.type === 'reliqueBoss') r = DJ.choisir(e, p.nom, 'prendre', 0, h);
     else if (m.type === 'feu') r = DJ.choisir(e, p.nom, p.pv < p.pvMax * 0.6 ? 'repos' : 'aiguiser', null, h);
     else if (m.type === 'marchand') {
       var b = p.boutiques[m.salle];

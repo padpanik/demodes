@@ -613,6 +613,10 @@ var DJ = (function () {
       if (action === 'passer') { if (m.type === 'choix' && m.ensuite) { remplacer(m.ensuite); return null; } fermer(); return null; }
       return 'Choix inconnu';
     }
+    if (m.type === 'rejoindre') {
+      fermer();
+      return action === 'oui' ? rejoindre(e, p, m, h) : null;
+    }
     if (m.type === 'reliqueBoss') {
       if (action === 'prendre' && m.choix[arg]) { donnerRelique(e, p, m.choix[arg], h); fermer(); return null; }
       return 'Choix inconnu';
@@ -939,9 +943,43 @@ var DJ = (function () {
     var noms = ms.map(nomMonstre);
     annonce(e, (rang === 'boss' ? '👑 ' : rang === 'elite' ? '⭐ ' : '⚔️ ') + 'Combat ! ' + noms.filter((n, i) => noms.indexOf(n) === i).join(', ') + ' !');
     nouveauTour(e, c, h);
+    if (e.combats[salle]) proposerRenfort(e, c);
+  }
+  // Renfort (3.81, demandé par l'utilisateur) : un ami dans une pièce voisine, par un passage ouvert, est invité à rejoindre
+  // le combat tout de suite (fenêtre « rejoindre », en tête de ses fenêtres). Sinon, comme avant : il entre à pied et regarde un tour.
+  function porteVers(e, depuis, vers) {
+    var S = e.salles[depuis], V = e.salles[vers];
+    var d = S && Object.keys(S.portes).find(k => S.portes[k] === vers);
+    if (!d || !V) return null;
+    var P = PORTE[d], Q = PORTE[OPP[d]];
+    return MARCHABLE[tuile(S, P[0], P[1])] && MARCHABLE[tuile(V, Q[0], Q[1])] ? d : null;
+  }
+  function proposerRenfort(e, c) {
+    Object.values(e.joueurs).forEach(q => {
+      if (q.fantome || q.salle === c.salle || e.combats[q.salle] || !porteVers(e, q.salle, c.salle)) return;
+      if (q.menus.some(m => m.type === 'rejoindre')) return;
+      q.menus.unshift({ type: 'rejoindre', salle: c.salle, combat: c.id, rang: c.rang, depuis: q.salle });
+    });
+  }
+  function rejoindre(e, q, m, h) {
+    var c = e.combats[m.salle], d = c && c.id === m.combat && q.salle === m.depuis && !q.fantome && !e.combats[q.salle] && porteVers(e, q.salle, m.salle);
+    if (!d) return 'Ce combat est déjà fini';
+    var P = PORTE[OPP[d]];
+    q.salle = m.salle; q.x = P[0]; q.y = P[1]; q.d = null; q.unPas = null;
+    decouvrir(e, q, m.salle);
+    annonce(e, '🛡️ ' + nomCp(q) + ' accourt en renfort !');
+    // Les monstres vont jouer : il entrera au tour suivant (nouveauTour l'ajoute), comme quelqu'un qui arrive à pied
+    if (c.pret) return null;
+    var avant = LIGNE; LIGNE = null;
+    entrerEnCombat(e, c, q, h);
+    ajusterPv(e, c);
+    debutTour(e, c, q, h);
+    LIGNE = avant;
+    return null;
   }
   function entrerEnCombat(e, c, p, h) {
     c.joueurs.push(p.nom); p.d = null; p.unPas = null;
+    p.menus = p.menus.filter(m => m.type !== 'rejoindre');
     p.pioche = melanger(p.paquet, h); p.main = []; p.glace = []; p.gardees = []; p.marque = null; p.garderTout = false; p.defausse = []; p.epuisees = []; p.armure = 0; p.etats = {}; p.joues = 0; p.tourCombat = 0;
     if (a(p, 'gant')) ajouterEtat(p, 'force', 1);
     if (a(p, 'collier')) ajouterEtat(p, 'epines', 3);
@@ -1481,6 +1519,7 @@ var DJ = (function () {
     if (!e.combats[c.salle]) return;
     h = h || Math.random;
     delete e.combats[c.salle];
+    Object.values(e.joueurs).forEach(q => { q.menus = q.menus.filter(m => m.type !== 'rejoindre' || m.combat !== c.id); });   // renfort devenu inutile
     var joueurs = c.joueurs.map(n => e.joueurs[n]).filter(p => p && p.salle === c.salle && !(e.combats[p.salle] && e.combats[p.salle] !== c));
     joueurs.forEach(p => { p.armure = 0; p.etats = {}; p.main = []; p.glace = []; p.gardees = []; p.marque = null; p.garderTout = false; p.pioche = []; p.defausse = []; p.epuisees = []; p.energie = 0; p.tourCombat = 0; p.invoc = []; p.murs = {}; });
     e.dernierCombat = { salle: c.salle, gagne: gagne, journal: c.journal.slice(-4), t: e.maintenant, id: c.id };
