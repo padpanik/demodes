@@ -1020,7 +1020,7 @@
 
         </section>
 
-        <div v-else class="jeu-dj" :class="{ immersif: immersif }" @contextmenu.prevent @pointerdown="reprendrePleinEcran">
+        <div v-else class="jeu-dj" :class="{ immersif: immersif }" @contextmenu.prevent>
           <!-- Fiche du compagnon : qui, PV, ressources, et tous les objets d'un coup (rien ne défile) -->
           <div class="tete-dj fiche-dj" :class="{ 'en-combat': !!combat }" v-if="monJ">
             <div class="fiche-l1" :class="{ 'avec-allies': alliesHaut, 'allies-large': alliesHaut && allies.length > 2 }">
@@ -2034,8 +2034,10 @@
         document.addEventListener('fullscreenchange', () => setTimeout(barresRevenues, 400));
         document.addEventListener('visibilitychange', () => setTimeout(barresRevenues, 400));
         window.addEventListener('resize', () => setTimeout(barresRevenues, 400));
-        // N'importe quel toucher dans le donjon (fenêtres et menu compris) redemande le plein écran s'il le faut
-        document.addEventListener('pointerdown', () => this.reprendrePleinEcran(), true);
+        // N'importe quel toucher dans le donjon (fenêtres et menu compris) redemande le plein écran s'il le faut.
+        // 3.86 : à la FIN du toucher (pointerup, touchend, click) : sur un écran tactile, le début du toucher (pointerdown)
+        // ne compte pas comme un geste de l'utilisateur, et le navigateur refusait le plein écran sans rien dire.
+        ['pointerup', 'touchend', 'click'].forEach(t => document.addEventListener(t, () => this.reprendrePleinEcran(), true));
         window.addEventListener('online', () => this.auRetourPremierPlan());
         window.addEventListener('pageshow', () => this.auRetourPremierPlan());
         // Doigt appuyé pendant le jeu (fenêtres comprises) : pas de menu ni de recherche Google
@@ -2275,7 +2277,7 @@
         pleinEcranNavigateur: function() {
           var d = document.documentElement, f = d.requestFullscreen || d.webkitRequestFullscreen;
           if (!f || !this.barresCachees || document.fullscreenElement || document.webkitFullscreenElement) return;
-          try { var p = f.call(d, { navigationUI: 'hide' }); if (p && p.catch) p.catch(() => {}); } catch (e) {}
+          try { var p = f.call(d, { navigationUI: 'hide' }); if (p && p.catch) p.catch(() => { this._fsDemande = false; }); } catch (e) { this._fsDemande = false; }   // refusé : on réessaiera au toucher suivant
         },
         sortirPleinEcranNavigateur: function() {
           var f = document.exitFullscreen || document.webkitExitFullscreen;
