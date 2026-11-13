@@ -162,8 +162,9 @@
     .dernier-combat .lj { display: block; } .dernier-combat .lj-a { color: inherit; } .dernier-combat .lj-a.mo { color: #ffc0c0; }
     .moi-c { position: relative; display: flex; align-items: center; gap: 8px; background: #3a2e26; border-radius: 12px; padding: 4px 6px; margin-bottom: 5px; border: 2px solid transparent; }
     .moi-c.ciblable { border-color: #8ce99a; cursor: pointer; }
-    .nrj { flex: none; width: 40px; height: 40px; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #ffe066, #f08c00); color: #2a211b; font-weight: 900; font-size: 1.3em; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 10px rgba(255,212,59,0.5); }
-    .nrj small { font-size: 0.55em; margin-left: 1px; }
+    .nrj { flex: none; position: relative; width: 40px; height: 40px; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #ffe066, #f08c00); color: #2a211b; font-weight: 900; font-size: 1.3em; line-height: 1; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 10px rgba(255,212,59,0.5); font-variant-numeric: tabular-nums; }
+    /* Le chiffre seul au centre du rond ; l'éclair en petite pastille dans le coin (avant, chiffre + éclair formaient un bloc décentré). */
+    .nrj small { position: absolute; right: -4px; bottom: -3px; font-size: 0.5em; line-height: 1; padding: 2px; border-radius: 50%; background: #2a211b; }
     .nrj.vide { background: #5c4a3d; color: #b9a99a; box-shadow: none; }
     .moi-c .corps { flex: 1; min-width: 0; }
     .moi-c .pv-dj { height: 16px; }
