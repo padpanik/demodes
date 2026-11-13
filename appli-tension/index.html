@@ -123,10 +123,10 @@
     .fenetre .boutons button { flex: 1; }
     .annuler { background: #e8eef3; color: #1d2b36; }
     .confirmer { background: #c0392b; color: #fff; }
-    /* Décompte avant la mesure suivante */
-    body.avec-decompte { padding-bottom: calc(110px + env(safe-area-inset-bottom)); }
+    /* Décompte avant la mesure suivante (en haut de l'écran) */
+    body.avec-decompte { padding-top: calc(96px + env(safe-area-inset-top)); }
     .decompte {
-      position: fixed; left: 10px; right: 10px; bottom: calc(10px + env(safe-area-inset-bottom));
+      position: fixed; left: 10px; right: 10px; top: calc(10px + env(safe-area-inset-top));
       max-width: 540px; margin: 0 auto; background: #1d2b36; color: #fff; border-radius: 14px;
       padding: 12px 14px; display: none; align-items: center; gap: 12px; z-index: 5;
       box-shadow: 0 4px 16px rgba(0,0,0,.25);
@@ -145,6 +145,27 @@
     .decompte.fini button { background: #fff; color: #2e8b57; }
     @keyframes appel { from { transform: scale(1); } to { transform: scale(1.02); } }
     @media (prefers-reduced-motion: reduce) { .decompte.fini { animation: none; } }
+    /* Feuilles de 3 jours */
+    .feuilles { display: flex; gap: 8px; overflow-x: auto; padding: 2px 2px 10px; margin: 0 -2px 4px; scrollbar-width: none; }
+    .feuilles::-webkit-scrollbar { display: none; }
+    .feuilles button {
+      flex: none; border: 1.5px solid #b8cfe0; background: #fff; color: #1f5f8b; border-radius: 12px;
+      padding: 7px 12px; font-size: 14px; font-weight: 600; cursor: pointer; text-align: left; line-height: 1.2;
+    }
+    .feuilles button small { display: block; font-weight: 400; font-size: 11.5px; color: #5b6b78; }
+    .feuilles button.choisie { background: #1f5f8b; color: #fff; border-color: #1f5f8b; }
+    .feuilles button.choisie small { color: #d6e6f2; }
+    .feuilles button.plus { color: #2e8b57; border-style: dashed; border-color: #8fc3a5; }
+    .comm {
+      background: #fff; border-radius: 14px; padding: 12px 14px; margin-bottom: 14px;
+      box-shadow: 0 1px 4px rgba(0,0,0,.08);
+    }
+    .comm label { display: block; font-size: 14px; font-weight: 600; color: #1f5f8b; margin-bottom: 6px; }
+    .comm textarea {
+      width: 100%; min-height: 64px; resize: vertical; font: inherit; font-size: 15px; color: inherit;
+      border: 1.5px solid #c7d4df; border-radius: 10px; padding: 8px 10px; background: #fbfdfe;
+    }
+    .comm textarea:focus { outline: none; border-color: #1f5f8b; background: #fff; }
     .toast {
       position: fixed; left: 50%; bottom: calc(20px + env(safe-area-inset-bottom)); transform: translateX(-50%);
       background: #1d2b36; color: #fff; padding: 10px 16px; border-radius: 10px; font-size: 14px;
@@ -166,7 +187,12 @@
       <button id="installerBtn">Installer</button>
       <button class="fermer" id="installerFermer" aria-label="Masquer">✕</button>
     </section>
+    <nav class="feuilles" id="feuilles" aria-label="Feuilles de 3 jours"></nav>
     <section class="resume" id="resume"></section>
+    <section class="comm">
+      <label for="comm">📝 Commentaire de cette feuille</label>
+      <textarea id="comm" maxlength="1000" placeholder="Traitement, contexte, ressenti… (envoyé avec le relevé)"></textarea>
+    </section>
     <div id="jours"></div>
     <div class="actions">
       <button class="gros copier" id="copier">Envoyer le relevé (pour le médecin)</button>
@@ -177,14 +203,14 @@
       </div>
       <input type="file" id="fichier" accept=".json,application/json" hidden>
       <button class="gros secondaire" id="installerBas" hidden>📲 Installer l'appli</button>
-      <button class="gros zero" id="zero">Tout remettre à zéro</button>
+      <button class="gros zero" id="zero">🗑 Supprimer cette feuille</button>
     </div>
   </main>
 
   <div class="voile" id="voile">
     <div class="fenetre">
-      <h2>Tout remettre à zéro ?</h2>
-      <p>Les <b id="nbEfface">0</b> relevés enregistrés seront effacés de ce téléphone. Impossible de revenir en arrière.</p>
+      <h2 id="titreEfface">Supprimer cette feuille ?</h2>
+      <p id="texteEfface"></p>
       <div class="boutons">
         <button class="gros annuler" id="non">Annuler</button>
         <button class="gros confirmer" id="oui">Effacer</button>
@@ -231,18 +257,89 @@
     const SEANCES = [['matin', 'Matin'], ['soir', 'Soir']];
     const CHAMPS = ['sys', 'dia', 'pouls'];
 
+    // Classeur : plusieurs feuilles de 3 jours { id, cree, comm, m }, la feuille affichée dans `cur`.
+    // `donnees` = la feuille affichée (même objet que dans le classeur).
+    function nouvelleFeuille() {
+      return { id: 'f' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5), cree: Date.now(), comm: '', m: {} };
+    }
     function lire() {
       try {
         const d = JSON.parse(localStorage.getItem(CLE));
-        if (d && d.v === 1) return d;
+        if (d && d.v === 2 && Array.isArray(d.f) && d.f.length) return d;
+        if (d && d.v === 1 && d.m) { // ancienne version : une seule feuille
+          const f = nouvelleFeuille();
+          f.m = d.m;
+          Object.keys(d.m).forEach(k => { if (d.m[k].t && d.m[k].t < f.cree) f.cree = d.m[k].t; });
+          return { v: 2, cur: f.id, f: [f] };
+        }
       } catch (e) {}
-      return { v: 1, m: {} };
+      const f = nouvelleFeuille();
+      return { v: 2, cur: f.id, f: [f] };
     }
-    let donnees = lire();
+    let classeur = lire();
+    function feuilleId(id) { return classeur.f.find(f => f.id === id); }
+    let donnees = feuilleId(classeur.cur) || classeur.f[classeur.f.length - 1];
+    classeur.cur = donnees.id;
 
     function ecrire() {
-      try { localStorage.setItem(CLE, JSON.stringify(donnees)); } catch (e) {}
+      try { localStorage.setItem(CLE, JSON.stringify(classeur)); } catch (e) {}
     }
+
+    // Date de début d'une feuille : première mesure, sinon sa création
+    function debutFeuille(f) {
+      let t = null;
+      Object.keys(f.m).forEach(k => { if (f.m[k].t && (!t || f.m[k].t < t)) t = f.m[k].t; });
+      return t || f.cree;
+    }
+    function dateCourte(t) {
+      return new Date(t).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
+    }
+    function nbReleves(f) {
+      return Object.keys(f.m).filter(k => verifier(f.m[k]).ok).length;
+    }
+
+    function majFeuilles() {
+      const nav = document.getElementById('feuilles');
+      let h = '';
+      classeur.f.forEach((f, i) => {
+        h += '<button data-f="' + f.id + '"' + (f.id === donnees.id ? ' class="choisie" aria-current="true"' : '') + '>Feuille ' + (i + 1) +
+          '<small>' + dateCourte(debutFeuille(f)) + ' · ' + nbReleves(f) + '/18</small></button>';
+      });
+      h += '<button class="plus" id="ajouterFeuille">+ Nouvelle<small>feuille de 3 jours</small></button>';
+      nav.innerHTML = h;
+      const choisie = nav.querySelector('.choisie');
+      if (choisie) choisie.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+    }
+
+    document.getElementById('feuilles').addEventListener('click', e => {
+      const b = e.target.closest('button');
+      if (!b) return;
+      if (b.id === 'ajouterFeuille') {
+        if (!Object.keys(donnees.m).length && !donnees.comm) { toast('Cette feuille est encore vide'); return; }
+        const f = nouvelleFeuille();
+        classeur.f.push(f);
+        changerFeuille(f.id);
+        toast('Nouvelle feuille de 3 jours');
+        return;
+      }
+      if (b.dataset.f && b.dataset.f !== donnees.id) changerFeuille(b.dataset.f);
+    });
+
+    function changerFeuille(id) {
+      const f = feuilleId(id);
+      if (!f) return;
+      donnees = f;
+      classeur.cur = id;
+      ecrire();
+      construire();
+    }
+
+    // Commentaire de la feuille, enregistré en tapant
+    const champComm = document.getElementById('comm');
+    champComm.addEventListener('input', () => {
+      donnees.comm = champComm.value.slice(0, 1000);
+      ecrire();
+    });
 
     function cle(j, s, n) {
       return j + '-' + s + '-' + n;
@@ -342,7 +439,9 @@
         });
       });
       Object.keys(donnees.m).forEach(majLigne);
+      champComm.value = donnees.comm || '';
       majResume();
+      majFeuilles();
     }
 
     function suivant(inp) {
@@ -368,7 +467,7 @@
       majResume();
       preparerSon();
       // Saisie de la mesure attendue : le décompte s'arrête ; mesure qui vient d'être complète : il démarre
-      if (decompte && decompte.k === k) arreterDecompte();
+      if (decompte && decompte.k === k && decompte.f === donnees.id) arreterDecompte();
       if (!etaitOk && verifier(donnees.m[k]).ok) lancerDecompte(k);
       // Passage automatique au champ suivant quand la valeur est complète
       const lg = inp.value.length;
@@ -398,9 +497,11 @@
       const soir = moyenne(valides((j, s) => s === 'soir'));
       const total = JOURS * SEANCES.length * MESURES;
       const n = tout ? tout.n : 0;
+      const ongletCourant = document.querySelector('#feuilles .choisie small');
+      if (ongletCourant) ongletCourant.textContent = dateCourte(debutFeuille(donnees)) + ' · ' + n + '/18';
 
       document.getElementById('resume').innerHTML =
-        '<h2>Moyenne de tous les relevés</h2>' +
+        '<h2>Moyenne de la feuille ' + (classeur.f.indexOf(donnees) + 1) + '</h2>' +
         '<div class="moy"><span class="val">' + texteMoy(tout) + '</span><span class="unite">mmHg</span>' +
         (tout && tout.pouls ? '<span class="pouls">pouls ' + tout.pouls + '</span>' : '') + '</div>' +
         '<div class="compte">' + n + ' relevé' + (n > 1 ? 's' : '') + ' sur ' + total +
@@ -420,7 +521,9 @@
 
     // ---- Copier le relevé ----
     function texteReleve() {
-      const lignes = ['Relevé de tension (automesure)'];
+      const lignes = ['Relevé de tension (automesure), série du ' +
+        new Date(debutFeuille(donnees)).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })];
+      if (donnees.comm && donnees.comm.trim()) lignes.push('Commentaire : ' + donnees.comm.trim());
       for (let j = 1; j <= JOURS; j++) {
         lignes.push('', 'Jour ' + j + (dateJour(j) ? ' (' + dateJour(j) + ')' : ''));
         SEANCES.forEach(([s, nom]) => {
@@ -463,20 +566,33 @@
     const voile = document.getElementById('voile');
     document.getElementById('zero').addEventListener('click', () => {
       const n = Object.keys(donnees.m).length;
-      if (!n) { toast('Aucun relevé à effacer'); return; }
-      document.getElementById('nbEfface').textContent = n;
+      const seule = classeur.f.length === 1;
+      if (seule && !n && !donnees.comm) { toast('Cette feuille est déjà vide'); return; }
+      const num = classeur.f.indexOf(donnees) + 1;
+      document.getElementById('titreEfface').textContent = seule ? 'Vider cette feuille ?' : 'Supprimer la feuille ' + num + ' ?';
+      document.getElementById('texteEfface').innerHTML = (n ? '<b>' + n + '</b> relevé' + (n > 1 ? 's' : '') : 'Aucun relevé') +
+        (donnees.comm ? ' et le commentaire' : '') + ' de cette feuille ' + (n > 1 ? 'seront effacés' : 'sera effacé') +
+        ' de ce téléphone. Impossible de revenir en arrière.' + (seule ? '' : '<br>Les autres feuilles ne changent pas.');
       voile.classList.add('ouvert');
     });
     document.getElementById('non').addEventListener('click', () => voile.classList.remove('ouvert'));
     voile.addEventListener('click', e => { if (e.target === voile) voile.classList.remove('ouvert'); });
     document.getElementById('oui').addEventListener('click', () => {
-      donnees = { v: 1, m: {} };
+      const i = classeur.f.indexOf(donnees);
+      if (decompte && decompte.f === donnees.id) arreterDecompte();
+      if (classeur.f.length === 1) {
+        classeur.f = [nouvelleFeuille()];
+        donnees = classeur.f[0];
+      } else {
+        classeur.f.splice(i, 1);
+        donnees = classeur.f[Math.min(i, classeur.f.length - 1)];
+      }
+      classeur.cur = donnees.id;
       ecrire();
-      arreterDecompte();
       voile.classList.remove('ouvert');
       construire();
       window.scrollTo(0, 0);
-      toast('Relevés effacés');
+      toast('Feuille supprimée');
     });
 
     // ---- Sauvegarde dans un fichier (changement de téléphone) ----
@@ -486,10 +602,10 @@
     }
 
     document.getElementById('exporter').addEventListener('click', async () => {
-      const n = Object.keys(donnees.m).length;
-      if (!n) { toast('Aucun relevé à sauvegarder'); return; }
+      const n = classeur.f.reduce((s, f) => s + Object.keys(f.m).length, 0);
+      if (!n && !classeur.f.some(f => f.comm)) { toast('Aucun relevé à sauvegarder'); return; }
       const nom = 'tension-releves-' + aujourdhui() + '.json';
-      const contenu = JSON.stringify({ appli: 'releve-tension', date: Date.now(), donnees: donnees }, null, 1);
+      const contenu = JSON.stringify({ appli: 'releve-tension', date: Date.now(), donnees: classeur }, null, 1);
       const fichier = new File([contenu], nom, { type: 'application/json' });
       // Sur téléphone : menu de partage (mail, messagerie, Drive…) ; sinon téléchargement
       if (navigator.canShare && navigator.canShare({ files: [fichier] })) {
@@ -512,21 +628,33 @@
     function lireSauvegarde(texte) {
       const j = JSON.parse(texte);
       const d = j && j.donnees;
-      if (!j || j.appli !== 'releve-tension' || !d || d.v !== 1 || typeof d.m !== 'object') return null;
-      const m = {};
-      Object.keys(d.m).forEach(k => {
-        const r = /^([1-3])-(matin|soir)-([1-3])$/.exec(k);
-        const v = d.m[k];
-        if (!r || !v || typeof v !== 'object') return;
-        const propre = {};
-        CHAMPS.forEach(c => {
-          const x = parseInt(v[c], 10);
-          if (x > 0 && x < 400) propre[c] = x;
+      if (!j || j.appli !== 'releve-tension' || !d) return null;
+      let brutes;
+      if (d.v === 1 && typeof d.m === 'object') brutes = [{ m: d.m }];
+      else if (d.v === 2 && Array.isArray(d.f)) brutes = d.f;
+      else return null;
+      const feuilles = [];
+      brutes.slice(0, 200).forEach(b => {
+        if (!b || typeof b.m !== 'object' || !b.m) return;
+        const f = nouvelleFeuille();
+        if (typeof b.cree === 'number') f.cree = b.cree;
+        if (typeof b.comm === 'string') f.comm = b.comm.slice(0, 1000);
+        Object.keys(b.m).forEach(k => {
+          const r = /^([1-3])-(matin|soir)-([1-3])$/.exec(k);
+          const v = b.m[k];
+          if (!r || !v || typeof v !== 'object') return;
+          const propre = {};
+          CHAMPS.forEach(c => {
+            const x = parseInt(v[c], 10);
+            if (x > 0 && x < 400) propre[c] = x;
+          });
+          if (typeof v.t === 'number') propre.t = v.t;
+          if (propre.sys || propre.dia || propre.pouls) f.m[k] = propre;
         });
-        if (typeof v.t === 'number') propre.t = v.t;
-        if (propre.sys || propre.dia || propre.pouls) m[k] = propre;
+        feuilles.push(f);
       });
-      return { v: 1, m: m, date: j.date };
+      if (!feuilles.length) return null;
+      return { feuilles: feuilles, date: j.date };
     }
 
     let aImporter = null;
@@ -537,11 +665,14 @@
       try { d = lireSauvegarde(texte); } catch (err) {}
       if (!d) { toast(origine === 'lien' ? 'Lien de déménagement illisible' : "Ce fichier n'est pas une sauvegarde du relevé"); return; }
       aImporter = d;
-      const n = Object.keys(d.m).length;
+      const nf = d.feuilles.length;
+      const n = d.feuilles.reduce((s, f) => s + Object.keys(f.m).length, 0);
       const quand = d.date ? ' du ' + new Date(d.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }) : '';
-      const ici = Object.keys(donnees.m).length;
-      document.getElementById('texteImport').innerHTML = 'Sauvegarde' + quand + ' : <b>' + n + '</b> relevé' + (n > 1 ? 's' : '') + '.' +
-        (ici ? '<br>Elle remplacera les <b>' + ici + '</b> relevé' + (ici > 1 ? 's' : '') + ' de ce téléphone.' : '');
+      const ici = classeur.f.reduce((s, f) => s + Object.keys(f.m).length, 0);
+      const nfi = classeur.f.length;
+      document.getElementById('texteImport').innerHTML = 'Sauvegarde' + quand + ' : <b>' + nf + '</b> feuille' + (nf > 1 ? 's' : '') +
+        ', <b>' + n + '</b> relevé' + (n > 1 ? 's' : '') + '.' +
+        (ici ? '<br>Elle remplacera les <b>' + nfi + '</b> feuille' + (nfi > 1 ? 's' : '') + ' de ce téléphone (' + ici + ' relevé' + (ici > 1 ? 's' : '') + ').' : '');
       voileImport.classList.add('ouvert');
     }
     document.getElementById('fichier').addEventListener('change', e => {
@@ -564,7 +695,9 @@
     voileImport.addEventListener('click', e => { if (e.target === voileImport) { aImporter = null; voileImport.classList.remove('ouvert'); } });
     document.getElementById('ouiImport').addEventListener('click', () => {
       if (!aImporter) return;
-      donnees = { v: 1, m: aImporter.m };
+      classeur = { v: 2, f: aImporter.feuilles };
+      donnees = classeur.f[classeur.f.length - 1];
+      classeur.cur = donnees.id;
       aImporter = null;
       ecrire();
       arreterDecompte();
@@ -641,7 +774,7 @@
       if (+n >= MESURES) return; // dernière mesure de la séance : rien à attendre
       const suivante = cle(j, s, +n + 1);
       if (donnees.m[suivante]) return; // déjà remplie (correction d'une ancienne mesure)
-      decompte = { fin: Date.now() + DELAI, k: suivante };
+      decompte = { fin: Date.now() + DELAI, k: suivante, f: donnees.id };
       ecrireDecompte();
       garderEcran();
       majDecompte();
@@ -656,13 +789,15 @@
 
     function nomMesure(k) {
       const [j, s, n] = k.split('-');
-      return 'Jour ' + j + ' · ' + s + ' · n° ' + n;
+      const i = decompte && decompte.f ? classeur.f.findIndex(f => f.id === decompte.f) : -1;
+      return (classeur.f.length > 1 && i >= 0 ? 'Feuille ' + (i + 1) + ' · ' : '') + 'Jour ' + j + ' · ' + s + ' · n° ' + n;
     }
 
     function majDecompte() {
       const bloc = document.getElementById('decompte');
       clearInterval(minuterie); minuterie = null;
-      if (!decompte || donnees.m[decompte.k]) {
+      const fd = decompte && (feuilleId(decompte.f) || (!decompte.f && donnees));
+      if (!decompte || !fd || fd.m[decompte.k]) {
         if (decompte) { decompte = null; ecrireDecompte(); lacherEcran(); }
         bloc.classList.remove('vu', 'fini');
         document.body.classList.remove('avec-decompte');
@@ -700,8 +835,10 @@
       if (!decompte) return;
       const k = decompte.k;
       const fini = decompte.fin <= Date.now();
+      const fid = decompte.f;
       arreterDecompte();
       if (fini) {
+        if (fid && fid !== donnees.id && feuilleId(fid)) changerFeuille(fid);
         const champ = document.querySelector('input[data-k="' + k + '"][data-c="sys"]');
         if (champ) {
           champ.scrollIntoView({ block: 'center', behavior: 'smooth' });
