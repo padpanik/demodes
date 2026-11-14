@@ -333,6 +333,7 @@
               </template>
               <button v-else-if="peut('voir')" class="btn principal" style="width:100%" @click="jouer({ type: 'voir' })">Voir la réponse</button>
               <div v-else class="reponse-cachee">{{ monRole === 'joue' ? '🗣️ Une seule réponse, à voix haute : les ' + lecteur.nom + ' jugent.' : '🤫 Réponse cachée : ' + lecteur.nom + ' jugent.' }}</div>
+              <button v-if="peut('autreQ')" class="lien-discret" @click="jouer({ type: 'autreQ' })">Question mal posée ? En tirer une autre</button>
             </template>
 
             <template v-else-if="e.phase === 'challenge'">

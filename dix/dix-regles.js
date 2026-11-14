@@ -228,7 +228,7 @@ var DX = (function () {
   }
   function question(e) { var s = e.carte && sujet(e.carte.sujet); return s && e.carte.niveau ? s.q[(e.carte.niveauQ || e.carte.niveau) - 1] : null; }
   // Qui peut faire quoi : 'lecteur' (tirer, autre sujet, chrono, voir la réponse, juger), 'joue' (miser, choisir la cible), 'tous'
-  var QUI = { commencer: 'tous', tirer: 'lecteur', autre: 'les2', chrono: 'lecteur', voir: 'lecteur', juger: 'lecteur', challenge: 'lecteur', annuler: 'juge',
+  var QUI = { commencer: 'tous', tirer: 'lecteur', autre: 'les2', autreQ: 'lecteur', chrono: 'lecteur', voir: 'lecteur', juger: 'lecteur', challenge: 'lecteur', annuler: 'juge',
               miser: 'joue', surprise: 'les2', nouvelle: 'tous' };
 
   function deplacer(e, i, n) { var q = e.equipes[i]; q.pos = Math.max(0, Math.min(e.cases.length - 1, q.pos + n)); }
@@ -279,6 +279,16 @@ var DX = (function () {
       case 'autre': {
         if (e.phase !== 'mise') return 'Pas maintenant.';
         var s3 = tirerSujet(c.theme, (ctx.vus || []).concat([c.sujet]), h); ctx.tire = s3.id; c.sujet = s3.id;
+        break;
+      }
+      // Une autre question, même niveau (sujet déjà joué, question douteuse…), tant qu'elle n'est pas jugée
+      case 'autreQ': {
+        if (e.phase !== 'question' && e.phase !== 'reponse') return 'Pas maintenant.';
+        var s4 = tirerSujet(c.finale ? null : c.theme, (ctx.vus || []).concat([c.sujet]), h); ctx.tire = s4.id;
+        c.sujet = s4.id; if (c.finale) c.theme = s4.theme;
+        delete c.niveauQ; if (c.niveau === 3 && !c.finale && h() < PART_NIVEAU3_DUR) c.niveauQ = 4;
+        e.phase = 'question'; e.chrono = null;
+        e.journal = e.equipes[lecteur(e)].nom + ' tirent une autre question (niveau ' + c.niveau + ').';
         break;
       }
       case 'miser':
