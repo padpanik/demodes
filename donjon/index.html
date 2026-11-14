@@ -731,6 +731,9 @@
     .fen-dep .cartes-gr .carte-c.choisie { transform: translateY(-4px); box-shadow: 0 0 0 3px #7048e8, 0 4px 12px rgba(112,72,232,0.5); }
     .fen-dep .aucune-gr { width: calc(33.3% - 4px); min-height: 150px; border: 2px dashed rgba(255,214,140,0.4); border-radius: 10px; background: rgba(255,255,255,0.05); font: inherit; font-weight: 800; color: #c2b39a; font-size: 0.8em; }
     .fen-dep .aucune-gr.choisie { border-color: #9775fa; color: #d0bfff; }
+    .vides-gr { display: flex; align-items: center; gap: 4px; margin-top: 8px; }
+    .vides-gr span { width: 22px; height: 30px; border: 1.5px dashed rgba(255,214,140,0.4); border-radius: 5px; display: flex; align-items: center; justify-content: center; font-family: Georgia, serif; font-size: 0.85em; color: rgba(255,214,140,0.5); }
+    .vides-gr em { margin-left: 4px; font-size: 0.78em; color: #c2b39a; }
     .fen-dep .champ input { width: 100%; }
     .fen-dep .pseudo-portail { margin: 8px 0; }
     /* Boss en deux phases (3.79) */
@@ -855,7 +858,7 @@
               <button @click="fenPartie = 'hero'">
                 <span class="t">🧙 Mon héros</span>
                 <span class="s">{{ sem.hero ? '🃏 ' + sem.hero.paquet.length + ' · ' + sem.hero.reliques.map(r => D.RELIQUES[r] ? D.RELIQUES[r].ico : '').join('') : 'Héros neuf' }}</span>
-                <span class="s2">💠 {{ sem.eclats }} éclat{{ sem.eclats > 1 ? 's' : '' }}<template v-if="sem.hero && sem.hero.classe !== maClasse"> · ⚠️ autre classe</template></span>
+                <span class="s2">💠 {{ sem.eclats }} éclat{{ sem.eclats > 1 ? 's' : '' }} · 📖 {{ grim.c.length }}/{{ D.LEGENDAIRES.length }}<template v-if="sem.hero && sem.hero.classe !== maClasse"> · ⚠️ autre classe</template></span>
               </button>
             </div>
         </section>
@@ -897,6 +900,16 @@
               <button class="lien-profil" style="margin-top:6px" @click="nouveauHero">🔄 Repartir d'un héros neuf</button>
             </div>
             <div class="aide" v-else>Ton héros grandit toute la semaine : à la fin de chaque donjon, gagné ou perdu, il garde son paquet, jusqu'à {{ D.SEMAINE.reliquesMax }} reliques (dont une de boss) et les PV max gagnés (+{{ D.SEMAINE.pvMax }} au plus). Sans un paquet construit en Normal, Héroïque est presque impossible.</div>
+            <!-- Grimoire des Terres (3.94, demandé par l'utilisateur : pouvoir le consulter ailleurs qu'à l'entrée du donjon) -->
+            <div class="sous-sem">📖 Grimoire des Terres · {{ grim.c.length }} / {{ D.LEGENDAIRES.length }}</div>
+            <template v-if="grim.c.length">
+              <div class="cartes-gr">
+                <carte-dj v-for="id in grim.c" :key="'gh' + id" :id="id" :class="{ choisie: grimChoix === id }" @click.native="choisirGrimoire(grimChoix === id ? null : id)"></carte-dj>
+              </div>
+              <div class="vides-gr" v-if="D.LEGENDAIRES.length > grim.c.length"><span v-for="i in D.LEGENDAIRES.length - grim.c.length" :key="'gv' + i">?</span><em>encore à découvrir</em></div>
+              <div class="aide">{{ grimChoix ? 'Encadrée : la carte que tu glisseras dans ton paquet au prochain départ (touche-la pour l\'enlever).' : 'Touche une carte pour la glisser dans ton paquet au prochain départ.' }}</div>
+            </template>
+            <div class="aide" v-else>Encore vide. Les cartes rares se gagnent dans les Terres de la Vallée : contre le gardien du sanctuaire (un boss différent chaque semaine) ou en refermant une faille profonde. Elles restent pour toujours.</div>
             <div class="sous-sem">💠 Éclats : {{ sem.eclats }}</div>
             <div class="bonus-sem" v-for="(B, k) in D.SEMAINE.bonus" :key="k">
               <span class="ico">{{ B.ico }}</span>

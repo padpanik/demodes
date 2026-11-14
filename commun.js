@@ -3,12 +3,13 @@
 // Les clés de stockage gardent l'ancien préfixe "brillant-" : les réglages déjà faits sont conservés.
 
 // Numéro de version affiché (à augmenter à chaque mise en ligne, avec brilliant/index.html et sw.js)
-const VERSION = '3.93';
+const VERSION = '3.94';
 
 // ---------- Nouveautés (2.87, demandé par l'utilisateur) ----------
 // Une ligne très brève par mise en ligne (la plus récente en haut) : l'accueil les montre une seule fois, dans une petite fenêtre,
 // à qui n'a pas encore vu cette version. [version, jeu ou partie de l'appli, ce qui change]
 const NOUVEAUTES = [
+  ['3.94', 'Donjon', 'Le Grimoire des Terres se consulte dans « Mon héros ».'],
   ['3.93', 'Donjon', 'Texte des cartes plus grand dans le choix du butin et le Grimoire.'],
   ['3.92', 'Donjon', 'Ton sac s’ouvre en touchant ton portrait (le bouton sac en double est retiré).'],
   ['3.91', 'Donjon', 'En combat, le chiffre de ton énergie est bien centré dans son rond.'],
