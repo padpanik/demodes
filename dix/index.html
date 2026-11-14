@@ -90,6 +90,8 @@
     .annuler-dx { display: block; margin: 6px auto 0; border: 1px solid #ccd5dc; background: #fff; border-radius: 16px; padding: 5px 12px; font: inherit; font-size: 0.82em; font-weight: 700; color: #3b4b57; cursor: pointer; }
     .ecoute-dx { text-align: center; font-size: 1.12em; font-weight: 800; color: var(--c); background: var(--cl); border-radius: 14px; padding: 18px 12px; margin: 10px 0; line-height: 1.4; }
     .reponse-cachee { background: #eef0f2; border-radius: 12px; padding: 10px 12px; font-size: 0.92em; font-weight: 700; color: #6b7a86; margin: 8px 0; text-align: center; }
+    .bandeau-reprise { background: #fff4d6; border: 1px solid #e8c56a; border-radius: 10px; padding: 8px 10px; margin: 0 0 8px; font-size: 0.9em; color: #6b4e00; text-align: center; }
+    .bandeau-reprise .lien-discret { display: block; margin: 4px auto 0; }
     .attente-dx { text-align: center; color: #5b6b78; font-weight: 700; margin: 12px 0 6px; }
     .niveaux-dx { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin: 8px 0; }
     .niveaux-dx button { border: none; border-radius: 12px; padding: 12px 0; font: inherit; font-size: 1.3em; font-weight: 900; color: #fff; background: var(--c); cursor: pointer; }
@@ -181,6 +183,10 @@
 
       <!-- JOUER -->
       <template v-slot:jouer>
+        <!-- Salon repris (appli rouverte, ou l'hôte ne répondait plus) : on attend un autre téléphone avant de jouer,
+             pour ne pas faire avancer une copie peut-être en retard -->
+        <div v-if="bloqueReprise" class="bandeau-reprise">🔄 Salon repris : on attend qu'un autre téléphone revienne pour reprendre au bon endroit.
+          <button class="lien-discret" @click="repriseAttente = false">Continuer sans attendre</button></div>
         <!-- Salle d'attente du salon : chacun choisit son équipe -->
         <template v-if="role && pub && !pub.e">
           <section class="carte">
@@ -507,6 +513,7 @@
           DX: DX, eclaircir: eclaircir, COULEURS: COULEURS, NOMS: NOMS, LONGUEURS: DX.LONGUEURS, NOMS_LONGUEUR: NOMS_LONGUEUR,
           version: VERSION,
           onglet: 'config',
+          repriseAttente: false,
           eTest: lireStockage(CLE_TEST),
           nbEquipes: r.nb || 2,
           reglage: [0, 1, 2, 3].map(i => ({ nom: (r.noms && r.noms[i]) || '' })),
@@ -527,6 +534,8 @@
         moi: function() { return this.pseudoInput.trim() || 'Moi'; },
         estSalon: function() { return !!this.role; },
         estHote: function() { return this.role === 'hote'; },
+        // Hôte qui a repris le salon : rien ne bouge tant qu'aucun autre téléphone n'est revenu (sa copie est peut-être en retard)
+        bloqueReprise: function() { return this.role === 'hote' && this.repriseAttente && !!this.pub && this.pub.ordre.length > 1 && !this.joueurs.some(j => !j.hote && j.connecte); },
         connexionTexte: function() { return { ok: 'en ligne', connexion: 'connexion…', perdue: 'reconnexion…', aucune: 'hors ligne' }[this.connexion]; },
         // La partie affichée : celle du salon, sinon celle du mode test
         e: function() { return this.role ? (this.pub && this.pub.e) : this.eTest; },
@@ -690,7 +699,7 @@
         },
         peut: function(type) {
           if (!this.role) return true;
-          if (this.connexion !== 'ok' || !this.pub) return false;
+          if (this.connexion !== 'ok' || !this.pub || this.bloqueReprise) return false;
           return this.autorise(this.pub, this.moi, type, (x) => this.estConnecteVue(x));
         },
         lancerChrono: function() {
@@ -744,7 +753,7 @@
 
         // ================== SALON : l'hôte arbitre ==================
         envoyerJeu: function(m) {
-          if (this.role === 'hote') return this.traiterJeu(monPseudo, m);
+          if (this.role === 'hote') { if (this.bloqueReprise && m.type !== 'REGLAGE' && m.type !== 'EQUIPE') return; return this.traiterJeu(monPseudo, m); }
           if (this.connexion !== 'ok') return;
           this.envoyerHote({ action: 'JEU', m: m });
         },
@@ -835,6 +844,7 @@
             pubHote = sv.pubHote || copie(sv.pub);
             salle = sv.salle || { infos: {} };
             Object.values(salle.infos).forEach(i => { i.connecte = false; });
+            this.repriseAttente = true;
             this.creerPartie(true);
           } else this.rejoindrePartie(true);
         },
@@ -887,7 +897,7 @@
           var ancien = peer;
           peer = null; connections = []; connParPseudo = {}; hostConn = null;
           if (ancien) { try { ancien.destroy(); } catch (e) {} }
-          if (!garder) { this.role = null; this.joueurs = []; this.roomCode = ''; this.connexion = 'aucune'; this.decalage = 0; }
+          if (!garder) { this.role = null; this.joueurs = []; this.roomCode = ''; this.connexion = 'aucune'; this.decalage = 0; this.repriseAttente = false; }
         },
         planifierReconnexion: function(delai) {
           clearTimeout(this._timerReco);
@@ -906,6 +916,7 @@
           salle = { infos: {} };
           pubHote.ordre.forEach(p => { if (p !== monPseudo) salle.infos[p] = { connecte: false, clientId: null }; });
           this._repriseParClient = true;
+          this.repriseAttente = true;
           this.role = 'hote'; this.decalage = 0;
           this.ajouterLog('L\'hôte ne répond plus : tu rouvres le salon.', true);
           this.creerPartie(true);
@@ -931,6 +942,7 @@
               this.onglet = 'play';
               this.finEntree(true);
               salle = { infos: {} };
+              this.repriseAttente = false;
               pubHote = nouvelEtatSalon([monPseudo]);
               this.ajouterLog(monPseudo + ' a ouvert le salon.', true);
             }
@@ -945,10 +957,11 @@
             if (reprise || this.role === 'hote') {
               if (err.type === 'peer-unavailable') return;
               this.connexion = 'perdue';
-              var seuil = this._repriseParClient ? 1 : 5;
+              // Identifiant pris : un autre téléphone tient le salon, on le rejoint (2 essais : le temps que le serveur oublie notre ancienne connexion)
+              var seuil = this._repriseParClient ? 1 : 2;
               if (err.type === 'unavailable-id' && (this._echecsReprise = (this._echecsReprise || 0) + 1) >= seuil) {
                 this._echecsReprise = 0; this._repriseParClient = false;
-                this.role = 'client'; pubHote = null; salle = { infos: {} };
+                this.role = 'client'; pubHote = null; salle = { infos: {} }; this.repriseAttente = false;
                 this.ajouterLog('Le salon est tenu par un autre joueur : tu le rejoins.', true);
                 return this.rejoindrePartie(true);
               }
@@ -995,6 +1008,8 @@
               salle.infos[pseudo] = { connecte: true, clientId: data.clientId };
               if (pubHote.ordre.indexOf(pseudo) !== -1) this.ajouterLog(pseudo + ' est revenu.', true);
               else { pubHote.ordre.push(pseudo); this.ajouterLog(pseudo + ' a rejoint le salon.', true); }
+              this.adopterCopie(pseudo, data.copie);
+              this.repriseAttente = false;
               this.publier();
               break;
             }
@@ -1011,6 +1026,16 @@
               this.traiterJeu(p, data.m || {});
               break;
           }
+        },
+        // Deux copies de la même partie (même id) : on garde la plus avancée (compteur d'actions e.n).
+        // Évite de revenir en arrière quand un téléphone a repris le salon avec une copie en retard.
+        adopterCopie: function(pseudo, cp) {
+          var P = pubHote, e = cp && cp.e;
+          if (!P || !P.e || !e || typeof e !== 'object' || e.id !== P.e.id || !(e.n > P.e.n) || !Array.isArray(e.equipes) || e.equipes.length !== P.e.equipes.length) return;
+          P.e = copie(e);
+          P.e.chrono = null;   // heure d'un autre téléphone : le chrono repart à la demande
+          if (cp.m && typeof cp.m === 'object') Object.keys(cp.m).forEach(x => { if (P.membres[x] === undefined && P.ordre.indexOf(x) !== -1 && cp.m[x] >= 0 && cp.m[x] < P.e.equipes.length) P.membres[x] = cp.m[x]; });
+          this.ajouterLog('Partie remise à jour avec la copie de ' + pseudo + ', plus récente.', true);
         },
         perteClient: function(conn) {
           if (conn._perdue) return;
@@ -1050,7 +1075,9 @@
               this.connexion = 'ok'; this.role = 'client'; this.roomCode = nom;
               this._echecsClient = 0;
               if (!reprise) { this.onglet = 'play'; this.finEntree(true); }
-              conn.send({ action: 'REJOINDRE', pseudo: monPseudo, clientId: clientId });
+              // Notre copie de la partie : l'hôte la reprend si elle est plus avancée que la sienne (il a pu reprendre le salon avec une copie en retard)
+              var cp = this.pub && this.pub.e ? { e: this.pub.e, m: this.pub.membres } : null;
+              conn.send({ action: 'REJOINDRE', pseudo: monPseudo, clientId: clientId, copie: cp });
             });
             conn.on('data', (data) => { if (hostConn !== conn) return; dernierMsgHote = Date.now(); this.recevoirDeHote(data); });
             conn.on('close', () => { if (hostConn === conn) this.perteHote(); });
