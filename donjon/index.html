@@ -200,7 +200,7 @@
     .rares-fin { margin: 8px 0 4px; }
     .rares-fin .titre-tr { margin: 0 0 6px; line-height: 1.25; }
     .rares-fin .cartes-gr { display: flex; gap: 6px; justify-content: center; padding-top: 8px; }
-    .rares-fin .carte-c { width: 31%; height: 132px; cursor: pointer; }
+    .rares-fin .carte-c { width: 31%; min-height: 140px; cursor: pointer; }
     .rares-fin .carte-c.choisie { box-shadow: 0 0 0 3px #7048e8, 0 0 14px rgba(112,72,232,0.7); transform: translateY(-4px); }
     .carte-c.plus .cc-nom { color: #2b8a3e; }
     .cc-cout { position: absolute; left: -3px; top: -9px; width: 22px; height: 22px; border-radius: 50%; background: #ffd43b; color: #2a211b; font-weight: 900; font-size: 0.85em; display: flex; align-items: center; justify-content: center; box-shadow: 0 1px 3px rgba(0,0,0,0.4); }
@@ -210,7 +210,9 @@
     .cc-badge { position: absolute; right: -3px; top: -9px; background: #e03131; color: #fff; border-radius: 8px; font-size: 0.68em; font-weight: 900; padding: 1px 4px; }
     .cc-prix { font-weight: 900; font-size: 0.72em; color: #a8590f; margin-top: auto; }
     .grande .carte-c, .carte-c.grande { min-height: 128px; padding-top: 15px; }
-    .grande .cc-ico { font-size: 28px; } .grande .cc-nom { font-size: 0.78em; } .grande .cc-txt { font-size: 0.66em; }
+    .grande .cc-ico { font-size: 28px; } .grande .cc-nom { font-size: 0.84em; } .grande .cc-txt { font-size: 0.74em; line-height: 1.2; }
+    /* 3.93 : texte des cartes un peu plus grand dans le choix du butin et le Grimoire (demandé par l'utilisateur). */
+    .cartes-gr .cc-nom { font-size: 0.8em; } .cartes-gr .cc-txt { font-size: 0.7em; line-height: 1.2; }
 
     /* Fenêtres : butin, feu de camp, marchand, autel, paquet */
     .boite-menu { max-height: calc(100vh - 40px); overflow-y: auto; padding: 14px 12px; }
@@ -725,9 +727,9 @@
     .fen-dep .sous-sem { color: #ffc46b; font-family: Georgia, serif; }
     .fen-dep .sous-sem small { font-weight: 700; color: #b8a88f; margin-left: 4px; }
     .fen-dep .cartes-gr { display: flex; flex-wrap: wrap; gap: 10px 6px; margin-top: 8px; }
-    .fen-dep .cartes-gr .carte-c { width: calc(33.3% - 4px); height: 150px; cursor: pointer; }
+    .fen-dep .cartes-gr .carte-c { width: calc(33.3% - 4px); min-height: 150px; cursor: pointer; }
     .fen-dep .cartes-gr .carte-c.choisie { transform: translateY(-4px); box-shadow: 0 0 0 3px #7048e8, 0 4px 12px rgba(112,72,232,0.5); }
-    .fen-dep .aucune-gr { width: calc(33.3% - 4px); height: 150px; border: 2px dashed rgba(255,214,140,0.4); border-radius: 10px; background: rgba(255,255,255,0.05); font: inherit; font-weight: 800; color: #c2b39a; font-size: 0.8em; }
+    .fen-dep .aucune-gr { width: calc(33.3% - 4px); min-height: 150px; border: 2px dashed rgba(255,214,140,0.4); border-radius: 10px; background: rgba(255,255,255,0.05); font: inherit; font-weight: 800; color: #c2b39a; font-size: 0.8em; }
     .fen-dep .aucune-gr.choisie { border-color: #9775fa; color: #d0bfff; }
     .fen-dep .champ input { width: 100%; }
     .fen-dep .pseudo-portail { margin: 8px 0; }
