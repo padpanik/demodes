@@ -24,6 +24,14 @@
     .segment button { flex: 1; border: none; background: transparent; border-radius: 8px; padding: 8px 4px; font: inherit; font-weight: 600; color: #5b6b78; cursor: pointer; }
     .segment button.actif { background: #fff; color: #1d2b36; box-shadow: 0 1px 3px rgba(0,0,0,0.12); }
     .petit-titre { font-size: 0.85em; font-weight: 700; color: #5b6b78; margin: 6px 0 4px; }
+    .petit-titre-lt { font-weight: 700; margin: 14px 0 2px; color: #2c3e50; }
+    .aide-lt { font-size: 0.8em; color: #5b6b78; margin: 2px 0 6px; }
+    .sac-lt { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
+    .jeton-lt { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+    .jeton-lt .lt { position: relative; width: 34px; height: 34px; border-radius: 6px; background: #f6e7c1; border: 1px solid #c9ad6e; box-shadow: 0 2px 0 #b8975a;
+      display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1.05em; color: #3b2a12; }
+    .jeton-lt .lt sub { position: absolute; right: 3px; bottom: 1px; font-size: 0.55em; font-weight: 700; }
+    .jeton-lt b { font-size: 0.82em; color: #3b4b57; }
     .regles ul { padding-left: 18px; margin: 8px 0 0; font-size: 0.88em; line-height: 1.45; color: #3b4b57; }
     .panneau-vide { text-align: center; padding: 36px 16px; color: #5b6b78; }
     .panneau-vide .grand { font-size: 2.5em; margin-bottom: 8px; }
@@ -397,6 +405,14 @@
             <li><strong>Mon lexique</strong> : touche un mot déjà joué pour lire sa définition, le vérifier, puis l'<strong>accepter</strong> ou le <strong>refuser</strong> pour les prochaines parties. Les votes et tes décisions seul sont retenus aussi (option « 📌 Retenir »). La liste est dans Réglages.</li>
             <li>Fin : quand un joueur a posé toutes ses lettres et que le sac est vide (il gagne les points restant chez les autres, qui les perdent), ou quand tout le monde passe deux fois de suite.</li>
           </ul>
+          <div class="petit-titre-lt">Les {{ totalJetons }} lettres du sac</div>
+          <div class="aide-lt">Sous chaque lettre : combien il y en a. Petit chiffre sur la lettre : ses points.</div>
+          <div class="sac-lt">
+            <div v-for="l in lettresSac" :key="l.l" class="jeton-lt">
+              <span class="lt">{{ l.l === '?' ? '★' : l.l }}<sub>{{ l.v }}</sub></span><b>×{{ l.n }}</b>
+            </div>
+          </div>
+          <div class="aide-lt">★ = joker (n'importe quelle lettre, 0 point).</div>
         </section>
 
       </template>
@@ -522,6 +538,9 @@
         veilleSupportee: false
       },
       computed: {
+        // Répartition des lettres du sac, pour l'onglet Règles
+        lettresSac: function() { var L = LC.LETTRES; return Object.keys(L).map(l => ({ l: l, n: L[l][0], v: L[l][1] })); },
+        totalJetons: function() { var L = LC.LETTRES; return Object.keys(L).reduce((t, l) => t + L[l][0], 0); },
         moi: function() { return this.pseudoInput.trim() || 'Moi'; },
         // En solo, je suis le premier joueur de la partie enregistrée
         moiJ: function() { return this.solo && this.e ? this.e.joueurs[0] : this.moi; },

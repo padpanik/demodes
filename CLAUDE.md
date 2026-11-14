@@ -435,6 +435,7 @@ Bataille navale : `bataille-boss` (partie contre un boss d'expédition), `batail
   Définition (Wiktionnaire), Vérifier dans l'ODS, et ✓ Accepté / Dictionnaire / ✗ Refusé. Option **« 📌 Retenir pour les prochaines parties »** (`lettres-retenir`, cochée par défaut)
   dans la fenêtre du doute (solo : « Il est valable » l'ajoute aux acceptés) et sous le vote (salon : résultat `e.decision = { n, mots, ok }` retenu par l'hôte et chaque joueur).
   Réglages : liste des mots, ajout à la main, ✕ pour retirer. Série de victoires par niveau (`Etoiles.serie('lettres-<niveau>')`).
+- **Onglet Règles : les lettres du sac** (3.98, demandé par l'utilisateur) : sous la liste des règles, « Les 102 lettres du sac » en jetons (7 par ligne, `.sac-lt`), points en petit sur la lettre, nombre dessous (« ×15 ») ; lus dans `LC.LETTRES` (computed `lettresSac`, `totalJetons`), donc toujours justes si la répartition change.
 
 ### 7 piliers, ex « Les 7 joyaux » (version maison du draft de cartes et de cités, 2.51 ; renommé en 2.69)
 - Nom choisi par l'utilisateur. Ils sont **souvent 2, parfois 4** : il faut 3 cités au moins, donc des 🤖 complètent la table

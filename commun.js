@@ -3,12 +3,13 @@
 // Les clés de stockage gardent l'ancien préfixe "brillant-" : les réglages déjà faits sont conservés.
 
 // Numéro de version affiché (à augmenter à chaque mise en ligne, avec brilliant/index.html et sw.js)
-const VERSION = '3.97';
+const VERSION = '3.98';
 
 // ---------- Nouveautés (2.87, demandé par l'utilisateur) ----------
 // Une ligne très brève par mise en ligne (la plus récente en haut) : l'accueil les montre une seule fois, dans une petite fenêtre,
 // à qui n'a pas encore vu cette version. [version, jeu ou partie de l'appli, ce qui change]
 const NOUVEAUTES = [
+  ['3.98', 'Lettres croisées', 'Règles : le nombre de chaque lettre dans le sac et ses points.'],
   ['3.97', 'Combien sur 10 ?', 'Téléphone déconnecté : plus de partie en double ni de retour en arrière.'],
   ['3.96', 'Combien sur 10 ?', 'Question mal formulée ou déjà jouée : les lecteurs peuvent en tirer une autre, même niveau.'],
   ['3.95', 'Vallée', 'Carte : lieux découverts plus grands ; fais-la glisser au doigt, elle se recentre quand tu bouges.'],
