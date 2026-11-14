@@ -1246,7 +1246,9 @@ var VLD = (function () {
     // Repères des lieux découverts
     // (3.62 : des icônes dessinées sur un petit médaillon de parchemin, plus d'émojis)
     var ICO = { maison: 'maison', hutte: 'hutte', forge: 'forge', crypte: 'crypte', cabane: 'cabane', chene: 'arbre', rainette: 'nenuphar', saule: 'saule', chalet: 'chalet', refuge: 'montagne', chaumiere: 'chaumiere' };
-    var medaille = (nom, cx, cy, fond) => '<circle cx="' + f(cx) + '" cy="' + f(cy) + '" r="' + f(7.6 * K) + '" fill="' + (fond || '#fff8e7') + '" stroke="#8a6a46" stroke-width="' + f(1.1 * K) + '" opacity=".95"/>' + pictoG(nom, cx, cy, 12.5 * K);
+    // 3.95 (demandé par l'utilisateur) : un lieu découvert a un médaillon plus grand (×1,45) ; ce qu'on voit de loin sous la brume (la tour) garde la petite taille
+    var GRAND = 1.45;
+    var medaille = (nom, cx, cy, fond, petit) => { var g = K * (petit ? 1 : GRAND); return '<circle cx="' + f(cx) + '" cy="' + f(cy) + '" r="' + f(7.6 * g) + '" fill="' + (fond || '#fff8e7') + '" stroke="#8a6a46" stroke-width="' + f(1.1 * g) + '" opacity=".95"/>' + pictoG(nom, cx, cy, 12.5 * g); };
     VL.BATIMENTS.forEach(bt => {
       if (!ICO[bt.type] || !VL.estVu(e, bt.x + (bt.w >> 1), bt.y + bt.h - 1, b)) return;
       s.push(medaille(ICO[bt.type], (bt.x + bt.w / 2) * U, (bt.y + bt.h / 2) * U));
@@ -1283,7 +1285,7 @@ var VLD = (function () {
     rep.forEach(q => {
       var vu = VL.estVu(e, q[0], q[1], b);
       if (!q[4] && !vu) return;
-      s.push('<g' + (vu ? '' : ' opacity=".75"') + '>' + medaille(q[2], q[0] * U + 5, q[1] * U + 5, q[3]) + '</g>');
+      s.push('<g' + (vu ? '' : ' opacity=".75"') + '>' + medaille(q[2], q[0] * U + 5, q[1] * U + 5, q[3], !vu) + '</g>');
     });
     return s.join('');
   }
@@ -1293,7 +1295,7 @@ var VLD = (function () {
     var U = 10, s = [], ec = VL.ecranDe(e.x, e.y), x0 = ctx.x0 != null ? ctx.x0 : ec.ex * VL.W, K = ctx.k || 1;   // x0 : la fenêtre de vue (le quartier défile)
     s.push('<rect x="' + (x0 * U + 1.5) + '" y="' + (ec.ey * VL.H * U + 1.5) + '" width="' + (VL.W * U - 3) + '" height="' + (VL.H * U - 3) + '" rx="4" fill="none" stroke="#fff" stroke-width="2.5" opacity=".9"/>');
     // La quête suivie : un anneau qui palpite
-    if (ctx.cible) s.push('<circle class="vl-cible" cx="' + (ctx.cible.x * U + 5) + '" cy="' + (ctx.cible.y * U + 5) + '" r="' + f(8 * K) + '" fill="none" stroke="#f59f00" stroke-width="' + f(2.5 * K) + '"/>');
+    if (ctx.cible) s.push('<circle class="vl-cible" cx="' + (ctx.cible.x * U + 5) + '" cy="' + (ctx.cible.y * U + 5) + '" r="' + f(11.5 * K) + '" fill="none" stroke="#f59f00" stroke-width="' + f(2.5 * K) + '"/>');
     // Les amis dans la Vallée (3.51) : un point à leur couleur
     (ctx.amis || []).forEach(a => s.push('<circle cx="' + (a.x * U + 5) + '" cy="' + (a.y * U + 5) + '" r="' + f(4.5 * K) + '" fill="' + (a.couleur || '#3498db') + '" stroke="#fff" stroke-width="1.6"/>'));
     // Moi

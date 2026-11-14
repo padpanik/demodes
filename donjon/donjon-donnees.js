@@ -45,6 +45,24 @@ var DJD = (function () {
     aucune: { nom: 'Explorateur', ico: '🧭', pv: 58, texte: 'Sans compagnon : les cartes de base', base: ['coupdouble', 'esquive'] }
   };
 
+  // ---------- Pouvoir de chaque espèce de compagnon (3.95 : source unique, lue aussi par la Vallée et l'accueil) ----------
+  var ESPECES = {
+    dragon: { pouvoir: 'ronces', action: 'crache du feu sur les ronces' },
+    chat: { pouvoir: 'ronces', action: 'griffe les ronces' },
+    oie: { pouvoir: 'ronces', action: 'arrache les ronces à coups de bec' },
+    panda: { pouvoir: 'force', action: 'casse le rocher' },
+    tortue: { pouvoir: 'force', action: 'fonce dans le rocher, carapace en avant' },
+    chevre: { pouvoir: 'force', action: 'casse le rocher d\'un coup de cornes' },
+    lapin: { pouvoir: 'bond', action: 'saute le trou et pose une planche' },
+    ecureuil: { pouvoir: 'bond', action: 'bondit par-dessus le trou et pose une planche' },
+    singe: { pouvoir: 'bond', action: 'se balance au-dessus du trou et pose une planche' },
+    chien: { pouvoir: 'flair', action: 'flaire un passage secret' },
+    renard: { pouvoir: 'flair', action: 'déniche un passage secret' },
+    raton: { pouvoir: 'flair', action: 'trouve un passage secret' }
+  };
+  // Trésors rapportés à la maison quand on gagne un donjon entier (articles de compagnon-commun.js ; lus aussi par le livre des trésors de la Vallée)
+  var SOUVENIRS = ['cle-donjon', 'coffre-tresor', 'bouclier', 'couronne-gluant'];
+
   // ---------- Cartes ----------
   // type : attaque | defense | competence | pouvoir | malediction ; rar : base | c (commune) | u (peu commune) | r (rare) | x (malédiction)
   // cible : monstre (un monstre), tous (tous les monstres), soi, joueur (toi ou un ami)
@@ -736,6 +754,6 @@ var DJD = (function () {
 
   return { ETATS: ETATS, CLASSES: CLASSES, CARTES: CARTES, FIOLES: FIOLES, RELIQUES: RELIQUES, MONSTRES: MONSTRES,
            ETAGES: ETAGES, LIEUX: LIEUX, REGLES_LIEU: REGLES_LIEU, PERILS: PERILS, DIFFICULTES: DIFFICULTES, ORDRE_DIFFICULTES: ORDRE_DIFFICULTES, POISON_GROUPE: POISON_GROUPE, SOIN_GROUPE: SOIN_GROUPE, SEMAINE: SEMAINE, CLE_PAR_NIVEAU: CLE_PAR_NIVEAU, EVENEMENTS: EVENEMENTS, RISQUES: RISQUES, PRIX: PRIX,
-           LEGENDAIRES: LEGENDAIRES, SANCTUAIRE: SANCTUAIRE, BOSS_SANCTUAIRE: BOSS_SANCTUAIRE };
+           LEGENDAIRES: LEGENDAIRES, SANCTUAIRE: SANCTUAIRE, BOSS_SANCTUAIRE: BOSS_SANCTUAIRE, ESPECES: ESPECES, SOUVENIRS: SOUVENIRS };
 })();
 if (typeof module !== 'undefined') module.exports = DJD;

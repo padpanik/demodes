@@ -34,20 +34,7 @@ var DJ = (function () {
     flair: { nom: 'Flair', ico: '👃', obstacle: 's', especes: 'chien, renard ou raton laveur', quoi: 'un passage secret' }
   };
   var PAR_OBSTACLE = { r: 'ronces', R: 'force', v: 'bond', s: 'flair' };
-  var ESPECES = {
-    dragon: { pouvoir: 'ronces', action: 'crache du feu sur les ronces' },
-    chat: { pouvoir: 'ronces', action: 'griffe les ronces' },
-    oie: { pouvoir: 'ronces', action: 'arrache les ronces à coups de bec' },
-    panda: { pouvoir: 'force', action: 'casse le rocher' },
-    tortue: { pouvoir: 'force', action: 'fonce dans le rocher, carapace en avant' },
-    chevre: { pouvoir: 'force', action: 'casse le rocher d\'un coup de cornes' },
-    lapin: { pouvoir: 'bond', action: 'saute le trou et pose une planche' },
-    ecureuil: { pouvoir: 'bond', action: 'bondit par-dessus le trou et pose une planche' },
-    singe: { pouvoir: 'bond', action: 'se balance au-dessus du trou et pose une planche' },
-    chien: { pouvoir: 'flair', action: 'flaire un passage secret' },
-    renard: { pouvoir: 'flair', action: 'déniche un passage secret' },
-    raton: { pouvoir: 'flair', action: 'trouve un passage secret' }
-  };
+  var ESPECES = D.ESPECES;   // dans donjon-donnees.js depuis 3.95 (source unique)
   function pouvoirDe(cp) { var x = cp && ESPECES[cp.e]; return x ? x.pouvoir : null; }
   var MONSTRES = D.MONSTRES, CARTES = D.CARTES, ETATS = D.ETATS, RELIQUES = D.RELIQUES, FIOLES = D.FIOLES, CLASSES = D.CLASSES;
 

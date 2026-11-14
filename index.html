@@ -460,17 +460,17 @@
   <script src="etoiles.js"></script>
   <script src="compagnon/compagnon-commun.js"></script>
   <script src="icones-jeux.js"></script>
+  <script src="donjon/donjon-donnees.js"></script>
   <script src="donjon/donjon-dessins.js"></script>
   <script src="vallee/vallee-regles.js"></script>
   <script src="vallee/vallee-pictos.js"></script>
   <script src="vallee/vallee-dessins.js"></script>
   <script>
     // ---------- Entrée du donjon sur l'accueil ----------
-    // Pouvoir de chaque espèce dans le donjon (même table que ESPECES dans donjon/donjon-regles.js, à tenir ensemble)
-    var POUVOIR_ESPECE = { dragon: 'ronces', chat: 'ronces', oie: 'ronces', panda: 'force', tortue: 'force', chevre: 'force',
-                           lapin: 'bond', ecureuil: 'bond', singe: 'bond', chien: 'flair', renard: 'flair', raton: 'flair' };
-    // Classe de cartes donnée par le pouvoir (DJD.CLASSES dans donjon/donjon-donnees.js)
-    var CLASSES_DONJON = { ronces: '🔥 Feu', force: '💪 Carapace', bond: '🦘 Vivacité', flair: '👃 Ruse' };
+    // Pouvoir de chaque espèce et classe de cartes qu'il donne : lus dans les données du Donjon (DJD, source unique depuis 3.95)
+    var POUVOIR_ESPECE = VL.POUVOIR_ESPECE;
+    var CLASSES_DONJON = {};
+    Object.keys(DJD.CLASSES).forEach(k => { CLASSES_DONJON[k] = DJD.CLASSES[k].ico + ' ' + DJD.CLASSES[k].nom; });
     // Scène dessinée : mur de briques, porte voûtée dans le noir, deux torches, des yeux qui brillent, un gluant qui sort, mon compagnon devant
     function sceneDonjon(dessinCp) {
       var t = [], y, x, k = 0;

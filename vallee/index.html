@@ -49,7 +49,7 @@
     /* La carte du monde : une vieille carte, sous le brouillard */
     .carte-vl { flex: 1; min-height: 0; position: relative; display: flex; align-items: center; justify-content: center; background: #ead8b0; border: 2px solid #8a6a46; border-radius: 14px;
                 box-shadow: inset 0 0 18px rgba(138,106,70,0.45), 0 3px 10px rgba(0,0,0,0.25); overflow: hidden; cursor: pointer; }
-    .carte-vl { padding-top: 24px; }
+    .carte-vl { padding-top: 24px; touch-action: none; }   /* 3.95 : on fait glisser la carte de près au doigt */
     .carte-vl svg { width: 100%; height: 100%; display: block; overflow: hidden; }
     .carte-vl .titre-carte { position: absolute; left: 50%; top: 2px; transform: translateX(-50%); white-space: nowrap; font: italic 800 0.78em/1.2 Georgia, serif; color: #5c3a1f;
                              background: rgba(255,248,231,0.88); border: 1px solid #c9a874; border-radius: 10px; padding: 1px 9px; pointer-events: none; }
@@ -373,7 +373,7 @@
       </div>
 
       <!-- La carte du monde, sous le brouillard -->
-      <div class="carte-vl" ref="carte" @click="fenetre = 'quetes'">
+      <div class="carte-vl" ref="carte" @click="toucherCarte" @pointerdown="carteDebut" @pointermove="carteBouge" @pointerup="carteFin" @pointercancel="carteFin">
         <svg :view-box.camel="carteVue" preserveAspectRatio="xMidYMid meet"><g v-html="carteSvg"></g><g v-html="carteDessus"></g></svg>
         <div class="titre-carte">{{ dansTerres ? infoTerres.nom : 'La Vallée de Désdale' }} · {{ explore }} % exploré</div>
         <div class="rose">N ↑</div>
@@ -695,6 +695,7 @@
   <script src="commun.js"></script>
   <script src="etoiles.js"></script>
   <script src="compagnon/compagnon-commun.js"></script>
+  <script src="donjon/donjon-donnees.js"></script>
   <script src="vallee/vallee-regles.js"></script>
   <script src="vallee/vallee-pictos.js"></script>
   <script src="vallee/vallee-dessins.js"></script>
@@ -730,7 +731,7 @@
         dir: null, sens: etat.dir === 'g' ? 'g' : 'd', saut: false, ecranCle: 0, lieuMontre: null,
         animal: lireStockage('compagnon-animal'), etoiles: Etoiles.solde(), nonLus: 0, livreSel: null,
         fenetre: null, dialogue: null, aLire: null, achat: null, sortie: false, fabOu: null, fabChoix: null, jour: VL.jourDe(),
-        annonces: [], maintenant: Date.now(), carteAspect: 330 / 270, carteLarge: false,
+        annonces: [], maintenant: Date.now(), carteAspect: 330 / 270, carteLarge: false, carteDec: { x: 0, y: 0 },
         inverse: lireStockage('donjon-inverse') === true,
         sonActif: lireStockage('brillant-son') !== false,
         pleinEcran: lireStockage('vallee-plein-ecran') !== false
@@ -811,25 +812,31 @@
         // La partie de la carte du monde montrée : le quartier et le marais en bande, ailleurs les 3 × 3 écrans de l'ouest
         // (sur un écran peu haut, la carte est plus large : on montre plus de monde au lieu de déborder d'un seul côté)
         carteVue: function() {
+          var V = this.carteBase, d = this.carteLarge ? { x: 0, y: 0 } : this.carteDec;
+          return [V.r[0] + d.x, V.r[1] + d.y, V.r[2], V.r[3]].map(n => Math.round(n)).join(' ');
+        },
+        // La partie de la carte montrée sans décalage (`r` = x, y, largeur, hauteur) et la région où l'on peut la faire glisser (`B`, en unités de carte)
+        carteBase: function() {
           this.v; this.ecranCoord;   // à recalculer quand on change de région, carte entière comprise (sinon elle restait sur les Terres après la Porte)
-          var B0 = VL.regions().find(R => R.id === VL.regionDe(etat.x, etat.y)) || VL.bornes();
+          var B0 = VL.regions().find(R => R.id === VL.regionDe(etat.x, etat.y)) || VL.bornes(), BU = { x0: B0.x0 * 10, y0: B0.y0 * 10, x1: B0.x1 * 10, y1: B0.y1 * 10 };
           if (this.carteLarge) {   // la carte entière de la région où l'on est (3.58)
             var bw = (B0.x1 - B0.x0) * 10, bh = (B0.y1 - B0.y0) * 10, w0 = bw, h0 = bh;
             if (w0 / h0 < this.carteAspect) w0 = h0 * this.carteAspect; else h0 = w0 / this.carteAspect;
-            return [B0.x0 * 10 - (w0 - bw) / 2, B0.y0 * 10 - (h0 - bh) / 2, w0, h0].map(n => Math.round(n)).join(' ');
+            return { r: [B0.x0 * 10 - (w0 - bw) / 2, B0.y0 * 10 - (h0 - bh) / 2, w0, h0], B: BU };
           }
-          if (this.vue.defile) return '330 90 330 90';
+          if (this.vue.defile) return { r: [330, 90, 330, 90], B: BU };
           // Ce qu'on veut voir (le marais : avec le bosquet et le quartier autour), agrandi à la forme du cadre, sans sortir du monde
           // Hors du cœur du monde (terres à venir) : les 3 × 3 écrans autour de moi
           var c = this.ecranCoord, dansCoeur = c.ex >= 0 && c.ey >= 0 && c.ex < VL.EW && c.ey < VL.EH;
-          var B = VL.regions().find(R => R.id === VL.regionDe(etat.x, etat.y)) || VL.bornes();   // on reste dans la région où l'on est
           var R = !dansCoeur ? [(c.ex - 1) * 110, (c.ey - 1) * 90, 330, 270] : this.ici.zone === 'marais' ? [220, 90, 440, 180] : this.ici.zone === 'montagne' ? [220, 0, 440, 180] : [0, 0, 330, 270], A = this.carteAspect;
           var w = R[2], h = R[3];
           if (w / h < A) w = h * A; else h = w / A;
           // Agrandie à la forme du cadre, sans sortir du monde (`d0`..`d1` : le monde sur cet axe)
           var place = (debut, taille, d0, d1, voulu) => taille >= d1 - d0 ? d0 + (d1 - d0 - taille) / 2 : Math.max(d0, Math.min(d1 - taille, debut - (taille - voulu) / 2));
-          return [place(R[0], w, B.x0 * 10, B.x1 * 10, R[2]), place(R[1], h, B.y0 * 10, B.y1 * 10, R[3]), w, h].map(n => Math.round(n)).join(' ');
+          return { r: [place(R[0], w, BU.x0, BU.x1, R[2]), place(R[1], h, BU.y0, BU.y1, R[3]), w, h], B: BU };
         },
+        // Position du compagnon : la carte de près se recentre dès qu'il bouge (3.95)
+        posCarte: function() { this.v; return etat.x + ',' + etat.y; },
         carteDessus: function() { this.v; return VLD.carteDessus(etat, { cible: VL.cible(etat, this.queteSuivie, this.ctx), amis: this.amis, x0: this.vue.x0, k: this.carteK }); },
         // Taille des repères sur la carte : plus grands quand on voit toute la région
         carteK: function() {
@@ -863,6 +870,8 @@
         }
       },
       watch: {
+        posCarte: function() { this.recentrerCarte(); },
+        carteLarge: function() { this.recentrerCarte(true); },
         sonActif: function(v) { ecrireStockage('brillant-son', v); },
         fenetre: function(f) { if (f) { this.dir = null; this._bloque = true; this._fenT = Date.now(); } this.achat = null; this.fabChoix = null; }
       },
@@ -924,6 +933,56 @@
         mesure(); window.addEventListener('resize', mesure); setTimeout(mesure, 300);
       },
       methods: {
+        // ---------- Faire glisser la carte de près au doigt (3.95, demandé par l'utilisateur) ----------
+        // Le décalage `carteDec` (en unités de carte) s'ajoute au cadrage habituel, borné à la région où l'on est ;
+        // un pas du compagnon le ramène en douceur à zéro. Un glissement n'ouvre pas la fenêtre des quêtes.
+        bornerDec: function(d) {
+          var V = this.carteBase, r = V.r, B = V.B;
+          var axe = (v, debut, taille, b0, b1) => taille >= b1 - b0 ? 0 : Math.max(b0 - debut, Math.min(b1 - taille - debut, v));
+          return { x: axe(d.x, r[0], r[2], B.x0, B.x1), y: axe(d.y, r[1], r[3], B.y0, B.y1) };
+        },
+        carteDebut: function(ev) {
+          if (this.carteLarge || ev.target.closest('button') || (ev.pointerType === 'mouse' && ev.button !== 0)) return;
+          var svg = this.$refs.carte.querySelector('svg'), rc = svg && svg.getBoundingClientRect(), r = this.carteBase.r;
+          if (!rc || !rc.width || !rc.height) return;
+          cancelAnimationFrame(this._animCarte);
+          this._glisse = { id: ev.pointerId, x: ev.clientX, y: ev.clientY, d: Object.assign({}, this.carteDec), k: Math.max(r[2] / rc.width, r[3] / rc.height), bouge: false };
+        },
+        carteBouge: function(ev) {
+          var G = this._glisse;
+          if (!G || G.id !== ev.pointerId) return;
+          var dx = ev.clientX - G.x, dy = ev.clientY - G.y;
+          if (!G.bouge) {
+            if (dx * dx + dy * dy < 64) return;   // 8 px : en dessous, c'est un simple toucher
+            G.bouge = true;
+            try { this.$refs.carte.setPointerCapture(ev.pointerId); } catch (x) {}
+          }
+          this.carteDec = this.bornerDec({ x: G.d.x - dx * G.k, y: G.d.y - dy * G.k });
+        },
+        carteFin: function(ev) {
+          var G = this._glisse;
+          if (!G || G.id !== ev.pointerId) return;
+          this._glisse = null;
+          if (G.bouge) this._finGlisse = Date.now();
+        },
+        toucherCarte: function() {
+          if (this._finGlisse && Date.now() - this._finGlisse < 350) return;   // fin d'un glissement : pas de fenêtre
+          this.fenetre = 'quetes';
+        },
+        recentrerCarte: function(net) {
+          cancelAnimationFrame(this._animCarte);
+          if (this._glisse && this._glisse.bouge) this._glisse = null;
+          var d0 = this.carteDec;
+          if (!d0.x && !d0.y) return;
+          if (net) { this.carteDec = { x: 0, y: 0 }; return; }
+          var t0 = performance.now(), D = 260;
+          var pas = t => {
+            var a = Math.min(1, (t - t0) / D), k = 1 - (1 - a) * (1 - a) * (1 - a);   // ralentit à l'arrivée
+            this.carteDec = a >= 1 ? { x: 0, y: 0 } : { x: d0.x * (1 - k), y: d0.y * (1 - k) };
+            if (a < 1) this._animCarte = requestAnimationFrame(pas);
+          };
+          this._animCarte = requestAnimationFrame(pas);
+        },
         nomTerres: function (n) { return VL.nomTerres(n); },
         son: function(nom) { if (this.sonActif) try { Sons.jouer(nom); } catch (e) {} },
         vibre: function(m) { if (lireStockage('brillant-vibration') !== false) vibrer(m); },

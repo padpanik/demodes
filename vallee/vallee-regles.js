@@ -6,6 +6,9 @@
 // Moteur sans écran : testable avec Node (`node vallee/vallee-test.js`).
 
 var VL = (function () {
+  // Les données du Donjon (donjon/donjon-donnees.js, chargé avant ce fichier) : lieux, boss, fioles, espèces, souvenirs.
+  // Source unique depuis 3.95 : ajouter un lieu ou un boss au Donjon suffit, la Vallée le lit d'ici (plus de listes recopiées).
+  var DJ_D = typeof DJD !== 'undefined' ? DJD : require('../donjon/donjon-donnees.js');
   var W = 11, H = 9;               // un écran = 11 × 9 cases, comme une pièce du Donjon
   var EW = 6, EH = 3;              // le cœur du monde, dessiné à la main : 3 × 3 écrans (le village au centre), le quartier, le marais, la montagne
   var LARG = W * EW, HAUT = H * EH; // taille du cœur (le monde entier peut être plus grand : voir `bornes`)
@@ -219,9 +222,9 @@ var VL = (function () {
     bond: { nom: 'Bond', ico: '🦘', obstacle: 'un trou', fait: 'pose une planche sur le trou' },
     flair: { nom: 'Flair', ico: '👃', obstacle: 'un buisson très épais', fait: 'flaire un passage secret' }
   };
-  // Pouvoir de chaque espèce (même table que ESPECES dans donjon/donjon-regles.js, à tenir ensemble)
-  var POUVOIR_ESPECE = { dragon: 'ronces', chat: 'ronces', oie: 'ronces', panda: 'force', tortue: 'force', chevre: 'force',
-                         lapin: 'bond', ecureuil: 'bond', singe: 'bond', chien: 'flair', renard: 'flair', raton: 'flair' };
+  // Pouvoir de chaque espèce : lu dans les données du Donjon (DJD.ESPECES)
+  var POUVOIR_ESPECE = {};
+  Object.keys(DJ_D.ESPECES).forEach(k => { POUVOIR_ESPECE[k] = DJ_D.ESPECES[k].pouvoir; });
 
   function g(ex, ey, x, y) { return { x: ex * W + x, y: ey * H + y }; }
 
@@ -354,16 +357,12 @@ var VL = (function () {
     pioche: { nom: 'Pioche', ico: '⛏️', texte: '+1 pierre, et les filons de cristal' }
   };
   // Fioles de la Vallée : mêmes identifiants que les fioles du Donjon (DJD.FIOLES). On en emporte DONJON_MAX au plus par donjon.
-  var FIOLES = {
-    soin: { nom: 'Fiole de soin', ico: '💖', texte: 'Soigne 15 PV' },
-    garde: { nom: 'Fiole de pierre', ico: '🛡️', texte: '+12 armure' },
-    force: { nom: 'Fiole de force', ico: '💪', texte: '+2 Force pour un combat' },
-    // Fioles des Terres (3.71) : avec les composants rares ; elles font ce qu'aucune carte ne fait (textes de donjon/donjon-donnees.js, à tenir ensemble)
-    voile: { nom: 'Fiole de voile', ico: '🫧', texte: 'Esquive les 2 prochains coups reçus', terres: true },
-    orage: { nom: 'Élixir d\'orage', ico: '⛈️', texte: '8 dégâts et Vulnérable 1 à tous les monstres', terres: true },
-    renouveau: { nom: 'Fiole de renouveau', ico: '🌱', texte: 'Tes Blessures et malédictions quittent le combat, +5 PV', terres: true },
-    essence: { nom: 'Essence de faille', ico: '🔮', texte: '+1 ⚡ maintenant et au début de tes 2 tours suivants', terres: true }
-  };
+  // Les fioles de base qu'on fabrique, puis celles des Terres (`vallee: true` dans DJD.FIOLES) ; noms, icônes et textes lus dans le Donjon
+  var FIOLES = {};
+  ['soin', 'garde', 'force'].concat(Object.keys(DJ_D.FIOLES).filter(k => DJ_D.FIOLES[k].vallee)).forEach(k => {
+    var F = DJ_D.FIOLES[k]; FIOLES[k] = { nom: F.nom, ico: F.ico, texte: F.texte };
+    if (F.vallee) FIOLES[k].terres = true;
+  });
   var BESACE_MAX = 6, DONJON_MAX = 2;
   // Recettes : où (établi devant ma maison, hutte de Mme Sauge, forge de Bruno), quoi, et ce que ça coûte
   var LIEUX_FAB = {
@@ -1031,13 +1030,19 @@ var VL = (function () {
     { id: 'histoire', nom: 'Château fort', ico: '🏰', pic: 'chateau', theme: 'Histoire', boss: 'le Chevalier noir', jeu: 'à l\'Assaut', c1: '#8b1e24', c2: '#e0b13f' },
     { id: 'geo', nom: 'Île aux trésors', ico: '🏝️', pic: 'ile', theme: 'Géographie', boss: 'le Capitaine Barbe-Sel', jeu: 'aux Dominos', c1: '#2b8a9e', c2: '#ffe08a' }
   ];
-  // Les lieux du Donjon qu'une faille peut ouvrir, par étage (identifiants et noms de donjon/donjon-donnees.js, à tenir ensemble)
-  var LIEUX_FAILLE = {
-    1: [{ id: 'caves', nom: 'Les Caves', de: 'des Caves', ico: '🕳️' }, { id: 'champignonniere', nom: 'La Champignonnière', de: 'de la Champignonnière', ico: '🍄', regle: 'Spores' },
-        { id: 'riviere', nom: 'La Rivière souterraine', de: 'de la Rivière souterraine', ico: '🌊', regle: 'Marée' }],
-    2: [{ id: 'catacombes', nom: 'Les Catacombes', de: 'des Catacombes', ico: '⚰️' }, { id: 'glace', nom: 'La Grotte de glace', de: 'de la Grotte de glace', ico: '❄️', regle: 'Engelures' },
-        { id: 'bibliotheque', nom: 'La Bibliothèque interdite', de: 'de la Bibliothèque interdite', ico: '📚', regle: 'Savoir' }]
-  };
+  // Les lieux du Donjon qu'une faille peut ouvrir, par étage (profondeur 1 = étage 1, profondeur 2 = étage 2) : lus dans DJD.ETAGES,
+  // dans le même ordre (le tirage d'une saison ne change donc pas). Un lieu ajouté au Donjon devient une faille possible tout seul.
+  function deLieu(nom) {   // « Les Caves » → « des Caves », « La Grotte » → « de la Grotte », « Le Puits » → « du Puits », « L'Abîme » → « de l'Abîme »
+    return /^Les /.test(nom) ? 'des ' + nom.slice(4) : /^Le /.test(nom) ? 'du ' + nom.slice(3) : /^La /.test(nom) ? 'de la ' + nom.slice(3) : /^L'/.test(nom) ? 'de l\'' + nom.slice(2) : 'de ' + nom;
+  }
+  var LIEUX_FAILLE = {};
+  [1, 2].forEach(et => {
+    LIEUX_FAILLE[et] = DJ_D.ETAGES[et - 1].lieux.map(id => {
+      var L = DJ_D.LIEUX[id], R = L.regle && DJ_D.REGLES_LIEU[L.regle], o = { id: id, nom: L.nom, de: deLieu(L.nom), ico: L.ico };
+      if (R) o.regle = R.nom;
+      return o;
+    });
+  });
   function saisonDe(t) {
     var d = new Date(t == null ? Date.now() : t); d.setHours(0, 0, 0, 0);
     return Math.floor(Math.round((d.getTime() - DEBUT_SAISONS) / 864e5) / DUREE_SAISON);
@@ -1415,17 +1420,13 @@ var VL = (function () {
   // Une place fixe par saison ; le boss y change chaque lundi (le même pour tous). On le combat dans le Donjon, seul,
   // comme une faille (`vallee-faille`, `donjon/?faille` avec `sanct: true`). Gagné : 5 ⭐ (une fois par semaine) et,
   // côté Donjon, une carte rare au choix parmi 3 pour le Grimoire.
-  // Boss, lieu et étage recopiés de BOSS_SANCTUAIRE de donjon/donjon-donnees.js (À TENIR ENSEMBLE, même ordre).
-  var BOSS_SANCTUAIRE = [
-    { boss: 'roi', nom: 'Le Roi Gluant', lieu: 'caves', etage: 1, ico: '👑' },
-    { boss: 'reine', nom: 'La Reine Araignée', lieu: 'catacombes', etage: 2, ico: '🕷️' },
-    { boss: 'mycelium', nom: 'Le Grand Mycélium', lieu: 'champignonniere', etage: 1, ico: '🍄' },
-    { boss: 'dragongivre', nom: 'Le Dragon de givre', lieu: 'glace', etage: 2, ico: '🐉' },
-    { boss: 'pieuvre', nom: 'La Pieuvre des profondeurs', lieu: 'riviere', etage: 1, ico: '🐙' },
-    { boss: 'archiviste', nom: 'L\'Archiviste', lieu: 'bibliotheque', etage: 2, ico: '📜' }
-  ];
+  // Boss, lieu et étage lus dans DJD.BOSS_SANCTUAIRE (même ordre) : un boss ajouté là entre dans le roulement tout seul.
+  var BOSS_SANCTUAIRE = DJ_D.BOSS_SANCTUAIRE.map(b => {
+    var M = DJ_D.MONSTRES[b[0]], L = DJ_D.LIEUX[b[1]];
+    return { boss: b[0], nom: M.nom, lieu: b[1], etage: L.etage, ico: M.ico || '👑' };
+  });
   var SANCT_ETOILES = 5;
-  function bossSemaine(w) { if (w == null) w = semaineDe(); return BOSS_SANCTUAIRE[((w % 6) + 6) % 6]; }
+  function bossSemaine(w) { if (w == null) w = semaineDe(); var n = BOSS_SANCTUAIRE.length; return BOSS_SANCTUAIRE[((w % n) + n) % n]; }
   function majSanct(e) { var w = semaineDe(); if (!e.sanct || e.sanct.w !== w) e.sanct = { w: w, ok: false }; return e.sanct; }
   function sanctVaincu(e) { return !!majSanct(e).ok; }
   function defiSanct() {
@@ -1549,7 +1550,7 @@ var VL = (function () {
   // ---------- Le livre des trésors (3.66, demandé par l'utilisateur : « un livre des trésors trouvés et à trouver ») ----------
   // Tous les souvenirs qu'on peut rapporter à la maison : expéditions, Donjon, Vallée. Trouvé = dans animal.possede.
   // articles = CP.ARTICLES (compagnon-commun.js), passé par la page.
-  var SOUVENIRS_DONJON = ['cle-donjon', 'coffre-tresor', 'bouclier', 'couronne-gluant'];   // recopiés de donjon/index.html (SOUVENIRS), à tenir ensemble
+  var SOUVENIRS_DONJON = DJ_D.SOUVENIRS;   // les trésors d'un donjon gagné, lus dans DJD.SOUVENIRS
   var PIC_TRESOR = { clap: 'clap', popcorn: 'popcorn', bobine: 'bobine', projecteur: 'projecteur', microscope: 'microscope', eprouvettes: 'fiole', telescope: 'longuevue', aimant: 'aimant',
     blason: 'bouclier', etendard: 'drapeau', chandelier: 'chandelier', heaume: 'heaume', mappemonde: 'mappemonde', boussole: 'boussole', coquillage: 'coquillage', ancre: 'ancre',
     'cle-donjon': 'cle', 'coffre-tresor': 'coffre', bouclier: 'bouclier', 'couronne-gluant': 'couronne',
