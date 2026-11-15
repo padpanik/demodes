@@ -236,7 +236,8 @@
       .pk-ecran { flex-direction: row; flex-wrap: wrap; }
       .pk-haut { position: absolute; left: 0; top: 0; right: 0; z-index: 25; padding: 4px 8px; pointer-events: none; }
       .pk-haut > * { pointer-events: auto; }
-      .pk-haut .pk-niveau { flex: 0 1 auto; margin: 0 auto 0 2px; text-align: left; background: rgba(0,0,0,0.35); border-radius: 12px; padding: 2px 12px; }
+      .pk-haut .pk-niveau { order: 9; flex: 0 1 auto; width: 200px; margin-right: -2px; box-sizing: border-box; margin: 0 0 0 auto; text-align: right; background: rgba(0,0,0,0.35); border-radius: 12px; padding: 2px 12px; }
+      .pk-haut .pk-niveau small { font-size: 0.68em; }
       .pk-zone { flex: 1 1 auto; height: 100%; }
       .pk-rail { left: 9%; right: 9%; top: 17%; bottom: 10%; }
       .pk-relance { position: static; }
@@ -891,6 +892,22 @@
         positions: function() {
           var e = this.e, n = Math.max(e ? e.sieges.length : 2, 2), pay = this.paysageCourant, l = [];
           var rx = pay ? 40 : (n > 6 ? 39 : 37), ry = pay ? 35 : (n > 6 ? 41 : 39), cy = pay ? 53 : 47;
+          if (pay) {
+            // Paysage : sièges répartis à pas égaux sur un « stade » (deux droites + deux demi-cercles), mesuré en pixels,
+            // pour garder de la place verticale entre voisins sur les côtés (pas forcément symétrique)
+            var W = Math.max(300, this.largeur - 210) * rx / 50, H = this.hauteur * ry / 50;
+            var A = W / 2, B = H / 2, d = Math.max(0, A - B), P = 4 * d + 2 * Math.PI * B;
+            for (var j = 0; j < n; j++) {
+              var t = j * P / n, x, y;
+              if (t < d) { x = -t; y = B; }                                   // bas, vers la gauche
+              else if ((t -= d) < Math.PI * B) { var g = t / B; x = -d - B * Math.sin(g); y = B * Math.cos(g); }   // demi-cercle gauche
+              else if ((t -= Math.PI * B) < 2 * d) { x = -d + t; y = -B; }   // haut, vers la droite
+              else if ((t -= 2 * d) < Math.PI * B) { var h = t / B; x = d + B * Math.sin(h); y = -B * Math.cos(h); }  // demi-cercle droit
+              else { t -= Math.PI * B; x = d - t; y = B; }                    // bas, retour vers moi
+              l.push({ x: 50 + x / W * 2 * rx, y: cy + y / H * 2 * ry });
+            }
+            return l;
+          }
           for (var k = 0; k < n; k++) {
             var a = Math.PI / 2 + k * 2 * Math.PI / n;
             l.push({ x: 50 + rx * Math.cos(a), y: cy + ry * Math.sin(a) });
