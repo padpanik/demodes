@@ -707,7 +707,7 @@
         },
         jeux: function() {
           this.maj;   // recalcul après « Quitter »
-          var b = etatJeu('brillant-sauvegarde-v1'), y = etatJeu('yams-sauvegarde'), g = etatJeu('bg-sauvegarde'), a = etatJeu('assaut-sauvegarde'), n = etatJeu('bataille-sauvegarde'), d = etatJeu('gribouille-sauvegarde'), pb = etatJeu('petitbac-sauvegarde'), ag = etatJeu('agents-sauvegarde'), ql = etatJeu('quatre-sauvegarde'), dm = etatJeu('domino-sauvegarde'), lc = etatJeu('lettres-sauvegarde'), jx = etatJeu('joyaux-sauvegarde'), cc = etatJeu('chinchon-sauvegarde'), cj = etatJeu('cieljo-sauvegarde'); var dx = lireStockage('dix-partie'), dxs = etatJeu('dix-sauvegarde');
+          var b = etatJeu('brillant-sauvegarde-v1'), y = etatJeu('yams-sauvegarde'), g = etatJeu('bg-sauvegarde'), a = etatJeu('assaut-sauvegarde'), n = etatJeu('bataille-sauvegarde'), d = etatJeu('gribouille-sauvegarde'), pb = etatJeu('petitbac-sauvegarde'), ag = etatJeu('agents-sauvegarde'), ql = etatJeu('quatre-sauvegarde'), dm = etatJeu('domino-sauvegarde'), lc = etatJeu('lettres-sauvegarde'), jx = etatJeu('joyaux-sauvegarde'), cc = etatJeu('chinchon-sauvegarde'), cj = etatJeu('cieljo-sauvegarde'), pk = etatJeu('poker-sauvegarde'), pks = lireStockage('poker-solo'); var dx = lireStockage('dix-partie'), dxs = etatJeu('dix-sauvegarde');
           return [
             { id: 'brilliant', nom: 'Brilliant', page: 'brilliant/', desc: 'Roll & write : remplis les zones de ta grille.', enCours: b && b.texte },
             { id: 'yams', nom: 'Yams', page: 'yams/', desc: '5 dés, 3 lancers, seul ou à plusieurs.', enCours: y && y.texte },
@@ -719,6 +719,7 @@
             { id: 'agents', nom: 'Agents secrets', page: 'agents/', desc: 'Deux équipes, un mot et un nombre pour tout dire.', enCours: ag && ag.texte },
             { id: 'quatre', nom: 'Quatre en ligne', page: 'quatre/', desc: 'Aligne 4 jetons : seul contre l\'ordinateur ou à deux.', enCours: ql && ql.texte },
             { id: 'domino', nom: 'Dominos', page: 'domino/', desc: 'Dominos ou triominos, seul ou de 2 à 4.', enCours: dm && dm.texte },
+            { id: 'poker', nom: 'Poker', page: 'poker/', desc: 'Texas Hold\'em : tournoi ou cash game, seul ou de 2 à 9.', enCours: pk ? pk.texte : pks && pks.phase === 'jeu' && pks.e && !pks.e.fin ? '● Table en cours (seul)' : '', solo: !pk, nouveau: true },
             { id: 'cieljo', nom: 'Cieljo', page: 'cieljo/', desc: 'Le plus petit total gagne, seul ou de 2 à 8.', enCours: cj && cj.texte, nouveau: true },
             { id: 'chinchon', nom: 'Chinchón', page: 'chinchon/', desc: 'Le jeu de cartes espagnol, seul ou de 2 à 4.', enCours: cc && cc.texte, nouveau: true },
             { id: 'lettres', nom: 'Lettres croisées', page: 'lettres/', desc: 'Des mots sur la grille, seul ou de 2 à 4.', enCours: lc && lc.texte },

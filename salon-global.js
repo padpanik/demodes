@@ -21,6 +21,7 @@ var SalonGlobal = (function () {
     domino: { nom: 'Dominos', page: 'domino/', cle: 'domino-sauvegarde' },
     cieljo: { nom: 'Cieljo', page: 'cieljo/', cle: 'cieljo-sauvegarde' },
     chinchon: { nom: 'Chinchón', page: 'chinchon/', cle: 'chinchon-sauvegarde' },
+    poker: { nom: 'Poker', page: 'poker/', cle: 'poker-sauvegarde' },
     joyaux: { nom: '7 piliers', page: 'joyaux/', cle: 'joyaux-sauvegarde' },
     lettres: { nom: 'Lettres croisées', page: 'lettres/', cle: 'lettres-sauvegarde' },
     dix: { nom: 'Combien sur 10 ?', page: 'dix/', cle: 'dix-sauvegarde' },
