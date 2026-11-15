@@ -540,7 +540,6 @@
             <span v-if="!s.dessin" class="initiale">{{ s.initiale }}</span>
             <svg v-if="s.chrono !== null" class="pk-chrono" viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" fill="none" stroke="rgba(0,0,0,0.4)" stroke-width="4"/>
               <circle cx="32" cy="32" r="30" fill="none" :stroke="s.chrono < 0.25 ? '#ff6b6b' : '#ffd43b'" stroke-width="4" stroke-linecap="round" :stroke-dasharray="188.5" :stroke-dashoffset="188.5 * (1 - s.chrono)"/></svg>
-            <span v-if="s.niveauOrdi" class="pk-niveau-ordi">{{ s.niveauOrdi }}</span>
             <span v-if="s.presence !== null" class="pk-presence" :class="{ non: !s.presence }"></span>
           </div>
           <div class="pk-plaque"><div class="n">{{ s.nomAff }}</div><div class="t">{{ s.tapisAff }}</div></div>
