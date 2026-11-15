@@ -381,6 +381,7 @@ var PK = (function () {
       m.faits[nom] = mot;
       noter(e, nom + (s.tapis === 0 ? ' fait tapis (' + v + ').' : (p.miser ? ' mise ' : ' relance à ') + v + '.'));
       m.agresseur = nom;
+      m.agresseurRue = nom;
     } else if (type !== 'coucher') return 'Action inconnue.';
     m.agi[nom] = true;
     e.n++;
@@ -426,6 +427,7 @@ var PK = (function () {
     for (var i = 0; i < n; i++) m.tableau.push(m.paquet.pop());
     Object.keys(m.mise).forEach(function (x) { m.mise[x] = 0; });
     Object.keys(m.agi).forEach(function (x) { m.agi[x] = false; });
+    m.agresseurRue = null;
     Object.keys(m.faits).forEach(function (x) { if (m.faits[x] !== 'Couché' && m.faits[x] !== 'Tapis') delete m.faits[x]; });
     m.miseMax = 0; m.relanceMin = m.gb; m.enchere = 0;
     m.tour = premierAParler(e, m.bouton);
@@ -477,7 +479,16 @@ var PK = (function () {
     if (abattage) {
       // Tableau complet (au cas où)
       while (m.tableau.length < 5) { m.paquet.pop(); m.tableau.push(m.paquet.pop()); }
-      vivants.forEach(function (n) { m.montre[n] = true; var b = V.meilleure(m.privees[n], m.tableau); mains[n] = { score: b.score, nom: nomMain(b.score), cinq: b.cinq }; });
+      vivants.forEach(function (n) { var b = V.meilleure(m.privees[n], m.tableau); mains[n] = { score: b.score, nom: nomMain(b.score), cinq: b.cinq }; });
+      // Ordre de l'abattage (4.11, demandé par l'utilisateur : « montrer ou pas son jeu selon les règles du poker ») :
+      // le dernier à avoir misé ou relancé montre d'abord, sinon le premier après le bouton ; puis dans le sens du jeu,
+      // chacun montre s'il bat ou égale la meilleure main déjà montrée, sinon il jette ses cartes face cachée
+      // (il pourra les montrer s'il le veut, PK.montrer). Tapis de tous : tout était déjà montré (m.runout).
+      var N0 = e.sieges.length, ordre = vivants.slice().sort(function (a, b) { return ((indexSiege(e, a) - m.bouton - 1 + N0) % N0) - ((indexSiege(e, b) - m.bouton - 1 + N0) % N0); });
+      var k0 = m.agresseurRue ? ordre.indexOf(m.agresseurRue) : -1;
+      if (k0 > 0) ordre = ordre.slice(k0).concat(ordre.slice(0, k0));
+      var meilleur = -1;
+      ordre.forEach(function (n) { if (mains[n].score >= meilleur) { m.montre[n] = true; meilleur = mains[n].score; } });
     }
     var N = e.sieges.length;
     pots(e).forEach(function (p, k) {
@@ -491,6 +502,7 @@ var PK = (function () {
       gagnants.sort(function (a, b) { return ((indexSiege(e, a) - m.bouton - 1 + N) % N) - ((indexSiege(e, b) - m.bouton - 1 + N) % N); });
       var part = Math.floor(p.montant / gagnants.length), reste = p.montant - part * gagnants.length;
       gagnants.forEach(function (n, i) { var g = part + (i < reste ? 1 : 0); gains[n] = (gains[n] || 0) + g; siege(e, n).tapis += g; });
+      if (abattage) gagnants.forEach(function (n) { m.montre[n] = true; });
       details.push({ montant: p.montant, gagnants: gagnants, main: abattage ? mains[gagnants[0]].nom : '', principal: k === 0 });
     });
     m.resultat = { abattage: abattage, gains: gains, pots: details, mains: mains };
@@ -516,6 +528,17 @@ var PK = (function () {
       else eliminer(e, s);
     });
     verifierFin(e);
+  }
+  // Main finie : un joueur resté jusqu'au bout (gagnant sans abattage, ou main jetée face cachée) peut montrer ses cartes
+  function montrer(e, nom) {
+    var m = e.main;
+    if (!m || !m.fini) return 'La main n\'est pas finie.';
+    if (m.joueurs.indexOf(indexSiege(e, nom)) === -1 || m.couche[nom]) return 'Tu n\'étais plus dans la main.';
+    if (m.montre[nom]) return null;
+    m.montre[nom] = true;
+    noter(e, nom + ' montre ses cartes.');
+    e.n++;
+    return null;
   }
   function eliminer(e, s) {
     s.rang = enLice(e);
@@ -838,7 +861,7 @@ var PK = (function () {
     normaliserOptions: normaliserOptions, blindesCash: blindesCash, payante: payante, robotsPermis: robotsPermis,
     tempsJeu: tempsJeu, montee: montee, parMains: parMains, mainsParNiveau: mainsParNiveau, mainsNiveau: mainsNiveau, arreterHorloge: arreterHorloge, lancerHorloge: lancerHorloge, niveauA: niveauA, blindesDe: blindesDe, recavePossible: recavePossible,
     nouvelleTable: nouvelleTable, siege: siege, indexSiege: indexSiege, assis: assis, enLice: enLice, humains: humains, partants: partants,
-    nouvelleMain: nouvelleMain, possibles: possibles, agir: agir, derouler: derouler, pots: pots, pot: pot, potAuMilieu: potAuMilieu, enCourse: enCourse,
+    nouvelleMain: nouvelleMain, possibles: possibles, agir: agir, montrer: montrer, derouler: derouler, pots: pots, pot: pot, potAuMilieu: potAuMilieu, enCourse: enCourse,
     annulerMain: annulerMain, recaver: recaver, refuserRecave: refuserRecave, asseoir: asseoir, lever: lever, retirer: retirer, tempsEcoule: tempsEcoule, calculerGains: calculerGains,
     chen: chen, pourcentMain: pourcentMain, equite: equite, ordinateur: ordinateur, resumeMain: resumeMain
   };

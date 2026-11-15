@@ -113,7 +113,7 @@
     .pk-siege.gagnant .pk-avatar { box-shadow: 0 0 0 3px #ffd86b, 0 0 24px rgba(255,216,107,0.8); }
     .pk-presence { position: absolute; right: 0; bottom: 1px; width: 12px; height: 12px; border-radius: 50%; background: #40c057; box-shadow: 0 0 0 2px #0c1c20; }
     .pk-presence.non { background: #868e96; }
-    .pk-chrono { position: absolute; inset: -5px; width: 64px; height: 64px; transform: rotate(-90deg); pointer-events: none; }
+    .pk-chrono { position: absolute; inset: -5px; width: 64px; height: 64px; pointer-events: none; overflow: visible; }
     .pk-niveau-ordi { position: absolute; left: -2px; top: -3px; background: #0c1c20; border-radius: 8px; padding: 1px 4px; font-size: 9px; font-weight: 800; color: #9fd8c3; box-shadow: 0 0 0 1.5px #2e4a50; }
     .pk-plaque { margin-top: -7px; position: relative; z-index: 2; background: linear-gradient(#1b2a2f, #0f1a1d); border: 1px solid rgba(255,255,255,0.12); border-radius: 9px; padding: 2px 7px 3px;
                  text-align: center; min-width: 62px; max-width: 84px; box-shadow: 0 4px 10px rgba(0,0,0,0.45); }
@@ -538,8 +538,9 @@
           <div class="pk-avatar">
             <div class="fond" :style="{ background: s.teinte }" v-html="s.dessin"></div>
             <span v-if="!s.dessin" class="initiale">{{ s.initiale }}</span>
-            <svg v-if="s.chrono !== null" class="pk-chrono" viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" fill="none" stroke="rgba(0,0,0,0.4)" stroke-width="4"/>
-              <circle cx="32" cy="32" r="30" fill="none" :stroke="s.chrono < 0.25 ? '#ff6b6b' : '#ffd43b'" stroke-width="4" stroke-linecap="round" :stroke-dasharray="188.5" :stroke-dashoffset="188.5 * (1 - s.chrono)"/></svg>
+            <!-- Temps pour jouer : un arc par le haut (4.11, demandé par l'utilisateur : rien de caché sous la plaque du nom) -->
+            <svg v-if="s.chrono !== null" class="pk-chrono" viewBox="0 0 64 64"><path d="M 3.02 39.76 A 30 30 0 1 1 60.98 39.76" fill="none" stroke="rgba(0,0,0,0.4)" stroke-width="4" stroke-linecap="round"/>
+              <path d="M 3.02 39.76 A 30 30 0 1 1 60.98 39.76" pathLength="100" fill="none" :stroke="s.chrono < 0.25 ? '#ff6b6b' : '#ffd43b'" stroke-width="4" stroke-linecap="round" stroke-dasharray="100" :stroke-dashoffset="100 * (1 - s.chrono)"/></svg>
             <span v-if="s.presence !== null" class="pk-presence" :class="{ non: !s.presence }"></span>
           </div>
           <div class="pk-plaque"><div class="n">{{ s.nomAff }}</div><div class="t">{{ s.tapisAff }}</div></div>
@@ -572,7 +573,7 @@
           <div class="sous">Main n° {{ bilan.n }} · pot {{ fmt(bilan.pot) }}{{ bilan.sous ? ' · ' + bilan.sous : '' }}</div>
           <div class="tab" v-if="bilan.tableau.length"><span v-for="c in bilan.tableau" :key="c" class="pk-carte" v-html="carte(c)"></span></div>
           <div v-for="l in bilan.lignes" :key="l.nom" class="ligne" :class="{ gagne: l.net > 0, couche: l.couche }">
-            <span class="cartes"><span v-for="c in l.cartes" :key="c" class="pk-carte" v-html="carte(c)"></span></span>
+            <span class="cartes"><span v-for="c in l.cartes" :key="c" class="pk-carte" v-html="l.cache ? dos : carte(c)"></span></span>
             <span class="qui"><b>{{ l.nom === moiJ ? l.nom + ' (moi)' : l.nom }}</b><small>{{ l.detail }}</small></span>
             <span class="net" :class="l.net > 0 ? 'plus' : l.net < 0 ? 'moins' : 'zero'">{{ l.net > 0 ? '+' : '' }}{{ l.net ? fmt(l.net) : '0' }}</span>
           </div>
@@ -696,6 +697,17 @@
           <button class="btn" @click="caveOuverte = null">Annuler</button>
         </div>
       </div>
+      <!-- Plus que des ordinateurs à la table : ils proposent d'arrêter (4.11) -->
+      <div v-if="plusQueRobots && !finAff" class="pk-voile">
+        <div class="pk-feuille centre">
+          <div style="font-size:2em;text-align:center">🤖🤖</div>
+          <h2>Plus que des ordinateurs à la table</h2>
+          <p style="font-size:0.9em;color:#3b4b57;text-align:center;margin:0 0 6px">« Plus personne ne joue avec nous… On s'arrête là ? »</p>
+          <button v-if="estHote || solo" class="btn principal" @click="envoyerJeu({ type: 'ARRETER' })">Arrêter la table</button>
+          <button class="btn" @click="retourAccueil">🏠 Retour à l'accueil</button>
+          <button class="btn" @click="finVue = 'robots-' + e.id">Les regarder finir</button>
+        </div>
+      </div>
       <!-- Fin du tournoi -->
       <div v-if="finAff" class="pk-voile">
         <div class="pk-feuille centre">
@@ -707,6 +719,7 @@
           <button v-if="estHote || solo" class="btn principal" @click="envoyerJeu({ type: 'NOUVELLE' })">Nouvelle table</button>
           <div v-else class="aide" style="text-align:center">L'hôte peut préparer une nouvelle table.</div>
           <button class="btn" @click="finVue = finAff.cle">Voir la table</button>
+          <button class="btn" @click="retourAccueil">🏠 Retour à l'accueil</button>
         </div>
       </div>
     </div>
@@ -993,7 +1006,7 @@
           return this.siegesVus.map(i => e.sieges[i]).map(s => {
             var p = this.positionDe[s.nom], dans = m && m.joueurs.indexOf(PK.indexSiege(e, s.nom)) !== -1, moi = s.nom === this.moiJ;
             var couche = dans && m.couche[s.nom], fait = dans && m.faits[s.nom], gagnant = m && m.fini && R && R.gains[s.nom] > 0;
-            var montre = dans && !moi && (m.montre[s.nom] || (m.fini && R && R.abattage && !couche)) ? m.privees[s.nom] : null;
+            var montre = dans && !moi && m.montre[s.nom] ? m.privees[s.nom] : null;   // 4.11 : seulement les cartes montrées (règles de l'abattage, ou choix du joueur)
             var chrono = null;
             if (m && !m.fini && m.tour === s.nom && e.opts.delai && !e.pause) chrono = Math.max(0, 1 - (t - m.debutTour) / (e.opts.delai * 1000));
             var dessin = this.avatar(s), statutTxt = s.statut === 'elimine' ? (s.rang ? s.rang + (s.rang === 1 ? 'er' : 'e') : 'éliminé') : (s.statut === 'recave' ? 'recave ?' : '');
@@ -1118,8 +1131,21 @@
           return '';
         },
         // Le bouton du bas quand ce n'est pas mon tour
+        // Plus aucun humain en jeu à la table (4.11, demandé par l'utilisateur) : les ordinateurs proposent d'arrêter
+        plusQueRobots: function() {
+          var e = this.e;
+          if (!e || e.fin || this.finVue === 'robots-' + e.id) return false;
+          var vivants = e.sieges.filter(s => s.statut === 'jeu' || s.statut === 'recave');
+          return vivants.length > 0 && vivants.every(s => s.robot) && PK.humains(e).length > 0;
+        },
+        // Main finie : je suis resté jusqu'au bout et mes cartes ne sont pas montrées (4.11)
+        peutMontrer: function() {
+          var e = this.e, m = this.m, moi = this.moiJ;
+          return !!(e && m && m.fini && m.resultat && !m.annulee && m.joueurs.indexOf(PK.indexSiege(e, moi)) !== -1 && !m.couche[moi] && !m.montre[moi]);
+        },
         boutonBas: function() {
           var e = this.e, s = this.monSiege;
+          if (this.peutMontrer) return { texte: '👁 Montrer mes cartes', sous: this.m.resultat.abattage ? 'tu les as jetées face cachée' : 'les autres se sont couchés', action: () => this.envoyerJeu({ type: 'MONTRER', id: e.id }) };
           if (!e || e.fin) return null;
           if (e.mode === 'cash') {
             if (!s || s.statut === 'parti') return this.peutSAsseoir ? { texte: '🪑 M\'asseoir', sous: 'cave de ' + this.caveMin + ' à ' + this.caveMax, action: () => { this.caveOuverte = 'asseoir'; } } : null;
@@ -1477,6 +1503,9 @@
               if (!e || e.id !== m.id || !m.action || e.pause) return;
               if (PK.agir(e, p, m.action, t)) return;
               break;
+            case 'MONTRER':
+              if (!e || e.id !== m.id || PK.montrer(e, p)) return;
+              break;
             case 'RECAVE':
               if (!e || e.fin) return;
               if (e.mode === 'tournoi' && e.opts.monnaie === 'etoiles' && p !== monPseudo && P.infos[p] && P.infos[p].solde < e.opts.mise) return;
@@ -1624,6 +1653,7 @@
             if (PK.pot(e) > PK.pot(ea)) this.son('jetons');
           } else if (!ma || ma.n !== m.n) { this.son('carte'); }
           if (m.fini && (!ma || !ma.fini || ma.n !== m.n) && m.resultat && !m.annulee && this.bilanActif) this.bilan = this.faireBilan(e);
+          else if (this.bilan && m.fini && m.resultat && this.bilan.n === m.n) this.bilan = this.faireBilan(e);   // quelqu'un vient de montrer ses cartes
           if (m.fini && (!ma || !ma.fini || ma.n !== m.n) && m.resultat && m.resultat.gains[this.moiJ] > 0) { this.vibre([60, 50, 60]); setTimeout(() => this.son('gagne'), 250); }
           // Fin du tournoi : les étoiles du compagnon (une fois par table)
           if (e.fin && !e.fin.annulee && (!ea || !ea.fin) && e.mode === 'tournoi') {
@@ -1641,10 +1671,13 @@
           Object.keys(m.engage).forEach(n => { pot += m.engage[n]; });
           var lignes = m.joueurs.map(i => e.sieges[i]).filter(Boolean).map(s => {
             var n = s.nom, net = (R.gains[n] || 0) - (m.engage[n] || 0), couche = !!m.couche[n], detail;
-            if (R.mains[n]) detail = R.mains[n].nom;
-            else if (couche) detail = m.faits[n] === 'Retiré' ? 'retiré' : 'couché';
-            else detail = R.abattage ? '' : 'les autres se sont couchés';
-            return { nom: n, cartes: (m.privees[n] || []).slice(), couche: couche, net: net, detail: detail };
+            // 4.11 : on ne voit que les cartes montrées (et les miennes) ; les autres restent face cachée
+            var vue = n === this.moiJ || !!m.montre[n];
+            if (couche) detail = m.faits[n] === 'Retiré' ? 'retiré' : 'couché';
+            else if (R.mains[n] && vue) detail = R.mains[n].nom;
+            else if (R.abattage) detail = 'cartes jetées';
+            else detail = 'les autres se sont couchés';
+            return { nom: n, cartes: (m.privees[n] || []).slice(), cache: !vue, couche: couche, net: net, detail: detail };
           });
           lignes.sort((a, b) => b.net - a.net);
           var a = this.annonce;
@@ -1783,6 +1816,10 @@
           if (++e.essais >= 4) return this.finEntree(false, 'Impossible d\'entrer dans le salon pour le moment.\n\nSi vous êtes sur le même Wi-Fi (location, hôtel, Wi-Fi invité…), il empêche souvent les téléphones de se parler : passe l\'un des deux en 4G/5G (Wi-Fi coupé), puis réessaie.');
           this.entreeEnCours = e.essais + 1;
           setTimeout(() => { if (this._entree === e && !this.role) this.creerPartie(false); }, 1200);
+        },
+        retourAccueil: function() {
+          try { if (document.fullscreenElement && document.exitFullscreen) document.exitFullscreen().catch(() => {}); } catch (x) {}
+          location.href = adresseRetour();
         },
         quitterSalon: function() {
           var e = this.e, s = this.monSiege;
