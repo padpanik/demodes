@@ -629,6 +629,7 @@
           <button class="ligne" v-if="peutRecaverCash" @click="menuOuvert = false; caveOuverte = 'recave'">➕ Recaver<small>Compléter mon tapis (jusqu'à {{ caveMax }})</small></button>
           <button class="ligne" v-if="e.mode === 'cash' && monSiege && monSiege.statut === 'jeu'" @click="menuOuvert = false; seLever()">🚪 Me lever de la table<small>{{ e.opts.monnaie === 'poussieres' ? 'Mes jetons redeviennent des étoiles' : 'Je garde ma place pour plus tard' }}</small></button>
           <button class="ligne" v-if="e.mode === 'cash' && peutSAsseoir" @click="menuOuvert = false; caveOuverte = 'asseoir'">🪑 M'asseoir<small>Cave de {{ caveMin }} à {{ caveMax }}</small></button>
+          <button class="ligne" @click="basculerBarres">{{ barresCachees ? '☑' : '☐' }} Cacher les barres du téléphone<small>Plein écran, comme au Donjon</small></button>
           <button class="ligne" v-if="!paysageCourant" @click="menuOuvert = false; passerPaysage()">📱 Passer en paysage</button>
           <button class="ligne" v-else @click="menuOuvert = false; forcerPortrait = true; revenirPortrait()">📱 Revenir en portrait</button>
           <button class="ligne danger" v-if="estHote || solo" @click="menuOuvert = false; arreterOuvert = true">⏹ Arrêter la table<small>{{ e.mode === 'tournoi' && e.opts.monnaie === 'etoiles' ? 'Chacun retrouve sa mise' : 'Retour à la salle d\'attente' }}</small></button>
@@ -837,6 +838,7 @@
         nouvellesCartes: {}, annonceVue: null,
         nonLus: 0,
         bilanActif: lireStockage('poker-bilan') !== false, bilan: null,
+        barresCachees: lireStockage('poker-barres') !== false,   // à la table, cacher les barres du téléphone (plein écran, comme le Donjon)
         soldeEtoiles: Etoiles.solde(), reservePoussieres: Bourse.lire().reserve
       },
       computed: {
@@ -1132,14 +1134,29 @@
         monTour: function(v) { if (v) { this.relanceOuverte = false; this.vibre([30, 40, 30]); this.son('tour'); } },
         tableVisible: { immediate: true, handler: function(v) {
           document.body.classList.toggle('pk-table', !!v);
-          if (v) this.$nextTick(this.mesurerZone);
-          if (!v) { this.revenirPortrait(); this.forcerPortrait = false; }   // table arrêtée ou quittée : retour en portrait
+          if (v) { this.$nextTick(this.mesurerZone); this._fsDemande = false; }
+          if (!v) { this.revenirPortrait(); this.forcerPortrait = false; this.sortirPleinEcran(); }   // table arrêtée ou quittée : retour en portrait
         } },
         caveOuverte: function(v) { if (v) this.montantCave = Math.max(this.caveBorne.min, Math.min(this.caveBorne.max, v === 'asseoir' ? this.caveAff : this.caveBorne.max)); }
       },
       created: function() {
         window.addEventListener('desdale-profil', () => { if (!this.role) this.pseudoInput = pseudoPortail(); });
         window.addEventListener('resize', () => { this.largeur = window.innerWidth; this.hauteur = window.innerHeight; this.$nextTick(this.mesurerZone); });
+        // Barres du téléphone cachées à la table (repris du Donjon, 3.84 à 3.86) : le navigateur sort du plein écran quand on quitte l'appli
+        // et n'y revient qu'après un toucher ; on le redemande à la FIN d'un toucher (le début ne compte pas comme geste sur écran tactile).
+        var finFs = () => { if (!document.fullscreenElement && !document.webkitFullscreenElement) { this._fsDemande = false; this._hFs = 0; } };
+        document.addEventListener('fullscreenchange', finFs);
+        document.addEventListener('webkitfullscreenchange', finFs);
+        document.addEventListener('visibilitychange', finFs);
+        // Chrome peut rester « en plein écran » en réaffichant les barres : si l'écran a nettement rapetissé, on sort nous-mêmes pour redemander au prochain toucher
+        var barresRevenues = () => {
+          if (document.hidden || !this.barresCachees || !this.tableVisible || !(document.fullscreenElement || document.webkitFullscreenElement)) return;
+          if (!this._hFs) { this._hFs = window.innerHeight; return; }
+          if (window.innerHeight < this._hFs - 30 && !this._paysage) { this.sortirPleinEcran(); this._fsDemande = false; this._hFs = 0; }
+        };
+        document.addEventListener('fullscreenchange', () => setTimeout(barresRevenues, 400));
+        document.addEventListener('visibilitychange', () => setTimeout(barresRevenues, 400));
+        ['pointerup', 'touchend', 'click'].forEach(t => document.addEventListener(t, () => this.reprendrePleinEcran(), true));
         if (!ACCES.cleSalon) return;
         this.majSoloEnCours();
         this.restaurer();
@@ -1295,6 +1312,28 @@
           this.envoyerJeu({ type: this.caveOuverte === 'recave' ? 'RECAVE' : 'ASSEOIR', montant: v });
           this.caveOuverte = null;
         },
+        // ---------- Barres du téléphone cachées à la table ----------
+        pleinEcran: function() {
+          var d = document.documentElement, f = d.requestFullscreen || d.webkitRequestFullscreen;
+          if (!f || document.fullscreenElement || document.webkitFullscreenElement) return;
+          try { var p = f.call(d, { navigationUI: 'hide' }); if (p && p.catch) p.catch(() => { this._fsDemande = false; }); } catch (x) { this._fsDemande = false; }   // refusé : nouvel essai au toucher suivant
+        },
+        sortirPleinEcran: function() {
+          var f = document.exitFullscreen || document.webkitExitFullscreen;
+          if (f && (document.fullscreenElement || document.webkitFullscreenElement)) try { var p = f.call(document); if (p && p.catch) p.catch(() => {}); } catch (x) {}
+        },
+        reprendrePleinEcran: function() {
+          if (!this.tableVisible || !this.barresCachees || this._fsDemande) return;
+          this._fsDemande = true;
+          this.pleinEcran();
+        },
+        basculerBarres: function() {
+          this.barresCachees = !this.barresCachees;
+          ecrireStockage('poker-barres', this.barresCachees);
+          this.menuOuvert = false;
+          if (this.barresCachees) { this._fsDemande = true; this.pleinEcran(); }
+          else if (!this._paysage) this.sortirPleinEcran();
+        },
         // Paysage : plein écran puis rotation verrouillée ; on note qu'on l'a demandé pour tout remettre à l'arrêt
         passerPaysage: function() {
           this.forcerPortrait = false;
@@ -1307,7 +1346,8 @@
         revenirPortrait: function() {
           if (!this._paysage) return;
           this._paysage = false;
-          var sortir = () => { try { if (document.fullscreenElement && document.exitFullscreen) document.exitFullscreen().catch(() => {}); } catch (x) {} };
+          var garder = this.tableVisible && this.barresCachees;
+          var sortir = () => { if (garder) return; try { if (document.fullscreenElement && document.exitFullscreen) document.exitFullscreen().catch(() => {}); } catch (x) {} };
           try {
             if (screen.orientation && screen.orientation.lock && document.fullscreenElement) {
               screen.orientation.lock('portrait').catch(() => {}).then(() => { try { screen.orientation.unlock(); } catch (x) {} sortir(); });
