@@ -515,7 +515,7 @@
         <div class="pk-rail"><div class="pk-tapis"><div class="pk-marque">DÉSDALE<small>{{ VARIANTE.nom.toUpperCase() }}</small></div></div></div>
 
         <!-- Centre : pot, tableau, annonce -->
-        <div class="pk-centre" v-if="m">
+        <div class="pk-centre" v-if="m" :style="{ top: centreY + '%' }">
           <div class="pk-pot" v-if="potAff"><span class="pk-pile" v-html="pileJetons(potAff)"></span>{{ fmt(potAff) }} <small v-if="potTotal !== potAff">· total {{ fmt(potTotal) }}</small></div>
           <div class="pk-tableau" :style="{ '--ct': tailleTableau + 'px' }">
             <span v-for="k in 5" :key="k">
@@ -525,7 +525,7 @@
           </div>
           <div class="pk-annonce" v-if="annonce" :key="annonce.cle">{{ annonce.titre }}<small v-if="annonce.sous">{{ annonce.sous }}</small></div>
         </div>
-        <div class="pk-centre" v-else-if="e && !e.fin">
+        <div class="pk-centre" v-else-if="e && !e.fin" :style="{ top: centreY + '%' }">
           <div class="pk-annonce">{{ e.mode === 'cash' ? 'En attente de joueurs…' : 'Les cartes arrivent…' }}</div>
         </div>
 
@@ -893,6 +893,8 @@
         paysageCourant: function() { return this.largeur > this.hauteur; },
         tournerConseille: function() { return this.e && this.nbSieges > 6 && !this.paysageCourant && !this.forcerPortrait; },
         nbSieges: function() { return this.siegesVus.length; },
+        // Hauteur du centre de la table (cartes du milieu et pot) en % : plus bas en portrait quand il y a peu de joueurs (4.10)
+        centreY: function() { return this.paysageCourant ? 50 : (this.nbSieges <= 6 ? 51 : 45); },
         // Les sièges montrés, vus de ma place (moi en bas) : les éliminés et les partis quittent la table (4.09, demandé par l'utilisateur :
         // « une répartition idéale par nombre de joueurs, pas des places fixes ») ; on garde ceux de la main en cours, et moi
         siegesVus: function() {
@@ -912,7 +914,7 @@
           var W = this.zoneW, H = this.zoneH, serre = this.nbSieges > 6, hw = (serre ? 35 : 42) + 4, av = serre ? 44 : 54;
           var pos = this.positions.slice(1);
           for (; ct > 28; ct--) {
-            var bw = 5 * ct + 16, bh = 1.4 * ct, by = H * 0.45 + 17;
+            var bw = 5 * ct + 16, bh = 1.4 * ct, by = H * this.centreY / 100 + 17;
             var gene = pos.some(q => {
               var cx = q.x * W / 100, cy = q.y * H / 100;
               var hs = av + 32, sh = cy - hs / 2 - 14, sb = cy + hs / 2 + 2;
@@ -934,6 +936,26 @@
         positions: function() {
           var n = Math.max(this.siegesVus.length, 2), pay = this.paysageCourant, l = [];
           var rx = pay ? 40 : (n > 6 ? 39 : 37), ry = pay ? 35 : (n > 6 ? 41 : 39), cy = pay ? 53 : 47;
+          // Peu de joueurs (6 au plus, 4.10, demandé par l'utilisateur : « profiter de la place pour une vue dégagée ») :
+          // moi en bas, les autres répartis à pas égaux sur le haut de la table, loin de moi, portrait comme paysage
+          var ARC = { 1: [270], 2: [215, 325], 3: [205, 270, 335], 4: [200, 247, 293, 340], 5: [195, 233, 270, 307, 345] };
+          if (!pay && n <= 6) {
+            // Portrait : le haut de la table est un « stade » (deux côtés droits + un demi-cercle) ; les autres y sont répartis
+            // à pas égaux, mesurés en pixels, du côté gauche jusqu'au côté droit en passant par le haut ; les cartes du milieu descendent un peu
+            var W0 = this.zoneW, H0 = this.zoneH, R = W0 * 0.36, yHaut = H0 * 0.08 + R, yBas = Math.max(yHaut, H0 * (this.centreY - 12) / 100);
+            // f : marge aux deux bouts (à 4 et 5 adversaires, les plus éloignés descendent presque au bas des côtés)
+            var dr = yBas - yHaut, L = 2 * dr + Math.PI * R, k = n - 1, f = k >= 4 ? 0.1 : 0.5;
+            l.push({ x: 50, y: 86 });
+            for (var j = 0; j < k; j++) {
+              var t = L * (j + f) / (k - 1 + 2 * f), x, y;
+              if (t < dr) { x = W0 / 2 - R; y = yBas - t; }
+              else if ((t -= dr) < Math.PI * R) { var g = Math.PI + t / R; x = W0 / 2 + R * Math.cos(g); y = yHaut + R * Math.sin(g); }
+              else { t -= Math.PI * R; x = W0 / 2 + R; y = yHaut + t; }
+              l.push({ x: x / W0 * 100, y: y / H0 * 100 });
+            }
+            return l;
+          }
+          if (ARC[n - 1]) return [90].concat(ARC[n - 1]).map(d => ({ x: 50 + rx * Math.cos(d * Math.PI / 180), y: cy + ry * Math.sin(d * Math.PI / 180) }));
           if (pay) {
             // Paysage : sièges répartis à pas égaux sur un « stade » (deux droites + deux demi-cercles), mesuré en pixels,
             // pour garder de la place verticale entre voisins sur les côtés (pas forcément symétrique)
@@ -993,7 +1015,7 @@
           if (!m) return l;
           Object.keys(m.mise).forEach(n => {
             if (m.fini || !m.mise[n] || !this.positionDe[n]) return;
-            var p = this.positionDe[n], cy = this.paysageCourant ? 53 : 47;
+            var p = this.positionDe[n], cy = this.paysageCourant ? 53 : this.centreY + 2;
             // Ma mise : à gauche de mes cartes (devant elles, elle les cacherait)
             if (this.paysageCourant) {
               // Paysage : ma mise juste à droite de mon portrait, celle des autres un peu vers le centre,
@@ -1016,7 +1038,7 @@
         donneurPos: function() {
           var m = this.m, e = this.e;
           if (!m || !e.sieges[m.bouton]) return null;
-          var p = this.positionDe[e.sieges[m.bouton].nom], cy = this.paysageCourant ? 53 : 47;
+          var p = this.positionDe[e.sieges[m.bouton].nom], cy = this.paysageCourant ? 53 : this.centreY + 2;
           if (!p) return null;
           if (!this.paysageCourant && this.misesAff.donneur) return this.misesAff.donneur;
           if (e.sieges[m.bouton].nom === this.moiJ && m.privees[this.moiJ]) return { x: p.x + (this.paysageCourant ? 12 : 22), y: p.y - (this.paysageCourant ? 6 : 4) };
@@ -1373,7 +1395,7 @@
         // un joueur ou une autre mise, on essaie d'autres directions (tournées de 35° et 70°) ou un peu plus loin
         placerMises: function(l) {
           var W = this.zoneW, H = this.zoneH, serre = this.nbSieges > 6, hw = serre ? 36 : 43, av = serre ? 44 : 54;
-          var boites = [], ct = this.tailleTableau, bw = 5 * ct + 16, bh = 1.4 * ct, by = H * 0.45 + 17;
+          var boites = [], ct = this.tailleTableau, bw = 5 * ct + 16, bh = 1.4 * ct, by = H * this.centreY / 100 + 17;
           boites.push([W / 2 - bw / 2, by - bh / 2 - 34, W / 2 + bw / 2, by + bh / 2]);   // pot et cartes du milieu
           var mc = this.mesCartes;
           if (mc) { var cm = serre ? 54 : 62, yb = mc.y * H / 100; boites.push([W / 2 - cm, yb - 1.4 * cm, W / 2 + cm, yb]); }

@@ -3,12 +3,13 @@
 // Les clés de stockage gardent l'ancien préfixe "brillant-" : les réglages déjà faits sont conservés.
 
 // Numéro de version affiché (à augmenter à chaque mise en ligne, avec brilliant/index.html et sw.js)
-const VERSION = '4.09';
+const VERSION = '4.10';
 
 // ---------- Nouveautés (2.87, demandé par l'utilisateur) ----------
 // Une ligne très brève par mise en ligne (la plus récente en haut) : l'accueil les montre une seule fois, dans une petite fenêtre,
 // à qui n'a pas encore vu cette version. [version, jeu ou partie de l'appli, ce qui change]
 const NOUVEAUTES = [
+  ['4.10', 'Poker', 'À 6 joueurs ou moins, les adversaires se répartissent en haut de la table, loin de toi.'],
   ['4.09', 'Poker', 'Les joueurs éliminés quittent la table et les autres se répartissent autour.'],
   ['4.08', 'Poker', 'À la table, les barres du téléphone se cachent (plein écran), comme au Donjon.'],
   ['4.07', 'Poker', 'Le niveau des ordinateurs n\'est plus affiché à la table.'],
