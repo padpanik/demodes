@@ -83,7 +83,7 @@
     .pk-marque { position: absolute; left: 0; right: 0; top: 27%; text-align: center; font-weight: 900; letter-spacing: 6px; color: rgba(255,255,255,0.10); font-size: 15px; }
     .pk-marque small { display: block; font-size: 9px; letter-spacing: 2px; font-weight: 700; margin-top: 2px; }
 
-    .pk-centre { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); display: flex; flex-direction: column; align-items: center; gap: 8px; width: 92%; z-index: 3; }
+    .pk-centre { position: absolute; left: 50%; top: 45%; transform: translate(-50%, -50%); display: flex; flex-direction: column; align-items: center; gap: 8px; width: 92%; z-index: 3; }
     .pk-pot { display: inline-flex; align-items: center; gap: 6px; background: rgba(0,0,0,0.38); border-radius: 999px; padding: 4px 12px 4px 6px; font-weight: 800; font-size: 0.9em; min-height: 22px; }
     .pk-pot small { color: #b8d4c9; font-weight: 600; }
     .pk-tableau { display: flex; gap: 4px; justify-content: center; }
@@ -131,6 +131,7 @@
     .pk-mains .pk-carte { --ct: 20px; }
     .pk-mains .pk-carte + .pk-carte { margin-left: -9px; transform: rotate(9deg) translateY(1px); }
     .pk-mains .pk-carte:first-child { transform: rotate(-6deg); }
+    .pk-siege:has(.pk-montrees) { z-index: 8; }
     .pk-montrees { position: absolute; top: -16px; display: flex; gap: 2px; z-index: 7; }
     .pk-montrees .pk-carte { --ct: 30px; }
     .pk-nommain { position: absolute; bottom: -15px; white-space: nowrap; font-size: 0.64em; font-weight: 800; color: #ffe39a; background: rgba(0,0,0,0.6); border-radius: 6px; padding: 0 5px; z-index: 8; }
@@ -239,6 +240,7 @@
       .pk-haut .pk-niveau { order: 9; flex: 0 1 auto; width: 200px; margin-right: -2px; box-sizing: border-box; margin: 0 0 0 auto; text-align: right; background: rgba(0,0,0,0.35); border-radius: 12px; padding: 2px 12px; }
       .pk-haut .pk-niveau small { font-size: 0.68em; }
       .pk-zone { flex: 1 1 auto; height: 100%; }
+      .pk-centre { top: 50%; }
       .pk-rail { left: 9%; right: 9%; top: 17%; bottom: 10%; }
       .pk-relance { position: static; }
       .pk-bas { width: 210px; flex: 0 0 210px; height: 100%; min-height: 0; display: flex; flex-direction: column; justify-content: flex-end; box-sizing: border-box; padding: 44px 10px 10px 0; }
@@ -515,7 +517,7 @@
         <!-- Centre : pot, tableau, annonce -->
         <div class="pk-centre" v-if="m">
           <div class="pk-pot" v-if="potAff"><span class="pk-pile" v-html="pileJetons(potAff)"></span>{{ fmt(potAff) }} <small v-if="potTotal !== potAff">· total {{ fmt(potTotal) }}</small></div>
-          <div class="pk-tableau">
+          <div class="pk-tableau" :style="{ '--ct': tailleTableau + 'px' }">
             <span v-for="k in 5" :key="k">
               <span v-if="m.tableau[k - 1]" class="pk-carte" :class="{ arrive: nouvellesCartes[m.tableau[k - 1]], gagnante: cartesGagnantes[m.tableau[k - 1]], terne: m.fini && m.resultat && m.resultat.abattage && !cartesGagnantes[m.tableau[k - 1]] }" v-html="carte(m.tableau[k - 1])"></span>
               <span v-else class="emp" style="display:block"></span>
@@ -832,7 +834,7 @@
         maintenant: Date.now(), decalage: 0,
         relanceOuverte: false, montantRelance: 0,
         menuOuvert: false, journalOuvert: false, structureOuverte: false, retirerQui: null, arreterOuvert: false, caveOuverte: null, montantCave: 0,
-        finVue: null, forcerPortrait: false, largeur: window.innerWidth, hauteur: window.innerHeight,
+        finVue: null, forcerPortrait: false, zoneW: 360, zoneH: 580, largeur: window.innerWidth, hauteur: window.innerHeight,
         nouvellesCartes: {}, annonceVue: null,
         nonLus: 0,
         bilanActif: lireStockage('poker-bilan') !== false, bilan: null,
@@ -890,6 +892,23 @@
         paysageCourant: function() { return this.largeur > this.hauteur; },
         tournerConseille: function() { return this.e && this.nbSieges > 6 && !this.paysageCourant && !this.forcerPortrait; },
         nbSieges: function() { return this.e ? this.e.sieges.filter(s => s.statut !== 'parti').length : 0; },
+        // Portrait : les cartes du milieu rapetissent si un joueur assis sur le côté les cacherait
+        tailleTableau: function() {
+          var ct = this.tailleCarte;
+          if (this.paysageCourant || !this.e) return ct;
+          var W = this.zoneW, H = this.zoneH, serre = this.nbSieges > 6, hw = (serre ? 35 : 42) + 4, av = serre ? 44 : 54;
+          var pos = this.positions.slice(1);
+          for (; ct > 28; ct--) {
+            var bw = 5 * ct + 16, bh = 1.4 * ct, by = H * 0.45 + 17;
+            var gene = pos.some(q => {
+              var cx = q.x * W / 100, cy = q.y * H / 100;
+              var hs = av + 32, sh = cy - hs / 2 - 14, sb = cy + hs / 2 + 2;
+              return Math.abs(cx - W / 2) < bw / 2 + hw && sb > by - bh / 2 - 4 && sh < by + bh / 2 + 4;
+            });
+            if (!gene) break;
+          }
+          return ct;
+        },
         tailleCarte: function() { return this.paysageCourant ? Math.min(46, Math.round(this.hauteur * 0.12)) : Math.min(50, Math.round((this.largeur - 70) / 6.2)); },
         // Les sièges vus de ma place (je suis en bas)
         ordreVue: function() {
@@ -918,6 +937,9 @@
             }
             return l;
           }
+          // Portrait de 4 à 7 places : personne à hauteur des cartes du milieu (sinon elles rapetissent beaucoup)
+          var ANGLES = { 4: [90, 205, 270, 335], 5: [90, 140, 220, 320, 40], 6: [90, 140, 205, 270, 335, 40], 7: [90, 135, 205, 245, 295, 335, 45] };
+          if (!pay && ANGLES[n]) return ANGLES[n].map(d => ({ x: 50 + rx * Math.cos(d * Math.PI / 180), y: cy + ry * Math.sin(d * Math.PI / 180) }));
           for (var k = 0; k < n; k++) {
             var a = Math.PI / 2 + k * 2 * Math.PI / n;
             l.push({ x: 50 + rx * Math.cos(a), y: cy + ry * Math.sin(a) });
@@ -955,9 +977,9 @@
         },
         misesAff: function() {
           var m = this.m, l = [];
-          if (!m || m.fini) return l;
+          if (!m) return l;
           Object.keys(m.mise).forEach(n => {
-            if (!m.mise[n] || !this.positionDe[n]) return;
+            if (m.fini || !m.mise[n] || !this.positionDe[n]) return;
             var p = this.positionDe[n], cy = this.paysageCourant ? 53 : 47;
             // Ma mise : à gauche de mes cartes (devant elles, elle les cacherait)
             if (this.paysageCourant) {
@@ -969,9 +991,13 @@
                 l.push({ nom: n, montant: m.mise[n], x: p.x + (50 - p.x) * (bas ? 0.22 : 0.38), y: p.y + (cy - p.y) * (bas ? 0.62 : 0.42) });
               }
             }
-            else if (n === this.moiJ && m.privees[n]) l.push({ nom: n, montant: m.mise[n], x: p.x - 27, y: p.y - 11 });
-            else l.push({ nom: n, montant: m.mise[n], x: p.x + (50 - p.x) * 0.42, y: p.y + (cy - p.y) * 0.4 });
+            else if (n === this.moiJ && m.privees[n]) {
+              // Portrait : ma mise au milieu, juste au-dessus de mes cartes (les voisins du bas sont à gauche et à droite)
+              var ctMoi = this.nbSieges > 6 ? 54 : 62, hautCartes = (1.4 * ctMoi + 18) / this.zoneH * 100;
+              l.push({ nom: n, montant: m.mise[n], x: 50, y: p.y - 8.5 - hautCartes });
+            } else l.push({ nom: n, montant: m.mise[n], x: p.x, y: p.y, autre: true });
           });
+          if (!this.paysageCourant) this.placerMises(l);
           return l;
         },
         donneurPos: function() {
@@ -979,6 +1005,7 @@
           if (!m || !e.sieges[m.bouton]) return null;
           var p = this.positionDe[e.sieges[m.bouton].nom], cy = this.paysageCourant ? 53 : 47;
           if (!p) return null;
+          if (!this.paysageCourant && this.misesAff.donneur) return this.misesAff.donneur;
           if (e.sieges[m.bouton].nom === this.moiJ && m.privees[this.moiJ]) return { x: p.x + (this.paysageCourant ? 12 : 22), y: p.y - (this.paysageCourant ? 6 : 4) };
           return { x: p.x + (50 - p.x) * 0.26 + (p.x < 50 ? 6 : -6), y: p.y + (cy - p.y) * 0.26 };
         },
@@ -1104,15 +1131,16 @@
         caveVoulue: function(v) { ecrireStockage('poker-cave', v); this.envoyerInfos(); },
         pseudoInput: function() { this.sauvegarder(); },
         monTour: function(v) { if (v) { this.relanceOuverte = false; this.vibre([30, 40, 30]); this.son('tour'); } },
-        tableVisible: function(v) {
+        tableVisible: { immediate: true, handler: function(v) {
           document.body.classList.toggle('pk-table', !!v);
+          if (v) this.$nextTick(this.mesurerZone);
           if (!v) { this.revenirPortrait(); this.forcerPortrait = false; }   // table arrêtée ou quittée : retour en portrait
-        },
+        } },
         caveOuverte: function(v) { if (v) this.montantCave = Math.max(this.caveBorne.min, Math.min(this.caveBorne.max, v === 'asseoir' ? this.caveAff : this.caveBorne.max)); }
       },
       created: function() {
         window.addEventListener('desdale-profil', () => { if (!this.role) this.pseudoInput = pseudoPortail(); });
-        window.addEventListener('resize', () => { this.largeur = window.innerWidth; this.hauteur = window.innerHeight; });
+        window.addEventListener('resize', () => { this.largeur = window.innerWidth; this.hauteur = window.innerHeight; this.$nextTick(this.mesurerZone); });
         if (!ACCES.cleSalon) return;
         this.majSoloEnCours();
         this.restaurer();
@@ -1290,6 +1318,45 @@
           } catch (x) {}
           sortir();
         },
+        // Portrait : chaque mise à ~60 px de son siège, vers le centre ; si elle tomberait sur les cartes du milieu, mes cartes,
+        // un joueur ou une autre mise, on essaie d'autres directions (tournées de 35° et 70°) ou un peu plus loin
+        placerMises: function(l) {
+          var W = this.zoneW, H = this.zoneH, serre = this.nbSieges > 6, hw = serre ? 36 : 43, av = serre ? 44 : 54;
+          var boites = [], ct = this.tailleTableau, bw = 5 * ct + 16, bh = 1.4 * ct, by = H * 0.45 + 17;
+          boites.push([W / 2 - bw / 2, by - bh / 2 - 34, W / 2 + bw / 2, by + bh / 2]);   // pot et cartes du milieu
+          var mc = this.mesCartes;
+          if (mc) { var cm = serre ? 54 : 62, yb = mc.y * H / 100; boites.push([W / 2 - cm, yb - 1.4 * cm, W / 2 + cm, yb]); }
+          // un siège : avatar, plaque, étiquette au-dessus et ses deux cartes en haut à droite
+          // (le siège est centré sur l'ensemble avatar + plaque : l'avatar est donc au-dessus du point)
+          var hs = av + 32;
+          this.positions.forEach(q => { var cx = q.x * W / 100, cy = q.y * H / 100; boites.push([cx - hw, cy - hs / 2 - 14, cx + hw, cy + hs / 2 + 2], [cx + 6, cy - hs / 2 - 8, cx + av / 2 + 24, cy - hs / 2 + 30]); });
+          l.forEach(b => { if (!b.autre) boites.push([b.x * W / 100 - 30, b.y * H / 100 - 12, b.x * W / 100 + 30, b.y * H / 100 + 12]); });
+          var gene = (x, y, rx, ry) => x < rx || x > W - rx || y < ry || y > H - ry || boites.some(c => x + rx > c[0] && x - rx < c[2] && y + ry > c[1] && y - ry < c[3]);
+          // Directions essayées : vers le centre, puis tournées de 35° et 70°, à trois distances
+          var essais = [[0, 56], [0.61, 56], [-0.61, 56], [0, 70], [0.61, 70], [-0.61, 70], [1.22, 56], [-1.22, 56], [0, 86], [0.61, 86], [-0.61, 86], [1.22, 70], [-1.22, 70]];
+          var placer = (sx, sy, rx, ry, liste) => {
+            var a0 = Math.atan2(H / 2 - sy, W / 2 - sx);
+            essais = liste || essais;
+            for (var k = 0; k < essais.length; k++) {
+              var a = a0 + essais[k][0], x = sx + Math.cos(a) * essais[k][1], y = sy + Math.sin(a) * essais[k][1];
+              if (!gene(x, y, rx, ry)) return [x, y];
+            }
+            return [sx + Math.cos(a0) * 56, sy + Math.sin(a0) * 56];
+          };
+          l.forEach(b => {
+            if (!b.autre) return;
+            var c = placer(b.x * W / 100, b.y * H / 100, 30, 12);
+            b.x = c[0] / W * 100; b.y = c[1] / H * 100;
+            boites.push([c[0] - 30, c[1] - 12, c[0] + 30, c[1] + 12]);
+          });
+          // Le bouton du donneur, après les mises, sans rien recouvrir
+          var m = this.m, e = this.e, sd = m && e.sieges[m.bouton] && this.positionDe[e.sieges[m.bouton].nom];
+          // pour le bouton : tout autour du siège, au plus près de la direction du centre
+          var tour = [];
+          [52, 64, 78].forEach(d => [0, 0.5, -0.5, 1, -1, 1.5, -1.5, 2, -2, 2.6, -2.6, 3.14].forEach(a => tour.push([a, d])));
+          if (sd) { var c = placer(sd.x * W / 100, sd.y * H / 100, 14, 14, tour); l.donneur = { x: c[0] / W * 100, y: c[1] / H * 100 }; }
+        },
+        mesurerZone: function() { var z = this.$refs.zone; if (z && z.clientHeight) { this.zoneW = z.clientWidth; this.zoneH = z.clientHeight; } },
         debutNiveauTable: function(k) { var e = this.e; return PK.parMains(e) ? 'main ' + (k * PK.mainsParNiveau(e) + 1) : k * e.structure.minutes + ' min'; },
         envoyerJeu: function(m) {
           if (this.solo || this.role === 'hote') return this.traiterJeu(monPseudo, m);
