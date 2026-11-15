@@ -229,9 +229,29 @@
     .classement-pk td.g { text-align: right; color: #7a5600; white-space: nowrap; }
     .classement-pk tr.moi td { background: #fff8dc; }
     .pk-tourner { position: absolute; inset: 0; z-index: 25; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; background: rgba(7,15,18,0.86); text-align: center; padding: 20px; }
-    .pk-tourner .btn { max-width: 260px; }
+    .pk-tourner .btn { max-width: 260px; width: 100%; flex: 0 0 auto; height: auto; }
 
-    /* Table de 7 à 9 places : sièges plus compacts (tout reste en portrait) */
+    /* Paysage : la table s'étire en largeur, les boutons passent à droite */
+    @media (orientation: landscape) and (max-height: 560px) {
+      .pk-ecran { flex-direction: row; flex-wrap: wrap; }
+      .pk-haut { position: absolute; left: 0; top: 0; right: 0; z-index: 25; padding: 4px 8px; pointer-events: none; }
+      .pk-haut > * { pointer-events: auto; }
+      .pk-haut .pk-niveau { flex: 0 1 auto; margin: 0 auto 0 2px; text-align: left; background: rgba(0,0,0,0.35); border-radius: 12px; padding: 2px 12px; }
+      .pk-zone { flex: 1 1 auto; height: 100%; }
+      .pk-rail { left: 9%; right: 9%; top: 17%; bottom: 10%; }
+      .pk-relance { position: static; }
+      .pk-bas { width: 210px; flex: 0 0 210px; height: 100%; min-height: 0; display: flex; flex-direction: column; justify-content: flex-end; box-sizing: border-box; padding: 44px 10px 10px 0; }
+      .pk-boutons { flex-direction: column; }
+      .pk-b { min-height: 46px; }
+      .pk-raccourcis { flex-wrap: wrap; }
+      .pk-raccourcis button { flex: 1 1 40%; }
+      .pk-siege { width: 80px; }
+      .pk-avatar { width: 48px; height: 48px; }
+      .pk-chrono { width: 58px; height: 58px; }
+      .pk-moi-cartes .pk-carte { --ct: 52px; }
+    }
+
+    /* Table de 7 à 9 places en portrait : sièges plus compacts */
     .pk-ecran.serre .pk-siege { width: 70px; }
     .pk-ecran.serre .pk-avatar { width: 44px; height: 44px; }
     .pk-ecran.serre .pk-chrono { width: 54px; height: 54px; }
@@ -367,6 +387,7 @@
             <div class="segment serre">
               <button v-for="n in [2, 3, 4, 5, 6, 7, 8, 9]" :key="n" :disabled="!regleur" :class="{ actif: o.places === n }" @click="regler({ places: n })">{{ n }}</button>
             </div>
+            <div class="aide" v-if="o.places > 6" style="margin:-4px 0 8px">De 7 à 9 places, la table se joue mieux téléphone en paysage (au choix).</div>
             <div class="petit-titre">Temps pour jouer</div>
             <div class="segment serre">
               <button v-for="d in [0, 20, 30, 60]" :key="d" :disabled="!regleur" :class="{ actif: o.delai === d }" @click="regler({ delai: d })">{{ d ? d + ' s' : 'Illimité' }}</button>
@@ -467,7 +488,7 @@
     </fiche-jeu>
 
     <!-- ================== LA TABLE ================== -->
-    <div class="pk-ecran" v-if="tableVisible" :class="{ serre: nbSieges > 6 }" :style="{ '--ct': tailleCarte + 'px' }">
+    <div class="pk-ecran" v-if="tableVisible" :class="{ serre: nbSieges > 6 && !paysageCourant }" :style="{ '--ct': tailleCarte + 'px' }">
       <div class="pk-haut">
         <button class="pk-rond" @click="menuOuvert = true" aria-label="Menu"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
         <div class="pk-niveau"><b>{{ titreTable }}</b><small>{{ sousTitreTable }}</small></div>
@@ -547,6 +568,13 @@
           <button class="btn" @click="bilan = null">OK</button>
         </div>
 
+        <!-- Plus de 6 places en portrait : proposer le paysage (on peut rester en portrait) -->
+        <div v-if="tournerConseille" class="pk-tourner">
+          <div style="font-size:2.2em">📱↻</div>
+          <div><b>Tourne ton téléphone ?</b><br><span style="color:#b7cec6;font-size:0.9em">À {{ e.opts.places }} places, la table est plus à l'aise en paysage.</span></div>
+          <button class="btn principal" @click="passerPaysage">Passer en paysage</button>
+          <button class="lien-discret" style="color:#9fd8c3" @click="forcerPortrait = true">Rester en portrait</button>
+        </div>
       </div>
 
       <!-- Bas : mes actions -->
@@ -590,6 +618,8 @@
           <button class="ligne" v-if="peutRecaverCash" @click="menuOuvert = false; caveOuverte = 'recave'">➕ Recaver<small>Compléter mon tapis (jusqu'à {{ caveMax }})</small></button>
           <button class="ligne" v-if="e.mode === 'cash' && monSiege && monSiege.statut === 'jeu'" @click="menuOuvert = false; seLever()">🚪 Me lever de la table<small>{{ e.opts.monnaie === 'poussieres' ? 'Mes jetons redeviennent des étoiles' : 'Je garde ma place pour plus tard' }}</small></button>
           <button class="ligne" v-if="e.mode === 'cash' && peutSAsseoir" @click="menuOuvert = false; caveOuverte = 'asseoir'">🪑 M'asseoir<small>Cave de {{ caveMin }} à {{ caveMax }}</small></button>
+          <button class="ligne" v-if="!paysageCourant" @click="menuOuvert = false; passerPaysage()">📱 Passer en paysage</button>
+          <button class="ligne" v-else @click="menuOuvert = false; forcerPortrait = true; revenirPortrait()">📱 Revenir en portrait</button>
           <button class="ligne danger" v-if="estHote || solo" @click="menuOuvert = false; arreterOuvert = true">⏹ Arrêter la table<small>{{ e.mode === 'tournoi' && e.opts.monnaie === 'etoiles' ? 'Chacun retrouve sa mise' : 'Retour à la salle d\'attente' }}</small></button>
           <button class="btn" @click="menuOuvert = false">Fermer</button>
         </div>
@@ -846,8 +876,8 @@
           if (!this.e) return [];
           return this.e.sieges.filter(s => !s.robot && (s.statut === 'jeu' || s.statut === 'recave')).map(s => ({ nom: s.nom, la: this.absents.indexOf(s.nom) === -1 && (s.nom !== this.moiJ || this.enLigne) }));
         },
-        // Tout se joue en portrait (le paysage est mis de côté, demandé par l'utilisateur)
-        paysageCourant: function() { return false; },
+        paysageCourant: function() { return this.largeur > this.hauteur; },
+        tournerConseille: function() { return this.e && this.nbSieges > 6 && !this.paysageCourant && !this.forcerPortrait; },
         nbSieges: function() { return this.e ? this.e.sieges.filter(s => s.statut !== 'parti').length : 0; },
         tailleCarte: function() { return this.paysageCourant ? Math.min(46, Math.round(this.hauteur * 0.12)) : Math.min(50, Math.round((this.largeur - 70) / 6.2)); },
         // Les sièges vus de ma place (je suis en bas)
@@ -860,7 +890,7 @@
         },
         positions: function() {
           var e = this.e, n = Math.max(e ? e.sieges.length : 2, 2), pay = this.paysageCourant, l = [];
-          var rx = n > 6 ? 39 : 37, ry = n > 6 ? 41 : 39, cy = 47;
+          var rx = pay ? 40 : (n > 6 ? 39 : 37), ry = pay ? 35 : (n > 6 ? 41 : 39), cy = pay ? 53 : 47;
           for (var k = 0; k < n; k++) {
             var a = Math.PI / 2 + k * 2 * Math.PI / n;
             l.push({ x: 50 + rx * Math.cos(a), y: cy + ry * Math.sin(a) });
@@ -1030,7 +1060,10 @@
         caveVoulue: function(v) { ecrireStockage('poker-cave', v); this.envoyerInfos(); },
         pseudoInput: function() { this.sauvegarder(); },
         monTour: function(v) { if (v) { this.relanceOuverte = false; this.vibre([30, 40, 30]); this.son('tour'); } },
-        tableVisible: function(v) { document.body.classList.toggle('pk-table', !!v); },
+        tableVisible: function(v) {
+          document.body.classList.toggle('pk-table', !!v);
+          if (!v) { this.revenirPortrait(); this.forcerPortrait = false; }   // table arrêtée ou quittée : retour en portrait
+        },
         caveOuverte: function(v) { if (v) this.montantCave = Math.max(this.caveBorne.min, Math.min(this.caveBorne.max, v === 'asseoir' ? this.caveAff : this.caveBorne.max)); }
       },
       created: function() {
@@ -1190,6 +1223,28 @@
           if (v < b.min || v > b.max) return;
           this.envoyerJeu({ type: this.caveOuverte === 'recave' ? 'RECAVE' : 'ASSEOIR', montant: v });
           this.caveOuverte = null;
+        },
+        // Paysage : plein écran puis rotation verrouillée ; on note qu'on l'a demandé pour tout remettre à l'arrêt
+        passerPaysage: function() {
+          this.forcerPortrait = false;
+          this._paysage = true;
+          var d = document.documentElement, f = d.requestFullscreen || d.webkitRequestFullscreen;
+          var tourner = () => { try { if (screen.orientation && screen.orientation.lock) screen.orientation.lock('landscape').catch(() => {}); } catch (x) {} };
+          try { if (f && !document.fullscreenElement) f.call(d).then(tourner).catch(tourner); else tourner(); } catch (x) { tourner(); }
+        },
+        // Retour en portrait : on rend la rotation et on quitte le plein écran demandé pour le paysage
+        revenirPortrait: function() {
+          if (!this._paysage) return;
+          this._paysage = false;
+          var sortir = () => { try { if (document.fullscreenElement && document.exitFullscreen) document.exitFullscreen().catch(() => {}); } catch (x) {} };
+          try {
+            if (screen.orientation && screen.orientation.lock && document.fullscreenElement) {
+              screen.orientation.lock('portrait').catch(() => {}).then(() => { try { screen.orientation.unlock(); } catch (x) {} sortir(); });
+              return;
+            }
+            if (screen.orientation && screen.orientation.unlock) screen.orientation.unlock();
+          } catch (x) {}
+          sortir();
         },
         envoyerJeu: function(m) {
           if (this.solo || this.role === 'hote') return this.traiterJeu(monPseudo, m);
