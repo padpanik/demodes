@@ -950,7 +950,16 @@
             if (!m.mise[n] || !this.positionDe[n]) return;
             var p = this.positionDe[n], cy = this.paysageCourant ? 53 : 47;
             // Ma mise : à gauche de mes cartes (devant elles, elle les cacherait)
-            if (n === this.moiJ && m.privees[n]) l.push({ nom: n, montant: m.mise[n], x: p.x - (this.paysageCourant ? 14 : 27), y: p.y - (this.paysageCourant ? 14 : 11) });
+            if (this.paysageCourant) {
+              // Paysage : ma mise juste à droite de mon portrait, celle des autres un peu vers le centre,
+              // et les voisins du bas montent davantage pour ne pas se mêler à la mienne
+              if (n === this.moiJ && m.privees[n]) l.push({ nom: n, montant: m.mise[n], x: p.x + 11, y: p.y - 7 });
+              else {
+                var bas = p.y > cy + 20;
+                l.push({ nom: n, montant: m.mise[n], x: p.x + (50 - p.x) * (bas ? 0.22 : 0.38), y: p.y + (cy - p.y) * (bas ? 0.62 : 0.42) });
+              }
+            }
+            else if (n === this.moiJ && m.privees[n]) l.push({ nom: n, montant: m.mise[n], x: p.x - 27, y: p.y - 11 });
             else l.push({ nom: n, montant: m.mise[n], x: p.x + (50 - p.x) * 0.42, y: p.y + (cy - p.y) * 0.4 });
           });
           return l;
