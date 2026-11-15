@@ -102,7 +102,7 @@
     .pk-carte.terne { opacity: 0.42; }
 
     /* Sièges */
-    .pk-siege { position: absolute; transform: translate(-50%, -50%); display: flex; flex-direction: column; align-items: center; z-index: 5; width: 84px; }
+    .pk-siege { position: absolute; transform: translate(-50%, -50%); transition: left 0.5s ease, top 0.5s ease; display: flex; flex-direction: column; align-items: center; z-index: 5; width: 84px; }
     .pk-avatar { position: relative; width: 54px; height: 54px; border-radius: 50%; background: #20343a; box-shadow: 0 0 0 2.5px #2e4a50, 0 6px 14px rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; }
     .pk-avatar .fond { position: absolute; inset: 0; border-radius: 50%; overflow: hidden; display: flex; align-items: flex-end; justify-content: center; }
     .pk-avatar .fond svg { width: 118%; height: 118%; margin-bottom: -14%; }
@@ -892,7 +892,19 @@
         },
         paysageCourant: function() { return this.largeur > this.hauteur; },
         tournerConseille: function() { return this.e && this.nbSieges > 6 && !this.paysageCourant && !this.forcerPortrait; },
-        nbSieges: function() { return this.e ? this.e.sieges.filter(s => s.statut !== 'parti').length : 0; },
+        nbSieges: function() { return this.siegesVus.length; },
+        // Les sièges montrés, vus de ma place (moi en bas) : les éliminés et les partis quittent la table (4.09, demandé par l'utilisateur :
+        // « une répartition idéale par nombre de joueurs, pas des places fixes ») ; on garde ceux de la main en cours, et moi
+        siegesVus: function() {
+          var e = this.e, m = this.m;
+          if (!e) return [];
+          return this.ordreVue.filter(i => {
+            var s = e.sieges[i];
+            if (s.statut === 'jeu' || s.statut === 'recave') return true;
+            if (s.statut === 'parti') return false;
+            return s.nom === this.moiJ || (m && m.joueurs.indexOf(i) !== -1);
+          });
+        },
         // Portrait : les cartes du milieu rapetissent si un joueur assis sur le côté les cacherait
         tailleTableau: function() {
           var ct = this.tailleCarte;
@@ -920,7 +932,7 @@
           return l;
         },
         positions: function() {
-          var e = this.e, n = Math.max(e ? e.sieges.length : 2, 2), pay = this.paysageCourant, l = [];
+          var n = Math.max(this.siegesVus.length, 2), pay = this.paysageCourant, l = [];
           var rx = pay ? 40 : (n > 6 ? 39 : 37), ry = pay ? 35 : (n > 6 ? 41 : 39), cy = pay ? 53 : 47;
           if (pay) {
             // Paysage : sièges répartis à pas égaux sur un « stade » (deux droites + deux demi-cercles), mesuré en pixels,
@@ -949,14 +961,14 @@
         },
         positionDe: function() {
           var p = {}, pos = this.positions;
-          this.ordreVue.forEach((i, k) => { if (this.e.sieges[i]) p[this.e.sieges[i].nom] = pos[k]; });
+          this.siegesVus.forEach((i, k) => { p[this.e.sieges[i].nom] = pos[k]; });
           return p;
         },
         cpTable: function() { return (this.pub && this.pub.cp) || {}; },
         siegesAff: function() {
           var e = this.e, m = this.m, R = m && m.resultat, t = this.maintenant + this.decalage;
           if (!e) return [];
-          return this.ordreVue.map(i => e.sieges[i]).filter(s => s.statut !== 'parti').map(s => {
+          return this.siegesVus.map(i => e.sieges[i]).map(s => {
             var p = this.positionDe[s.nom], dans = m && m.joueurs.indexOf(PK.indexSiege(e, s.nom)) !== -1, moi = s.nom === this.moiJ;
             var couche = dans && m.couche[s.nom], fait = dans && m.faits[s.nom], gagnant = m && m.fini && R && R.gains[s.nom] > 0;
             var montre = dans && !moi && (m.montre[s.nom] || (m.fini && R && R.abattage && !couche)) ? m.privees[s.nom] : null;
