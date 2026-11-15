@@ -150,6 +150,9 @@ var PK = (function () {
   // Profondeur du tapis (en grosses blindes) et durée d'un niveau selon la durée visée
   function profondeur(duree) { return duree <= 30 ? 40 : duree <= 60 ? 60 : duree <= 90 ? 75 : 100; }
   function minutesNiveau(duree) { return duree <= 30 ? 5 : duree <= 60 ? 8 : duree <= 90 ? 10 : 12; }
+  // Montée des blindes à la main : environ 1,25 main par minute (mesuré : ~70 mains pour un tournoi d'une heure à 6)
+  var MAINS_PAR_MINUTE = 1.25;
+  function mainsNiveau(duree) { return Math.round(minutesNiveau(duree) * MAINS_PAR_MINUTE); }
   // Structure d'un tournoi : on vise une grosse blinde d'environ 5 % des jetons en jeu à la fin du temps prévu.
   // opts = { joueurs, duree (minutes), antes }
   function structure(opts) {
@@ -165,7 +168,7 @@ var PK = (function () {
       niveaux.push([gb / 2, gb, ante]);
       prec = gb;
     }
-    return { tapis: tapis, profondeur: D, minutes: min, niveauxPrevus: L, hausse: Math.round((r - 1) * 100), niveaux: niveaux };
+    return { tapis: tapis, profondeur: D, minutes: min, mains: mainsNiveau(duree), niveauxPrevus: L, hausse: Math.round((r - 1) * 100), niveaux: niveaux };
   }
   // Cash game : blindes en poussières d'étoile
   var BLINDES_CASH = [[1, 2], [2, 4], [5, 10]];
@@ -195,6 +198,8 @@ var PK = (function () {
       r.duree = DUREES.indexOf(o.duree) !== -1 ? o.duree : 60;
       r.recave = [0, 1, 9].indexOf(o.recave) !== -1 ? o.recave : 0;
       r.antes = !!o.antes;
+      // Les blindes montent à l'heure ('temps') ou toutes les N mains ('mains') ; 'auto' = à la main quand le temps pour jouer est illimité
+      r.montee = ['auto', 'temps', 'mains'].indexOf(o.montee) !== -1 ? o.montee : 'auto';
     } else {
       r.monnaie = o.monnaie === 'fictif' ? 'fictif' : 'poussieres';
       var bl = parseInt(o.blindes, 10);
@@ -212,10 +217,14 @@ var PK = (function () {
   function tempsJeu(e, t) { var h = e.horloge; return h.ecoule + (h.depuis ? Math.max(0, t - h.depuis) : 0); }
   function arreterHorloge(e, t) { var h = e.horloge; if (h.depuis) { h.ecoule += Math.max(0, t - h.depuis); h.depuis = null; } }
   function lancerHorloge(e, t) { if (!e.horloge.depuis) e.horloge.depuis = t; }
+  // Montée des blindes : à la main ou à l'heure (une table d'avant 4.05, sans « montee », reste à l'heure)
+  function montee(o) { return o.montee === 'mains' || (o.montee === 'auto' && !o.delai) ? 'mains' : 'temps'; }
+  function parMains(e) { return e.mode === 'tournoi' && montee(e.opts) === 'mains'; }
+  function mainsParNiveau(e) { return e.structure.mains || mainsNiveau(e.opts.duree); }
   // Le niveau de blindes à ce moment (tournoi)
   function niveauA(e, t) {
     if (e.mode !== 'tournoi') return 0;
-    var k = Math.floor(tempsJeu(e, t) / (e.structure.minutes * 60000));
+    var k = parMains(e) ? Math.floor(e.nMain / mainsParNiveau(e)) : Math.floor(tempsJeu(e, t) / (e.structure.minutes * 60000));
     return Math.min(e.structure.niveaux.length - 1, k);
   }
   function blindesDe(e, k) {
@@ -227,6 +236,7 @@ var PK = (function () {
   function recavePossible(e, s, t) {
     if (e.mode !== 'tournoi' || !e.opts.recave || s.robot) return false;
     if ((s.recaves || 0) >= e.opts.recave) return false;
+    if (parMains(e)) return e.nMain < mainsParNiveau(e) * e.structure.niveauxPrevus / 2;
     return tempsJeu(e, t) < e.opts.duree * 60000 / 2;
   }
 
@@ -826,7 +836,7 @@ var PK = (function () {
     score: score, meilleureDe: meilleureDe, variante: variante,
     structure: structure, profondeur: profondeur, minutesNiveau: minutesNiveau, repartition: repartition, partage: partage,
     normaliserOptions: normaliserOptions, blindesCash: blindesCash, payante: payante, robotsPermis: robotsPermis,
-    tempsJeu: tempsJeu, arreterHorloge: arreterHorloge, lancerHorloge: lancerHorloge, niveauA: niveauA, blindesDe: blindesDe, recavePossible: recavePossible,
+    tempsJeu: tempsJeu, montee: montee, parMains: parMains, mainsParNiveau: mainsParNiveau, mainsNiveau: mainsNiveau, arreterHorloge: arreterHorloge, lancerHorloge: lancerHorloge, niveauA: niveauA, blindesDe: blindesDe, recavePossible: recavePossible,
     nouvelleTable: nouvelleTable, siege: siege, indexSiege: indexSiege, assis: assis, enLice: enLice, humains: humains, partants: partants,
     nouvelleMain: nouvelleMain, possibles: possibles, agir: agir, derouler: derouler, pots: pots, pot: pot, potAuMilieu: potAuMilieu, enCourse: enCourse,
     annulerMain: annulerMain, recaver: recaver, refuserRecave: refuserRecave, asseoir: asseoir, lever: lever, retirer: retirer, tempsEcoule: tempsEcoule, calculerGains: calculerGains,

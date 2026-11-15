@@ -393,17 +393,26 @@
             <div class="segment serre">
               <button v-for="d in [0, 20, 30, 60]" :key="d" :disabled="!regleur" :class="{ actif: o.delai === d }" @click="regler({ delai: d })">{{ d ? d + ' s' : 'Illimité' }}</button>
             </div>
+            <template v-if="o.mode === 'tournoi'">
+              <div class="petit-titre">Les blindes montent</div>
+              <div class="segment serre">
+                <button :disabled="!regleur" :class="{ actif: o.montee === 'auto' }" @click="regler({ montee: 'auto' })">Auto</button>
+                <button :disabled="!regleur" :class="{ actif: o.montee === 'temps' }" @click="regler({ montee: 'temps' })">À l'heure</button>
+                <button :disabled="!regleur" :class="{ actif: o.montee === 'mains' }" @click="regler({ montee: 'mains' })">À la main</button>
+              </div>
+              <div class="aide" style="margin:-4px 0 8px">{{ o.montee === 'auto' ? (o.delai ? 'Auto : à l\'heure, puisqu\'il y a un temps pour jouer.' : 'Auto : toutes les ' + struct.mains + ' mains, puisque le temps pour jouer est illimité (un joueur lent ne fait pas monter les blindes).') : (o.montee === 'mains' ? 'Toutes les ' + struct.mains + ' mains, quel que soit le temps passé.' : 'Toutes les ' + struct.minutes + ' minutes, comme dans un vrai tournoi.') }}</div>
+            </template>
 
             <!-- Résumé : structure calculée -->
             <div class="resume-pk" v-if="o.mode === 'tournoi'">
               <b>{{ nbPartants }} joueurs</b> · tapis de <b>{{ struct.tapis }}</b> jetons ({{ struct.profondeur }} grosses blindes)<br>
-              Blindes de départ <b>10 / 20</b>, niveaux de <b>{{ struct.minutes }} min</b>, environ <b>+{{ struct.hausse }} %</b> à chaque niveau<br>
+              Blindes de départ <b>10 / 20</b>, niveaux de <b>{{ montee === 'mains' ? struct.mains + ' mains' : struct.minutes + ' min' }}</b>, environ <b>+{{ struct.hausse }} %</b> à chaque niveau<br>
               Fin visée : vers <b>{{ texteDuree(o.duree) }}</b>{{ o.monnaie === 'etoiles' ? ' · cagnotte : ' + cagnotte + ' ⭐ (' + texteRepartition + ')' : '' }}
               <div><button class="lien-discret" @click="voirStructure = !voirStructure">{{ voirStructure ? 'Masquer la structure' : 'Voir la structure des blindes' }}</button></div>
               <table class="structure-pk" v-if="voirStructure">
                 <tr><th>Niveau</th><th>Blindes</th><th>Ante</th><th>Début</th></tr>
                 <tr v-for="(n, k) in struct.niveaux.slice(0, struct.niveauxPrevus + 3)" :key="k" :class="k < struct.niveauxPrevus ? 'prevu' : 'apres'">
-                  <td>{{ k + 1 }}</td><td>{{ n[0] }} / {{ n[1] }}</td><td>{{ n[2] || '–' }}</td><td>{{ k * struct.minutes }} min</td></tr>
+                  <td>{{ k + 1 }}</td><td>{{ n[0] }} / {{ n[1] }}</td><td>{{ n[2] || '–' }}</td><td>{{ montee === 'mains' ? 'main ' + (k * struct.mains + 1) : k * struct.minutes + ' min' }}</td></tr>
               </table>
             </div>
             <div class="resume-pk" v-else>
@@ -640,7 +649,7 @@
           <table class="structure-pk">
             <tr><th>Niveau</th><th>Blindes</th><th>Ante</th><th>Début</th></tr>
             <tr v-for="(n, k) in e.structure.niveaux.slice(0, Math.max(e.structure.niveauxPrevus + 2, e.niveau + 4))" :key="k" :class="k === e.niveau ? 'prevu' : (k < e.niveau ? 'apres' : '')" :style="k === e.niveau ? 'font-weight:900;background:#fff8dc' : ''">
-              <td>{{ k + 1 }}</td><td>{{ n[0] }} / {{ n[1] }}</td><td>{{ n[2] || '–' }}</td><td>{{ k * e.structure.minutes }} min</td></tr>
+              <td>{{ k + 1 }}</td><td>{{ n[0] }} / {{ n[1] }}</td><td>{{ n[2] || '–' }}</td><td>{{ debutNiveauTable(k) }}</td></tr>
           </table>
           <button class="btn" @click="structureOuverte = false">Fermer</button>
         </div>
@@ -846,6 +855,7 @@
           return this.presents.filter(p => !this.manqueArgent(p)).slice(0, this.o.places);
         },
         nbPartants: function() { var h = this.humainsPartants.length; return h + (this.robotsPermis ? Math.min(this.robots.length, this.o.places - h) : 0); },
+        montee: function() { return PK.montee(this.o); },
         struct: function() { return PK.structure({ joueurs: Math.max(2, this.nbPartants), duree: this.o.duree, antes: this.o.antes }); },
         cagnotte: function() { return this.humainsPartants.length * (this.o.mise || 0); },
         texteRepartition: function() { var r = PK.repartition(this.humainsPartants.length); return r.length === 1 ? 'tout au 1er' : r.join(' / ') + ' %'; },
@@ -1013,9 +1023,17 @@
           var e = this.e;
           if (!e) return '';
           if (e.mode === 'cash') return e.sieges.filter(s => s.statut === 'jeu').length + ' / ' + e.opts.places + ' places · ' + (e.opts.monnaie === 'poussieres' ? 'poussières d\'étoile' : 'jetons fictifs');
-          var t = PK.tempsJeu(e, this.maintenant + this.decalage), fin = (e.niveau + 1) * e.structure.minutes * 60000, reste = Math.max(0, fin - t);
-          var enJeu = e.sieges.filter(s => s.statut === 'jeu').length;
-          var suiv = e.pause ? '' : (e.niveau + 1 < e.structure.niveaux.length ? ' · niveau suivant ' + this.mmss(reste) : '');
+          var enJeu = e.sieges.filter(s => s.statut === 'jeu').length, suiv = '';
+          if (!e.pause && e.niveau + 1 < e.structure.niveaux.length) {
+            if (PK.parMains(e)) {
+              // La main en cours compte : le niveau change au début de la main numéro (niveau + 1) × N + 1
+              var rest = (e.niveau + 1) * PK.mainsParNiveau(e) - e.nMain;
+              suiv = rest <= 0 ? ' · niveau suivant à la prochaine main' : ' · niveau suivant dans ' + rest + ' main' + (rest > 1 ? 's' : '');
+            } else {
+              var t = PK.tempsJeu(e, this.maintenant + this.decalage), fin = (e.niveau + 1) * e.structure.minutes * 60000;
+              suiv = ' · niveau suivant ' + this.mmss(Math.max(0, fin - t));
+            }
+          }
           return enJeu + ' en jeu' + (e.opts.monnaie === 'etoiles' ? ' · ' + this.cagnotteTable + ' ⭐' : '') + suiv + (e.pause ? ' · ⏸ en pause' : '');
         },
         cagnotteTable: function() { return this.e ? PK.humains(this.e).reduce((a, s) => a + (s.investi || 0), 0) : 0; },
@@ -1272,6 +1290,7 @@
           } catch (x) {}
           sortir();
         },
+        debutNiveauTable: function(k) { var e = this.e; return PK.parMains(e) ? 'main ' + (k * PK.mainsParNiveau(e) + 1) : k * e.structure.minutes + ' min'; },
         envoyerJeu: function(m) {
           if (this.solo || this.role === 'hote') return this.traiterJeu(monPseudo, m);
           if (this.connexion !== 'ok') return;
