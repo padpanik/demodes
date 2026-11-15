@@ -178,6 +178,27 @@
     .pk-montant small { font-size: 0.55em; color: #b7cec6; font-weight: 700; }
     .pk-attente-bas { display: flex; gap: 8px; }
 
+    /* Bilan de la main (fenêtre qui ne bloque pas la partie) */
+    .pk-bilan { position: absolute; left: 50%; bottom: 8px; transform: translateX(-50%); z-index: 28; width: min(94%, 380px); max-height: 92%; overflow-y: auto; box-sizing: border-box;
+                background: rgba(12,24,28,0.96); border: 1px solid rgba(255,215,120,0.45); border-radius: 16px; padding: 10px 10px 8px; box-shadow: 0 14px 36px rgba(0,0,0,0.6); animation: pk-monte 0.25s ease-out; }
+    .pk-bilan .titre { text-align: center; font-weight: 900; color: #ffe39a; font-size: 0.95em; }
+    .pk-bilan .sous { text-align: center; color: #b7cec6; font-size: 0.76em; margin: 1px 0 6px; }
+    .pk-bilan .tab { display: flex; justify-content: center; gap: 3px; margin-bottom: 7px; }
+    .pk-bilan .tab .pk-carte { --ct: 30px; }
+    .pk-bilan .ligne { display: flex; align-items: center; gap: 7px; padding: 5px 4px; border-top: 1px solid rgba(255,255,255,0.08); }
+    .pk-bilan .ligne.gagne { background: rgba(255,215,120,0.10); border-radius: 8px; }
+    .pk-bilan .cartes { display: flex; gap: 2px; flex: 0 0 auto; }
+    .pk-bilan .cartes .pk-carte { --ct: 26px; }
+    .pk-bilan .couche .cartes { opacity: 0.45; }
+    .pk-bilan .qui { flex: 1; min-width: 0; line-height: 1.2; }
+    .pk-bilan .qui b { display: block; font-size: 0.84em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .pk-bilan .qui small { color: #b7cec6; font-size: 0.72em; }
+    .pk-bilan .net { font-weight: 900; font-size: 0.9em; white-space: nowrap; }
+    .pk-bilan .net.plus { color: #69db7c; }
+    .pk-bilan .net.moins { color: #ff8787; }
+    .pk-bilan .net.zero { color: #adb5bd; }
+    .pk-bilan .btn { width: 100%; margin-top: 6px; padding: 9px; background: #2c3e50; color: #fff; border-color: #4b6278; }
+
     /* Pause : quelqu'un s'est déconnecté */
     .pk-pause { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 30; width: min(86%, 330px); background: rgba(10,22,26,0.94); border: 1px solid rgba(255,200,90,0.5);
                 border-radius: 16px; padding: 12px; text-align: center; box-shadow: 0 16px 40px rgba(0,0,0,0.6); }
@@ -520,6 +541,19 @@
           </template>
         </div>
 
+        <!-- Bilan de la main : chacun le ferme quand il veut, la partie continue -->
+        <div v-if="bilan && !pauseAff" class="pk-bilan" :key="'b' + bilan.n">
+          <div class="titre">{{ bilan.titre }}</div>
+          <div class="sous">Main n° {{ bilan.n }} · pot {{ fmt(bilan.pot) }}{{ bilan.sous ? ' · ' + bilan.sous : '' }}</div>
+          <div class="tab" v-if="bilan.tableau.length"><span v-for="c in bilan.tableau" :key="c" class="pk-carte" v-html="carte(c)"></span></div>
+          <div v-for="l in bilan.lignes" :key="l.nom" class="ligne" :class="{ gagne: l.net > 0, couche: l.couche }">
+            <span class="cartes"><span v-for="c in l.cartes" :key="c" class="pk-carte" v-html="carte(c)"></span></span>
+            <span class="qui"><b>{{ l.nom === moiJ ? l.nom + ' (moi)' : l.nom }}</b><small>{{ l.detail }}</small></span>
+            <span class="net" :class="l.net > 0 ? 'plus' : l.net < 0 ? 'moins' : 'zero'">{{ l.net > 0 ? '+' : '' }}{{ l.net ? fmt(l.net) : '0' }}</span>
+          </div>
+          <button class="btn" @click="bilan = null">OK</button>
+        </div>
+
         <!-- Plus de 6 places en portrait : tourner le téléphone -->
         <div v-if="tournerConseille" class="pk-tourner">
           <div style="font-size:2.2em">📱↻</div>
@@ -565,6 +599,7 @@
           <h2>{{ e.mode === 'tournoi' ? 'Tournoi' : 'Cash game' }} · {{ VARIANTE.court }}</h2>
           <button class="ligne" @click="menuOuvert = false; onglet = 'config'">↩ Retour aux onglets<small>Salon, réglages, règles</small></button>
           <button class="ligne" @click="menuOuvert = false; journalOuvert = true">📜 Journal de la table<small>Les dernières actions</small></button>
+          <button class="ligne" @click="bilanActif = !bilanActif">{{ bilanActif ? '☑' : '☐' }} Bilan de chaque main<small>Les cartes de chacun, ce qu'il a gagné ou perdu ; à fermer par OK, la partie continue</small></button>
           <button class="ligne" v-if="e.mode === 'tournoi'" @click="menuOuvert = false; structureOuverte = true">📈 Structure des blindes<small>Niveau {{ e.niveau + 1 }} · {{ blindesTexte }}</small></button>
           <button class="ligne" v-if="peutRecaverCash" @click="menuOuvert = false; caveOuverte = 'recave'">➕ Recaver<small>Compléter mon tapis (jusqu'à {{ caveMax }})</small></button>
           <button class="ligne" v-if="e.mode === 'cash' && monSiege && monSiege.statut === 'jeu'" @click="menuOuvert = false; seLever()">🚪 Me lever de la table<small>{{ e.opts.monnaie === 'poussieres' ? 'Mes jetons redeviennent des étoiles' : 'Je garde ma place pour plus tard' }}</small></button>
@@ -775,6 +810,7 @@
         finVue: null, forcerPortrait: false, largeur: window.innerWidth, hauteur: window.innerHeight,
         nouvellesCartes: {}, annonceVue: null,
         nonLus: 0,
+        bilanActif: lireStockage('poker-bilan') !== false, bilan: null,
         soldeEtoiles: Etoiles.solde(), reservePoussieres: Bourse.lire().reserve
       },
       computed: {
@@ -1004,6 +1040,7 @@
         sonActif: function(v) { ecrireStockage('brillant-son', v); },
         vibrationActive: function(v) { ecrireStockage('brillant-vibration', v); if (v) vibrer(40); },
         cartes4: function(v) { ecrireStockage('poker-4couleurs', v); },
+        bilanActif: function(v) { ecrireStockage('poker-bilan', v); if (!v) this.bilan = null; },
         caveVoulue: function(v) { ecrireStockage('poker-cave', v); this.envoyerInfos(); },
         pseudoInput: function() { this.sauvegarder(); },
         monTour: function(v) { if (v) { this.relanceOuverte = false; this.vibre([30, 40, 30]); this.son('tour'); } },
@@ -1360,6 +1397,7 @@
             if (Object.keys(nouv).length) { this.nouvellesCartes = nouv; this.son('carte'); setTimeout(() => { this.nouvellesCartes = {}; }, 700); }
             if (PK.pot(e) > PK.pot(ea)) this.son('jetons');
           } else if (!ma || ma.n !== m.n) { this.son('carte'); }
+          if (m.fini && (!ma || !ma.fini || ma.n !== m.n) && m.resultat && !m.annulee && this.bilanActif) this.bilan = this.faireBilan(e);
           if (m.fini && (!ma || !ma.fini || ma.n !== m.n) && m.resultat && m.resultat.gains[this.moiJ] > 0) { this.vibre([60, 50, 60]); setTimeout(() => this.son('gagne'), 250); }
           // Fin du tournoi : les étoiles du compagnon (une fois par table)
           if (e.fin && !e.fin.annulee && (!ea || !ea.fin) && e.mode === 'tournoi') {
@@ -1370,6 +1408,21 @@
               if (this.solo) Etoiles.serie('poker', e.fin.gagnant === this.moiJ, NOM_JEU);
             }
           }
+        },
+        // Bilan de la main qui vient de finir : une copie (la main suivante peut commencer pendant qu'on le lit)
+        faireBilan: function(e) {
+          var m = e.main, R = m.resultat, pot = 0;
+          Object.keys(m.engage).forEach(n => { pot += m.engage[n]; });
+          var lignes = m.joueurs.map(i => e.sieges[i]).filter(Boolean).map(s => {
+            var n = s.nom, net = (R.gains[n] || 0) - (m.engage[n] || 0), couche = !!m.couche[n], detail;
+            if (R.mains[n]) detail = R.mains[n].nom;
+            else if (couche) detail = m.faits[n] === 'Retiré' ? 'retiré' : 'couché';
+            else detail = R.abattage ? '' : 'les autres se sont couchés';
+            return { nom: n, cartes: (m.privees[n] || []).slice(), couche: couche, net: net, detail: detail };
+          });
+          lignes.sort((a, b) => b.net - a.net);
+          var a = this.annonce;
+          return { n: m.n, titre: a ? a.titre : 'Main finie', sous: R.pots.length > 1 ? R.pots.length + ' pots' : '', pot: pot, tableau: m.tableau.slice(), lignes: lignes };
         },
         // Paie et encaisse ce que dit la table, une seule fois (voir Bourse)
         suivreArgent: function(pub) {
