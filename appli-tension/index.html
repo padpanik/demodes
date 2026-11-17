@@ -172,6 +172,43 @@
       opacity: 0; transition: opacity .25s; pointer-events: none;
     }
     .toast.vu { opacity: 1; }
+
+    /* ---- Feuille à imprimer : une page A4 ---- */
+    #impression { display: none; }
+    @page { size: A4 portrait; margin: 12mm; }
+    @media print {
+      html, body { background: #fff !important; padding: 0 !important; margin: 0 !important; }
+      body > *:not(#impression) { display: none !important; }
+      #impression { display: block; color: #000; font: 10.5pt/1.35 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+        -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      #impression * { break-inside: avoid; }
+    }
+    .imp-tete { display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 2.5pt solid #b3261e; padding-bottom: 6pt; }
+    .imp-tete h1 { margin: 0; font-size: 17pt; color: #b3261e; }
+    .imp-tete .per { font-size: 11pt; margin-top: 2pt; }
+    .imp-tete .nom { font-size: 10pt; line-height: 2; white-space: nowrap; display: grid; grid-template-columns: auto 50mm; column-gap: 2mm; }
+    .imp-tete .nom span { border-bottom: 0.7pt dotted #555; }
+    .imp-moy { display: flex; gap: 4mm; margin: 6mm 0 5mm; }
+    .imp-moy div { flex: 1; border: 1pt solid #bbb; border-radius: 3mm; padding: 3mm; text-align: center; }
+    .imp-moy div.g { border: 1.6pt solid #b3261e; background: #fdf1f0; }
+    .imp-moy small { display: block; font-size: 9pt; color: #444; text-transform: uppercase; letter-spacing: .4pt; }
+    .imp-moy b { display: block; font-size: 18pt; margin: 1mm 0; }
+    .imp-moy div.g b { font-size: 21pt; }
+    .imp-moy span { font-size: 9pt; color: #444; }
+    .imp-tab { width: 100%; border-collapse: collapse; table-layout: fixed; }
+    .imp-tab th, .imp-tab td { border: 0.7pt solid #999; padding: 3.2mm 1.5mm; text-align: center; vertical-align: middle; }
+    .imp-tab thead th { background: #eee; font-size: 9pt; text-transform: uppercase; letter-spacing: .3pt; }
+    .imp-tab th.jour { width: 28mm; text-align: left; font-size: 9.5pt; }
+    .imp-tab td.sea { width: 15mm; font-weight: 600; font-size: 9.5pt; }
+    .imp-tab td b { font-size: 12.5pt; }
+    .imp-tab td small { display: block; font-size: 8pt; color: #555; }
+    .imp-tab td.imp-m { background: #f6f6f6; }
+    .imp-tab td.vide { color: #aaa; }
+    .imp-tab tr.sep td, .imp-tab tr.sep th { border-top: 1.4pt solid #555; }
+    .imp-comm { margin-top: 5mm; border: 0.7pt solid #999; border-radius: 2mm; padding: 2.5mm 3mm; min-height: 22mm; white-space: pre-wrap; }
+    .imp-comm h2, .imp-note h2 { margin: 0 0 1mm; font-size: 9pt; text-transform: uppercase; letter-spacing: .4pt; color: #444; }
+    .imp-note { margin-top: 4mm; font-size: 8.5pt; color: #333; }
+    .imp-pied { margin-top: 4mm; font-size: 8pt; color: #777; display: flex; justify-content: space-between; }
   </style>
 </head>
 <body>
@@ -196,6 +233,7 @@
     <div id="jours"></div>
     <div class="actions">
       <button class="gros copier" id="copier">Envoyer le relevé (pour le médecin)</button>
+      <button class="gros secondaire" id="imprimer">🖨 Imprimer (une page A4)</button>
       <div class="titre-bloc">Changement de téléphone</div>
       <div class="deux">
         <button class="gros secondaire" id="exporter">⬇️ Sauvegarder</button>
@@ -248,6 +286,7 @@
   </div>
 
   <div class="toast" id="toast"></div>
+  <div id="impression"></div>
 
   <script>
     // Relevé de tension (automesure) : 3 jours × matin / soir × 3 mesures.
@@ -606,6 +645,58 @@
       clearTimeout(toast._t);
       toast._t = setTimeout(() => el.classList.remove('vu'), 2200);
     }
+
+    // ---- Impression : toute la feuille sur une page A4 ----
+    function echapper(t) {
+      return String(t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+    }
+    function preparerImpression() {
+      const hm = t => new Date(t).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+      const boite = (nom, r, g) => '<div' + (g ? ' class="g"' : '') + '><small>' + nom + '</small><b>' +
+        (r ? r.sys + ' / ' + r.dia : '– / –') + '</b><span>' +
+        (r ? 'mmHg' + (r.pouls ? ' · pouls ' + r.pouls : '') + ' · ' + r.n + ' mesure' + (r.n > 1 ? 's' : '') : 'pas de mesure') + '</span></div>';
+      let h = '<div class="imp-tete"><div><h1>Relevé de tension artérielle</h1><div class="per">Automesure ' +
+        echapper(periode(true)) + '</div></div><div class="nom"><b>Nom :</b><span></span><b>Traitement :</b><span></span></div></div>';
+      h += '<div class="imp-moy">' + boite('Moyenne générale', moyenne(valides()), true) +
+        SEANCES.map(([s, nom]) => boite('Moyenne du ' + nom.toLowerCase(), moyenne(valides((j, x) => x === s)))).join('') + '</div>';
+      h += '<table class="imp-tab"><thead><tr><th class="jour">Jour</th><th style="width:15mm">Séance</th>';
+      for (let n = 1; n <= MESURES; n++) h += '<th>Mesure ' + n + '</th>';
+      h += '<th>Moyenne</th></tr></thead><tbody>';
+      for (let j = 1; j <= JOURS; j++) {
+        const dj = dateJour(j);
+        SEANCES.forEach(([s, nom], i) => {
+          h += '<tr' + (i === 0 && j > 1 ? ' class="sep"' : '') + '>';
+          if (i === 0) h += '<th class="jour" rowspan="' + SEANCES.length + '">Jour ' + j + (dj ? '<br><small>' + echapper(dj) + '</small>' : '') + '</th>';
+          h += '<td class="sea">' + nom + '</td>';
+          const l = [];
+          for (let n = 1; n <= MESURES; n++) {
+            const m = donnees.m[cle(j, s, n)];
+            if (verifier(m).ok) {
+              l.push(m);
+              h += '<td><b>' + m.sys + ' / ' + m.dia + '</b><small>' + (m.pouls ? 'pouls ' + m.pouls : '&nbsp;') +
+                (m.t ? ' · ' + hm(m.t) : '') + '</small></td>';
+            } else h += '<td class="vide">–</td>';
+          }
+          const r = moyenne(l);
+          h += '<td class="imp-m' + (r ? '' : ' vide') + '">' + (r ? '<b>' + r.sys + ' / ' + r.dia + '</b>' +
+            (r.pouls ? '<small>pouls ' + r.pouls + '</small>' : '') : '–') + '</td></tr>';
+        });
+      }
+      h += '</tbody></table>';
+      h += '<div class="imp-comm"><h2>Commentaire</h2>' + echapper((donnees.comm || '').trim()) + '</div>';
+      h += '<div class="imp-note"><h2>Rappel</h2>Mesures en position assise, au calme, après 5 minutes de repos ; ' +
+        '3 mesures le matin (avant petit-déjeuner et médicaments) et 3 le soir (avant le coucher), espacées de quelques minutes, pendant 3 jours. ' +
+        'Pression en mmHg (systolique / diastolique), pouls en battements par minute. Repère en automesure : moyenne normale sous 135 / 85 mmHg.</div>';
+      h += '<div class="imp-pied"><span>Édité le ' + new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }) +
+        '</span><span>tension.desdale.workers.dev</span></div>';
+      document.getElementById('impression').innerHTML = h;
+    }
+    window.addEventListener('beforeprint', preparerImpression);
+    document.getElementById('imprimer').addEventListener('click', () => {
+      if (!valides().length) { toast('Aucun relevé à imprimer'); return; }
+      preparerImpression();
+      window.print();
+    });
 
     document.getElementById('copier').addEventListener('click', async () => {
       if (!valides().length) { toast('Aucun relevé à envoyer'); return; }
