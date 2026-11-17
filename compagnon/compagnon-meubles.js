@@ -605,8 +605,18 @@ var CPM = (function () {
       var m = MEUBLES[ob.m]; if (!m || !m.lumiere) return;
       var L = m.lumiere, k = contexte(ob.i, ob.j, ob.o ? 1 : 0, 0, H), z = L.zH != null ? H + L.zH : L.z, c = L.c || amb.lampe;
       lampes.push({ n: n, pt: k.P(L.u, L.v, z), sol: k.P(L.u, L.v, 0), r: L.r * TW, c: c });
-      s += '<radialGradient id="' + id + '-gl' + n + '"><stop offset="0" stop-color="' + c + '" stop-opacity="0.85"/><stop offset="0.45" stop-color="' + c + '" stop-opacity="0.35"/><stop offset="1" stop-color="' + c + '" stop-opacity="0"/></radialGradient>';
+      s += '<radialGradient id="' + id + '-gl' + n + '"><stop offset="0" stop-color="' + c + '" stop-opacity="0.85"/><stop offset="0.45" stop-color="' + c + '" stop-opacity="0.35"/><stop offset="1" stop-color="' + c + '" stop-opacity="0"/></radialGradient>' +
+        '<radialGradient id="' + id + '-gm' + n + '"><stop offset="0" stop-color="#000" stop-opacity="0.9"/><stop offset="0.5" stop-color="#000" stop-opacity="0.45"/><stop offset="1" stop-color="#000" stop-opacity="0"/></radialGradient>';
     });
+    // la nuit est un voile percé autour des lampes : ce qui est près d'une lampe reste éclairé, sans être délavé
+    if (nuit) {
+      s += '<mask id="' + id + '-nuit" maskUnits="userSpaceOnUse" x="-2000" y="-2000" width="4000" height="4000"><rect x="-2000" y="-2000" width="4000" height="4000" fill="#fff"/>';
+      lampes.forEach(function (L) {
+        s += '<circle cx="' + n1(L.pt[0]) + '" cy="' + n1(L.pt[1]) + '" r="' + n1(L.r * 0.8) + '" fill="url(#' + id + '-gm' + L.n + ')"/>' +
+          '<ellipse cx="' + n1(L.sol[0]) + '" cy="' + n1(L.sol[1]) + '" rx="' + n1(L.r * 1.1) + '" ry="' + n1(L.r * 0.6) + '" fill="url(#' + id + '-gm' + L.n + ')"/>';
+      });
+      s += '</mask>';
+    }
     s += '</defs>';
     // plancher vu de face
     var A = proj(0, p), B = proj(l, p), C = proj(l, 0);
@@ -675,10 +685,12 @@ var CPM = (function () {
     var voile = '';
     if (amb.c) voile += '<rect x="-2000" y="-2000" width="4000" height="4000" fill="' + amb.c + '" opacity="' + (nuit ? 0.2 : 0.25) + '" style="mix-blend-mode:soft-light"/>';
     if (nuit) {
-      voile += '<rect x="-2000" y="-2000" width="4000" height="4000" fill="#4a5490" style="mix-blend-mode:multiply"/>';
+      voile += '<rect x="-2000" y="-2000" width="4000" height="4000" fill="#4a5490" mask="url(#' + id + '-nuit)" style="mix-blend-mode:multiply"/>';
       lampes.forEach(function (L) {
-        voile += '<circle cx="' + n1(L.pt[0]) + '" cy="' + n1(L.pt[1]) + '" r="' + n1(L.r) + '" fill="url(#' + id + '-gl' + L.n + ')" style="mix-blend-mode:screen"/>';
-        voile += '<ellipse cx="' + n1(L.sol[0]) + '" cy="' + n1(L.sol[1]) + '" rx="' + n1(L.r * 0.9) + '" ry="' + n1(L.r * 0.45) + '" fill="url(#' + id + '-gl' + L.n + ')" opacity="0.7" style="mix-blend-mode:screen"/>';
+        // teinte chaude autour de la lampe (sans délaver), et un petit cœur lumineux sur l'abat-jour seulement
+        voile += '<circle cx="' + n1(L.pt[0]) + '" cy="' + n1(L.pt[1]) + '" r="' + n1(L.r) + '" fill="url(#' + id + '-gl' + L.n + ')" opacity="0.55" style="mix-blend-mode:soft-light"/>';
+        voile += '<ellipse cx="' + n1(L.sol[0]) + '" cy="' + n1(L.sol[1]) + '" rx="' + n1(L.r * 1.1) + '" ry="' + n1(L.r * 0.6) + '" fill="url(#' + id + '-gl' + L.n + ')" opacity="0.5" style="mix-blend-mode:soft-light"/>';
+        voile += '<circle cx="' + n1(L.pt[0]) + '" cy="' + n1(L.pt[1]) + '" r="' + n1(Math.min(18, L.r * 0.22)) + '" fill="url(#' + id + '-gl' + L.n + ')" style="mix-blend-mode:screen"/>';
       });
     }
     // le découpage est posé sur chaque calque : sur un groupe, il isolerait le mélange des couleurs
