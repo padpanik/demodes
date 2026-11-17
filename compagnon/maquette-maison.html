@@ -130,6 +130,40 @@
     .pied-m .btn-papier { background: #3f3026; border-color: #8d6a3f; color: #ffd8a8; box-shadow: 0 2px 0 #120c09; }
     .annonce-m { position: absolute; left: 50%; bottom: 10px; transform: translateX(-50%); background: rgba(28,20,15,0.94); border: 1px solid #8d6a3f; color: #ffe8cc; border-radius: 10px;
                  padding: 5px 11px; font: 600 0.82em system-ui, sans-serif; white-space: nowrap; pointer-events: none; }
+    /* ----- Boutique de Pipa : étals en bois, étiquettes en papier ----- */
+    .boutique-m { flex: 1; min-height: 0; overflow: auto; background: radial-gradient(circle, #241a14 1px, transparent 1.2px) 0 0 / 10px 10px, #120d0a; border: 2px solid #4b3a2c; border-radius: 14px; padding: 8px 8px 10px; }
+    .pipa-m { display: flex; align-items: center; gap: 8px; background: linear-gradient(#fdf4e3, #ecd6b0); border: 3px solid #6b4f36; border-radius: 12px; padding: 4px 9px 4px 4px; color: #3b2a1e; }
+    .pipa-m .portrait { flex: none; width: 50px; height: 50px; border-radius: 50%; background: #e6d3b0; border: 2px solid #8d6a3f; display: flex; align-items: flex-end; justify-content: center; overflow: hidden; }
+    .pipa-m b { display: block; font: 700 1.02em Georgia, serif; color: #7c2d12; }
+    .pipa-m small { display: block; font: italic 600 0.76em/1.25 Georgia, serif; color: #5c4532; }
+    .etal-m { margin-top: 10px; background: repeating-linear-gradient(90deg, #6b4428 0 22px, #613d23 22px 24px); border: 2px solid #3a2414; border-radius: 10px; padding: 18px 6px 8px; position: relative; box-shadow: inset 0 -6px 0 rgba(0,0,0,0.25); }
+    .etal-m h3 { position: absolute; top: -11px; left: 50%; transform: translateX(-50%); margin: 0; white-space: nowrap; background: linear-gradient(#fdf4e3, #ecd6b0); border: 2px solid #6b4f36; border-radius: 8px; padding: 1px 10px;
+                 font: 700 0.86em Georgia, serif; color: #7c2d12; }
+    .etal-m h3 small { font: 600 0.82em system-ui, sans-serif; color: #7a6550; }
+    .articles-m { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; }
+    .article-m { position: relative; display: flex; flex-direction: column; align-items: center; background: #fffaf0; border: 1.5px solid #c9b08f; border-radius: 10px; padding: 5px 3px 6px; cursor: pointer; box-shadow: 0 2px 0 #3a2414; }
+    .article-m .vig svg { width: 66px; height: 60px; display: block; }
+    .article-m b { font: 700 0.76em/1.15 Georgia, serif; text-align: center; color: #3b2a1e; min-height: 2.3em; display: flex; align-items: center; }
+    .etiquette-p { margin-top: 3px; display: inline-flex; align-items: center; gap: 2px; background: #fbf3e6; border: 1px solid #b89a72; border-radius: 3px 8px 8px 3px; padding: 1px 7px 1px 4px;
+                   font: 800 0.74em system-ui, sans-serif; color: #3b2a1e; position: relative; }
+    .etiquette-p:before { content: ''; width: 4px; height: 4px; border-radius: 50%; background: #8d6a3f; margin-right: 3px; }
+    .article-m .atoi { position: absolute; top: 4px; right: 4px; font: 800 0.62em system-ui, sans-serif; color: #2b6a2f; background: #e6f2dd; border: 1px solid #9cc28c; border-radius: 99px; padding: 0 5px; }
+    .article-m.trop .etiquette-p { opacity: 0.55; }
+    .ruban.rare { background: #7c3aed; }
+    .ruban.rare:before { border-top-color: #3b1673; }
+    .note-m { margin: 8px 2px 0; color: #c9b8a6; font: italic 600 0.76em/1.3 Georgia, serif; text-align: center; }
+    .voile-m { position: fixed; inset: 0; z-index: 30; background: rgba(10,7,5,0.6); display: flex; align-items: center; justify-content: center; padding: 18px; }
+    .achat-m { width: 100%; max-width: 320px; background: linear-gradient(#fdf4e3, #ecd6b0); border: 3px solid #6b4f36; border-radius: 14px; padding: 12px; color: #3b2a1e; text-align: center; }
+    .achat-m h3 { margin: 0 0 4px; font: 700 1.05em Georgia, serif; color: #7c2d12; }
+    .achat-m p { margin: 6px 0 10px; font: 600 0.86em/1.35 system-ui, sans-serif; }
+    .achat-m .vig svg { width: 120px; height: 104px; }
+    .achat-m .boutons { display: grid; grid-template-columns: 1fr 1.4fr; gap: 8px; }
+    .achat-m .boutons button { padding: 10px 6px; font-size: 0.92em; display: flex; align-items: center; justify-content: center; gap: 5px; }
+    .tuile-m .cadenas-t { position: absolute; left: 3px; top: 3px; color: #8a6a46; line-height: 0; }
+    .annonce-m.fixe { position: fixed; bottom: 96px; z-index: 40; }
+    .carte-m .etat.stock { background: #fff6d6; color: #8a5a00; border: 1px solid #e3c36b; }
+    .carte-m.pipa { justify-content: center; gap: 4px; background: repeating-linear-gradient(90deg, #6b4428 0 14px, #613d23 14px 16px); border-color: #3a2414; }
+    .carte-m.pipa b { color: #ffe8cc; }
   </style>
 </head>
 <body>
@@ -140,7 +174,7 @@
       <span class="etoiles-m"><span v-html="ETOILE"></span>{{ etoiles }}</span>
     </header>
 
-    <div class="scene-m" :class="{ arranger: arranger }">
+    <div v-show="onglet !== 'boutique' || arranger" class="scene-m" :class="{ arranger: arranger }">
       <svg ref="svg" class="piece" xmlns="http://www.w3.org/2000/svg" :view-box.camel="viewBox" :style="{ '--ar': ratio }" v-html="svgScene"
            @pointerdown="appui" @pointermove="glisse" @pointerup="lache" @pointercancel="lache"></svg>
       <div v-if="!arranger" class="etiquette-m"><button @click="changerPiece(-1)" v-html="ico('gauche', 12)" title="Pièce d'avant"></button><span>{{ infoPiece.nom }}</span><button @click="changerPiece(1)" v-html="ico('droite', 12)" title="Pièce suivante"></button></div>
@@ -148,14 +182,59 @@
       <button v-if="!arranger" class="pastille-m arr" @click="ouvrirArranger" v-html="ico('arranger', 21)" title="Arranger"></button>
       <div v-if="annonce" class="annonce-m">{{ annonce }}</div>
     </div>
+    <div v-if="annonce && onglet === 'boutique' && !arranger" class="annonce-m fixe">{{ annonce }}</div>
+    <div v-if="achat" class="voile-m" @click.self="achat = null">
+      <div class="achat-m">
+        <h3>{{ achat.ok ? 'Déjà à toi' : 'Acheter ' + achat.nom.toLowerCase() + ' ?' }}</h3>
+        <span class="vig" v-html="achat.vigG"></span>
+        <p v-if="achat.ok">Tu l'as déjà : choisis-le dans l'habillage de tes pièces.</p>
+        <p v-else-if="achat.prix > bourse">Il te manque {{ achat.prix - bourse }} étoiles. Joue un peu, et reviens me voir !</p>
+        <p v-else>Prix : {{ achat.prix }} étoiles · il t'en restera {{ bourse - achat.prix }}.<br><span v-if="achat.genre === 'objet'">Il ira dans ta malle, prêt à être posé.</span></p>
+        <div class="boutons">
+          <button class="btn-papier" @click="achat = null">{{ achat.ok || achat.prix > bourse ? 'Fermer' : 'Annuler' }}</button>
+          <button v-if="!achat.ok && achat.prix <= bourse" class="btn-rouille" @click="acheter" v-html="ETOILE_P + ' Acheter'"></button>
+        </div>
+      </div>
+    </div>
 
     <template v-if="!arranger">
-      <div class="bulle-m"><b>{{ nom }} :</b> {{ phrase }}</div>
+      <div v-if="onglet !== 'boutique'" class="bulle-m"><b>{{ nom }} :</b> {{ phrase }}</div>
       <nav class="onglets-m">
         <button v-for="o in ONGLETS" :key="o.id" class="onglet-m" :class="{ actif: onglet === o.id }" @click="onglet = o.id"><i v-html="ico(o.id, 22)"></i>{{ o.nom }}</button>
       </nav>
-      <section class="fiche-m">
-        <div v-for="b in SOINS" :key="b.id" class="ligne-soin">
+      <section v-if="onglet === 'boutique'" class="boutique-m">
+        <div class="pipa-m">
+          <span class="portrait" v-html="PIPA"></span>
+          <div><b>La boutique de Pipa</b><small>« Tout pour la maison ! Ma vitrine change chaque lundi : ce qui part revient un jour. »</small></div>
+        </div>
+        <div class="etal-m">
+          <h3>Vitrine de la semaine <small>· jusqu'au {{ finVitrine }}</small></h3>
+          <div class="articles-m">
+            <div v-for="a in articles" :key="a.id" class="article-m" :class="{ trop: a.prix > bourse }" @click="preparerAchat(a)">
+              <span v-if="a.rare" class="ruban rare">Rare</span>
+              <span v-if="a.n" class="atoi">×{{ a.n }}</span>
+              <span class="vig" v-html="a.vig"></span>
+              <b>{{ a.nom }}</b>
+              <span class="etiquette-p"><span v-html="ETOILE_P"></span>{{ a.prix }}</span>
+            </div>
+          </div>
+        </div>
+        <div class="etal-m">
+          <h3>Pour habiller tes pièces</h3>
+          <div class="articles-m">
+            <div v-for="h in habVitrine" :key="h.cle" class="article-m" :class="{ trop: !h.ok && h.prix > bourse }" @click="preparerAchat(h)">
+              <span v-if="h.ok" class="atoi">À toi</span>
+              <span class="vig" v-html="h.vig"></span>
+              <b>{{ h.nom }}</b>
+              <span class="etiquette-p"><span v-html="ETOILE_P"></span>{{ h.prix }}</span>
+            </div>
+          </div>
+        </div>
+        <p class="note-m">Ce que tu achètes va dans ta malle : pose-le avec le crayon d'Arranger, dans la pièce de ton choix.</p>
+      </section>
+      <section v-else class="fiche-m">
+        <div v-if="onglet !== 'soins'" class="aide-h" style="color:#c9b8a6">Rien à voir ici dans la maquette.</div>
+        <div v-for="b in SOINS" v-if="onglet === 'soins'" :key="b.id" class="ligne-soin">
           <span class="p" v-html="ico(b.id, 19)"></span>
           <div><b>{{ b.nom }}</b><div class="jauge-m"><i :class="{ bas: b.v < 35 }" :style="{ width: b.v + '%' }"></i></div></div>
           <button class="btn-rouille btn-soin">{{ b.action }}</button>
@@ -183,12 +262,14 @@
         <div class="contenu-arr" v-if="ongletArr !== 'habillage'">
           <div class="grille-m">
             <div v-for="c in cartes" :key="c.id" class="carte-m" :class="{ choisie: objetChoisi && objetChoisi.m === c.id }" @click="toucherCarte(c.id)">
-              <span v-if="c.id === 'pouf'" class="ruban">Nouveau</span>
+              <span v-if="c.rare" class="ruban rare">Rare</span>
               <span class="sceau" v-html="SCEAU" title="À toi"></span>
               <span class="vig" v-html="c.vig"></span>
               <b>{{ c.nom }}</b>
-              <span class="etat" :class="c.pose ? 'pose' : 'range'">{{ c.pose ? 'Dans la pièce' : 'Poser' }}</span>
+              <span v-if="c.stock" class="etat stock">À poser ×{{ c.stock }}</span>
+              <span v-else class="etat pose">Dans la pièce</span>
             </div>
+            <div class="carte-m pipa" @click="allerChezPipa"><span class="vig" v-html="PIPA_P"></span><b>Plus d'objets chez Pipa</b></div>
           </div>
         </div>
         <div class="contenu-arr habillage" v-else>
@@ -200,8 +281,9 @@
               <button v-for="c in CIBLES_MUR" :key="c.id" :class="{ on: murCible === c.id }" @click="murCible = c.id">{{ c.nom }}</button>
             </div>
             <div class="tuiles">
-              <div v-for="m in MOTIFS_MUR" :key="m.id" class="tuile-m" :class="{ on: murEdite.motif === m.id }" @click="regleMur('motif', m.id)">
-                <span v-if="m.prix" class="prix-m"><span v-html="ETOILE_P"></span>{{ m.prix }}</span>
+              <div v-for="m in MOTIFS_MUR" :key="m.id" class="tuile-m" :class="{ on: murEdite.motif === m.id, ferme: !aHab('mur:' + m.id) }" @click="aHab('mur:' + m.id) ? regleMur('motif', m.id) : pasAToi('mur:' + m.id)">
+                <span v-if="!aHab('mur:' + m.id)" class="cadenas-t" v-html="ico('cadenas', 12)"></span>
+                <span v-if="m.prix && !aHab('mur:' + m.id)" class="prix-m"><span v-html="ETOILE_P"></span>{{ m.prix }}</span>
                 <span v-html="tuileMur(m.id)"></span><span class="nom-t">{{ m.nom }}</span>
               </div>
             </div>
@@ -210,8 +292,9 @@
           </template>
           <template v-else-if="sousH === 'sol'">
             <div class="tuiles">
-              <div v-for="s in SOLS" :key="s.id" class="tuile-m" :class="{ on: piece.sol.type === s.id }" @click="piece.sol.type = s.id">
-                <span v-if="s.prix" class="prix-m"><span v-html="ETOILE_P"></span>{{ s.prix }}</span>
+              <div v-for="s in SOLS" :key="s.id" class="tuile-m" :class="{ on: piece.sol.type === s.id, ferme: !aHab('sol:' + s.id) }" @click="aHab('sol:' + s.id) ? piece.sol.type = s.id : pasAToi('sol:' + s.id)">
+                <span v-if="!aHab('sol:' + s.id)" class="cadenas-t" v-html="ico('cadenas', 12)"></span>
+                <span v-if="s.prix && !aHab('sol:' + s.id)" class="prix-m"><span v-html="ETOILE_P"></span>{{ s.prix }}</span>
                 <span v-html="tuileSol(s.id)"></span><span class="nom-t">{{ s.nom }}</span>
               </div>
             </div>
@@ -221,8 +304,9 @@
           <template v-else-if="sousH === 'finitions'">
             <h3>Plinthes</h3>
             <div class="tuiles">
-              <div v-for="pl in PLINTHES" :key="pl.id" class="tuile-m" :class="{ on: piece.plinthe.type === pl.id }" @click="piece.plinthe.type = pl.id">
-                <span v-if="pl.prix" class="prix-m"><span v-html="ETOILE_P"></span>{{ pl.prix }}</span>
+              <div v-for="pl in PLINTHES" :key="pl.id" class="tuile-m" :class="{ on: piece.plinthe.type === pl.id, ferme: !aHab('plinthe:' + pl.id) }" @click="aHab('plinthe:' + pl.id) ? piece.plinthe.type = pl.id : pasAToi('plinthe:' + pl.id)">
+                <span v-if="!aHab('plinthe:' + pl.id)" class="cadenas-t" v-html="ico('cadenas', 12)"></span>
+                <span v-if="pl.prix && !aHab('plinthe:' + pl.id)" class="prix-m"><span v-html="ETOILE_P"></span>{{ pl.prix }}</span>
                 <span v-html="tuileFin({ type: pl.id, teinte: piece.plinthe.teinte }, piece.corniche)"></span><span class="nom-t">{{ pl.nom }}</span>
               </div>
             </div>
@@ -235,8 +319,9 @@
             </template>
             <h3>Corniche <small>moulure en haut des murs</small></h3>
             <div class="tuiles">
-              <div v-for="c in [false, true]" :key="String(c)" class="tuile-m" :class="{ on: piece.corniche === c }" @click="piece.corniche = c">
-                <span v-if="c" class="prix-m"><span v-html="ETOILE_P"></span>10</span>
+              <div v-for="c in [false, true]" :key="String(c)" class="tuile-m" :class="{ on: piece.corniche === c, ferme: c && !aHab('corniche') }" @click="!c || aHab('corniche') ? piece.corniche = c : pasAToi('corniche')">
+                <span v-if="c && !aHab('corniche')" class="cadenas-t" v-html="ico('cadenas', 12)"></span>
+                <span v-if="c && !aHab('corniche')" class="prix-m"><span v-html="ETOILE_P"></span>10</span>
                 <span v-html="tuileFin(piece.plinthe, c)"></span><span class="nom-t">{{ c ? 'Avec' : 'Sans' }}</span>
               </div>
             </div>
@@ -282,6 +367,8 @@
   <script src="etoiles.js"></script>
   <script src="compagnon/compagnon-commun.js"></script>
   <script src="compagnon/compagnon-meubles.js"></script>
+  <script src="vallee/vallee-pictos.js"></script>
+  <script src="vallee/vallee-dessins.js"></script>
   <script>
     // Icônes au trait (même famille que ICONES_COMPTE de l'accueil) : dessinées dans la couleur du texte
     const TRAITS = {
@@ -325,19 +412,35 @@
       return r;
     }
 
+    // Les habillages déjà posés dans les pièces sont à toi (ceux des pièces de départ sont offerts)
+    function habUtilises(pieces) {
+      var r = {};
+      Object.keys(pieces).forEach(function (id) {
+        var p = pieces[id];
+        [p.murs, p.murD].forEach(function (m) { if (m) r['mur:' + m.motif] = 1; });
+        if (p.sol) r['sol:' + p.sol.type] = 1;
+        if (p.plinthe) r['plinthe:' + p.plinthe.type] = 1;
+        if (p.corniche) r.corniche = 1;
+      });
+      return r;
+    }
+
     new Vue({
       el: '#app',
       data: function () {
         var a = lireStockage('compagnon-animal');
         if (!a || !a.espece) a = { espece: 'renard', couleur: '#e07a3a', nom: 'Noisette', porte: {} };
-        var sv = lireStockage(CLE);
+        var sv = lireStockage(CLE), pieces = lirePieces(sv);
         return {
           MEUBLES: CPM.MEUBLES, NUANCIER: CPM.NUANCIER, MOTIFS_MUR: CPM.MOTIFS_MUR, SOLS: CPM.SOLS, ETOILE: ETOILE, ETOILE_P: ETOILE_P, SCEAU: SCEAU,
           ONGLETS: [{ id: 'soins', nom: 'Soins' }, { id: 'boutique', nom: 'Boutique' }, { id: 'defis', nom: 'Défis' }, { id: 'reglages', nom: 'Réglages' }],
           ONGLETS_ARR: [{ id: 'meubles', nom: 'Meubles' }, { id: 'deco', nom: 'Déco' }, { id: 'habillage', nom: 'Habillage' }],
           SOINS: [{ id: 'repas', nom: 'Repas', v: 72, action: 'Nourrir' }, { id: 'eau', nom: 'Eau', v: 54, action: 'Donner à boire' }, { id: 'toilette', nom: 'Toilette', v: 31, action: 'Le laver' }, { id: 'calin', nom: 'Câlins', v: 88, action: 'Câlin' }],
-          animal: a, nom: a.nom || 'Noisette', etoiles: (typeof Etoiles !== 'undefined' ? Etoiles.solde() : 0) || 42,
-          pieces: lirePieces(sv), pieceId: 'salon', PIECES: CPM.PIECES, avant: null,
+          animal: a, nom: a.nom || 'Noisette',
+          pieces: pieces, pieceId: 'salon', PIECES: CPM.PIECES, avant: null,
+          // maquette : une bourse à part (on ne dépense pas les vraies étoiles), la malle (objets achetés pas encore posés) et les habillages achetés
+          bourse: sv && sv.bourse != null ? sv.bourse : 200, stock: (sv && sv.stock) || {}, habOk: Object.assign(habUtilises(pieces), (sv && sv.habOk) || {}), achat: null,
+          vitrineS: CPM.vitrine(), PIPA: typeof VLD !== 'undefined' ? VLD.habitant('chat', 46) : '', PIPA_P: typeof VLD !== 'undefined' ? VLD.habitant('chat', 40) : '',
           PLINTHES: CPM.PLINTHES, AMBIANCES: CPM.AMBIANCES, VUES: CPM.VUES, vus: lireStockage('vallee-lieux') || [],
           SOUS_H: [{ id: 'murs', nom: 'Murs' }, { id: 'sol', nom: 'Sol' }, { id: 'finitions', nom: 'Finitions' }, { id: 'fenetre', nom: 'Fenêtre' }, { id: 'lumiere', nom: 'Lumière' }],
           CIBLES_MUR: [{ id: 'deux', nom: 'Les deux murs' }, { id: 'g', nom: 'Gauche' }, { id: 'd', nom: 'Droit' }],
@@ -350,6 +453,28 @@
       },
       computed: {
         piece: function () { return this.pieces[this.pieceId]; },
+        etoiles: function () { return this.bourse; },
+        finVitrine: function () { var d = this.vitrineS.fin; return d.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' }).replace(/^lundi /, 'lundi '); },
+        // combien j'en ai : posés dans toutes les pièces + dans la malle
+        possedes: function () {
+          var n = {}, st = this.stock;
+          Object.keys(this.pieces).forEach(function (id) { this.pieces[id].objets.forEach(function (o) { n[o.m] = (n[o.m] || 0) + 1; }); }, this);
+          Object.keys(st).forEach(function (id) { n[id] = (n[id] || 0) + st[id]; });
+          return n;
+        },
+        articles: function () {
+          var v = this.vitrineS, M = this.MEUBLES, n = this.possedes;
+          return v.rares.map(function (id) { return { id: id, rare: true }; }).concat(v.objets.map(function (id) { return { id: id }; })).map(function (a) {
+            return { id: a.id, rare: a.rare, genre: 'objet', nom: M[a.id].nom, prix: M[a.id].prix, n: n[a.id] || 0, vig: CPM.vignette(a.id, null, 66), vigG: CPM.vignette(a.id, null, 120) };
+          });
+        },
+        habVitrine: function () {
+          var self = this;
+          return this.vitrineS.habillages.map(function (cle) {
+            var h = CPM.HABILLAGES.filter(function (x) { return x.cle === cle; })[0];
+            return { id: cle, cle: cle, genre: 'hab', nom: h.nom.replace(/^.*: /, function (m) { return m; }), prix: h.prix, ok: self.aHab(cle), vig: self.vigHab(h, 56), vigG: self.vigHab(h, 104) };
+          });
+        },
         infoPiece: function () { var id = this.pieceId; return this.PIECES.filter(function (P) { return P.id === id; })[0]; },
         phrase: function () { return this.infoPiece.phrase; },
         // dehors, pas de murs : seulement le sol et la lumière
@@ -380,9 +505,10 @@
         cartes: function () {
           var r = this.ongletArr, p = this.piece, M = this.MEUBLES, ici = this.pieceId;
           // les meubles de cette pièce d'abord, puis ceux qu'on peut y mettre aussi
-          return Object.keys(M).filter(function (id) { return M[id].rayon === r && CPM.vaDans(id, p); })
-            .sort(function (a, b) { return (M[b].chez === ici) - (M[a].chez === ici); }).map(function (id) {
-              return { id: id, nom: M[id].nom, vig: CPM.vignette(id, null, 64), pose: p.objets.some(function (o) { return o.m === id; }) };
+          var st = this.stock;
+          return Object.keys(M).filter(function (id) { return M[id].rayon === r && CPM.vaDans(id, p) && (st[id] > 0 || p.objets.some(function (o) { return o.m === id; })); })
+            .sort(function (a, b) { return (st[b] > 0) - (st[a] > 0) || (M[b].chez === ici) - (M[a].chez === ici); }).map(function (id) {
+              return { id: id, nom: M[id].nom, rare: M[id].exclusif, vig: CPM.vignette(id, null, 64), stock: st[id] || 0 };
             });
         }
       },
@@ -402,12 +528,31 @@
         },
         tuileSol: function (s) { return CPM.tuile('sol', s, this.piece.sol.teinte, 50); },
         dire: function (t) { var v = this; v.annonce = t; clearTimeout(v._ann); v._ann = setTimeout(function () { v.annonce = ''; }, 1800); },
+        // ----- boutique et possession -----
+        aHab: function (cle) { return CPM.habGratuit(cle) || !!this.habOk[cle]; },
+        pasAToi: function (cle) { this.dire(this.vitrineS.habillages.indexOf(cle) >= 0 ? 'En vitrine chez Pipa cette semaine' : 'Pas en vitrine cette semaine : il reviendra chez Pipa'); },
+        vigHab: function (h, t) {
+          if (h.genre === 'mur') return CPM.tuile('mur', h.id, 'sable', t);
+          if (h.genre === 'sol') return CPM.tuile('sol', h.id, 'miel', t);
+          return CPM.tuileFinition({ plinthe: { type: h.genre === 'plinthe' ? h.id : 'simple', teinte: null }, corniche: h.genre === 'corniche' }, 'sable', Math.round(t * 0.85));
+        },
+        preparerAchat: function (a) { this.achat = a; },
+        acheter: function () {
+          var a = this.achat; if (!a || a.ok || a.prix > this.bourse) return;
+          this.bourse -= a.prix;
+          if (a.genre === 'objet') this.$set(this.stock, a.id, (this.stock[a.id] || 0) + 1); else this.$set(this.habOk, a.cle, 1);
+          this.sauverTout();
+          this.achat = null;
+          this.dire(a.genre === 'objet' ? 'Dans ta malle : pose-le avec Arranger' : 'À toi : choisis-le dans Habillage');
+        },
+        sauverTout: function () { ecrireStockage(CLE, { pieces: this.pieces, salon: this.pieces.salon, stock: this.stock, habOk: this.habOk, bourse: this.bourse }); },
+        allerChezPipa: function () { this.valider(); this.onglet = 'boutique'; },
         ouvrirArranger: function () {
-          this.avant = copie(this.piece); this.arranger = true; this.choisi = null; this.ongletArr = 'meubles';
+          this.avant = copie({ piece: this.piece, stock: this.stock }); this.arranger = true; this.choisi = null; this.ongletArr = 'meubles';
           if (!this.sousHVisibles.some(function (h) { return h.id === this.sousH; }, this)) this.sousH = this.sousHVisibles[0].id;
         },
-        annuler: function () { if (this.avant) this.$set(this.pieces, this.pieceId, this.avant); this.fermer(); },
-        valider: function () { ecrireStockage(CLE, { pieces: this.pieces, salon: this.pieces.salon }); this.fermer(); this.dire('Pièce enregistrée (maquette)'); },
+        annuler: function () { if (this.avant) { this.$set(this.pieces, this.pieceId, this.avant.piece); this.stock = this.avant.stock; } this.fermer(); },
+        valider: function () { this.sauverTout(); this.fermer(); this.dire('Pièce enregistrée (maquette)'); },
         // Passer d'une pièce à l'autre (flèches de l'étiquette, ou glisser la pièce du doigt)
         changerPiece: function (d) {
           var n = this.PIECES.length, k = this.PIECES.findIndex(function (P) { return P.id === this.pieceId; }, this);
@@ -507,10 +652,15 @@
         },
         choisirOngletArr: function (id) { this.ongletArr = id; if (id === 'habillage') { this.choisi = null; this.teintesOuvertes = false; } },
         teindre: function (t) { this.$set(this.objetChoisi, 't', t); },
-        ranger: function () { this.piece.objets.splice(this.choisi, 1); this.choisi = null; this.teintesOuvertes = false; },
+        ranger: function () {
+          var m = this.piece.objets[this.choisi].m;
+          this.piece.objets.splice(this.choisi, 1); this.choisi = null; this.teintesOuvertes = false;
+          this.$set(this.stock, m, (this.stock[m] || 0) + 1);
+          this.dire('Rangé dans ta malle');
+        },
         toucherCarte: function (id) {
           var p = this.piece, k = p.objets.findIndex(function (o) { return o.m === id; });
-          if (k >= 0) { this.choisi = k; return; }
+          if (!(this.stock[id] > 0)) { if (k >= 0) this.choisi = k; return; }
           // poser : première place libre, en partant du milieu de la pièce
           var m = this.MEUBLES[id], places = [];
           if (m.plan === 'mur') {
@@ -522,6 +672,7 @@
           var bonne = places.find(function (x) { return CPM.placeLibre(p, x); });
           if (!bonne) { this.dire('Plus de place dans la pièce'); return; }
           p.objets.push(bonne); this.choisi = p.objets.length - 1;
+          this.$set(this.stock, id, this.stock[id] - 1);
         }
       }
     });

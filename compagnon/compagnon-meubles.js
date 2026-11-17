@@ -868,6 +868,171 @@ var CPM = (function () {
     return s;
   }
 
+  // ---------- Objets rares de la boutique de Pipa (on ne les trouve que dans sa vitrine) ----------
+  Object.assign(MEUBLES, {
+    fauteuilBascule: { nom: 'Rocking-chair', rayon: 'meubles', plan: 'sol', w: 1, d: 1, h: 1.2, t: 'brique', chez: 'salon', exclusif: true, usage: 'sieste',
+      dessin: function (k, t) {
+        var P = k.P, s = ombreSol(k, 0.12, 0.08, 0.76, 0.84), bois = BOIS;
+        [0.18, 0.78].forEach(function (u) {
+          var a = P(u, 0.02, 0.1), b = P(u, 0.98, 0.1), m = P(u, 0.5, -0.12), d = 'M' + pt(a) + ' Q' + pt(m) + ' ' + pt(b);
+          s += '<path d="' + d + '" fill="none" stroke="' + O + '" stroke-width="5" stroke-linecap="round"/><path d="' + d + '" fill="none" stroke="' + bois + '" stroke-width="2.6" stroke-linecap="round"/>';
+        });
+        [[0.16, 0.22], [0.76, 0.22], [0.16, 0.72], [0.76, 0.72]].forEach(function (p) { s += boite(k, p[0], p[1], 0.02, 0.07, 0.07, 0.42, BOIS_S, 1); });
+        [0.2, 0.42, 0.64].forEach(function (u) { s += boite(k, u, 0.18, 0.49, 0.1, 0.06, 0.58, bois, 1); });
+        s += boite(k, 0.14, 0.16, 1.05, 0.72, 0.1, 0.1, bois, 2);
+        s += boite(k, 0.14, 0.18, 0.42, 0.72, 0.62, 0.07, bois, 2) + coussin(k, 0.2, 0.26, 0.49, 0.6, 0.5, 0.09, t);
+        s += boite(k, 0.1, 0.24, 0.7, 0.08, 0.58, 0.05, BOIS_C, 1) + boite(k, 0.82, 0.24, 0.7, 0.08, 0.58, 0.05, BOIS_C, 1);
+        // un plaid posé sur le dossier
+        s += poly([P(0.26, 0.2, 1.02), P(0.62, 0.2, 1.02), P(0.62, 0.26, 0.6), P(0.26, 0.26, 0.66)], '#4f6e9a', 2, 1.1);
+        s += ligne([P(0.32, 0.22, 0.98), P(0.32, 0.25, 0.68)], '#fbf3e6', 1.2, ' opacity="0.8"') + ligne([P(0.52, 0.22, 0.98), P(0.52, 0.25, 0.64)], '#fbf3e6', 1.2, ' opacity="0.8"');
+        return s;
+      } },
+    aquarium: { nom: 'Aquarium', rayon: 'deco', plan: 'sol', w: 1, d: 1, h: 1.45, t: 'chocolat', chez: 'salon', exclusif: true, usage: 'regarder', lumiere: { u: 0.5, v: 0.5, z: 1.0, r: 1.4, c: '#7ad3ff' },
+      dessin: function (k, t) {
+        var s = ombreSol(k, 0.08, 0.15, 0.84, 0.7);
+        s += boite(k, 0.08, 0.15, 0, 0.84, 0.7, 0.62, t, 2);
+        s += '<g transform="' + face(k, 0.08, 0.85, 0.62) + '"><rect x="2.5" y="3" width="14" height="19" rx="1" fill="' + nuance(t, 0.08) + '" stroke="' + O + '" stroke-width="0.9"/><rect x="17.6" y="3" width="14" height="19" rx="1" fill="' + nuance(t, 0.08) + '" stroke="' + O + '" stroke-width="0.9"/></g>';
+        s += boite(k, 0.12, 0.2, 0.62, 0.76, 0.6, 0.5, '#4fa3c7', 1);
+        s += '<g transform="' + face(k, 0.12, 0.8, 1.12) + '"><rect x="0" y="16" width="30.4" height="4" fill="#d9b98a"/>' +
+          '<path d="M5 20 q-2 -7 1 -12 q2 6 0 12 M8 20 q2 -9 -1 -15 M24 20 q-1 -6 2 -10 q1 5 -1 10" fill="none" stroke="#3f8a3a" stroke-width="1.6" stroke-linecap="round"/>' +
+          '<path d="M14 9 q4 -3 8 0 q-4 3 -8 0z M14 9 l-3 -2 v4z" fill="#ff922b" stroke="' + O + '" stroke-width="0.6"/><circle cx="20" cy="8.4" r="0.6" fill="' + O + '"/>' +
+          '<path d="M22 14 q3 -2 6 0 q-3 2 -6 0z M22 14 l-2 -1.5 v3z" fill="#f5c542" stroke="' + O + '" stroke-width="0.5"/>' +
+          '<circle cx="11" cy="6" r="0.9" fill="none" stroke="#e7f5ff" stroke-width="0.6"/><circle cx="12" cy="3" r="0.7" fill="none" stroke="#e7f5ff" stroke-width="0.6"/><path d="M2 2 l6 -1.5" stroke="#fff" stroke-opacity="0.5" stroke-width="1.2"/></g>';
+        s += boite(k, 0.1, 0.18, 1.12, 0.8, 0.64, 0.06, '#3a3b40', 1.5);
+        return s;
+      } },
+    cheminee: { nom: 'Cheminée', rayon: 'meubles', plan: 'sol', w: 2, d: 1, h: 2.6, t: 'creme', chez: 'salon', exclusif: true, usage: 'chaleur', lumiere: { u: 1, v: 0.75, z: 0.4, r: 2.2, c: '#ff8a2a' },
+      dessin: function (k, t) {
+        var P = k.P, s = '';
+        s += boite(k, 0.38, 0, 1.4, 1.24, 0.4, k.H - 1.4, nuance(t, -0.05), 1);
+        s += boite(k, 0.04, 0, 0, 1.92, 0.55, 1.3, t, 2);
+        s += '<g transform="' + face(k, 0.04, 0.55, 1.3) + '">' +
+          '<path d="M3 3 H74 V49 H3Z" fill="none" stroke="' + nuance(t, -0.2) + '" stroke-width="1"/>' +
+          '<path d="M20 52 V26 Q38 10 57 26 V52Z" fill="#1d1a18" stroke="' + O + '" stroke-width="1.4"/>' +
+          '<path d="M26 50 h26" stroke="#5c3d28" stroke-width="3.4" stroke-linecap="round"/><path d="M28 47 l22 -3" stroke="#7a5232" stroke-width="3" stroke-linecap="round"/>' +
+          '<path d="M30 46 Q28 36 34 30 Q34 37 38 36 Q38 28 43 24 Q44 32 48 34 Q50 40 47 46Z" fill="#ff922b"/><path d="M34 46 Q33 40 37 36 Q38 41 41 40 Q43 36 44 43 Q44 46 42 46Z" fill="#ffe066"/>' +
+          [10, 18, 61, 69].map(function (x) { return '<path d="M' + x + ' 10 v38" stroke="' + nuance(t, -0.15) + '" stroke-width="0.8" opacity="0.7"/>'; }).join('') + '</g>';
+        s += boite(k, 0, 0, 1.3, 2, 0.66, 0.1, nuance(t, -0.18), 2);
+        s += boite(k, 0.12, 0.55, 0, 1.76, 0.26, 0.05, '#7a6f66', 1.5);
+        // sur le manteau : deux bougies et une petite horloge
+        s += cylindre(k, 0.3, 0.32, 1.4, 0.05, 0.22, '#fbf3e6') + cylindre(k, 1.7, 0.32, 1.4, 0.05, 0.18, '#fbf3e6');
+        [P(0.3, 0.32, 1.66), P(1.7, 0.32, 1.62)].forEach(function (f) { s += '<ellipse cx="' + n1(f[0]) + '" cy="' + n1(f[1]) + '" rx="1.6" ry="2.8" fill="#ffd43b"/>'; });
+        var h = P(1.0, 0.3, 1.4);
+        s += '<rect x="' + n1(h[0] - 7) + '" y="' + n1(h[1] - 13) + '" width="14" height="13" rx="3" fill="' + BOIS + '" stroke="' + O + '" stroke-width="1"/>' + rond(h[0], h[1] - 7, 4.4, '#fbf3e6', 0.9) +
+          '<path d="M' + n1(h[0]) + ' ' + n1(h[1] - 7) + ' v-3 M' + n1(h[0]) + ' ' + n1(h[1] - 7) + ' h2.5" stroke="' + O + '" stroke-width="0.9"/>';
+        return s;
+      } },
+    guirlande: { nom: 'Guirlande lumineuse', rayon: 'deco', plan: 'mur', w: 2, h: 0.45, z: 1.95, t: 'moutarde', exclusif: true, lumiere: { u: 1, v: 0.2, z: 2.1, r: 1.8, c: '#ffe08a' },
+      dessin: function (k, t) {
+        var s = '<g transform="' + plan(k, [0, 0, k.z + 0.45], [1, 0, 0], [0, 0, -1]) + '">', cs = ['#ffd43b', '#ff6b6b', '#69db7c', '#4dabf7', '#f783ac'];
+        s += '<path d="M2 3 Q20 15 40 4 Q60 15 78 3" fill="none" stroke="' + O + '" stroke-width="1.1"/>';
+        for (var n = 0; n < 11; n++) {
+          var x = 4 + n * 7.2, seg = x < 40 ? (x - 2) / 38 : (x - 40) / 38, y = (x < 40 ? 3 + (4 - 3) * seg : 4 + (3 - 4) * seg) + 2 * 6 * seg * (1 - seg) * 2 + 1.5;
+          if (k.env.nuit) s += '<circle cx="' + n1(x) + '" cy="' + n1(y + 2) + '" r="4.5" fill="' + cs[n % 5] + '" opacity="0.35"/>';
+          s += '<ellipse cx="' + n1(x) + '" cy="' + n1(y + 2) + '" rx="1.6" ry="2.3" fill="' + cs[n % 5] + '" stroke="' + O + '" stroke-width="0.5"/>';
+        }
+        return s + '</g>';
+      } },
+    lustre: { nom: 'Lustre', rayon: 'deco', plan: 'plafond', w: 1, d: 1, h: 1.0, t: 'moutarde', exclusif: true, lumiere: { u: 0.5, v: 0.5, zH: -0.72, r: 3.0 },
+      dessin: function (k, t) {
+        var H = k.H, P = k.P, s = '', a = P(0.5, 0.5, H), b = P(0.5, 0.5, H - 0.45);
+        s += ligne([a, b], O, 1.6);
+        var bras = [], N = 6;
+        for (var q = 0; q < N; q++) { var an = q / N * Math.PI * 2; bras.push({ u: 0.5 + Math.cos(an) * 0.3, v: 0.5 + Math.sin(an) * 0.3 }); }
+        bras.sort(function (x, y) { return (x.u + x.v) - (y.u + y.v); });
+        var c = P(0.5, 0.5, H - 0.78);
+        var bougie = function (q) {
+          var p0 = P(q.u, q.v, H - 0.72), r = '';
+          r += ligne([c, p0], O, 2.6) + ligne([c, p0], nuance(t, 0.1), 1.2);
+          r += '<rect x="' + n1(p0[0] - 1.6) + '" y="' + n1(p0[1] - 7) + '" width="3.2" height="7" fill="#fbf3e6" stroke="' + O + '" stroke-width="0.7"/><ellipse cx="' + n1(p0[0]) + '" cy="' + n1(p0[1] - 9) + '" rx="1.5" ry="2.6" fill="#ffd43b"/>';
+          return r;
+        };
+        bras.slice(0, 3).forEach(function (q) { s += bougie(q); });
+        s += '<ellipse cx="' + n1(c[0]) + '" cy="' + n1(c[1]) + '" rx="7" ry="5" fill="' + t + '" stroke="' + O + '" stroke-width="1.2"/><path d="M' + n1(c[0]) + ' ' + n1(c[1] + 5) + ' l-2 5 h4z" fill="' + t + '" stroke="' + O + '" stroke-width="0.8"/>';
+        s += ligne([b, [c[0], c[1] - 5]], O, 1.6);
+        bras.slice(3).forEach(function (q) { s += bougie(q); });
+        return s;
+      } },
+    tapisRond: { nom: 'Tapis rond', rayon: 'deco', plan: 'sol', w: 2, d: 2, h: 0, plat: true, t: 'sauge', exclusif: true,
+      dessin: function (k, t) {
+        var c2 = '#efe2c8', s = '<g transform="' + plan(k, [0, 0, 0], [1, 0, 0], [0, 1, 0]) + '">';
+        s += '<circle cx="40" cy="40" r="36" fill="' + t + '" stroke="' + O + '" stroke-width="' + EP * 1.6 + '"/>';
+        s += '<circle cx="40" cy="40" r="30" fill="none" stroke="' + c2 + '" stroke-width="2.4"/><circle cx="40" cy="40" r="26" fill="none" stroke="' + nuance(t, -0.25) + '" stroke-width="1.4"/>';
+        for (var a = 0; a < 8; a++) { var an = a * Math.PI / 4; s += '<ellipse cx="' + n1(40 + Math.cos(an) * 14) + '" cy="' + n1(40 + Math.sin(an) * 14) + '" rx="6" ry="3" transform="rotate(' + a * 45 + ' ' + n1(40 + Math.cos(an) * 14) + ' ' + n1(40 + Math.sin(an) * 14) + ')" fill="' + nuance(t, 0.25) + '" stroke="' + c2 + '" stroke-width="1"/>'; }
+        s += '<circle cx="40" cy="40" r="6" fill="#d8a73a" stroke="' + nuance(t, -0.25) + '" stroke-width="1.2"/>';
+        return s + '</g>';
+      } },
+    fontaine: { nom: 'Fontaine', rayon: 'meubles', plan: 'sol', w: 1, d: 1, h: 1.4, t: '#a8a29a', chez: 'jardin', lieu: 'dehors', exclusif: true, usage: 'boire',
+      dessin: function (k, t) {
+        var P = k.P, c = P(0.5, 0.5, 0), s = '<ellipse cx="' + n1(c[0]) + '" cy="' + n1(c[1]) + '" rx="22" ry="11" fill="#000" opacity="0.18"/>';
+        s += cylindre(k, 0.5, 0.5, 0, 0.44, 0.26, t);
+        var w = P(0.5, 0.5, 0.26);
+        s += '<ellipse cx="' + n1(w[0]) + '" cy="' + n1(w[1]) + '" rx="16" ry="8" fill="#5aa0d0"/><path d="M' + n1(w[0] - 10) + ' ' + n1(w[1]) + ' h5 M' + n1(w[0] + 4) + ' ' + n1(w[1] + 3) + ' h6" stroke="#d6efff" stroke-width="1.2" stroke-linecap="round"/>';
+        s += cylindre(k, 0.5, 0.5, 0.26, 0.08, 0.52, t, 0.06, false) + cylindre(k, 0.5, 0.5, 0.76, 0.12, 0.08, t, 0.22);
+        var h = P(0.5, 0.5, 0.84);
+        s += '<ellipse cx="' + n1(h[0]) + '" cy="' + n1(h[1]) + '" rx="7" ry="3.5" fill="#5aa0d0"/>';
+        s += '<path d="M' + n1(h[0]) + ' ' + n1(h[1] - 1) + ' V' + n1(h[1] - 14) + ' M' + n1(h[0]) + ' ' + n1(h[1] - 14) + ' Q' + n1(h[0] - 8) + ' ' + n1(h[1] - 18) + ' ' + n1(h[0] - 11) + ' ' + n1(h[1] - 2) +
+          ' M' + n1(h[0]) + ' ' + n1(h[1] - 14) + ' Q' + n1(h[0] + 8) + ' ' + n1(h[1] - 18) + ' ' + n1(h[0] + 11) + ' ' + n1(h[1] - 2) + '" fill="none" stroke="#9fd3f0" stroke-width="1.8" stroke-linecap="round"/>';
+        [[-12, 6], [12, 7], [-6, 10], [7, 11]].forEach(function (d) { s += '<circle cx="' + n1(h[0] + d[0]) + '" cy="' + n1(h[1] + d[1]) + '" r="1" fill="#d6efff"/>'; });
+        return s;
+      } },
+    nichoir: { nom: 'Nichoir', rayon: 'deco', plan: 'sol', w: 1, d: 1, h: 1.9, t: 'sauge', chez: 'jardin', lieu: 'dehors', exclusif: true, usage: 'regarder',
+      dessin: function (k, t) {
+        var P = k.P, c = P(0.5, 0.5, 0), s = '<ellipse cx="' + n1(c[0]) + '" cy="' + n1(c[1]) + '" rx="10" ry="5" fill="#000" opacity="0.18"/>';
+        s += cylindre(k, 0.5, 0.5, 0, 0.05, 1.3, '#7a5232', null, false);
+        s += boite(k, 0.33, 0.33, 1.3, 0.34, 0.34, 0.32, t, 1.5);
+        s += '<g transform="' + face(k, 0.33, 0.67, 1.62) + '">' + rond(6.8, 5, 2.6, '#3a2c22', 0.7) + '<path d="M6.8 9.5 v3" stroke="' + O + '" stroke-width="1.2"/></g>';
+        var p1 = P(0.7, 0.3, 1.62), p2 = P(0.7, 0.7, 1.62), p3 = P(0.3, 0.7, 1.62), sm = P(0.5, 0.5, 1.86);
+        s += poly([p1, p2, sm], '#a8483a', 1) + poly([p2, p3, sm], '#c25b4a', 1);
+        // un oiseau sur le toit
+        var o = P(0.5, 0.5, 1.86);
+        s += '<path d="M' + n1(o[0] - 1) + ' ' + n1(o[1] - 1) + ' q4 -6 9 -3 q-2 4 -9 3z" fill="#4dabf7" stroke="' + O + '" stroke-width="0.8"/>' + rond(o[0] + 7.5, o[1] - 5.5, 2.4, '#4dabf7', 0.8) +
+          '<path d="M' + n1(o[0] + 9.6) + ' ' + n1(o[1] - 5.5) + ' l2.2 0.6 l-2.2 0.6z" fill="#f5c542"/><circle cx="' + n1(o[0] + 8) + '" cy="' + n1(o[1] - 6.2) + '" r="0.6" fill="' + O + '"/>';
+        return s;
+      } }
+  });
+
+  // ---------- La boutique de Pipa : prix, habillages payants, vitrine de la semaine ----------
+  var PRIX = {
+    canape: 30, fauteuil: 18, tableBasse: 15, tapis: 12, bibliotheque: 25, commode: 18, lampadaire: 14, plante: 8, pouf: 6, malle: 12, poele: 30,
+    fenetre: 15, tableau: 8, etagere: 8, horloge: 10, suspension: 12, planTravail: 25, cuisiniere: 25, frigo: 30, tableRonde: 15, chaise: 8, gamelle: 6, ustensiles: 6,
+    lit: 30, chevet: 15, armoire: 25, nounours: 8, miroir: 10, tableJeu: 25, arcade: 40, coffreJouets: 12, ballon: 4, cible: 8, vitrine: 25, piedestal: 18, ecu: 10,
+    arbre: 20, banc: 15, massif: 8, bassin: 30, lanterne: 12,
+    fauteuilBascule: 35, aquarium: 45, cheminee: 60, guirlande: 20, lustre: 40, tapisRond: 25, fontaine: 50, nichoir: 20
+  };
+  Object.keys(PRIX).forEach(function (id) { if (MEUBLES[id]) MEUBLES[id].prix = PRIX[id]; });
+  // Habillages qui s'achètent : clé « genre:id »
+  var HABILLAGES = [];
+  MOTIFS_MUR.forEach(function (m) { if (m.prix) HABILLAGES.push({ cle: 'mur:' + m.id, genre: 'mur', id: m.id, nom: 'Murs : ' + m.nom.toLowerCase(), prix: m.prix }); });
+  SOLS.forEach(function (m) { if (m.prix) HABILLAGES.push({ cle: 'sol:' + m.id, genre: 'sol', id: m.id, nom: 'Sol : ' + m.nom.toLowerCase(), prix: m.prix }); });
+  PLINTHES.forEach(function (m) { if (m.prix) HABILLAGES.push({ cle: 'plinthe:' + m.id, genre: 'plinthe', id: m.id, nom: 'Plinthes : ' + m.nom.toLowerCase(), prix: m.prix }); });
+  HABILLAGES.push({ cle: 'corniche', genre: 'corniche', id: 'corniche', nom: 'Corniche', prix: 10 });
+  var HAB = {}; HABILLAGES.forEach(function (h) { HAB[h.cle] = h; });
+  function habGratuit(cle) { return !HAB[cle]; }
+  // Semaine de la vitrine (change le lundi, heure du téléphone), comme les rumeurs de la Vallée
+  var JOUR = 86400000;
+  function semaine(t) {
+    var d = new Date(t || Date.now()); d.setHours(0, 0, 0, 0);
+    return Math.floor(Math.round((d - new Date(2026, 10, 9)) / JOUR) / 7);
+  }
+  function lundiSuivant(t) { var d = new Date(2026, 10, 9); d.setDate(d.getDate() + (semaine(t) + 1) * 7); return d; }
+  // Mélange fixe (le même pour tout le monde) ; la vitrine avance dans le cycle chaque semaine : chaque objet revient
+  function melange(liste, graine) {
+    var a = liste.slice(), x = graine;
+    function r() { x = (x + 0x6D2B79F5) | 0; var t = Math.imul(x ^ (x >>> 15), 1 | x); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }
+    for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(r() * (i + 1)), c = a[i]; a[i] = a[j]; a[j] = c; }
+    return a;
+  }
+  var RARES = melange(Object.keys(MEUBLES).filter(function (id) { return MEUBLES[id].exclusif; }), 11);
+  var COURANTS = melange(Object.keys(MEUBLES).filter(function (id) { return !MEUBLES[id].exclusif && MEUBLES[id].prix; }), 23);
+  var HABS = melange(HABILLAGES.map(function (h) { return h.cle; }), 37);
+  function tranche(l, w, n) { var r = []; for (var q = 0; q < n; q++) r.push(l[((w * n + q) % l.length + l.length) % l.length]); return r; }
+  // La vitrine d'une semaine : 2 objets rares, 4 courants, 2 habillages
+  function vitrine(t) {
+    var w = semaine(t);
+    return { semaine: w, rares: tranche(RARES, w, 2), objets: tranche(COURANTS, w, 4), habillages: tranche(HABS, w, 2), fin: lundiSuivant(t) };
+  }
+
   // ---------- Emprise, collisions ----------
   function emprise(ob) {
     var m = MEUBLES[ob.m];
@@ -1150,7 +1315,7 @@ var CPM = (function () {
 
   var kit = {
     TW: TW, TH: TH, ZU: ZU, HAUTEUR: HAUTEUR, MEUBLES: MEUBLES, NUANCIER: NUANCIER, MOTIFS_MUR: MOTIFS_MUR, SOLS: SOLS,
-    PIECES: PIECES, pieceDepart: pieceDepart, vaDans: vaDans,
+    PIECES: PIECES, pieceDepart: pieceDepart, vaDans: vaDans, HABILLAGES: HABILLAGES, habGratuit: habGratuit, semaine: semaine, vitrine: vitrine,
     PLINTHES: PLINTHES, AMBIANCES: AMBIANCES, VUES: VUES, vueOuverte: vueOuverte, vueFenetre: vueFenetre, habillage: habillage, saisonDe: saisonDe, tuileFinition: tuileFinition, tuileVue: tuileVue,
     proj: proj, versSol: versSol, versMur: versMur, nuance: nuance, teinte: teinte,
     emprise: emprise, placeLibre: placeLibre, caseOccupee: caseOccupee,
