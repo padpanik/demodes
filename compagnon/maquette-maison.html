@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <!-- Maquette de la refonte de la maison (étape 1) : page à part, la vraie maison n'est pas touchée -->
+  <base href="../">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Maison (maquette) · Désdale</title>
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <meta name="theme-color" content="#17110d">
+  <link rel="icon" type="image/png" href="favicon.png">
+  <script src="https://cdn.jsdelivr.net/npm/vue@2.7.16/dist/vue.min.js"></script>
+  <link rel="stylesheet" href="commun.css">
+  <style>
+    html, body { margin: 0; background: #17110d; }
+    [v-cloak] { display: none; }
+    .mm { box-sizing: border-box; height: 100vh; height: 100dvh; display: flex; flex-direction: column; gap: 7px; padding: 8px 7px 8px;
+          background: radial-gradient(ellipse at 50% 0%, #2c211a 0%, #17110d 70%); color: #f1e6d6; font-family: system-ui, sans-serif; overflow: hidden; }
+    .mm * { box-sizing: border-box; }
+    .ico { display: block; }
+    /* ----- En-tête en bois sombre ----- */
+    .tete-m { display: flex; align-items: center; gap: 8px; background: linear-gradient(#3a2c22, #261c15); border: 1px solid #5c4532; border-radius: 12px; padding: 6px 7px;
+              box-shadow: inset 0 1px 0 rgba(255,255,255,0.06), 0 3px 8px rgba(0,0,0,0.4); flex: none; }
+    .btn-bois { display: inline-flex; align-items: center; gap: 3px; background: #3f3026; border: 1px solid #8d6a3f; color: #ffd8a8; border-radius: 9px; padding: 6px 9px 6px 5px;
+                font: 700 0.85em system-ui, sans-serif; box-shadow: 0 2px 0 #120c09; cursor: pointer; }
+    .titre-m { flex: 1; min-width: 0; text-align: center; line-height: 1.15; }
+    .titre-m b { display: block; font: 700 1.08em Georgia, 'Times New Roman', serif; color: #ffe8cc; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .titre-m small { color: #c9a66b; font-size: 0.78em; }
+    .etoiles-m { display: inline-flex; align-items: center; gap: 4px; background: #1b130e; border: 1px solid #5c4532; color: #ffd43b; border-radius: 99px; padding: 4px 9px 4px 6px; font-weight: 800; }
+    /* ----- La pièce ----- */
+    .scene-m { position: relative; flex: none; border: 2px solid #4b3a2c; border-radius: 14px; background: radial-gradient(circle, #241a14 1px, transparent 1.2px) 0 0 / 10px 10px, #120d0a;
+               box-shadow: inset 0 0 24px rgba(0,0,0,0.65), 0 6px 16px rgba(0,0,0,0.55); overflow: hidden; }
+    .scene-m svg.piece { display: block; width: 100%; height: auto; aspect-ratio: var(--ar); touch-action: manipulation; user-select: none; -webkit-user-select: none; }
+    .scene-m.arranger svg.piece { touch-action: none; }
+    .scene-m .obj { cursor: pointer; }
+    .scene-m .obj.choisi { filter: drop-shadow(0 0 1.5px #fff3bf) drop-shadow(0 0 3px #ffa94d); }
+    .scene-m .obj.fantome { opacity: 0.55; }
+    .etiquette-m { position: absolute; left: 50%; top: 6px; transform: translateX(-50%); display: flex; align-items: center; gap: 2px; background: rgba(28,20,15,0.92); border: 1px solid #8d6a3f;
+                   border-radius: 99px; padding: 1px 3px; font: italic 800 0.82em Georgia, serif; color: #ffe8cc; white-space: nowrap; }
+    .etiquette-m button { background: none; border: 0; color: #c9a66b; padding: 2px 4px; cursor: pointer; }
+    .etiquette-m span { padding: 0 3px; }
+    .pastille-m { position: absolute; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer;
+                  background: radial-gradient(circle at 50% 35%, #6b4f36, #3f3026); border: 2px solid #c9a66b; color: #ffd8a8; box-shadow: 0 0 0 2px #1b130e, 0 3px 6px rgba(0,0,0,0.5); }
+    .pastille-m.arr { right: 8px; bottom: 8px; }
+    .pastille-m.loupe { left: 8px; bottom: 8px; width: 34px; height: 34px; }
+    .pastille-m.loupe.on { background: linear-gradient(#e8590c, #b8541a); color: #fff; border-color: #ffc078; }
+    /* ----- Bulle du compagnon (parchemin) ----- */
+    .bulle-m { position: relative; flex: none; background: linear-gradient(#fdf4e3, #ecd6b0); border: 2px solid #6b4f36; color: #3b2a1e; border-radius: 12px; padding: 7px 11px;
+               font: italic 600 0.92em/1.35 Georgia, serif; box-shadow: 0 0 0 1px #2a1f18; margin-top: 4px; }
+    .bulle-m:before { content: ''; position: absolute; top: -9px; left: 46px; border: 8px solid transparent; border-top: 0; border-bottom-color: #6b4f36; }
+    .bulle-m:after { content: ''; position: absolute; top: -6px; left: 48px; border: 6px solid transparent; border-top: 0; border-bottom-color: #fdf4e3; }
+    .bulle-m b { font-style: normal; color: #7c2d12; }
+    /* ----- Onglets en pastilles de bois ----- */
+    .onglets-m { display: flex; justify-content: space-around; flex: none; padding: 2px 0; }
+    .onglet-m { display: flex; flex-direction: column; align-items: center; gap: 3px; background: none; border: 0; color: #c9b8a6; font: 700 0.74em system-ui, sans-serif; cursor: pointer; padding: 0; min-width: 62px; }
+    .onglet-m i { width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-style: normal;
+                  background: radial-gradient(circle at 50% 35%, #5a4330, #33261d); border: 1.5px solid #8d6a3f; color: #ffd8a8; box-shadow: 0 2px 0 #120c09, inset 0 1px 0 rgba(255,255,255,0.08); }
+    .onglet-m.actif { color: #ffe8cc; }
+    .onglet-m.actif i { background: linear-gradient(#e8590c, #b8541a); border-color: #ffc078; color: #fff; box-shadow: 0 2px 0 #6b2a07, 0 0 10px rgba(255,146,43,0.35); }
+    /* ----- Fiche de soins (bois) ----- */
+    .fiche-m { flex: 1; min-height: 0; overflow: auto; background: linear-gradient(#3a2c22, #261c15); border: 1px solid #5c4532; border-radius: 12px; padding: 8px 9px; }
+    .ligne-soin { display: grid; grid-template-columns: 34px 1fr 118px; align-items: center; gap: 8px; padding: 5px 0; border-bottom: 1px solid rgba(141,106,63,0.25); }
+    .ligne-soin:last-child { border-bottom: 0; }
+    .ligne-soin .p { width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: #1b130e; border: 1px solid #8d6a3f; color: #ffc46b; }
+    .ligne-soin b { display: block; font: 700 0.95em Georgia, serif; color: #ffe8cc; margin-bottom: 4px; }
+    .jauge-m { height: 9px; border-radius: 99px; background: #1b130e; border: 1px solid #120c09; overflow: hidden; }
+    .jauge-m i { display: block; height: 100%; border-radius: 99px; background: linear-gradient(#8ce99a, #2f9e44); }
+    .jauge-m i.bas { background: linear-gradient(#ffc078, #e8590c); }
+    .btn-rouille { background: linear-gradient(#c2410c, #9a3412); border: 1px solid #7c2d12; color: #fff; border-radius: 10px; padding: 8px 6px; font: 800 0.86em system-ui, sans-serif; box-shadow: 0 2px 0 #4a1a06; cursor: pointer; }
+    .btn-soin { width: 100%; height: 38px; padding: 0 6px; white-space: nowrap; display: flex; align-items: center; justify-content: center; }
+    .btn-papier { background: #fff8ee; border: 1.5px solid #c9b08f; color: #3b2a1e; border-radius: 10px; padding: 8px 6px; font: 800 0.86em system-ui, sans-serif; cursor: pointer; }
+    /* ----- Mode Arranger ----- */
+    .outils-m { flex: none; display: flex; align-items: center; gap: 6px; min-height: 46px; background: linear-gradient(#2e231b, #1f1712); border: 1px solid #4b3a2c; border-radius: 12px; padding: 5px 6px 5px 10px; }
+    .outils-m .nom { flex: 1; min-width: 0; line-height: 1.15; }
+    .outils-m .nom b { display: block; font: 700 0.98em Georgia, serif; color: #ffe8cc; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .outils-m .nom small { color: #a8957f; font-size: 0.76em; }
+    .outil { display: flex; flex-direction: column; align-items: center; gap: 1px; width: 60px; background: #3f3026; border: 1px solid #8d6a3f; color: #ffd8a8; border-radius: 10px; padding: 4px 2px 3px;
+             font: 700 0.64em system-ui, sans-serif; box-shadow: 0 2px 0 #120c09; cursor: pointer; }
+    .outil.on { background: linear-gradient(#e8590c, #b8541a); color: #fff; border-color: #ffc078; }
+    .aide-m { flex: 1; color: #c9b8a6; font: italic 600 0.86em/1.3 Georgia, serif; }
+    .nuancier-m { flex: none; display: flex; flex-wrap: wrap; gap: 5px; justify-content: center; background: #2a1f18; border: 1px solid #4b3a2c; border-radius: 12px; padding: 7px; }
+    .pastel { width: 22px; height: 22px; flex: none; border-radius: 50%; border: 2px solid #1b130e; box-shadow: 0 0 0 1.5px #8d6a3f; cursor: pointer; padding: 0; }
+    .pastel.on { box-shadow: 0 0 0 2px #fff3bf, 0 0 0 4px #e8590c; }
+    .panneau-m { flex: 1; min-height: 0; display: flex; flex-direction: column; background: linear-gradient(#fdf4e3, #ecd6b0); border: 3px solid #6b4f36; border-radius: 14px;
+                 box-shadow: 0 0 0 2px #2a1f18, 0 8px 20px rgba(0,0,0,0.5); color: #3b2a1e; overflow: hidden; }
+    .onglets-arr { display: flex; background: linear-gradient(#3a2c22, #261c15); border-bottom: 2px solid #6b4f36; padding: 6px 6px 5px; gap: 4px; flex: none; }
+    .onglets-arr button { flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; background: none; border: 0; color: #c9b8a6; font: 700 0.86em Georgia, serif; cursor: pointer; padding: 2px; }
+    .onglets-arr button i { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-style: normal;
+                            background: radial-gradient(circle at 50% 35%, #5a4330, #33261d); border: 1.5px solid #8d6a3f; color: #ffd8a8; }
+    .onglets-arr button.actif { color: #ffe8cc; }
+    .onglets-arr button.actif i { background: linear-gradient(#e8590c, #b8541a); border-color: #ffc078; color: #fff; }
+    .contenu-arr { flex: 1; min-height: 0; overflow-y: auto; padding: 8px; }
+    .grille-m { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; }
+    .carte-m { position: relative; display: flex; flex-direction: column; align-items: center; background: #fffaf0; border: 1.5px solid #c9b08f; border-radius: 11px; padding: 5px 3px 5px;
+               box-shadow: 0 2px 0 #c9a96e; cursor: pointer; }
+    .carte-m.choisie { border-color: #e8590c; box-shadow: 0 0 0 2px #ffa94d, 0 2px 0 #c9a96e; }
+    .carte-m .vig { width: 64px; height: 58px; display: flex; align-items: center; justify-content: center; }
+    .carte-m .vig svg { width: 64px; height: 58px; }
+    .carte-m b { font: 700 0.78em/1.15 Georgia, serif; text-align: center; color: #3b2a1e; }
+    .carte-m .etat { margin-top: 3px; font: 700 0.68em system-ui, sans-serif; border-radius: 99px; padding: 1px 7px; }
+    .carte-m .etat.pose { background: #e6f2dd; color: #2b6a2f; border: 1px solid #9cc28c; }
+    .carte-m .etat.range { background: #fff0e6; color: #9a3412; border: 1px solid #f0b48a; }
+    .sceau { position: absolute; top: 3px; right: 3px; width: 17px; height: 17px; }
+    .ruban { position: absolute; top: 7px; left: -4px; background: #c2410c; color: #fff; font: 800 0.6em system-ui, sans-serif; padding: 1px 6px 1px 5px; border-radius: 0 3px 3px 0;
+             box-shadow: 0 1px 0 #7c2d12; }
+    .ruban:before { content: ''; position: absolute; left: 0; bottom: -4px; border-top: 4px solid #6b1f06; border-left: 4px solid transparent; }
+    .habillage h3 { margin: 2px 2px 6px; font: 800 0.95em Georgia, serif; color: #5c3a1f; display: flex; align-items: baseline; gap: 6px; }
+    .habillage h3 small { font: 600 0.78em system-ui, sans-serif; color: #8a6a46; }
+    .tuiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 8px; }
+    .tuile-m { position: relative; display: flex; flex-direction: column; align-items: center; gap: 2px; background: #fffaf0; border: 1.5px solid #c9b08f; border-radius: 10px; padding: 4px 2px 3px; cursor: pointer; }
+    .tuile-m.on { border-color: #e8590c; box-shadow: 0 0 0 2px #ffa94d; }
+    .tuile-m .nom-t { font: 700 0.72em Georgia, serif; color: #3b2a1e; }
+    .prix-m { position: absolute; top: 2px; right: 2px; display: inline-flex; align-items: center; gap: 1px; background: #3b2a1e; color: #ffd43b; border-radius: 99px; padding: 0 5px 0 2px; font: 800 0.66em system-ui, sans-serif; }
+    .teintes-h { display: flex; flex-wrap: wrap; gap: 3px; justify-content: center; margin: 0 0 12px; }
+    .pied-m { flex: none; display: grid; grid-template-columns: 1fr 1.4fr; gap: 8px; }
+    .pied-m button { display: flex; align-items: center; justify-content: center; gap: 6px; padding: 11px 6px; font-size: 0.95em; }
+    .pied-m .btn-papier { background: #3f3026; border-color: #8d6a3f; color: #ffd8a8; box-shadow: 0 2px 0 #120c09; }
+    .annonce-m { position: absolute; left: 50%; bottom: 10px; transform: translateX(-50%); background: rgba(28,20,15,0.94); border: 1px solid #8d6a3f; color: #ffe8cc; border-radius: 10px;
+                 padding: 5px 11px; font: 600 0.82em system-ui, sans-serif; white-space: nowrap; pointer-events: none; }
+  </style>
+</head>
+<body>
+  <div id="app" v-cloak class="mm">
+    <header class="tete-m">
+      <button class="btn-bois" v-html="ico('retour', 16) + 'Vallée'"></button>
+      <div class="titre-m"><b>Maison de {{ nom }}</b><small>Maquette (ta vraie maison n'est pas touchée)</small></div>
+      <span class="etoiles-m"><span v-html="ETOILE"></span>{{ etoiles }}</span>
+    </header>
+
+    <div class="scene-m" :class="{ arranger: arranger }">
+      <svg ref="svg" class="piece" xmlns="http://www.w3.org/2000/svg" :view-box.camel="viewBox" :style="{ '--ar': ratio }" v-html="svgScene"
+           @pointerdown="appui" @pointermove="glisse" @pointerup="lache" @pointercancel="lache"></svg>
+      <div class="etiquette-m"><button v-html="ico('gauche', 14)"></button><span>Le salon</span><button v-html="ico('droite', 14)"></button></div>
+      <button class="pastille-m loupe" :class="{ on: zoom > 1 }" @click="basculerZoom()" v-html="ico('loupe', 19)" title="Zoom"></button>
+      <button v-if="!arranger" class="pastille-m arr" @click="ouvrirArranger" v-html="ico('arranger', 21)" title="Arranger"></button>
+      <div v-if="annonce" class="annonce-m">{{ annonce }}</div>
+    </div>
+
+    <template v-if="!arranger">
+      <div class="bulle-m"><b>{{ nom }} :</b> {{ phrase }}</div>
+      <nav class="onglets-m">
+        <button v-for="o in ONGLETS" :key="o.id" class="onglet-m" :class="{ actif: onglet === o.id }" @click="onglet = o.id"><i v-html="ico(o.id, 22)"></i>{{ o.nom }}</button>
+      </nav>
+      <section class="fiche-m">
+        <div v-for="b in SOINS" :key="b.id" class="ligne-soin">
+          <span class="p" v-html="ico(b.id, 19)"></span>
+          <div><b>{{ b.nom }}</b><div class="jauge-m"><i :class="{ bas: b.v < 35 }" :style="{ width: b.v + '%' }"></i></div></div>
+          <button class="btn-rouille btn-soin">{{ b.action }}</button>
+        </div>
+      </section>
+    </template>
+
+    <template v-else>
+      <div class="outils-m">
+        <template v-if="objetChoisi">
+          <div class="nom"><b>{{ MEUBLES[objetChoisi.m].nom }}</b><small>{{ aideChoisi }}</small></div>
+          <button class="outil" @click="retourner" v-html="ico('retourner', 18) + 'Retourner'"></button>
+          <button class="outil" :class="{ on: teintesOuvertes }" @click="teintesOuvertes = !teintesOuvertes" v-html="ico('teinte', 18) + 'Teinte'"></button>
+          <button class="outil" @click="ranger" v-html="ico('ranger', 18) + 'Ranger'"></button>
+        </template>
+        <div v-else class="aide-m">Touche un objet de la pièce pour le déplacer, ou choisis-en un ci-dessous pour le poser.</div>
+      </div>
+      <div v-if="objetChoisi && teintesOuvertes" class="nuancier-m">
+        <button v-for="t in NUANCIER" :key="t.id" class="pastel" :class="{ on: (objetChoisi.t || MEUBLES[objetChoisi.m].t) === t.id }" :style="{ background: t.c }" :title="t.nom" @click="teindre(t.id)"></button>
+      </div>
+      <section class="panneau-m">
+        <nav class="onglets-arr">
+          <button v-for="o in ONGLETS_ARR" :key="o.id" :class="{ actif: ongletArr === o.id }" @click="choisirOngletArr(o.id)"><i v-html="ico(o.id, 18)"></i>{{ o.nom }}</button>
+        </nav>
+        <div class="contenu-arr" v-if="ongletArr !== 'habillage'">
+          <div class="grille-m">
+            <div v-for="c in cartes" :key="c.id" class="carte-m" :class="{ choisie: objetChoisi && objetChoisi.m === c.id }" @click="toucherCarte(c.id)">
+              <span v-if="c.id === 'pouf'" class="ruban">Nouveau</span>
+              <span class="sceau" v-html="SCEAU" title="À toi"></span>
+              <span class="vig" v-html="c.vig"></span>
+              <b>{{ c.nom }}</b>
+              <span class="etat" :class="c.pose ? 'pose' : 'range'">{{ c.pose ? 'Dans la pièce' : 'Poser' }}</span>
+            </div>
+          </div>
+        </div>
+        <div class="contenu-arr habillage" v-else>
+          <h3>Murs <small>motif</small></h3>
+          <div class="tuiles">
+            <div v-for="m in MOTIFS_MUR" :key="m.id" class="tuile-m" :class="{ on: piece.murs.motif === m.id }" @click="piece.murs.motif = m.id">
+              <span v-if="m.prix" class="prix-m"><span v-html="ETOILE_P"></span>{{ m.prix }}</span>
+              <span v-html="tuileMur(m.id)"></span><span class="nom-t">{{ m.nom }}</span>
+            </div>
+          </div>
+          <h3>Teinte des murs</h3>
+          <div class="teintes-h"><button v-for="t in NUANCIER" :key="t.id" class="pastel" :class="{ on: piece.murs.teinte === t.id }" :style="{ background: t.c }" :title="t.nom" @click="piece.murs.teinte = t.id"></button></div>
+          <h3>Sol <small>type</small></h3>
+          <div class="tuiles">
+            <div v-for="s in SOLS" :key="s.id" class="tuile-m" :class="{ on: piece.sol.type === s.id }" @click="piece.sol.type = s.id">
+              <span v-if="s.prix" class="prix-m"><span v-html="ETOILE_P"></span>{{ s.prix }}</span>
+              <span v-html="tuileSol(s.id)"></span><span class="nom-t">{{ s.nom }}</span>
+            </div>
+          </div>
+          <h3>Teinte du sol</h3>
+          <div class="teintes-h"><button v-for="t in NUANCIER" :key="t.id" class="pastel" :class="{ on: piece.sol.teinte === t.id }" :style="{ background: t.c }" :title="t.nom" @click="piece.sol.teinte = t.id"></button></div>
+        </div>
+      </section>
+      <footer class="pied-m">
+        <button class="btn-papier" @click="annuler" v-html="ico('croix', 17) + 'Annuler'"></button>
+        <button class="btn-rouille" @click="valider" v-html="ico('coche', 18) + 'Valider'"></button>
+      </footer>
+    </template>
+  </div>
+
+  <script src="joueur.js"></script>
+  <script src="commun.js"></script>
+  <script src="etoiles.js"></script>
+  <script src="compagnon/compagnon-commun.js"></script>
+  <script src="compagnon/compagnon-meubles.js"></script>
+  <script>
+    // Icônes au trait (même famille que ICONES_COMPTE de l'accueil) : dessinées dans la couleur du texte
+    const TRAITS = {
+      retour: '<path d="M14.5 5.5L8 12l6.5 6.5"/>', gauche: '<path d="M14.5 5.5L8 12l6.5 6.5"/>', droite: '<path d="M9.5 5.5L16 12l-6.5 6.5"/>',
+      arranger: '<path d="M4 20h7"/><path d="M15 4.5l4.5 4.5L9 19.5H4.5V15z"/><path d="M12.5 7l4.5 4.5"/>',
+      loupe: '<circle cx="10.5" cy="10.5" r="6"/><path d="M15 15l5 5"/><path d="M8 10.5h5M10.5 8v5"/>',
+      meubles: '<path d="M6.5 11V8a2 2 0 0 1 2-2h7a2 2 0 0 1 2 2v3"/><path d="M4 12.5a2 2 0 0 1 4 0V15h8v-2.5a2 2 0 0 1 4 0V18H4z"/><path d="M6 18v2M18 18v2"/>',
+      deco: '<rect x="4" y="5" width="16" height="13" rx="1.5"/><path d="M4 15.5l4.5-4.5 3.5 3.5 2.5-2.5 5.5 5"/><circle cx="15.5" cy="9" r="1.4"/>',
+      habillage: '<rect x="3.5" y="4" width="13.5" height="5.5" rx="1.5"/><path d="M17 6.5h3V12h-8.5v3"/><rect x="10" y="15" width="3" height="5.5" rx="1"/>',
+      retourner: '<path d="M12 3.5v17" stroke-dasharray="2 2.2"/><path d="M9 7.5L4 17h5z"/><path d="M15 7.5l5 9.5h-5z"/>',
+      teinte: '<path d="M12 3.5c3 4 6 7 6 10.5a6 6 0 0 1-12 0c0-3.5 3-6.5 6-10.5z"/><path d="M9.5 14.5a2.5 2.5 0 0 0 2.5 2.5"/>',
+      ranger: '<path d="M4.5 9h15v10.5h-15z"/><path d="M3 5.5h18V9H3z"/><path d="M10 12.5h4"/>',
+      coche: '<path d="M5 12.5l4.5 4.5L19 7.5"/>', croix: '<path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/>',
+      soins: '<path d="M12 19.5s-7.2-4.4-7.2-9.9A4.1 4.1 0 0 1 12 7.1a4.1 4.1 0 0 1 7.2 2.5c0 5.5-7.2 9.9-7.2 9.9z"/>',
+      boutique: '<path d="M5.5 8.5h13l-1.1 11h-10.8z"/><path d="M9 10V7.5a3 3 0 0 1 6 0V10"/>',
+      defis: '<path d="M8 4.5h8V9a4 4 0 0 1-8 0z"/><path d="M8 6H5.5a2.5 2.5 0 0 0 2.6 3.5M16 6h2.5a2.5 2.5 0 0 1-2.6 3.5M12 13v3.5M8.5 20h7M9.8 16.5h4.4v3.5"/>',
+      reglages: '<path d="M4 7h9M17 7h3M4 12h3M11 12h9M4 17h11M19 17h1"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="17" cy="17" r="2"/>',
+      repas: '<path d="M4 11.5h16a8 8 0 0 1-16 0z"/><path d="M9 4.5c-1 1.5 1 2.5 0 4M13 4.5c-1 1.5 1 2.5 0 4"/>',
+      eau: '<path d="M12 3.5c3 4 6 7 6 10.5a6 6 0 0 1-12 0c0-3.5 3-6.5 6-10.5z"/>',
+      toilette: '<circle cx="9" cy="14" r="4.5"/><circle cx="16.5" cy="9" r="3"/><circle cx="17" cy="17" r="1.8"/><path d="M7.5 12.5a1.8 1.8 0 0 1 1.8-1.4"/>',
+      calin: '<path d="M12 19.5s-7.2-4.4-7.2-9.9A4.1 4.1 0 0 1 12 7.1a4.1 4.1 0 0 1 7.2 2.5c0 5.5-7.2 9.9-7.2 9.9z"/><path d="M9 11.5a2.2 2.2 0 0 1 2-2"/>'
+    };
+    function ico(nom, t) {
+      return '<svg class="ico" viewBox="0 0 24 24" width="' + (t || 20) + '" height="' + (t || 20) + '" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + TRAITS[nom] + '</svg>';
+    }
+    const ETOILE = '<svg class="ico" viewBox="0 0 24 24" width="17" height="17" aria-hidden="true"><path d="M12 2.8l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 16.8l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z" fill="#f5b81f" stroke="#c98c0a" stroke-width="1.3" stroke-linejoin="round"/></svg>';
+    const ETOILE_P = ETOILE.replace(/width="17" height="17"/, 'width="11" height="11"');
+    // Sceau de cire « À toi »
+    const SCEAU = '<svg viewBox="0 0 24 24" width="17" height="17"><path d="M12 1.8l2.3 1.7 2.8-.3 1.1 2.6 2.6 1.1-.3 2.8 1.7 2.3-1.7 2.3.3 2.8-2.6 1.1-1.1 2.6-2.8-.3L12 22.2l-2.3-1.7-2.8.3-1.1-2.6-2.6-1.1.3-2.8L1.8 12l1.7-2.3-.3-2.8 2.6-1.1 1.1-2.6 2.8.3z" fill="#b02a1e" stroke="#6b1410" stroke-width="1"/>' +
+      '<circle cx="12" cy="12" r="6.2" fill="none" stroke="#e86a5a" stroke-width="1"/><path d="M8.8 12.2l2.2 2.2 4.4-4.6" fill="none" stroke="#ffe3dc" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+    const CLE = 'maquette-maison';
+    function salonDepart() {
+      return { l: 6, p: 6, h: CPM.HAUTEUR, murs: { motif: 'rayures', teinte: 'sauge' }, sol: { type: 'parquet', teinte: 'miel' }, objets: [
+        { m: 'fenetre', i: 1.5, j: 0, o: 0, z: 1.05 }, { m: 'etagere', i: 4, j: 0, o: 0, z: 1.55 }, { m: 'tableau', i: 0, j: 1.5, o: 1, z: 1.3 }, { m: 'horloge', i: 0, j: 3, o: 1, z: 1.35 },
+        { m: 'tapis', i: 1, j: 1, o: 0 }, { m: 'plante', i: 0, j: 0, o: 0 }, { m: 'canape', i: 1, j: 0, o: 0 }, { m: 'commode', i: 4, j: 0, o: 0 }, { m: 'poele', i: 5, j: 0, o: 0 },
+        { m: 'lampadaire', i: 0, j: 1, o: 0 }, { m: 'fauteuil', i: 0, j: 2, o: 1 }, { m: 'tableBasse', i: 1, j: 2, o: 0 }, { m: 'bibliotheque', i: 0, j: 4, o: 1 },
+        { m: 'malle', i: 5, j: 5, o: 0 }, { m: 'suspension', i: 2, j: 3, o: 0 }
+      ] };
+    }
+    function copie(x) { return JSON.parse(JSON.stringify(x)); }
+
+    new Vue({
+      el: '#app',
+      data: function () {
+        var a = lireStockage('compagnon-animal');
+        if (!a || !a.espece) a = { espece: 'renard', couleur: '#e07a3a', nom: 'Noisette', porte: {} };
+        var sv = lireStockage(CLE);
+        return {
+          MEUBLES: CPM.MEUBLES, NUANCIER: CPM.NUANCIER, MOTIFS_MUR: CPM.MOTIFS_MUR, SOLS: CPM.SOLS, ETOILE: ETOILE, ETOILE_P: ETOILE_P, SCEAU: SCEAU,
+          ONGLETS: [{ id: 'soins', nom: 'Soins' }, { id: 'boutique', nom: 'Boutique' }, { id: 'defis', nom: 'Défis' }, { id: 'reglages', nom: 'Réglages' }],
+          ONGLETS_ARR: [{ id: 'meubles', nom: 'Meubles' }, { id: 'deco', nom: 'Déco' }, { id: 'habillage', nom: 'Habillage' }],
+          SOINS: [{ id: 'repas', nom: 'Repas', v: 72, action: 'Nourrir' }, { id: 'eau', nom: 'Eau', v: 54, action: 'Donner à boire' }, { id: 'toilette', nom: 'Toilette', v: 31, action: 'Le laver' }, { id: 'calin', nom: 'Câlins', v: 88, action: 'Câlin' }],
+          animal: a, nom: a.nom || 'Noisette', etoiles: (typeof Etoiles !== 'undefined' ? Etoiles.solde() : 0) || 42,
+          piece: (sv && sv.salon) || salonDepart(), avant: null,
+          compagnon: { i: 3, j: 3 },
+          onglet: 'soins', arranger: false, ongletArr: 'meubles', choisi: null, teintesOuvertes: false,
+          zoom: 1, centre: null, glisser: null, apercu: null, annonce: '', phrase: 'Il fait bon près du poêle. Tu restes un peu\u00a0?'
+        };
+      },
+      computed: {
+        viewBox: function () { return this.zoom > 1 && this.centre ? CPM.camera(this.piece, this.zoom, this.centre.x, this.centre.y) : CPM.camera(this.piece, 1); },
+        ratio: function () { var b = CPM.bornes(this.piece); return (b.x1 - b.x0) + ' / ' + (b.y1 - b.y0); },
+        caseCompagnon: function () {
+          var p = this.piece, c = this.compagnon;
+          if (!CPM.caseOccupee(p, c.i, c.j)) return c;
+          for (var r = 1; r < 6; r++) for (var di = -r; di <= r; di++) for (var dj = -r; dj <= r; dj++) {
+            var i = c.i + di, j = c.j + dj;
+            if (i >= 0 && j >= 0 && i < p.l && j < p.p && !CPM.caseOccupee(p, i, j)) return { i: i, j: j };
+          }
+          return c;
+        },
+        svgScene: function () {
+          var c = this.caseCompagnon;
+          return CPM.scene(this.piece, { id: 'mq', grille: this.arranger, choisi: this.choisi, apercu: this.apercu,
+            compagnon: { i: c.i, j: c.j, ech: 0.33, svg: CP.dessin(this.animal, 'content', false) } });
+        },
+        objetChoisi: function () { return this.choisi == null ? null : this.piece.objets[this.choisi]; },
+        aideChoisi: function () {
+          var m = this.MEUBLES[this.objetChoisi.m];
+          return m.plan === 'mur' ? 'Fais-le glisser sur un mur' : m.plan === 'plafond' ? 'Fais-le glisser au plafond' : 'Fais-le glisser sur une case';
+        },
+        cartes: function () {
+          var r = this.ongletArr, p = this.piece, M = this.MEUBLES;
+          return Object.keys(M).filter(function (id) { return M[id].rayon === r; }).map(function (id) {
+            return { id: id, nom: M[id].nom, vig: CPM.vignette(id, null, 64), pose: p.objets.some(function (o) { return o.m === id; }) };
+          });
+        }
+      },
+      methods: {
+        ico: ico,
+        tuileMur: function (m) { return CPM.tuile('mur', m, this.piece.murs.teinte, 44); },
+        tuileSol: function (s) { return CPM.tuile('sol', s, this.piece.sol.teinte, 50); },
+        dire: function (t) { var v = this; v.annonce = t; clearTimeout(v._ann); v._ann = setTimeout(function () { v.annonce = ''; }, 1800); },
+        ouvrirArranger: function () { this.avant = copie(this.piece); this.arranger = true; this.choisi = null; this.ongletArr = 'meubles'; },
+        annuler: function () { if (this.avant) this.piece = this.avant; this.fermer(); },
+        valider: function () { ecrireStockage(CLE, { salon: this.piece }); this.fermer(); this.dire('Pièce enregistrée (maquette)'); },
+        fermer: function () { this.arranger = false; this.choisi = null; this.apercu = null; this.glisser = null; this.teintesOuvertes = false; this.avant = null; },
+        basculerZoom: function (pt) {
+          if (this.zoom > 1) { this.zoom = 1; this.centre = null; return; }
+          var b = CPM.bornes(this.piece);
+          this.zoom = 1.8; this.centre = pt || { x: (b.x0 + b.x1) / 2, y: (b.y0 + b.y1) / 2 + 20 };
+        },
+        point: function (ev) {
+          var s = this.$refs.svg, pt = s.createSVGPoint(); pt.x = ev.clientX; pt.y = ev.clientY;
+          return pt.matrixTransform(s.getScreenCTM().inverse());
+        },
+        // Position visée par le doigt pour un objet (en cases), sans la valider
+        viser: function (ob, p, decal) {
+          var m = this.MEUBLES[ob.m], n = Object.assign({}, ob);
+          if (m.plan === 'mur') {
+            var o = p.x < 0 ? 1 : 0, w = CPM.versMur(p.x, p.y, o);
+            var k = Math.round((w.k - m.w / 2) * 2) / 2, z = Math.round((w.z - m.h / 2) * 4) / 4;
+            n.o = o; if (o) { n.i = 0; n.j = k; } else { n.j = 0; n.i = k; } n.z = z;
+            return n;
+          }
+          var c = CPM.versSol(p.x, p.y);
+          if (m.plan === 'plafond') { c = CPM.versSol(p.x, p.y + CPM.ZU * (this.piece.h - 0.85)); }
+          n.i = Math.round(c.i - decal.i); n.j = Math.round(c.j - decal.j);
+          return n;
+        },
+        apercuDe: function (n, ok) {
+          var m = this.MEUBLES[n.m], e = CPM.emprise(n);
+          if (m.plan === 'mur') return { mur: e.mur, k: e.k0, z: e.z0, w: m.w, h: m.h, ok: ok };
+          return { i: e.i0, j: e.j0, w: e.i1 - e.i0, d: e.j1 - e.j0, ok: ok };
+        },
+        appui: function (ev) {
+          var p = this.point(ev);
+          if (!this.arranger) {   // double toucher = zoom
+            var t = Date.now();
+            if (this._dernier && t - this._dernier < 320) { this._dernier = 0; this.basculerZoom({ x: p.x, y: p.y }); } else this._dernier = t;
+            return;
+          }
+          var g = ev.target.closest && ev.target.closest('[data-n]');
+          if (g) {
+            var n = +g.getAttribute('data-n'), ob = this.piece.objets[n], m = this.MEUBLES[ob.m];
+            this.choisi = n;
+            var c = CPM.versSol(p.x, p.y + (m.plan === 'plafond' ? CPM.ZU * (this.piece.h - 0.85) : 0));
+            this.glisser = { n: n, depart: copie(ob), decal: { i: c.i - ob.i, j: c.j - ob.j }, bouge: false, x: ev.clientX, y: ev.clientY };
+            try { this.$refs.svg.setPointerCapture(ev.pointerId); } catch (e) {}
+            return;
+          }
+          // toucher une case vide avec un objet choisi : il y va
+          if (this.objetChoisi) {
+            var obc = this.objetChoisi, e = CPM.emprise(obc), mc = this.MEUBLES[obc.m];
+            var dec = mc.plan === 'mur' ? null : { i: (e.i1 - e.i0) / 2, j: (e.j1 - e.j0) / 2 };
+            this.poserA(this.choisi, this.viser(obc, p, dec));
+          }
+        },
+        glisse: function (ev) {
+          var g = this.glisser; if (!g) return;
+          if (!g.bouge && Math.hypot(ev.clientX - g.x, ev.clientY - g.y) < 6) return;
+          g.bouge = true;
+          var n = this.viser(this.piece.objets[g.n], this.point(ev), g.decal), ob = this.piece.objets[g.n];
+          var ok = CPM.placeLibre(this.piece, n, ob);
+          ['i', 'j', 'o', 'z'].forEach(function (k) { if (n[k] != null) ob[k] = n[k]; });
+          this.apercu = this.apercuDe(n, ok);
+        },
+        lache: function () {
+          var g = this.glisser; if (!g) return;
+          this.glisser = null;
+          if (g.bouge) {
+            var ob = this.piece.objets[g.n];
+            if (!this.apercu || !this.apercu.ok) { Object.assign(ob, g.depart); this.dire('Pas de place ici'); }
+          }
+          this.apercu = null;
+        },
+        poserA: function (n, cible) {
+          var ob = this.piece.objets[n];
+          if (!CPM.placeLibre(this.piece, cible, ob)) { this.dire('Pas de place ici'); return false; }
+          ['i', 'j', 'o', 'z'].forEach(function (k) { if (cible[k] != null) ob[k] = cible[k]; });
+          return true;
+        },
+        retourner: function () {
+          var ob = this.objetChoisi, m = this.MEUBLES[ob.m], n = Object.assign({}, ob, { o: ob.o ? 0 : 1 });
+          if (m.plan === 'mur') { if (n.o) { n.j = ob.i; n.i = 0; } else { n.i = ob.j; n.j = 0; } }
+          var essais = [[0, 0], [-1, 0], [0, -1], [-1, -1], [1, 0], [0, 1]];
+          for (var k = 0; k < essais.length; k++) {
+            var t = Object.assign({}, n);
+            if (m.plan === 'mur') { if (t.o) t.j += essais[k][0]; else t.i += essais[k][0]; } else { t.i += essais[k][0]; t.j += essais[k][1]; }
+            if (CPM.placeLibre(this.piece, t, ob)) { Object.assign(ob, t); return; }
+          }
+          this.dire('Pas la place de le retourner ici');
+        },
+        choisirOngletArr: function (id) { this.ongletArr = id; if (id === 'habillage') { this.choisi = null; this.teintesOuvertes = false; } },
+        teindre: function (t) { this.$set(this.objetChoisi, 't', t); },
+        ranger: function () { this.piece.objets.splice(this.choisi, 1); this.choisi = null; this.teintesOuvertes = false; },
+        toucherCarte: function (id) {
+          var p = this.piece, k = p.objets.findIndex(function (o) { return o.m === id; });
+          if (k >= 0) { this.choisi = k; return; }
+          // poser : première place libre, en partant du milieu de la pièce
+          var m = this.MEUBLES[id], places = [];
+          if (m.plan === 'mur') {
+            for (var o = 0; o < 2; o++) for (var c = 0; c < (o ? p.p : p.l); c++) places.push({ m: id, o: o, i: o ? 0 : c, j: o ? c : 0, z: m.z || 1.2 });
+          } else {
+            for (var i = 0; i < p.l; i++) for (var j = 0; j < p.p; j++) places.push({ m: id, o: 0, i: i, j: j });
+            places.sort(function (a, b) { return Math.hypot(a.i - p.l / 2 + 1, a.j - p.p / 2 + 1) - Math.hypot(b.i - p.l / 2 + 1, b.j - p.p / 2 + 1); });
+          }
+          var bonne = places.find(function (x) { return CPM.placeLibre(p, x); });
+          if (!bonne) { this.dire('Plus de place dans la pièce'); return; }
+          p.objets.push(bonne); this.choisi = p.objets.length - 1;
+        }
+      }
+    });
+  </script>
+</body>
+</html>
