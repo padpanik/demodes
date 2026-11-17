@@ -30,7 +30,7 @@
     /* ----- La pièce ----- */
     .scene-m { position: relative; flex: none; border: 2px solid #4b3a2c; border-radius: 14px; background: radial-gradient(circle, #241a14 1px, transparent 1.2px) 0 0 / 10px 10px, #120d0a;
                box-shadow: inset 0 0 24px rgba(0,0,0,0.65), 0 6px 16px rgba(0,0,0,0.55); overflow: hidden; }
-    .scene-m svg.piece { display: block; width: 100%; height: auto; aspect-ratio: var(--ar); touch-action: manipulation; user-select: none; -webkit-user-select: none; }
+    .scene-m svg.piece { display: block; width: 100%; height: auto; aspect-ratio: var(--ar); touch-action: none; user-select: none; -webkit-user-select: none; }
     .scene-m.arranger svg.piece { touch-action: none; }
     .scene-m .obj { cursor: pointer; }
     .scene-m .obj.choisi { filter: drop-shadow(0 0 1.5px #fff3bf) drop-shadow(0 0 3px #ffa94d); }
@@ -38,7 +38,7 @@
     /* Nom de la pièce : petite étiquette dans le coin, pour laisser la place à la déco */
     .etiquette-m { position: absolute; left: 6px; top: 6px; display: flex; align-items: center; background: rgba(28,20,15,0.85); border: 1px solid #5c4532;
                    border-radius: 99px; padding: 0 2px; font: italic 700 0.7em Georgia, serif; color: #ffe8cc; white-space: nowrap; }
-    .etiquette-m button { background: none; border: 0; color: #c9a66b; padding: 2px 2px; cursor: pointer; line-height: 0; }
+    .etiquette-m button { background: none; border: 0; color: #c9a66b; padding: 3px 5px; cursor: pointer; line-height: 0; }
     .etiquette-m span { padding: 0 1px; }
     .pastille-m { position: absolute; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer;
                   background: radial-gradient(circle at 50% 35%, #6b4f36, #3f3026); border: 2px solid #c9a66b; color: #ffd8a8; box-shadow: 0 0 0 2px #1b130e, 0 3px 6px rgba(0,0,0,0.5); }
@@ -143,7 +143,7 @@
     <div class="scene-m" :class="{ arranger: arranger }">
       <svg ref="svg" class="piece" xmlns="http://www.w3.org/2000/svg" :view-box.camel="viewBox" :style="{ '--ar': ratio }" v-html="svgScene"
            @pointerdown="appui" @pointermove="glisse" @pointerup="lache" @pointercancel="lache"></svg>
-      <div v-if="!arranger" class="etiquette-m"><button v-html="ico('gauche', 12)"></button><span>Salon</span><button v-html="ico('droite', 12)"></button></div>
+      <div v-if="!arranger" class="etiquette-m"><button @click="changerPiece(-1)" v-html="ico('gauche', 12)" title="Pièce d'avant"></button><span>{{ infoPiece.nom }}</span><button @click="changerPiece(1)" v-html="ico('droite', 12)" title="Pièce suivante"></button></div>
       <button class="pastille-m loupe" :class="{ on: zoom > 1 }" @click="basculerZoom()" v-html="ico('loupe', 19)" title="Zoom"></button>
       <button v-if="!arranger" class="pastille-m arr" @click="ouvrirArranger" v-html="ico('arranger', 21)" title="Arranger"></button>
       <div v-if="annonce" class="annonce-m">{{ annonce }}</div>
@@ -193,7 +193,7 @@
         </div>
         <div class="contenu-arr habillage" v-else>
           <div class="puces-h">
-            <button v-for="h in SOUS_H" :key="h.id" :class="{ on: sousH === h.id }" @click="sousH = h.id">{{ h.nom }}</button>
+            <button v-for="h in sousHVisibles" :key="h.id" :class="{ on: sousH === h.id }" @click="sousH = h.id">{{ h.nom }}</button>
           </div>
           <template v-if="sousH === 'murs'">
             <div class="seg-h">
@@ -315,18 +315,15 @@
       '<circle cx="12" cy="12" r="6.2" fill="none" stroke="#e86a5a" stroke-width="1"/><path d="M8.8 12.2l2.2 2.2 4.4-4.6" fill="none" stroke="#ffe3dc" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 
     const CLE = 'maquette-maison';
-    function salonDepart() {
-      return { l: 6, p: 6, h: CPM.HAUTEUR, murs: { motif: 'rayures', teinte: 'sauge' }, murD: null, sol: { type: 'parquet', teinte: 'miel' },
-        plinthe: { type: 'simple', teinte: null }, corniche: false, fenetre: { vue: 'pre', cadre: null }, lumiere: { ambiance: 'chaude' }, objets: [
-        { m: 'fenetre', i: 1.5, j: 0, o: 0, z: 1.05 }, { m: 'etagere', i: 4, j: 0, o: 0, z: 1.55 }, { m: 'tableau', i: 0, j: 1.5, o: 1, z: 1.3 }, { m: 'horloge', i: 0, j: 3, o: 1, z: 1.35 },
-        { m: 'tapis', i: 1, j: 1, o: 0 }, { m: 'plante', i: 0, j: 0, o: 0 }, { m: 'canape', i: 1, j: 0, o: 0 }, { m: 'commode', i: 4, j: 0, o: 0 }, { m: 'poele', i: 5, j: 0, o: 0 },
-        { m: 'lampadaire', i: 0, j: 1, o: 0 }, { m: 'fauteuil', i: 0, j: 2, o: 1 }, { m: 'tableBasse', i: 1, j: 2, o: 0 }, { m: 'bibliotheque', i: 0, j: 4, o: 1 },
-        { m: 'malle', i: 5, j: 5, o: 0 }, { m: 'suspension', i: 2, j: 3, o: 0 }
-      ] };
-    }
     function copie(x) { return JSON.parse(JSON.stringify(x)); }
-    // Une pièce enregistrée avant l'étape 2 reçoit les champs d'habillage manquants
-    function completer(p) { var d = salonDepart(); ['murD', 'plinthe', 'corniche', 'fenetre', 'lumiere'].forEach(function (k) { if (!(k in p)) p[k] = d[k]; }); return p; }
+    // Une pièce enregistrée avant reçoit les champs d'habillage manquants
+    function completer(p, id) { var d = CPM.pieceDepart(id); Object.keys(d).forEach(function (k) { if (!(k in p)) p[k] = d[k]; }); return p; }
+    // Toutes les pièces de la maquette (une sauvegarde de l'étape 1 n'avait que le salon)
+    function lirePieces(sv) {
+      var r = {}, avant = (sv && sv.pieces) || (sv && sv.salon ? { salon: sv.salon } : {});
+      CPM.PIECES.forEach(function (P) { r[P.id] = avant[P.id] ? completer(avant[P.id], P.id) : CPM.pieceDepart(P.id); });
+      return r;
+    }
 
     new Vue({
       el: '#app',
@@ -340,7 +337,7 @@
           ONGLETS_ARR: [{ id: 'meubles', nom: 'Meubles' }, { id: 'deco', nom: 'Déco' }, { id: 'habillage', nom: 'Habillage' }],
           SOINS: [{ id: 'repas', nom: 'Repas', v: 72, action: 'Nourrir' }, { id: 'eau', nom: 'Eau', v: 54, action: 'Donner à boire' }, { id: 'toilette', nom: 'Toilette', v: 31, action: 'Le laver' }, { id: 'calin', nom: 'Câlins', v: 88, action: 'Câlin' }],
           animal: a, nom: a.nom || 'Noisette', etoiles: (typeof Etoiles !== 'undefined' ? Etoiles.solde() : 0) || 42,
-          piece: completer((sv && sv.salon) || salonDepart()), avant: null,
+          pieces: lirePieces(sv), pieceId: 'salon', PIECES: CPM.PIECES, avant: null,
           PLINTHES: CPM.PLINTHES, AMBIANCES: CPM.AMBIANCES, VUES: CPM.VUES, vus: lireStockage('vallee-lieux') || [],
           SOUS_H: [{ id: 'murs', nom: 'Murs' }, { id: 'sol', nom: 'Sol' }, { id: 'finitions', nom: 'Finitions' }, { id: 'fenetre', nom: 'Fenêtre' }, { id: 'lumiere', nom: 'Lumière' }],
           CIBLES_MUR: [{ id: 'deux', nom: 'Les deux murs' }, { id: 'g', nom: 'Gauche' }, { id: 'd', nom: 'Droit' }],
@@ -348,14 +345,19 @@
           sousH: 'murs', murCible: 'deux', moment: 'heure',
           compagnon: { i: 3, j: 3 },
           onglet: 'soins', arranger: false, ongletArr: 'meubles', choisi: null, teintesOuvertes: false,
-          zoom: 1, centre: null, glisser: null, apercu: null, annonce: '', phrase: 'Il fait bon près du poêle.'
+          zoom: 1, centre: null, glisser: null, apercu: null, annonce: ''
         };
       },
       computed: {
+        piece: function () { return this.pieces[this.pieceId]; },
+        infoPiece: function () { var id = this.pieceId; return this.PIECES.filter(function (P) { return P.id === id; })[0]; },
+        phrase: function () { return this.infoPiece.phrase; },
+        // dehors, pas de murs : seulement le sol et la lumière
+        sousHVisibles: function () { var e = this.piece.exterieur; return this.SOUS_H.filter(function (h) { return !e || h.id === 'sol' || h.id === 'lumiere'; }); },
         viewBox: function () { return this.zoom > 1 && this.centre ? CPM.camera(this.piece, this.zoom, this.centre.x, this.centre.y) : CPM.camera(this.piece, 1); },
         ratio: function () { var b = CPM.bornes(this.piece); return (b.x1 - b.x0) + ' / ' + (b.y1 - b.y0); },
         caseCompagnon: function () {
-          var p = this.piece, c = this.compagnon;
+          var p = this.piece, c = this.infoPiece.cp || this.compagnon;
           if (!CPM.caseOccupee(p, c.i, c.j)) return c;
           for (var r = 1; r < 6; r++) for (var di = -r; di <= r; di++) for (var dj = -r; dj <= r; dj++) {
             var i = c.i + di, j = c.j + dj;
@@ -376,10 +378,12 @@
           return m.plan === 'mur' ? 'Fais-le glisser sur un mur' : m.plan === 'plafond' ? 'Fais-le glisser au plafond' : 'Fais-le glisser sur une case';
         },
         cartes: function () {
-          var r = this.ongletArr, p = this.piece, M = this.MEUBLES;
-          return Object.keys(M).filter(function (id) { return M[id].rayon === r; }).map(function (id) {
-            return { id: id, nom: M[id].nom, vig: CPM.vignette(id, null, 64), pose: p.objets.some(function (o) { return o.m === id; }) };
-          });
+          var r = this.ongletArr, p = this.piece, M = this.MEUBLES, ici = this.pieceId;
+          // les meubles de cette pièce d'abord, puis ceux qu'on peut y mettre aussi
+          return Object.keys(M).filter(function (id) { return M[id].rayon === r && CPM.vaDans(id, p); })
+            .sort(function (a, b) { return (M[b].chez === ici) - (M[a].chez === ici); }).map(function (id) {
+              return { id: id, nom: M[id].nom, vig: CPM.vignette(id, null, 64), pose: p.objets.some(function (o) { return o.m === id; }) };
+            });
         }
       },
       methods: {
@@ -398,9 +402,17 @@
         },
         tuileSol: function (s) { return CPM.tuile('sol', s, this.piece.sol.teinte, 50); },
         dire: function (t) { var v = this; v.annonce = t; clearTimeout(v._ann); v._ann = setTimeout(function () { v.annonce = ''; }, 1800); },
-        ouvrirArranger: function () { this.avant = copie(this.piece); this.arranger = true; this.choisi = null; this.ongletArr = 'meubles'; },
-        annuler: function () { if (this.avant) this.piece = this.avant; this.fermer(); },
-        valider: function () { ecrireStockage(CLE, { salon: this.piece }); this.fermer(); this.dire('Pièce enregistrée (maquette)'); },
+        ouvrirArranger: function () {
+          this.avant = copie(this.piece); this.arranger = true; this.choisi = null; this.ongletArr = 'meubles';
+          if (!this.sousHVisibles.some(function (h) { return h.id === this.sousH; }, this)) this.sousH = this.sousHVisibles[0].id;
+        },
+        annuler: function () { if (this.avant) this.$set(this.pieces, this.pieceId, this.avant); this.fermer(); },
+        valider: function () { ecrireStockage(CLE, { pieces: this.pieces, salon: this.pieces.salon }); this.fermer(); this.dire('Pièce enregistrée (maquette)'); },
+        // Passer d'une pièce à l'autre (flèches de l'étiquette, ou glisser la pièce du doigt)
+        changerPiece: function (d) {
+          var n = this.PIECES.length, k = this.PIECES.findIndex(function (P) { return P.id === this.pieceId; }, this);
+          this.pieceId = this.PIECES[(k + d + n) % n].id; this.zoom = 1; this.centre = null;
+        },
         fermer: function () { this.arranger = false; this.choisi = null; this.apercu = null; this.glisser = null; this.teintesOuvertes = false; this.avant = null; },
         basculerZoom: function (pt) {
           if (this.zoom > 1) { this.zoom = 1; this.centre = null; return; }
@@ -432,8 +444,9 @@
         },
         appui: function (ev) {
           var p = this.point(ev);
-          if (!this.arranger) {   // double toucher = zoom
+          if (!this.arranger) {   // double toucher = zoom ; glisser = autre pièce
             var t = Date.now();
+            this._balaye = this.zoom > 1 ? null : { x: ev.clientX, y: ev.clientY, t: t };
             if (this._dernier && t - this._dernier < 320) { this._dernier = 0; this.basculerZoom({ x: p.x, y: p.y }); } else this._dernier = t;
             return;
           }
@@ -462,7 +475,11 @@
           ['i', 'j', 'o', 'z'].forEach(function (k) { if (n[k] != null) ob[k] = n[k]; });
           this.apercu = this.apercuDe(n, ok);
         },
-        lache: function () {
+        lache: function (ev) {
+          var b = this._balaye; this._balaye = null;
+          if (b && ev && ev.type === 'pointerup' && Date.now() - b.t < 600 && Math.abs(ev.clientX - b.x) > 50 && Math.abs(ev.clientX - b.x) > 2 * Math.abs(ev.clientY - b.y)) {
+            this.changerPiece(ev.clientX < b.x ? 1 : -1); return;
+          }
           var g = this.glisser; if (!g) return;
           this.glisser = null;
           if (g.bouge) {

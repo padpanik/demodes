@@ -16,6 +16,7 @@ var CPM = (function () {
   var O = '#2b1d14', EP = 1.5;           // contour (comme le Donjon) et son épaisseur
   var U = 40;                            // dessins à plat (murs, sol, faces) : 40 unités locales par case
   var HAUTEUR = 2.6;                     // hauteur des murs (en cases)
+  var CIEL = 2.85;                       // dehors : hauteur du ciel au-dessus de la haie
   var BORD = 10;                         // épaisseur du plancher vu de face (px)
   var BOIS = '#a8693a', BOIS_C = '#c98d55', BOIS_S = '#6b4423';
 
@@ -417,9 +418,386 @@ var CPM = (function () {
       } }
   };
 
+  // ---------- Les meubles des autres pièces (étape 3) ----------
+  // chez : la pièce où on le trouve d'abord ; lieu : 'dehors' (seulement au jardin), 'partout', ou rien (dedans seulement)
+  // Façade « +v » d'un objet : repère à plat (x le long de u, y vers le bas depuis le haut)
+  function face(k, u, v, z) { return plan(k, [u, v, z], [1, 0, 0], [0, 0, -1]); }
+  // Une coupe dessinée à l'écran : x, y = bas du pied
+  function coupe(x, y, s, c) {
+    var e = ' stroke="' + O + '" stroke-width="' + n1(Math.max(0.8, s * 0.9)) + '" stroke-linejoin="round"';
+    var A = function (dx, dy) { return n1(x + dx * s) + ' ' + n1(y + dy * s); };
+    return '<path d="M' + A(-6, -13) + ' C' + A(-10.5, -13) + ' ' + A(-10.5, -8) + ' ' + A(-4.5, -8.5) + ' M' + A(6, -13) + ' C' + A(10.5, -13) + ' ' + A(10.5, -8) + ' ' + A(4.5, -8.5) + '" fill="none"' + e + '/>' +
+      '<path d="M' + A(-5, 0) + ' L' + A(5, 0) + ' L' + A(4, -2.2) + ' L' + A(-4, -2.2) + 'Z" fill="' + nuance(c, -0.2) + '"' + e + '/>' +
+      '<path d="M' + A(-1.3, -2.2) + ' L' + A(1.3, -2.2) + ' L' + A(1.3, -6.8) + ' L' + A(-1.3, -6.8) + 'Z" fill="' + c + '"' + e + '/>' +
+      '<path d="M' + A(-6.5, -15) + ' L' + A(6.5, -15) + ' Q' + A(6.5, -6.5) + ' ' + A(0, -6.5) + ' Q' + A(-6.5, -6.5) + ' ' + A(-6.5, -15) + 'Z" fill="' + c + '"' + e + '/>' +
+      '<path d="M' + A(-3.6, -13.4) + ' Q' + A(-3.6, -9.6) + ' ' + A(-1, -8.6) + '" stroke="#fff" stroke-opacity="0.65" stroke-width="' + n1(Math.max(0.7, s * 0.9)) + '" fill="none" stroke-linecap="round"/>';
+  }
+  function rond(x, y, r, c, ep) { return '<circle cx="' + n1(x) + '" cy="' + n1(y) + '" r="' + n1(r) + '" fill="' + c + '" stroke="' + O + '" stroke-width="' + (ep || 1) + '"/>'; }
+
+  Object.assign(MEUBLES, {
+    // ----- cuisine -----
+    planTravail: { nom: 'Plan de travail', rayon: 'meubles', plan: 'sol', w: 2, d: 1, h: 1.3, t: 'sauge', chez: 'cuisine',
+      dessin: function (k, t) {
+        var P = k.P, s = ombreSol(k, 0.02, 0.05, 1.96, 0.85);
+        s += boite(k, 0.06, 0.08, 0, 1.88, 0.78, 0.08, '#3a2c22', 1) + boite(k, 0.02, 0.05, 0.08, 1.96, 0.85, 0.8, t, 1.5);
+        s += '<g transform="' + face(k, 0.02, 0.9, 0.88) + '">';
+        [[3, 36], [41, 36]].forEach(function (d) {
+          s += '<rect x="' + d[0] + '" y="2.5" width="' + d[1] + '" height="6" rx="1.2" fill="' + nuance(t, 0.12) + '" stroke="' + O + '" stroke-width="1"/>' +
+            '<rect x="' + d[0] + '" y="10.5" width="' + d[1] + '" height="19" rx="1.5" fill="' + nuance(t, 0.08) + '" stroke="' + O + '" stroke-width="1"/>' +
+            '<rect x="' + (d[0] + 4) + '" y="13.5" width="' + (d[1] - 8) + '" height="13" rx="1" fill="none" stroke="' + nuance(t, -0.18) + '" stroke-width="0.9"/>' +
+            '<rect x="' + (d[0] + d[1] / 2 - 4) + '" y="4.6" width="8" height="1.8" rx="0.9" fill="#c9a66b" stroke="' + O + '" stroke-width="0.6"/>';
+        });
+        s += '</g>' + boite(k, 0, 0.02, 0.88, 2, 0.92, 0.08, '#e9dcc4', 1.5);
+        // évier et robinet
+        s += poly([P(1.08, 0.22, 0.96), P(1.72, 0.22, 0.96), P(1.72, 0.7, 0.96), P(1.08, 0.7, 0.96)], '#9fb3c2', 3, 1.2);
+        s += poly([P(1.15, 0.29, 0.96), P(1.65, 0.29, 0.96), P(1.65, 0.63, 0.96), P(1.15, 0.63, 0.96)], '#c9d8e2', 2, 0.8);
+        var r0 = P(1.4, 0.1, 0.96), r1 = P(1.4, 0.1, 1.24), r2 = P(1.4, 0.36, 1.18), d = 'M' + pt(r0) + ' L' + pt(r1) + ' Q' + n1(r1[0] + 4) + ' ' + n1(r1[1] - 4) + ' ' + pt(r2);
+        s += '<path d="' + d + '" fill="none" stroke="' + O + '" stroke-width="4.2" stroke-linecap="round"/><path d="' + d + '" fill="none" stroke="#c7d0d6" stroke-width="2" stroke-linecap="round"/>';
+        // une planche, du pain et un pot d'herbes
+        s += boite(k, 0.18, 0.3, 0.96, 0.52, 0.38, 0.04, '#c98d55', 1.5);
+        var pn = P(0.44, 0.49, 1.0);
+        s += '<path d="M' + n1(pn[0] - 11) + ' ' + n1(pn[1]) + ' Q' + n1(pn[0] - 11) + ' ' + n1(pn[1] - 9) + ' ' + n1(pn[0]) + ' ' + n1(pn[1] - 9) + ' Q' + n1(pn[0] + 11) + ' ' + n1(pn[1] - 9) + ' ' + n1(pn[0] + 11) + ' ' + n1(pn[1]) + 'Z" fill="#d9a35b" stroke="' + O + '" stroke-width="1.2"/>' +
+          '<path d="M' + n1(pn[0] - 5) + ' ' + n1(pn[1] - 8) + ' l3 3 M' + n1(pn[0]) + ' ' + n1(pn[1] - 9) + ' l3 3 M' + n1(pn[0] + 5) + ' ' + n1(pn[1] - 8) + ' l3 3" stroke="#a8692f" stroke-width="1.1"/>';
+        s += cylindre(k, 0.86, 0.26, 0.96, 0.09, 0.14, '#c9733f', 0.11);
+        var h = P(0.86, 0.26, 1.1);
+        s += '<path d="M' + n1(h[0] - 7) + ' ' + n1(h[1] + 1) + ' Q' + n1(h[0] - 9) + ' ' + n1(h[1] - 9) + ' ' + n1(h[0] - 2) + ' ' + n1(h[1] - 11) + ' Q' + n1(h[0]) + ' ' + n1(h[1] - 4) + ' ' + n1(h[0] + 3) + ' ' + n1(h[1] - 12) +
+          ' Q' + n1(h[0] + 9) + ' ' + n1(h[1] - 7) + ' ' + n1(h[0] + 7) + ' ' + n1(h[1] + 1) + 'Z" fill="#6cae5c" stroke="' + O + '" stroke-width="1"/>';
+        return s;
+      } },
+    cuisiniere: { nom: 'Cuisinière', rayon: 'meubles', plan: 'sol', w: 1, d: 1, h: 1.35, t: 'creme', chez: 'cuisine',
+      dessin: function (k, t) {
+        var P = k.P, s = ombreSol(k, 0.04, 0.05, 0.92, 0.86);
+        s += boite(k, 0.04, 0.05, 0, 0.92, 0.86, 0.92, t, 2);
+        s += '<g transform="' + face(k, 0.04, 0.91, 0.92) + '">';
+        [8, 15, 22, 29].forEach(function (x) { s += '<circle cx="' + x + '" cy="3.4" r="1.6" fill="#3d3f45" stroke="' + O + '" stroke-width="0.6"/>'; });
+        s += '<rect x="4" y="7" width="29" height="26" rx="2" fill="' + nuance(t, -0.08) + '" stroke="' + O + '" stroke-width="1.1"/>' +
+          '<rect x="6" y="8.6" width="25" height="2" rx="1" fill="#c9a66b" stroke="' + O + '" stroke-width="0.6"/>' +
+          '<rect x="8" y="14" width="21" height="13" rx="1.5" fill="#2a2b30" stroke="' + O + '" stroke-width="0.9"/>' +
+          '<rect x="10" y="21.5" width="17" height="4" rx="1" fill="#ff922b" opacity="0.6"/><path d="M10 16.5 l4 -1" stroke="#fff" stroke-opacity="0.4" stroke-width="0.9"/></g>';
+        s += boite(k, 0.02, 0.03, 0.92, 0.96, 0.9, 0.06, '#3d3f45', 1.5);
+        [[0.28, 0.28], [0.72, 0.28], [0.28, 0.7]].forEach(function (b) { var c = P(b[0], b[1], 0.98); s += '<ellipse cx="' + n1(c[0]) + '" cy="' + n1(c[1]) + '" rx="7" ry="3.5" fill="#22232a" stroke="#6b6f78" stroke-width="1"/>'; });
+        var a = P(0.72, 0.7, 1.12);
+        s += ligne([a, [a[0] + 15, a[1] - 3]], O, 4.4) + ligne([a, [a[0] + 15, a[1] - 3]], '#3a2c22', 2);
+        s += cylindre(k, 0.72, 0.7, 0.98, 0.17, 0.18, '#c25b4a');
+        var v = P(0.72, 0.7, 1.22);
+        s += '<path d="M' + n1(v[0] - 3) + ' ' + n1(v[1]) + ' q-3 -5 0 -9 q3 -4 0 -9 M' + n1(v[0] + 3) + ' ' + n1(v[1] - 2) + ' q-3 -5 0 -8" stroke="#fff" stroke-opacity="0.6" stroke-width="1.6" fill="none" stroke-linecap="round"/>';
+        return s;
+      } },
+    frigo: { nom: 'Réfrigérateur', rayon: 'meubles', plan: 'sol', w: 1, d: 1, h: 2.05, t: 'creme', chez: 'cuisine',
+      dessin: function (k, t) {
+        var s = ombreSol(k, 0.06, 0.06, 0.88, 0.84) + boite(k, 0.06, 0.06, 0, 0.88, 0.84, 2.0, t, 4);
+        s += '<g transform="' + face(k, 0.06, 0.9, 2.0) + '"><path d="M1 27 H34.2" stroke="' + O + '" stroke-width="1.3"/>' +
+          '<rect x="28" y="9" width="2.6" height="13" rx="1.3" fill="#b8c4cc" stroke="' + O + '" stroke-width="0.8"/><rect x="28" y="32" width="2.6" height="20" rx="1.3" fill="#b8c4cc" stroke="' + O + '" stroke-width="0.8"/>' +
+          '<g transform="rotate(-6 12 43)"><rect x="6" y="36" width="12" height="14" fill="#fbf3e6" stroke="' + O + '" stroke-width="0.8"/><path d="M8 47 l3 -5 l3 3 l2 -3" stroke="#e8590c" stroke-width="0.9" fill="none"/><circle cx="15" cy="39.5" r="1.4" fill="#f5c542"/></g>' +
+          rond(12, 36, 1.6, '#c25b4a', 0.6) + rond(21, 41, 1.6, '#4f6e9a', 0.6) + rond(9, 14, 1.6, '#d8a73a', 0.6) + rond(15, 12, 1.6, '#4f8a46', 0.6) + '</g>';
+        return s;
+      } },
+    tableRonde: { nom: 'Table ronde', rayon: 'meubles', plan: 'sol', w: 1, d: 1, h: 1.0, t: 'miel', chez: 'cuisine', usage: 'manger',
+      dessin: function (k, t) {
+        var c = k.P(0.5, 0.5, 0), s = '<ellipse cx="' + n1(c[0]) + '" cy="' + n1(c[1]) + '" rx="22" ry="11" fill="#000" opacity="0.18"/>';
+        s += cylindre(k, 0.5, 0.5, 0, 0.22, 0.05, nuance(t, -0.2)) + cylindre(k, 0.5, 0.5, 0.05, 0.06, 0.67, nuance(t, -0.15), null, false);
+        s += cylindre(k, 0.5, 0.5, 0.72, 0.46, 0.07, t) + cylindre(k, 0.5, 0.5, 0.79, 0.14, 0.06, '#efe2c8', 0.2);
+        var f = k.P(0.5, 0.5, 0.86);
+        [[-5, -2, '#c25b4a'], [4, -3, '#e8a33a'], [0, -6.5, '#6cae5c']].forEach(function (a) { s += rond(f[0] + a[0], f[1] + a[1], 3.6, a[2]); });
+        return s;
+      } },
+    chaise: { nom: 'Chaise', rayon: 'meubles', plan: 'sol', w: 1, d: 1, h: 1.1, t: 'miel', chez: 'cuisine', usage: 'sieste',
+      dessin: function (k, t) {
+        var s = ombreSol(k, 0.2, 0.2, 0.6, 0.6), b = nuance(t, -0.15);
+        [[0.22, 0.22], [0.7, 0.22], [0.22, 0.7], [0.7, 0.7]].forEach(function (p) { s += boite(k, p[0], p[1], 0, 0.08, 0.08, 0.45, b, 1); });
+        s += boite(k, 0.22, 0.2, 0.45, 0.08, 0.08, 0.58, b, 1) + boite(k, 0.7, 0.2, 0.45, 0.08, 0.08, 0.58, b, 1);
+        s += boite(k, 0.2, 0.18, 0.66, 0.6, 0.08, 0.07, t, 1.5) + boite(k, 0.2, 0.18, 0.88, 0.6, 0.1, 0.16, t, 2);
+        s += boite(k, 0.18, 0.18, 0.45, 0.64, 0.64, 0.07, t, 2) + coussin(k, 0.24, 0.3, 0.52, 0.52, 0.46, 0.07, '#c25b4a');
+        return s;
+      } },
+    gamelle: { nom: 'Gamelles', rayon: 'deco', plan: 'sol', w: 1, d: 1, h: 0.3, t: 'brique', chez: 'cuisine', usage: 'manger',
+      dessin: function (k, t) {
+        var P = k.P, s = '<path d="' + chemin([P(0.08, 0.22, 0), P(0.92, 0.22, 0), P(0.92, 0.82, 0), P(0.08, 0.82, 0)], 5) + '" fill="' + t + '" stroke="' + O + '" stroke-width="' + EP + '"/>';
+        s += cylindre(k, 0.3, 0.52, 0, 0.15, 0.1, '#4f6e9a', 0.18) + cylindre(k, 0.7, 0.52, 0, 0.15, 0.1, '#c9733f', 0.18);
+        var a = P(0.3, 0.52, 0.1), b = P(0.7, 0.52, 0.1);
+        s += '<ellipse cx="' + n1(a[0]) + '" cy="' + n1(a[1]) + '" rx="6" ry="3" fill="#7cc4ef"/><ellipse cx="' + n1(b[0]) + '" cy="' + n1(b[1]) + '" rx="6" ry="3" fill="#8a5a32"/>' +
+          '<circle cx="' + n1(b[0] - 2) + '" cy="' + n1(b[1] - 0.5) + '" r="1.3" fill="#b5793f"/><circle cx="' + n1(b[0] + 2) + '" cy="' + n1(b[1] + 0.3) + '" r="1.3" fill="#b5793f"/>';
+        return s;
+      } },
+    ustensiles: { nom: 'Ustensiles', rayon: 'deco', plan: 'mur', w: 1, h: 0.75, z: 1.4, t: '#b8c4cc', chez: 'cuisine',
+      dessin: function (k, t) {
+        var s = '<g transform="' + plan(k, [0, 0, k.z + 0.75], [1, 0, 0], [0, 0, -1]) + '">';
+        s += '<rect x="3" y="2" width="34" height="2.6" rx="1.3" fill="' + t + '" stroke="' + O + '" stroke-width="1"/>';
+        s += '<path d="M8 4.6 V18" stroke="' + O + '" stroke-width="2.6"/><path d="M8 4.6 V18" stroke="#8a5a32" stroke-width="1.2"/><rect x="5.5" y="17" width="5" height="9" rx="1.5" fill="#c98d55" stroke="' + O + '" stroke-width="1"/>';
+        s += '<path d="M17 4.6 V20" stroke="' + O + '" stroke-width="2.4"/><path d="M17 4.6 V20" stroke="' + t + '" stroke-width="1.1"/>' + rond(17, 23, 4, t);
+        s += '<path d="M25 4.6 V13" stroke="' + O + '" stroke-width="2.2"/><path d="M25 13 q-4 6 0 13 q4 -7 0 -13 M25 13 q-1.6 7 0 13 M25 13 q1.6 7 0 13" fill="none" stroke="' + O + '" stroke-width="0.9"/>';
+        s += '<path d="M32.5 4.6 V10" stroke="' + O + '" stroke-width="1.6"/>' + rond(32.5, 16, 5.5, '#3d3f45') + '<circle cx="32.5" cy="16" r="3.8" fill="#55575e"/>';
+        return s + '</g>';
+      } },
+    // ----- chambre -----
+    lit: { nom: 'Lit', rayon: 'meubles', plan: 'sol', w: 1, d: 2, h: 1.0, t: 'nuit', chez: 'chambre', usage: 'dormir',
+      dessin: function (k, t) {
+        var P = k.P, s = ombreSol(k, 0.02, 0.02, 0.96, 1.96);
+        [[0.04, 0.04], [0.86, 0.04], [0.04, 1.86], [0.86, 1.86]].forEach(function (p) { s += boite(k, p[0], p[1], 0, 0.1, 0.1, 0.12, BOIS_S, 1); });
+        s += boite(k, 0, 0, 0.12, 1, 0.14, 0.88, BOIS, 3);
+        s += '<g transform="' + face(k, 0, 0.14, 1.0) + '"><path d="M7 24 Q20 4 33 24" fill="none" stroke="' + BOIS_C + '" stroke-width="2.4"/>' + rond(20, 13, 2.6, '#d8a73a', 0.8) + '</g>';
+        s += boite(k, 0.02, 0.14, 0.12, 0.96, 1.84, 0.2, BOIS, 2) + boite(k, 0.06, 0.16, 0.32, 0.88, 1.76, 0.14, '#f3eadb', 3);
+        s += coussin(k, 0.14, 0.2, 0.46, 0.72, 0.34, 0.13, '#fbf3e6');
+        s += boite(k, 0.04, 0.66, 0.36, 0.92, 1.3, 0.16, t, 5);
+        [1.05, 1.45].forEach(function (v) { s += ligne([P(0.1, v, 0.52), P(0.9, v, 0.52)], nuance(t, 0.3), 2); });
+        s += boite(k, 0.04, 0.66, 0.52, 0.92, 0.2, 0.03, '#fbf3e6', 2);
+        s += boite(k, 0, 1.86, 0.12, 1, 0.12, 0.44, BOIS, 2.5);
+        return s;
+      } },
+    chevet: { nom: 'Chevet et lampe', rayon: 'meubles', plan: 'sol', w: 1, d: 1, h: 1.05, t: 'miel', chez: 'chambre', lumiere: { u: 0.5, v: 0.42, z: 0.9, r: 1.9 },
+      dessin: function (k, t) {
+        var s = ombreSol(k, 0.15, 0.15, 0.7, 0.62);
+        s += boite(k, 0.15, 0.15, 0, 0.7, 0.62, 0.55, t, 2) + boite(k, 0.12, 0.12, 0.55, 0.76, 0.68, 0.05, nuance(t, -0.1), 1.5);
+        s += '<g transform="' + face(k, 0.15, 0.77, 0.55) + '">';
+        [3, 12].forEach(function (y) { s += '<rect x="3" y="' + y + '" width="22" height="7" rx="1.2" fill="' + nuance(t, 0.1) + '" stroke="' + O + '" stroke-width="0.9"/>' + rond(14, y + 3.5, 1.3, '#e9b949', 0.6); });
+        s += '</g>' + boite(k, 0.2, 0.58, 0.6, 0.3, 0.2, 0.05, '#4f6e9a', 1);
+        s += cylindre(k, 0.5, 0.42, 0.6, 0.09, 0.04, '#7a6f66');
+        var a = k.P(0.5, 0.42, 0.64), b = k.P(0.5, 0.42, 0.8);
+        s += ligne([a, b], O, 3.4) + ligne([a, b], '#c9a66b', 1.6) + cylindre(k, 0.5, 0.42, 0.78, 0.17, 0.22, '#f3d9a4', 0.1);
+        return s;
+      } },
+    armoire: { nom: 'Armoire', rayon: 'meubles', plan: 'sol', w: 1, d: 1, h: 2.25, t: 'chocolat', chez: 'chambre',
+      dessin: function (k, t) {
+        var s = ombreSol(k, 0.04, 0.08, 0.92, 0.84);
+        [[0.08, 0.12], [0.84, 0.12], [0.08, 0.82], [0.84, 0.82]].forEach(function (p) { s += boite(k, p[0], p[1], 0, 0.08, 0.08, 0.08, BOIS_S, 1); });
+        s += boite(k, 0.04, 0.08, 0.08, 0.92, 0.84, 2.02, t, 2) + '<g transform="' + face(k, 0.04, 0.92, 2.1) + '">';
+        [2, 18.4].forEach(function (x) {
+          s += '<rect x="' + x + '" y="3" width="16.4" height="74" rx="1.5" fill="' + nuance(t, 0.08) + '" stroke="' + O + '" stroke-width="1"/>' +
+            '<rect x="' + (x + 3) + '" y="7" width="10.4" height="30" rx="1" fill="none" stroke="' + nuance(t, -0.2) + '" stroke-width="0.9"/>' +
+            '<rect x="' + (x + 3) + '" y="42" width="10.4" height="31" rx="1" fill="none" stroke="' + nuance(t, -0.2) + '" stroke-width="0.9"/>';
+        });
+        s += rond(15.6, 40, 1.4, '#e9b949', 0.6) + rond(21.2, 40, 1.4, '#e9b949', 0.6) + '</g>';
+        s += boite(k, 0, 0.04, 2.1, 1, 0.92, 0.12, nuance(t, -0.12), 2);
+        return s;
+      } },
+    nounours: { nom: 'Nounours', rayon: 'deco', plan: 'sol', w: 1, d: 1, h: 0.8, t: 'miel', chez: 'chambre', usage: 'calin',
+      dessin: function (k, t) {
+        var c = k.P(0.5, 0.5, 0), x = c[0], y = c[1], f = nuance(t, -0.22), cl = nuance(t, 0.32);
+        var E = function (dx, dy, rx, ry, col) { return '<ellipse cx="' + n1(x + dx) + '" cy="' + n1(y + dy) + '" rx="' + rx + '" ry="' + ry + '" fill="' + col + '" stroke="' + O + '" stroke-width="1.3"/>'; };
+        var s = '<ellipse cx="' + n1(x) + '" cy="' + n1(y) + '" rx="15" ry="6" fill="#000" opacity="0.18"/>';
+        s += E(-7, -3, 5, 4, t) + E(7, -3, 5, 4, t) + E(0, -11, 9, 10, t) + '<ellipse cx="' + n1(x) + '" cy="' + n1(y - 9) + '" rx="5" ry="6" fill="' + cl + '"/>';
+        s += E(-9, -13, 3.5, 5, f) + E(9, -13, 3.5, 5, f) + rond(x - 6, y - 29, 3.6, t, 1.3) + rond(x + 6, y - 29, 3.6, t, 1.3) + rond(x, y - 23, 8, t, 1.3);
+        s += '<ellipse cx="' + n1(x) + '" cy="' + n1(y - 20.5) + '" rx="3.6" ry="2.8" fill="' + cl + '"/><circle cx="' + n1(x) + '" cy="' + n1(y - 21.5) + '" r="1.2" fill="' + O + '"/>' +
+          '<circle cx="' + n1(x - 3) + '" cy="' + n1(y - 25) + '" r="1.1" fill="' + O + '"/><circle cx="' + n1(x + 3) + '" cy="' + n1(y - 25) + '" r="1.1" fill="' + O + '"/>' +
+          '<path d="M' + n1(x - 4.5) + ' ' + n1(y - 17) + ' l4.5 2.5 l4.5 -2.5 v4 l-4.5 -1.5 l-4.5 1.5z" fill="#c25b4a" stroke="' + O + '" stroke-width="0.8"/>';
+        return s;
+      } },
+    miroir: { nom: 'Miroir', rayon: 'deco', plan: 'mur', w: 1, h: 1.1, z: 1.05, t: 'moutarde', chez: 'chambre',
+      dessin: function (k, t) {
+        var s = '<g transform="' + plan(k, [0, 0, k.z + 1.1], [1, 0, 0], [0, 0, -1]) + '">';
+        s += '<ellipse cx="20" cy="23" rx="14" ry="19.5" fill="' + t + '" stroke="' + O + '" stroke-width="1.6"/><ellipse cx="20" cy="23" rx="10.5" ry="16" fill="#cfe3ec" stroke="' + O + '" stroke-width="1"/>' +
+          '<path d="M14 15 l7 -5 M14 21 l10 -8 M24 33 l4 -3" stroke="#fff" stroke-width="1.4" stroke-linecap="round" opacity="0.85"/>' + rond(20, 3.2, 2, nuance(t, 0.2), 0.8);
+        return s + '</g>';
+      } },
+    // ----- salle de jeux -----
+    tableJeu: { nom: 'Table de jeu', rayon: 'meubles', plan: 'sol', w: 2, d: 1, h: 0.95, t: 'foret', chez: 'jeux', usage: 'jouer',
+      dessin: function (k, t) {
+        var P = k.P, s = ombreSol(k, 0.06, 0.08, 1.88, 0.84);
+        [[0.14, 0.16], [1.74, 0.16], [0.14, 0.72], [1.74, 0.72]].forEach(function (p) { s += boite(k, p[0], p[1], 0, 0.12, 0.12, 0.66, BOIS_S, 1); });
+        s += boite(k, 0.06, 0.08, 0.66, 1.88, 0.84, 0.09, BOIS, 2.5);
+        s += poly([P(0.16, 0.18, 0.75), P(1.84, 0.18, 0.75), P(1.84, 0.82, 0.75), P(0.16, 0.82, 0.75)], t, 3, 1.1);
+        s += '<g transform="' + plan(k, [0.32, 0.22, 0.755], [1, 0, 0], [0, 1, 0]) + '"><rect width="23" height="23" rx="1.5" fill="#f3e3c3" stroke="' + O + '" stroke-width="1.2"/>';
+        var cs = ['#c25b4a', '#4f6e9a', '#d8a73a', '#4f8a46'];
+        for (var q = 0; q < 16; q++) {
+          var xx = q < 5 ? q * 4.5 : q < 9 ? 18 : q < 13 ? 18 - (q - 8) * 4.5 : 0, yy = q < 5 ? 0 : q < 9 ? (q - 4) * 4.5 : q < 13 ? 18 : 18 - (q - 12) * 4.5;
+          s += '<rect x="' + n1(xx + 0.6) + '" y="' + n1(yy + 0.6) + '" width="3.8" height="3.8" fill="' + cs[q % 4] + '"/>';
+        }
+        s += '<rect x="7.5" y="7.5" width="8" height="8" fill="none" stroke="' + O + '" stroke-width="0.8"/></g>';
+        s += cylindre(k, 0.5, 0.36, 0.755, 0.045, 0.11, '#c25b4a') + cylindre(k, 0.76, 0.6, 0.755, 0.045, 0.11, '#4f6e9a');
+        s += boite(k, 1.28, 0.3, 0.755, 0.11, 0.11, 0.11, '#fbf3e6', 1) + boite(k, 1.46, 0.44, 0.755, 0.11, 0.11, 0.11, '#fbf3e6', 1);
+        [P(1.335, 0.355, 0.865), P(1.515, 0.495, 0.865)].forEach(function (d) { s += '<circle cx="' + n1(d[0]) + '" cy="' + n1(d[1]) + '" r="1" fill="' + O + '"/>'; });
+        s += boite(k, 1.34, 0.6, 0.755, 0.26, 0.17, 0.05, '#c25b4a', 1) + boite(k, 1.36, 0.6, 0.805, 0.26, 0.17, 0.02, '#fbf3e6', 1);
+        return s;
+      } },
+    arcade: { nom: 'Borne d\'arcade', rayon: 'meubles', plan: 'sol', w: 1, d: 1, h: 2.1, t: 'prune', chez: 'jeux', usage: 'jouer', lumiere: { u: 0.5, v: 0.75, z: 1.45, r: 1.5, c: '#7ad3ff' },
+      dessin: function (k, t) {
+        var P = k.P, s = ombreSol(k, 0.1, 0.1, 0.8, 0.8);
+        s += boite(k, 0.1, 0.1, 0, 0.8, 0.8, 0.95, t, 2);
+        s += '<g transform="' + face(k, 0.1, 0.9, 0.95) + '"><rect x="13" y="12" width="6" height="9" rx="1" fill="#2a2b30" stroke="' + O + '" stroke-width="0.8"/><path d="M16 14 v5" stroke="#ffd43b" stroke-width="1.2"/>' +
+          '<path d="M3 6 H29" stroke="' + nuance(t, 0.3) + '" stroke-width="1.6"/></g>';
+        s += boite(k, 0.1, 0.1, 0.95, 0.8, 0.45, 1.15, t, 2);
+        s += '<g transform="' + face(k, 0.1, 0.55, 2.1) + '"><rect x="2" y="2" width="28" height="7" rx="1" fill="#ffd43b" stroke="' + O + '" stroke-width="0.9"/><path d="M6 5.5 h5 M13 5.5 h4 M19 5.5 h7" stroke="#c2410c" stroke-width="1.4"/>' +
+          '<rect x="3.5" y="12" width="25" height="20" rx="2" fill="#16213d" stroke="' + O + '" stroke-width="1.1"/>' +
+          '<rect x="8" y="24" width="3" height="3" fill="#ffd43b"/><rect x="11" y="24" width="3" height="3" fill="#ffd43b"/><rect x="18" y="17" width="3" height="3" fill="#ff6b6b"/><rect x="21" y="20" width="3" height="3" fill="#ff6b6b"/><rect x="15" y="20" width="3" height="3" fill="#ff6b6b"/>' +
+          '<path d="M5 29 h22" stroke="#69db7c" stroke-width="1.2"/><path d="M5 14.5 l5 3" stroke="#fff" stroke-opacity="0.35" stroke-width="1.2"/></g>';
+        s += boite(k, 0.1, 0.55, 0.95, 0.8, 0.35, 0.1, nuance(t, 0.12), 1.5);
+        var j = P(0.3, 0.72, 1.05);
+        s += ligne([j, [j[0], j[1] - 8]], O, 2.6) + rond(j[0], j[1] - 9, 3, '#e03131');
+        [[0.58, 0.66, '#ffd43b'], [0.74, 0.7, '#4dabf7'], [0.66, 0.8, '#69db7c']].forEach(function (b) { var q = P(b[0], b[1], 1.05); s += '<ellipse cx="' + n1(q[0]) + '" cy="' + n1(q[1]) + '" rx="2.6" ry="1.4" fill="' + b[2] + '" stroke="' + O + '" stroke-width="0.8"/>'; });
+        return s;
+      } },
+    coffreJouets: { nom: 'Coffre à jouets', rayon: 'meubles', plan: 'sol', w: 1, d: 1, h: 1.0, t: 'brique', chez: 'jeux', usage: 'jouer',
+      dessin: function (k, t) {
+        var P = k.P, s = ombreSol(k, 0.08, 0.15, 0.84, 0.7);
+        s += poly([P(0.08, 0.15, 0.5), P(0.92, 0.15, 0.5), P(0.92, 0.03, 0.98), P(0.08, 0.03, 0.98)], nuance(t, 0.06), 2);
+        s += boite(k, 0.08, 0.15, 0, 0.84, 0.7, 0.5, t, 2);
+        s += '<g transform="' + face(k, 0.08, 0.85, 0.5) + '"><path d="M16.8 4 l2 4.4 4.8 .6 -3.5 3.3 .9 4.7 -4.2 -2.3 -4.2 2.3 .9 -4.7 -3.5 -3.3 4.8 -.6z" fill="#ffd43b" stroke="' + O + '" stroke-width="0.8"/></g>';
+        s += boite(k, 0.16, 0.24, 0.5, 0.2, 0.2, 0.2, '#4f6e9a', 1.5) + boite(k, 0.48, 0.26, 0.5, 0.06, 0.06, 0.34, '#d8a73a', 1);
+        var b = P(0.66, 0.5, 0.62);
+        s += rond(b[0], b[1], 8, '#e03131', 1.2) + '<path d="M' + n1(b[0] - 8) + ' ' + n1(b[1]) + ' Q' + n1(b[0]) + ' ' + n1(b[1] + 5) + ' ' + n1(b[0] + 8) + ' ' + n1(b[1]) + '" fill="none" stroke="#fff" stroke-width="1.6"/>';
+        return s;
+      } },
+    ballon: { nom: 'Ballon', rayon: 'deco', plan: 'sol', w: 1, d: 1, h: 0.5, t: 'brique', chez: 'jeux', lieu: 'partout', usage: 'jouer',
+      dessin: function (k, t) {
+        var c = k.P(0.5, 0.5, 0), x = c[0], y = c[1];
+        return '<ellipse cx="' + n1(x) + '" cy="' + n1(y) + '" rx="11" ry="5" fill="#000" opacity="0.2"/>' + rond(x, y - 10, 10, t, 1.4) +
+          '<path d="M' + n1(x - 10) + ' ' + n1(y - 10) + ' Q' + n1(x) + ' ' + n1(y - 4) + ' ' + n1(x + 10) + ' ' + n1(y - 10) + ' M' + n1(x) + ' ' + n1(y - 20) + ' Q' + n1(x - 6) + ' ' + n1(y - 10) + ' ' + n1(x) + ' ' + n1(y) + '" fill="none" stroke="#fbf3e6" stroke-width="2"/>' +
+          '<path d="M' + n1(x - 5) + ' ' + n1(y - 15) + ' q2 -2 5 -2" stroke="#fff" stroke-opacity="0.7" stroke-width="1.4" fill="none" stroke-linecap="round"/>';
+      } },
+    cible: { nom: 'Cible', rayon: 'deco', plan: 'mur', w: 1, h: 0.95, z: 1.35, t: 'brique', chez: 'jeux',
+      dessin: function (k, t) {
+        var s = '<g transform="' + plan(k, [0, 0, k.z + 0.95], [1, 0, 0], [0, 0, -1]) + '">';
+        [[17, '#3a2c22'], [15, '#fbf3e6'], [11.5, t], [8, '#fbf3e6'], [4.5, t], [1.6, '#ffd43b']].forEach(function (r) { s += rond(20, 19, r[0], r[1], 0.9); });
+        s += '<path d="M22 17 l9 -6 M14 22 l-9 3" stroke="' + O + '" stroke-width="1.4"/><path d="M31 11 l2 -3 M31 11 l3 0 M5 25 l-2 -2 M5 25 l-1 3" stroke="#4f6e9a" stroke-width="1.4"/>';
+        return s + '</g>';
+      } },
+    // ----- salle des trophées -----
+    vitrine: { nom: 'Vitrine', rayon: 'meubles', plan: 'sol', w: 1, d: 1, h: 2.15, t: 'chocolat', chez: 'trophees', usage: 'admirer',
+      dessin: function (k, t) {
+        var P = k.P, s = ombreSol(k, 0.06, 0.1, 0.88, 0.75);
+        s += boite(k, 0.06, 0.1, 0, 0.88, 0.75, 0.32, t, 2) + boite(k, 0.1, 0.12, 0.32, 0.8, 0.7, 1.55, '#2b211b', 1);
+        [0.84, 1.36].forEach(function (z) { s += boite(k, 0.1, 0.12, z, 0.8, 0.7, 0.04, nuance(t, 0.15), 1); });
+        var cs = ['#e9b949', '#c0c6cc', '#c98d55'];
+        [0.32, 0.88, 1.4].forEach(function (z, r) { [0.34, 0.68].forEach(function (u, q) { var b = P(u, 0.48, z); s += coupe(b[0], b[1], 1.05, cs[(r + q) % 3]); }); });
+        s += poly([P(0.06, 0.85, 0.32), P(0.94, 0.85, 0.32), P(0.94, 0.85, 1.87), P(0.06, 0.85, 1.87)], '#cfe8f5', 1, 0, ' fill-opacity="0.16"');
+        s += poly([P(0.94, 0.1, 0.32), P(0.94, 0.85, 0.32), P(0.94, 0.85, 1.87), P(0.94, 0.1, 1.87)], '#cfe8f5', 1, 0, ' fill-opacity="0.12"');
+        s += ligne([P(0.2, 0.85, 1.5), P(0.45, 0.85, 1.8)], '#fff', 1.6, ' opacity="0.55"') + ligne([P(0.25, 0.85, 1.2), P(0.4, 0.85, 1.38)], '#fff', 1.2, ' opacity="0.45"');
+        [[0.06, 0.81], [0.88, 0.81], [0.88, 0.1]].forEach(function (p) { s += boite(k, p[0], p[1], 0.32, 0.06, 0.04, 1.55, t, 0.5); });
+        s += boite(k, 0.04, 0.08, 1.87, 0.92, 0.79, 0.22, t, 2);
+        s += '<g transform="' + face(k, 0.04, 0.87, 2.09) + '"><path d="M14 4 h9 M18.5 1.5 v5" stroke="#e9b949" stroke-width="1.4"/></g>';
+        return s;
+      } },
+    piedestal: { nom: 'Piédestal', rayon: 'meubles', plan: 'sol', w: 1, d: 1, h: 1.6, t: 'creme', chez: 'trophees', usage: 'admirer',
+      dessin: function (k, t) {
+        var s = ombreSol(k, 0.16, 0.16, 0.68, 0.68);
+        s += boite(k, 0.16, 0.16, 0, 0.68, 0.68, 0.12, nuance(t, -0.1), 2) + boite(k, 0.24, 0.24, 0.12, 0.52, 0.52, 0.72, t, 1.5);
+        s += '<g transform="' + face(k, 0.24, 0.76, 0.84) + '"><path d="M5 2 V27 M10.4 2 V27 M15.8 2 V27" stroke="' + nuance(t, -0.18) + '" stroke-width="1"/><rect x="3" y="11" width="15" height="6" rx="1" fill="#d8a73a" stroke="' + O + '" stroke-width="0.7"/></g>';
+        s += boite(k, 0.16, 0.16, 0.84, 0.68, 0.68, 0.1, nuance(t, -0.1), 2);
+        var b = k.P(0.5, 0.5, 0.94);
+        s += '<circle cx="' + n1(b[0]) + '" cy="' + n1(b[1] - 15) + '" r="22" fill="#ffd43b" opacity="0.13"/>' + coupe(b[0], b[1], 1.9, '#e9b949');
+        return s;
+      } },
+    ecu: { nom: 'Écu', rayon: 'deco', plan: 'mur', w: 1, h: 1.05, z: 1.3, t: 'brique', chez: 'trophees',
+      dessin: function (k, t) {
+        var s = '<g transform="' + plan(k, [0, 0, k.z + 1.05], [1, 0, 0], [0, 0, -1]) + '">';
+        s += '<path d="M4 4 L36 40 M36 4 L4 40" stroke="' + O + '" stroke-width="3.6" stroke-linecap="round"/><path d="M4 4 L36 40 M36 4 L4 40" stroke="#c0c6cc" stroke-width="1.8" stroke-linecap="round"/>';
+        s += '<path d="M8 4 H32 V20 Q32 34 20 41 Q8 34 8 20Z" fill="' + t + '" stroke="' + O + '" stroke-width="1.6"/>' +
+          '<path d="M8 15 L20 25 L32 15 V20 L20 30 L8 20Z" fill="#e9b949" stroke="' + O + '" stroke-width="0.9"/>' +
+          '<path d="M20 6.5 l1.5 3 3.3 .4 -2.4 2.3 .6 3.2 -3 -1.6 -3 1.6 .6 -3.2 -2.4 -2.3 3.3 -.4z" fill="#ffd43b" stroke="' + O + '" stroke-width="0.7"/>';
+        return s + '</g>';
+      } },
+    // ----- jardin -----
+    arbre: { nom: 'Arbre', rayon: 'meubles', plan: 'sol', w: 1, d: 1, h: 2.85, t: 'foret', chez: 'jardin', lieu: 'dehors', usage: 'sieste',
+      dessin: function (k, t) {
+        var c = k.P(0.5, 0.5, 0), s = '<ellipse cx="' + n1(c[0] + 6) + '" cy="' + n1(c[1] + 2) + '" rx="34" ry="15" fill="#000" opacity="0.18"/>';
+        s += cylindre(k, 0.5, 0.5, 0, 0.16, 1.25, '#7a5232', 0.1, false);
+        var f = k.P(0.5, 0.5, 1.85), x = f[0], y = f[1], cf = nuance(t, -0.18), cc = nuance(t, 0.18);
+        var B = [[-17, 8, 15, cf], [17, 7, 15, cf], [0, -16, 18, t], [-14, -4, 16, t], [15, -5, 16, t], [0, 6, 17, t]];
+        B.forEach(function (b) { s += '<circle cx="' + n1(x + b[0]) + '" cy="' + n1(y + b[1]) + '" r="' + n1(b[2] + 1.6) + '" fill="' + O + '"/>'; });
+        B.forEach(function (b) { s += '<circle cx="' + n1(x + b[0]) + '" cy="' + n1(y + b[1]) + '" r="' + b[2] + '" fill="' + b[3] + '"/>'; });
+        s += '<circle cx="' + n1(x - 6) + '" cy="' + n1(y - 14) + '" r="8" fill="' + cc + '"/><circle cx="' + n1(x + 9) + '" cy="' + n1(y - 9) + '" r="6" fill="' + cc + '"/>';
+        [[-10, 2], [9, 1], [2, 13], [-3, -21], [17, -10]].forEach(function (p) { s += rond(x + p[0], y + p[1], 2.6, '#e03131', 0.8); });
+        return s;
+      } },
+    banc: { nom: 'Banc', rayon: 'meubles', plan: 'sol', w: 2, d: 1, h: 1.05, t: 'miel', chez: 'jardin', lieu: 'partout', usage: 'sieste',
+      dessin: function (k, t) {
+        var s = ombreSol(k, 0.1, 0.2, 1.8, 0.65), fer = '#3a3b40';
+        [[0.18, 0.28], [1.72, 0.28], [0.18, 0.74], [1.72, 0.74]].forEach(function (p) { s += boite(k, p[0], p[1], 0, 0.1, 0.08, 0.45, fer, 1); });
+        s += boite(k, 0.18, 0.2, 0.45, 0.1, 0.08, 0.55, fer, 1) + boite(k, 1.72, 0.2, 0.45, 0.1, 0.08, 0.55, fer, 1);
+        [0.62, 0.82].forEach(function (z) { s += boite(k, 0.1, 0.22, z, 1.8, 0.05, 0.13, t, 1.5); });
+        [0.28, 0.48, 0.68].forEach(function (v) { s += boite(k, 0.1, v, 0.45, 1.8, 0.17, 0.06, t, 1.5); });
+        return s;
+      } },
+    massif: { nom: 'Massif de fleurs', rayon: 'deco', plan: 'sol', w: 1, d: 1, h: 0.75, t: 'brique', chez: 'jardin', lieu: 'dehors', usage: 'renifler',
+      dessin: function (k, t) {
+        var P = k.P, s = boite(k, 0.06, 0.06, 0, 0.88, 0.88, 0.18, '#a8a29a', 2.5);
+        s += poly([P(0.14, 0.14, 0.18), P(0.86, 0.14, 0.18), P(0.86, 0.86, 0.18), P(0.14, 0.86, 0.18)], '#5c3d28', 3, 1);
+        [[0.3, 0.3], [0.7, 0.28], [0.28, 0.7], [0.5, 0.5], [0.5, 0.8], [0.74, 0.7]].forEach(function (q, n) {
+          var b = P(q[0], q[1], 0.18), hg = 12 + (n % 3) * 3, cf = n % 2 ? t : '#f5c542';
+          s += '<path d="M' + n1(b[0]) + ' ' + n1(b[1]) + ' V' + n1(b[1] - hg) + '" stroke="#3f6b3a" stroke-width="1.6"/>' +
+            '<path d="M' + n1(b[0]) + ' ' + n1(b[1] - 4) + ' q-5 -2 -6 -6 q5 0 6 4" fill="#5a9a4f" stroke="' + O + '" stroke-width="0.7"/>';
+          for (var a = 0; a < 5; a++) { var an = a * 1.2566; s += rond(b[0] + Math.cos(an) * 3, b[1] - hg + Math.sin(an) * 3, 2.4, cf, 0.6); }
+          s += '<circle cx="' + n1(b[0]) + '" cy="' + n1(b[1] - hg) + '" r="1.5" fill="' + (n % 2 ? '#ffe066' : '#c2410c') + '"/>';
+        });
+        return s;
+      } },
+    bassin: { nom: 'Bassin', rayon: 'meubles', plan: 'sol', w: 2, d: 2, h: 0.3, t: '#5aa0d0', chez: 'jardin', lieu: 'dehors', usage: 'renifler',
+      dessin: function (k, t) {
+        var P = k.P, s = boite(k, 0.08, 0.08, 0, 1.84, 1.84, 0.2, '#a8a29a', 8);
+        s += poly([P(0.26, 0.26, 0.2), P(1.74, 0.26, 0.2), P(1.74, 1.74, 0.2), P(0.26, 1.74, 0.2)], t, 10, 1.2);
+        s += '<g transform="' + plan(k, [0.26, 0.26, 0.2], [1, 0, 0], [0, 1, 0]) + '">' +
+          '<path d="M8 14 h14 M30 42 h16 M12 50 h10" stroke="#d6efff" stroke-width="1.6" stroke-linecap="round" opacity="0.8"/>' +
+          '<ellipse cx="44" cy="16" rx="8" ry="7" fill="#5a9a4f" stroke="' + O + '" stroke-width="1"/><path d="M44 16 L52 13" stroke="#3f6b3a" stroke-width="1.2"/>' +
+          '<ellipse cx="18" cy="38" rx="6" ry="5.5" fill="#6cae5c" stroke="' + O + '" stroke-width="1"/>' + rond(18, 37, 2.2, '#f7a8c4', 0.6) +
+          '<path d="M33 28 q4 -3 8 0 q-4 3 -8 0z M33 28 l-3 -2 v4z" fill="#ff922b" stroke="' + O + '" stroke-width="0.7"/></g>';
+        return s;
+      } },
+    lanterne: { nom: 'Lanterne', rayon: 'deco', plan: 'sol', w: 1, d: 1, h: 1.75, t: '#3a3b40', chez: 'jardin', lieu: 'partout', lumiere: { u: 0.5, v: 0.5, z: 1.3, r: 2.2 },
+      dessin: function (k, t) {
+        var P = k.P, c = P(0.5, 0.5, 0), s = '<ellipse cx="' + n1(c[0]) + '" cy="' + n1(c[1]) + '" rx="12" ry="6" fill="#000" opacity="0.2"/>';
+        s += cylindre(k, 0.5, 0.5, 0, 0.14, 0.08, t) + cylindre(k, 0.5, 0.5, 0.08, 0.04, 1.02, t, null, false);
+        s += boite(k, 0.33, 0.33, 1.07, 0.34, 0.34, 0.04, t, 1) + boite(k, 0.36, 0.36, 1.11, 0.28, 0.28, 0.36, '#ffe9a8', 1);
+        var l = P(0.5, 0.5, 1.28);
+        s += '<circle cx="' + n1(l[0]) + '" cy="' + n1(l[1]) + '" r="15" fill="#ffd43b" opacity="0.18"/><ellipse cx="' + n1(l[0]) + '" cy="' + n1(l[1] + 2) + '" rx="2.4" ry="4" fill="#ff922b"/>';
+        [[0.64, 0.36], [0.64, 0.64], [0.36, 0.64]].forEach(function (q) { s += ligne([P(q[0], q[1], 1.11), P(q[0], q[1], 1.47)], t, 1.6); });
+        var p1 = P(0.68, 0.32, 1.5), p2 = P(0.68, 0.68, 1.5), p3 = P(0.32, 0.68, 1.5), sm = P(0.5, 0.5, 1.7);
+        s += boite(k, 0.32, 0.32, 1.47, 0.36, 0.36, 0.03, t, 1) + poly([p1, p2, sm], nuance(t, -0.1), 1) + poly([p2, p3, sm], nuance(t, 0.15), 1) + rond(sm[0], sm[1] - 2, 2.2, t);
+        return s;
+      } }
+  });
+  MEUBLES.plante.lieu = 'partout'; MEUBLES.pouf.lieu = 'partout';
+  // Un meuble va-t-il dans cette pièce ? (le jardin n'a ni mur ni plafond)
+  function vaDans(mid, piece) {
+    var m = MEUBLES[mid]; if (!m) return false;
+    if (piece && piece.exterieur) return m.plan === 'sol' && (m.lieu === 'dehors' || m.lieu === 'partout');
+    return m.lieu !== 'dehors';
+  }
+
+  // ---------- Les pièces de la maison et leur aménagement de départ ----------
+  var PIECES = [
+    { id: 'salon', nom: 'Salon', phrase: 'Il fait bon près du poêle.' },
+    { id: 'cuisine', nom: 'Cuisine', phrase: 'Ça sent bon… c\'est pour moi ?', cp: { i: 4, j: 4 } },
+    { id: 'chambre', nom: 'Chambre', phrase: 'Un petit somme me ferait du bien.' },
+    { id: 'jeux', nom: 'Salle de jeux', phrase: 'On fait une partie ?' },
+    { id: 'trophees', nom: 'Salle des trophées', phrase: 'Regarde toutes nos coupes !', cp: { i: 4, j: 3 } },
+    { id: 'jardin', nom: 'Jardin', phrase: 'Quel bon air !', exterieur: true }
+  ];
+  function pieceDepart(id) {
+    var base = { l: 6, p: 6, h: HAUTEUR, murD: null, plinthe: { type: 'simple', teinte: null }, corniche: false, fenetre: { vue: 'pre', cadre: null }, lumiere: { ambiance: 'chaude' } };
+    var d = {
+      salon: { murs: { motif: 'rayures', teinte: 'sauge' }, sol: { type: 'parquet', teinte: 'miel' }, objets: [
+        { m: 'fenetre', i: 1.5, j: 0, o: 0, z: 1.05 }, { m: 'etagere', i: 4, j: 0, o: 0, z: 1.55 }, { m: 'tableau', i: 0, j: 1.5, o: 1, z: 1.3 }, { m: 'horloge', i: 0, j: 3, o: 1, z: 1.35 },
+        { m: 'tapis', i: 1, j: 1, o: 0 }, { m: 'plante', i: 0, j: 0, o: 0 }, { m: 'canape', i: 1, j: 0, o: 0 }, { m: 'commode', i: 4, j: 0, o: 0 }, { m: 'poele', i: 5, j: 0, o: 0 },
+        { m: 'lampadaire', i: 0, j: 1, o: 0 }, { m: 'fauteuil', i: 0, j: 2, o: 1 }, { m: 'tableBasse', i: 1, j: 2, o: 0 }, { m: 'bibliotheque', i: 0, j: 4, o: 1 },
+        { m: 'malle', i: 5, j: 5, o: 0 }, { m: 'suspension', i: 2, j: 3, o: 0 }] },
+      cuisine: { murs: { motif: 'faience', teinte: 'creme' }, sol: { type: 'tomettes', teinte: 'terracotta' }, plinthe: { type: 'aucune', teinte: null }, fenetre: { vue: 'village', cadre: 'sauge' }, objets: [
+        { m: 'fenetre', i: 0.5, j: 0, o: 0, z: 1.1 }, { m: 'ustensiles', i: 2, j: 0, o: 0, z: 1.45 }, { m: 'etagere', i: 0, j: 3.5, o: 1, z: 1.5 },
+        { m: 'planTravail', i: 0, j: 0, o: 0 }, { m: 'cuisiniere', i: 2, j: 0, o: 0 }, { m: 'frigo', i: 0, j: 2, o: 1 }, { m: 'plante', i: 5, j: 0, o: 0 },
+        { m: 'tableRonde', i: 3, j: 3, o: 0 }, { m: 'chaise', i: 3, j: 2, o: 0 }, { m: 'chaise', i: 2, j: 3, o: 1 }, { m: 'gamelle', i: 0, j: 4, o: 1 }, { m: 'suspension', i: 3, j: 3, o: 0 }] },
+      chambre: { murs: { motif: 'fleurs', teinte: 'sable' }, sol: { type: 'moquette', teinte: 'sauge' }, fenetre: { vue: 'foret', cadre: null }, lumiere: { ambiance: 'chaude' }, objets: [
+        { m: 'fenetre', i: 2.5, j: 0, o: 0, z: 1.05 }, { m: 'miroir', i: 0, j: 4, o: 1, z: 1.05 }, { m: 'tableau', i: 0, j: 1.5, o: 1, z: 1.45 },
+        { m: 'lit', i: 0, j: 1, o: 1 }, { m: 'chevet', i: 0, j: 0, o: 0 }, { m: 'armoire', i: 5, j: 0, o: 0 }, { m: 'commode', i: 4, j: 0, o: 0 },
+        { m: 'tapis', i: 2, j: 2, o: 0, t: 'prune' }, { m: 'nounours', i: 4, j: 4, o: 0 }, { m: 'pouf', i: 0, j: 5, o: 0, t: 'prune' }] },
+      jeux: { murs: { motif: 'losanges', teinte: 'moutarde' }, sol: { type: 'damier', teinte: 'ardoise' }, plinthe: { type: 'haute', teinte: 'nuit' }, objets: [
+        { m: 'fenetre', i: 1, j: 0, o: 0, z: 1.05 }, { m: 'cible', i: 3, j: 0, o: 0, z: 1.35 }, { m: 'etagere', i: 0, j: 2, o: 1, z: 1.5 },
+        { m: 'arcade', i: 5, j: 0, o: 0 }, { m: 'arcade', i: 4, j: 0, o: 0, t: 'brique' }, { m: 'tableJeu', i: 2, j: 2, o: 0 },
+        { m: 'pouf', i: 2, j: 3, o: 0 }, { m: 'pouf', i: 3, j: 3, o: 0, t: 'ardoise' }, { m: 'coffreJouets', i: 0, j: 4, o: 1 }, { m: 'ballon', i: 5, j: 4, o: 0 }, { m: 'suspension', i: 3, j: 2, o: 0 }] },
+      trophees: { murs: { motif: 'rayures', teinte: 'prune' }, sol: { type: 'chevrons', teinte: 'miel' }, plinthe: { type: 'lambris', teinte: 'chocolat' }, corniche: true, objets: [
+        { m: 'ecu', i: 2.5, j: 0, o: 0, z: 1.3 }, { m: 'fenetre', i: 0, j: 2, o: 1, z: 1.05 }, { m: 'tableau', i: 0, j: 4, o: 1, z: 1.3 },
+        { m: 'vitrine', i: 1, j: 0, o: 0 }, { m: 'vitrine', i: 4, j: 0, o: 0 }, { m: 'tapis', i: 2, j: 2, o: 0, t: 'brique' }, { m: 'piedestal', i: 2, j: 2, o: 0 },
+        { m: 'lampadaire', i: 0, j: 0, o: 0 }, { m: 'plante', i: 5, j: 5, o: 0 }] },
+      jardin: { exterieur: true, h: 1.05, murs: { motif: 'haie', teinte: 'foret' }, sol: { type: 'herbe', teinte: 'sauge' }, plinthe: { type: 'aucune', teinte: null }, lumiere: { ambiance: 'neutre' }, objets: [
+        { m: 'arbre', i: 0, j: 0, o: 0 }, { m: 'banc', i: 2, j: 0, o: 0 }, { m: 'massif', i: 5, j: 0, o: 0 }, { m: 'massif', i: 0, j: 4, o: 0, t: 'prune' },
+        { m: 'bassin', i: 3, j: 3, o: 0 }, { m: 'lanterne', i: 1, j: 2, o: 0 }, { m: 'plante', i: 5, j: 2, o: 0 }, { m: 'ballon', i: 1, j: 5, o: 0 }] }
+    }[id] || {};
+    var p = JSON.parse(JSON.stringify(base));
+    Object.keys(d).forEach(function (cle) { p[cle] = JSON.parse(JSON.stringify(d[cle])); });
+    return p;
+  }
+
   // ---------- Habillage : motifs des murs et types de sol (dessinés d'après une teinte) ----------
   var MOTIFS_MUR = [
-    { id: 'uni', nom: 'Uni' }, { id: 'rayures', nom: 'Rayures' }, { id: 'fleurs', nom: 'Petites fleurs' },
+    { id: 'uni', nom: 'Uni' }, { id: 'rayures', nom: 'Rayures' }, { id: 'faience', nom: 'Faïence' }, { id: 'fleurs', nom: 'Petites fleurs' },
     { id: 'losanges', nom: 'Losanges' }, { id: 'lambris', nom: 'Lambris', prix: 15 }, { id: 'briques', nom: 'Briques', prix: 20 },
     { id: 'pierre', nom: 'Pierre', prix: 25 }, { id: 'saison', nom: 'De saison', prix: 15 }
   ];
@@ -460,6 +838,11 @@ var CPM = (function () {
           automne: function (x, y) { return '<path d="M' + x + ' ' + (y - 2.5) + ' Q' + (x + 2.5) + ' ' + y + ' ' + x + ' ' + (y + 2.5) + ' Q' + (x - 2.5) + ' ' + y + ' ' + x + ' ' + (y - 2.5) + 'Z" fill="#c9733f"/><path d="M' + x + ' ' + (y - 2) + ' V' + (y + 3) + '" stroke="' + f + '" stroke-width="0.5"/>'; }
         }[sa];
         s = '<pattern id="' + id + '" width="24" height="24" patternUnits="userSpaceOnUse"><rect width="24" height="24" fill="' + t + '"/>' + dessinS(6, 6) + dessinS(18, 18) + '</pattern>'; break;
+      case 'faience': s = '<pattern id="' + id + '" width="13.333" height="13.333" patternUnits="userSpaceOnUse"><rect width="13.333" height="13.333" fill="' + nuance(t, -0.18) + '"/>' +
+        '<rect x="0.7" y="0.7" width="11.9" height="11.9" rx="1" fill="' + t + '"/><path d="M2.2 3.2 l3 -1" stroke="#fff" stroke-opacity="0.6" stroke-width="0.8" stroke-linecap="round"/></pattern>'; break;
+      // la haie du jardin (à la place des murs)
+      case 'haie': s = '<pattern id="' + id + '" width="24" height="20" patternUnits="userSpaceOnUse"><rect width="24" height="20" fill="' + nuance(t, -0.22) + '"/>' +
+        [[6, 6, 5.5], [17, 5, 5.5], [11, 15, 5.5], [23, 15, 4.5], [0, 15, 4.5]].map(function (b) { return '<circle cx="' + b[0] + '" cy="' + b[1] + '" r="' + b[2] + '" fill="' + t + '"/><circle cx="' + (b[0] - 1.5) + '" cy="' + (b[1] - 2) + '" r="1.8" fill="' + c + '" opacity="0.7"/>'; }).join('') + '</pattern>'; break;
       default: s = '<pattern id="' + id + '" width="40" height="40" patternUnits="userSpaceOnUse"><rect width="40" height="40" fill="' + t + '"/></pattern>';
     }
     return s;
@@ -523,7 +906,7 @@ var CPM = (function () {
   // ---------- La pièce ----------
   // Bornes de la pièce à l'écran (pour la caméra)
   function bornes(piece) {
-    var H = piece.h || HAUTEUR, m = 14;
+    var H = piece.exterieur ? CIEL : (piece.h || HAUTEUR), m = 14;   // dehors : le ciel au-dessus de la haie
     return { x0: proj(0, piece.p)[0] - m - 8, x1: proj(piece.l, 0)[0] + m + 8, y0: proj(0, 0, H)[1] - m - 8, y1: proj(piece.l, piece.p)[1] + BORD + m };
   }
   // Caméra : zoom (1 = toute la pièce) et centre (coordonnées du SVG) → viewBox, sans sortir de la pièce
@@ -594,9 +977,9 @@ var CPM = (function () {
     var mG = hb.murs, mD = hb.murD || hb.murs, tg = teinte(mG.teinte), td = teinte(mD.teinte), ts = teinte(hb.sol.teinte), s = '';
     var nuit = !!op.nuit, amb = AMBIANCES.filter(function (a) { return a.id === hb.lumiere.ambiance; })[0] || AMBIANCES[0];
     var env = { nuit: nuit, vue: hb.fenetre.vue, cadre: hb.fenetre.cadre };
-    var e = 0.22;
-    // contour de la pièce (sert à poser la nuit et les lumières seulement sur elle)
-    var contour = [proj(-e, -e, H), proj(l, -e, H), proj(l, -e, 0), [proj(l, 0)[0], proj(l, 0)[1] + BORD], [proj(l, p)[0], proj(l, p)[1] + BORD], [proj(0, p)[0], proj(0, p)[1] + BORD], proj(-e, p, 0), proj(-e, p, H)];
+    var e = 0.22, dehors = !!piece.exterieur, Hc = dehors ? CIEL : H;
+    // contour de la pièce (sert à poser la nuit et les lumières seulement sur elle) ; dehors, il monte jusqu'en haut du ciel
+    var contour = [proj(-e, -e, Hc), proj(l, -e, Hc), proj(l, -e, 0), [proj(l, 0)[0], proj(l, 0)[1] + BORD], [proj(l, p)[0], proj(l, p)[1] + BORD], [proj(0, p)[0], proj(0, p)[1] + BORD], proj(-e, p, 0), proj(-e, p, Hc)];
     s += '<defs>' + motifMur(id + '-murg', mG.motif, tg) + motifMur(id + '-mur', mD.motif, td) + motifSol(id + '-sol', hb.sol.type, ts) +
       '<clipPath id="' + id + '-piece"><path d="' + chemin(contour) + '"/></clipPath>';
     // halos des lampes (dégradés : un seul jeu d'identifiants par scène)
@@ -618,9 +1001,23 @@ var CPM = (function () {
       s += '</mask>';
     }
     s += '</defs>';
-    // plancher vu de face
+    // dehors : le ciel (à la place du haut des murs), puis des arbres qui dépassent derrière la haie
+    if (dehors) {
+      s += poly([proj(0, p, H), proj(0, p, CIEL), proj(0, 0, CIEL), proj(l, 0, CIEL), proj(l, 0, H), proj(0, 0, H)], '#b9dcec', 0, 0);
+      [[0.4, 3.6, 2.45, 14], [1.6, -0.2, 2.55, 12], [4.2, -0.2, 2.3, 10]].forEach(function (n) {
+        var q = proj(n[0], n[1], n[2]);
+        s += '<path d="M' + n1(q[0] - n[3]) + ' ' + n1(q[1]) + ' q' + n1(n[3] * 0.2) + ' ' + n1(-n[3] * 0.6) + ' ' + n1(n[3] * 0.6) + ' ' + n1(-n[3] * 0.4) + ' q' + n1(n[3] * 0.5) + ' ' + n1(-n[3] * 0.6) + ' ' + n1(n[3]) + ' ' + n1(-n[3] * 0.1) +
+          ' q' + n1(n[3] * 0.6) + ' ' + n1(-n[3] * 0.1) + ' ' + n1(n[3] * 0.4) + ' ' + n1(n[3] * 0.5) + 'z" fill="#fff" opacity="' + (nuit ? 0.12 : 0.85) + '"/>';
+      });
+      if (nuit) [[0.3, 2.2, 2.6], [0.5, 4.8, 2.3], [1.2, 0.3, 2.75], [3.2, 0.2, 2.6], [5.4, 0.2, 2.4], [2.4, 0.1, 2.3]].forEach(function (e2) { var q = proj(e2[0], e2[1], e2[2]); s += '<circle cx="' + n1(q[0]) + '" cy="' + n1(q[1]) + '" r="1.3" fill="#fff"/>'; });
+      var fond = [[-0.6, 2.2, 0.55, 22], [-0.6, 4.6, 0.4, 18], [-0.7, 0.4, 0.62, 23], [0.4, -0.7, 0.68, 24], [2.5, -0.6, 0.6, 22], [4.8, -0.6, 0.45, 19]];
+      fond.forEach(function (f) { var q = proj(f[0], f[1], H + f[2]); s += '<circle cx="' + n1(q[0]) + '" cy="' + n1(q[1]) + '" r="' + n1(f[3] + 1.6) + '" fill="' + O + '"/>'; });
+      fond.forEach(function (f, n) { var q = proj(f[0], f[1], H + f[2]); s += '<circle cx="' + n1(q[0]) + '" cy="' + n1(q[1]) + '" r="' + f[3] + '" fill="' + (n % 2 ? '#35552f' : '#3e6236') + '"/>' +
+        '<circle cx="' + n1(q[0] - f[3] * 0.3) + '" cy="' + n1(q[1] - f[3] * 0.35) + '" r="' + n1(f[3] * 0.35) + '" fill="#4f7a42"/>'; });
+    }
+    // plancher vu de face (de la terre, dehors)
     var A = proj(0, p), B = proj(l, p), C = proj(l, 0);
-    s += poly([A, B, [B[0], B[1] + BORD], [A[0], A[1] + BORD]], '#5c4532') + poly([B, C, [C[0], C[1] + BORD], [B[0], B[1] + BORD]], '#3f3026');
+    s += poly([A, B, [B[0], B[1] + BORD], [A[0], A[1] + BORD]], dehors ? '#6b4a32' : '#5c4532') + poly([B, C, [C[0], C[1] + BORD], [B[0], B[1] + BORD]], dehors ? '#4f3424' : '#3f3026');
     // sol
     s += '<g transform="' + matrice(proj(0, 0), proj(1, 0), proj(0, 1)) + '"><rect width="' + l * U + '" height="' + p * U + '" fill="url(#' + id + '-sol)"/>' +
       '<rect width="' + l * U + '" height="' + p * U + '" fill="none" stroke="' + O + '" stroke-width="2"/>';
@@ -640,10 +1037,20 @@ var CPM = (function () {
       finitions(l * U, Hu, td, hb, true) + '<rect width="' + l * U + '" height="' + Hu + '" fill="#1b130e" opacity="0.2"/>' +
       '<rect width="' + l * U + '" height="' + Hu + '" fill="none" stroke="' + O + '" stroke-width="2"/></g>';
     s += ligne([proj(0, 0, 0), proj(0, 0, H)], nuance(tg, -0.3), 1.6);
-    // dessus des murs (épaisseur) et leurs bouts
-    s += poly([proj(-e, -e, H), proj(l, -e, H), proj(l, 0, H), proj(0, 0, H), proj(0, p, H), proj(-e, p, H)], '#5c4532', 1);
-    s += poly([proj(l, -e, H), proj(l, 0, H), proj(l, 0, 0), proj(l, -e, 0)], '#3f3026', 1);
-    s += poly([proj(0, p, H), proj(-e, p, H), proj(-e, p, 0), proj(0, p, 0)], '#4b3a2c', 1);
+    if (dehors) {
+      // le haut de la haie : des touffes arrondies
+      var bosses = [];
+      for (var jj = p; jj >= 0; jj -= 0.5) bosses.push(proj(0, jj, H));
+      for (var ii = 0.5; ii <= l; ii += 0.5) bosses.push(proj(ii, 0, H));
+      s += poly([proj(l, -e, H), proj(l, 0, H), proj(l, 0, 0), proj(l, -e, 0)], nuance(td, -0.35), 1) + poly([proj(0, p, H), proj(-e, p, H), proj(-e, p, 0), proj(0, p, 0)], nuance(tg, -0.25), 1);
+      bosses.forEach(function (b) { s += '<circle cx="' + n1(b[0]) + '" cy="' + n1(b[1]) + '" r="10.6" fill="' + O + '"/>'; });
+      bosses.forEach(function (b, n) { s += '<circle cx="' + n1(b[0]) + '" cy="' + n1(b[1]) + '" r="9" fill="' + (n % 2 ? tg : nuance(tg, 0.06)) + '"/><circle cx="' + n1(b[0] - 2.5) + '" cy="' + n1(b[1] - 3.5) + '" r="3.2" fill="' + nuance(tg, 0.22) + '"/>'; });
+    } else {
+      // dessus des murs (épaisseur) et leurs bouts
+      s += poly([proj(-e, -e, H), proj(l, -e, H), proj(l, 0, H), proj(0, 0, H), proj(0, p, H), proj(-e, p, H)], '#5c4532', 1);
+      s += poly([proj(l, -e, H), proj(l, 0, H), proj(l, 0, 0), proj(l, -e, 0)], '#3f3026', 1);
+      s += poly([proj(0, p, H), proj(-e, p, H), proj(-e, p, 0), proj(0, p, 0)], '#4b3a2c', 1);
+    }
     // objets
     var murs = [], plats = [], sols = [], plafonds = [];
     piece.objets.forEach(function (ob, n) {
@@ -743,6 +1150,7 @@ var CPM = (function () {
 
   var kit = {
     TW: TW, TH: TH, ZU: ZU, HAUTEUR: HAUTEUR, MEUBLES: MEUBLES, NUANCIER: NUANCIER, MOTIFS_MUR: MOTIFS_MUR, SOLS: SOLS,
+    PIECES: PIECES, pieceDepart: pieceDepart, vaDans: vaDans,
     PLINTHES: PLINTHES, AMBIANCES: AMBIANCES, VUES: VUES, vueOuverte: vueOuverte, vueFenetre: vueFenetre, habillage: habillage, saisonDe: saisonDe, tuileFinition: tuileFinition, tuileVue: tuileVue,
     proj: proj, versSol: versSol, versMur: versMur, nuance: nuance, teinte: teinte,
     emprise: emprise, placeLibre: placeLibre, caseOccupee: caseOccupee,
