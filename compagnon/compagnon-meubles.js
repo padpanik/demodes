@@ -74,9 +74,9 @@ var CPM = (function () {
   }
 
   // Contexte de dessin d'un objet : P(u, v, z) en coordonnées propres de l'objet (u le long de sa largeur, v de sa profondeur)
-  function contexte(i, j, o, z, H) {
+  function contexte(i, j, o, z, H, env) {
     return {
-      o: o, z: z || 0, H: H || HAUTEUR,
+      o: o, z: z || 0, H: H || HAUTEUR, env: env || {},
       P: function (u, v, w) { return o ? proj(i + v, j + u, w) : proj(i + u, j + v, w); },
       // Couleur d'une face selon sa direction dans la pièce : face « +u » ou « +v »
       faceU: function (c) { return o ? nuance(c, -0.2) : c; },
@@ -116,6 +116,64 @@ var CPM = (function () {
   function ombreSol(k, u, v, du, dv) {
     var P = k.P, m = 0.06;
     return '<path d="' + chemin([P(u - m, v - m, 0), P(u + du + m, v - m, 0), P(u + du + m, v + dv + m, 0), P(u - m, v + dv + m, 0)], 6) + '" fill="#000" opacity="0.18"/>';
+  }
+
+  // ---------- Vues de la fenêtre (dessinées dans la vitre : x 8,5 à 31,5, y 7,5 à 42,5) ----------
+  // lieux : écrans de la Vallée qui la débloquent (vide = toujours là)
+  var VUES = [
+    { id: 'pre', nom: 'Le pré', lieux: [] },
+    { id: 'village', nom: 'Le village', lieux: [] },
+    { id: 'foret', nom: 'La forêt', lieux: ['sapins', 'chene', 'bosquet', 'clairiere'] },
+    { id: 'ruisseau', nom: 'Le ruisseau', lieux: ['ruisseau'] },
+    { id: 'marais', nom: 'Le marais', lieux: ['marais1', 'marais2', 'marais3'] },
+    { id: 'montagne', nom: 'La montagne', lieux: ['montagne1', 'montagne2', 'montagne3'] },
+    { id: 'terres', nom: 'Les Terres', lieux: ['t-'] }
+  ];
+  function vueOuverte(v, vus) {
+    if (!v.lieux.length) return true;
+    return (vus || []).some(function (id) { return v.lieux.some(function (l) { return l === 't-' ? String(id).indexOf('t-') === 0 : id === l; }); });
+  }
+  function vueFenetre(vue, nuit) {
+    var ciel = { pre: '#9fd0ee', village: '#a9d6f0', foret: '#a7d3e6', ruisseau: '#9fd0ee', marais: '#c4d8cc', montagne: '#8fc4ea', terres: '#cdbfe0' }[vue] || '#9fd0ee';
+    var s = '<rect x="8.5" y="7.5" width="23" height="35" fill="' + (nuit ? '#1c2547' : ciel) + '"/>';
+    if (!nuit) s += '<path d="M12 15 q2 -3 5 -1 q3 -2 4 1 q2 0 1 2 h-10 q-1 -2 0 -2z" fill="#fff" opacity="0.9"/>';
+    if (vue === 'village') {
+      s += '<path d="M8.5 34 H31.5 V42.5 H8.5Z" fill="#8bc47a"/>';
+      s += '<rect x="10.5" y="27" width="8" height="8" fill="#efe2c8" stroke="' + O + '" stroke-width="0.7"/><path d="M9.5 27.5 L14.5 22 L19.5 27.5Z" fill="#b5462f" stroke="' + O + '" stroke-width="0.7"/>';
+      s += '<rect x="21" y="29" width="8" height="6" fill="#e6d3b0" stroke="' + O + '" stroke-width="0.7"/><path d="M20 29.5 L25 24.5 L30 29.5Z" fill="#7a4b3a" stroke="' + O + '" stroke-width="0.7"/>';
+      s += '<rect x="13.3" y="29.5" width="2.4" height="2.4" fill="' + (nuit ? '#ffd43b' : '#5c7a96') + '"/><rect x="24" y="30.5" width="2" height="2" fill="' + (nuit ? '#ffd43b' : '#5c7a96') + '"/>';
+      s += '<path d="M8.5 38 Q20 35 31.5 38 V42.5 H8.5Z" fill="#6aa35c"/>';
+    } else if (vue === 'foret') {
+      s += '<path d="M8.5 32 H31.5 V42.5 H8.5Z" fill="#4f7a3f"/>';
+      [[11, 20, 7], [17, 17, 8], [23, 21, 7], [29, 18, 8], [14, 26, 6], [26, 27, 6]].forEach(function (a) {
+        s += '<path d="M' + a[0] + ' ' + a[1] + ' L' + (a[0] + a[2] / 2) + ' ' + (a[1] + a[2] * 1.8) + ' H' + (a[0] - a[2] / 2) + 'Z" fill="' + (a[1] > 24 ? '#2f5a2c' : '#3f6b3a') + '" stroke="' + O + '" stroke-width="0.5"/>';
+      });
+    } else if (vue === 'ruisseau') {
+      s += '<path d="M8.5 29 Q20 26 31.5 29 V42.5 H8.5Z" fill="#8bc47a"/><path d="M8.5 34 Q16 32 22 35 Q27 37 31.5 35 V40 Q24 42 18 39 Q13 37 8.5 39Z" fill="#5aa0d0" stroke="' + O + '" stroke-width="0.5"/>';
+      s += '<path d="M12 36 h4 M20 37.5 h5" stroke="#d6efff" stroke-width="0.8"/><circle cx="27" cy="31" r="1.2" fill="#e8590c"/>';
+    } else if (vue === 'marais') {
+      s += '<path d="M8.5 30 H31.5 V42.5 H8.5Z" fill="#6f8f7a"/><path d="M8.5 30 Q20 28 31.5 30" stroke="#9fb8a6" stroke-width="1" fill="none"/>';
+      s += '<path d="M24 31 Q24 20 28 18 Q33 19 31.5 31Z" fill="#5f7d4e" stroke="' + O + '" stroke-width="0.5"/><path d="M26 22 q-1 6 0 9 M29 21 q1 5 0 9" stroke="#4a6340" stroke-width="0.6" fill="none"/>';
+      for (var r = 0; r < 5; r++) s += '<path d="M' + (10 + r * 2.2) + ' 42.5 V' + (33 + (r % 2) * 2) + '" stroke="#4a6340" stroke-width="0.7"/><ellipse cx="' + (10 + r * 2.2) + '" cy="' + (33 + (r % 2) * 2) + '" rx="0.6" ry="1.4" fill="#6b4a35"/>';
+      s += '<rect x="8.5" y="26" width="23" height="4" fill="#fff" opacity="' + (nuit ? 0.12 : 0.3) + '"/>';
+    } else if (vue === 'montagne') {
+      s += '<path d="M8.5 32 L15 18 L19 24 L24 14 L31.5 28 V42.5 H8.5Z" fill="#8a94a6" stroke="' + O + '" stroke-width="0.6"/>';
+      s += '<path d="M13.2 21.8 L15 18 L16.8 21.8 L15.5 21 L14.5 22.2Z M21.6 18.8 L24 14 L26.6 19 L25 18.2 L23.4 19.4Z" fill="#fff"/>';
+      s += '<path d="M8.5 36 Q20 32 31.5 35 V42.5 H8.5Z" fill="#7cb46a"/>';
+    } else if (vue === 'terres') {
+      s += '<path d="M8.5 30 Q14 24 20 28 Q26 23 31.5 27 V42.5 H8.5Z" fill="#8b7fa6"/><path d="M8.5 36 Q18 31 31.5 35 V42.5 H8.5Z" fill="#6f6590"/>';
+      s += '<rect x="8.5" y="29" width="23" height="2.5" fill="#fff" opacity="0.35"/><rect x="8.5" y="35" width="23" height="2" fill="#fff" opacity="0.25"/>';
+    } else {
+      s += '<path d="M8.5 33 Q16 27 22 31 Q27 28 31.5 30 V42.5 H8.5Z" fill="#8bc47a"/><path d="M8.5 38 Q20 33 31.5 37 V42.5 H8.5Z" fill="#6aa35c"/>';
+      s += '<circle cx="13" cy="39" r="0.8" fill="#ffd43b"/><circle cx="18" cy="40.5" r="0.8" fill="#fff"/><circle cx="25" cy="39.5" r="0.8" fill="#e8590c"/>';
+    }
+    if (nuit) {
+      s += '<rect x="8.5" y="7.5" width="23" height="35" fill="#0d1330" opacity="0.45"/>';
+      if (vue === 'village') s += '<rect x="13.3" y="29.5" width="2.4" height="2.4" fill="#ffd43b"/><rect x="24" y="30.5" width="2" height="2" fill="#ffd43b"/>';
+      s += '<circle cx="26" cy="12" r="2.4" fill="#fff3bf"/><circle cx="27.2" cy="11.2" r="2" fill="#1c2547"/>';
+      [[11, 10], [15, 13], [19, 9], [22, 15], [13, 17]].forEach(function (p) { s += '<circle cx="' + p[0] + '" cy="' + p[1] + '" r="0.45" fill="#fff"/>'; });
+    }
+    return s;
   }
 
   // ---------- Les meubles ----------
@@ -219,7 +277,7 @@ var CPM = (function () {
         s += ligne([f, [f[0] + 2, f[1] - 12]], '#4f6e4a', 1.4) + '<circle cx="' + n1(f[0] + 2) + '" cy="' + n1(f[1] - 14) + '" r="3.2" fill="#e8590c" stroke="' + O + '" stroke-width="1"/>';
         return s;
       } },
-    lampadaire: { nom: 'Lampadaire', rayon: 'deco', plan: 'sol', w: 1, d: 1, h: 2.1, t: 'creme', usage: '',
+    lampadaire: { nom: 'Lampadaire', rayon: 'deco', plan: 'sol', w: 1, d: 1, h: 2.1, t: 'creme', usage: '', lumiere: { u: 0.5, v: 0.5, z: 1.72, r: 2.4 },
       dessin: function (k, t) {
         var s = '<ellipse cx="' + n1(k.P(0.5, 0.5, 0)[0]) + '" cy="' + n1(k.P(0.5, 0.5, 0)[1]) + '" rx="16" ry="8" fill="#000" opacity="0.16"/>';
         s += cylindre(k, 0.5, 0.5, 0, 0.2, 0.06, '#3a2c22');
@@ -270,7 +328,7 @@ var CPM = (function () {
         s += '</g>';
         return s;
       } },
-    poele: { nom: 'Poêle à bois', rayon: 'meubles', plan: 'sol', w: 1, d: 1, h: 2.6, t: '#3d3f45', usage: 'chaleur',
+    poele: { nom: 'Poêle à bois', rayon: 'meubles', plan: 'sol', w: 1, d: 1, h: 2.6, t: '#3d3f45', usage: 'chaleur', lumiere: { u: 0.71, v: 0.71, z: 0.42, r: 1.7, c: '#ff8a2a' },
       dessin: function (k, t) {
         var c = k.P(0.5, 0.5, 0), s = '<ellipse cx="' + n1(c[0]) + '" cy="' + n1(c[1]) + '" rx="22" ry="11" fill="#000" opacity="0.18"/>';
         s += boite(k, 0.08, 0.08, 0, 0.84, 0.84, 0.05, '#7a6f66', 2);
@@ -291,13 +349,12 @@ var CPM = (function () {
     // ----- au mur -----
     fenetre: { nom: 'Fenêtre', rayon: 'deco', plan: 'mur', w: 1, h: 1.25, z: 0.85, t: 'brique',
       dessin: function (k, t) {
-        var z = k.z, s = '<g transform="' + plan(k, [0, 0, z + 1.25], [1, 0, 0], [0, 0, -1]) + '">';
-        s += '<rect x="5" y="4" width="30" height="42" rx="2" fill="' + BOIS_C + '" stroke="' + O + '" stroke-width="1.6"/>';
-        s += '<rect x="8.5" y="7.5" width="23" height="35" fill="#9fd0ee" stroke="' + O + '" stroke-width="1.1"/>';
-        s += '<path d="M8.5 33 Q16 27 22 31 Q27 28 31.5 30 V42.5 H8.5Z" fill="#8bc47a"/><path d="M8.5 38 Q20 33 31.5 37 V42.5 H8.5Z" fill="#6aa35c"/>';
-        s += '<path d="M12 15 q2 -3 5 -1 q3 -2 4 1 q2 0 1 2 h-10 q-1 -2 0 -2z" fill="#fff" opacity="0.9"/>';
-        s += '<path d="M20 7.5 V42.5 M8.5 25 H31.5" stroke="' + BOIS_C + '" stroke-width="2.2"/><path d="M20 7.5 V42.5 M8.5 25 H31.5" stroke="' + O + '" stroke-width="0.6" opacity="0.5"/>';
-        s += '<path d="M10 10 l6 -2 M10 13 l3 -1" stroke="#fff" stroke-width="1" opacity="0.7"/>';
+        var z = k.z, cadre = k.env.cadre ? teinte(k.env.cadre) : BOIS_C, s = '<g transform="' + plan(k, [0, 0, z + 1.25], [1, 0, 0], [0, 0, -1]) + '">';
+        s += '<rect x="5" y="4" width="30" height="42" rx="2" fill="' + cadre + '" stroke="' + O + '" stroke-width="1.6"/>';
+        s += vueFenetre(k.env.vue || 'pre', k.env.nuit);
+        s += '<rect x="8.5" y="7.5" width="23" height="35" fill="none" stroke="' + O + '" stroke-width="1.1"/>';
+        s += '<path d="M20 7.5 V42.5 M8.5 25 H31.5" stroke="' + cadre + '" stroke-width="2.2"/><path d="M20 7.5 V42.5 M8.5 25 H31.5" stroke="' + O + '" stroke-width="0.6" opacity="0.5"/>';
+        s += '<path d="M10 10 l6 -2 M10 13 l3 -1" stroke="#fff" stroke-width="1" opacity="' + (k.env.nuit ? 0.25 : 0.7) + '"/>';
         // tringle et rideaux
         s += '<path d="M0 3 H40" stroke="' + O + '" stroke-width="2.6" stroke-linecap="round"/><path d="M0 3 H40" stroke="#c9a66b" stroke-width="1.2" stroke-linecap="round"/>';
         s += '<path d="M0.5 3 H11 Q9 18 12.5 26 Q8 36 9 48 H1.5 Q-0.5 30 0.5 3Z" fill="' + t + '" stroke="' + O + '" stroke-width="1.3" stroke-linejoin="round"/>';
@@ -305,7 +362,7 @@ var CPM = (function () {
         s += '<path d="M4 6 Q3 25 4 44 M36 6 Q37 25 36 44" stroke="' + nuance(t, -0.25) + '" stroke-width="1" fill="none"/>';
         s += '<path d="M8 25.5 l5 1 M32 25.5 l-5 1" stroke="#d8a73a" stroke-width="2" stroke-linecap="round"/>';
         s += '</g>';
-        s += boite(k, 0.08, 0, z - 0.1, 0.84, 0.14, 0.07, BOIS_C, 1.5);
+        s += boite(k, 0.08, 0, z - 0.1, 0.84, 0.14, 0.07, cadre, 1.5);
         return s;
       } },
     tableau: { nom: 'Tableau', rayon: 'deco', plan: 'mur', w: 1, h: 0.85, z: 1.25, t: 'miel',
@@ -344,7 +401,7 @@ var CPM = (function () {
         return s + '</g>';
       } },
     // ----- au plafond -----
-    suspension: { nom: 'Suspension', rayon: 'deco', plan: 'plafond', w: 1, d: 1, h: 0.9, t: 'foret',
+    suspension: { nom: 'Suspension', rayon: 'deco', plan: 'plafond', w: 1, d: 1, h: 0.9, t: 'foret', lumiere: { u: 0.5, v: 0.5, zH: -0.88, r: 2.8 },
       dessin: function (k, t) {
         var H = k.H, a = k.P(0.5, 0.5, H), b = k.P(0.5, 0.5, H - 0.55), s = '';
         var sol = k.P(0.5, 0.5, 0);
@@ -363,12 +420,23 @@ var CPM = (function () {
   // ---------- Habillage : motifs des murs et types de sol (dessinés d'après une teinte) ----------
   var MOTIFS_MUR = [
     { id: 'uni', nom: 'Uni' }, { id: 'rayures', nom: 'Rayures' }, { id: 'fleurs', nom: 'Petites fleurs' },
-    { id: 'losanges', nom: 'Losanges' }, { id: 'lambris', nom: 'Lambris', prix: 15 }, { id: 'briques', nom: 'Briques', prix: 20 }
+    { id: 'losanges', nom: 'Losanges' }, { id: 'lambris', nom: 'Lambris', prix: 15 }, { id: 'briques', nom: 'Briques', prix: 20 },
+    { id: 'pierre', nom: 'Pierre', prix: 25 }, { id: 'saison', nom: 'De saison', prix: 15 }
   ];
   var SOLS = [
     { id: 'parquet', nom: 'Parquet' }, { id: 'chevrons', nom: 'Chevrons', prix: 20 }, { id: 'tomettes', nom: 'Tomettes' },
-    { id: 'damier', nom: 'Damier' }, { id: 'moquette', nom: 'Moquette' }, { id: 'dalles', nom: 'Dalles', prix: 15 }
+    { id: 'damier', nom: 'Damier' }, { id: 'moquette', nom: 'Moquette' }, { id: 'dalles', nom: 'Dalles', prix: 15 },
+    { id: 'herbe', nom: 'Herbe' }
   ];
+  // Finitions : plinthes (bas des murs) et corniche (haut des murs)
+  var PLINTHES = [
+    { id: 'aucune', nom: 'Aucune' }, { id: 'simple', nom: 'Simple' }, { id: 'haute', nom: 'Haute' }, { id: 'lambris', nom: 'Lambris', prix: 10 }
+  ];
+  var AMBIANCES = [
+    { id: 'chaude', nom: 'Chaude', c: '#ffb15c', lampe: '#ffc777' }, { id: 'neutre', nom: 'Neutre', c: null, lampe: '#fff0c4' }, { id: 'froide', nom: 'Froide', c: '#8fb8ff', lampe: '#dbe8ff' }
+  ];
+  // Motif de saison : flocons l'hiver, fleurs au printemps, soleils l'été, feuilles à l'automne
+  function saisonDe(t) { var m = new Date(t || Date.now()).getMonth(); return m === 11 || m < 2 ? 'hiver' : m < 5 ? 'printemps' : m < 8 ? 'ete' : 'automne'; }
   function motifMur(id, motif, t) {
     var f = nuance(t, -0.12), c = nuance(t, 0.3), s;
     switch (motif) {
@@ -380,6 +448,18 @@ var CPM = (function () {
       case 'lambris': s = '<pattern id="' + id + '" width="10" height="40" patternUnits="userSpaceOnUse"><rect width="10" height="40" fill="' + t + '"/><rect width="1.4" height="40" fill="' + f + '"/><rect x="1.4" width="1" height="40" fill="' + c + '" opacity="0.6"/></pattern>'; break;
       case 'briques': s = '<pattern id="' + id + '" width="20" height="10" patternUnits="userSpaceOnUse"><rect width="20" height="10" fill="' + c + '"/>' +
         '<rect x="0.6" y="0.6" width="18.8" height="3.8" rx="0.8" fill="' + t + '"/><rect x="-9.4" y="5.6" width="18.8" height="3.8" rx="0.8" fill="' + f + '"/><rect x="10.6" y="5.6" width="18.8" height="3.8" rx="0.8" fill="' + f + '"/></pattern>'; break;
+      case 'pierre': s = '<pattern id="' + id + '" width="40" height="20" patternUnits="userSpaceOnUse"><rect width="40" height="20" fill="' + nuance(t, -0.3) + '"/>' +
+        '<rect x="1" y="1" width="15" height="8" rx="2.5" fill="' + t + '"/><rect x="17" y="1" width="22" height="8" rx="2.5" fill="' + nuance(t, 0.08) + '"/>' +
+        '<rect x="-6" y="11" width="18" height="8" rx="2.5" fill="' + nuance(t, 0.05) + '"/><rect x="13" y="11" width="13" height="8" rx="2.5" fill="' + t + '"/><rect x="27" y="11" width="18" height="8" rx="2.5" fill="' + nuance(t, -0.06) + '"/>' +
+        '<path d="M3 3 h5 M20 3 h6 M16 13 h4" stroke="' + c + '" stroke-width="0.8" opacity="0.6"/></pattern>'; break;
+      case 'saison':
+        var sa = saisonDe(), dessinS = {
+          hiver: function (x, y) { return '<path d="M' + x + ' ' + (y - 2.5) + ' v5 M' + (x - 2.2) + ' ' + (y - 1.2) + ' l4.4 2.4 M' + (x - 2.2) + ' ' + (y + 1.2) + ' l4.4 -2.4" stroke="' + c + '" stroke-width="0.9" stroke-linecap="round"/>'; },
+          printemps: function (x, y) { return [0, 1, 2, 3, 4].map(function (a) { var an = a * 1.2566; return '<circle cx="' + n1(x + Math.cos(an) * 1.5) + '" cy="' + n1(y + Math.sin(an) * 1.5) + '" r="1.1" fill="#e8a0b4"/>'; }).join('') + '<circle cx="' + x + '" cy="' + y + '" r="0.8" fill="#d8a73a"/>'; },
+          ete: function (x, y) { return '<circle cx="' + x + '" cy="' + y + '" r="1.6" fill="#f5c542"/><path d="M' + (x - 3) + ' ' + y + ' h1 M' + (x + 2) + ' ' + y + ' h1 M' + x + ' ' + (y - 3) + ' v1 M' + x + ' ' + (y + 2) + ' v1" stroke="#f5c542" stroke-width="0.7"/>'; },
+          automne: function (x, y) { return '<path d="M' + x + ' ' + (y - 2.5) + ' Q' + (x + 2.5) + ' ' + y + ' ' + x + ' ' + (y + 2.5) + ' Q' + (x - 2.5) + ' ' + y + ' ' + x + ' ' + (y - 2.5) + 'Z" fill="#c9733f"/><path d="M' + x + ' ' + (y - 2) + ' V' + (y + 3) + '" stroke="' + f + '" stroke-width="0.5"/>'; }
+        }[sa];
+        s = '<pattern id="' + id + '" width="24" height="24" patternUnits="userSpaceOnUse"><rect width="24" height="24" fill="' + t + '"/>' + dessinS(6, 6) + dessinS(18, 18) + '</pattern>'; break;
       default: s = '<pattern id="' + id + '" width="40" height="40" patternUnits="userSpaceOnUse"><rect width="40" height="40" fill="' + t + '"/></pattern>';
     }
     return s;
@@ -396,6 +476,8 @@ var CPM = (function () {
       case 'moquette': s = '<pattern id="' + id + '" width="12" height="12" patternUnits="userSpaceOnUse"><rect width="12" height="12" fill="' + t + '"/><circle cx="3" cy="4" r="0.7" fill="' + c + '"/><circle cx="9" cy="9" r="0.7" fill="' + f + '"/></pattern>'; break;
       case 'dalles': s = '<pattern id="' + id + '" width="40" height="40" patternUnits="userSpaceOnUse"><rect width="40" height="40" fill="' + f + '"/>' +
         '<rect x="1" y="1" width="23" height="18" rx="2" fill="' + t + '"/><rect x="26" y="1" width="13" height="18" rx="2" fill="' + c + '"/><rect x="1" y="21" width="14" height="18" rx="2" fill="' + c + '"/><rect x="17" y="21" width="22" height="18" rx="2" fill="' + t + '"/></pattern>'; break;
+      case 'herbe': s = '<pattern id="' + id + '" width="16" height="16" patternUnits="userSpaceOnUse"><rect width="16" height="16" fill="' + t + '"/>' +
+        '<path d="M3 6 l1 -3 M4.5 6 l0 -3.5 M11 13 l1 -3 M12.5 13 l-0.5 -3.5" stroke="' + f + '" stroke-width="0.9" stroke-linecap="round"/><circle cx="9" cy="4" r="0.8" fill="#fff8e7" opacity="0.8"/></pattern>'; break;
       default: s = '<pattern id="' + id + '" width="80" height="20" patternUnits="userSpaceOnUse"><rect width="80" height="20" fill="' + t + '"/>' +
         '<rect y="10" width="80" height="10" fill="' + nuance(t, -0.06) + '"/><path d="M0 10 H80 M0 20 H80" stroke="' + f + '" stroke-width="1"/><path d="M26 0 V10 M66 0 V10 M8 10 V20 M48 10 V20" stroke="' + f + '" stroke-width="1"/>' +
         '<path d="M4 4 h12 M40 15 h14" stroke="' + c + '" stroke-width="0.8" opacity="0.6"/></pattern>';
@@ -465,27 +547,73 @@ var CPM = (function () {
     return sortie;
   }
   // Dessin d'un objet seul (dans la pièce ou en vignette)
-  function dessinObjet(ob, H) {
+  function dessinObjet(ob, H, env) {
     var m = MEUBLES[ob.m]; if (!m) return '';
     var t = teinte(ob.t || m.t), k;
-    if (m.plan === 'mur') k = ob.o ? contexte(0, ob.j, 1, ob.z, H) : contexte(ob.i, 0, 0, ob.z, H);
-    else k = contexte(ob.i, ob.j, ob.o ? 1 : 0, 0, H);
+    if (m.plan === 'mur') k = ob.o ? contexte(0, ob.j, 1, ob.z, H, env) : contexte(ob.i, 0, 0, ob.z, H, env);
+    else k = contexte(ob.i, ob.j, ob.o ? 1 : 0, 0, H, env);
     return m.dessin(k, t);
   }
+  // Valeurs par défaut de l'habillage (une pièce d'avant n'a pas tous les champs)
+  function habillage(piece) {
+    return {
+      murs: piece.murs || { motif: 'uni', teinte: 'creme' }, murD: piece.murD || null, sol: piece.sol || { type: 'parquet', teinte: 'miel' },
+      plinthe: piece.plinthe || { type: 'simple', teinte: null }, corniche: !!piece.corniche,
+      fenetre: piece.fenetre || { vue: 'pre', cadre: null }, lumiere: piece.lumiere || { ambiance: 'chaude' }
+    };
+  }
+  // Plinthes et corniche d'un mur, dans le repère à plat du mur (40 unités par case, y vers le bas depuis le haut du mur)
+  function finitions(lon, Hu, tm, hb, ech) {
+    var pl = hb.plinthe, c = pl.teinte ? teinte(pl.teinte) : nuance(tm, pl.type === 'lambris' ? -0.3 : -0.35), s = '', E = ech || 1;
+    if (pl.type === 'simple') {
+      var hs = 5.2 * E;
+      s += '<rect y="' + (Hu - hs) + '" width="' + lon + '" height="' + hs + '" fill="' + c + '"/><path d="M0 ' + (Hu - hs) + ' H' + lon + '" stroke="' + nuance(c, 0.45) + '" stroke-width="1.2"/>';
+    } else if (pl.type === 'haute') {
+      var hh = 11 * E;
+      s += '<rect y="' + (Hu - hh) + '" width="' + lon + '" height="' + hh + '" fill="' + c + '"/><path d="M0 ' + (Hu - hh) + ' H' + lon + '" stroke="' + nuance(c, 0.5) + '" stroke-width="1.6"/>' +
+        '<path d="M0 ' + (Hu - hh * 0.77) + ' H' + lon + '" stroke="' + nuance(c, -0.25) + '" stroke-width="0.9"/><path d="M0 ' + (Hu - hh * 0.27) + ' H' + lon + '" stroke="' + nuance(c, -0.2) + '" stroke-width="0.7"/>';
+    } else if (pl.type === 'lambris') {
+      var hl = Math.min(38 * E, Hu * 0.6), y0 = Hu - hl, l = '';
+      for (var x = 10; x < lon; x += 10) l += 'M' + x + ' ' + (y0 + 3) + ' V' + (Hu - 4);
+      s += '<rect y="' + y0 + '" width="' + lon + '" height="' + hl + '" fill="' + c + '"/><path d="' + l + '" stroke="' + nuance(c, -0.2) + '" stroke-width="1"/>' +
+        '<rect y="' + (y0 - 1) + '" width="' + lon + '" height="4" fill="' + nuance(c, 0.2) + '"/><path d="M0 ' + (y0 - 1) + ' H' + lon + '" stroke="' + O + '" stroke-width="0.8" opacity="0.6"/>' +
+        '<rect y="' + (Hu - 4) + '" width="' + lon + '" height="4" fill="' + nuance(c, -0.3) + '"/>';
+    }
+    if (hb.corniche) {
+      var cc = '#f3eadb';
+      s += '<rect width="' + lon + '" height="5" fill="' + cc + '"/><path d="M0 5 H' + lon + '" stroke="' + nuance(cc, -0.35) + '" stroke-width="1.2"/><path d="M0 2.4 H' + lon + '" stroke="' + nuance(cc, -0.15) + '" stroke-width="0.7"/>';
+    }
+    return s;
+  }
 
-  // piece = { l, p, h, murs: { motif, teinte }, sol: { type, teinte }, objets: [{ m, i, j, o, z, t }] }
-  // options : { id (préfixe des motifs), grille, choisi (index), apercu: { i, j, w, d, ok } ou { mur, k, z, w, h, ok }, compagnon: { i, j, svg, ech } }
+  // piece = { l, p, h, murs: { motif, teinte }, murD (mur droit, s'il diffère), sol: { type, teinte }, plinthe: { type, teinte }, corniche,
+  //           fenetre: { vue, cadre }, lumiere: { ambiance }, objets: [{ m, i, j, o, z, t }] }
+  // options : { id (préfixe des motifs), grille, choisi (index), apercu: { i, j, w, d, ok } ou { mur, k, z, w, h, ok }, compagnon: { i, j, svg, ech }, nuit }
   function scene(piece, options) {
-    var op = options || {}, id = op.id || 'pm', l = piece.l, p = piece.p, H = piece.h || HAUTEUR;
-    var tm = teinte(piece.murs.teinte), ts = teinte(piece.sol.teinte), s = '';
-    s += '<defs>' + motifMur(id + '-mur', piece.murs.motif, tm) + motifMur(id + '-murg', piece.murs.motif, tm) + motifSol(id + '-sol', piece.sol.type, ts) + '</defs>';
+    var op = options || {}, id = op.id || 'pm', l = piece.l, p = piece.p, H = piece.h || HAUTEUR, hb = habillage(piece);
+    var mG = hb.murs, mD = hb.murD || hb.murs, tg = teinte(mG.teinte), td = teinte(mD.teinte), ts = teinte(hb.sol.teinte), s = '';
+    var nuit = !!op.nuit, amb = AMBIANCES.filter(function (a) { return a.id === hb.lumiere.ambiance; })[0] || AMBIANCES[0];
+    var env = { nuit: nuit, vue: hb.fenetre.vue, cadre: hb.fenetre.cadre };
+    var e = 0.22;
+    // contour de la pièce (sert à poser la nuit et les lumières seulement sur elle)
+    var contour = [proj(-e, -e, H), proj(l, -e, H), proj(l, -e, 0), [proj(l, 0)[0], proj(l, 0)[1] + BORD], [proj(l, p)[0], proj(l, p)[1] + BORD], [proj(0, p)[0], proj(0, p)[1] + BORD], proj(-e, p, 0), proj(-e, p, H)];
+    s += '<defs>' + motifMur(id + '-murg', mG.motif, tg) + motifMur(id + '-mur', mD.motif, td) + motifSol(id + '-sol', hb.sol.type, ts) +
+      '<clipPath id="' + id + '-piece"><path d="' + chemin(contour) + '"/></clipPath>';
+    // halos des lampes (dégradés : un seul jeu d'identifiants par scène)
+    var lampes = [];
+    if (nuit) piece.objets.forEach(function (ob, n) {
+      var m = MEUBLES[ob.m]; if (!m || !m.lumiere) return;
+      var L = m.lumiere, k = contexte(ob.i, ob.j, ob.o ? 1 : 0, 0, H), z = L.zH != null ? H + L.zH : L.z, c = L.c || amb.lampe;
+      lampes.push({ n: n, pt: k.P(L.u, L.v, z), sol: k.P(L.u, L.v, 0), r: L.r * TW, c: c });
+      s += '<radialGradient id="' + id + '-gl' + n + '"><stop offset="0" stop-color="' + c + '" stop-opacity="0.85"/><stop offset="0.45" stop-color="' + c + '" stop-opacity="0.35"/><stop offset="1" stop-color="' + c + '" stop-opacity="0"/></radialGradient>';
+    });
+    s += '</defs>';
     // plancher vu de face
     var A = proj(0, p), B = proj(l, p), C = proj(l, 0);
     s += poly([A, B, [B[0], B[1] + BORD], [A[0], A[1] + BORD]], '#5c4532') + poly([B, C, [C[0], C[1] + BORD], [B[0], B[1] + BORD]], '#3f3026');
     // sol
     s += '<g transform="' + matrice(proj(0, 0), proj(1, 0), proj(0, 1)) + '"><rect width="' + l * U + '" height="' + p * U + '" fill="url(#' + id + '-sol)"/>' +
       '<rect width="' + l * U + '" height="' + p * U + '" fill="none" stroke="' + O + '" stroke-width="2"/>';
-    // ombre des murs sur le sol
     s += '<path d="M0 0 H' + l * U + ' L' + (l * U - 10) + ' 10 H10 V' + (p * U - 10) + ' L0 ' + p * U + 'Z" fill="#000" opacity="0.14"/>';
     if (op.grille) {
       var g = '';
@@ -494,18 +622,15 @@ var CPM = (function () {
       s += '<path d="' + g + '" stroke="#fff8e7" stroke-opacity="0.38" stroke-width="1.2" stroke-dasharray="4 3"/>';
     }
     s += '</g>';
-    // murs (gauche plus clair, droit plus sombre), plinthes
-    var Hu = H * U, pl = 0.13 * U;
+    // murs (gauche plus clair, droit plus sombre), finitions
+    var Hu = H * U;
     s += '<g transform="' + matrice(proj(0, 0, H), proj(0, 1, H), proj(0, 0, H - 1)) + '"><rect width="' + p * U + '" height="' + Hu + '" fill="url(#' + id + '-murg)"/>' +
-      '<rect y="' + (Hu - pl) + '" width="' + p * U + '" height="' + pl + '" fill="' + nuance(tm, -0.35) + '"/><path d="M0 ' + (Hu - pl) + ' H' + p * U + '" stroke="' + nuance(tm, 0.3) + '" stroke-width="1.2"/>' +
-      '<rect width="' + p * U + '" height="' + Hu + '" fill="none" stroke="' + O + '" stroke-width="2"/></g>';
+      finitions(p * U, Hu, tg, hb, false) + '<rect width="' + p * U + '" height="' + Hu + '" fill="none" stroke="' + O + '" stroke-width="2"/></g>';
     s += '<g transform="' + matrice(proj(0, 0, H), proj(1, 0, H), proj(0, 0, H - 1)) + '"><rect width="' + l * U + '" height="' + Hu + '" fill="url(#' + id + '-mur)"/>' +
-      '<rect width="' + l * U + '" height="' + Hu + '" fill="#1b130e" opacity="0.2"/>' +
-      '<rect y="' + (Hu - pl) + '" width="' + l * U + '" height="' + pl + '" fill="' + nuance(tm, -0.42) + '"/><path d="M0 ' + (Hu - pl) + ' H' + l * U + '" stroke="' + nuance(tm, 0.15) + '" stroke-width="1.2"/>' +
+      finitions(l * U, Hu, td, hb, true) + '<rect width="' + l * U + '" height="' + Hu + '" fill="#1b130e" opacity="0.2"/>' +
       '<rect width="' + l * U + '" height="' + Hu + '" fill="none" stroke="' + O + '" stroke-width="2"/></g>';
-    s += ligne([proj(0, 0, 0), proj(0, 0, H)], nuance(tm, -0.3), 1.6);
+    s += ligne([proj(0, 0, 0), proj(0, 0, H)], nuance(tg, -0.3), 1.6);
     // dessus des murs (épaisseur) et leurs bouts
-    var e = 0.22;
     s += poly([proj(-e, -e, H), proj(l, -e, H), proj(l, 0, H), proj(0, 0, H), proj(0, p, H), proj(-e, p, H)], '#5c4532', 1);
     s += poly([proj(l, -e, H), proj(l, 0, H), proj(l, 0, 0), proj(l, -e, 0)], '#3f3026', 1);
     s += poly([proj(0, p, H), proj(-e, p, H), proj(-e, p, 0), proj(0, p, 0)], '#4b3a2c', 1);
@@ -516,10 +641,15 @@ var CPM = (function () {
       var x = { ob: ob, n: n, e: emprise(ob) };
       (m.plan === 'mur' ? murs : m.plan === 'plafond' ? plafonds : m.plat ? plats : sols).push(x);
     });
+    // lumière qui entre par les fenêtres (soleil le jour, lune la nuit), posée sur le sol
+    murs.forEach(function (x) {
+      if (x.ob.m !== 'fenetre') return;
+      var q = x.ob.o ? function (u, v) { return proj(v, x.ob.j + u); } : function (u, v) { return proj(x.ob.i + u, v); };
+      s += '<path d="' + chemin([q(0.15, 0.08), q(0.85, 0.08), q(1.3, 1.9), q(0.6, 1.9)], 4) + '" fill="' + (nuit ? '#9fb8ff' : '#fff3c4') + '" opacity="' + (nuit ? 0.1 : 0.22) + '" style="mix-blend-mode:screen"/>';
+    });
     function enveloppe(x) {
-      return '<g class="obj' + (op.choisi === x.n ? ' choisi' : '') + (op.fantome === x.n ? ' fantome' : '') + '" data-n="' + x.n + '">' + dessinObjet(x.ob, H) + '</g>';
+      return '<g class="obj' + (op.choisi === x.n ? ' choisi' : '') + (op.fantome === x.n ? ' fantome' : '') + '" data-n="' + x.n + '">' + dessinObjet(x.ob, H, env) + '</g>';
     }
-    // aperçu de l'emplacement visé (case verte ou rouge, ou rectangle sur le mur)
     var ap = '';
     if (op.apercu) {
       var c = op.apercu.ok ? '#8ce99a' : '#ff6b6b';
@@ -532,9 +662,7 @@ var CPM = (function () {
       }
     }
     murs.forEach(function (x) { s += enveloppe(x); });
-    if (op.apercu && op.apercu.mur != null) s += ap;
     plats.forEach(function (x) { s += enveloppe(x); });
-    if (op.apercu && op.apercu.mur == null) s += ap;
     if (op.compagnon) sols.push({ cp: true, e: { i0: op.compagnon.i, j0: op.compagnon.j, i1: op.compagnon.i + 1, j1: op.compagnon.j + 1 } });
     ordonner(sols).forEach(function (x) {
       if (!x.cp) { s += enveloppe(x); return; }
@@ -543,6 +671,20 @@ var CPM = (function () {
         '<svg x="' + n1(b[0] - w / 2) + '" y="' + n1(b[1] - h * 0.95) + '" width="' + n1(w) + '" height="' + n1(h) + '" viewBox="0 -6 200 216" overflow="visible">' + cp.svg + '</svg></g>';
     });
     plafonds.forEach(function (x) { s += enveloppe(x); });
+    // ambiance de la pièce, puis la nuit et ses lampes (seulement sur la pièce)
+    var voile = '';
+    if (amb.c) voile += '<rect x="-2000" y="-2000" width="4000" height="4000" fill="' + amb.c + '" opacity="' + (nuit ? 0.2 : 0.25) + '" style="mix-blend-mode:soft-light"/>';
+    if (nuit) {
+      voile += '<rect x="-2000" y="-2000" width="4000" height="4000" fill="#4a5490" style="mix-blend-mode:multiply"/>';
+      lampes.forEach(function (L) {
+        voile += '<circle cx="' + n1(L.pt[0]) + '" cy="' + n1(L.pt[1]) + '" r="' + n1(L.r) + '" fill="url(#' + id + '-gl' + L.n + ')" style="mix-blend-mode:screen"/>';
+        voile += '<ellipse cx="' + n1(L.sol[0]) + '" cy="' + n1(L.sol[1]) + '" rx="' + n1(L.r * 0.9) + '" ry="' + n1(L.r * 0.45) + '" fill="url(#' + id + '-gl' + L.n + ')" opacity="0.7" style="mix-blend-mode:screen"/>';
+      });
+    }
+    // le découpage est posé sur chaque calque : sur un groupe, il isolerait le mélange des couleurs
+    if (voile) s += '<g pointer-events="none">' + voile.replace(/<(rect|circle|ellipse) /g, '<$1 clip-path="url(#' + id + '-piece)" ') + '</g>';
+    // l'aperçu (case visée) reste lisible par-dessus tout
+    s += ap;
     return s;
   }
 
@@ -572,8 +714,24 @@ var CPM = (function () {
       '<g transform="' + matrice(proj(0, 0, 1), proj(1, 0, 1), proj(0, 0, 0)) + '"><rect width="40" height="40" fill="url(#' + pid + ')"/><rect width="40" height="40" fill="#1b130e" opacity="0.2" stroke="' + O + '" stroke-width="2.4"/></g></svg>';
   }
 
+  // Petite tuile des finitions : un coin de mur avec ses plinthes (et sa corniche)
+  function tuileFinition(hb, tm, taille) {
+    var tl = taille || 46, Hm = 1.4, Hu = Hm * U, t = teinte(tm);
+    var murG = '<rect width="40" height="' + Hu + '" fill="' + t + '"/>' + finitions(40, Hu, t, hb, 1.7) + '<rect width="40" height="' + Hu + '" fill="none" stroke="' + O + '" stroke-width="2.4"/>';
+    return '<svg viewBox="-36 ' + n1(-Hm * ZU - 4) + ' 72 ' + n1(Hm * ZU + 26) + '" width="' + tl + '" height="' + n1(tl * (Hm * ZU + 26) / 72) + '">' +
+      '<g transform="' + matrice(proj(0, 0, Hm), proj(0, 1, Hm), proj(0, 0, Hm - 1)) + '">' + murG + '</g>' +
+      '<g transform="' + matrice(proj(0, 0, Hm), proj(1, 0, Hm), proj(0, 0, Hm - 1)) + '">' + murG.replace('stroke-width="2.4"/>', 'stroke-width="2.4"/><rect width="40" height="' + Hu + '" fill="#1b130e" opacity="0.2"/>') + '</g></svg>';
+  }
+  // Petite tuile d'une vue de fenêtre
+  function tuileVue(vue, nuit, taille) {
+    var tl = taille || 40;
+    return '<svg viewBox="5 4 30 42" width="' + n1(tl * 30 / 42) + '" height="' + tl + '"><rect x="5" y="4" width="30" height="42" rx="2" fill="' + BOIS_C + '" stroke="' + O + '" stroke-width="1.6"/>' +
+      vueFenetre(vue, nuit) + '<rect x="8.5" y="7.5" width="23" height="35" fill="none" stroke="' + O + '" stroke-width="1.1"/><path d="M20 7.5 V42.5 M8.5 25 H31.5" stroke="' + BOIS_C + '" stroke-width="1.8"/></svg>';
+  }
+
   var kit = {
     TW: TW, TH: TH, ZU: ZU, HAUTEUR: HAUTEUR, MEUBLES: MEUBLES, NUANCIER: NUANCIER, MOTIFS_MUR: MOTIFS_MUR, SOLS: SOLS,
+    PLINTHES: PLINTHES, AMBIANCES: AMBIANCES, VUES: VUES, vueOuverte: vueOuverte, vueFenetre: vueFenetre, habillage: habillage, saisonDe: saisonDe, tuileFinition: tuileFinition, tuileVue: tuileVue,
     proj: proj, versSol: versSol, versMur: versMur, nuance: nuance, teinte: teinte,
     emprise: emprise, placeLibre: placeLibre, caseOccupee: caseOccupee,
     bornes: bornes, camera: camera, scene: scene, vignette: vignette, tuile: tuile
