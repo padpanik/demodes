@@ -114,6 +114,9 @@
     .pk-presence { position: absolute; right: 0; bottom: 1px; width: 12px; height: 12px; border-radius: 50%; background: #40c057; box-shadow: 0 0 0 2px #0c1c20; }
     .pk-presence.non { background: #868e96; }
     .pk-chrono { position: absolute; inset: -5px; width: 64px; height: 64px; pointer-events: none; overflow: visible; }
+    .pk-enerve { position: absolute; left: -7px; top: -6px; z-index: 2; font-size: 17px; line-height: 1; filter: drop-shadow(0 1px 1px rgba(0,0,0,0.6)); animation: pk-fume 1.6s ease-in-out infinite; }
+    @keyframes pk-fume { 0%, 100% { transform: scale(1) rotate(0); } 50% { transform: scale(1.15) rotate(-8deg); } }
+    @media (prefers-reduced-motion: reduce) { .pk-enerve { animation: none; } }
     .pk-niveau-ordi { position: absolute; left: -2px; top: -3px; background: #0c1c20; border-radius: 8px; padding: 1px 4px; font-size: 9px; font-weight: 800; color: #9fd8c3; box-shadow: 0 0 0 1.5px #2e4a50; }
     .pk-plaque { margin-top: -7px; position: relative; z-index: 2; background: linear-gradient(#1b2a2f, #0f1a1d); border: 1px solid rgba(255,255,255,0.12); border-radius: 9px; padding: 2px 7px 3px;
                  text-align: center; min-width: 62px; max-width: 84px; box-shadow: 0 4px 10px rgba(0,0,0,0.45); }
@@ -542,6 +545,7 @@
             <svg v-if="s.chrono !== null" class="pk-chrono" viewBox="0 0 64 64"><path d="M 3.02 39.76 A 30 30 0 1 1 60.98 39.76" fill="none" stroke="rgba(0,0,0,0.4)" stroke-width="4" stroke-linecap="round"/>
               <path d="M 3.02 39.76 A 30 30 0 1 1 60.98 39.76" pathLength="100" fill="none" :stroke="s.chrono < 0.25 ? '#ff6b6b' : '#ffd43b'" stroke-width="4" stroke-linecap="round" stroke-dasharray="100" :stroke-dashoffset="100 * (1 - s.chrono)"/></svg>
             <span v-if="s.presence !== null" class="pk-presence" :class="{ non: !s.presence }"></span>
+            <span v-if="s.enerve" class="pk-enerve" title="Il est énervé">😤</span>
           </div>
           <div class="pk-plaque"><div class="n">{{ s.nomAff }}</div><div class="t">{{ s.tapisAff }}</div></div>
           <span v-if="s.fait" class="pk-fait" :class="s.faitClasse">{{ s.fait }}</span>
@@ -1018,7 +1022,7 @@
               fait: faitAff, faitClasse: gagnant ? 'relance' : (fait || '').toLowerCase().replace('é', 'e'),
               dos: dans && !moi && !couche && !montre && !m.fini, montre: montre,
               nomMain: montre && R && R.mains[s.nom] ? R.mains[s.nom].nom : '',
-              chrono: chrono, niveauOrdi: s.robot ? (s.cache ? '?' : 'N' + s.robot) : '',
+              chrono: chrono, enerve: !!s.robot && (s.tilt || 0) >= 0.45 && s.statut === 'jeu', niveauOrdi: s.robot ? (s.cache ? '?' : 'N' + s.robot) : '',
               presence: this.solo || s.robot || s.statut === 'elimine' ? null : this.absents.indexOf(s.nom) === -1 && (!moi || this.enLigne)
             };
           });
@@ -1616,9 +1620,20 @@
           if (!m.tour) return;
           var s = PK.siege(e, m.tour);
           if (s && s.robot) {
-            if (this._robotN !== e.n) { this._robotN = e.n; this._robotA = t + 700 + Math.random() * 1100; }
+            // Temps de réflexion à la façon d'un joueur (4.12) : il se couche vite, hésite devant une grosse mise
+            // ou un tapis, et joue plus vite quand il est énervé
+            if (this._robotN !== e.n) {
+              this._robotN = e.n; this._robotC = PK.ordinateur(e, m.tour);
+              var pr = PK.possibles(e, m.tour), c = this._robotC || {}, gros = pr && pr.aSuivre > 0 && pr.aSuivre >= s.tapis * 0.4;
+              var d = c.type === 'coucher' && !gros ? 500 + Math.random() * 700
+                : gros || (c.type === 'relancer' && c.montant >= s.tapis + (m.mise[m.tour] || 0)) ? 1800 + Math.random() * 2600
+                : 800 + Math.random() * 1300;
+              if (Math.random() < 0.08) d += 1200 + Math.random() * 1500;     // il réfléchit longtemps, sans raison
+              this._robotA = t + d * (1 - (s.tilt || 0) * 0.45);
+            }
             if (t < this._robotA) return;
-            var nom = m.tour, a = PK.ordinateur(e, nom);
+            var nom = m.tour, a = this._robotC || PK.ordinateur(e, nom);
+            this._robotC = null;
             if (a) PK.agir(e, nom, a, t);
             return this.publier();
           }

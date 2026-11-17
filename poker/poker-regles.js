@@ -11,7 +11,8 @@
 //
 // Un état e = { id, n (compteur d'actions), variante, mode, opts, structure, sieges, niveau, horloge, bouton, nMain, main, fin, journal }
 // Un siège = { nom, robot (0 = humain, 1 à 4 = niveau), cache (niveau tiré au hasard, gardé secret), tapis, investi, achats,
-//              recaves, statut ('jeu' | 'recave' : sauté, attend de recaver | 'elimine' | 'parti'), rang, gain, attente (cash : cave à ajouter) }
+//              recaves, statut ('jeu' | 'recave' : sauté, attend de recaver | 'elimine' | 'parti'), rang, gain, attente (cash : cave à ajouter),
+//              tilt (ordinateurs : 0 à 1, énervement), rancune (ordinateurs : à qui il en veut), style (facultatif, sinon tiré du nom) }
 
 var PK = (function () {
   var RANGS = '23456789TJQKA', COULEURS = 'shdc';      // pique, cœur, carreau, trèfle
@@ -510,6 +511,7 @@ var PK = (function () {
     Object.keys(m.mise).forEach(function (x) { m.mise[x] = 0; });
     var g = Object.keys(gains);
     noter(e, g.map(function (n) { return n + ' gagne ' + gains[n] + (abattage ? ' (' + mains[n].nom.toLowerCase() + ')' : ''); }).join(', ') + '.');
+    humeurApres(e);
     e.n++;
     apresMain(e, t);
   }
@@ -763,11 +765,79 @@ var PK = (function () {
     { nom: 'Confirmé', sims: 200, bruit: 0.08, marge: 0.02, agressif: 0.6, bluff: 0.08, suiveur: 0.06 },
     { nom: 'Expert', sims: 500, bruit: 0.02, marge: 0.05, agressif: 0.75, bluff: 0.1, suiveur: 0 }
   ];
+  // Caractère des ordinateurs (4.12, demandé par l'utilisateur : « le comportement le plus réaliste, des robots qui ne réagissent
+  // pas toujours pareil, qui tiltent ») : le niveau dit s'il joue bien, le caractère dit comment il joue.
+  // ouvre : part de mains jouées (×) ; agressif : envie de miser plutôt que suivre (+) ; bluff (×) ; suiveur : paie pour voir (×) ;
+  // tapis : facilité à payer un gros tapis (+ = paie plus léger) ; taille : grosseur de ses mises (×) ; piege : joue lentement ses
+  // très fortes mains ; sang : sensibilité au tilt (×) ; humeurs : ce qu'il dit dans le journal quand il s'énerve.
+  var STYLES = {
+    roc: { nom: 'Le roc', ouvre: 0.72, agressif: -0.18, bluff: 0.35, suiveur: 0.5, tapis: -0.07, taille: 0.85, piege: 0.25, sang: 0.6 },
+    requin: { nom: 'Le requin', ouvre: 0.92, agressif: 0.12, bluff: 1.3, suiveur: 0.4, tapis: -0.02, taille: 1, piege: 0.12, sang: 0.7 },
+    fonceur: { nom: 'Le fonceur', ouvre: 1.5, agressif: 0.25, bluff: 2.3, suiveur: 1, tapis: 0.04, taille: 1.3, piege: 0.05, sang: 1.35 },
+    curieux: { nom: 'Le curieux', ouvre: 1.35, agressif: -0.15, bluff: 0.6, suiveur: 2.6, tapis: 0.09, taille: 0.8, piege: 0.15, sang: 1 },
+    joueur: { nom: 'Le joueur', ouvre: 1.12, agressif: 0.05, bluff: 1.5, suiveur: 1.2, tapis: 0.02, taille: 1.1, piege: 0.3, sang: 1.2 }
+  };
+  var LISTE_STYLES = ['roc', 'requin', 'fonceur', 'curieux', 'joueur'];
+  function hacher(t) { var h = 2166136261; for (var i = 0; i < t.length; i++) { h ^= t.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; }
+  // Son caractère : tiré d'après la table et son nom (le même sur tous les téléphones, sans rien garder de plus)
+  function styleDe(e, s) { return STYLES[s.style] ? s.style : LISTE_STYLES[hacher((e.id || '') + '|' + s.nom) % LISTE_STYLES.length]; }
+  // Sa forme du moment : un peu plus ou un peu moins de mains selon la main (tirée d'après la main, stable pendant elle)
+  function formeMain(e, s) { var h = hacher((e.id || '') + '|' + s.nom + '|' + (e.nMain || 0)); return ((h % 1000) / 1000 - 0.5); }
+  var RALES = ['peste contre la rivière', 'tape sur la table', 'n\'en revient pas', 'marmonne quelque chose', 'soupire bruyamment', 'fusille {x} du regard', 'jure qu\'on ne l\'y reprendra plus'];
+  var CALMES = ['respire un grand coup', 'se détend', 'retrouve le sourire'];
+  // Après chaque main : le tilt monte après une grosse perte ou une belle main battue, retombe en gagnant et avec le temps
+  function humeurApres(e) {
+    var m = e.main, R = m && m.resultat;
+    if (!R) return;
+    e.sieges.forEach(function (s) {
+      if (!s.robot) return;
+      var avant = s.tilt || 0, t = avant * 0.88;                          // ça passe peu à peu
+      var dans = m.depart[s.nom] !== undefined, sang = caractere(e, s).sang;
+      if (dans) {
+        var depart = m.depart[s.nom] || 1, engage = m.engage[s.nom] || 0, gain = R.gains[s.nom] || 0, bilan = (gain - engage) / depart;
+        var main = R.mains && R.mains[s.nom];
+        if (gain > 0) t -= bilan > 0.3 ? 0.3 : 0.1;
+        else if (R.abattage && main && main.score >= 2 * B5 && engage / depart > 0.15) {   // deux paires ou mieux, battu à l'abattage
+          t += (0.3 + Math.min(0.3, engage / depart * 0.4)) * sang;
+          var vainqueur = Object.keys(R.gains)[0]; if (vainqueur) s.rancune = vainqueur;
+        }
+        else if (bilan <= -0.35) t += 0.32 * sang;
+        else if (bilan <= -0.15) t += 0.08 * sang;
+      }
+      t = Math.max(0, Math.min(1, t));
+      s.tilt = Math.round(t * 100) / 100;
+      if (s.tilt < 0.15) delete s.rancune;
+      var nomC = s.nom.replace(/^🤖\s*/, '');
+      if (avant < 0.45 && s.tilt >= 0.45) noter(e, '😤 ' + nomC + ' ' + RALES[hacher(s.nom + e.nMain) % RALES.length].replace('{x}', (s.rancune || 'la table').replace(/^🤖\s*/, '')) + '.');
+      else if (avant >= 0.45 && s.tilt < 0.25) noter(e, '😌 ' + nomC + ' ' + CALMES[hacher(s.nom + e.nMain) % CALMES.length] + '.');
+    });
+  }
+  // Un bon joueur garde son style mais en sort moins (il s'adapte) et s'énerve moins
+  var MESURE = [1, 1, 1, 0.75, 0.5];
+  function caractere(e, s) {
+    var st = STYLES[styleDe(e, s)], k = MESURE[Math.max(1, Math.min(4, s.robot || 2))], r = {};
+    Object.keys(st).forEach(function (c) {
+      var v = st[c];
+      if (c === 'nom') r[c] = v;
+      else if (c === 'agressif' || c === 'tapis' || c === 'piege') r[c] = v * k;
+      else r[c] = 1 + (v - 1) * k;
+    });
+    return r;
+  }
   function ordinateur(e, nom, hasard) {
     hasard = hasard || Math.random;
     var m = e.main, p = possibles(e, nom), s = siege(e, nom);
     if (!p) return null;
-    var niv = NIVEAUX[Math.max(1, Math.min(4, s.robot || 2))];
+    var base = NIVEAUX[Math.max(1, Math.min(4, s.robot || 2))], st = caractere(e, s), tilt = s.tilt || 0;
+    var rancune = s.rancune && (m.agresseur === s.rancune) ? 1 : 0;      // il en veut à celui qui mise
+    // Le niveau corrigé par le caractère et l'humeur : énervé, il joue plus de mains, bluffe et paie plus, juge moins bien
+    var niv = {
+      sims: base.sims, bruit: base.bruit * (1 + tilt * 0.8),
+      marge: base.marge - tilt * 0.07 - rancune * 0.04,
+      agressif: Math.max(0.05, Math.min(0.95, base.agressif + st.agressif + tilt * 0.25)),
+      bluff: base.bluff * st.bluff + tilt * 0.12,
+      suiveur: Math.min(0.75, Math.max(0, base.suiveur * st.suiveur + (st.suiveur - 1) * 0.03 + tilt * 0.15))
+    };
     var adversaires = enCourse(e).filter(function (n) { return n !== nom; }), nbAdv = adversaires.length;
     var potT = pot(e), aSuivre = p.aSuivre, gb = m.gb, tapisGB = (s.tapis + m.mise[nom]) / gb;
     var cote = aSuivre > 0 ? aSuivre / (potT + aSuivre) : 0;
@@ -780,39 +850,43 @@ var PK = (function () {
     var suivreOuParler = function () { return aSuivre > 0 ? { type: 'suivre' } : { type: 'parler' }; };
     var abandon = function () { return aSuivre > 0 ? { type: 'coucher' } : { type: 'parler' }; };
     var rel = function (frac) {   // mise en proportion du pot
-      var base = m.miseMax + aSuivre * 0;
+      var miseBase = m.miseMax;
       if (m.rue === 0) {
         var limpers = Object.keys(m.mise).filter(function (n) { return m.mise[n] === m.miseMax && n !== nom; }).length;
-        return montantA(m.miseMax === gb ? gb * (2.5 + Math.max(0, limpers - 1)) : m.miseMax * 3);
+        var ouv = st.taille > 1.2 && hasard() < 0.3 ? 1 : (st.taille < 0.9 && hasard() < 0.3 ? -0.5 : 0);
+        return montantA(m.miseMax === gb ? gb * (2.5 + ouv + tilt + Math.max(0, limpers - 1)) : m.miseMax * (3 + (st.taille > 1.2 ? hasard() : 0)));
       }
-      return montantA(base + (potT + aSuivre) * frac);
+      // Taille selon le caractère, et de temps en temps une mise inattendue (le fonceur surmise)
+      var f = frac * st.taille * (0.85 + hasard() * 0.3) * (1 + tilt * 0.3);
+      if (st.taille > 1.2 && hasard() < 0.15) f = 1.1 + hasard() * 0.5;
+      return montantA(miseBase + (potT + aSuivre) * f);
     };
     // Avant le flop : des fourchettes de mains selon la position et le niveau (plutôt qu'un calcul de chances)
     if (m.rue === 0) {
       var pc = pourcentMain(m.privees[nom][0], m.privees[nom][1]);           // 0 = la meilleure main, 1 = la pire
       var apres = m.joueurs.length - 1 - rangPosition(e, nom);                 // joueurs qui parlent encore après moi
-      var ouvre = [0, 0.55, 0.32, 0.24, 0.22][s.robot] + (apres <= 1 ? 0.12 : apres <= 2 ? 0.06 : 0) - Math.max(0, m.joueurs.length - 6) * 0.015;
+      var ouvre = [0, 0.55, 0.32, 0.24, 0.22][s.robot] * st.ouvre * (1 + formeMain(e, s) * 0.35) + tilt * 0.18 + (apres <= 1 ? 0.12 : apres <= 2 ? 0.06 : 0) - Math.max(0, m.joueurs.length - 6) * 0.015;
       if (m.joueurs.length <= 3) ouvre += 0.12;
       if (m.joueurs.length === 2) ouvre += 0.15;
       var relance = m.enchere || 0, mur = aSuivre / gb;                       // nombre de relances, et ce qu'il faut payer en blindes
       // Expert ou confirmé court en jetons : tapis ou rien
       if (s.robot >= 3 && tapisGB <= 12) {
-        var pousse = 0.1 + (12 - tapisGB) * 0.02 + (apres <= 1 ? 0.08 : 0) + (m.joueurs.length <= 3 ? 0.12 : 0) - relance * 0.06;
+        var pousse = 0.1 + st.agressif * 0.12 + tilt * 0.1 + (12 - tapisGB) * 0.02 + (apres <= 1 ? 0.08 : 0) + (m.joueurs.length <= 3 ? 0.12 : 0) - relance * 0.06;
         if (pc <= Math.max(0.04, pousse)) return p.relancer ? montantA(p.relancer.max) : suivreOuParler();
-        return aSuivre > 0 && cote < 0.2 && pc < 0.5 ? { type: 'suivre' } : abandon();
+        return aSuivre > 0 && cote < 0.2 && pc < 0.5 + st.tapis + tilt * 0.2 ? { type: 'suivre' } : abandon();
       }
       var bruitPc = pc + (hasard() - 0.5) * niv.bruit;
       if (!relance) {
-        if (bruitPc <= ouvre * 0.45 + (s.robot === 1 ? -0.1 : 0) && p.relancer) return rel(0);
+        if (bruitPc <= ouvre * Math.max(0.15, 0.45 + st.agressif * 0.6 + tilt * 0.2) + (s.robot === 1 ? -0.1 : 0) && p.relancer) return rel(0);
         if (bruitPc <= ouvre) {
-          if (p.relancer && s.robot >= 3 && hasard() < 0.75) return rel(0);
+          if (p.relancer && s.robot >= 3 && hasard() < 0.75 + st.agressif) return rel(0);
           return suivreOuParler();
         }
         return aSuivre > 0 && aSuivre <= gb * 0.5 && bruitPc < ouvre * 1.5 ? { type: 'suivre' } : abandon();
       }
       // Face à une relance
-      var tient = [0, 0.3, 0.13, 0.1, 0.11][s.robot] / Math.max(1, relance * 0.8) + (mur <= 3 ? 0.04 : 0) + (apres === 0 && cote < 0.3 ? 0.05 : 0);
-      var surRelance = [0, 0.02, 0.035, 0.045, 0.055][s.robot] / relance;
+      var tient = [0, 0.3, 0.13, 0.1, 0.11][s.robot] * (0.6 + 0.4 * Math.min(2, st.suiveur)) * (1 + tilt * 0.8 + rancune * 0.3) / Math.max(1, relance * 0.8) + (aSuivre >= s.tapis * 0.5 ? st.tapis : 0) + (mur <= 3 ? 0.04 : 0) + (apres === 0 && cote < 0.3 ? 0.05 : 0);
+      var surRelance = [0, 0.02, 0.035, 0.045, 0.055][s.robot] * (0.6 + st.bluff * 0.3) / relance + tilt * 0.04;
       if (bruitPc <= surRelance && p.relancer) return rel(0);
       if (bruitPc <= tient) return { type: 'suivre' };
       return abandon();
@@ -827,7 +901,7 @@ var PK = (function () {
     var forte = 1.75 - niv.agressif * 0.35, tresForte = 2.4 - niv.agressif * 0.3;
     if (nbAdv === 1) { forte = 1.18; tresForte = 1.5; }
     // Très forte : on relance (parfois on ralentit pour piéger)
-    if (relatif >= tresForte && p.relancer && hasard() < 0.55 + niv.agressif * 0.4) return rel(m.rue === 0 ? 0 : (0.6 + hasard() * 0.5));
+    if (relatif >= tresForte && p.relancer && hasard() < 0.55 + niv.agressif * 0.4 - st.piege * (1 - tilt)) return rel(m.rue === 0 ? 0 : (0.6 + hasard() * 0.5));
     if (relatif >= forte && p.relancer && hasard() < niv.agressif) {
       if (aSuivre === 0 || hasard() < 0.5) return rel(0.5 + hasard() * 0.3);
     }
@@ -835,12 +909,15 @@ var PK = (function () {
     if (p.relancer && aSuivre === 0 && nbAdv <= 2 && hasard() < niv.bluff * (m.agresseur === nom ? 2.2 : 1)) return rel(0.5 + hasard() * 0.2);
     if (aSuivre === 0) return { type: 'parler' };
     // Faut-il suivre ? D'après la cote du pot
-    if (eq >= cote + niv.marge) {
-      // Énorme mise contre une main moyenne : prudence
-      if (aSuivre > s.tapis * 0.6 && relatif < 1.05 && s.robot >= 3 && hasard() < 0.7) return abandon();
+    var gros = aSuivre > s.tapis * 0.4;                  // une grosse mise, ou un tapis à payer
+    if (eq >= cote + niv.marge - (gros ? st.tapis : 0)) {
+      // Énorme mise contre une main moyenne : prudence (sauf s'il est énervé, ou que c'est un curieux)
+      if (aSuivre > s.tapis * 0.6 && relatif < 1.05 - st.tapis * 2 - tilt * 0.3 && s.robot >= 3 && hasard() < 0.7 - tilt * 0.4) return abandon();
       return { type: 'suivre' };
     }
     if (hasard() < niv.suiveur && aSuivre <= gb * 4) return { type: 'suivre' };
+    // Un doute : il paie pour voir, surtout s'il est énervé (on ne sait jamais d'avance s'il paiera un tapis)
+    if (gros && eq >= cote - 0.1 && hasard() < 0.05 + tilt * 0.3 + rancune * 0.15 + Math.max(0, st.tapis)) return { type: 'suivre' };
     return abandon();
   }
 
@@ -853,7 +930,7 @@ var PK = (function () {
   }
 
   return {
-    RANGS: RANGS, COULEURS: COULEURS, NOMS_COULEURS: NOMS_COULEURS, CATEGORIES: CATEGORIES, VARIANTES: VARIANTES, NIVEAUX: NIVEAUX, DUREES: DUREES,
+    RANGS: RANGS, COULEURS: COULEURS, NOMS_COULEURS: NOMS_COULEURS, CATEGORIES: CATEGORIES, VARIANTES: VARIANTES, NIVEAUX: NIVEAUX, STYLES: STYLES, styleDe: styleDe, DUREES: DUREES,
     BLINDES_CASH: BLINDES_CASH, CAVE: CAVE,
     copie: copie, rang: rang, couleur: couleur, rouge: rouge, paquet: paquet, melanger: melanger, nomCarte: nomCarte, nomRang: nomRang, nomMain: nomMain,
     score: score, meilleureDe: meilleureDe, variante: variante,
