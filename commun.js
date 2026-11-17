@@ -3,12 +3,13 @@
 // Les clés de stockage gardent l'ancien préfixe "brillant-" : les réglages déjà faits sont conservés.
 
 // Numéro de version affiché (à augmenter à chaque mise en ligne, avec brilliant/index.html et sw.js)
-const VERSION = '4.12';
+const VERSION = '4.13';
 
 // ---------- Nouveautés (2.87, demandé par l'utilisateur) ----------
 // Une ligne très brève par mise en ligne (la plus récente en haut) : l'accueil les montre une seule fois, dans une petite fenêtre,
 // à qui n'a pas encore vu cette version. [version, jeu ou partie de l'appli, ce qui change]
 const NOUVEAUTES = [
+  ['4.13', 'Accueil', 'Sur l\'accueil, le bouton ou le geste retour ferme l\'appli au lieu de revenir sur les pages d\'avant.'],
   ['4.12', 'Poker', 'Chaque ordinateur a son caractère, s\'énerve après une grosse perte (😤) et ne réagit jamais tout à fait pareil.'],
   ['4.11', 'Poker', 'Montrer ou jeter ses cartes selon les règles, temps en arc, et les ordinateurs proposent d\'arrêter quand ils restent seuls.'],
   ['4.10', 'Poker', 'À 6 joueurs ou moins, les adversaires se répartissent en haut de la table, loin de toi.'],
@@ -632,11 +633,50 @@ function vibrer(motif) {
   window.addEventListener('pageshow', function (ev) {
     if (ev.persisted) { ev.stopImmediatePropagation(); location.reload(); }
   });
+  var garde = false, ouverte = null, partant = null;
+  // 3) (4.13, demandé par l'utilisateur : « le retour sur l'accueil doit fermer l'application, pas revenir sur les états précédents »)
+  //    Aucune page de Désdale ne s'empile plus dans l'historique : un lien ou un changement d'adresse vers une autre page du site
+  //    REMPLACE la page courante. L'accueil est donc toujours la première page : le retour y ferme l'appli installée.
+  //    L'entrée de garde d'une page de jeu est d'abord retirée (history.back), sinon elle resterait sous l'accueil.
+  function partir(adr) {
+    if (!garde) return location.replace(adr);
+    garde = false; partant = adr;
+    try { history.back(); } catch (e) {}
+    setTimeout(function () { if (partant) { var a = partant; partant = null; location.replace(a); } }, 500);
+  }
+  function memePage(u) { return u.origin === location.origin && u.pathname === location.pathname && u.search === location.search; }
+  if (window.navigation && navigation.addEventListener) {
+    navigation.addEventListener('navigate', function (ev) {
+      if (ev.navigationType !== 'push' || !ev.cancelable || ev.hashChange || ev.downloadRequest || ev.formData) return;
+      if (ev.destination.sameDocument) return;   // pushState de la page (entrée de garde)
+      var u;
+      try { u = new URL(ev.destination.url); } catch (e) { return; }
+      if (u.origin !== location.origin) return;
+      ev.preventDefault();
+      partir(u.href);
+    });
+  } else {
+    // Navigateur sans cet outil : au moins les liens
+    document.addEventListener('click', function (ev) {
+      if (ev.defaultPrevented || ev.button || ev.ctrlKey || ev.metaKey || ev.shiftKey) return;
+      var a = ev.target.closest && ev.target.closest('a[href]');
+      if (!a || (a.target && a.target !== '_self') || a.hasAttribute('download')) return;
+      var u;
+      try { u = new URL(a.href, document.baseURI); } catch (e) { return; }
+      if (u.origin !== location.origin || memePage(u)) return;
+      ev.preventDefault();
+      partir(u.href);
+    });
+  }
+  window.addEventListener('popstate', function () {
+    if (!partant) return;
+    var a = partant; partant = null;
+    location.replace(a);
+  });
   var base = document.querySelector('base');
-  if (!base || base.getAttribute('href') !== '../') return;   // l'accueil : le retour garde son sens habituel
-  var garde = false, ouverte = null;
+  if (!base || base.getAttribute('href') !== '../') return;   // l'accueil : pas de fenêtre, le retour quitte l'appli
   function poser() {
-    if (garde) return;
+    if (garde || ouverte) return;   // fenêtre ouverte : toucher un de ses boutons ne repose pas l'entrée
     try { history.pushState({ desdaleRetour: 1 }, '', location.href); garde = true; } catch (e) {}
   }
   document.addEventListener('pointerdown', poser, true);
