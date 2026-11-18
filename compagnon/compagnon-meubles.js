@@ -383,6 +383,8 @@ var CPM = (function () {
         s += '<path d="M6 0 v8 l6 -6 M34 0 v8 l-6 -6" stroke="' + O + '" stroke-width="2.6" fill="none" stroke-linejoin="round"/><path d="M6 0 v8 l6 -6 M34 0 v8 l-6 -6" stroke="#5c4532" stroke-width="1.2" fill="none"/>';
         s += '</g>';
         s += boite(k, 0.02, 0, z, 0.96, 0.3, 0.07, t, 1.5);
+        var ex = k.env.etagere;
+        if (ex && ex.length) { ex.slice(0, 3).forEach(function (c, q) { var b = k.P(0.2 + q * 0.3, 0.15, z + 0.07); s += coupe(b[0], b[1], 1.05, c); }); return s; }
         s += cylindre(k, 0.2, 0.15, z + 0.07, 0.08, 0.26, '#7f9bb0', 0.07) + cylindre(k, 0.2, 0.15, z + 0.33, 0.085, 0.04, '#c9733f');
         s += boite(k, 0.42, 0.04, z + 0.07, 0.12, 0.22, 0.34, '#a8483a', 1) + boite(k, 0.54, 0.04, z + 0.07, 0.1, 0.22, 0.3, '#3d5378', 1) + boite(k, 0.64, 0.04, z + 0.07, 0.13, 0.22, 0.36, '#d8a73a', 1);
         var p = k.P(0.86, 0.15, z + 0.07);
@@ -657,8 +659,11 @@ var CPM = (function () {
         var P = k.P, s = ombreSol(k, 0.06, 0.1, 0.88, 0.75);
         s += boite(k, 0.06, 0.1, 0, 0.88, 0.75, 0.32, t, 2) + boite(k, 0.1, 0.12, 0.32, 0.8, 0.7, 1.55, '#2b211b', 1);
         [0.84, 1.36].forEach(function (z) { s += boite(k, 0.1, 0.12, z, 0.8, 0.7, 0.04, nuance(t, 0.15), 1); });
-        var cs = ['#e9b949', '#c0c6cc', '#c98d55'];
-        [0.32, 0.88, 1.4].forEach(function (z, r) { [0.34, 0.68].forEach(function (u, q) { var b = P(u, 0.48, z); s += coupe(b[0], b[1], 1.05, cs[(r + q) % 3]); }); });
+        var cs = ['#e9b949', '#c0c6cc', '#c98d55'], vraies = k.env.coupes;
+        [0.32, 0.88, 1.4].forEach(function (z, r) { [0.34, 0.68].forEach(function (u, q) {
+          var c = vraies ? vraies[k.env.cv++] : cs[(r + q) % 3], b = P(u, 0.48, z);
+          if (c) s += coupe(b[0], b[1], 1.05, c);
+        }); });
         s += poly([P(0.06, 0.85, 0.32), P(0.94, 0.85, 0.32), P(0.94, 0.85, 1.87), P(0.06, 0.85, 1.87)], '#cfe8f5', 1, 0, ' fill-opacity="0.16"');
         s += poly([P(0.94, 0.1, 0.32), P(0.94, 0.85, 0.32), P(0.94, 0.85, 1.87), P(0.94, 0.1, 1.87)], '#cfe8f5', 1, 0, ' fill-opacity="0.12"');
         s += ligne([P(0.2, 0.85, 1.5), P(0.45, 0.85, 1.8)], '#fff', 1.6, ' opacity="0.55"') + ligne([P(0.25, 0.85, 1.2), P(0.4, 0.85, 1.38)], '#fff', 1.2, ' opacity="0.45"');
@@ -674,7 +679,8 @@ var CPM = (function () {
         s += '<g transform="' + face(k, 0.24, 0.76, 0.84) + '"><path d="M5 2 V27 M10.4 2 V27 M15.8 2 V27" stroke="' + nuance(t, -0.18) + '" stroke-width="1"/><rect x="3" y="11" width="15" height="6" rx="1" fill="#d8a73a" stroke="' + O + '" stroke-width="0.7"/></g>';
         s += boite(k, 0.16, 0.16, 0.84, 0.68, 0.68, 0.1, nuance(t, -0.1), 2);
         var b = k.P(0.5, 0.5, 0.94);
-        s += '<circle cx="' + n1(b[0]) + '" cy="' + n1(b[1] - 15) + '" r="22" fill="#ffd43b" opacity="0.13"/>' + coupe(b[0], b[1], 1.9, '#e9b949');
+        var cp = k.env.coupes ? k.env.coupes.filter(function (c) { return c === '#e9b949'; })[0] || k.env.coupes[0] : '#e9b949';
+        if (cp) s += '<circle cx="' + n1(b[0]) + '" cy="' + n1(b[1] - 15) + '" r="22" fill="#ffd43b" opacity="0.13"/>' + coupe(b[0], b[1], 1.9, cp);
         return s;
       } },
     ecu: { nom: 'Écu', rayon: 'deco', plan: 'mur', w: 1, h: 1.05, z: 1.3, t: 'brique', chez: 'trophees',
@@ -992,6 +998,74 @@ var CPM = (function () {
       } }
   });
 
+  // ---------- Les décos d'avant (4.20) : bibelots sur socle, cadres au mur, couchages ----------
+  // Chaque ancienne déco de la boutique, souvenir d'expédition, du Donjon, de la Vallée ou de fête devient un objet de la maison :
+  // ob = { m: 'bibelot' | 'cadre' | 'couchage', a: identifiant de l'article, i, j, o, z, t }. Son icône est dessinée (vallee-pictos.js).
+  // Quelques décos ont un vrai meuble qui leur ressemble : elles deviennent ce meuble.
+  var DECO_MEUBLE = { plante: 'plante', tableau: 'tableau', horloge: 'horloge', lampe: 'lampadaire', balle: 'ballon', peluche: 'nounours', miroir: 'miroir' };
+  var DECO_MUR = { 'val-carte': 1, 'val-banniere': 1, etendard: 1, blason: 1 };
+  var COUCHAGES = { coussin: 1, panier: 1, niche: 1, chateau: 1 };
+  // Article → icône (même table que le livre des trésors de la Vallée, plus les décos de la boutique et des fêtes)
+  var PICTO_DECO = { clap: 'clap', popcorn: 'popcorn', bobine: 'bobine', projecteur: 'projecteur', microscope: 'microscope', eprouvettes: 'fiole', telescope: 'longuevue', aimant: 'aimant',
+    blason: 'bouclier', etendard: 'drapeau', chandelier: 'chandelier', heaume: 'heaume', mappemonde: 'mappemonde', boussole: 'boussole', coquillage: 'coquillage', ancre: 'ancre',
+    'cle-donjon': 'cle', 'coffre-tresor': 'coffre', bouclier: 'bouclier', 'couronne-gluant': 'couronne',
+    'val-lanterne': 'lanterne', 'val-banniere': 'drapeau', 'val-champi': 'champignon', 'val-hibou': 'hibou', 'val-lucioles': 'luciole', 'val-edelweiss': 'fleur', 'val-carte': 'carte',
+    'fab-tabouret': 'tabouret', 'fab-bouquet': 'bouquet', 'fab-nichoir': 'nichoir', 'fab-statuette': 'statue', 'fab-muret': 'tulipe', 'fab-lampe': 'boule', 'fab-vitrine': 'cristal', 'fab-bassin': 'fontaine',
+    cactus: 'cactus', tournesol: 'tournesol', pelote: 'pelote', os: 'os', livres: 'livres', radio: 'radio', bocal: 'bocal',
+    'boule-facettes': 'boulefacettes', poele: 'crepe', bouquet: 'bouquet', 'pot-or': 'trefle', 'nid-oeufs': 'nid', guitare: 'guitare', parasol: 'parasol', citrouille: 'citrouille', ballons: 'ballons', sapin: 'sapin',
+    coussin: 'coussin', panier: 'panier', niche: 'niche', chateau: 'chateau' };
+  // Les décos lumineuses éclairent la nuit
+  var DECO_LUMIERE = { 'val-lanterne': '#ffb347', 'val-champi': '#9ae6b4', 'val-lucioles': '#d8f56b', 'fab-lampe': '#c3a6ff', citrouille: '#ff922b', chandelier: '#ffc46b', 'boule-facettes': '#e5dbff' };
+  // Quel objet de la maison pour cet article (null : rien, comme les rideaux, déjà à la fenêtre)
+  function objetDeco(aid) {
+    if (DECO_MEUBLE[aid]) return { m: DECO_MEUBLE[aid] };
+    if (aid === 'rideaux') return null;
+    if (COUCHAGES[aid]) return { m: 'couchage', a: aid };
+    return { m: DECO_MUR[aid] ? 'cadre' : 'bibelot', a: aid };
+  }
+  function icone(aid, cx, cy, taille) {
+    var nom = PICTO_DECO[aid];
+    if (typeof VLP === 'undefined') return '';
+    if (!nom && typeof CP !== 'undefined' && CP.art) nom = VLP.nom((CP.art(aid) || {}).ico || '');
+    if (nom === 'hibou' && typeof VLD !== 'undefined' && VLD.habitant) {
+      var t = taille || 24; return VLD.habitant('hibou', t).replace('<svg ', '<svg x="' + n1(cx - t / 2) + '" y="' + n1(cy - t * 0.62) + '" ');
+    }
+    return nom ? VLP.g(nom, cx, cy, taille || 24) : rond(cx, cy, (taille || 24) * 0.3, '#e9b949', 1);
+  }
+  function nomDeco(aid) { var a = typeof CP !== 'undefined' && CP.art ? CP.art(aid) : null; return (a && a.nom) || 'Bibelot'; }
+  Object.assign(MEUBLES, {
+    bibelot: { nom: 'Bibelot', rayon: 'deco', plan: 'sol', w: 1, d: 1, h: 1.1, t: 'sable', lieu: 'partout', usage: 'bibelot', deco: true,
+      dessin: function (k, t, ob) {
+        var s = ombreSol(k, 0.26, 0.26, 0.48, 0.48), P = k.P;
+        s += boite(k, 0.24, 0.24, 0, 0.52, 0.52, 0.08, nuance(t, -0.15), 1.5) + boite(k, 0.3, 0.3, 0.08, 0.4, 0.4, 0.34, t, 1.2) + boite(k, 0.26, 0.26, 0.42, 0.48, 0.48, 0.06, nuance(t, 0.1), 1.2);
+        var h = P(0.5, 0.5, 0.48);
+        return s + icone(ob && ob.a, h[0], h[1] - 14, 30);
+      } },
+    cadre: { nom: 'Cadre', rayon: 'deco', plan: 'mur', w: 1, h: 0.85, z: 1.25, t: 'chocolat', deco: true,
+      dessin: function (k, t, ob) {
+        var s = '<g transform="' + plan(k, [0, 0, k.z + 0.85], [1, 0, 0], [0, 0, -1]) + '">';
+        s += '<rect x="4" y="1.5" width="32" height="31" rx="2" fill="' + t + '" stroke="' + O + '" stroke-width="1.6"/><rect x="7.5" y="5" width="25" height="24" rx="1" fill="#fbf3e6" stroke="' + O + '" stroke-width="0.9"/>';
+        s += '<path d="M8 5.5 h24" stroke="' + nuance(t, 0.35) + '" stroke-width="1"/>' + icone(ob && ob.a, 20, 17, 20);
+        return s + '</g>';
+      } },
+    couchage: { nom: 'Couchage', rayon: 'meubles', plan: 'sol', plat: true, w: 1, d: 1, h: 0.7, t: 'prune', lieu: 'partout', usage: 'refuge', deco: true,
+      dessin: function (k, t, ob) {
+        var r = ob && typeof CP !== 'undefined' && CP.REFUGES ? CP.REFUGES[ob.a] : null, b = k.P(0.5, 0.62, 0);
+        if (!r) return ombreSol(k, 0.15, 0.15, 0.7, 0.7) + boite(k, 0.15, 0.15, 0, 0.7, 0.7, 0.18, t, 4);
+        var w = ob.a === 'chateau' ? 92 : ob.a === 'niche' ? 84 : 76, h = w * 200 / 240;
+        return '<svg x="' + n1(b[0] - w / 2) + '" y="' + n1(b[1] - h * 0.93) + '" width="' + n1(w) + '" height="' + n1(h) + '" viewBox="0 0 240 200" overflow="visible">' + r.fond + r.devant + '</svg>';
+      } }
+  });
+  // Lumière des décos qui éclairent (la scène la lit sur l'objet)
+  function lumiereDe(ob) {
+    var m = MEUBLES[ob.m]; if (!m) return null;
+    if (m.lumiere) return m.lumiere;
+    if (ob.a && DECO_LUMIERE[ob.a]) return ob.m === 'cadre' ? { u: 0.5, v: 0.1, z: 1.6, r: 1.3, c: DECO_LUMIERE[ob.a] } : { u: 0.5, v: 0.5, z: 0.75, r: 1.5, c: DECO_LUMIERE[ob.a] };
+    return null;
+  }
+  // Nom d'un objet posé (un bibelot porte le nom de son article)
+  function nomObjet(ob) { return ob.a ? nomDeco(ob.a) : (MEUBLES[ob.m] || {}).nom || ''; }
+
   // ---------- La boutique de Pipa : prix, habillages payants, vitrine de la semaine ----------
   var PRIX = {
     canape: 30, fauteuil: 18, tableBasse: 15, tapis: 12, bibliotheque: 25, commode: 18, lampadaire: 14, plante: 8, pouf: 6, malle: 12, poele: 30,
@@ -1100,7 +1174,7 @@ var CPM = (function () {
     var t = teinte(ob.t || m.t), k;
     if (m.plan === 'mur') k = ob.o ? contexte(0, ob.j, 1, ob.z, H, env) : contexte(ob.i, 0, 0, ob.z, H, env);
     else k = contexte(ob.i, ob.j, ob.o ? 1 : 0, 0, H, env);
-    return m.dessin(k, t);
+    return m.dessin(k, t, ob);
   }
   // Valeurs par défaut de l'habillage (une pièce d'avant n'a pas tous les champs)
   function habillage(piece) {
@@ -1141,7 +1215,7 @@ var CPM = (function () {
     var op = options || {}, id = op.id || 'pm', l = piece.l, p = piece.p, H = piece.h || HAUTEUR, hb = habillage(piece);
     var mG = hb.murs, mD = hb.murD || hb.murs, tg = teinte(mG.teinte), td = teinte(mD.teinte), ts = teinte(hb.sol.teinte), s = '';
     var nuit = !!op.nuit, amb = AMBIANCES.filter(function (a) { return a.id === hb.lumiere.ambiance; })[0] || AMBIANCES[0];
-    var env = { nuit: nuit, vue: hb.fenetre.vue, cadre: hb.fenetre.cadre };
+    var env = { nuit: nuit, vue: hb.fenetre.vue, cadre: hb.fenetre.cadre, coupes: op.coupes || null, cv: 0, etagere: op.etagere || null };
     var e = 0.22, dehors = !!piece.exterieur, Hc = dehors ? CIEL : H;
     // contour de la pièce (sert à poser la nuit et les lumières seulement sur elle) ; dehors, il monte jusqu'en haut du ciel
     var contour = [proj(-e, -e, Hc), proj(l, -e, Hc), proj(l, -e, 0), [proj(l, 0)[0], proj(l, 0)[1] + BORD], [proj(l, p)[0], proj(l, p)[1] + BORD], [proj(0, p)[0], proj(0, p)[1] + BORD], proj(-e, p, 0), proj(-e, p, Hc)];
@@ -1150,8 +1224,8 @@ var CPM = (function () {
     // halos des lampes (dégradés : un seul jeu d'identifiants par scène)
     var lampes = [];
     if (nuit) piece.objets.forEach(function (ob, n) {
-      var m = MEUBLES[ob.m]; if (!m || !m.lumiere) return;
-      var L = m.lumiere, k = contexte(ob.i, ob.j, ob.o ? 1 : 0, 0, H), z = L.zH != null ? H + L.zH : L.z, c = L.c || amb.lampe;
+      var L = lumiereDe(ob); if (!L) return;
+      var k = contexte(ob.i, ob.j, ob.o ? 1 : 0, 0, H), z = L.zH != null ? H + L.zH : L.z, c = L.c || amb.lampe;
       lampes.push({ n: n, pt: k.P(L.u, L.v, z), sol: k.P(L.u, L.v, 0), r: L.r * TW, c: c });
       s += '<radialGradient id="' + id + '-gl' + n + '"><stop offset="0" stop-color="' + c + '" stop-opacity="0.85"/><stop offset="0.45" stop-color="' + c + '" stop-opacity="0.35"/><stop offset="1" stop-color="' + c + '" stop-opacity="0"/></radialGradient>' +
         '<radialGradient id="' + id + '-gm' + n + '"><stop offset="0" stop-color="#000" stop-opacity="0.9"/><stop offset="0.5" stop-color="#000" stop-opacity="0.45"/><stop offset="1" stop-color="#000" stop-opacity="0"/></radialGradient>';
@@ -1249,8 +1323,11 @@ var CPM = (function () {
     ordonner(sols).forEach(function (x) {
       if (!x.cp) { s += enveloppe(x); return; }
       var cp = op.compagnon, b = proj(cp.i + 0.5, cp.j + 0.5), w = 200 * cp.ech, h = 216 * cp.ech;
-      s += '<g class="compagnon"><ellipse cx="' + n1(b[0]) + '" cy="' + n1(b[1]) + '" rx="' + n1(w * 0.3) + '" ry="' + n1(w * 0.13) + '" fill="#000" opacity="0.22"/>' +
-        '<svg x="' + n1(b[0] - w / 2) + '" y="' + n1(b[1] - h * 0.95) + '" width="' + n1(w) + '" height="' + n1(h) + '" viewBox="0 -6 200 216" overflow="visible">' + cp.svg + '</svg></g>';
+      // pas : il glisse depuis la case d'avant (décalage dx, dy en pixels de la scène, joué par une animation CSS)
+      var pas = cp.pas ? ' cp-pas" style="--dx:' + n1(cp.pas.dx) + 'px;--dy:' + n1(cp.pas.dy) + 'px;--d:' + (cp.pas.ms || 300) + 'ms' : '';
+      var sens = cp.dir < 0 ? ' gauche' : '';
+      s += '<g class="compagnon' + pas + '"><g class="' + (cp.classe || '') + '"><ellipse cx="' + n1(b[0]) + '" cy="' + n1(b[1]) + '" rx="' + n1(w * 0.3) + '" ry="' + n1(w * 0.13) + '" fill="#000" opacity="0.22"/>' +
+        '<svg class="cp-svg" x="' + n1(b[0] - w / 2) + '" y="' + n1(b[1] - h * 0.95) + '" width="' + n1(w) + '" height="' + n1(h) + '" viewBox="0 -6 200 216" overflow="visible"><g class="sens' + sens + '">' + cp.svg + '</g></svg></g></g>';
     });
     plafonds.forEach(function (x) { s += enveloppe(x); });
     // ambiance de la pièce, puis la nuit et ses lampes (seulement sur la pièce)
@@ -1273,9 +1350,9 @@ var CPM = (function () {
   }
 
   // ---------- Vignettes (boutique, panneau Arranger) ----------
-  function vignette(mid, t, taille) {
+  function vignette(mid, t, taille, a) {
     var m = MEUBLES[mid]; if (!m) return '';
-    var ob = { m: mid, i: 0, j: 0, o: 0, z: 0, t: t }, x0, x1, y0, y1, H = Math.max(m.h, 0.6), pad = 6;
+    var ob = { m: mid, a: a, i: 0, j: 0, o: 0, z: 0, t: t }, x0, x1, y0, y1, H = Math.max(m.h, 0.6), pad = 6;
     if (m.plan === 'mur') { x0 = 0; x1 = proj(m.w, 0)[0]; y0 = proj(0, 0, m.h)[1]; y1 = proj(m.w, 0.4, 0)[1]; }
     else {
       x0 = proj(0, m.d)[0]; x1 = proj(m.w, 0)[0]; y1 = proj(m.w, m.d)[1];
@@ -1283,7 +1360,7 @@ var CPM = (function () {
       if (m.plan === 'plafond') { y1 = proj(1, 1, H - 1.05)[1]; ob.z = 0; }
     }
     var w = x1 - x0 + pad * 2, h = y1 - y0 + pad * 2, tl = taille || 64;
-    var corps = m.plan === 'plafond' ? MEUBLES[mid].dessin(contexte(0, 0, 0, 0, H), teinte(t || m.t)).replace(/<ellipse[^>]*opacity="0.12"\/>/, '') : dessinObjet(ob, H);
+    var corps = m.plan === 'plafond' ? MEUBLES[mid].dessin(contexte(0, 0, 0, 0, H), teinte(t || m.t), ob).replace(/<ellipse[^>]*opacity="0.12"\/>/, '') : dessinObjet(ob, H);
     return '<svg viewBox="' + [n1(x0 - pad), n1(y0 - pad), n1(w), n1(h)].join(' ') + '" width="' + tl + '" height="' + tl + '" preserveAspectRatio="xMidYMid meet">' + corps + '</svg>';
   }
   // Petite tuile d'habillage : losange de sol, ou coin de mur
@@ -1319,7 +1396,8 @@ var CPM = (function () {
     PLINTHES: PLINTHES, AMBIANCES: AMBIANCES, VUES: VUES, vueOuverte: vueOuverte, vueFenetre: vueFenetre, habillage: habillage, saisonDe: saisonDe, tuileFinition: tuileFinition, tuileVue: tuileVue,
     proj: proj, versSol: versSol, versMur: versMur, nuance: nuance, teinte: teinte,
     emprise: emprise, placeLibre: placeLibre, caseOccupee: caseOccupee,
-    bornes: bornes, camera: camera, scene: scene, vignette: vignette, tuile: tuile
+    bornes: bornes, camera: camera, scene: scene, vignette: vignette, tuile: tuile,
+    objetDeco: objetDeco, nomObjet: nomObjet, nomDeco: nomDeco, PICTO_DECO: PICTO_DECO
   };
   if (typeof CP !== 'undefined') CP.MEUBLES = kit;
   return kit;

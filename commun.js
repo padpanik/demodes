@@ -3,12 +3,13 @@
 // Les clés de stockage gardent l'ancien préfixe "brillant-" : les réglages déjà faits sont conservés.
 
 // Numéro de version affiché (à augmenter à chaque mise en ligne, avec brilliant/index.html et sw.js)
-const VERSION = '4.19';
+const VERSION = '4.20';
 
 // ---------- Nouveautés (2.87, demandé par l'utilisateur) ----------
 // Une ligne très brève par mise en ligne (la plus récente en haut) : l'accueil les montre une seule fois, dans une petite fenêtre,
 // à qui n'a pas encore vu cette version. [version, jeu ou partie de l'appli, ce qui change]
 const NOUVEAUTES = [
+  ['4.20', 'Mon compagnon', 'La maison passe en 3D : six pièces meublées, tes décos sur leur socle, tout s\'arrange au doigt, et Pipa vend meubles et habillage.'],
   ['4.13', 'Accueil', 'Sur l\'accueil, le bouton ou le geste retour ferme l\'appli au lieu de revenir sur les pages d\'avant.'],
   ['4.12', 'Poker', 'Chaque ordinateur a son caractère, s\'énerve après une grosse perte (😤) et ne réagit jamais tout à fait pareil.'],
   ['4.11', 'Poker', 'Montrer ou jeter ses cartes selon les règles, temps en arc, et les ordinateurs proposent d\'arrêter quand ils restent seuls.'],
