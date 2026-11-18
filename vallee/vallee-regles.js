@@ -893,7 +893,8 @@ var VL = (function () {
   function defile(x, y) { var E = ecran(x, y); return !!(E && E.defile); }
   // voisins = { idDeLaPersonne: { p: parcelle, nom, couleur, cp, vu } }, propre à ce téléphone (`vallee-voisins`, dans la sauvegarde).
   // Un ami connecté qui a un compagnon reçoit une parcelle libre et la garde ; quand tout est pris, l'ami absent depuis le plus longtemps
-  // laisse sa place. presents = [{ j, pseudo, couleur, cp }].
+  // laisse sa place. presents = [{ j, pseudo, couleur, cp, vu }] : les amis connectés (vu absent = maintenant)
+  // et, depuis 4.26, ceux du registre des joueurs (vu = dernière fiche publiée), même s'ils ne sont pas connectés.
   function placerVoisins(voisins, presents, t) {
     var v = Object.assign({}, voisins || {}), change = false, ici = {};
     (presents || []).forEach(m => {
@@ -902,7 +903,7 @@ var VL = (function () {
       var a = v[m.j];
       if (a) {
         if (a.nom !== m.pseudo || a.couleur !== m.couleur || JSON.stringify(a.cp) !== JSON.stringify(m.cp)) change = true;
-        v[m.j] = Object.assign({}, a, { nom: m.pseudo, couleur: m.couleur, cp: m.cp, vu: t });
+        v[m.j] = Object.assign({}, a, { nom: m.pseudo, couleur: m.couleur, cp: m.cp, vu: Math.max(a.vu || 0, m.vu || t) });
         return;
       }
       var prises = {}; Object.keys(v).forEach(j => { prises[v[j].p] = j; });
@@ -914,7 +915,7 @@ var VL = (function () {
         if (!vieux) return;
         p = v[vieux].p; delete v[vieux];
       }
-      v[m.j] = { p: p, nom: m.pseudo, couleur: m.couleur, cp: m.cp, vu: t };
+      v[m.j] = { p: p, nom: m.pseudo, couleur: m.couleur, cp: m.cp, vu: m.vu || t };
       change = true;
     });
     return { voisins: v, change: change };
@@ -933,7 +934,7 @@ var VL = (function () {
   // Ce qu'il y a sur chaque parcelle : [{ j, nom, couleur, cp, present }] ou null (libre)
   function parcelles(voisins, presentsJ) {
     var l = []; for (var k = 0; k < NB_PARCELLES; k++) l.push(null);
-    Object.keys(voisins || {}).forEach(j => { var a = voisins[j]; if (a.p >= 0 && a.p < NB_PARCELLES) l[a.p] = { j: j, nom: a.nom, couleur: a.couleur, cp: a.cp, present: !!(presentsJ && presentsJ[j]) }; });
+    Object.keys(voisins || {}).forEach(j => { var a = voisins[j]; if (a.p >= 0 && a.p < NB_PARCELLES) l[a.p] = { j: j, nom: a.nom, couleur: a.couleur, cp: a.cp, vu: a.vu || 0, present: !!(presentsJ && presentsJ[j]) }; });
     return l;
   }
 

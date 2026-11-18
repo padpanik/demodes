@@ -3,12 +3,13 @@
 // Les clés de stockage gardent l'ancien préfixe "brillant-" : les réglages déjà faits sont conservés.
 
 // Numéro de version affiché (à augmenter à chaque mise en ligne, avec brilliant/index.html et sw.js)
-const VERSION = '4.25';
+const VERSION = '4.26';
 
 // ---------- Nouveautés (2.87, demandé par l'utilisateur) ----------
 // Une ligne très brève par mise en ligne (la plus récente en haut) : l'accueil les montre une seule fois, dans une petite fenêtre,
 // à qui n'a pas encore vu cette version. [version, jeu ou partie de l'appli, ce qui change]
 const NOUVEAUTES = [
+  ['4.26', 'Vallée', 'Le quartier montre la maison de chaque ami, même sans l\'avoir croisé.'],
   ['4.25', 'Accueil', 'Mes amis : qui joue à Désdale et les classements, même quand personne n\'est connecté.'],
   ['4.24', 'Mon compagnon', 'Pièce agrandie à la loupe : fais-la glisser du doigt pour la parcourir.'],
   ['4.23', 'Mon compagnon', 'Dans son panier, sa niche ou son château, il est vraiment dedans.'],

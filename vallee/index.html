@@ -897,6 +897,10 @@
         window.addEventListener('desdale-membres', majAmis);
         window.addEventListener('desdale-pos', majAmis);
         setInterval(() => { this.majAmis(); this.envoyerPosition(); }, 1000);
+        // Le quartier se remplit aussi avec le registre des joueurs (relu au plus toutes les 10 min)
+        this.majRegistre();
+        window.addEventListener('desdale-registre', () => this.majRegistre());
+        if (typeof Registre !== 'undefined') Registre.lire(false).catch(() => {});
         window.addEventListener('desdale-emote', ev => { var d = ev.detail || {}, m = EMOTES[d.e]; if (m) this.bulle(window.SalonGlobal && d.id === SalonGlobal.monId() ? 'moi' : d.id, m.ico, m.txt); });
         window.addEventListener('desdale-salut', ev => { var d = ev.detail || {}; this.bulle(d.id, '👋', 'Coucou !'); });
         window.addEventListener('desdale-invite', ev => {
@@ -1325,6 +1329,17 @@
           var l = SalonGlobal.positions();
           if (JSON.stringify(l) !== JSON.stringify(this.amis)) this.amis = l;
         },
+        // Les maisons du registre des joueurs (4.26) : chaque ami qui a publié sa fiche avec un compagnon a sa maison
+        // dans le quartier, même sans l'avoir croisé en ligne (Registre, commun.js)
+        majRegistre: function() {
+          if (typeof Registre === 'undefined') return;
+          var l = Registre.cache().fiches.filter(f => f && f.profil && f.profil.cp && f.profil.cp.e && !(window.Joueur && Joueur.estMoi(f.id)))
+            .sort((a, b) => a.id < b.id ? -1 : 1)
+            .map(f => { var c = f.profil.cp; return { j: f.id, pseudo: f.pseudo, couleur: /^#[0-9a-f]{6}$/i.test(f.profil.c || '') ? f.profil.c : '#8d6e63', cp: { e: c.e, c: c.c, p: c.p || {}, n: c.n }, vu: f.vu }; });
+          if (!l.length) return;
+          var r = VL.placerVoisins(this.voisins, l, Date.now());
+          if (r.change) { this.voisins = r.voisins; ecrireStockage('vallee-voisins', r.voisins); }
+        },
         envoyerPosition: function() { if (window.SalonGlobal && SalonGlobal.position) SalonGlobal.position({ x: etat.x, y: etat.y, d: this.sens }); },
         bulle: function(id, ico, txt) {
           var k = Date.now() + Math.random();
@@ -1362,10 +1377,12 @@
         // On fonce dans la porte d'une maison du quartier
         porteAmi: function(p) {
           var a = this.parcelles[p];
-          if (!a) return this.annoncer('🏡 Une parcelle libre. Un ami qui a un compagnon y emménagera dès qu\'il se connectera.');
+          if (!a) return this.annoncer('🏡 Une parcelle libre. Un ami qui a un compagnon y emménagera dès qu\'il aura ouvert Désdale.');
           var id = this.presentsJ[a.j];
           if (id && a.cp) return this.entrer('compagnon/?visite=' + encodeURIComponent(id));
-          this.annoncer('🏠 Chez ' + a.nom + ' : volets fermés. ' + a.nom + ' n\'est pas connecté.');
+          var j = a.vu ? Math.floor((Date.now() - a.vu) / 86400000) : -1;
+          var quand = j < 0 ? '' : j < 1 ? ' Passé à Désdale aujourd\'hui.' : j < 2 ? ' Passé à Désdale hier.' : ' Passé à Désdale il y a ' + j + ' jours.';
+          this.annoncer('🏠 Chez ' + a.nom + ' : volets fermés, ' + a.nom + ' n\'est pas connecté.' + quand);
         },
         ouvrirFab: function(ou) { this.fabOu = ou; this.fenetre = 'fab'; this.son('toc'); },
         // Fabriquer : deux touchers (le 2e confirme), comme les achats
