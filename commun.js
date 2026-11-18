@@ -3,12 +3,13 @@
 // Les clés de stockage gardent l'ancien préfixe "brillant-" : les réglages déjà faits sont conservés.
 
 // Numéro de version affiché (à augmenter à chaque mise en ligne, avec brilliant/index.html et sw.js)
-const VERSION = '4.23';
+const VERSION = '4.24';
 
 // ---------- Nouveautés (2.87, demandé par l'utilisateur) ----------
 // Une ligne très brève par mise en ligne (la plus récente en haut) : l'accueil les montre une seule fois, dans une petite fenêtre,
 // à qui n'a pas encore vu cette version. [version, jeu ou partie de l'appli, ce qui change]
 const NOUVEAUTES = [
+  ['4.24', 'Mon compagnon', 'Pièce agrandie à la loupe : fais-la glisser du doigt pour la parcourir.'],
   ['4.23', 'Mon compagnon', 'Dans son panier, sa niche ou son château, il est vraiment dedans.'],
   ['4.22', 'Mon compagnon', '« Au panier ! » marche de nouveau, même la nuit : il y dort ensuite.'],
   ['4.21', 'Mon compagnon', 'Toute la page du compagnon prend le style du Donjon : bois sombre, parchemin et icônes dessinées.'],

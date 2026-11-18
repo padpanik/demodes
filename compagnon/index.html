@@ -1964,6 +1964,12 @@
             if (ev.target.closest && ev.target.closest('.compagnon')) { if (this.visite) this.calinVisite(); else this.caresser(); return; }
             var t = Date.now();
             this._balaye = this.zoom > 1 ? null : { x: ev.clientX, y: ev.clientY, t: t };
+            // zoomé : glisser déplace la vue dans la pièce
+            if (this.zoom > 1) {
+              var vb = this.viewBox.split(' ').map(Number);
+              this._pan = { x: ev.clientX, y: ev.clientY, cx: vb[0] + vb[2] / 2, cy: vb[1] + vb[3] / 2, k: vb[2] / (this.$refs.svg.clientWidth || 1) };
+              try { this.$refs.svg.setPointerCapture(ev.pointerId); } catch (e) {}
+            }
             if (this._dernier && t - this._dernier < 320) { this._dernier = 0; this.basculerZoom({ x: p.x, y: p.y }); } else this._dernier = t;
             return;
           }
@@ -1982,6 +1988,13 @@
           }
         },
         glisse: function(ev) {
+          var pn = this._pan;
+          if (pn && this.zoom > 1) {
+            var b = CPM.bornes(this.pieceM), w = (b.x1 - b.x0) / this.zoom, h = (b.y1 - b.y0) / this.zoom;
+            var cx = pn.cx - (ev.clientX - pn.x) * pn.k, cy = pn.cy - (ev.clientY - pn.y) * pn.k;
+            this.centre = { x: Math.min(b.x1 - w / 2, Math.max(b.x0 + w / 2, cx)), y: Math.min(b.y1 - h / 2, Math.max(b.y0 + h / 2, cy)) };
+            return;
+          }
           var g = this.glisser; if (!g) return;
           if (!g.bouge && Math.hypot(ev.clientX - g.x, ev.clientY - g.y) < 6) return;
           g.bouge = true;
@@ -1990,7 +2003,7 @@
           this.apercu = this.apercuDe(n, ok);
         },
         lache: function(ev) {
-          var b = this._balaye; this._balaye = null;
+          var b = this._balaye; this._balaye = null; this._pan = null;
           if (b && ev && ev.type === 'pointerup' && Date.now() - b.t < 600 && Math.abs(ev.clientX - b.x) > 50 && Math.abs(ev.clientX - b.x) > 2 * Math.abs(ev.clientY - b.y)) {
             this.changerPiece(ev.clientX < b.x ? 1 : -1); return;
           }
