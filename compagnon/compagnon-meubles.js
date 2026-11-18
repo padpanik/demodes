@@ -1052,10 +1052,15 @@ var CPM = (function () {
       dessin: function (k, t, ob) {
         var r = ob && typeof CP !== 'undefined' && CP.REFUGES ? CP.REFUGES[ob.a] : null, b = k.P(0.5, 0.62, 0);
         if (!r) return ombreSol(k, 0.15, 0.15, 0.7, 0.7) + boite(k, 0.15, 0.15, 0, 0.7, 0.7, 0.18, t, 4);
-        var w = ob.a === 'chateau' ? 92 : ob.a === 'niche' ? 84 : 76, h = w * 200 / 240;
-        return '<svg x="' + n1(b[0] - w / 2) + '" y="' + n1(b[1] - h * 0.93) + '" width="' + n1(w) + '" height="' + n1(h) + '" viewBox="0 0 240 200" overflow="visible">' + r.fond + r.devant + '</svg>';
+        var g = boiteCouchage(ob, b[0], b[1]);
+        return '<svg x="' + n1(g.x) + '" y="' + n1(g.y) + '" width="' + n1(g.w) + '" height="' + n1(g.h) + '" viewBox="0 0 240 200" overflow="visible">' + r.fond + r.devant + '</svg>';
       } }
   });
+  // Où se dessine un couchage (bx, by = son pied à l'écran) : le même cadre sert à y glisser le compagnon
+  function boiteCouchage(ob, bx, by) {
+    var w = ob.a === 'chateau' ? 92 : ob.a === 'niche' ? 84 : 76, h = w * 200 / 240;
+    return { x: bx - w / 2, y: by - h * 0.93, w: w, h: h, k: w / 240 };
+  }
   // Lumière des décos qui éclairent (la scène la lit sur l'objet)
   function lumiereDe(ob) {
     var m = MEUBLES[ob.m]; if (!m) return null;
@@ -1318,11 +1323,25 @@ var CPM = (function () {
       }
     }
     murs.forEach(function (x) { s += enveloppe(x); });
-    plats.forEach(function (x) { s += enveloppe(x); });
+    // blotti dans son couchage : le fond du couchage, lui (à la taille du couchage), puis le devant par-dessus
+    var dedans = null;
+    if (op.compagnon && op.compagnon.refuge) plats.forEach(function (x) {
+      if (x.ob.m === 'couchage' && x.ob.i === op.compagnon.i && x.ob.j === op.compagnon.j && typeof CP !== 'undefined' && CP.REFUGES && CP.REFUGES[x.ob.a]) dedans = x;
+    });
+    plats.forEach(function (x) { if (x !== dedans) s += enveloppe(x); });
     if (op.compagnon) sols.push({ cp: true, e: { i0: op.compagnon.i, j0: op.compagnon.j, i1: op.compagnon.i + 1, j1: op.compagnon.j + 1 } });
     ordonner(sols).forEach(function (x) {
       if (!x.cp) { s += enveloppe(x); return; }
       var cp = op.compagnon, b = proj(cp.i + 0.5, cp.j + 0.5), w = 200 * cp.ech, h = 216 * cp.ech;
+      if (dedans) {
+        var R = CP.REFUGES[dedans.ob.a], pb = dedans.ob.o ? proj(dedans.ob.i + 0.62, dedans.ob.j + 0.5) : proj(dedans.ob.i + 0.5, dedans.ob.j + 0.62), g = boiteCouchage(dedans.ob, pb[0], pb[1]);
+        var cadre = function (calque) { return '<svg x="' + n1(g.x) + '" y="' + n1(g.y) + '" width="' + n1(g.w) + '" height="' + n1(g.h) + '" viewBox="0 0 240 200" overflow="visible">' + calque + '</svg>'; };
+        var wa = 200 * R.ech * g.k, ha = 216 * R.ech * g.k, pied = g.y + R.pied * g.k;
+        s += '<g class="obj" data-n="' + dedans.n + '">' + cadre(R.fond) + '</g>' +
+          '<g class="compagnon"><g class="' + (cp.classe || '') + '"><svg class="cp-svg" x="' + n1(g.x + 120 * g.k - wa / 2) + '" y="' + n1(pied - ha * 0.95) + '" width="' + n1(wa) + '" height="' + n1(ha) + '" viewBox="0 -6 200 216" overflow="visible"><g class="sens' + (cp.dir < 0 ? ' gauche' : '') + '">' + cp.svg + '</g></svg></g></g>' +
+          '<g class="obj" data-n="' + dedans.n + '">' + cadre(R.devant) + '</g>';
+        return;
+      }
       // pas : il glisse depuis la case d'avant (décalage dx, dy en pixels de la scène, joué par une animation CSS)
       var pas = cp.pas ? ' cp-pas" style="--dx:' + n1(cp.pas.dx) + 'px;--dy:' + n1(cp.pas.dy) + 'px;--d:' + (cp.pas.ms || 300) + 'ms' : '';
       var sens = cp.dir < 0 ? ' gauche' : '';

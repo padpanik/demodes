@@ -1268,7 +1268,7 @@
           var v = this.vie, ici = this.pieceVueId === this.ouEst;
           return CPM.scene(this.pieceM, { id: 'cp', grille: this.arranger, choisi: this.choisi, apercu: this.apercu, nuit: this.nuitScene,
             coupes: this.coulCoupes, etagere: this.pieceVueId === 'salon' ? this.coulEtagere : null,
-            compagnon: ici ? { i: v.i, j: v.j, ech: 0.33, dir: v.dir, pas: v.pas, classe: this.classesCp, svg: this.dessin(this.animal, this.humeurClasse) } : null });
+            compagnon: ici ? { i: v.i, j: v.j, ech: 0.33, dir: v.dir, pas: v.pas, refuge: !!v.refuge, classe: this.classesCp, svg: this.dessin(this.animal, this.humeurClasse) } : null });
         },
         // Où est le compagnon à l'écran (en % de la scène) : bulles, effets
         posCp: function() {
