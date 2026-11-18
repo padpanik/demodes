@@ -423,7 +423,7 @@
             <div class="liste-amis">
               <div v-for="f in amisVue.liste" :key="f.id" class="ami-l" :class="{ moi: f.moi }">
                 <span class="ami-av" :style="{ background: f.couleur }"><span v-if="f.dessin" v-html="f.dessin"></span><span v-else>{{ f.emoji || f.initiale }}</span></span>
-                <div class="ami-txt"><b>{{ f.pseudo }}<template v-if="f.moi"> (moi)</template></b><small>{{ f.ligne }}</small></div>
+                <div class="ami-txt"><b>{{ f.pseudo }}<template v-if="f.moi"> (moi)</template></b><small v-if="f.ligne">{{ f.ligne }}</small><small>{{ f.vu }}</small></div>
                 <div class="ami-n"><b>{{ f.parties }}</b><small>partie{{ f.parties > 1 ? 's' : '' }}</small></div>
                 <a v-if="f.maison" class="ami-visite" :href="'compagnon/?j=' + encodeURIComponent(f.id)" title="Visiter sa maison" v-html="icoTrait('maison', 20)"></a>
               </div>
@@ -732,7 +732,7 @@
           r.liste = fiches.map(f => {
             var cp = (f.profil || {}).cp, vu = f.id === moi ? 'ta fiche' : 'vu ' + this.depuisSv(f.vu);
             return Object.assign({ id: f.id, pseudo: f.pseudo, moi: f.id === moi, parties: total(f), maison: f.id !== moi && !!(cp && cp.e),
-                                   ligne: (cp && cp.n ? 'avec ' + cp.n + ' · ' : '') + vu }, this.avatarFiche(f));
+                                   ligne: cp && cp.n ? 'avec ' + cp.n : '', vu: vu }, this.avatarFiche(f));
           });
           // Les classements possibles : un par record, puis les victoires par jeu
           var vus = {}, poids = {};
