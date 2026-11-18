@@ -507,6 +507,88 @@
     .pastilles button.actif { box-shadow: 0 0 0 3px #1d2b36; }
     .journal-etoiles li { display: flex; justify-content: space-between; padding: 5px 2px; border-bottom: 1px solid #eef1f3; font-size: 0.9em; }
     .journal-etoiles li b { color: #b07d00; }
+
+    /* ================= Habillage au goût du Donjon (4.21) : bois sombre, parchemin, Georgia, boutons rouille ================= */
+    body { background: radial-gradient(ellipse at 50% 0%, #2c211a 0%, #17110d 75%) fixed, #17110d; color: #f1e6d6; }
+    .serie .vlp, .gain .vlp, .aide .vlp, .vide-alerte .vlp, .journal-etoiles .vlp, ul li .vlp { width: 1.1em; height: 1.1em; vertical-align: -0.2em; }
+    .barre .lien-jeux { background: linear-gradient(#3a2c22, #261c15); border: 1.5px solid #8d6a3f; color: #ffd8a8; box-shadow: 0 2px 0 #120c09; }
+    .etoiles { background: linear-gradient(#3a2c22, #261c15); border: 1.5px solid #c9a66b; color: #ffe8a8; font-family: Georgia, serif; }
+    .tete-cp .nom { font: 700 1.3em Georgia, serif; color: #ffe8cc; }
+    .tete-cp .nom small { color: #a8957f !important; font-family: system-ui, sans-serif; }
+    .tete-cp .humeur { color: #c9b8a6; font-style: italic; }
+    .hero h1 { font-family: Georgia, serif; color: #ffe8cc; }
+    .hero p { color: #c9b8a6; }
+    /* Onglets : pastilles de bois sur une barre sombre */
+    .onglets-cp { background: linear-gradient(#3a2c22, #261c15); border: 1.5px solid #6b4f36; border-radius: 14px; box-shadow: 0 2px 0 #120c09; }
+    .onglets-cp button { color: #c9b8a6; font-family: Georgia, serif; }
+    .onglets-cp button .i { color: #ffd8a8; background: radial-gradient(circle at 50% 35%, #5a4330, #33261d); border: 1.5px solid #8d6a3f; border-radius: 50%; }
+    .onglets-cp button.actif { background: transparent; box-shadow: none; color: #ffe8cc; }
+    .onglets-cp button.actif .i { background: linear-gradient(#e8590c, #b8541a); border-color: #ffc078; color: #fff; transform: translateY(-1px); }
+    .onglets-cp button .pastille { box-shadow: 0 0 0 2px #2e231b !important; }
+    /* Cartes en parchemin */
+    .carte, .besoin, .jour, .defi, .article, .bloc, .cabine, .fenetre-achat, .langues button, .choix-animaux button, .trophees-grille button {
+      background: linear-gradient(#fdf4e3, #ecd6b0); border: 1.5px solid #6b4f36; color: #3b2a1e; box-shadow: 0 2px 0 #120c09; }
+    .carte { border-width: 2.5px; border-radius: 14px; }
+    .titre-carte, .jour .titre, .titre-achat, .cabine .titre-cab { font-family: Georgia, serif; font-weight: 700; color: #7c2d12; display: flex; align-items: center; gap: 7px; }
+    .aide, .serie, .compte-rayon, .prochaine-fete, .info-cab, .desc, .gain, .phrase-retour { color: #7a6550 !important; }
+    .app > .aide, .zone-maison + .aide, template + .aide { color: #c9b8a6; }
+    .besoins + .aide { color: #c9b8a6 !important; }
+    .compte-rayon, .prochaine-fete { color: #c9b8a6 !important; }
+    .besoin .haut { font-family: Georgia, serif; }
+    .besoin .haut .ico { display: inline-flex; line-height: 0; }
+    .besoin .action { background: linear-gradient(#c2410c, #9a3412); color: #fff; border: 1px solid #7c2d12; box-shadow: 0 2px 0 #4a1a06; }
+    .besoin.bas { box-shadow: 0 0 0 2.5px #e8590c, 0 2px 0 #120c09; }
+    .jauge { background: #d9c3a0; box-shadow: inset 0 1px 2px rgba(0,0,0,0.25); }
+    .jour ul li { display: flex; align-items: center; gap: 8px; }
+    .case-t { width: 18px; height: 18px; flex: none; border: 1.5px solid #8d6a3f; border-radius: 4px; background: #fffaf0; display: inline-flex; align-items: center; justify-content: center; color: #2b6a2f; }
+    .jour li.fait { color: #2b6a2f; }
+    .jour li.fait .case-t { background: #e6f2dd; border-color: #6a9c5a; }
+    /* Boutons */
+    .btn { background: #fff8ee; border: 1.5px solid #c9b08f; color: #3b2a1e; box-shadow: 0 2px 0 #b89a72; }
+    .btn.principal { background: linear-gradient(#c2410c, #9a3412); border-color: #7c2d12; color: #fff; box-shadow: 0 2px 0 #4a1a06; }
+    .btn .vlp, .btn.principal .vlp { vertical-align: -0.28em; }
+    .article .btn.prix { background: #3b2a1e; color: #ffd43b; border-color: #3b2a1e; box-shadow: 0 2px 0 #120c09; }
+    .article .btn.prix:disabled { background: #cdbb9c; color: #7a6550; border-color: #cdbb9c; opacity: 1; }
+    .article .ico { background: rgba(255,250,240,0.7) !important; }
+    .article .ico .vlp { width: 46px; height: 46px; }
+    .article.porte { box-shadow: 0 0 0 2.5px #2b8a3e, 0 2px 0 #120c09; }
+    .article .pastille { background: #7c3aed; }
+    .article .pastille.a-toi { background: #2b8a3e; }
+    .rayons button { background: #3f3026; border-color: #8d6a3f; color: #ffd8a8; font-family: Georgia, serif; }
+    .rayons button.actif { background: linear-gradient(#e8590c, #b8541a); border-color: #ffc078; color: #fff; box-shadow: none; }
+    .cabine .titre-cab { color: #7c2d12; }
+    .choix-boutique button { background: #3f3026; border-color: #8d6a3f; color: #ffd8a8; font-family: Georgia, serif; }
+    .choix-boutique button.actif { background: linear-gradient(#e8590c, #b8541a); border-color: #ffc078; color: #fff; }
+    .banniere-fete { border: 1.5px solid #6b4f36; color: #3b2a1e; background: linear-gradient(#fdf4e3, #ecd6b0) !important; }
+    .banniere-fete .ico .vlp { width: 32px; height: 32px; }
+    /* Défis, maison, coupes */
+    .defi.fait { background: linear-gradient(#fff6d6, #f3dc9a); box-shadow: 0 0 0 2px #c9a66b, 0 2px 0 #120c09; }
+    .defi .titre-defi { font-family: Georgia, serif; }
+    .bonus-maison { background: #f3e6cc; border: 1px dashed #b89a72; color: #5c3a1f; }
+    .bloc .nom { font-family: Georgia, serif; }
+    .bloc .ico { display: flex; justify-content: center; line-height: 0; color: #8a6a46; margin-bottom: 4px; }
+    .bloc.construit { background: linear-gradient(#eef6e6, #d8e8c8); border-color: #6a9c5a; }
+    .bloc.choix { background: linear-gradient(#fff6d6, #f3dc9a); border-color: #e8590c; }
+    .trophees-grille button { color: #5c3a1f; }
+    .trophees-grille button.expose { background: linear-gradient(#fff6d6, #f3dc9a); border-color: #e8590c; }
+    /* Réglages */
+    .langues button { font-family: Georgia, serif; }
+    .langues button.actif { background: linear-gradient(#e8590c, #b8541a); border-color: #ffc078; color: #fff; }
+    .case-a-cocher { color: #3b2a1e; }
+    .journal-etoiles li { border-bottom-color: #d9c3a0; }
+    .journal-etoiles li b { color: #7c2d12; }
+    .journal-etoiles small { color: #8a6a46 !important; }
+    .lien-admin { color: #8a6a46; }
+    /* Fenêtres */
+    .voile-achat { background: rgba(10,7,5,0.6); }
+    .fenetre-achat { border-width: 3px; border-radius: 14px; }
+    .compte-achat td { color: #3b2a1e; }
+    .apercu-adoption { border: 1.5px solid #6b4f36; }
+    .champ { color: #5c3a1f; }
+    .champ input { background: #fffaf0; border-color: #c9b08f; color: #3b2a1e; }
+    .visite-cp { background: linear-gradient(#fdf4e3, #ecd6b0); }
+    .etoile-p { vertical-align: -0.1em; }
+    .article .btn .etoile-p { width: 13px; height: 13px; }
   </style>
 </head>
 <body>
@@ -519,14 +601,14 @@
     <!-- ===== Adoption ===== -->
     <!-- Visite chez un ami : on frappe à la porte -->
     <section v-if="visite && visite.etat !== 'ok'" class="carte" style="text-align:center;margin-top:20px">
-      <div style="font-size:44px">{{ visite.etat === 'echec' ? '🚪' : '🏡' }}</div>
+      <div v-html="pic(visite.etat === 'echec' ? 'porte' : 'maison', 54)"></div>
       <div class="titre-carte">{{ visite.etat === 'echec' ? 'Personne n\'ouvre…' : 'Je frappe à la porte de ' + (visite.pseudo || 'ton ami') + '…' }}</div>
       <div class="aide" v-if="visite.etat === 'echec'">{{ visite.pseudo || 'Ton ami' }} n'est peut-être plus connecté, ou n'a pas encore de compagnon.</div>
-      <a class="btn" style="display:inline-block;margin-top:10px;text-decoration:none" href="compagnon/">↩ Rentrer chez moi</a>
+      <a class="btn" style="display:inline-block;margin-top:10px;text-decoration:none" href="compagnon/">Rentrer chez moi</a>
     </section>
 
     <template v-if="!animal && !visite">
-      <header class="hero"><div style="font-size:44px">🏡</div><div><h1>Mon compagnon</h1><p>Adopte un petit animal et prends-en soin</p></div></header>
+      <header class="hero"><div v-html="pic('maison', 54)"></div><div><h1>Mon compagnon</h1><p>Adopte un petit animal et prends-en soin</p></div></header>
       <section class="carte">
         <div class="titre-carte">1. Choisis ton compagnon</div>
         <div class="choix-animaux">
@@ -544,7 +626,7 @@
         </div>
         <div class="pastilles"><button v-for="c in especeChoisie.couleurs" :key="c" :class="{ actif: adoption.couleur === c }" :style="{ background: c }" @click="adoption.couleur = c"></button></div>
         <label class="champ">Son nom<input type="text" v-model="adoption.nom" maxlength="16" :placeholder="'ex : ' + especeChoisie.exemple"></label>
-        <button class="btn principal btn-large" style="margin-top:14px" :disabled="!adoption.nom.trim()" @click="adopter">💛 Adopter {{ adoption.nom.trim() || '' }}</button>
+        <button class="btn principal btn-large" style="margin-top:14px" :disabled="!adoption.nom.trim()" @click="adopter">Adopter {{ adoption.nom.trim() || '' }}</button>
       </section>
     </template>
 
@@ -698,11 +780,11 @@
 
       <!-- En visite : pas d'onglets, juste un câlin possible et le retour -->
       <section v-if="visite" class="carte visite-cp">
-        <div class="titre-carte">🏠 Chez {{ visite.pseudo }}</div>
-        <div class="aide">Glisse pour voir ses pièces. Touche {{ animal.nom }} pour lui faire un câlin : il le sentira chez {{ visite.pseudo }} ❤️</div>
+        <div class="titre-carte"><span v-html="pic('maison', 24)"></span>Chez {{ visite.pseudo }}</div>
+        <div class="aide">Glisse pour voir ses pièces. Touche {{ animal.nom }} pour lui faire un câlin : il le sentira chez {{ visite.pseudo }}.</div>
         <div class="actions-visite">
-          <button class="btn principal" @click="calinVisite">❤️ Câlin à {{ animal.nom }}</button>
-          <a class="btn" :href="retourVallee ? 'vallee/' : 'compagnon/'">{{ retourVallee ? '↩ Retour dans la Vallée' : '↩ Rentrer chez moi' }}</a>
+          <button class="btn principal" @click="calinVisite" v-html="pic('coeur', 20) + ' Câlin à ' + esc(animal.nom)"></button>
+          <a class="btn" :href="retourVallee ? 'vallee/' : 'compagnon/'">{{ retourVallee ? 'Retour dans la Vallée' : 'Rentrer chez moi' }}</a>
         </div>
       </section>
 
@@ -717,20 +799,19 @@
       <template v-if="!visite && onglet === 'soins'">
         <div class="besoins">
           <button v-for="b in BESOINS" :key="b.id" class="besoin" :class="{ bas: niveaux[b.id] < 30 }" @click="soigner(b)">
-            <div class="haut"><span class="ico">{{ b.ico }}</span>{{ b.nom }}</div>
+            <div class="haut"><span class="ico" v-html="pic(PIC_BESOIN[b.id], 28)"></span>{{ b.nom }}</div>
             <div class="jauge"><span :style="{ width: niveaux[b.id] + '%', background: couleurJauge(niveaux[b.id]) }"></span></div>
             <span class="action">{{ b.action }}</span>
-            <span v-if="niveaux[b.id] === 0" class="vide-alerte">−1 ⭐ par heure</span>
+            <span v-if="niveaux[b.id] === 0" class="vide-alerte" v-html="riche('−1 ⭐ par heure')"></span>
           </button>
         </div>
-        <div class="aide" style="text-align:center;margin:-2px 0 8px">Une jauge à zéro ? Au bout d'une heure, {{ animal.nom }} perd une étoile ⭐ par heure (pas la nuit).</div>
+        <div class="aide" style="text-align:center;margin:-2px 0 8px">Une jauge à zéro ? Au bout d'une heure, {{ animal.nom }} perd une étoile par heure (pas la nuit).</div>
         <div class="jour">
-          <div class="titre">📅 Aujourd'hui</div>
+          <div class="titre"><span v-html="pic('carnet', 22)"></span>Aujourd'hui</div>
           <ul>
-            <li v-for="t in tachesDuJour" :key="t.id" :class="{ fait: t.fait }">{{ t.fait ? '✅' : '⬜' }} {{ t.texte }}</li>
+            <li v-for="t in tachesDuJour" :key="t.id" :class="{ fait: t.fait }"><span class="case-t" v-html="t.fait ? ico('coche', 14) : ''"></span>{{ t.texte }}</li>
           </ul>
-          <div class="serie">{{ jour.recompense ? '⭐ Journée complète : +' + RECOMPENSE_JOUR + ' étoiles gagnées.' : 'Tout fait aujourd\'hui : +' + RECOMPENSE_JOUR + ' ⭐' }}
-            <span v-if="animal.serie > 1"> · {{ animal.serie }} jours de suite 🔥</span></div>
+          <div class="serie" v-html="riche((jour.recompense ? '⭐ Journée complète : +' + RECOMPENSE_JOUR + ' étoiles gagnées.' : 'Tout fait aujourd\'hui : +' + RECOMPENSE_JOUR + ' ⭐') + (animal.serie > 1 ? ' · ' + animal.serie + ' jours de suite 🔥' : ''))"></div>
         </div>
       </template>
 
@@ -772,18 +853,18 @@
           <p class="note-m">Ce que tu achètes va dans ta malle : pose-le avec le crayon d'Arranger, dans la pièce de ton choix.</p>
         </section>
         <template v-else>
-        <div class="rayons"><button v-for="r in rayons" :key="r.id" :class="{ actif: rayon === r.id }" @click="rayon = r.id">{{ r.nom }}</button></div>
+        <div class="rayons"><button v-for="r in rayons" :key="r.id" :class="{ actif: rayon === r.id }" @click="rayon = r.id">{{ r.nom.replace(/^[^A-Za-zÀ-ÿ]+/, '') }}</button></div>
         <div v-if="rayon === 'saison' && fete" class="banniere-fete" :style="{ background: 'linear-gradient(90deg, ' + fete.guirlande[0] + '33, ' + fete.guirlande[1] + '22)' }">
-          <span class="ico">{{ fete.ico }}</span><span>Boutique {{ deFete(fete) }}<small>Ces articles ne se vendent que jusqu'au {{ dateFr(fete.fin) }}. Une fois achetés, ils sont à toi pour toujours.</small></span>
+          <span class="ico" v-html="riche(fete.ico)"></span><span>Boutique {{ deFete(fete) }}<small>Ces articles ne se vendent que jusqu'au {{ dateFr(fete.fin) }}. Une fois achetés, ils sont à toi pour toujours.</small></span>
         </div>
-        <div v-else-if="!fete && prochaine" class="prochaine-fete">{{ prochaine.ico }} Prochaine boutique de fête : {{ prochaine.nom }}, dès le {{ dateFr(prochaine.debut) }}</div>
+        <div v-else-if="!fete && prochaine" class="prochaine-fete">Prochaine boutique de fête : {{ prochaine.nom }}, dès le {{ dateFr(prochaine.debut) }}</div>
         <!-- Cabine d'essayage : on touche un article pour le voir sur lui, avec ce qu'il porte déjà -->
         <div v-if="rayonPorte" class="cabine">
           <svg viewBox="0 0 200 210" v-html="dessin({ espece: animal.espece, couleur: animal.couleur, porte: tenueEssai }, 'content')"></svg>
           <div class="txt">
-            <div class="titre-cab">{{ essais.length ? '🪞 En essai' : '🪞 Son look' }}</div>
+            <div class="titre-cab">{{ essais.length ? 'En essai' : 'Son look' }}</div>
             <div class="info-cab" v-if="!essais.length">Touche un article pour l'essayer sur {{ animal.nom }}.</div>
-            <div class="info-cab" v-else>{{ essais.map(a => a.nom).join(', ') }}<template v-if="prixEssais"><br>À acheter : ⭐ {{ prixEssais }}</template></div>
+            <div class="info-cab" v-else>{{ essais.map(a => a.nom).join(', ') }}<template v-if="prixEssais"><br>À acheter : <span v-html="ETOILE_P"></span> {{ prixEssais }}</template></div>
             <button v-if="essais.length" class="btn" @click="essai = {}">Retirer l'essai</button>
           </div>
         </div>
@@ -792,14 +873,14 @@
           <div v-for="a in articlesDuRayon" :key="a.id" class="article" :class="{ porte: estPorte(a) }">
             <span v-if="a.neuf && !possede(a)" class="pastille">Nouveau</span>
             <span v-if="possede(a) && !a.conso" class="pastille a-toi">À toi</span>
-            <div class="ico" v-if="a.ico">{{ a.ico }}</div>
+            <div class="ico" v-if="a.ico" v-html="riche(a.ico)"></div>
             <div class="ico essayable" v-else :class="{ 'en-essai': essai[a.slot] === a.id }" @click="essayer(a)"><svg :view-box.camel="a.slot === 'corps' ? '24 48 152 158' : '30 0 140 150'" v-html="apercuAccessoire(a)"></svg></div>
             <div class="nom">{{ a.nom }}</div>
             <div class="desc">{{ a.desc }}</div>
-            <button v-if="!possede(a)" class="btn prix" :disabled="etoiles < a.prix" @click="enAchat = a">⭐ {{ a.prix }}</button>
+            <button v-if="!possede(a)" class="btn prix" :disabled="etoiles < a.prix" @click="enAchat = a" v-html="ETOILE_P + ' ' + a.prix"></button>
             <button v-else-if="a.conso" class="btn principal" @click="utiliser(a)">Donner ({{ stock(a) }})</button>
-            <button v-else class="btn" @click="porter(a)">{{ estPorte(a) ? '✓ ' + (a.place ? 'En place' : 'Porté') : (a.place ? 'Installer' : 'Mettre') }}</button>
-            <button v-if="possede(a) && a.conso" class="btn prix" style="margin-top:2px" :disabled="etoiles < a.prix" @click="enAchat = a">+1 · ⭐ {{ a.prix }}</button>
+            <button v-else class="btn" @click="porter(a)">{{ estPorte(a) ? (a.place ? 'En place' : 'Porté') : (a.place ? 'Installer' : 'Mettre') }}</button>
+            <button v-if="possede(a) && a.conso" class="btn prix" style="margin-top:2px" :disabled="etoiles < a.prix" @click="enAchat = a" v-html="'+1 · ' + ETOILE_P + ' ' + a.prix"></button>
           </div>
         </div>
         </template>
@@ -808,7 +889,7 @@
       <!-- ===== Défis de la semaine, coupes, maison ===== -->
       <template v-else-if="!visite && onglet === 'defis'">
         <section class="carte">
-          <div class="titre-carte">🏆 Défis de la semaine</div>
+          <div class="titre-carte"><span v-html="pic('couronne', 24)"></span>Défis de la semaine</div>
           <div class="aide" style="margin:-4px 0 8px">Les mêmes pour tous les amis · {{ finSemaine }}</div>
           <div v-for="d in defis.defis" :key="d.id" class="defi" :class="{ fait: d.fait }">
             <svg viewBox="0 0 60 72" v-html="CP.coupe(d.niv, d.ico, !d.fait)"></svg>
@@ -816,31 +897,31 @@
               <div class="niv" :style="{ color: d.niveau.couleurs[2] }">{{ d.niveau.nom }} · {{ d.niveau.coupe }}</div>
               <div class="titre-defi">{{ d.titre }}</div>
               <div class="jauge"><span :style="{ width: (100 * d.n / d.but) + '%', background: d.fait ? '#f0b92a' : '#3a8fd8' }"></span></div>
-              <div class="gain">{{ d.fait ? '✅ Réussi ! +' + d.niveau.etoiles + ' ⭐' : d.n + ' / ' + d.but + ' · récompense : la coupe et +' + d.niveau.etoiles + ' ⭐' }}</div>
+              <div class="gain" v-html="riche(d.fait ? 'Réussi ! +' + d.niveau.etoiles + ' ⭐' : d.n + ' / ' + d.but + ' · récompense : la coupe et +' + d.niveau.etoiles + ' ⭐')"></div>
             </div>
           </div>
           <div class="bonus-maison">
-            <span style="font-size:1.6em">🗝️</span>
+            <span v-html="pic('cle', 32)"></span>
             <span v-if="defis.bonus">Les trois défis sont réussis : ta maison a gagné une pièce !</span>
             <span v-else>Réussis les trois défis de la semaine pour agrandir la maison ({{ defis.defis.filter(d => d.fait).length }} / 3)</span>
           </div>
         </section>
 
         <section class="carte">
-          <div class="titre-carte">🏠 La maison de {{ animal.nom }}</div>
-          <div v-if="maison.cles" class="aide" style="margin:-4px 0 8px;color:#7a5600;font-weight:800">🗝️ Tu as {{ maison.cles }} clé{{ maison.cles > 1 ? 's' : '' }} : touche la pièce à construire.</div>
+          <div class="titre-carte"><span v-html="pic('maison', 24)"></span>La maison de {{ animal.nom }}</div>
+          <div v-if="maison.cles" class="aide" style="margin:-4px 0 8px;color:#7a5600;font-weight:800">Tu as {{ maison.cles }} clé{{ maison.cles > 1 ? 's' : '' }} : touche la pièce à construire.</div>
           <div class="blocs">
             <button v-for="b in CP.BLOCS" :key="b.id" class="bloc" :class="{ construit: aBloc(b.id), choix: !aBloc(b.id) && !b.auto && maison.cles > 0, ferme: !aBloc(b.id) && !(maison.cles > 0 && !b.auto) }"
                     @click="construire(b)">
-              <div class="ico">{{ aBloc(b.id) ? b.ico : '🔒' }}</div>
+              <div class="ico" v-html="aBloc(b.id) ? pic(PIC_BLOC[b.id] || 'maison', 30) : ico('cadenas', 24)"></div>
               <div class="nom">{{ b.nom }}</div>
-              <div class="desc">{{ aBloc(b.id) ? '✓ Construite' : b.desc }}</div>
+              <div class="desc">{{ aBloc(b.id) ? 'Construite' : b.desc }}</div>
             </button>
           </div>
         </section>
 
         <section class="carte">
-          <div class="titre-carte">Mes coupes</div>
+          <div class="titre-carte"><span v-html="pic('couronne', 24)"></span>Mes coupes</div>
           <div v-if="trophees.length" class="aide" style="margin:-4px 0 8px">Touche une coupe pour la poser sur l'étagère du salon ({{ maison.etagere.length }} / {{ CP.ETAGERE_MAX }}).</div>
           <div class="trophees-grille" v-if="trophees.length">
             <button v-for="t in trophees.slice().reverse()" :key="t.k" :class="{ expose: maison.etagere.indexOf(t.k) >= 0 }" @click="exposer(t)">
@@ -856,45 +937,42 @@
       <template v-else-if="!visite">
         <!-- Les petits mots du compagnon : messages et notifications -->
         <section class="carte">
-          <div class="titre-carte">💬 Les petits mots de {{ animal.nom }}</div>
+          <div class="titre-carte"><span v-html="pic('bulle', 24)"></span>Les petits mots de {{ animal.nom }}</div>
           <label class="case-a-cocher"><input type="checkbox" :checked="reglages.messages" @change="changerReglage('messages', $event.target.checked)"> Il me parle de temps en temps</label>
-          <label class="case-a-cocher" v-if="notifPossible"><input type="checkbox" :checked="reglages.notifications && notifPermise === 'granted'" :disabled="!reglages.messages" @change="basculerNotifications($event.target.checked)"> 🔔 Notification si l'appli est en arrière-plan</label>
+          <label class="case-a-cocher" v-if="notifPossible"><input type="checkbox" :checked="reglages.notifications && notifPermise === 'granted'" :disabled="!reglages.messages" @change="basculerNotifications($event.target.checked)"> Notification si l'appli est en arrière-plan</label>
           <div class="serie" v-if="notifPermise === 'denied'">Les notifications sont bloquées pour ce site dans les réglages du téléphone.</div>
           <div class="serie">Un message au plus toutes les 20 minutes, jamais la nuit. Il te demande à manger, à boire, un bain ou un câlin quand il en a besoin.</div>
           <button class="btn" style="width:100%;margin-top:8px" @click="essayerMessage">Essayer maintenant</button>
         </section>
         <section class="carte">
-          <div class="titre-carte">🌍 Une langue pour {{ animal.nom }}</div>
+          <div class="titre-carte"><span v-html="pic('carte', 24)"></span>Une langue pour {{ animal.nom }}</div>
           <div class="aide" style="margin:-4px 0 8px">{{ animal.nom }} te parle dans cette langue, avec la traduction en petit dessous. Pour l'instant il connaît ses phrases de tous les jours ; il en apprendra d'autres petit à petit. Réglé sur ce téléphone seulement.</div>
           <div class="langues">
-            <button v-for="(l, id) in CP.LANGUES" :key="id" :class="{ actif: langue.langue === id }" @click="choisirLangue(id)">{{ l.ico }} {{ l.nom }}</button>
+            <button v-for="(l, id) in CP.LANGUES" :key="id" :class="{ actif: langue.langue === id }" @click="choisirLangue(id)">{{ l.nom }}</button>
             <button class="aucune" :class="{ actif: !langue.langue }" @click="choisirLangue(null)">Aucune, il parle français</button>
           </div>
         </section>
         <section class="carte">
-          <div class="titre-carte">Comment gagner des étoiles ⭐</div>
+          <div class="titre-carte"><span v-html="ETOILE_P"></span>Comment gagner des étoiles</div>
           <ul style="padding-left:18px;margin:4px 0;line-height:1.5">
-            <li><strong>Jouer avec les amis</strong> : +{{ Etoiles.BAREME.victoirePlusieurs }} ⭐ pour une victoire, +{{ Etoiles.BAREME.partiePlusieurs }} ⭐ pour chaque partie terminée.</li>
-            <li>Gagner seul contre l'ordinateur : +{{ Etoiles.BAREME.victoireSeul }} ⭐.</li>
-            <li><strong>Battre ton record</strong> en jouant seul (meilleur score, moins de tirs, plus longue série de victoires) : +{{ Etoiles.RECORD }} ⭐, même au-delà du plafond du jour.</li>
-            <li>S'occuper de {{ animal.nom }} toute la journée : +{{ RECOMPENSE_JOUR }} ⭐ (et +{{ RECOMPENSE_SEMAINE }} ⭐ tous les 7 jours de suite).</li>
+            <li v-for="(l, k) in gainsEtoiles" :key="k" v-html="riche(l)"></li>
           </ul>
-          <div class="aide">Au plus {{ Etoiles.PLAFOND_JOUR }} ⭐ par jour en jouant. Aujourd'hui : <strong>{{ gagneesJeux }} / {{ Etoiles.PLAFOND_JOUR }} ⭐</strong>.</div>
-          <a class="btn principal" style="display:block;text-align:center;text-decoration:none;margin-top:8px" href="index.html?choix">🎲 Aller jouer</a>
+          <div class="aide" v-html="riche('Au plus ' + Etoiles.PLAFOND_JOUR + ' ⭐ par jour en jouant. Aujourd\'hui : ' + gagneesJeux + ' / ' + Etoiles.PLAFOND_JOUR + ' ⭐.')"></div>
+          <a class="btn principal" style="display:block;text-align:center;text-decoration:none;margin-top:8px" href="index.html?choix"><span v-html="pic('jouer', 20)"></span> Aller jouer</a>
         </section>
         <section class="carte">
           <div class="titre-carte">Dernières étoiles</div>
           <ul class="journal-etoiles" style="list-style:none;padding:0;margin:0">
-            <li v-for="(j, k) in journal" :key="k"><span>{{ j.r }} <small style="color:#8a97a1">· {{ quand(j.h) }}</small></span><b>{{ j.n > 0 ? '+' : '' }}{{ j.n || '' }}{{ j.n ? ' ⭐' : '—' }}</b></li>
+            <li v-for="(j, k) in journal" :key="k"><span>{{ j.r }} <small style="color:#8a97a1">· {{ quand(j.h) }}</small></span><b v-html="j.n ? (j.n > 0 ? '+' : '') + j.n + ' ' + ETOILE_P : '—'"></b></li>
             <li v-if="!journal.length" style="color:#8a97a1">Pas encore d'étoile : joue une partie !</li>
           </ul>
         </section>
         <section class="carte">
           <div class="titre-carte">Changer d'animal</div>
-          <button class="btn" style="width:100%" @click="reprendreAdoption">🐾 Adopter un autre compagnon</button>
+          <button class="btn" style="width:100%" @click="reprendreAdoption" v-html="ico('patte', 18) + ' Adopter un autre compagnon'"></button>
           <div class="aide">Tes étoiles, tes objets, tes coupes et ta maison sont gardés.</div>
         </section>
-        <button class="lien-admin" @click="ouvrirAdmin">{{ admin.actif ? '🛠️ Menu admin' : '🔒 Admin' }}</button>
+        <button class="lien-admin" @click="ouvrirAdmin">{{ admin.actif ? 'Menu admin' : 'Admin' }}</button>
       </template>
     </template>
     <!-- Menu admin (testeurs) : protégé par mot de passe -->
@@ -944,15 +1022,15 @@
     <div v-if="retourExp && animal" class="voile-achat">
       <div class="fenetre-achat" role="dialog" aria-label="Retour d'expédition">
         <svg viewBox="0 -6 200 216" width="110" height="116" v-html="dessin(animal, 'content')"></svg>
-        <div class="titre-achat">{{ retourExp.ico }} Retour d'expédition</div>
-        <div class="phrase-retour">« {{ retourExp.gagne ? 'On a battu ' + retourExp.boss + ' ! Quelle aventure !' : 'C\'était une belle balade, même sans battre ' + retourExp.boss + '.' }} J'ai un peu faim et soif maintenant 😋 »</div>
+        <div class="titre-achat">Retour d'expédition</div>
+        <div class="phrase-retour">« {{ retourExp.gagne ? 'On a battu ' + retourExp.boss + ' ! Quelle aventure !' : 'C\'était une belle balade, même sans battre ' + retourExp.boss + '.' }} J'ai un peu faim et soif maintenant. »</div>
         <table class="compte-achat">
           <tr><td>Lieu</td><td>{{ retourExp.lieu }}</td></tr>
           <tr><td>Bonnes réponses</td><td>{{ retourExp.bonnes }} / {{ retourExp.questions }}</td></tr>
-          <tr v-if="retourExp.poussiere"><td>Poussières d'étoile</td><td>✨ {{ retourExp.poussiere }}</td></tr>
-          <tr class="reste"><td>Étoiles gagnées</td><td>⭐ {{ retourExp.donne }}<small v-if="retourExp.donne < retourExp.gain" style="display:block;font-weight:600;font-size:0.7em">plafond du jour</small></td></tr>
+          <tr v-if="retourExp.poussiere"><td>Poussières d'étoile</td><td>{{ retourExp.poussiere }}</td></tr>
+          <tr class="reste"><td>Étoiles gagnées</td><td><span v-html="ETOILE_P"></span> {{ retourExp.donne }}<small v-if="retourExp.donne < retourExp.gain" style="display:block;font-weight:600;font-size:0.7em">plafond du jour</small></td></tr>
         </table>
-        <div v-if="retourExp.souvenirs && retourExp.souvenirs.length" class="souvenirs-retour">Souvenir{{ retourExp.souvenirs.length > 1 ? 's' : '' }} rapporté{{ retourExp.souvenirs.length > 1 ? 's' : '' }} : <span v-for="s in retourExp.souvenirs" :key="s.id">{{ s.ico }} {{ s.nom }} </span><br><small>installé{{ retourExp.souvenirs.length > 1 ? 's' : '' }} dans le salon</small></div>
+        <div v-if="retourExp.souvenirs && retourExp.souvenirs.length" class="souvenirs-retour">Souvenir{{ retourExp.souvenirs.length > 1 ? 's' : '' }} rapporté{{ retourExp.souvenirs.length > 1 ? 's' : '' }} : <span v-for="s in retourExp.souvenirs" :key="s.id">{{ s.nom }} </span><br><small>installé{{ retourExp.souvenirs.length > 1 ? 's' : '' }} dans le salon</small></div>
         <button class="btn principal" style="width:100%" @click="finRetourExp">OK</button>
       </div>
     </div>
@@ -976,13 +1054,13 @@
     <!-- Confirmation d'achat -->
     <div v-if="enAchat" class="voile-achat" @click.self="enAchat = null">
       <div class="fenetre-achat" role="dialog" aria-label="Confirmer l'achat">
-        <div class="ico-achat" v-if="enAchat.ico">{{ enAchat.ico }}</div>
+        <div class="ico-achat" v-if="enAchat.ico" v-html="riche(enAchat.ico)"></div>
         <div class="ico-achat" v-else><svg :view-box.camel="enAchat.slot === 'corps' ? '0 0 200 210' : '30 0 140 150'" v-html="apercuAccessoire(enAchat)"></svg></div>
         <div class="titre-achat">{{ enAchat.nom }}</div>
         <table class="compte-achat">
-          <tr><td>Tes étoiles</td><td>⭐ {{ etoiles }}</td></tr>
-          <tr><td>Prix</td><td>− ⭐ {{ enAchat.prix }}</td></tr>
-          <tr class="reste"><td>Il te restera</td><td>⭐ {{ etoiles - enAchat.prix }}</td></tr>
+          <tr><td>Tes étoiles</td><td><span v-html="ETOILE_P"></span> {{ etoiles }}</td></tr>
+          <tr><td>Prix</td><td>− <span v-html="ETOILE_P"></span> {{ enAchat.prix }}</td></tr>
+          <tr class="reste"><td>Il te restera</td><td><span v-html="ETOILE_P"></span> {{ etoiles - enAchat.prix }}</td></tr>
         </table>
         <div class="boutons-achat">
           <button class="btn" @click="enAchat = null">Annuler</button>
@@ -1070,7 +1148,7 @@
       return '<svg class="ico" viewBox="0 0 24 24" width="' + (t || 20) + '" height="' + (t || 20) + '" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + TRAITS[nom] + '</svg>';
     }
     const ETOILE = '<svg class="ico" viewBox="0 0 24 24" width="17" height="17" aria-hidden="true"><path d="M12 2.8l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 16.8l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z" fill="#f5b81f" stroke="#c98c0a" stroke-width="1.3" stroke-linejoin="round"/></svg>';
-    const ETOILE_P = ETOILE.replace(/width="17" height="17"/, 'width="11" height="11"');
+    const ETOILE_P = ETOILE.replace(/width="17" height="17"/, 'width="11" height="11"').replace('class="ico"', 'class="etoile-p"');
     // Sceau de cire « À toi »
     const SCEAU = '<svg viewBox="0 0 24 24" width="17" height="17"><path d="M12 1.8l2.3 1.7 2.8-.3 1.1 2.6 2.6 1.1-.3 2.8 1.7 2.3-1.7 2.3.3 2.8-2.6 1.1-1.1 2.6-2.8-.3L12 22.2l-2.3-1.7-2.8.3-1.1-2.6-2.6-1.1.3-2.8L1.8 12l1.7-2.3-.3-2.8 2.6-1.1 1.1-2.6 2.8.3z" fill="#b02a1e" stroke="#6b1410" stroke-width="1"/>' +
       '<circle cx="12" cy="12" r="6.2" fill="none" stroke="#e86a5a" stroke-width="1"/><path d="M8.8 12.2l2.2 2.2 4.4-4.6" fill="none" stroke="#ffe3dc" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg>';
@@ -1113,6 +1191,8 @@
       el: '#app',
       data: {
         ICO: ICONES_CP,
+        PIC_BESOIN: { repas: 'crepe', eau: 'goutte', toilette: 'bulles', calin: 'coeur' },
+        PIC_BLOC: { salon: 'maison', trophees: 'couronne', jardin: 'arbre', chambre: 'sommeil', cuisine: 'crepe', jeux: 'jouer' },
         CP: CP, ORDRE_REFUGE: { coussin: 'Sur ton coussin !', panier: 'Au panier !', niche: 'À la niche !', chateau: 'Au château !' }, GRILLE4: GRILLE4, ESPECES: ESPECES, BESOINS: BESOINS, RAYONS: RAYONS, Etoiles: Etoiles, RECOMPENSE_JOUR: RECOMPENSE_JOUR, RECOMPENSE_SEMAINE: RECOMPENSE_SEMAINE,
         animal: lireStockage('compagnon-animal'),
         adoption: { espece: '', couleur: '', nom: '' },
@@ -1194,6 +1274,14 @@
         posCp: function() {
           var vb = this.viewBox.split(' ').map(Number), b = CPM.proj(this.vie.i + 0.5, this.vie.j + 0.5);
           return { x: (b[0] - vb[0]) / vb[2] * 100, y: (b[1] - 40 - vb[1]) / vb[3] * 100 };
+        },
+        // Comment gagner des étoiles (lignes passées par riche : les ⭐ deviennent l'étoile dessinée)
+        gainsEtoiles: function() {
+          var B = Etoiles.BAREME, n = this.animal ? this.animal.nom : '';
+          return ['Jouer avec les amis : +' + B.victoirePlusieurs + ' ⭐ pour une victoire, +' + B.partiePlusieurs + ' ⭐ pour chaque partie terminée.',
+            'Gagner seul contre l\'ordinateur : +' + B.victoireSeul + ' ⭐.',
+            'Battre ton record en jouant seul (meilleur score, moins de tirs, plus longue série de victoires) : +' + Etoiles.RECORD + ' ⭐, même au-delà du plafond du jour.',
+            'S\'occuper de ' + n + ' toute la journée : +' + this.RECOMPENSE_JOUR + ' ⭐ (et +' + this.RECOMPENSE_SEMAINE + ' ⭐ tous les 7 jours de suite).'];
         },
         // ---------- Arranger ----------
         objetChoisiM: function() { return this.choisi == null ? null : this.pieceM.objets[this.choisi] || null; },
@@ -1758,6 +1846,7 @@
         // ---------- La maison en isométrique : pièces, malle, décos d'avant (4.20) ----------
         ico: icoT, esc: function(t) { return String(t || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); },
         riche: function(t) { return typeof VLP !== 'undefined' ? VLP.riche(t || '') : this.esc(t); },
+        pic: function(nom, t) { return typeof VLP !== 'undefined' ? VLP.svg(nom, t || 22) : ''; },
         cleStock: function(o) { return o.a ? 'a:' + o.a : o.m; },
         objetDeStock: function(c) { return c.indexOf('a:') === 0 ? (CPM.objetDeco(c.slice(2)) || { m: 'bibelot', a: c.slice(2) }) : { m: c }; },
         sauverIso: function() { if (!this.visite) ecrireStockage(CLE_ISO, this.iso); },
