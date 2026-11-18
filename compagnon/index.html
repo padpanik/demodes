@@ -1325,7 +1325,8 @@
         dort: function() { return this.estNuit && this.humeurClasse !== 'triste'; },
         // La pièce où il se trouve : sa chambre la nuit s'il en a une, sinon là où on l'a appelé
         ouEst: function() {
-          if (this.estNuit && this.aBloc('chambre')) return 'chambre';
+          // la nuit : dans sa chambre, sauf s'il a un couchage préféré ailleurs (« Au panier ! » le choisit)
+          if (this.estNuit && this.aBloc('chambre')) { var d = this.maison.dortA; return d && this.aBloc(d) && this.couchageDe(d) ? d : 'chambre'; }
           return this.aBloc(this.maison.piece) ? this.maison.piece : 'salon';
         },
         signes: function() { return (this.animal && CP.signes(this.animal, this.maintenant)) || {}; },
@@ -1704,7 +1705,7 @@
             cible = l[Math.floor(Math.random() * l.length)];
           }
           var ch = this.chemin(p, { i: v.i, j: v.j }, cible);
-          if (!ch || !ch.length) { if (ensuite && ch) ensuite(); return; }
+          if (!ch || !ch.length) { if (!ch) this._occupe = 0; if (ensuite && ch) ensuite(); return; }
           if (ch.length > 9) ch = ch.slice(0, 9).concat(ch.length > 9 && !ensuite ? [] : ch.slice(9));
           v.marche = true;
           this._occupe = Date.now() + ch.length * PAS + 900;
@@ -1751,16 +1752,21 @@
         couchageDe: function(piece) { var p = this.iso.pieces[piece]; return p ? p.objets.find(o => o.m === 'couchage' && CP.REFUGES[o.a]) || null : null; },
         // « Au panier ! » : comme on l'appelle dans une pièce, il va dans son couchage (et s'y blottit un bon moment)
         allerAuRefuge: function(piece) {
-          if (this.estNuit && this.aBloc('chambre') && piece !== 'chambre') { this.voirPiece(this.ouEst); this.message = 'Chut… je dors 😴'; return; }
+          var ici = this.ouEst;
+          // ce couchage devient son lit préféré : la nuit, il y dort (au lieu de la chambre)
+          if (this.maison.dortA !== piece) { this.$set(this.maison, 'dortA', piece); this.ecrireMaison(); }
           var entrer = () => {
-            var d = this.couchageDe(piece), v = this.vie;
+            var d = this.couchageDe(piece), v = this.vie, p = this.iso.pieces[piece];
             if (!d) return;
+            var duree = 60000 + Math.random() * 60000;
             v.refuge = ''; v.posture = 'assis'; v.sieste = false; v.geste = '';
+            if (v.i === d.i && v.j === d.j) { this.blottir(d, duree); return; }
+            // pas de chemin (couchage cerné par des meubles) : il y saute quand même
+            if (!p || !this.chemin(p, { i: v.i, j: v.j }, { i: d.i, j: d.j })) { v.i = d.i; v.j = d.j; v.pas = null; this.blottir(d, duree); return; }
             this._occupe = Date.now() + 99999;   // rien d'autre tant qu'il n'est pas arrivé
-            this.marcher({ i: d.i, j: d.j }, () => this.blottir(d, 60000 + Math.random() * 60000));
-            if (this.vie.i === d.i && this.vie.j === d.j && !this.vie.marche) this.blottir(d, 60000 + Math.random() * 60000);
+            this.marcher({ i: d.i, j: d.j }, () => this.blottir(d, duree));
           };
-          if (this.ouEst !== piece) {
+          if (ici !== piece) {
             this.$set(this.maison, 'piece', piece); this.ecrireMaison();
             this.placerDansPiece(piece);
             this.voirPiece(piece);
