@@ -611,7 +611,7 @@
         </div>
         <div class="boutons-vl">
           <button class="btn-vl principal" @click="saluerAmi"><i class="pi" v-html="pic('main')"></i> Saluer {{ ami.pseudo }}</button>
-          <button class="btn-vl" v-if="ami.cp" @click="entrer('compagnon/?visite=' + encodeURIComponent(ami.id))"><i class="pi" v-html="pic('maison')"></i> Visiter sa maison</button>
+          <button class="btn-vl" v-if="ami.cp" @click="entrer('compagnon/?visite=' + encodeURIComponent(ami.id) + (ami.j ? '&j=' + encodeURIComponent(ami.j) : ''))"><i class="pi" v-html="pic('maison')"></i> Visiter sa maison</button>
           <button class="btn-vl" @click="descendreAvec"><i class="pi" v-html="pic('epees')"></i> Descendre ensemble au Donjon</button>
           <button class="btn-vl" @click="fermer">Fermer</button>
         </div>
@@ -901,6 +901,13 @@
         this.majRegistre();
         window.addEventListener('desdale-registre', () => this.majRegistre());
         if (typeof Registre !== 'undefined') Registre.lire(false).catch(() => {});
+        // Courrier de mes amis (4.27) : un cadeau de récolte arrive aussi dans le sac en mémoire (sinon la prochaine sauvegarde l'effacerait)
+        window.addEventListener('desdale-courrier', ev => {
+          var l = (ev.detail && ev.detail.nouvelles) || [];
+          l.forEach(x => { if (x.cadeau && etat.sac && x.cadeau.r in etat.sac) etat.sac[x.cadeau.r] = Math.min(20, etat.sac[x.cadeau.r] + x.cadeau.n); });
+          if (l.length) { this.sauver(); this.v++; this.annoncer('💌 ' + (l.length > 1 ? l.length + ' lettres t\'attendent' : 'Une lettre t\'attend') + ' à la maison.'); }
+        });
+        if (typeof Registre !== 'undefined' && Registre.nonLues().length) setTimeout(() => this.annoncer('💌 Du courrier t\'attend à la maison.'), 1500);
         window.addEventListener('desdale-emote', ev => { var d = ev.detail || {}, m = EMOTES[d.e]; if (m) this.bulle(window.SalonGlobal && d.id === SalonGlobal.monId() ? 'moi' : d.id, m.ico, m.txt); });
         window.addEventListener('desdale-salut', ev => { var d = ev.detail || {}; this.bulle(d.id, '👋', 'Coucou !'); });
         window.addEventListener('desdale-invite', ev => {
@@ -1379,7 +1386,8 @@
           var a = this.parcelles[p];
           if (!a) return this.annoncer('🏡 Une parcelle libre. Un ami qui a un compagnon y emménagera dès qu\'il aura ouvert Désdale.');
           var id = this.presentsJ[a.j];
-          if (id && a.cp) return this.entrer('compagnon/?visite=' + encodeURIComponent(id));
+          if (id && a.cp) return this.entrer('compagnon/?visite=' + encodeURIComponent(id) + '&j=' + encodeURIComponent(a.j));
+          if (a.cp && a.j) return this.entrer('compagnon/?j=' + encodeURIComponent(a.j));   // il n'est pas là : la copie de sa maison et sa boîte aux lettres (4.27)
           var j = a.vu ? Math.floor((Date.now() - a.vu) / 86400000) : -1;
           var quand = j < 0 ? '' : j < 1 ? ' Passé à Désdale aujourd\'hui.' : j < 2 ? ' Passé à Désdale hier.' : ' Passé à Désdale il y a ' + j + ' jours.';
           this.annoncer('🏠 Chez ' + a.nom + ' : volets fermés, ' + a.nom + ' n\'est pas connecté.' + quand);

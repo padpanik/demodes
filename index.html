@@ -117,6 +117,7 @@
     .ami-txt { flex: 1; min-width: 0; display: flex; flex-direction: column; }
     .ami-txt b { color: #1d2b36; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .ami-txt small { color: #6b7a86; font-size: 0.8em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .ami-visite { flex-shrink: 0; width: 38px; height: 38px; border-radius: 50%; background: #f1e7d6; color: #6b4f36; display: flex; align-items: center; justify-content: center; margin-left: 6px; }
     .ami-n { display: flex; flex-direction: column; align-items: flex-end; flex-shrink: 0; }
     .ami-n b { font-size: 1.1em; color: #1d2b36; } .ami-n small { color: #6b7a86; font-size: 0.75em; }
     .rang-cl { width: 22px; text-align: center; font-weight: 900; color: #6b7a86; flex-shrink: 0; }
@@ -424,6 +425,7 @@
                 <span class="ami-av" :style="{ background: f.couleur }"><span v-if="f.dessin" v-html="f.dessin"></span><span v-else>{{ f.emoji || f.initiale }}</span></span>
                 <div class="ami-txt"><b>{{ f.pseudo }}<template v-if="f.moi"> (moi)</template></b><small>{{ f.ligne }}</small></div>
                 <div class="ami-n"><b>{{ f.parties }}</b><small>partie{{ f.parties > 1 ? 's' : '' }}</small></div>
+                <a v-if="f.maison" class="ami-visite" :href="'compagnon/?j=' + encodeURIComponent(f.id)" title="Visiter sa maison" v-html="icoTrait('maison', 20)"></a>
               </div>
             </div>
           </template>
@@ -729,7 +731,7 @@
           fiches.sort((a, b) => (b.id === moi) - (a.id === moi) || b.vu - a.vu);
           r.liste = fiches.map(f => {
             var cp = (f.profil || {}).cp, vu = f.id === moi ? 'ta fiche' : 'vu ' + this.depuisSv(f.vu);
-            return Object.assign({ id: f.id, pseudo: f.pseudo, moi: f.id === moi, parties: total(f),
+            return Object.assign({ id: f.id, pseudo: f.pseudo, moi: f.id === moi, parties: total(f), maison: f.id !== moi && !!(cp && cp.e),
                                    ligne: (cp && cp.n ? 'avec ' + cp.n + ' · ' : '') + vu }, this.avatarFiche(f));
           });
           // Les classements possibles : un par record, puis les victoires par jeu

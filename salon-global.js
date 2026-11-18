@@ -318,6 +318,7 @@ var SalonGlobal = (function () {
     setTimeout(() => { if (attentes[q]) { delete attentes[q]; rappel(null); } }, delai || 12000);
   }
   function instantaneMaison() {
+    if (window.Registre && Registre.instantane) return Registre.instantane(true);   // commun.js (4.27) : la même que la copie publiée
     var a = lire('compagnon-animal');
     if (!a || !a.espece) return null;
     var m = lire('compagnon-maison') || {}, tr = lire('compagnon-trophees') || [];

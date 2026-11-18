@@ -493,6 +493,27 @@
     .visite-cp { margin-top: 2px; background: linear-gradient(135deg, #fff8e1, #ffeccc); }
     .actions-visite { display: flex; gap: 8px; margin-top: 8px; }
     .actions-visite .btn { flex: 1; text-align: center; text-decoration: none; padding: 12px 6px; }
+    .actions-visite .btn:disabled { opacity: 0.55; }
+    /* Boîte aux lettres (4.27) */
+    .lettre-cp { max-width: 340px; width: 100%; max-height: calc(100vh - 32px); overflow-y: auto; }
+    .mots-l { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 8px; }
+    .mot-l { border: 1px solid #b89b74; background: #fffaf0; color: #4a3424; border-radius: 12px; padding: 7px 10px; font: 600 0.86em system-ui, sans-serif; text-align: left; }
+    .mot-l.choisi, .cadeau-l.choisi { background: #c4622d; border-color: #8a3f17; color: #fff; }
+    .ligne-l .case-t.ok { background: #e6f2dd; border-color: #6a9c5a; }
+    .ligne-l { display: flex; align-items: center; gap: 8px; font-weight: 700; margin: 8px 0; cursor: pointer; }
+    .sous-l { font-weight: 700; margin: 10px 0 6px; }
+    .cadeaux-l { display: flex; gap: 8px; }
+    .cadeau-l { flex: 1; border: 1px solid #b89b74; background: #fffaf0; border-radius: 12px; padding: 6px 0 2px; display: flex; flex-direction: column; align-items: center; color: #4a3424; }
+    .cadeau-l small { font-weight: 700; font-size: 0.75em; }
+    .nombre-l { display: flex; align-items: center; justify-content: center; gap: 12px; margin-top: 8px; }
+    .nombre-l .btn { width: 44px; padding: 6px 0; }
+    .erreur-l { color: #a02a12; font-weight: 700; margin-top: 8px; text-align: center; }
+    .liste-courrier { margin: 10px 0; display: flex; flex-direction: column; gap: 8px; }
+    .lettre-recue { background: #fffaf0; border: 1px solid #c9ad84; border-radius: 12px; padding: 8px 10px; text-align: left; }
+    .lettre-recue small { color: #8a6f52; font-weight: 600; }
+    .mot-recu { font-style: italic; margin: 3px 0; }
+    .dons-l { display: flex; flex-direction: column; gap: 2px; font-size: 0.88em; font-weight: 600; color: #6b4f36; }
+    .dons-l span { display: inline-flex; align-items: center; gap: 4px; }
 
     /* ---------- Adoption ---------- */
     .apercu-adoption { text-align: center; background: linear-gradient(#f6e7cf, #e9cfa8); border-radius: 18px; padding: 10px 0 8px; margin-bottom: 8px; }
@@ -603,7 +624,7 @@
     <section v-if="visite && visite.etat !== 'ok'" class="carte" style="text-align:center;margin-top:20px">
       <div v-html="pic(visite.etat === 'echec' ? 'porte' : 'maison', 54)"></div>
       <div class="titre-carte">{{ visite.etat === 'echec' ? 'Personne n\'ouvre…' : 'Je frappe à la porte de ' + (visite.pseudo || 'ton ami') + '…' }}</div>
-      <div class="aide" v-if="visite.etat === 'echec'">{{ visite.pseudo || 'Ton ami' }} n'est peut-être plus connecté, ou n'a pas encore de compagnon.</div>
+      <div class="aide" v-if="visite.etat === 'echec'">{{ visite.essaiCopie ? (visite.pseudo || 'Ton ami') + ' n\'est pas là, et sa maison n\'est pas encore ouverte aux visites : elle le sera quand il aura ouvert la dernière version de Désdale.' : (visite.pseudo || 'Ton ami') + ' n\'est peut-être plus connecté, ou n\'a pas encore de compagnon.' }}</div>
       <a class="btn" style="display:inline-block;margin-top:10px;text-decoration:none" href="compagnon/">Rentrer chez moi</a>
     </section>
 
@@ -781,9 +802,11 @@
       <!-- En visite : pas d'onglets, juste un câlin possible et le retour -->
       <section v-if="visite" class="carte visite-cp">
         <div class="titre-carte"><span v-html="pic('maison', 24)"></span>Chez {{ visite.pseudo }}</div>
-        <div class="aide">Glisse pour voir ses pièces. Touche {{ animal.nom }} pour lui faire un câlin : il le sentira chez {{ visite.pseudo }}.</div>
+        <div class="aide" v-if="visite.absent">{{ visite.pseudo }} n'est pas là{{ visite.vu ? ' (passé à Désdale ' + quandVu(visite.vu) + ')' : '' }}. Glisse pour voir ses pièces, et laisse-lui une lettre : il la trouvera en rentrant.</div>
+        <div class="aide" v-else>Glisse pour voir ses pièces. Touche {{ animal.nom }} pour lui faire un câlin : il le sentira chez {{ visite.pseudo }}.</div>
         <div class="actions-visite">
-          <button class="btn principal" @click="calinVisite" v-html="pic('coeur', 20) + ' Câlin à ' + esc(animal.nom)"></button>
+          <button v-if="!visite.absent" class="btn principal" @click="calinVisite" v-html="pic('coeur', 20) + ' Câlin'"></button>
+          <button v-if="visite.j" class="btn" :class="{ principal: visite.absent }" :disabled="visite.ecrit" @click="ouvrirLettre" v-html="pic('lettre', 20) + (visite.ecrit ? ' Lettre déposée' : ' Une lettre')"></button>
           <a class="btn" :href="retourVallee ? 'vallee/' : 'compagnon/'">{{ retourVallee ? 'Retour dans la Vallée' : 'Rentrer chez moi' }}</a>
         </div>
       </section>
@@ -1018,6 +1041,48 @@
         </template>
       </div>
     </div>
+    <!-- Une lettre pour l'ami que je visite (4.27) -->
+    <div v-if="lettre && visite" class="voile-achat" @click.self="lettre = null">
+      <div class="fenetre-achat lettre-cp" role="dialog" aria-label="Une lettre">
+        <div class="titre-carte" style="justify-content:center"><span v-html="pic('lettre', 26)"></span>Une lettre pour {{ visite.pseudo }}</div>
+        <div class="mots-l">
+          <button v-for="m in Registre.MOTS" :key="m[0]" class="mot-l" :class="{ choisi: lettre.mot === m[0] }" @click="lettre.mot = lettre.mot === m[0] ? '' : m[0]">{{ m[1] }}</button>
+        </div>
+        <div class="ligne-l" @click="lettre.calin = !lettre.calin"><span class="case-t" :class="{ ok: lettre.calin }" v-html="lettre.calin ? ico('coche', 14) : ''"></span>Un câlin pour {{ animal.nom }} <span v-html="pic('coeur', 18)"></span></div>
+        <div class="sous-l">Un petit cadeau de ta récolte ?</div>
+        <div v-if="lettre.sac.length" class="cadeaux-l">
+          <button v-for="x in lettre.sac" :key="x.r" class="cadeau-l" :class="{ choisi: lettre.r === x.r }" @click="choisirCadeau(x.r)"><span v-html="pic(x.r, 26)"></span><small>{{ x.n }}</small></button>
+        </div>
+        <div v-else class="aide">Ton sac de la Vallée est vide pour l'instant.</div>
+        <div v-if="lettre.r" class="nombre-l">
+          <button class="btn" @click="lettre.n = Math.max(1, lettre.n - 1)">−</button>
+          <b>{{ texteCadeau({ r: lettre.r, n: lettre.n }) }}</b>
+          <button class="btn" @click="lettre.n = Math.min(3, lettre.n + 1, (lettre.sac.find(x => x.r === lettre.r) || {}).n || 1)">+</button>
+        </div>
+        <div v-if="lettre.erreur" class="erreur-l">{{ lettre.erreur }}</div>
+        <div class="actions-visite">
+          <button class="btn" @click="lettre = null">Annuler</button>
+          <button class="btn principal" :disabled="lettre.occupe || (!lettre.mot && !lettre.calin && !lettre.r)" @click="envoyerLettre">{{ lettre.occupe ? 'Un instant…' : 'Dans sa boîte' }}</button>
+        </div>
+      </div>
+    </div>
+    <!-- Mon courrier : les lettres laissées pendant mon absence (4.27) -->
+    <div v-if="courrier && courrier.length && !visite" class="voile-achat">
+      <div class="fenetre-achat lettre-cp" role="dialog" aria-label="Ton courrier">
+        <div class="titre-carte" style="justify-content:center"><span v-html="pic('coeurlettre', 28)"></span>{{ courrier.length > 1 ? courrier.length + ' lettres' : 'Une lettre' }} dans ta boîte</div>
+        <div class="liste-courrier">
+          <div v-for="l in courrier" :key="l.n" class="lettre-recue">
+            <div class="de-l"><b>{{ l.p || 'Un ami' }}</b> <small>{{ quandVu(l.t) }}</small></div>
+            <div v-if="l.mot" class="mot-recu">«&nbsp;{{ Registre.texteMot(l.mot) }}&nbsp;»</div>
+            <div class="dons-l">
+              <span v-if="l.calin && animal"><span v-html="pic('coeur', 16)"></span> un câlin pour {{ animal.nom }}</span>
+              <span v-if="l.cadeau"><span v-html="pic(l.cadeau.r, 16)"></span> {{ texteCadeau(l.cadeau) }} dans ton sac</span>
+            </div>
+          </div>
+        </div>
+        <div class="actions-visite"><button class="btn principal" @click="fermerCourrier">Merci !</button></div>
+      </div>
+    </div>
     <!-- Retour d'expédition : il raconte l'aventure (expedition-retour, écrit par expedition/) -->
     <div v-if="retourExp && animal" class="voile-achat">
       <div class="fenetre-achat" role="dialog" aria-label="Retour d'expédition">
@@ -1216,6 +1281,9 @@
         maison: CP.lireMaison(),
         // Visite chez un ami connecté (compagnon/index.html?visite=…) : sa maison, en lecture seule
         visite: null,
+        Registre: Registre,
+        lettre: null,           // lettre en cours d'écriture chez un ami (4.27)
+        courrier: null,         // lettres reçues pas encore lues
         // La maison en isométrique (4.20)
         CPM: CPM, iso: lireIso(), pieceVueId: 'salon', zoom: 1, centre: null,
         // Vie de l'animal dans la pièce : sa case, son sens, marche, posture, geste en cours, pas en cours (glissé d'une case à l'autre)
@@ -1322,7 +1390,7 @@
         },
         // ---------- Maison ----------
         pieces: function() { return CP.BLOCS.filter(b => this.maison.blocs.indexOf(b.id) >= 0); },
-        dort: function() { return this.estNuit && this.humeurClasse !== 'triste'; },
+        dort: function() { return (this.visite && this.visite.absent) || (this.estNuit && this.humeurClasse !== 'triste'); },   // chez un ami absent, il fait la sieste
         // La pièce où il se trouve : sa chambre la nuit s'il en a une, sinon là où on l'a appelé
         ouEst: function() {
           // la nuit : dans sa chambre, sauf s'il a un couchage préféré ailleurs (« Au panier ! » le choisit)
@@ -1391,8 +1459,12 @@
         setInterval(() => { this.maintenant = Date.now(); this.etoiles = Etoiles.solde(); this.defis = CP.etatDefis(); }, 20000);
         this.chargerJour();
         this.majJournal();
-        var idVisite = new URLSearchParams(location.search).get('visite');
-        if (idVisite) { this.visite = { id: idVisite, pseudo: '', etat: 'attente' }; this.demanderVisite(); }
+        var qs = new URLSearchParams(location.search), idVisite = qs.get('visite') || '', jVisite = qs.get('j') || '';
+        // ?visite=<téléphone de l'ami> : en direct par le salon global ; ?j=<personne> : la copie du registre s'il n'est pas là (4.27)
+        if (idVisite || jVisite) {
+          this.visite = { id: idVisite, j: /^[a-z0-9]{4,40}$/i.test(jVisite) ? jVisite : '', pseudo: '', etat: 'attente', absent: false, vu: 0, ecrit: false };
+          if (idVisite) this.demanderVisite(); else this.visiteHorsLigne();
+        }
         else {
           // Une partie jouée aujourd'hui avec des amis (gagnée ou perdue) compte pour les tâches du jour
           this.verifierPartieAmis();
@@ -1419,12 +1491,18 @@
           this.$nextTick(() => this.animer('❤️', 3));
         });
         window.addEventListener('cp-defis', () => this.majDefis(true));
+        // Mon courrier (4.27) : les lettres laissées par mes amis pendant mon absence
+        if (!this.visite) {
+          window.addEventListener('desdale-courrier', () => this.voirCourrier());
+          this.voirCourrier();
+          if (typeof Registre !== 'undefined') Registre.relever(true).catch(() => {});
+        }
         document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && !this.visite) { this.maintenant = Date.now(); this.chargerJour(); this.verifierPartieAmis(); this.majDefis(); } });
       },
       mounted: function() { if (this.animal && !this.visite) this.placerDansPiece(this.ouEst); this.montrerAnimal(); this.demarrerVie(); },
       methods: {
         // ---------- Dessin de l'animal (SVG fait par le code, dans compagnon-commun.js) ----------
-        dessin: function(a, humeur) { return CP.dessin(a, humeur, this.animal === a && ((this.estNuit && humeur !== 'triste') || this.vie.sieste), this.maintenant); },
+        dessin: function(a, humeur) { return CP.dessin(a, humeur, this.animal === a && ((this.estNuit && humeur !== 'triste') || this.vie.sieste || !!(this.visite && this.visite.absent)), this.maintenant); },
         // Cabine d'essayage : toucher un article le met (ou le retire) en essai, sans rien acheter
         essayer: function(a) {
           if (this.essai[a.slot] === a.id) this.$delete(this.essai, a.slot); else this.$set(this.essai, a.slot, a.id);
@@ -1932,7 +2010,7 @@
         },
         fermerArr: function() { this.arranger = false; this.choisi = null; this.apercu = null; this.glisser = null; this.teintesOuvertes = false; this.avant = null; this.moment = 'heure'; },
         annulerArr: function() { if (this.avant) { this.iso.pieces = this.avant.pieces; this.iso.stock = this.avant.stock; } this.fermerArr(); this.recaserCompagnon(); },
-        validerArr: function() { this.sauverIso(); this.fermerArr(); this.recaserCompagnon(); this.dire('C\'est rangé !'); },
+        validerArr: function() { this.sauverIso(); if (typeof Registre !== 'undefined') Registre.bientotMaison(5000); this.fermerArr(); this.recaserCompagnon(); this.dire('C\'est rangé !'); },
         // Un meuble posé sur sa case : il se pousse à côté
         recaserCompagnon: function() {
           var p = this.pieceIci, v = this.vie;
@@ -2081,13 +2159,32 @@
           var sg = window.SalonGlobal;
           // On attend d'être dans le salon global ET d'y voir l'ami : en changeant de page, le salon se reforme (jusqu'à ~40 s si l'on en était l'hôte)
           var m = sg && sg.pret && sg.pret() ? sg.membre(this.visite.id) : null;
-          if (!m) { if (n > 90) { this.visite.etat = 'echec'; return; } return setTimeout(() => this.demanderVisite(n + 1), 500); }
+          if (!m) { if (n > 90) return this.echecVisite(); return setTimeout(() => this.demanderVisite(n + 1), 500); }
           this.visite.pseudo = m.pseudo || 'ton ami';
+          if (m.j && !this.visite.j) this.visite.j = m.j;
           sg.demander(this.visite.id, { type: 'MAISON?' }, d => {
             if (!d && n < 90) return setTimeout(() => this.demanderVisite(n + 24), 500);   // pas de réponse : on redemande (le salon se reformait)
-            if (!d || d.aucun || !d.a || !ESPECES.some(e => e.id === d.a.espece)) { this.visite.etat = 'echec'; return; }
-            var a = d.a, propre = {};
-            BESOINS.forEach(b => { var x = a.besoins && a.besoins[b.id]; propre[b.id] = { v: +(x && x.v) || 0, t: +(x && x.t) || Date.now() }; });
+            if (!d || d.aucun || !d.a || !ESPECES.some(e => e.id === d.a.espece)) return this.echecVisite();
+            this.installerVisite(d, false);
+          });
+        },
+        // Il n'a pas répondu : sa copie du registre, s'il en a une
+        echecVisite: function() { if (this.visite.j && !this.visite.essaiCopie) this.visiteHorsLigne(); else this.visite.etat = 'echec'; },
+        visiteHorsLigne: function() {
+          this.visite.essaiCopie = true;
+          if (typeof Registre === 'undefined' || !this.visite.j) { this.visite.etat = 'echec'; return; }
+          if (!this.visite.pseudo && window.Joueur) this.visite.pseudo = Joueur.nom(this.visite.j, '');
+          Registre.lireMaison(this.visite.j).then(r => {
+            if (!r || !r.donnees || !r.donnees.a || !ESPECES.some(e => e.id === r.donnees.a.espece)) { this.visite.etat = 'echec'; return; }
+            this.visite.vu = +r.fvu || +r.vu || 0;
+            if (r.pseudo) r.donnees.pseudo = r.pseudo;
+            this.installerVisite(r.donnees, true);
+          }, () => { this.visite.etat = 'echec'; });
+        },
+        // Sa maison, en lecture seule (en direct ou copie du registre : même forme)
+        installerVisite: function(d, absent) {
+            var a = d.a, propre = {}, t = Date.now();
+            BESOINS.forEach(b => { var x = a.besoins && a.besoins[b.id]; propre[b.id] = absent ? { v: 90, t: t } : { v: +(x && x.v) || 0, t: +(x && x.t) || t }; });
             var porte = {};
             Object.keys(a.porte || {}).forEach(k => { if (CP.art(a.porte[k]).id) porte[k] = a.porte[k]; });
             var deco = {};
@@ -2099,18 +2196,52 @@
                             piece: String(mm.piece || 'salon'), etagere: (mm.etagere || []).slice(0, 3) };
             this.trophees = (d.trophees || []).slice(0, 15).filter(t => t && t.k).map(t => ({ k: String(t.k), niv: Math.max(0, Math.min(2, +t.niv || 0)), ico: String(t.ico || '🏆').slice(0, 4), titre: String(t.titre || ''), h: +t.h || 0 }));
             if (d.pseudo) this.visite.pseudo = String(d.pseudo).slice(0, 20);
+            if (!this.visite.pseudo) this.visite.pseudo = 'ton ami';
             // Sa maison en isométrique (un ami d'avant 4.20 : ses pièces meublées de départ)
             this.iso = { v: 1, pieces: nettoyerPieces(d.iso, this.maison.blocs), stock: {}, habOk: {}, conv: {} };
+            this.visite.absent = !!absent;
             this.pieceVueId = this.ouEst;
             this.placerDansPiece(this.ouEst);
             this.visite.etat = 'ok';
             this.maintenant = Date.now();
-            this.message = 'Bienvenue chez ' + this.visite.pseudo + ' ! 👋';
+            this.message = absent ? this.visite.pseudo + ' n\'est pas là. Chut, ' + this.animal.nom + ' fait la sieste.' : 'Bienvenue chez ' + this.visite.pseudo + ' ! 👋';
             this.$nextTick(() => { this.montrerAnimal(true); this.demarrerVie(); });
-          });
         },
+        // ---------- La boîte aux lettres (4.27, Registre dans commun.js) ----------
+        ouvrirLettre: function() {
+          var v = lireStockage('vallee-etat'), sac = v && v.sac ? v.sac : {};
+          this.lettre = { mot: '', calin: !!this.visite.absent, r: '', n: 1, sac: Registre.CADEAUX.map(r => ({ r: r, n: Math.min(20, sac[r] | 0) })).filter(x => x.n > 0), occupe: false, erreur: '' };
+        },
+        choisirCadeau: function(r) { if (this.lettre.r === r) this.lettre.r = ''; else { this.lettre.r = r; this.lettre.n = 1; } },
+        envoyerLettre: function() {
+          var L = this.lettre;
+          if (!L || L.occupe || (!L.mot && !L.calin && !L.r)) return;
+          var q = { mot: L.mot || undefined, calin: L.calin || undefined };
+          var x = L.sac.find(s => s.r === L.r);
+          if (x) q.cadeau = { r: x.r, n: Math.max(1, Math.min(3, Math.min(x.n, L.n))) };
+          L.occupe = true; L.erreur = '';
+          Registre.ecrireLettre(this.visite.j, q).then(() => {
+            // Le cadeau quitte mon sac de la Vallée
+            if (q.cadeau) {
+              var v = lireStockage('vallee-etat');
+              if (v && v.sac) { v.sac[q.cadeau.r] = Math.max(0, (v.sac[q.cadeau.r] | 0) - q.cadeau.n); ecrireStockage('vallee-etat', v); }
+            }
+            this.lettre = null; this.visite.ecrit = true;
+            this.message = 'Ma lettre est dans la boîte de ' + this.visite.pseudo + ' !';
+            vibrer(20);
+          }, e => { L.occupe = false; L.erreur = e && e.message ? e.message : 'La boîte aux lettres ne répond pas.'; });
+        },
+        voirCourrier: function() {
+          if (this.visite || typeof Registre === 'undefined') return;
+          var l = Registre.nonLues();
+          if (l.length) { this.courrier = l; this.animal = lireStockage('compagnon-animal'); this.maintenant = Date.now(); }
+        },
+        fermerCourrier: function() { Registre.marquerLues(); this.courrier = null; },
+        quandVu: function(t) { var j = Math.floor((Date.now() - t) / 86400000); return j < 1 ? 'aujourd\'hui' : j < 2 ? 'hier' : 'il y a ' + j + ' jours'; },
+        texteCadeau: function(c) { var r = { bois: ['bûche', 'bûches'], pierre: ['pierre', 'pierres'], plante: ['brin de plante', 'brins de plantes'], cristal: ['cristal', 'cristaux'] }[c.r] || [c.r, c.r]; return c.n + ' ' + r[c.n > 1 ? 1 : 0]; },
         calinVisite: function() {
           if (!this.visite || this.visite.etat !== 'ok') return;
+          if (this.visite.absent) { this.message = 'Chut, il dort… Glisse-lui un câlin dans une lettre.'; return; }
           var t = Date.now();
           if (t - (this._dernierCalinVisite || 0) < 15000) { this.message = 'Merci, encore un petit moment 😊'; return; }
           this._dernierCalinVisite = t;

@@ -6,13 +6,19 @@
   fenêtre « Mes amis » de l'accueil. **Activé par défaut** (choix de l'utilisateur), le joueur peut retirer sa fiche.
 - Accès : en-tête `X-Desdale` = **clé de salon** (tirée du code d'accès, jamais publiée), comparée au secret `CLE`
   (le même que celui de `desdale-reseau`). Sans le code d'accès, ni lecture ni écriture. Origines autorisées dans `ORIGINES`.
-- Stockage : base D1 `desdale-registre` (id `b55bb2f1-dd4d-4504-a9c7-8768f0587a8a`), liaison `DB`, table `joueurs` (voir `schema.sql`).
+- Stockage : base D1 `desdale-registre` (id `b55bb2f1-dd4d-4504-a9c7-8768f0587a8a`), liaison `DB`, tables `joueurs`, `maisons`, `lettres` (voir `schema.sql` ; en ligne depuis 4.27, créées par l'API D1).
   Une ligne par personne (`Joueur.id`) ; scores en JSON dans la ligne : une publication = une seule ligne écrite.
 - API :
   - `GET /r` : toutes les fiches vues depuis moins d'un an (500 au plus), sans les jetons.
   - `PUT /r/<id>` (`Authorization: Bearer <jeton>`, 32 hexadécimaux tirés par le téléphone, gardés dans `desdale-registre`, donc dans la sauvegarde) :
     8 Ko au plus, une fois par minute au plus (429). Le premier envoi réserve l'identifiant pour ce jeton (403 avec un autre).
-  - `DELETE /r/<id>` (même jeton) : retirer sa fiche.
+  - `DELETE /r/<id>` (même jeton) : retirer sa fiche (et sa maison, et sa boîte aux lettres).
+  - **4.27, la maison** (table `maisons`) : `GET /m/<id>` (tout le monde avec le code : la copie de la maison et le pseudo, 404 sinon) ;
+    `PUT /m/<id>` (jeton, fiche déjà publiée sinon 409, 48 Ko au plus, une fois par 20 s) : écrite quand on range sa maison et au passage en arrière-plan si elle a changé ;
+    `DELETE /m/<id>`.
+  - **4.27, la boîte aux lettres** (table `lettres`) : `POST /b/<destinataire>` (corps `{ de, p, mot, calin, cadeau: { r, n } }`, jeton **de l'expéditeur** ;
+    mot = identifiant d'une phrase toute faite, cadeau = 1 à 3 bois, pierre, plante ou cristal ; une lettre toutes les 10 min d'un même ami au même ami (429),
+    40 en attente au plus (409)) ; `GET /b/<id>` (son jeton : ses lettres, celles de plus de 60 jours oubliées) ; `DELETE /b/<id>?jusqua=<n>` (vider après lecture).
 - Quotas gratuits D1 : 5 millions de lignes lues et 100 000 écrites par jour (au-delà : échec, pas de facture). L'appli publie au plus toutes les 2 min,
   seulement si la fiche a changé (30 s après une fin de partie, au passage en arrière-plan), et relit les fiches au plus toutes les 10 min (copie `desdale-registre-cache`).
 - **Secret à poser par l'utilisateur** (jamais dans le dépôt) : `CLE`, dans le tableau de bord Cloudflare (Worker `desdale-registre`, variables et secrets)

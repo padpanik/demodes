@@ -3,12 +3,13 @@
 // Les clés de stockage gardent l'ancien préfixe "brillant-" : les réglages déjà faits sont conservés.
 
 // Numéro de version affiché (à augmenter à chaque mise en ligne, avec brilliant/index.html et sw.js)
-const VERSION = '4.26';
+const VERSION = '4.27';
 
 // ---------- Nouveautés (2.87, demandé par l'utilisateur) ----------
 // Une ligne très brève par mise en ligne (la plus récente en haut) : l'accueil les montre une seule fois, dans une petite fenêtre,
 // à qui n'a pas encore vu cette version. [version, jeu ou partie de l'appli, ce qui change]
 const NOUVEAUTES = [
+  ['4.27', 'Mon compagnon', 'Visite la maison d\'un ami même absent, et laisse-lui une lettre, un câlin ou un cadeau.'],
   ['4.26', 'Vallée', 'Le quartier montre la maison de chaque ami, même sans l\'avoir croisé.'],
   ['4.25', 'Accueil', 'Mes amis : qui joue à Désdale et les classements, même quand personne n\'est connecté.'],
   ['4.24', 'Mon compagnon', 'Pièce agrandie à la loupe : fais-la glisser du doigt pour la parcourir.'],
@@ -532,26 +533,155 @@ var Registre = (function () {
     ecrireStockage(CLE, Object.assign(reglage(), { actif: false }));
     var c = lireStockage(CACHE);
     if (c && Array.isArray(c.fiches)) { c.fiches = c.fiches.filter(function (x) { return x.id !== monId(); }); ecrireStockage(CACHE, c); }
-    majEtat({ emp: undefined });
+    majEtat({ emp: undefined, mEmp: undefined, mDernier: undefined });
     if (!possible() || !cleSalon() || !monId() || !reglage().jeton) return Promise.resolve(true);
     return requete('DELETE', '/r/' + monId(), null, true).then(function () { return true; });
   }
   function activer() {
     ecrireStockage(CLE, Object.assign(reglage(), { actif: true }));
-    majEtat({ emp: undefined, dernier: undefined });
-    return publier(true);
+    majEtat({ emp: undefined, dernier: undefined, mEmp: undefined });
+    return publier(true).then(function (r) { bientotMaison(3000); return r; });
+  }
+
+  // ---------- La maison (4.27) : une copie pour les amis qui passent quand je ne suis pas là ----------
+  // Même contenu que la visite en direct (salon-global.js s'en sert aussi) ; sans les besoins pour la copie publiée
+  // (ils changent sans arrêt : chez un ami absent, son compagnon fait la sieste).
+  function instantane(avecBesoins) {
+    var a = lireStockage('compagnon-animal');
+    if (!a || !a.espece) return null;
+    var m = lireStockage('compagnon-maison') || {}, tr = lireStockage('compagnon-trophees') || [];
+    var etagere = (m.etagere || []).slice(0, 3), dernieres = tr.slice(-12);
+    var d = {
+      a: { espece: a.espece, couleur: a.couleur, nom: a.nom, ne: a.ne, porte: a.porte || {}, deco: a.deco || {}, possede: {} },
+      maison: { blocs: (m.blocs || ['salon']).slice(0, 10), piece: m.piece || 'salon', etagere: etagere, cles: 0 },
+      trophees: dernieres.concat(tr.filter(function (t) { return etagere.indexOf(t.k) >= 0 && dernieres.indexOf(t) < 0; }))
+        .map(function (t) { return { k: t.k, niv: t.niv, ico: t.ico, titre: t.titre, h: t.h }; }),
+      pseudo: String((lireStockage('desdale-profil') || {}).pseudo || '').slice(0, 20),
+      iso: (lireStockage('compagnon-pieces') || {}).pieces || null
+    };
+    if (avecBesoins) d.a.besoins = a.besoins;
+    return d;
+  }
+  function publierMaison(force) {
+    if (!possible() || !actif() || !cleSalon() || !monId()) return Promise.resolve(false);
+    var e = etat();
+    if (!e.dernier) return Promise.resolve(false);   // la maison suit la fiche : il faut qu'elle soit publiée
+    var d = instantane(false);
+    if (!d) return Promise.resolve(false);
+    var corps = JSON.stringify(d), emp = hash(corps);
+    if (emp === e.mEmp) return Promise.resolve(false);
+    if (!force && e.mDernier && Date.now() - e.mDernier < ECART_AUTO) { bientotMaison(ECART_AUTO - (Date.now() - e.mDernier) + 1000); return Promise.resolve(false); }
+    return requete('PUT', '/m/' + monId(), corps, true).then(function () {
+      majEtat({ mDernier: Date.now(), mEmp: emp }); return true;
+    }, function (err) { if (err.statut === 429) bientotMaison(25 * 1000); throw err; });
+  }
+  var minuterieM = null;
+  function bientotMaison(delai) {
+    if (typeof setTimeout === 'undefined') return;
+    clearTimeout(minuterieM);
+    minuterieM = setTimeout(function () { publierMaison(true).catch(function () {}); }, delai || 5000);
+  }
+  // La maison d'un ami (null : il n'en a pas publié)
+  function lireMaison(id) {
+    if (!possible() || !cleSalon() || !/^[a-z0-9]{4,40}$/i.test(id || '')) return Promise.resolve(null);
+    return requete('GET', '/m/' + id).then(function (r) { return r && r.donnees ? r : null; }, function (err) { if (err.statut === 404) return null; throw err; });
+  }
+
+  // ---------- La boîte aux lettres (4.27) ----------
+  // Des mots tout faits (on choisit, on ne tape pas : le ton du jeu, pas de surprise gâchée), un câlin, un petit cadeau de récolte.
+  var MOTS = [
+    ['coucou', 'Coucou ! Je suis passé te voir.'], ['jolie', 'Ta maison est vraiment jolie !'], ['calins', 'Plein de câlins à ton compagnon !'],
+    ['partie', 'On fait une partie bientôt ?'], ['donjon', 'On descend au Donjon ensemble ?'], ['vallee', 'Rendez-vous dans la Vallée !'],
+    ['merci', 'Merci pour la dernière partie !'], ['courage', 'Courage pour ta semaine !'], ['bravo', 'Bravo pour tes coupes !'], ['manque', 'Tu nous manques, reviens vite !']
+  ];
+  var CADEAUX = ['bois', 'pierre', 'plante', 'cristal'];
+  var COURRIER = 'desdale-courrier';
+  function texteMot(id) { for (var i = 0; i < MOTS.length; i++) if (MOTS[i][0] === id) return MOTS[i][1]; return ''; }
+  function ecrireLettre(pour, lettre) {
+    if (!possible() || !actif() || !cleSalon() || !monId()) return Promise.reject(new Error('Pour écrire, ta fiche doit être visible de tes amis (« Mes amis » sur l\'accueil).'));
+    var corps = { de: monId(), p: String((lireStockage('desdale-profil') || {}).pseudo || '').slice(0, 20) };
+    if (lettre.mot) corps.mot = lettre.mot;
+    if (lettre.calin) corps.calin = true;
+    if (lettre.cadeau) corps.cadeau = lettre.cadeau;
+    var envoi = function () { return requete('POST', '/b/' + pour, JSON.stringify(corps), true); };
+    return (etat().dernier ? Promise.resolve() : publier(true)).then(envoi).then(function () { return true; }, function (err) {
+      if (err.statut === 429) err.message = 'Tu as déjà laissé une lettre il y a peu. Reviens dans quelques minutes.';
+      else if (err.statut === 409) err.message = 'Sa boîte aux lettres est pleine.';
+      else if (err.statut === 404) err.message = 'Cet ami n\'a pas de boîte aux lettres.';
+      else if (err.statut === 403) err.message = 'Ta fiche n\'est pas encore publiée. Réessaie dans une minute.';
+      throw err;
+    });
+  }
+  // Mon courrier gardé sur le téléphone : { lettres: [{ n, de, p, mot, calin, cadeau, t, lu }], vus } (30 dernières)
+  function courrier() { var c = lireStockage(COURRIER); return c && Array.isArray(c.lettres) ? c : { lettres: [], vus: 0 }; }
+  function nonLues() { return courrier().lettres.filter(function (l) { return !l.lu; }); }
+  function marquerLues() { var c = courrier(); c.lettres.forEach(function (l) { l.lu = true; }); ecrireStockage(COURRIER, c); prevenir(); }
+  // Ce qu'apporte une lettre, appliqué une seule fois (numéro déjà vu = ignoré) : câlin au compagnon, cadeau dans le sac de la Vallée
+  function appliquer(l) {
+    if (l.calin) {
+      var a = lireStockage('compagnon-animal');
+      if (a && a.besoins) {
+        var t = Date.now(), b = a.besoins.calin || { v: 0, t: t };
+        var actuel = typeof CP !== 'undefined' && CP.niveaux ? CP.niveaux(a, t).calin : b.v;
+        a.besoins.calin = { v: Math.min(100, actuel + 20), t: t };
+        ecrireStockage('compagnon-animal', a);
+      }
+    }
+    if (l.cadeau && CADEAUX.indexOf(l.cadeau.r) >= 0) {
+      var v = lireStockage('vallee-etat');
+      if (!v || typeof v !== 'object' || v.v !== 1) v = { v: 1 };
+      v.sac = v.sac && typeof v.sac === 'object' ? v.sac : {};
+      v.sac[l.cadeau.r] = Math.min(20, (v.sac[l.cadeau.r] | 0) + Math.max(1, Math.min(3, l.cadeau.n | 0)));
+      ecrireStockage('vallee-etat', v);
+    }
+  }
+  var dernierReleve = 0, releveEnCours = null;
+  function relever(force) {
+    if (!possible() || !actif() || !cleSalon() || !monId() || !etat().dernier) return Promise.resolve([]);
+    if (releveEnCours) return releveEnCours;
+    if (!force && Date.now() - dernierReleve < 5 * 60 * 1000) return Promise.resolve([]);
+    dernierReleve = Date.now();
+    releveEnCours = requete('GET', '/b/' + monId(), null, true).then(function (r) {
+      var c = courrier(), nouvelles = [], max = 0;
+      (r.lettres || []).forEach(function (l) {
+        var n = +l.n || 0; if (n > max) max = n;
+        if (n <= (c.vus || 0) || !/^[a-z0-9]{4,40}$/i.test(l.de || '')) return;
+        var x = { n: n, de: l.de, p: String(l.p || '').slice(0, 20), t: +l.t || Date.now(), lu: false };
+        if (texteMot(l.mot)) x.mot = l.mot;
+        if (l.calin) x.calin = true;
+        if (l.cadeau && CADEAUX.indexOf(l.cadeau.r) >= 0) x.cadeau = { r: l.cadeau.r, n: Math.max(1, Math.min(3, l.cadeau.n | 0)) };
+        appliquer(x);
+        nouvelles.push(x);
+      });
+      if (max) {
+        c.vus = Math.max(c.vus || 0, max);
+        c.lettres = c.lettres.concat(nouvelles).slice(-30);
+        ecrireStockage(COURRIER, c);
+        requete('DELETE', '/b/' + monId() + '?jusqua=' + max, null, true).catch(function () {});
+      }
+      if (nouvelles.length) {
+        try { window.dispatchEvent(new CustomEvent('desdale-courrier', { detail: { nouvelles: nouvelles } })); } catch (x) {}
+        try { window.dispatchEvent(new CustomEvent('cp-exterieur')); } catch (x) {}
+      }
+      return nouvelles;
+    }).then(function (r) { releveEnCours = null; return r; }, function (err) { releveEnCours = null; throw err; });
+    return releveEnCours;
   }
 
   function demarrer() {
     if (!possible()) return;
-    setTimeout(function () { publier(false).catch(function () {}); }, 25000);
+    setTimeout(function () { publier(false).catch(function () {}).then(function () { return publierMaison(false); }).catch(function () {}); }, 25000);
+    setTimeout(function () { relever(true).catch(function () {}); }, 6000);
     document.addEventListener('visibilitychange', function () {
-      if (document.visibilityState === 'hidden') publier(false).catch(function () {});
+      if (document.visibilityState === 'hidden') publier(false).catch(function () {}).then(function () { return publierMaison(false); }).catch(function () {});
+      else relever(false).catch(function () {});
     });
   }
 
   return { possible: possible, actif: actif, etat: etat, fiche: fiche, publier: publier, bientot: bientot,
-    lire: lire, cache: cache, retirer: retirer, activer: activer, demarrer: demarrer };
+    lire: lire, cache: cache, retirer: retirer, activer: activer, demarrer: demarrer,
+    instantane: instantane, publierMaison: publierMaison, bientotMaison: bientotMaison, lireMaison: lireMaison,
+    MOTS: MOTS, CADEAUX: CADEAUX, texteMot: texteMot, ecrireLettre: ecrireLettre, relever: relever, courrier: courrier, nonLues: nonLues, marquerLues: marquerLues };
 })();
 if (typeof document !== 'undefined') { try { Registre.demarrer(); } catch (e) {} }
 
