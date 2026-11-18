@@ -108,6 +108,26 @@
     .table-stats col.c-st { width: 40px; }
     .table-stats td.jeu-st > div { overflow: hidden; }
     .table-stats td.g { color: #2b8a3e; } .table-stats td.p { color: #c0392b; }
+    /* Fenêtre « Mes amis » (registre des joueurs) */
+    .liste-amis { display: flex; flex-direction: column; gap: 6px; margin: 4px 0 8px; text-align: left; }
+    .ami-l { display: flex; align-items: center; gap: 10px; padding: 6px 8px; border-radius: 12px; background: #f6f8fa; }
+    .ami-l.moi { background: #fff4e6; box-shadow: inset 0 0 0 1.5px #f3c48c; }
+    .ami-av { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: #fff; font-weight: 800; font-size: 1.1em; overflow: hidden; }
+    .ami-av svg { width: 38px; height: 38px; }
+    .ami-txt { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+    .ami-txt b { color: #1d2b36; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .ami-txt small { color: #6b7a86; font-size: 0.8em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .ami-n { display: flex; flex-direction: column; align-items: flex-end; flex-shrink: 0; }
+    .ami-n b { font-size: 1.1em; color: #1d2b36; } .ami-n small { color: #6b7a86; font-size: 0.75em; }
+    .rang-cl { width: 22px; text-align: center; font-weight: 900; color: #6b7a86; flex-shrink: 0; }
+    .rang-cl.r1 { color: #c98c0a; } .rang-cl.r2 { color: #8a99a6; } .rang-cl.r3 { color: #b5651d; }
+    .puces-cl { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin: 4px 0 8px; }
+    .puces-cl button { display: inline-flex; align-items: center; gap: 5px; border: none; background: #eef2f5; border-radius: 999px; padding: 4px 10px 4px 5px; font: inherit; font-size: 0.82em; font-weight: 700; color: #3b4b57; cursor: pointer; }
+    .puces-cl button span { line-height: 0; }
+    .puces-cl button.actif { background: #1d2b36; color: #fff; }
+    .registre-moi { margin-top: 6px; padding-top: 10px; border-top: 1px solid #e3e8ec; text-align: left; }
+    .case-reg { display: flex; align-items: center; gap: 8px; font-weight: 800; color: #1d2b36; margin-bottom: 4px; }
+    .case-reg input { width: 20px; height: 20px; accent-color: #d9480f; }
     .cal-stats { margin-top: 12px; background: #f7f9fb; border-radius: 14px; padding: 8px; }
     .cal-tete { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
     .cal-grille { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; }
@@ -236,13 +256,14 @@
           <div class="mc-tete">{{ profilAff.pseudo || 'Pas encore de pseudo' }}</div>
           <button @click="menuCompte = false; ouvrirProfilPortail()"><span class="mc-ico" v-html="icoCompte('profil')"></span>Mon profil</button>
           <button @click="menuCompte = false; ouvrirStats()"><span class="mc-ico" v-html="icoCompte('stats')"></span>Mes statistiques</button>
+          <button @click="menuCompte = false; ouvrirAmis()"><span class="mc-ico" v-html="icoCompte('amis')"></span>Mes amis</button>
           <button @click="menuCompte = false; ouvrirSauvegarde()"><span class="mc-ico" v-html="icoCompte('sauvegarde')"></span>Ma sauvegarde</button>
           <button @click="menuCompte = false; partage = true"><span class="mc-ico" v-html="icoCompte('inviter')"></span>Inviter un ami</button>
         </div>
       </header>
 
       <!-- Nouveautés : une seule fois par version, ce qui a changé depuis la dernière visite -->
-      <div v-if="nouveautes.length && !sauvegarde && !partage && !stats" class="voile-partage" @click.self="fermerNouveautes">
+      <div v-if="nouveautes.length && !sauvegarde && !partage && !stats && !amis" class="voile-partage" @click.self="fermerNouveautes">
         <div class="fenetre-partage fenetre-nouveautes" role="dialog" aria-label="Quoi de neuf ?">
           <div class="titre-partage titre-ico"><span class="mc-ico" v-html="icoCompte('nouveau')"></span>Quoi de neuf ?</div>
           <ul class="liste-nouveautes">
@@ -386,6 +407,54 @@
         </div>
       </div>
 
+      <!-- Mes amis : le registre des joueurs (fiches publiques, Registre dans commun.js) : qui existe et les classements, même hors ligne -->
+      <div v-if="amis" class="voile-partage" @click.self="amis = null">
+        <div class="fenetre-partage fenetre-stats" role="dialog" aria-label="Mes amis">
+          <div class="titre-partage titre-ico"><span class="mc-ico" v-html="icoCompte('amis')"></span>Mes amis</div>
+          <div class="seg-stats">
+            <button :class="{ actif: amis.onglet === 'joueurs' }" @click="amis.onglet = 'joueurs'">Joueurs</button>
+            <button :class="{ actif: amis.onglet === 'classements' }" @click="amis.onglet = 'classements'">Classements</button>
+          </div>
+          <div v-if="amis.charge && !amisVue.liste.length" class="aide-partage" style="margin:10px 0">Lecture du registre…</div>
+          <div v-if="amis.erreur" class="erreur-sv" style="margin:4px 0 8px">{{ amis.erreur }}</div>
+          <template v-if="amis.onglet === 'joueurs'">
+            <div v-if="!amis.charge && !amisVue.liste.length" class="aide-partage" style="margin:10px 0">Personne dans le registre pour l'instant.</div>
+            <div class="liste-amis">
+              <div v-for="f in amisVue.liste" :key="f.id" class="ami-l" :class="{ moi: f.moi }">
+                <span class="ami-av" :style="{ background: f.couleur }"><span v-if="f.dessin" v-html="f.dessin"></span><span v-else>{{ f.emoji || f.initiale }}</span></span>
+                <div class="ami-txt"><b>{{ f.pseudo }}<template v-if="f.moi"> (moi)</template></b><small>{{ f.ligne }}</small></div>
+                <div class="ami-n"><b>{{ f.parties }}</b><small>partie{{ f.parties > 1 ? 's' : '' }}</small></div>
+              </div>
+            </div>
+          </template>
+          <template v-else>
+            <div v-if="!amisVue.choix.length" class="aide-partage" style="margin:10px 0">Pas encore de score à comparer.</div>
+            <div class="puces-cl">
+              <button v-for="c in amisVue.choix" :key="c.cle" :class="{ actif: c.cle === amisVue.cle }" @click="amis.cle = c.cle">
+                <span v-html="icone24(c.jeu)"></span>{{ c.nom }}
+              </button>
+            </div>
+            <div v-if="amisVue.titre" class="aide-partage" style="margin:2px 0 6px">{{ amisVue.titre }}</div>
+            <div class="liste-amis">
+              <div v-for="(l, k) in amisVue.classement" :key="l.id" class="ami-l" :class="{ moi: l.moi }">
+                <span class="rang-cl" :class="'r' + l.rang">{{ l.rang }}</span>
+                <span class="ami-av" :style="{ background: l.couleur }"><span v-if="l.dessin" v-html="l.dessin"></span><span v-else>{{ l.emoji || l.initiale }}</span></span>
+                <div class="ami-txt"><b>{{ l.pseudo }}</b><small>{{ l.detail }}</small></div>
+                <div class="ami-n"><b>{{ l.valeur }}</b></div>
+              </div>
+            </div>
+          </template>
+          <div class="registre-moi">
+            <label class="case-reg"><input type="checkbox" :checked="registre.actif" :disabled="amis.occupe" @change="basculerRegistre($event.target.checked)"> Me montrer à mes amis</label>
+            <div class="aide-partage">Tes amis voient ton pseudo, ta couleur, ton compagnon, tes parties par jeu et tes records. Ni ta photo, ni tes étoiles, ni ta sauvegarde.
+              <template v-if="registre.actif && registre.dernier"> Fiche publiée {{ depuisSv(registre.dernier) }}.</template>
+              <template v-if="!registre.actif"> Ta fiche est retirée du registre.</template></div>
+            <div class="erreur-sv" v-if="registre.actif && registre.erreur" style="margin-top:4px">{{ registre.erreur }}</div>
+          </div>
+          <button class="btn" style="width:100%;margin-top:10px" @click="amis = null">Fermer</button>
+        </div>
+      </div>
+
       <!-- Sauvegarde : un fichier à garder (Drive, mail à soi-même…) pour tout retrouver sur un autre téléphone ou navigateur -->
       <div v-if="sauvegarde" class="voile-partage" @click.self="sauvegarde = null">
         <div class="fenetre-partage" role="dialog" aria-label="Sauvegarde">
@@ -523,6 +592,7 @@
       nouveau:    { c: '#d9480f', f: '#fff0e6', d: '<path d="M12 3.5l1.9 4.6 4.6 1.9-4.6 1.9L12 16.5l-1.9-4.6L5.5 10l4.6-1.9z"/><path d="M18.5 15.5l.8 1.9 1.9.8-1.9.8-.8 1.9-.8-1.9-1.9-.8 1.9-.8z"/>' },
       stats:      { c: '#2f7fd8', f: '#e5f0fc', d: '<path d="M4 20h16"/><rect x="5.5" y="12" width="3" height="5.5" rx="1"/><rect x="10.5" y="7" width="3" height="10.5" rx="1"/><rect x="15.5" y="9.5" width="3" height="8" rx="1"/>' },
       sauvegarde: { c: '#2b8a3e', f: '#e3f4e7', d: '<path d="M12 3.5v10"/><path d="M7.8 9.4L12 13.6l4.2-4.2"/><path d="M4.5 15v2.8a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V15"/>' },
+      amis:       { c: '#c2255c', f: '#fde8ef', d: '<circle cx="8.5" cy="9" r="3"/><circle cx="16" cy="8" r="2.6"/><path d="M3 19c.7-3 2.9-4.7 5.5-4.7S13.3 16 14 19"/><path d="M14.5 13.2c.5-.2 1-.3 1.5-.3 2.3 0 4.2 1.5 4.8 4.3"/>' },
       inviter:    { c: '#e07a1f', f: '#fdeedd', d: '<circle cx="9.5" cy="8.5" r="3.4"/><path d="M3.5 19.5c.8-3.3 3.2-5.2 6-5.2s5.2 1.9 6 5.2"/><path d="M18.5 7.5v6M15.5 10.5h6"/>' },
       // Icônes des boutons et des petites lignes (dessinées dans la couleur du texte)
       partager:   { d: '<circle cx="17.5" cy="5.5" r="2.5"/><circle cx="6.5" cy="12" r="2.5"/><circle cx="17.5" cy="18.5" r="2.5"/><path d="M8.7 10.8l6.6-4M8.7 13.2l6.6 4"/>' },
@@ -583,6 +653,9 @@
         menuCompte: false, // menu du badge « Mon compte »
         profilV: 0,        // change quand le profil change (événement desdale-profil)
         stats: null,       // fenêtre « Mes statistiques » : { periode, date (référence), calA, calM }
+        amis: null,        // fenêtre « Mes amis » : { onglet, cle (classement choisi), charge, occupe, erreur }
+        registre: { actif: true, dernier: 0, erreur: '' },   // ma fiche du registre (Registre, commun.js)
+        registreV: 0,      // change quand les fiches lues changent (événement desdale-registre)
         etoile: ETOILE,
         PERIODES: [['jour', 'Jour'], ['semaine', 'Semaine'], ['mois', 'Mois'], ['tout', 'Tout']],
         nouveautes: [],    // fenêtre « Quoi de neuf ? » (nouveautesAVoir, commun.js)
@@ -644,6 +717,46 @@
           else libelle = 'Depuis le début';
           return { libelle: libelle.charAt(0).toUpperCase() + libelle.slice(1), total: total,
                    lignes: Object.values(par).sort((x, y) => (y.sn + y.an) - (x.sn + x.an)) };
+        },
+        // Fenêtre « Mes amis » : la liste des joueurs du registre et les classements, calculés sur le téléphone
+        amisVue: function() {
+          this.registreV;
+          var r = { liste: [], choix: [], cle: '', titre: '', classement: [] };
+          if (!this.amis || typeof Registre === 'undefined') return r;
+          var moi = typeof Joueur !== 'undefined' ? Joueur.id : '', fiches = Registre.cache().fiches.slice();
+          var noms = {}; this.jeux.forEach(j => { noms[j.id] = j.nom; }); noms.donjon = 'Donjon'; noms.expedition = 'Expédition';
+          var total = f => Object.keys(f.scores || {}).reduce((s, k) => s + (k.indexOf('p:') === 0 ? (+f.scores[k].v || 0) : 0), 0);
+          fiches.sort((a, b) => (b.id === moi) - (a.id === moi) || b.vu - a.vu);
+          r.liste = fiches.map(f => {
+            var cp = (f.profil || {}).cp, vu = f.id === moi ? 'ta fiche' : 'vu ' + this.depuisSv(f.vu);
+            return Object.assign({ id: f.id, pseudo: f.pseudo, moi: f.id === moi, parties: total(f),
+                                   ligne: (cp && cp.n ? 'avec ' + cp.n + ' · ' : '') + vu }, this.avatarFiche(f));
+          });
+          // Les classements possibles : un par record, puis les victoires par jeu
+          var vus = {}, poids = {};
+          fiches.forEach(f => Object.keys(f.scores || {}).forEach(k => { vus[k] = 1; poids[k] = (poids[k] || 0) + (+f.scores[k].v || 0); }));
+          Object.keys(vus).forEach(k => {
+            var m;
+            if (k === 'r:yams') r.choix.push({ cle: k, jeu: 'yams', nom: 'Record Yams', ordre: 0, titre: 'Meilleur score au Yams' });
+            else if ((m = k.match(/^r:brilliant-(\d)$/))) r.choix.push({ cle: k, jeu: 'brilliant', nom: 'Record Brilliant ' + m[1], ordre: 1, titre: 'Meilleur score à Brilliant, niveau ' + m[1] });
+            else if (k === 'r:donjon') r.choix.push({ cle: k, jeu: 'donjon', nom: 'Donjon', ordre: 2, titre: 'Donjons vaincus' });
+            else if ((m = k.match(/^p:(.+)$/)) && !(m[1] === 'donjon' && vus['r:donjon']))
+              r.choix.push({ cle: k, jeu: m[1], nom: noms[m[1]] || m[1], ordre: 3, poids: poids[k], titre: 'Parties gagnées à ' + (noms[m[1]] || m[1]) });
+          });
+          r.choix.sort((a, b) => a.ordre - b.ordre || (b.poids || 0) - (a.poids || 0) || a.nom.localeCompare(b.nom));
+          var c = r.choix.find(x => x.cle === this.amis.cle) || r.choix[0];
+          if (!c) return r;
+          r.cle = c.cle; r.titre = c.titre;
+          var lignes = fiches.filter(f => f.scores && f.scores[c.cle]).map(f => {
+            var s = f.scores[c.cle], d = s.d || {}, detail, valeur;
+            if (c.cle.indexOf('p:') === 0) { valeur = d.g || 0; detail = 'sur ' + s.v + ' partie' + (s.v > 1 ? 's' : ''); }
+            else if (c.cle === 'r:donjon') { valeur = s.v; detail = 'sur ' + (d.p || 0) + ' · record : étage ' + (d.e || 1); }
+            else { valeur = s.v; detail = d.t ? 'le ' + new Date(d.t).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }) : ''; }
+            return Object.assign({ id: f.id, pseudo: f.pseudo, moi: f.id === moi, valeur: valeur, n: s.v, detail: detail }, this.avatarFiche(f));
+          }).sort((a, b) => b.valeur - a.valeur || a.n - b.n);
+          lignes.forEach((l, k) => { l.rang = k && lignes[k - 1].valeur === l.valeur ? lignes[k - 1].rang : k + 1; });
+          r.classement = lignes;
+          return r;
         },
         calendrier: function() {
           var s = this.stats, debut = new Date(s.calA, s.calM, 1), nbJ = new Date(s.calA, s.calM + 1, 0).getDate(), parJour = {}, bo = this.bornesStats;
@@ -746,7 +859,8 @@
         document.addEventListener('mouseup', () => this.finAppui());
         window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); this._invitation = e; this.installPossible = true; });
         window.addEventListener('appinstalled', () => { this.installPossible = false; this.estInstallee = true; });
-        window.addEventListener('desdale-profil', () => { this.profilV++; });
+        window.addEventListener('desdale-profil', () => { this.profilV++; if (typeof Registre !== 'undefined') Registre.bientot(); });   // pseudo changé : fiche republiée
+        window.addEventListener('desdale-registre', () => { this.registreV++; this.majRegistre(); });
         var arrivee = this.lireDemenagement();
         if (ACCES.memorise()) { this.accesOk = true; if (!arrivee) this.reprendre(); }
         if (!arrivee) this.nouveautes = this.annonceFete().concat(nouveautesAVoir());
@@ -820,6 +934,34 @@
         choisirJour: function(c) {
           if (!c.j) return;
           this.stats.date = c.t; this.stats.periode = 'jour';
+        },
+        // ---------- Mes amis (registre des joueurs) ----------
+        ouvrirAmis: function() {
+          this.amis = { onglet: 'joueurs', cle: '', charge: true, occupe: false, erreur: '' };
+          this.majRegistre();
+          // Ma fiche d'abord (pour me voir dans la liste), puis celles de tout le monde
+          Registre.publier(false).catch(() => {}).then(() => Registre.lire(true)).then(() => {
+            if (this.amis) { this.amis.charge = false; this.amis.erreur = ''; }
+          }, e => { if (this.amis) { this.amis.charge = false; this.amis.erreur = e && e.message ? e.message : 'Registre injoignable.'; } });
+        },
+        majRegistre: function() {
+          if (typeof Registre === 'undefined') return;
+          var e = Registre.etat();
+          this.registre = { actif: Registre.actif(), dernier: e.dernier || 0, erreur: e.erreur || '' };
+        },
+        basculerRegistre: function(oui) {
+          this.amis.occupe = true; this.amis.erreur = '';
+          (oui ? Registre.activer() : Registre.retirer()).catch(e => { this.amis.erreur = e && e.message ? e.message : 'Registre injoignable.'; })
+            .then(() => { if (this.amis) this.amis.occupe = false; this.majRegistre(); this.registreV++; });
+          this.majRegistre();
+        },
+        // Avatar d'une fiche : son compagnon dessiné s'il en a un, sinon émoji ou initiale sur sa couleur
+        avatarFiche: function(f) {
+          var p = f.profil || {}, c = p.cp, d = '';
+          if (c && c.e && typeof CP !== 'undefined') {
+            try { d = '<svg viewBox="0 -6 200 216">' + CP.dessin({ espece: c.e, couleur: c.c, porte: c.p || {} }, 'content', false) + '</svg>'; } catch (e) { d = ''; }
+          }
+          return { couleur: /^#[0-9a-f]{6}$/i.test(p.c || '') ? p.c : '#7d8a94', emoji: p.e || '', initiale: String(f.pseudo || '?').charAt(0).toUpperCase(), dessin: d };
         },
         ouvrirProfilPortail: function() { ouvrirProfilPortail(); },
         icone24: function(id) { return IconesJeux.svg(id, 24) || '🎲'; },

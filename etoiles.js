@@ -46,6 +46,7 @@ const Etoiles = {
     ev.push({ h: Date.now(), jeu: jeu, g: !!gagne, p: !!aPlusieurs, i: info || {} });
     ecrireStockage('compagnon-evenements', ev.slice(-150));
     try { StatsParties.ajouter(jeu, gagne, aPlusieurs); } catch (e) {}
+    try { if (typeof Registre !== 'undefined') Registre.bientot(); } catch (e) {}   // fiche du registre republiée 30 s après
     // Défi réussi ? (le module du compagnon est chargé par le salon global sur toutes les pages)
     setTimeout(() => { try { if (typeof CP !== 'undefined' && CP.verifierDefis) CP.verifierDefis(true); } catch (e) {} }, 1500);
   },

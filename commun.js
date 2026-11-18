@@ -3,12 +3,13 @@
 // Les clés de stockage gardent l'ancien préfixe "brillant-" : les réglages déjà faits sont conservés.
 
 // Numéro de version affiché (à augmenter à chaque mise en ligne, avec brilliant/index.html et sw.js)
-const VERSION = '4.24';
+const VERSION = '4.25';
 
 // ---------- Nouveautés (2.87, demandé par l'utilisateur) ----------
 // Une ligne très brève par mise en ligne (la plus récente en haut) : l'accueil les montre une seule fois, dans une petite fenêtre,
 // à qui n'a pas encore vu cette version. [version, jeu ou partie de l'appli, ce qui change]
 const NOUVEAUTES = [
+  ['4.25', 'Accueil', 'Mes amis : qui joue à Désdale et les classements, même quand personne n\'est connecté.'],
   ['4.24', 'Mon compagnon', 'Pièce agrandie à la loupe : fais-la glisser du doigt pour la parcourir.'],
   ['4.23', 'Mon compagnon', 'Dans son panier, sa niche ou son château, il est vraiment dedans.'],
   ['4.22', 'Mon compagnon', '« Au panier ! » marche de nouveau, même la nuit : il y dort ensuite.'],
@@ -210,7 +211,7 @@ var DEMENAGEMENT = { ouvert: true, ancienHote: 'padpanik.github.io', nouvelle: '
 
 var Sauvegarde = (function () {
   var NOTRES = /^(brillant|desdale|compagnon|expedition|yams2?|bg|assaut|bataille|gribouille|petitbac|agents|quatre|domino|lettres|donjon|joyaux|dix|chinchon|cieljo|poker|vallee)-/;
-  var EXCLUES = ['brillant-acces', 'brillant-client-id', 'desdale-admin', 'desdale-nuage'];
+  var EXCLUES = ['brillant-acces', 'brillant-client-id', 'desdale-admin', 'desdale-nuage', 'desdale-registre-etat', 'desdale-registre-cache', 'desdale-registre-adresse'];
   function gardee(k) { return NOTRES.test(k) && EXCLUES.indexOf(k) === -1 && !/-sauvegarde(-v1)?$/.test(k) && !/-prive$/.test(k); }
   function cles() { var l = []; try { for (var i = 0; i < localStorage.length; i++) { var k = localStorage.key(i); if (gardee(k)) l.push(k); } } catch (e) {} return l.sort(); }
   function creer() {
@@ -397,6 +398,161 @@ var Nuage = (function () {
     envoyer: envoyer, lire: lire, activer: activer, reprendre: reprendre, suspendre: suspendre, effacer: effacer, demarrer: demarrer };
 })();
 if (typeof document !== 'undefined') { try { Nuage.demarrer(); } catch (e) {} }
+
+// ================== REGISTRE DES JOUEURS (fiches publiques entre amis) ==================
+// Chaque téléphone publie la fiche de son joueur (pseudo, couleur, résumé du compagnon, parties par jeu, records)
+// sur le Worker « desdale-registre » (voir serveur-registre/), et lit celles des autres : on sait qui existe
+// et on compare les scores même quand personne n'est connecté. Activé par défaut (choix de l'utilisateur) ;
+// le joueur voit ce qui est publié et peut retirer sa fiche (« Mes amis » sur l'accueil).
+// Lecture et écriture demandent la clé de salon (en-tête X-Desdale) : sans le code d'accès, rien.
+// `desdale-registre` = { jeton, actif } : dans la sauvegarde (un nouveau téléphone continue la même fiche) ;
+// `desdale-registre-etat` (dernier envoi, empreinte, erreur) et `desdale-registre-cache` (fiches lues) : propres au téléphone.
+var Registre = (function () {
+  var ADRESSE = 'https://desdale-registre.desdale.workers.dev';
+  var CLE = 'desdale-registre', ETAT = 'desdale-registre-etat', CACHE = 'desdale-registre-cache';
+  var ECART_AUTO = 2 * 60 * 1000;       // publication automatique au plus toutes les 2 min (et seulement si la fiche a changé)
+  var FRAICHEUR = 10 * 60 * 1000;       // fiches des autres relues au plus toutes les 10 min
+  var DELAI = 30 * 1000;                // après une fin de partie
+  var enCours = null, minuterie = null;
+
+  function adresse() { var a = lireStockage('desdale-registre-adresse'); return typeof a === 'string' && a ? a : ADRESSE; }   // essais : serveur local
+  function cleSalon() {
+    try { if (typeof ACCES !== 'undefined' && ACCES.cleSalon) return ACCES.cleSalon; } catch (e) {}
+    var a = lireStockage('brillant-acces'); return a && a.s ? a.s : '';
+  }
+  function possible() { return typeof window !== 'undefined' && !!(window.fetch && window.crypto && crypto.getRandomValues); }
+  function reglage() { return lireStockage(CLE) || {}; }
+  function etat() { return lireStockage(ETAT) || {}; }
+  function prevenir() { try { window.dispatchEvent(new CustomEvent('desdale-registre')); } catch (x) {} }
+  function majEtat(m) { var e = etat(); Object.keys(m).forEach(function (k) { if (m[k] === undefined) delete e[k]; else e[k] = m[k]; }); ecrireStockage(ETAT, e); prevenir(); }
+  function actif() { return reglage().actif !== false; }
+  function monId() { return typeof Joueur !== 'undefined' && Joueur.id ? Joueur.id : ''; }
+  function jeton() {
+    var r = reglage();
+    if (!/^[0-9a-f]{32}$/.test(r.jeton || '')) {
+      var o = crypto.getRandomValues(new Uint8Array(16));
+      r.jeton = Array.prototype.map.call(o, function (x) { return ('0' + x.toString(16)).slice(-2); }).join('');
+      ecrireStockage(CLE, r);
+    }
+    return r.jeton;
+  }
+  function hash(s) { var h = 5381; for (var i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) | 0; return (h >>> 0).toString(36); }
+
+  // Parties par jeu (Mes statistiques) et quelques records déjà rangés sur le téléphone
+  function scores() {
+    var s = {};
+    try {
+      var par = {};
+      StatsParties.lire().forEach(function (x) {
+        var id = StatsParties.id(x[1]); par[id] = par[id] || { n: 0, g: 0 };
+        par[id].n++; if (x[2]) par[id].g++;
+      });
+      Object.keys(par).forEach(function (id) { if (/^[a-z0-9-]{1,30}$/.test(id)) s['p:' + id] = { v: par[id].n, d: { g: par[id].g } }; });
+    } catch (e) {}
+    var y = lireStockage('yams2-record');
+    if (y && y.s > 0) s['r:yams'] = { v: y.s, d: { t: y.d || 0 } };
+    var br = lireStockage('brillant-records') || {}, brd = lireStockage('brillant-records-dates') || {};
+    Object.keys(br).forEach(function (n) { if (/^[1-9]$/.test(n) && br[n] > 0) s['r:brilliant-' + n] = { v: br[n], d: { t: brd[n] || 0 } }; });
+    var dj = lireStockage('donjon-stats');
+    if (dj && dj.parties) s['r:donjon'] = { v: dj.gagnes || 0, d: { p: dj.parties, e: dj.record || 0 } };
+    return s;
+  }
+  // Ma fiche, telle que les amis la verront (null : pas encore de pseudo)
+  function fiche() {
+    var p = lireStockage('desdale-profil') || {}, a = lireStockage('compagnon-animal');
+    var pseudo = String(p.pseudo || '').trim().slice(0, 20);
+    if (!pseudo) return null;
+    var profil = { c: /^#[0-9a-f]{6}$/i.test(p.couleur || '') ? p.couleur : '', e: String(p.emoji || '').slice(0, 8) };
+    if (a && a.espece) profil.cp = { e: a.espece, c: a.couleur, n: String(a.nom || '').slice(0, 16), p: a.porte || {}, ne: a.ne || 0 };
+    return { pseudo: pseudo, profil: profil, scores: scores() };
+  }
+
+  function requete(methode, chemin, corps, avecJeton) {
+    var h = { 'X-Desdale': cleSalon() };
+    if (avecJeton) h.Authorization = 'Bearer ' + jeton();
+    if (corps) h['Content-Type'] = 'application/json';
+    return fetch(adresse() + chemin, { method: methode, cache: 'no-store', headers: h, body: corps }).then(function (r) {
+      if (r.ok) return r.json();
+      var e = new Error(r.status === 401 ? 'Le registre ne reconnaît pas le code d\'accès.' : r.status === 403 ? 'Cette fiche appartient à un autre jeton.'
+        : r.status === 429 ? 'Publication trop rapprochée.' : 'Le registre ne répond pas (' + r.status + ').');
+      e.statut = r.status; throw e;
+    }, function () { throw new Error('Pas de connexion au registre.'); });
+  }
+
+  // Publie ma fiche. force = sans attendre ni vérifier qu'elle a changé.
+  function publier(force) {
+    if (!possible() || !actif() || !cleSalon() || !monId()) return Promise.resolve(false);
+    var f = fiche();
+    if (!f) return Promise.resolve(false);
+    var corps = JSON.stringify(f), emp = hash(corps), e = etat();
+    if (!force && emp === e.emp) return Promise.resolve(false);
+    if (!force && e.dernier && Date.now() - e.dernier < ECART_AUTO) { bientot(ECART_AUTO - (Date.now() - e.dernier) + 1000); return Promise.resolve(false); }
+    if (enCours) return enCours;
+    enCours = requete('PUT', '/r/' + monId(), corps, true).then(function () {
+      majEtat({ dernier: Date.now(), emp: emp, erreur: undefined });
+      // Ma fiche à jour dans la copie locale, sans attendre la prochaine lecture
+      var c = lireStockage(CACHE);
+      if (c && Array.isArray(c.fiches)) {
+        var moi = { id: monId(), pseudo: f.pseudo, profil: f.profil, scores: f.scores, vu: Date.now() };
+        c.fiches = [moi].concat(c.fiches.filter(function (x) { return x.id !== moi.id; }));
+        ecrireStockage(CACHE, c); prevenir();
+      }
+      return true;
+    }, function (err) {
+      if (err.statut === 429) bientot(65 * 1000);
+      else majEtat({ erreur: err.message, erreurT: Date.now() });
+      throw err;
+    }).then(function (r) { enCours = null; return r; }, function (err) { enCours = null; throw err; });
+    return enCours;
+  }
+  function bientot(delai) {
+    if (typeof setTimeout === 'undefined') return;
+    clearTimeout(minuterie);
+    minuterie = setTimeout(function () { publier(false).catch(function () {}); }, delai || DELAI);
+  }
+
+  // Les fiches de tout le monde (copie locale si elle a moins de 10 min, sauf force)
+  function cache() { var c = lireStockage(CACHE); return c && Array.isArray(c.fiches) ? c : { t: 0, fiches: [] }; }
+  function lire(force) {
+    var c = cache();
+    if (!force && c.t && Date.now() - c.t < FRAICHEUR) return Promise.resolve(c.fiches);
+    if (!possible() || !cleSalon()) return Promise.resolve(c.fiches);
+    return requete('GET', '/r').then(function (r) {
+      var fiches = (r.fiches || []).filter(function (x) { return x && /^[a-z0-9]{4,40}$/i.test(x.id) && x.pseudo; });
+      fiches.forEach(function (x) { try { if (typeof Joueur !== 'undefined' && !Joueur.estMoi(x.id)) Joueur.noter(x.id, x.pseudo); } catch (e) {} });
+      ecrireStockage(CACHE, { t: Date.now(), fiches: fiches });
+      prevenir();
+      return fiches;
+    });
+  }
+
+  // Retirer ma fiche (et ne plus publier) / la remettre
+  function retirer() {
+    ecrireStockage(CLE, Object.assign(reglage(), { actif: false }));
+    var c = lireStockage(CACHE);
+    if (c && Array.isArray(c.fiches)) { c.fiches = c.fiches.filter(function (x) { return x.id !== monId(); }); ecrireStockage(CACHE, c); }
+    majEtat({ emp: undefined });
+    if (!possible() || !cleSalon() || !monId() || !reglage().jeton) return Promise.resolve(true);
+    return requete('DELETE', '/r/' + monId(), null, true).then(function () { return true; });
+  }
+  function activer() {
+    ecrireStockage(CLE, Object.assign(reglage(), { actif: true }));
+    majEtat({ emp: undefined, dernier: undefined });
+    return publier(true);
+  }
+
+  function demarrer() {
+    if (!possible()) return;
+    setTimeout(function () { publier(false).catch(function () {}); }, 25000);
+    document.addEventListener('visibilitychange', function () {
+      if (document.visibilityState === 'hidden') publier(false).catch(function () {});
+    });
+  }
+
+  return { possible: possible, actif: actif, etat: etat, fiche: fiche, publier: publier, bientot: bientot,
+    lire: lire, cache: cache, retirer: retirer, activer: activer, demarrer: demarrer };
+})();
+if (typeof document !== 'undefined') { try { Registre.demarrer(); } catch (e) {} }
 
 // Garde-fou réseau : si le serveur de mise en relation (PeerJS) ne répond pas, l'événement « open » n'arrive jamais
 // et aucune erreur non plus : la page resterait sur « connexion… ». Passé le délai, on déclenche une erreur ;

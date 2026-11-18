@@ -1,0 +1,13 @@
+# Worker « desdale-registre » : registre des joueurs (fiches publiques entre amis). Voir LISEZMOI.md.
+# Secret CLE (la clé de salon, la même que pour desdale-reseau) : wrangler secret put CLE, jamais dans le dépôt.
+name = "desdale-registre"
+main = "worker.js"
+compatibility_date = "2026-11-01"
+
+[vars]
+ORIGINES = "https://demodes.desdale.workers.dev,https://padpanik.github.io"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "desdale-registre"
+database_id = "b55bb2f1-dd4d-4504-a9c7-8768f0587a8a"
