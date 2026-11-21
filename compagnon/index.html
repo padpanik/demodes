@@ -615,7 +615,7 @@
 <body>
   <div id="app" v-cloak class="app">
     <div class="barre">
-      <a class="lien-jeux retour-cp" :href="retourVallee ? 'vallee/' : 'index.html?choix'" :title="retourVallee ? 'Retour dans la Vallée' : 'Retour à la liste des jeux'"><span class="ico" v-html="ICO.retour"></span>{{ retourVallee ? 'Vallée' : 'Jeux' }}</a>
+      <a class="lien-jeux retour-cp" :href="retourVallee ? retourUrl : 'index.html?choix'" :title="retourVallee ? 'Retour dans la Vallée' : 'Retour à la liste des jeux'"><span class="ico" v-html="ICO.retour"></span>{{ retourVallee ? (retourQuartier ? 'Quartier' : 'Vallée') : 'Jeux' }}</a>
       <div class="barre-infos"><span class="etoiles"><span class="ico" v-html="ICO.etoile"></span>{{ etoiles }}</span></div>
     </div>
 
@@ -808,7 +808,7 @@
         <div class="actions-visite">
           <button v-if="!visite.absent" class="btn principal" @click="calinVisite" v-html="pic('coeur', 20) + ' Câlin'"></button>
           <button v-if="visite.j" class="btn" :class="{ principal: visite.absent }" :disabled="visite.ecrit" @click="ouvrirLettre" v-html="pic('lettre', 20) + (visite.ecrit ? ' Lettre déposée' : ' Une lettre')"></button>
-          <a class="btn" :href="retourVallee ? 'vallee/' : 'compagnon/'">{{ retourVallee ? 'Retour dans la Vallée' : 'Rentrer chez moi' }}</a>
+          <a class="btn" :href="retourVallee ? retourUrl : 'compagnon/'">{{ retourVallee ? (retourQuartier ? 'Retour au quartier' : 'Retour dans la Vallée') : 'Rentrer chez moi' }}</a>
         </div>
       </section>
 
@@ -1273,6 +1273,9 @@
         journal: [],
         onglet: ['soins', 'boutique', 'defis'].indexOf(new URLSearchParams(location.search).get('onglet')) >= 0 ? new URLSearchParams(location.search).get('onglet') : 'soins',
         retourVallee: depuisVallee(),   // venu de la Vallée (ma maison) : on y retourne (3.48)
+        // venu du quartier des amis (4.35) : on y retourne
+        retourQuartier: (function () { try { return depuisVallee() && sessionStorage.getItem('desdale-quartier') === '1'; } catch (e) { return false; } })(),
+        retourUrl: (function () { try { return depuisVallee() && sessionStorage.getItem('desdale-quartier') === '1' ? 'vallee/quartier.html' : 'vallee/'; } catch (e) { return 'vallee/'; } })(),
         enAchat: null,
         reglages: CP.reglagesMessages(),
         notifPossible: 'Notification' in window && 'serviceWorker' in navigator,
@@ -2229,6 +2232,8 @@
             this.maintenant = Date.now();
             this.message = absent ? this.visite.pseudo + ' n\'est pas là. Chut, ' + this.animal.nom + ' fait la sieste.' : 'Bienvenue chez ' + this.visite.pseudo + ' ! 👋';
             this.$nextTick(() => { this.montrerAnimal(true); this.demarrerVie(); });
+            // Venu du quartier par « Lettre » (4.35) : la lettre s'ouvre tout de suite, une fois
+            if (this.visite.j && new URLSearchParams(location.search).get('lettre') && !this._lettreAuto) { this._lettreAuto = true; setTimeout(() => this.ouvrirLettre(), 600); }
         },
         // ---------- La boîte aux lettres (4.27, Registre dans commun.js) ----------
         ouvrirLettre: function() {

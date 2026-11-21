@@ -725,7 +725,10 @@
     // Petites phrases de la fontaine et des maisons
     const FONTAINE = ['Tu fais un vœu… plouf ! 🪙', 'L\'eau est fraîche et claire. 💧', 'Un poisson rouge te fait des bulles. 🐟'];
     const SAULE = ['🌳 Le vieux saule frissonne. Ses branches caressent l\'eau.', '🌳 Quelqu\'un a gravé un cœur dans l\'écorce, il y a très longtemps.', '🌳 Une balançoire pend à une grosse branche. Elle grince doucement.'];
+    try { sessionStorage.removeItem('desdale-quartier'); } catch (e) {}
     var etat = VL.charger(lireStockage(CLE));
+    // Le quartier des amis a sa propre page (4.35) : une ancienne position dans l'ancien quartier revient à l'entrée, dans la clairière
+    if (VL.defile(etat.x, etat.y)) { etat.x = 32; etat.y = 13; etat.dir = 'g'; }
     // Les émotions des jeux (même liste et même ordre que compagnons-jeu.js : le numéro voyage sur le réseau)
     const EMOTES = [
       { ico: '👍', txt: 'Bien joué !' }, { ico: '😂', txt: 'Ha ha !' }, { ico: '😮', txt: 'Oh !' }, { ico: '😅', txt: 'Oups…' },
@@ -1087,8 +1090,13 @@
             this._amiPasse = { id: amiLa.id, t: Date.now() };
             this.ouvrirAmi(amiLa); return;
           }
-          var dansQuartier = VL.defile(etat.x, etat.y);
+          var dansQuartier = VL.defile(etat.x, etat.y), px = etat.x, py = etat.y;
           var r = VL.pas(etat, d, this.ctx);
+          // Le passage vers le quartier des amis est un portail : il mène à sa page, en isométrique (4.35)
+          if (r.bouge && !dansQuartier && VL.defile(etat.x, etat.y)) {
+            etat.x = px; etat.y = py; etat.dir = 'g'; this.sens = 'g'; this.dir = null;
+            this.son('toc'); this.entrer('vallee/quartier.html'); return;
+          }
           if (r.bouge) {
             if (r.ecran && dansQuartier && VL.defile(etat.x, etat.y)) r.ecran = false;   // le quartier défile : ni fondu ni nom du lieu
             if (r.ecran) {

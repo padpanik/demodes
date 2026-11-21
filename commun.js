@@ -3,12 +3,13 @@
 // Les clés de stockage gardent l'ancien préfixe "brillant-" : les réglages déjà faits sont conservés.
 
 // Numéro de version affiché (à augmenter à chaque mise en ligne, avec brilliant/index.html et sw.js)
-const VERSION = '4.34';
+const VERSION = '4.35';
 
 // ---------- Nouveautés (2.87, demandé par l'utilisateur) ----------
 // Une ligne très brève par mise en ligne (la plus récente en haut) : l'accueil les montre une seule fois, dans une petite fenêtre,
 // à qui n'a pas encore vu cette version. [version, jeu ou partie de l'appli, ce qui change]
 const NOUVEAUTES = [
+  ['4.35', 'Vallée', 'Le quartier des amis s\'ouvre par un portail : de vraies maisons à arranger, celles de tes amis autour.'],
   ['4.34', 'Vallée et maison', 'La lumière suit le vrai lever et coucher du soleil : crépuscule doré, nuit bleue.'],
   ['4.33', 'Vallée et maison', 'La météo de chez toi (pluie, neige, brouillard, vent), mêlée à la saison : à activer dans les Options.'],
   ['4.28', 'Accueil', 'Mes amis : « vu il y a… » sur sa propre ligne.'],
@@ -469,6 +470,9 @@ var Registre = (function () {
     if (!pseudo) return null;
     var profil = { c: /^#[0-9a-f]{6}$/i.test(p.couleur || '') ? p.couleur : '', e: String(p.emoji || '').slice(0, 8) };
     if (a && a.espece) profil.cp = { e: a.espece, c: a.couleur, n: String(a.nom || '').slice(0, 16), p: a.porte || {}, ne: a.ne || 0 };
+    // La façade de ma maison dans le quartier des amis (4.35)
+    var fa = lireStockage('vallee-facade');
+    if (a && a.espece && fa && fa.maison && typeof fa.maison === 'object' && JSON.stringify(fa.maison).length < 1200) profil.f = fa.maison;
     return { pseudo: pseudo, profil: profil, scores: scores() };
   }
 
