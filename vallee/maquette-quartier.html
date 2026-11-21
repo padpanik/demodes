@@ -62,6 +62,27 @@
     .fiche-q .etat i.on { background: #2f9e44; box-shadow: 0 0 0 2px #c3f0cc; }
     .fiche-q .boutons { margin-top: auto; display: flex; gap: 6px; }
     .fiche-q .boutons button { flex: 1; white-space: nowrap; padding: 8px 4px; border-radius: 9px; font: 700 0.82em system-ui, sans-serif; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 4px; }
+    /* ----- Arranger dehors ----- */
+    .arr-q { flex: none; height: 300px; background: linear-gradient(#fdf4e3, #ecd6b0); border: 2px solid #6b4f36; border-radius: 12px; color: #3b2a1e; display: flex; flex-direction: column; overflow: hidden; }
+    .onglets-a { display: grid; grid-template-columns: repeat(4, 1fr); background: #3a2c22; flex: none; }
+    .onglets-a button { background: none; border: 0; border-bottom: 3px solid transparent; color: #e9dcc0; font: 700 0.8em system-ui, sans-serif; padding: 9px 2px 7px; cursor: pointer; }
+    .onglets-a button.on { color: #ffd8a8; border-bottom-color: #e8590c; background: #4b3a2c; }
+    .contenu-a { flex: 1; min-height: 0; overflow-y: auto; padding: 8px 9px; display: flex; flex-direction: column; gap: 8px; }
+    .contenu-a h4 { margin: 0; font: 700 0.86em Georgia, serif; color: #7c2d12; }
+    .tuiles-a { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+    .tuiles-a.quatre { grid-template-columns: repeat(4, 1fr); }
+    .tuile-a { background: #fff8ea; border: 1.5px solid #c9a874; border-radius: 9px; padding: 3px 2px 4px; display: flex; flex-direction: column; align-items: center; gap: 1px; cursor: pointer; font: 700 0.72em system-ui, sans-serif; color: #5c3a1e; }
+    .tuile-a.on { border-color: #e8590c; box-shadow: 0 0 0 2px #ffc078; background: #fff1dc; }
+    .tuile-a svg { display: block; }
+    .seg-a { display: flex; gap: 5px; flex-wrap: wrap; }
+    .seg-a button { flex: 1; min-width: 60px; background: #fff8ea; border: 1.5px solid #c9a874; border-radius: 99px; padding: 6px 6px; font: 700 0.76em system-ui, sans-serif; color: #5c3a1e; cursor: pointer; }
+    .seg-a button.on { background: linear-gradient(#c2551b, #9a3f12); border-color: #6b2a07; color: #fff4e6; }
+    .nuancier-a { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; }
+    .nuancier-a button { aspect-ratio: 1; border-radius: 50%; border: 2px solid rgba(0,0,0,0.25); cursor: pointer; }
+    .nuancier-a button.on { border-color: #3b2a1e; box-shadow: 0 0 0 2px #fff8ea, 0 0 0 4px #e8590c; }
+    .aide-a { margin: 0; font: italic 600 0.76em/1.3 Georgia, serif; color: #6b4f36; }
+    .pied-a { flex: none; display: grid; grid-template-columns: 1fr 1.3fr; gap: 8px; padding: 7px 9px 8px; border-top: 1px solid #c9a874; }
+    .pied-a button { padding: 9px 4px; border-radius: 9px; font: 700 0.88em system-ui, sans-serif; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px; }
     .btn-rouille { background: linear-gradient(#c2551b, #9a3f12); border: 1.5px solid #6b2a07; color: #fff4e6; box-shadow: 0 2px 0 #4a1d05; }
     .btn-papier { background: #fff8ea; border: 1.5px solid #b08a5c; color: #5c3a1e; box-shadow: 0 2px 0 #b08a5c; }
   </style>
@@ -82,13 +103,58 @@
           <g ref="monde" v-html="monde"></g>
           <rect v-if="nuit" x="-4000" y="-4000" width="9000" height="9000" fill="#1d2552" opacity="0.58" style="mix-blend-mode:multiply" pointer-events="none"/>
           <g v-if="nuit" v-html="lueurs" pointer-events="none" style="mix-blend-mode:screen"></g>
+          <g v-if="arr && arr.onglet === 'jardin'" v-html="reperes"></g>
         </g>
       </svg>
       <div class="lieu-q">{{ lieu }}</div>
       <div v-if="annonce" class="annonce-q">{{ annonce }}</div>
     </div>
 
-    <div class="bas-q">
+    <div class="arr-q" v-if="arr">
+      <div class="onglets-a"><button v-for="o in ONGLETS_A" :key="o.id" :class="{ on: arr.onglet === o.id }" @click="arr.onglet = o.id">{{ o.nom }}</button></div>
+      <div class="contenu-a" v-if="arr.onglet === 'maison'">
+        <div class="tuiles-a">
+          <div v-for="(S, id) in STYLES" :key="id" class="tuile-a" :class="{ on: maMaison.style === id }" @click="choisirStyle(id)"><span v-html="vignettes[id]"></span>{{ S.nom }}</div>
+        </div>
+        <p class="aide-a">Changer de style reprend ses couleurs d'origine ; retouche-les ensuite dans Couleurs.</p>
+      </div>
+      <div class="contenu-a" v-else-if="arr.onglet === 'couleurs'">
+        <div class="seg-a"><button v-for="c in CIBLES_C" :key="c.id" :class="{ on: arr.couleur === c.id }" @click="arr.couleur = c.id">{{ c.nom }}</button></div>
+        <div class="nuancier-a"><button v-for="t in NUANCIER" :key="t.id" :class="{ on: maMaison[arr.couleur] === t.id }" :style="{ background: t.c }" :title="t.nom" @click="regler(arr.couleur, t.id)"></button></div>
+        <template v-if="arr.couleur === 'toitT'">
+          <h4>Couverture</h4>
+          <div class="seg-a"><button v-for="(nom, id) in TOITS" :key="id" :class="{ on: maMaison.toit === id }" @click="regler('toit', id)">{{ nom }}</button></div>
+        </template>
+      </div>
+      <div class="contenu-a" v-else-if="arr.onglet === 'cloture'">
+        <h4>Clôture</h4>
+        <div class="seg-a"><button v-for="(nom, id) in CLOTURES" :key="id" :class="{ on: maMaison.cloture === id }" @click="regler('cloture', id)">{{ nom }}</button></div>
+        <h4>Détails</h4>
+        <div class="seg-a">
+          <button :class="{ on: maMaison.arche }" @click="regler('arche', !maMaison.arche)">Arceau de roses</button>
+          <button :class="{ on: maMaison.fleurs !== false }" @click="regler('fleurs', maMaison.fleurs === false)">Fleurs aux fenêtres</button>
+        </div>
+      </div>
+      <div class="contenu-a" v-else>
+        <p class="aide-a" v-if="arr.place == null">Touche une place du jardin (les losanges), puis choisis ce que tu y mets.</p>
+        <template v-else>
+          <div class="tuiles-a quatre">
+            <div class="tuile-a" :class="{ on: !objetPlace }" @click="poser(null)"><span v-html="ico('croix', 30)" style="color:#8a6a46;padding:10px 0"></span>Rien</div>
+            <div v-for="m in OBJETS_J" :key="m" class="tuile-a" :class="{ on: objetPlace && objetPlace.m === m }" @click="poser(m)"><span v-html="vigObjet(m)"></span>{{ MEUBLES[m].nom }}</div>
+          </div>
+          <template v-if="objetPlace">
+            <h4>Teinte</h4>
+            <div class="nuancier-a"><button v-for="t in NUANCIER" :key="t.id" :class="{ on: (objetPlace.t || MEUBLES[objetPlace.m].t) === t.id }" :style="{ background: t.c }" @click="teinter(t.id)"></button></div>
+          </template>
+        </template>
+      </div>
+      <div class="pied-a">
+        <button class="btn-papier" @click="annuler">Annuler</button>
+        <button class="btn-rouille" @click="valider" v-html="ico('coche', 17) + 'Valider'"></button>
+      </div>
+    </div>
+
+    <div class="bas-q" v-else>
       <div class="croix-q">
         <div class="rond"></div>
         <button v-for="b in CROIX" :key="b.c" :class="[b.c, { appui: dirTenue === b.c }]" @pointerdown.prevent="tenir(b)" @pointerup="lacher" @pointercancel="lacher" @pointerleave="lacher" v-html="ico(b.ico, 22)"></button>
@@ -98,7 +164,7 @@
         <span class="etat"><i :class="{ on: fiche.present }"></i>{{ fiche.moi ? 'C\'est chez toi' : fiche.present ? 'À la maison' : 'Absent · passé il y a ' + fiche.vu }}</span>
         <p class="ligne">{{ STYLES[fiche.maison.style].nom }} · {{ placetteNom(fiche.n) }}</p>
         <div class="boutons" v-if="fiche.moi">
-          <button class="btn-rouille" @click="dire('Étape 2 : Arranger ma parcelle (style, couleurs, jardin)')" v-html="ico('arranger', 16) + 'Arranger dehors'"></button>
+          <button class="btn-rouille" @click="ouvrirArranger" v-html="ico('arranger', 16) + 'Arranger dehors'"></button>
         </div>
         <div class="boutons" v-else>
           <button class="btn-papier" @click="dire('Dans l\'appli : une lettre dans sa boîte')" v-html="ico('lettre', 16) + 'Lettre'"></button>
@@ -126,6 +192,7 @@
       fleche: '<path d="M12 19V5M6 11l6-6 6 6"/>',
       arranger: '<path d="M4 20h7"/><path d="M15 4.5l4.5 4.5L9 19.5H4.5V15z"/><path d="M12.5 7l4.5 4.5"/>',
       lettre: '<rect x="3.5" y="6" width="17" height="12.5" rx="1.5"/><path d="M4 7l8 6.5L20 7"/>',
+      coche: '<path d="M5 12.5l4.5 4.5L19 7.5"/>', croix: '<path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/>',
       porte: '<path d="M6 20.5V4.5h12v16"/><path d="M3.5 20.5h17"/><circle cx="14.5" cy="12.5" r="1"/>'
     };
     function ico(nom, t) {
@@ -139,6 +206,9 @@
       var t = Date.now(), b = {}; ['repas', 'eau', 'toilette', 'calin'].forEach(function (k) { b[k] = { v: 90, t: t }; });
       return { espece: espece, couleur: couleur, nom: nom, besoins: b, porte: {}, ne: t };
     }
+    const CLE_Q = 'maquette-quartier';   // ma maison de la maquette (jamais lue ailleurs)
+    const OBJETS_J = ['massif', 'plante', 'lanterne', 'nichoir', 'fontaine', 'arbre', 'ballon'];
+    function copie(x) { return JSON.parse(JSON.stringify(x)); }
     function exemples(moi) {
       var J = function (m, u, v, t, o) { return { m: m, u: u, v: v, t: t, o: o }; };
       return [
@@ -160,14 +230,19 @@
       data: function () {
         var a = lireStockage('compagnon-animal');
         if (!a || !a.espece) a = animalDe('renard', '#e8772e', 'Roux');
+        var sv = lireStockage(CLE_Q) || {};
         var moi = { nom: (lireStockage('desdale-profil') || {}).pseudo || 'Moi', moi: true, present: true, a: a,
-                    maison: { style: 'chaumiere', mur: 'creme', menuis: 'brique', toitT: 'moutarde', cloture: 'piquets', arche: true, jardin: [{ m: 'massif', u: 0, v: 3, t: 'prune' }, { m: 'plante', u: 3, v: 4 }, { m: 'lanterne', u: 2, v: 4 }] } };
+                    maison: sv.maison || { style: 'chaumiere', mur: 'creme', menuis: 'brique', toitT: 'moutarde', cloture: 'piquets', arche: true, jardin: [{ m: 'massif', u: 0, v: 3, t: 'prune' }, { m: 'plante', u: 3, v: 4 }, { m: 'lanterne', u: 2, v: 4 }] } };
         var hab = exemples(moi).map(function (h, n) { h.n = n; h.maison = QQ.maison(h.maison); return h; });
         var Q = QQ.quartier(hab.length);
         return {
           STYLES: QQ.STYLES, Q: Q, hab: hab, animal: a, ok: QQ.cases(Q),
           CROIX: [{ c: 'hg', d: [-1, 0], ico: 'fl-hg' }, { c: 'hd', d: [0, -1], ico: 'fl-hd' }, { c: 'bg', d: [0, 1], ico: 'fl-bg' }, { c: 'bd', d: [1, 0], ico: 'fl-bd' }],
           pos: { i: -1, j: QQ.RUE0 + 1 }, gauche: false, chemin: [], dirTenue: null,
+          arr: null, NUANCIER: CPM.NUANCIER, MEUBLES: CPM.MEUBLES, TOITS: QQ.TOITS, CLOTURES: QQ.CLOTURES, OBJETS_J: OBJETS_J,
+          ONGLETS_A: [{ id: 'maison', nom: 'Maison' }, { id: 'couleurs', nom: 'Couleurs' }, { id: 'cloture', nom: 'Clôture' }, { id: 'jardin', nom: 'Jardin' }],
+          CIBLES_C: [{ id: 'mur', nom: 'Murs' }, { id: 'toitT', nom: 'Toit' }, { id: 'menuis', nom: 'Portes, volets' }],
+          vignettes: (function () { var r = {}; Object.keys(QQ.STYLES).forEach(function (id) { r[id] = QQ.vignetteMaison({ style: id }, 76, 70); }); return r; })(),
           nuit: false, loin: false, W: 360, H: 560, camVite: true, fiche: null, annonce: '', v: 0
         };
       },
@@ -193,17 +268,27 @@
           this.scene.elements.forEach(function (e) { (e.lueurs || []).forEach(function (p) { s += '<circle cx="' + p[0].toFixed(1) + '" cy="' + p[1].toFixed(1) + '" r="22" fill="url(#qd-lueur)"/>'; }); });
           return s;
         },
-        ech: function () { return this.loin ? 0.45 : 0.9; },
+        ech: function () { return this.arr ? 1 : this.loin ? 0.45 : 0.9; },
+        moiH: function () { return this.hab.filter(function (h) { return h.moi; })[0]; },
+        maMaison: function () { return this.moiH.maison; },
+        monLot: function () { return this.Q.lots[this.moiH.n]; },
+        reperes: function () { return QQ.reperesJardin(this.monLot, this.arr ? this.arr.place : null); },
+        objetPlace: function () {
+          if (!this.arr || this.arr.place == null) return null;
+          var c = QQ.PLACES_JARDIN[this.arr.place];
+          return this.maMaison.jardin.filter(function (o) { return o.u === c[0] && o.v === c[1]; })[0] || null;
+        },
         // Caméra : centrée sur moi, sans sortir du quartier
         camStyle: function () {
-          var s = this.ech, p = QQ.proj(this.pos.i + 0.5, this.pos.j + 0.5), Q = this.Q;
+          var s = this.ech, p = this.arr ? QQ.centreLot(this.monLot) : QQ.proj(this.pos.i + 0.5, this.pos.j + 0.5), Q = this.Q;
           var x0 = QQ.proj(Q.iMin - 2, Q.jMax)[0], x1 = QQ.proj(Q.iMax + 3, Q.jMin - 2)[0], y0 = QQ.proj(Q.iMin - 3, Q.jMin - 3)[1] - 150, y1 = QQ.proj(Q.iMax + 3, Q.jMax + 6)[1];
-          var tx = this.W / 2 - s * p[0], ty = this.H * 0.7 - s * (p[1] - 20);
+          var tx = this.W / 2 - s * p[0], ty = (this.arr ? this.H * 0.62 : this.H * 0.7) - s * (p[1] - 20);
           var bx = function (t, a, b, L) { var lo = L - s * b, hi = -s * a; return lo > hi ? (lo + hi) / 2 : Math.min(hi, Math.max(lo, t)); };
           tx = bx(tx, x0, x1, this.W); ty = bx(ty, y0, y1, this.H);
           return { transform: 'translate(' + tx.toFixed(1) + 'px,' + ty.toFixed(1) + 'px) scale(' + s + ')' };
         },
         lieu: function () {
+          if (this.arr) return 'Ma parcelle';
           var p = Math.max(0, Math.min(this.Q.placettes.length - 1, Math.floor((this.pos.i + 1) / QQ.PAS)));
           return this.pos.i < 1 && this.pos.j >= QQ.RUE0 ? 'La rue des amis' : this.Q.placettes[p].nom;
         }
@@ -225,7 +310,7 @@
       methods: {
         ico: ico,
         dire: function (t) { var v = this; v.annonce = t; clearTimeout(v._ann); v._ann = setTimeout(function () { v.annonce = ''; }, 2400); },
-        mesurer: function () { var r = this.$refs.scene.getBoundingClientRect(); this.W = Math.round(r.width); this.H = Math.round(r.height); },
+        mesurer: function () { if (!this.$refs.scene) return; var r = this.$refs.scene.getBoundingClientRect(); this.W = Math.round(r.width); this.H = Math.round(r.height); },
         placetteNom: function (n) { var L = this.Q.lots[n]; return this.Q.placettes[L.placette].nom; },
         // Mon compagnon : un nœud à part, glissé dans le monde juste avant le premier élément qui est devant lui
         placerMoi: function () {
@@ -254,6 +339,37 @@
           this.placerMoi();
           return false;
         },
+        // ----- Arranger dehors (ma parcelle) -----
+        ouvrirArranger: function () {
+          this.lacher(); this.chemin = []; clearInterval(this._marche);
+          this.arr = { onglet: 'maison', couleur: 'mur', place: null, avant: copie(this.maMaison) };
+          this.$nextTick(this.mesurer);
+        },
+        maj: function (m) { this.moiH.maison = QQ.maison(m); },
+        regler: function (cle, val) { var m = copie(this.maMaison); m[cle] = val; this.maj(m); },
+        choisirStyle: function (id) {
+          var m = copie(this.maMaison), S = QQ.STYLES[id];
+          m.style = id; m.mur = S.murT; m.toit = S.toit; m.toitT = S.toitT; m.menuis = S.menuis;
+          this.maj(m);
+        },
+        vigObjet: function (m) { return CPM.vignette(m, null, 46); },
+        poser: function (mid) {
+          var c = QQ.PLACES_JARDIN[this.arr.place], m = copie(this.maMaison);
+          m.jardin = m.jardin.filter(function (o) { return !(o.u === c[0] && o.v === c[1]); });
+          if (mid) m.jardin.push({ m: mid, u: c[0], v: c[1] });
+          this.maj(m);
+        },
+        teinter: function (t) {
+          var c = QQ.PLACES_JARDIN[this.arr.place], m = copie(this.maMaison);
+          m.jardin.forEach(function (o) { if (o.u === c[0] && o.v === c[1]) o.t = t; });
+          this.maj(m);
+        },
+        annuler: function () { this.maj(this.arr.avant); this.fermerArranger(); },
+        valider: function () {
+          var m = copie(this.maMaison); ecrireStockage(CLE_Q, { maison: m });
+          this.fermerArranger(); this.dire('Ta maison est enregistrée (maquette)');
+        },
+        fermerArranger: function () { this.arr = null; this.$nextTick(this.mesurer); },
         ouvrir: function (n) { var h = this.hab.filter(function (x) { return x.n === n; })[0]; this.fiche = h || null; if (!h) this.dire('Parcelle libre : un nouvel ami s\'installera ici'); },
         // La croix : un pas tout de suite, puis un pas toutes les 0,2 s tant qu'on tient
         tenir: function (b) {
@@ -263,6 +379,12 @@
         lacher: function () { this.dirTenue = null; clearInterval(this._marche); },
         // Toucher la scène : une maison = qui y habite (et on y va), le sol = on y va
         toucher: function (ev) {
+          if (this.arr) {
+            var pl = ev.target.closest && ev.target.closest('[data-place]');
+            if (pl) { this.arr.place = +pl.getAttribute('data-place'); this.arr.onglet = 'jardin'; }
+            else if (this.arr.onglet !== 'jardin') this.dire('Pour le jardin, ouvre l\'onglet Jardin et touche un losange');
+            return;
+          }
           var g = ev.target.closest && ev.target.closest('[data-lot]');
           var r = this.$refs.scene.getBoundingClientRect(), s = this.ech, t = this.$refs.monde.parentNode.getCTM();
           if (g) { var n = +g.getAttribute('data-lot'); this.ouvrir(n); var P = QQ.devantPorte(this.Q.lots[n]); this.allerA(P); return; }

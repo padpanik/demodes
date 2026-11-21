@@ -434,6 +434,8 @@ var QQ = (function () {
     // bois au fond : derrière le rang A de chaque placette et derrière le rang B de la première
     for (var i = -3; i <= Q.iMax + 2; i += 1.7) add(i - 1.6, arbre(i - 0.5, -2.1, 1.7 + ((i * 7) % 3) * 0.15, ((i * 3) % 2) < 1 ? 'foret' : 'sauge'));
     for (var j = -1; j < TAILLE; j += 1.7) add(j - 1.6, arbre(-2.1, j - 0.5, 1.7 + ((j * 5) % 3) * 0.15, 'foret'));
+    // derrière le portail, la lisière : des arbres en quinconce (sinon on verrait une prairie vide)
+    for (var ia = -5; ia >= -14; ia -= 2.2) for (var ja = -2 + (Math.round(-ia) % 2) * 1.1; ja < RUE0 - 1; ja += 2.4) add(ia + ja + 1, arbre(ia, ja, 1.5 + ((ja * 7 + ia) % 3) * 0.12, (Math.round(ia + ja) % 2) ? 'sauge' : 'foret'));
     for (var j2 = RUE1 + 1; j2 < BAS + 6; j2 += 2.3) add(j2 - 6, arbre(Q.iMin - 3, j2, 1.4 + ((j2 * 3) % 2) * 0.2, 'sauge'));
     Q.placettes.forEach(function (P, n) {
       var a = P.i0;
@@ -445,7 +447,7 @@ var QQ = (function () {
       if (n < Q.placettes.length - 1) {   // entre deux placettes : un petit bois et une haie
         var h = a + TAILLE + 0.6, k0 = contexte(h, 0, 0);
         add(h + 7, boite(k0, 0, 1, 0, 0.8, TAILLE - 5, 0.7, '#4f7a42', 5));
-        [[1.6, 0.6, 2], [1, 4, 1.7], [2.2, 7.5, 1.9], [1.2, 11, 1.6]].forEach(function (t, q) { add(h + t[0] + t[1] + 1, arbre(h + t[0], t[1], t[2], q % 2 ? 'sauge' : 'foret')); });
+        [[1.6, 0.4, 2], [2.4, 2.4, 1.5], [1.4, 11.5, 1.6], [2.2, 14, 1.3]].forEach(function (t, q) { add(h + t[0] + t[1] + 1, arbre(h + t[0], t[1], t[2], q % 2 ? 'sauge' : 'foret')); });
       }
       // la place : grande fontaine, massifs, lanternes, bancs
       decorsPlace(P).forEach(function (d) {
@@ -504,6 +506,22 @@ var QQ = (function () {
     });
     return { defs: Object.keys(defs).map(function (k) { return defs[k]; }).join(''), sol: solS, elements: el };
   }
+  // Petite vignette d'une maison seule (tuiles des styles dans Arranger)
+  function vignetteMaison(m0, larg, haut) {
+    var defs = {}, L = { n: 0, i: 0, j: 0, o: 0 }, el = dessinerParcelle(L, m0, { nom: '', id: 'v' + Math.round(Math.random() * 1e6), vignette: true }, defs);
+    return '<svg viewBox="-112 -142 250 236" width="' + (larg || 70) + '" height="' + (haut || 66) + '"><defs>' + Object.keys(defs).map(function (k) { return defs[k]; }).join('') + '</defs>' + el[0].s + '</svg>';
+  }
+  // Repères des places du jardin de ma parcelle (losanges au sol), pour Arranger
+  function reperesJardin(L, choisie) {
+    var s = '';
+    PLACES_JARDIN.forEach(function (c, n) {
+      var a = versMonde(L, c[0] + 0.08, c[1] + 0.08), b = versMonde(L, c[0] + 0.92, c[1] + 0.08), d = versMonde(L, c[0] + 0.92, c[1] + 0.92), e = versMonde(L, c[0] + 0.08, c[1] + 0.92);
+      var on = n === choisie;
+      s += '<path data-place="' + n + '" d="' + chemin([proj(a[0], a[1]), proj(b[0], b[1]), proj(d[0], d[1]), proj(e[0], e[1])], 4) + '" fill="' + (on ? '#ffa94d' : '#fff8e7') + '" fill-opacity="' + (on ? 0.55 : 0.28) + '" stroke="' + (on ? '#e8590c' : '#fff8e7') + '" stroke-width="2" stroke-dasharray="' + (on ? '' : '5 3') + '"/>';
+    });
+    return s;
+  }
+  function centreLot(L) { var c = versMonde(L, 2, 2.6); return proj(c[0], c[1]); }
   // Point de l'écran → case du sol
   function caseEn(x, y) { var c = K.versSol(x, y); return { i: Math.floor(c.i), j: Math.floor(c.j) }; }
 
@@ -511,7 +529,7 @@ var QQ = (function () {
     LOT_W: LOT_W, LOT_D: LOT_D, COIN: COIN, TAILLE: TAILLE, PAS: PAS, RUE0: RUE0, RUE1: RUE1, BAS: BAS, STYLES: STYLES, TOITS: TOITS, CLOTURES: CLOTURES,
     PLACES_JARDIN: PLACES_JARDIN, NOMS_PLACETTES: NOMS_PLACETTES,
     quartier: quartier, cases: cases, versMonde: versMonde, devantPorte: devantPorte, lotEn: lotEn, chemin: chemin4, maison: maison,
-    scene: scene, compagnon: compagnon, caseEn: caseEn, proj: proj
+    scene: scene, compagnon: compagnon, caseEn: caseEn, proj: proj, vignetteMaison: vignetteMaison, reperesJardin: reperesJardin, centreLot: centreLot
   };
 })();
 if (typeof module !== 'undefined') module.exports = QQ;
