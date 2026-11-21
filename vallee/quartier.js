@@ -287,7 +287,7 @@ var QQ = (function () {
     s += '<path d="M' + pt(E1) + ' L' + pt(E2) + ' L' + pt(R2) + ' L' + pt(R1) + 'Z" fill="none" stroke="' + O + '" stroke-width="1.8" stroke-linejoin="round"/>';
     s += ligne([R1, R2], m.toit === 'chaume' ? nuance(cToit, -0.3) : nuance(cToit, -0.35), m.toit === 'chaume' ? 6 : 4.2) + ligne([R1, R2], O, 1, ' opacity="0.6"');
     if (m.toit === 'chaume') s += ligne([[R1[0], R1[1] - 2], [R2[0], R2[1] - 2]], nuance(cToit, 0.1), 2.2);
-    if (FD && FD.neige) {   // Noël : de la neige sur le pan avant et des glaçons au bord
+    if (op.neige != null ? op.neige : FD && FD.neige) {   // la neige sur les toits (le temps qu'il fait, 4.33 : vient de Meteo.ambiance) ; Noël : de la neige sur le pan avant et des glaçons au bord
       var Nb1 = [E1[0] + (R1[0] - E1[0]) * 0.55, E1[1] + (R1[1] - E1[1]) * 0.55], Nb2 = [E2[0] + (R2[0] - E2[0]) * 0.55, E2[1] + (R2[1] - E2[1]) * 0.55];
       var Nh1 = [E1[0] + (R1[0] - E1[0]) * 0.97, E1[1] + (R1[1] - E1[1]) * 0.97], Nh2 = [E2[0] + (R2[0] - E2[0]) * 0.97, E2[1] + (R2[1] - E2[1]) * 0.97];
       var bord = [];
@@ -820,7 +820,7 @@ var QQ = (function () {
     Q.lots.forEach(function (L) {
       var h = parLot[L.n];
       if (!h) { el = el.concat(dessinerParcelle(L, null, {}, defs)); return; }
-      el = el.concat(dessinerParcelle(L, h.maison, { nom: h.nom, present: h.present, courrier: h.courrier, moi: h.moi, nuit: op.nuit, cp: h.cp, id: L.n, fete: op.fete }, defs));
+      el = el.concat(dessinerParcelle(L, h.maison, { nom: h.nom, present: h.present, courrier: h.courrier, moi: h.moi, nuit: op.nuit, cp: h.cp, id: L.n, fete: op.fete, neige: op.neige }, defs));
     });
     return { defs: Object.keys(defs).map(function (k) { return defs[k]; }).join(''), sol: solS, elements: el };
   }

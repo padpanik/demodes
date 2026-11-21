@@ -673,6 +673,7 @@
           </template>
           <button class="pastille-m loupe" :class="{ on: zoom > 1 }" @click="basculerZoom()" v-html="ico('loupe', 19)" title="Zoom"></button>
           <button v-if="!arranger && !visite" class="pastille-m arr" @click="ouvrirArranger" v-html="ico('arranger', 21)" title="Arranger la maison"></button>
+          <div v-if="pieceM && pieceM.exterieur && !arranger" class="mto" v-html="calqueMeteo"></div>
           <div v-if="annonce && !achatM && onglet !== 'boutique'" class="annonce-m">{{ annonce }}</div>
         </div>
         <div v-if="!arranger" class="bulle-m"><b>{{ animal.nom }} :</b> <span v-html="riche(messageLangue || message || phraseRepos)"></span><small v-if="messageLangue">{{ message }}</small></div>
@@ -976,6 +977,12 @@
           </div>
         </section>
         <section class="carte">
+          <div class="titre-carte"><span v-html="pic('meteo', 24)"></span>La météo de chez moi</div>
+          <div class="aide" style="margin:-4px 0 8px">Le jardin, les fenêtres, la Vallée et le quartier suivent le temps qu'il fait chez toi, mêlé à la saison (neige à Noël, feuilles à l'automne). Ta position, arrondie à 10 km, reste sur ce téléphone et sert seulement à demander le temps à Open-Meteo.com.</div>
+          <div class="serie" v-if="meteoActive">En ce moment : {{ ambiance.texte }}</div>
+          <button class="btn" style="width:100%;margin-top:6px" @click="basculerMeteo">{{ meteoActive ? 'Arrêter : garder le temps de la saison' : 'Utiliser la météo de chez moi' }}</button>
+        </section>
+        <section class="carte">
           <div class="titre-carte"><span v-html="ETOILE_P"></span>Comment gagner des étoiles</div>
           <ul style="padding-left:18px;margin:4px 0;line-height:1.5">
             <li v-for="(l, k) in gainsEtoiles" :key="k" v-html="riche(l)"></li>
@@ -1143,6 +1150,7 @@
   <script src="compagnon/compagnon-meubles.js"></script>
   <script src="vallee/vallee-pictos.js"></script>
   <script src="vallee/vallee-dessins.js"></script>
+  <script src="meteo.js"></script>
   <script>
     if (!ACCES.memorise()) location.replace('index.html');
 
@@ -1298,6 +1306,7 @@
         PIPA: typeof VLD !== 'undefined' ? VLD.habitant('chat', 46) : '', PIPA_P: typeof VLD !== 'undefined' ? VLD.habitant('chat', 26) : '',
         feteEssai: lireStockage('compagnon-fete-essai') || '',
         retourExp: null,
+        meteoT: Date.now(), meteoActive: Meteo.etat().actif,
         langue: Object.assign({ langue: null }, lireStockage('compagnon-langue') || {}),   // sa langue, sur ce téléphone
         listeFetes: CP.FETES.concat([{ id: 'anniversaire', nom: 'Anniversaire', ico: '🎂' }]),
         admin: { ouvert: false, actif: ADMIN.actif(), mdp: '', erreur: '', calcul: false }
@@ -1316,6 +1325,9 @@
           return { content: '😊 Très heureux', calme: '🙂 Ça va', triste: '😟 A besoin de toi' }[this.humeurClasse];
         },
         estNuit: function() { var h = new Date(this.maintenant).getHours(); return h >= 21 || h < 7; },
+        // La météo (4.33) : de chez moi si je l'ai activée (Vallée ou ici), mêlée à la saison ; dans le jardin et par les fenêtres
+        ambiance: function() { this.meteoT; return Meteo.ambiance(Date.now()); },
+        calqueMeteo: function() { return Meteo.calque(this.ambiance, { sansCiel: this.nuitScene, n: 0.8 }); },
         estHiver: function() { var m = new Date(this.maintenant).getMonth(); return m === 11 || m <= 1; },
         ciel: function() { return this.estNuit ? 'linear-gradient(#0f2347, #2b4a7d)' : this.estHiver ? 'linear-gradient(#b8c9d9, #e6eef5)' : 'linear-gradient(#6fb6ec, #bfe3fb)'; },
         fondMur: function() { return 'linear-gradient(#f6e7cf, #f1dcbc)'; },
@@ -1335,7 +1347,7 @@
         svgScene: function() {
           var v = this.vie, ici = this.pieceVueId === this.ouEst;
           return CPM.scene(this.pieceM, { id: 'cp', grille: this.arranger, choisi: this.choisi, apercu: this.apercu, nuit: this.nuitScene,
-            coupes: this.coulCoupes, etagere: this.pieceVueId === 'salon' ? this.coulEtagere : null,
+            meteo: Meteo.fenetre(this.ambiance), coupes: this.coulCoupes, etagere: this.pieceVueId === 'salon' ? this.coulEtagere : null,
             compagnon: ici ? { i: v.i, j: v.j, ech: 0.33, dir: v.dir, pas: v.pas, refuge: !!v.refuge, classe: this.classesCp, svg: this.dessin(this.animal, this.humeurClasse) } : null });
         },
         // Où est le compagnon à l'écran (en % de la scène) : bulles, effets
@@ -1499,8 +1511,18 @@
         }
         document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && !this.visite) { this.maintenant = Date.now(); this.chargerJour(); this.verifierPartieAmis(); this.majDefis(); } });
       },
-      mounted: function() { if (this.animal && !this.visite) this.placerDansPiece(this.ouEst); this.montrerAnimal(); this.demarrerVie(); },
+      mounted: function() {
+        if (this.animal && !this.visite) this.placerDansPiece(this.ouEst); this.montrerAnimal(); this.demarrerVie();
+        Meteo.demarrer();
+        window.addEventListener('desdale-meteo', () => { this.meteoT = Date.now(); this.meteoActive = Meteo.etat().actif; });
+        setInterval(() => { this.meteoT = Date.now(); }, 60000);
+      },
       methods: {
+        basculerMeteo: function() {
+          if (this.meteoActive) { Meteo.desactiver(); this.meteoActive = false; this.meteoT = Date.now(); return; }
+          Meteo.activer((ok, r) => { this.meteoT = Date.now(); this.meteoActive = Meteo.etat().actif;
+            this.message = ok ? 'Il fait comme chez toi dehors : ' + this.ambiance.texte.toLowerCase() + '.' : r === 'refus' ? 'Pas de position : je garde le temps de la saison.' : 'Pas de météo pour l\'instant.'; });
+        },
         // ---------- Dessin de l'animal (SVG fait par le code, dans compagnon-commun.js) ----------
         dessin: function(a, humeur) { return CP.dessin(a, humeur, this.animal === a && ((this.estNuit && humeur !== 'triste') || this.vie.sieste || !!(this.visite && this.visite.absent)), this.maintenant); },
         // Cabine d'essayage : toucher un article le met (ou le retire) en essai, sans rien acheter

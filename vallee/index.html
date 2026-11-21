@@ -80,6 +80,9 @@
     .ent .boussole { display: flex; align-items: flex-end; justify-content: center; font-size: 22px; }
     .ent.marche .sp { animation: vl-trot 0.19s ease-in-out infinite alternate; }
     @keyframes vl-trot { to { transform: translateY(-2px); } }
+    .ecran-vl .mto { z-index: 3; }
+    .mto-txt { display: block; font-weight: 600; font-size: 0.8em; opacity: 0.8; }
+    .mto-credit { font-size: 0.78em; opacity: 0.8; margin: 8px 2px 0; }
     .fondu-vl { position: absolute; inset: 0; background: #000; pointer-events: none; z-index: 5; animation: vl-fondu 0.45s ease-out forwards; }
     @keyframes vl-fondu { from { opacity: 0.85; } to { opacity: 0; } }
     .lieu-vl { position: absolute; left: 50%; top: 8px; transform: translateX(-50%); z-index: 6; white-space: nowrap; pointer-events: none;
@@ -385,6 +388,7 @@
         <svg class="fond" :class="{ bande: vue.defile }" :view-box.camel="vue.defile ? '0 0 1056 288' : '0 0 352 288'" preserveAspectRatio="none" :style="vue.defile ? { transform: 'translateX(' + (-vue.cam * 100 / 33) + '%)' } : null" v-html="ecranSvg"></svg>
         <div class="voile-bande" v-if="vue.defile"></div>
         <div class="fondu-vl" :key="'f' + ecranCle"></div>
+        <div class="mto" v-html="calqueMeteo"></div>
         <div v-for="a in amisIci" :key="a.id" class="ent ami" :class="{ gauche: a.d === 'g', saut: saut, 'bord-g': a.lx <= 1, 'bord-d': a.lx >= 9 }" :style="a.pos" @click="ouvrirAmi(a)">
           <span class="sp" v-if="a.dessin" v-html="a.dessin"></span>
           <span class="av-ami" v-else :style="{ background: a.couleur }">{{ (a.pseudo || '?').charAt(0).toUpperCase() }}</span>
@@ -655,9 +659,21 @@
           <button class="btn-vl" @click="sonActif = !sonActif"><i v-html="pic(sonActif ? 'son' : 'muet')"></i>Son : {{ sonActif ? 'oui' : 'non' }}</button>
           <button class="btn-vl" @click="inverser"><i v-html="pic('inverser')"></i>Croix à {{ inverse ? 'gauche' : 'droite' }}</button>
           <button class="btn-vl" @click="basculerPleinEcran"><i v-html="pic('plein')"></i>{{ pleinEcran ? 'Garder les barres du téléphone' : 'Cacher les barres du téléphone' }}</button>
+          <button class="btn-vl" @click="basculerMeteo"><i v-html="pic('meteo')"></i>Météo de chez moi : {{ meteoActive ? 'oui' : 'non' }}<small v-if="meteoActive" class="mto-txt">{{ ambiance.texte }}</small></button>
           <button class="btn-vl" @click="discuter"><i v-html="pic('bulle')"></i>Discuter<span v-if="nonLus" class="pastille">{{ nonLus }}</span></button>
         </div>
+        <p class="mto-credit">La météo de chez toi mêlée à la saison (neige à Noël, feuilles à l'automne). Ta position, arrondie à 10 km, reste sur ce téléphone et sert seulement à demander le temps à Open-Meteo.com.</p>
         <div class="boutons-vl"><button class="btn-vl" @click="fenetre = 'menu'">‹ Menu</button><button class="btn-vl principal" @click="fermer">Continuer</button></div>
+      </div>
+    </div>
+
+    <!-- La météo de chez moi : proposée une fois -->
+    <div class="voile-vl" v-if="fenetre === 'meteo'" @click.self="fermer">
+      <div class="fen-vl">
+        <h2><i class="pi" v-html="pic('meteo')"></i> Le temps qu'il fait chez toi ?</h2>
+        <p>La Vallée, le quartier et la maison peuvent suivre <b>la météo de chez toi</b> : pluie, neige, brouillard, vent… mêlée à la saison (neige à Noël, feuilles qui tombent à l'automne).</p>
+        <p class="mto-credit">Ta position, arrondie à 10 km, reste sur ce téléphone et sert seulement à demander le temps à Open-Meteo.com. Tu peux changer d'avis dans les Options.</p>
+        <div class="boutons-vl"><button class="btn-vl" @click="refuserMeteo">Non merci</button><button class="btn-vl principal" @click="activerMeteo">Oui, ma météo</button></div>
       </div>
     </div>
 
@@ -699,6 +715,7 @@
   <script src="vallee/vallee-regles.js"></script>
   <script src="vallee/vallee-pictos.js"></script>
   <script src="vallee/vallee-dessins.js"></script>
+  <script src="meteo.js"></script>
   <script>
     if (!ACCES.memorise()) location.replace('index.html');
 
@@ -730,6 +747,7 @@
         v: 0,                       // monte à chaque changement de l'état (le dessin se recalcule)
         dir: null, sens: etat.dir === 'g' ? 'g' : 'd', saut: false, ecranCle: 0, lieuMontre: null,
         animal: lireStockage('compagnon-animal'), etoiles: Etoiles.solde(), nonLus: 0, livreSel: null,
+        meteoT: Date.now(), meteoActive: Meteo.etat().actif,
         fenetre: null, dialogue: null, aLire: null, achat: null, sortie: false, fabOu: null, fabChoix: null, jour: VL.jourDe(),
         annonces: [], maintenant: Date.now(), carteAspect: 330 / 270, carteLarge: false, carteDec: { x: 0, y: 0 },
         inverse: lireStockage('donjon-inverse') === true,
@@ -737,6 +755,9 @@
         pleinEcran: lireStockage('vallee-plein-ecran') !== false
       },
       computed: {
+        // La météo (4.33) : celle de chez moi si je l'ai activée, mêlée à la saison, sinon le temps de la saison
+        ambiance: function() { this.meteoT; return Meteo.ambiance(Date.now()); },
+        calqueMeteo: function() { return Meteo.calque(this.ambiance); },
         e: function() { this.v; return etat; },
         pouvoir: function() { return this.animal && VL.POUVOIR_ESPECE[this.animal.espece] || null; },
         ctx: function() { this.v; return { pouvoir: this.pouvoir, bossTotal: (lireStockage('donjon-stats') || {}).boss | 0, nom: this.animal ? this.animal.nom : '', jour: this.jour,
@@ -940,10 +961,21 @@
         }
       },
       mounted: function() {
+        Meteo.demarrer();
+        window.addEventListener('desdale-meteo', () => { this.meteoT = Date.now(); this.meteoActive = Meteo.etat().actif; });
+        setInterval(() => { this.meteoT = Date.now(); }, 60000);
+        if (!Meteo.etat().demande) setTimeout(() => { if (!this.fenetre && !Meteo.etat().demande) this.fenetre = 'meteo'; }, 5000);
         var mesure = () => { var c = this.$refs.carte; if (c && c.clientHeight > 24) this.carteAspect = c.clientWidth / (c.clientHeight - 24); };   // 24 = la bande du titre
         mesure(); window.addEventListener('resize', mesure); setTimeout(mesure, 300);
       },
       methods: {
+        activerMeteo: function() {
+          this.fermer();
+          Meteo.activer((ok, r) => { this.meteoT = Date.now(); this.meteoActive = Meteo.etat().actif;
+            this.annoncer(ok ? '🌦️ Ta météo : ' + this.ambiance.texte : r === 'refus' ? 'Position refusée : la Vallée garde le temps de la saison.' : 'Météo indisponible pour l\'instant : temps de la saison.'); });
+        },
+        refuserMeteo: function() { Meteo.refuser(); this.fermer(); },
+        basculerMeteo: function() { if (this.meteoActive) { Meteo.desactiver(); this.meteoActive = false; this.meteoT = Date.now(); } else this.activerMeteo(); },
         // ---------- Faire glisser la carte de près au doigt (3.95, demandé par l'utilisateur) ----------
         // Le décalage `carteDec` (en unités de carte) s'ajoute au cadrage habituel, borné à la région où l'on est ;
         // un pas du compagnon le ramène en douceur à zéro. Un glissement n'ouvre pas la fenêtre des quêtes.

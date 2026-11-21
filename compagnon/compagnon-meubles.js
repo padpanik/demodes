@@ -134,7 +134,7 @@ var CPM = (function () {
     if (!v.lieux.length) return true;
     return (vus || []).some(function (id) { return v.lieux.some(function (l) { return l === 't-' ? String(id).indexOf('t-') === 0 : id === l; }); });
   }
-  function vueFenetre(vue, nuit) {
+  function vueFenetre(vue, nuit, meteo) {
     var ciel = { pre: '#9fd0ee', village: '#a9d6f0', foret: '#a7d3e6', ruisseau: '#9fd0ee', marais: '#c4d8cc', montagne: '#8fc4ea', terres: '#cdbfe0' }[vue] || '#9fd0ee';
     var s = '<rect x="8.5" y="7.5" width="23" height="35" fill="' + (nuit ? '#1c2547' : ciel) + '"/>';
     if (!nuit) s += '<path d="M12 15 q2 -3 5 -1 q3 -2 4 1 q2 0 1 2 h-10 q-1 -2 0 -2z" fill="#fff" opacity="0.9"/>';
@@ -173,6 +173,15 @@ var CPM = (function () {
       if (vue === 'village') s += '<rect x="13.3" y="29.5" width="2.4" height="2.4" fill="#ffd43b"/><rect x="24" y="30.5" width="2" height="2" fill="#ffd43b"/>';
       s += '<circle cx="26" cy="12" r="2.4" fill="#fff3bf"/><circle cx="27.2" cy="11.2" r="2" fill="#1c2547"/>';
       [[11, 10], [15, 13], [19, 9], [22, 15], [13, 17]].forEach(function (p) { s += '<circle cx="' + p[0] + '" cy="' + p[1] + '" r="0.45" fill="#fff"/>'; });
+    }
+    // Le temps qu'il fait dehors (4.33, Meteo.fenetre) : ciel gris, pluie, neige, brume
+    if (meteo) {
+      if (meteo.gris > 0.3) s += '<rect x="8.5" y="7.5" width="23" height="18" fill="#6b7785" opacity="' + (meteo.gris * 0.35).toFixed(2) + '"/>';
+      if (meteo.sol) s += '<path d="M8.5 36 Q20 33 31.5 36 V42.5 H8.5Z" fill="#f8fbff" opacity="0.95"/>';
+      if (meteo.pluie) for (var q = 0; q < 9; q++) { var x = 10 + (q * 2.6) % 21, y = 9 + (q * 7.3) % 26; s += '<path d="M' + x.toFixed(1) + ' ' + y.toFixed(1) + ' l-1 4" stroke="#b8d4ec" stroke-width="0.7" opacity="0.9"/>'; }
+      if (meteo.neige) for (var q2 = 0; q2 < 10; q2++) s += '<circle cx="' + (10 + (q2 * 2.3) % 21).toFixed(1) + '" cy="' + (9 + (q2 * 6.7) % 27).toFixed(1) + '" r="0.75" fill="#fff"/>';
+      if (meteo.brume) s += '<rect x="8.5" y="7.5" width="23" height="35" fill="#eef2f5" opacity="' + (meteo.brume * 0.55).toFixed(2) + '"/>';
+      if (meteo.orage) s += '<path d="M22 9 l-3 6 h3 l-3 6" stroke="#ffe066" stroke-width="0.9" fill="none"/>';
     }
     return s;
   }
@@ -352,7 +361,7 @@ var CPM = (function () {
       dessin: function (k, t) {
         var z = k.z, cadre = k.env.cadre ? teinte(k.env.cadre) : BOIS_C, s = '<g transform="' + plan(k, [0, 0, z + 1.25], [1, 0, 0], [0, 0, -1]) + '">';
         s += '<rect x="5" y="4" width="30" height="42" rx="2" fill="' + cadre + '" stroke="' + O + '" stroke-width="1.6"/>';
-        s += vueFenetre(k.env.vue || 'pre', k.env.nuit);
+        s += vueFenetre(k.env.vue || 'pre', k.env.nuit, k.env.meteo);
         s += '<rect x="8.5" y="7.5" width="23" height="35" fill="none" stroke="' + O + '" stroke-width="1.1"/>';
         s += '<path d="M20 7.5 V42.5 M8.5 25 H31.5" stroke="' + cadre + '" stroke-width="2.2"/><path d="M20 7.5 V42.5 M8.5 25 H31.5" stroke="' + O + '" stroke-width="0.6" opacity="0.5"/>';
         s += '<path d="M10 10 l6 -2 M10 13 l3 -1" stroke="#fff" stroke-width="1" opacity="' + (k.env.nuit ? 0.25 : 0.7) + '"/>';
@@ -1220,7 +1229,7 @@ var CPM = (function () {
     var op = options || {}, id = op.id || 'pm', l = piece.l, p = piece.p, H = piece.h || HAUTEUR, hb = habillage(piece);
     var mG = hb.murs, mD = hb.murD || hb.murs, tg = teinte(mG.teinte), td = teinte(mD.teinte), ts = teinte(hb.sol.teinte), s = '';
     var nuit = !!op.nuit, amb = AMBIANCES.filter(function (a) { return a.id === hb.lumiere.ambiance; })[0] || AMBIANCES[0];
-    var env = { nuit: nuit, vue: hb.fenetre.vue, cadre: hb.fenetre.cadre, coupes: op.coupes || null, cv: 0, etagere: op.etagere || null };
+    var env = { nuit: nuit, vue: hb.fenetre.vue, cadre: hb.fenetre.cadre, coupes: op.coupes || null, cv: 0, etagere: op.etagere || null, meteo: op.meteo || null };
     var e = 0.22, dehors = !!piece.exterieur, Hc = dehors ? CIEL : H;
     // contour de la pièce (sert à poser la nuit et les lumières seulement sur elle) ; dehors, il monte jusqu'en haut du ciel
     var contour = [proj(-e, -e, Hc), proj(l, -e, Hc), proj(l, -e, 0), [proj(l, 0)[0], proj(l, 0)[1] + BORD], [proj(l, p)[0], proj(l, p)[1] + BORD], [proj(0, p)[0], proj(0, p)[1] + BORD], proj(-e, p, 0), proj(-e, p, Hc)];

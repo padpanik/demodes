@@ -67,6 +67,7 @@ var VLP = (function () {
     goutte: () => p('M12 2.5q7 8.5 7 12.5a7 7 0 01-14 0q0-4 7-12.5z', '#4dabf7') + p('M8.5 14.5q0 2.5 2 3.5', 'none', 1.4, ' stroke="#d0ebff"'),
     vague: () => p('M2 13q2.5-4 5 0t5 0 5 0 5 0v7.5H2z', '#4dabf7') + p('M2 17q2.5-3 5 0t5 0 5 0 5 0', 'none', 1.1, ' stroke="#d0ebff"'),
     brume: () => l('M3 8h12M6 12h15M3 16h13M8 20h10', '#868e96', 2.2),
+    meteo: () => c(9, 9, 4.6, '#fcc419') + l('M9 1.5v1.8M2.5 9h1.8M4.3 4.3l1.3 1.3M13.7 4.3l-1.3 1.3', '#f59f00', 1.4) + p('M7 20h10.5a4 4 0 0 0 .3-8 5.4 5.4 0 0 0-10.4 1.5A3.3 3.3 0 0 0 7 20z', '#e9f2f9'),
     flocon: () => l('M12 2.5v19M3.8 7.3l16.4 9.4M3.8 16.7l16.4-9.4', '#4dabf7', 1.8) + l('M9.5 4l2.5 2 2.5-2M9.5 20l2.5-2 2.5 2M4 10.5l3 .2-.6-3M20 13.5l-3-.2.6 3M4 13.5l3-.2-.6 3M20 10.5l-3 .2.6-3', '#4dabf7', 1.3),
     nenuphar: () => p('M12 12L3.5 9q-1 8 8.5 10 9.5-2 8.5-10z', '#51cf66') + p('M12 12l-2-7q4 0 4 7z', '#f783ac', 1) + l('M12 12l7-2.5', '#2b8a3e', 0.9),
     // ---------- Objets ----------
@@ -194,7 +195,7 @@ var VLP = (function () {
     '🔥': 'flamme', '💪': 'force', '🦘': 'bond', '👃': 'flair',
     '🏠': 'maison', '🏡': 'maison', '🏘️': 'hameau', '🛖': 'cabane', '⚒️': 'forge', '🗝️': 'crypte', '🌳': 'arbre', '🌲': 'sapin', '🏔️': 'montagne', '⛰️': 'colline',
     '🌀': 'porte', '⛺': 'tente', '🗼': 'tour', '🕳️': 'trou', '⚰️': 'tombe', '🧰': 'coffre', '🎁': 'cadeau', '🔑': 'cle', '🍄': 'champignon', '✨': 'luciole', '🌼': 'fleur',
-    '💧': 'goutte', '🌊': 'vague', '🌫️': 'brume', '❄️': 'flocon', '📜': 'quete', '📖': 'carnet', '📚': 'livres', '🗺️': 'carte', '🔍': 'loupe', '🎒': 'sac', '🛠️': 'outils',
+    '💧': 'goutte', '🌊': 'vague', '🌫️': 'brume', '❄️': 'flocon', '🌦️': 'meteo', '📜': 'quete', '📖': 'carnet', '📚': 'livres', '🗺️': 'carte', '🔍': 'loupe', '🎒': 'sac', '🛠️': 'outils',
     '🪚': 'scie', '🪓': 'hache', '🌾': 'faucille', '⛏️': 'pioche', '✉️': 'lettre', '💌': 'coeurlettre', '⚔️': 'epees', '🔭': 'longuevue', '🏮': 'lanterne', '🛶': 'barque',
     '🎬': 'clap', '🏰': 'chateau', '🏝️': 'ile', '🔬': 'microscope', '👛': 'bourse', '🎶': 'musique', '🌱': 'graines', '🪈': 'flute', '💬': 'bulle', '🗣️': 'rumeur', '🔊': 'son', '🔇': 'muet', '⇄': 'inverser',
     '⛶': 'plein', '❓': 'aide', '❔': 'aide', '🏁': 'drapeau', '🚩': 'drapeau', '🧭': 'boussole', '👋': 'main', '🛍️': 'boutique', '😴': 'sommeil', '🏞️': 'paysage',
