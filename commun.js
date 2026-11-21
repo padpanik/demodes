@@ -3,12 +3,13 @@
 // Les clés de stockage gardent l'ancien préfixe "brillant-" : les réglages déjà faits sont conservés.
 
 // Numéro de version affiché (à augmenter à chaque mise en ligne, avec brilliant/index.html et sw.js)
-const VERSION = '4.39';
+const VERSION = '4.40';
 
 // ---------- Nouveautés (2.87, demandé par l'utilisateur) ----------
 // Une ligne très brève par mise en ligne (la plus récente en haut) : l'accueil les montre une seule fois, dans une petite fenêtre,
 // à qui n'a pas encore vu cette version. [version, jeu ou partie de l'appli, ce qui change]
 const NOUVEAUTES = [
+  ['4.40', 'Combien sur 10 ?', '15 nouveaux sujets (Mr Bean, Rabbi Jacob, les yo-yos, le cidre, les Gaulois…).'],
   ['4.39', 'Combien sur 10 ?', '15 nouveaux sujets (la Lune, Jeanne d\'Arc, le Loto, Pac-Man, les crêpes…).'],
   ['4.38', 'Combien sur 10 ?', 'Les sujets déjà vus sont retenus par tous les téléphones du salon : moins de répétitions.'],
   ['4.37', 'Combien sur 10 ?', 'Noms d\'équipe modifiables, nouvelle mise quand on change de sujet, questions à écarter pour toujours.'],

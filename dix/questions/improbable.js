@@ -1310,4 +1310,48 @@ Que veut dire cette phrase latine ? | Le sort en est jeté
 Quel jeu de dés de casino se joue debout ? | Le craps
 Quel dé a vingt faces, dans les jeux de rôle ? | Le d20
 Comment s'appelle le polyèdre à vingt faces ? | L'icosaèdre
+# Les yo-yos
+Un yo-yo sert-il à se brosser les dents ? | Non, c'est un jouet
+Qu'enroule-t-on autour de l'axe d'un yo-yo ? | Une ficelle
+Comment appelle-t-on la figure où le yo-yo tourne tout seul au bout de sa ficelle sans remonter ? | Le dormeur
+Quelle figure de yo-yo consiste à le faire rouler par terre au bout de sa ficelle, comme un animal en laisse ? | Promener le chien
+Quelle marque américaine a rendu le yo-yo célèbre dans le monde entier ? | Duncan
+Dans quelle langue le mot « yo-yo » voudrait-il dire « viens, viens » ? | Le tagalog (langue des Philippines)
+Quel président américain a joué au yo-yo sur la scène du Grand Ole Opry en 1974 ? | Richard Nixon
+Comment s'appelait l'immigré philippin qui fabriquait des yo-yos en Californie dans les années 1920 ? | Pedro Flores
+À bord de quelle navette spatiale un yo-yo est-il allé dans l'espace pour la première fois ? | Discovery
+En quelle année un yo-yo est-il allé dans l'espace pour la première fois ? | 1985
+# Les boomerangs
+Un boomerang est-il un fruit exotique ? | Non, un objet qu'on lance
+Que fait un boomerang bien lancé ? | Il revient vers le lanceur
+De quel pays le boomerang est-il le symbole ? | L'Australie
+Quel peuple d'Australie a fabriqué les premiers boomerangs du pays ? | Les Aborigènes
+En quelle matière sont faits les boomerangs traditionnels australiens ? | En bois
+Les boomerangs de chasse reviennent-ils vers le lanceur ? | Non, ils filent droit vers la proie
+Comment appelle-t-on l'arme de chasse courbe qui ne revient pas, utilisée aussi dans l'Égypte ancienne ? | Le bâton de jet
+Dans quel pays d'Europe a-t-on trouvé un boomerang en ivoire de mammouth vieux d'environ 40 000 ans ? | La Pologne
+Dans la tombe de quel pharaon célèbre a-t-on retrouvé toute une collection de bâtons de jet ? | Toutânkhamon
+Quel effet lié à la rotation fait tourner la trajectoire d'un boomerang pour qu'il revienne ? | L'effet gyroscopique (la précession)
+# Les bulles de savon
+Une bulle de savon est-elle lourde comme une pierre ? | Non, très légère
+Que fait une bulle de savon quand on la touche avec un doigt sec ? | Elle éclate
+Quelle forme prend une bulle de savon qui flotte dans l'air ? | Une sphère (une boule)
+Quel petit outil percé d'un anneau trempe-t-on dans l'eau savonneuse pour souffler des bulles ? | Une baguette à bulles (un anneau)
+Quel liquide ajoute-t-on souvent à l'eau savonneuse pour rendre les bulles plus solides ? | La glycérine
+Pourquoi voit-on des reflets d'arc-en-ciel sur une bulle de savon ? | Interférences de la lumière dans le film très mince
+Quel peintre français a peint « Les Bulles de savon » au XVIIIe siècle ? | Jean Siméon Chardin
+Quelle marque de savon anglaise a utilisé le tableau « Bubbles » du peintre Millais dans une publicité célèbre ? | Pears
+Quel physicien belge a donné son nom aux lois qui décrivent les films de savon ? | Joseph Plateau
+Selon les lois de Plateau, à quel angle se rejoignent trois films de savon dans une mousse ? | 120 degrés
+# Les chameaux et les dromadaires
+Un dromadaire a-t-il des ailes ? | Non
+Combien de bosses a un dromadaire ? | Une
+Combien de bosses a un chameau de Bactriane ? | Deux
+Que contient la bosse d'un dromadaire : de l'eau ou de la graisse ? | De la graisse
+Comment appelle-t-on le petit du chameau ? | Le chamelon
+Quel verbe désigne le cri du chameau ? | Blatérer
+Comment appelle-t-on celui qui conduit les chameaux dans le désert ? | Le chamelier
+Quelle forme ont les globules rouges du dromadaire, qui l'aident à boire beaucoup d'un coup ? | Ovale
+Dans quel pays vit la plus grande population de dromadaires retournés à l'état sauvage ? | L'Australie
+Comment appelle-t-on la poche rose que le dromadaire mâle fait sortir de sa bouche en période de rut ? | Le dulla
 `;

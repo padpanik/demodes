@@ -969,4 +969,48 @@ De quelle attraction de parc la saga Pirates des Caraïbes est-elle tirée ? | P
 Comment s'appelle le capitaine au visage de pieuvre du Hollandais volant ? | Davy Jones
 Quel guitariste des Rolling Stones joue le père de Jack Sparrow ? | Keith Richards
 Quel compositeur allemand signe la musique du premier Pirates des Caraïbes ? | Klaus Badelt
+# Les Aventures de Rabbi Jacob
+Rabbi Jacob est-il un dessin animé ? | Non, un film avec Louis de Funès
+Quel acteur joue Victor Pivert dans Les Aventures de Rabbi Jacob ? | Louis de Funès
+Qui a réalisé Les Aventures de Rabbi Jacob ? | Gérard Oury
+En quelle année est sorti Les Aventures de Rabbi Jacob ? | 1973
+De quelle ville arrive le vrai rabbi Jacob ? | New York
+Dans quelle rue de Paris la communauté attend-elle le rabbi Jacob ? | La rue des Rosiers
+Dans quelle sorte d'usine Victor Pivert cherche-t-il du secours après son accident ? | Une usine de chewing-gum
+Comment s'appelle le chauffeur de Victor Pivert, joué par Henri Guybet ? | Salomon
+Quel acteur joue le révolutionnaire Slimane dans Les Aventures de Rabbi Jacob ? | Claude Giraud
+Comment s'appelle l'usine de chewing-gum de Rabbi Jacob ? | Le Yankee
+# Mr Bean
+Mr Bean parle-t-il beaucoup ? | Non, presque jamais
+Quel acteur joue Mr Bean ? | Rowan Atkinson
+De quel pays vient Mr Bean ? | Le Royaume-Uni (l'Angleterre)
+Comment s'appelle l'ours en peluche de Mr Bean ? | Teddy
+Quelle petite voiture anglaise conduit Mr Bean ? | Une Mini
+De quelle couleur est la Mini la plus connue de Mr Bean ? | Vert citron, avec un capot noir
+Pendant quelle cérémonie Mr Bean a-t-il joué la musique des Chariots de feu ? | L'ouverture des Jeux olympiques de Londres 2012
+En quelle année a été diffusé le premier épisode de Mr Bean ? | 1990
+Quelle petite voiture bleue à trois roues Mr Bean malmène-t-il sans cesse ? | Une Reliant Regal
+Comment s'appelle la petite amie de Mr Bean ? | Irma Gobb
+# Tom et Jerry
+Tom est-il une souris ? | Non, un chat
+Quel animal est Jerry ? | Une souris
+Dans Tom et Jerry, qui poursuit qui ? | Tom poursuit Jerry
+Quel animal est Spike dans Tom et Jerry ? | Un bouledogue
+Comment s'appelle le chiot de Spike dans Tom et Jerry ? | Tyke
+Comment s'appelle le petit souriceau gris en couche que Jerry protège ? | Nibbles (ou Tuffy)
+Quels deux créateurs ont inventé Tom et Jerry ? | William Hanna et Joseph Barbera
+En quelle année est sorti le premier dessin animé de Tom et Jerry ? | 1940
+Combien d'Oscars les dessins animés de Tom et Jerry ont-ils remportés ? | Sept
+Comment s'appelait le chat dans le tout premier dessin animé de Tom et Jerry ? | Jasper
+# Les Minions
+Les Minions sont-ils bleus ? | Non, jaunes
+Quel méchant les Minions servent-ils dans Moi, moche et méchant ? | Gru
+Quel fruit les Minions adorent-ils ? | La banane
+Combien d'yeux peut avoir un Minion ? | Un ou deux
+Quelle langue parlent les Minions ? | Le « minionais », un charabia fait de plusieurs langues
+En quelle année est sorti le premier film Moi, moche et méchant ? | 2010
+Comment s'appellent les trois Minions héros du film Les Minions de 2015 ? | Kevin, Stuart et Bob
+Lequel des trois Minions, Kevin, Stuart ou Bob, n'a qu'un œil ? | Stuart
+Quel réalisateur français prête sa voix aux Minions ? | Pierre Coffin
+Comment s'appelle l'ours en peluche du Minion Bob ? | Tim
 `;

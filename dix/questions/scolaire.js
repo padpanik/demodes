@@ -749,4 +749,48 @@ Quel est le plus petit des océans ? | L'océan Arctique
 Quelle est la fosse océanique la plus profonde du monde ? | La fosse des Mariannes
 Quel continent compte le plus de pays ? | L'Afrique (54)
 Comment s'appelle le point le plus profond de la fosse des Mariannes ? | Le Challenger Deep (gouffre Challenger)
+# Le système digestif
+Digère-t-on avec les oreilles ? | Non
+Avec quoi mâche-t-on les aliments ? | Avec les dents
+Dans quel organe arrivent les aliments après l'œsophage ? | L'estomac
+Quel liquide de la bouche commence à digérer les aliments ? | La salive
+Quel organe très long absorbe l'essentiel des nutriments ? | L'intestin grêle
+Quel organe fabrique la bile ? | Le foie
+Dans quel petit organe la bile est-elle stockée ? | La vésicule biliaire
+Quel acide l'estomac produit-il ? | L'acide chlorhydrique
+Combien de mètres mesure à peu près l'intestin grêle d'un adulte ? | Environ 6 à 7 mètres
+Comment s'appellent les petits replis en doigt de gant qui tapissent l'intestin grêle ? | Les villosités
+# Les Gaulois
+Astérix est-il un Gaulois qui a vraiment existé ? | Non, un personnage de bande dessinée
+Comment s'appelait l'ancien pays des Gaulois ? | La Gaule
+Comment appelle-t-on les prêtres gaulois ? | Les druides
+Quel récipient en bois pour transporter le vin attribue-t-on souvent aux Gaulois ? | Le tonneau
+Quelle plante les druides coupaient-ils sur les chênes avec une serpe d'or ? | Le gui
+À quelle famille de langues appartenait la langue gauloise ? | Les langues celtiques
+Comment s'appelait la ville gauloise qui est devenue Paris ? | Lutèce
+Dans quelle bataille Vercingétorix a-t-il battu César en 52 avant J.-C. ? | Gergovie
+Sur le territoire de quel peuple les druides se réunissaient-ils chaque année ? | Les Carnutes (région de Chartres)
+En quelle année avant J.-C. César a-t-il commencé la conquête de la Gaule ? | 58 avant J.-C.
+# Les angles
+Trace-t-on un angle droit avec un ballon ? | Non, avec une équerre
+Combien de degrés mesure un angle droit ? | 90
+Combien de degrés fait un tour complet ? | 360
+Comment appelle-t-on un angle plus petit qu'un angle droit ? | Un angle aigu
+Comment appelle-t-on un angle plus grand qu'un angle droit mais plus petit qu'un angle plat ? | Un angle obtus
+Combien de degrés mesure un angle plat ? | 180
+Comment appelle-t-on deux angles dont la somme fait 90 degrés ? | Des angles complémentaires
+Combien vaut la somme des angles d'un quadrilatère ? | 360 degrés
+Combien de degrés mesure chaque angle d'un hexagone régulier ? | 120
+Combien vaut un angle droit en radians ? | Pi sur deux
+# Les fleuves de France
+La Seine passe-t-elle par Marseille ? | Non, par Paris
+Quel fleuve traverse Paris ? | La Seine
+Quel est le plus long fleuve de France ? | La Loire
+Quel fleuve se joint à la Saône à Lyon ? | Le Rhône
+Quel fleuve traverse Bordeaux ? | La Garonne
+Dans quelle mer se jette le Rhône ? | La Méditerranée
+Comment s'appelle l'estuaire commun de la Garonne et de la Dordogne ? | La Gironde
+Près de quelle grande ville portuaire la Seine se jette-t-elle dans la Manche ? | Le Havre
+Au pied de quel mont ardéchois la Loire prend-elle sa source ? | Le mont Gerbier-de-Jonc
+Combien de kilomètres mesure à peu près la Loire, à 50 km près ? | Environ 1 000 km
 `;

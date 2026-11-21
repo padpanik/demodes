@@ -870,4 +870,37 @@ Quelle pierre passe-t-on sur les petites coupures du rasage ? | La pierre d'alun
 Sur quoi affûte-t-on traditionnellement la lame d'un coupe-chou ? | Sur un cuir (cuir à rasoir)
 Les poils d'un blaireau de rasage traditionnel viennent-ils vraiment de l'animal appelé blaireau ? | Oui
 En quelle année le brevet du rasoir à lame jetable de King Camp Gillette a-t-il été accordé ? | 1904
+# Le potager
+Les tomates poussent-elles sous terre ? | Non, sur un pied
+Avec quoi arrose-t-on traditionnellement le potager ? | Un arrosoir
+Quel légume rouge pousse en grappes sur un pied qu'on attache à un tuteur ? | La tomate
+Quel petit légume rouge et rond se récolte trois à quatre semaines seulement après le semis ? | Le radis
+Comment appelle-t-on le fait de couvrir le sol de paille ou de feuilles pour le protéger ? | Le paillage
+Comment appelle-t-on les petites pousses qu'on pince entre la tige et les branches des tomates ? | Les gourmands
+Quelle fleur plante-t-on souvent près des tomates pour éloigner certains insectes ? | L'œillet d'Inde
+Comment appelle-t-on le fait de ne pas cultiver la même famille de légumes au même endroit chaque année ? | La rotation des cultures
+Comment appelle-t-on les trois saints de mai après lesquels on plante les tomates sans risque de gel ? | Les saints de glace
+Quels sont les trois saints de glace, fêtés du 11 au 13 mai ? | Saint Mamert, saint Pancrace et saint Servais
+# Le vin de Bourgogne
+Le vin de Bourgogne se boit-il chaud avec une paille ? | Non
+Quel cépage rouge fait les grands vins rouges de Bourgogne ? | Le pinot noir
+Quel cépage blanc fait la plupart des vins blancs de Bourgogne ? | Le chardonnay
+Quel vin blanc sec de Bourgogne porte le nom d'une petite ville de l'Yonne ? | Le chablis
+Dans quelle ville a lieu la célèbre vente aux enchères des vins des Hospices ? | Beaune
+Dans quel département se trouvent Beaune et Nuits-Saint-Georges ? | La Côte-d'Or
+En Bourgogne, comment appelle-t-on une parcelle de vigne délimitée et nommée depuis des siècles ? | Un climat
+Quel domaine, ancien vignoble des moines de Cîteaux, accueille la Confrérie des chevaliers du Tastevin ? | Le Clos de Vougeot
+En quelle année les climats du vignoble de Bourgogne ont-ils été inscrits au patrimoine mondial de l'Unesco ? | 2015
+Dans quel village de la Côte de Nuits se trouve la vigne de la Romanée-Conti ? | Vosne-Romanée
+# Le cidre
+Le cidre est-il fait avec des carottes ? | Non, avec des pommes
+Quelles deux régions françaises sont les plus célèbres pour leur cidre ? | La Normandie et la Bretagne
+Avec quel plat breton boit-on souvent du cidre ? | Les crêpes et les galettes
+Dans quelle tasse en terre cuite sert-on le cidre en crêperie ? | Une bolée
+Comment s'appelle l'eau-de-vie de cidre de Normandie ? | Le calvados
+Comment appelle-t-on le petit verre de calvados bu au milieu d'un repas ? | Le trou normand
+Comment s'appelle la boisson qu'on fait avec des poires comme le cidre avec des pommes ? | Le poiré
+Comment s'appelle l'apéritif normand qui mêle jus de pomme et calvados ? | Le pommeau
+Quel est le seul cidre breton à bénéficier d'une appellation d'origine protégée ? | Le cidre de Cornouaille
+Comment appelle-t-on la méthode qui clarifie le cidre en formant un « chapeau brun » à la surface de la cuve ? | La défécation
 `;
