@@ -14,10 +14,11 @@ var QQ = (function () {
       contexte = T.contexte, plan = T.plan, boite = T.boite, cylindre = T.cylindre, rond = T.rond;
 
   // ---------- Le plan ----------
-  // Une placette : un coin (5 × 5, son grand arbre et son panneau), deux rangs de 3 parcelles en L autour d'une place pavée.
+  // Une placette : un coin (6 × 6, son grand arbre et son panneau), deux rangs de 3 parcelles en L autour d'une place pavée.
   // Rang A : le long de i, façades tournées vers +j ; rang B : le long de j, façades tournées vers +i.
-  // On ne voit donc que des façades, jamais l'arrière d'une maison. La rue passe devant toutes les placettes (j de 17 à 20).
-  var LOT_W = 4, LOT_D = 5, COIN = 5, PAR_RANG = 3, TAILLE = COIN + LOT_W * PAR_RANG, PAS = TAILLE + 4;
+  // On ne voit donc que des façades, jamais l'arrière d'une maison. La rue passe devant toutes les placettes (j de 18 à 21).
+  // 4.31 (demandé par l'utilisateur) : une rangée de plus au jardin de devant (LOT_D = 6), donc un coin de 6 × 6
+  var LOT_W = 4, LOT_D = 6, COIN = 6, PAR_RANG = 3, TAILLE = COIN + LOT_W * PAR_RANG, PAS = TAILLE + 4;
   var RUE0 = TAILLE, RUE1 = TAILLE + 3, BAS = TAILLE + 6;
   var NOMS_PLACETTES = ['Placette des Tilleuls', 'Placette du Puits', 'Placette des Lilas', 'Placette des Cerisiers', 'Placette du Moulin', 'Placette des Glycines'];
   // Ordre de remplissage d'une placette : on alterne les deux rangs en partant du coin (4 maisons = un L serré)
@@ -44,31 +45,33 @@ var QQ = (function () {
 
   // Cases où l'on marche : la rue, les places (sauf leur fontaine et leurs décors), l'allée de chaque parcelle.
   // Porte d'une maison : depuis la 1re case de l'allée, on « fonce » vers la maison. Le portail : au bout ouest de la rue.
-  function decorsPlace(P) {
-    var a = P.i0;
-    return [
-      { m: 'fontaineG', i: a + 10, j: 10, w: 2, d: 2 },
-      { m: 'massif', i: a + 9, j: 9 }, { m: 'massif', i: a + 12, j: 9, t: 'prune' }, { m: 'massif', i: a + 9, j: 12, t: 'moutarde' }, { m: 'massif', i: a + 12, j: 12 },
-      { m: 'lanterne', i: a + 7, j: 7 }, { m: 'lanterne', i: a + 15, j: 7 }, { m: 'lanterne', i: a + 7, j: 15 }, { m: 'lanterne', i: a + 15, j: 15 },
-      { m: 'banc', i: a + 10, j: 14, o: 0 }, { m: 'banc', i: a + 14, j: 10, o: 1 }
+  function decorsPlace(P, fete) {
+    var a = P.i0, l = [
+      { m: 'fontaineG', i: a + 11, j: 11, w: 2, d: 2 },
+      { m: 'massif', i: a + 10, j: 10 }, { m: 'massif', i: a + 13, j: 10, t: 'prune' }, { m: 'massif', i: a + 10, j: 13, t: 'moutarde' }, { m: 'massif', i: a + 13, j: 13 },
+      { m: 'lanterne', i: a + 8, j: 8 }, { m: 'lanterne', i: a + 16, j: 8 }, { m: 'lanterne', i: a + 8, j: 16 }, { m: 'lanterne', i: a + 16, j: 16 },
+      { m: 'banc', i: a + 11, j: 15, o: 0 }, { m: 'banc', i: a + 15, j: 11, o: 1 }
     ];
+    var F = FETES_DEHORS[fete && fete.id];
+    if (F && F.place) l.push({ m: F.place, i: a + 8, j: 12, grand: true });   // le sapin de Noël, le tas de citrouilles…
+    return l;
   }
-  function cases(Q) {
+  function cases(Q, fete) {
     var ok = {}, bloque = {};
     function mettre(i, j) { ok[i + ',' + j] = 1; }
     for (var i = -3; i <= Q.iMax; i++) for (var j = RUE0; j < RUE1; j++) mettre(i, j);
     Q.placettes.forEach(function (P) {
       for (var i = P.i0 + COIN; i < P.i0 + TAILLE; i++) for (var j = COIN; j < TAILLE; j++) mettre(i, j);
-      decorsPlace(P).forEach(function (d) { for (var a = 0; a < (d.w || 1); a++) for (var b = 0; b < (d.d || 1); b++) bloque[(d.i + a) + ',' + (d.j + b)] = 1; });
+      decorsPlace(P, fete).forEach(function (d) { for (var a = 0; a < (d.w || 1); a++) for (var b = 0; b < (d.d || 1); b++) bloque[(d.i + a) + ',' + (d.j + b)] = 1; });
     });
-    Q.lots.forEach(function (L) { [3, 4].forEach(function (v) { var c = versMonde(L, 1, v); mettre(c[0], c[1]); }); });
+    Q.lots.forEach(function (L) { [3, 4, 5].forEach(function (v) { var c = versMonde(L, 1, v); mettre(c[0], c[1]); }); });
     Object.keys(bloque).forEach(function (c) { delete ok[c]; });
     return ok;
   }
   // La porte d'une parcelle : la case devant elle (1re case de l'allée) et la direction de la maison
   function devantPorte(L) { var c = versMonde(L, 1, 3); return { i: c[0], j: c[1], dir: L.o ? [-1, 0] : [0, -1] }; }
   function lotEn(Q, i, j) {
-    return Q.lots.filter(function (L) { var c = versMonde(L, 1, 3), d = versMonde(L, 1, 4); return (c[0] === i && c[1] === j) || (d[0] === i && d[1] === j); })[0] || null;
+    return Q.lots.filter(function (L) { return [3, 4, 5].some(function (v) { var c = versMonde(L, 1, v); return c[0] === i && c[1] === j; }); })[0] || null;
   }
   // Chemin le plus court (largeur d'abord) entre deux cases où l'on marche
   function chemin4(ok, a, b) {
@@ -104,7 +107,7 @@ var QQ = (function () {
     return r;
   }
   // Places du jardin de devant (repère local de la parcelle) : l'allée est en u = 1, la boîte aux lettres en (0, 4)
-  var PLACES_JARDIN = [[0, 3], [3, 3], [2, 4], [3, 4]];   // la case (2, 3), devant la porte, est le perron du compagnon
+  var PLACES_JARDIN = [[0, 3], [0, 4], [3, 3], [3, 4], [2, 4], [2, 5], [3, 5]];   // la case (2, 3), devant la porte, est le perron du compagnon ; (0, 5) la boîte aux lettres
 
   // ---------- Matières (motifs posés à plat sur une face : 40 unités par case) ----------
   function cleT(t) { return String(teinte(t)).replace('#', ''); }
@@ -241,6 +244,8 @@ var QQ = (function () {
     var fx = [[porteX - 31, 16], [porteX + 35, 18], [porteX + 68, 18]];
     fx.forEach(function (f) { var w = fenetre2D(f[0], Hu * 0.38, f[1], 19, S, m, cMen, allume, op.nuit); face += w.s; w.l.forEach(function (q) { fen.push(q); }); });
     face += porte2D(porteX, Hu, S, m, cMen, allume);
+    var FD = op.fete && FETES_DEHORS[op.fete.id];
+    if (FD && FD.porte) face += decorPorte(FD.porte, porteX, Hu - 5 - Math.min(38, Hu - 14), couleursFete(op.fete));
     // lanterne à côté de la porte
     face += '<path d="M' + n1(porteX + 15) + ' ' + n1(Hu - 44) + ' h4" stroke="' + O + '" stroke-width="1.5"/><rect x="' + n1(porteX + 16.5) + '" y="' + n1(Hu - 43) + '" width="5" height="7" rx="1" fill="' + (allume || op.nuit ? '#ffd77a' : '#e9dcc0') + '" stroke="' + O + '" stroke-width="1"/>';
     // jardinières de fleurs sous les fenêtres de droite
@@ -275,20 +280,35 @@ var QQ = (function () {
     s += '<path d="M' + pt(E1) + ' L' + pt(E2) + ' L' + pt(R2) + ' L' + pt(R1) + 'Z" fill="none" stroke="' + O + '" stroke-width="1.8" stroke-linejoin="round"/>';
     s += ligne([R1, R2], m.toit === 'chaume' ? nuance(cToit, -0.3) : nuance(cToit, -0.35), m.toit === 'chaume' ? 6 : 4.2) + ligne([R1, R2], O, 1, ' opacity="0.6"');
     if (m.toit === 'chaume') s += ligne([[R1[0], R1[1] - 2], [R2[0], R2[1] - 2]], nuance(cToit, 0.1), 2.2);
+    if (FD && FD.neige) {   // Noël : de la neige sur le pan avant et des glaçons au bord
+      var Nb1 = [E1[0] + (R1[0] - E1[0]) * 0.55, E1[1] + (R1[1] - E1[1]) * 0.55], Nb2 = [E2[0] + (R2[0] - E2[0]) * 0.55, E2[1] + (R2[1] - E2[1]) * 0.55];
+      var Nh1 = [E1[0] + (R1[0] - E1[0]) * 0.97, E1[1] + (R1[1] - E1[1]) * 0.97], Nh2 = [E2[0] + (R2[0] - E2[0]) * 0.97, E2[1] + (R2[1] - E2[1]) * 0.97];
+      var bord = [];
+      for (var qn = 8; qn >= 0; qn--) { var tq = qn / 8; bord.push(n1(Nb1[0] + (Nb2[0] - Nb1[0]) * tq) + ' ' + n1(Nb1[1] + (Nb2[1] - Nb1[1]) * tq + (qn % 2 ? 3 : -1))); }
+      s += '<path d="M' + pt(Nh1) + ' L' + pt(Nh2) + ' L' + bord.join(' L') + 'Z" fill="#f8fbff" stroke="#9fb4c7" stroke-width="0.9" stroke-linejoin="round" opacity="0.96"/>';
+      for (var qg = 0.1; qg < 0.95; qg += 0.13) { var ga = [E1[0] + (E2[0] - E1[0]) * qg, E1[1] + (E2[1] - E1[1]) * qg + ep * 34]; s += '<path d="M' + n1(ga[0] - 1.6) + ' ' + n1(ga[1]) + ' l1.6 ' + (4 + (qg * 37 % 3)).toFixed(1) + ' 1.6 -' + (4 + (qg * 37 % 3)).toFixed(1) + 'z" fill="#e7f5ff" stroke="#9fb4c7" stroke-width="0.5"/>'; }
+    }
+    if (FD) s += fanions([E1[0], E1[1] + ep * 34 + 1], [E2[0], E2[1] + ep * 34 + 1], couleursFete(op.fete), op.nuit);
     s += '</g>';
     el.push({ cle: cle(L, 2, 1.4), s: s, lueurs: op.nuit ? lueurs : [], lot: L.n });
     // --- clôture, portillon et nom ---
     el = el.concat(cloture(L, k, m, op));
     // --- boîte aux lettres ---
-    el.push({ cle: cle(L, 0.5, 4.45), s: boiteLettres(k, op.courrier) });
+    el.push({ cle: cle(L, 0.5, 5.45), s: boiteLettres(k, op.courrier) });
     // --- objets du jardin ---
     m.jardin.forEach(function (ob) {
+      if (OBJETS_FETE[ob.m]) {
+        var wf = P(ob.u + 0.5, ob.v + 0.5, 0), nf = ob.m.slice(2);
+        el.push({ cle: cle(L, ob.u + 0.5, ob.v + 0.5), s: '<g class="qd-obj" data-lot="' + L.n + '">' + objetFete(nf, wf, op.nuit, 1, op.fete) + '</g>', lueurs: op.nuit && (nf === 'citrouille' || nf === 'lampions' || nf === 'sapin') ? [P(ob.u + 0.5, ob.v + 0.5, 0.6)] : [] });
+        return;
+      }
       if (!K.MEUBLES[ob.m]) return;
       var w = versMonde(L, ob.u, ob.v), o2 = L.o ? (ob.o ? 0 : 1) : (ob.o || 0);
       var x = { m: ob.m, i: w[0], j: w[1], o: o2, t: ob.t };
       var mm = K.MEUBLES[ob.m], lu = mm.w || 1, lv = mm.d || 1;
       el.push({ cle: cle(L, ob.u + lu / 2, ob.v + lv / 2), s: '<g class="qd-obj" data-lot="' + L.n + '">' + K.dessinObjet(x, 2.6, { nuit: op.nuit }) + '</g>', lueurs: op.nuit && mm.lumiere ? [P(ob.u + 0.5, ob.v + 0.5, mm.lumiere.z || 1)] : [] });
     });
+    if (FD && FD.porte === 'citrouille') el.push({ cle: cle(L, 2.6, 2.9), s: objetFete('citrouille', P(2.55, 2.85, 0), op.nuit, 0.85, op.fete), lueurs: op.nuit ? [P(2.55, 2.85, 0.4)] : [] });
     // --- son compagnon devant chez lui (s'il est là) ---
     if (op.cp) { var pc = versMonde(L, 2.45, 3.25); el.push({ cle: cle(L, 2.45, 3.25), cp: op.cp, i: pc[0], j: pc[1] }); }
     return el;
@@ -336,7 +356,7 @@ var QQ = (function () {
 
   // Clôture devant la parcelle (en v = 4.9), avec un portillon en u = 1 à 2 et le nom de l'habitant dessus
   function cloture(L, k, m, op) {
-    var el = [], P = k.P, type = m.cloture, cM = teinte(m.menuis), V = 4.88;
+    var el = [], P = k.P, type = m.cloture, cM = teinte(m.menuis), V = LOT_D - 0.12;
     var bois = type === 'piquets' ? '#f3eadb' : '#9b6a3e';
     function segment(u0, u1) {
       var s = '';
@@ -380,20 +400,20 @@ var QQ = (function () {
     return s;
   }
   function boiteLettres(k, courrier) {
-    var P = k.P, s = cylindre(k, 0.5, 4.45, 0, 0.04, 0.82, '#6b4a35', null, false);
-    s += boite(k, 0.32, 4.3, 0.82, 0.36, 0.3, 0.24, '#c94a3f', 2.5);
-    var d = P(0.68, 4.45, 0.94);
+    var P = k.P, s = cylindre(k, 0.5, 5.45, 0, 0.04, 0.82, '#6b4a35', null, false);
+    s += boite(k, 0.32, 5.3, 0.82, 0.36, 0.3, 0.24, '#c94a3f', 2.5);
+    var d = P(0.68, 5.45, 0.94);
     s += '<path d="M' + n1(d[0] - 2) + ' ' + n1(d[1] + 2) + ' h4" stroke="' + O + '" stroke-width="1.3"/>';
     // drapeau levé = du courrier attend
-    var f = P(0.7, 4.36, courrier ? 1.25 : 1.0);
+    var f = P(0.7, 5.36, courrier ? 1.25 : 1.0);
     s += courrier ? '<path d="M' + n1(f[0]) + ' ' + n1(f[1] + 10) + ' V' + n1(f[1]) + ' h7 l-2 3 l2 3 h-7" fill="#ffd43b" stroke="' + O + '" stroke-width="0.9"/>'
                   : '<path d="M' + n1(f[0]) + ' ' + n1(f[1]) + ' h8 v4 h-8z" fill="#ffd43b" stroke="' + O + '" stroke-width="0.9"/>';
     return s;
   }
   function terrainLibre(L, k) {
     var P = k.P, s = '';
-    [[0.4, 0.5], [3.6, 0.5], [0.4, 4.6], [3.6, 4.6]].forEach(function (c) { s += boite(k, c[0] - 0.05, c[1] - 0.05, 0, 0.1, 0.1, 0.42, '#9b6a3e', 0.6); });
-    s += ligne([P(0.4, 0.5, 0.36), P(3.6, 0.5, 0.36), P(3.6, 4.6, 0.36), P(0.4, 4.6, 0.36), P(0.4, 0.5, 0.36)], '#f3eadb', 1.2, ' stroke-dasharray="3 3"');
+    [[0.4, 0.5], [3.6, 0.5], [0.4, 5.6], [3.6, 5.6]].forEach(function (c) { s += boite(k, c[0] - 0.05, c[1] - 0.05, 0, 0.1, 0.1, 0.42, '#9b6a3e', 0.6); });
+    s += ligne([P(0.4, 0.5, 0.36), P(3.6, 0.5, 0.36), P(3.6, 5.6, 0.36), P(0.4, 5.6, 0.36), P(0.4, 0.5, 0.36)], '#f3eadb', 1.2, ' stroke-dasharray="3 3"');
     var c = P(2, 2.6, 0.9);
     s += ligne([P(2, 2.6, 0), c], O, 2.4);
     return s + panneauNom(c[0], c[1] + 6, 'Libre');
@@ -418,7 +438,7 @@ var QQ = (function () {
     Q.lots.forEach(function (L) {
       var a = versMonde(L, 0, VF), b = versMonde(L, 1, VF);
       // allée de la porte au portillon
-      s += L.o ? sol(defs, L.i + VF, L.j + 1, 5 - VF, 1, 'paves', '#d9c9a8') : sol(defs, L.i + 1, L.j + VF, 1, 5 - VF, 'paves', '#d9c9a8');
+      s += L.o ? sol(defs, L.i + VF, L.j + 1, LOT_D - VF, 1, 'paves', '#d9c9a8') : sol(defs, L.i + 1, L.j + VF, 1, LOT_D - VF, 'paves', '#d9c9a8');
     });
     return s;
   }
@@ -428,7 +448,7 @@ var QQ = (function () {
     return echelle(K.dessinObjet({ m: 'arbre', i: i, j: j, o: 0, t: t || 'foret' }, 2.6, {}), base, ech || 1.6);
   }
   // Les éléments fixes du décor (triés avec les maisons)
-  function decors(Q, defs, nuit) {
+  function decors(Q, defs, nuit, fete) {
     var el = [];
     function add(cleV, s, lueurs) { el.push({ cle: cleV, s: s, lueurs: lueurs || [] }); }
     // bois au fond : derrière le rang A de chaque placette et derrière le rang B de la première
@@ -450,7 +470,8 @@ var QQ = (function () {
         [[1.6, 0.4, 2], [2.4, 2.4, 1.5], [1.4, 11.5, 1.6], [2.2, 14, 1.3]].forEach(function (t, q) { add(h + t[0] + t[1] + 1, arbre(h + t[0], t[1], t[2], q % 2 ? 'sauge' : 'foret')); });
       }
       // la place : grande fontaine, massifs, lanternes, bancs
-      decorsPlace(P).forEach(function (d) {
+      decorsPlace(P, fete).forEach(function (d) {
+        if (d.grand) { add(d.i + d.j + 1, objetFete(d.m, proj(d.i + 0.5, d.j + 0.5), nuit, 2.1, fete), nuit && d.m === 'sapin' ? [proj(d.i + 0.5, d.j + 0.5, 1.6)] : []); return; }
         if (d.m === 'fontaineG') { var c = proj(d.i + 1, d.j + 1); add(d.i + d.j + 2, echelle(K.dessinObjet({ m: 'fontaine', i: d.i + 0.5, j: d.j + 0.5, o: 0 }, 2.6, {}), c, 1.9)); return; }
         var mm = K.MEUBLES[d.m], ob = { m: d.m, i: d.i, j: d.j, o: d.o || 0, t: d.t };
         add(d.i + d.j + ((d.o ? mm.d : mm.w) || 1) / 2 + ((d.o ? mm.w : mm.d) || 1) / 2, K.dessinObjet(ob, 2.6, { nuit: nuit }), nuit && mm.lumiere ? [proj(d.i + 0.5, d.j + 0.5, mm.lumiere.z)] : []);
@@ -489,6 +510,153 @@ var QQ = (function () {
       '<svg x="' + n1(b[0] - w / 2) + '" y="' + n1(b[1] - h * 0.95) + '" width="' + n1(w) + '" height="' + n1(h) + '" viewBox="0 -6 200 216" overflow="visible"><g class="sens' + (extra && extra.gauche ? ' gauche' : '') + '">' + svg + '</g></svg></g>';
   }
 
+  // ---------- Les fêtes dehors (4.31, demandé par l'utilisateur) ----------
+  // Pendant une fête (CP.feteDu) : fanions aux couleurs de la fête au-dessus des places, sous l'avant-toit de chaque maison,
+  // une décoration sur la place (sapin, citrouilles…), un décor à chaque porte et, à Noël, de la neige sur les toits.
+  // `op.fete` = { id, guirlande } (l'objet de CP.feteDu suffit).
+  var FETES_DEHORS = {
+    'nouvel-an': { place: 'lampions', porte: 'etoile' },
+    chandeleur: { place: 'lampions', porte: 'etoile' },
+    'saint-valentin': { place: 'coeur', porte: 'coeur' },
+    'saint-patrick': { place: 'lampions', porte: 'trefle' },
+    paques: { place: 'oeufs', porte: 'oeuf' },
+    musique: { place: 'lampions', porte: 'note' },
+    ete: { place: 'parasol', porte: null },
+    halloween: { place: 'citrouilles', porte: 'citrouille' },
+    noel: { place: 'sapin', porte: 'couronne', neige: true }
+  };
+  // Objets de fête pour le jardin : on les achète pendant leur fête, on les garde ensuite
+  var OBJETS_FETE = {
+    'f:sapin': { nom: 'Sapin de Noël', fete: 'noel', prix: 25 },
+    'f:bonhomme': { nom: 'Bonhomme de neige', fete: 'noel', prix: 15 },
+    'f:citrouille': { nom: 'Citrouille', fete: 'halloween', prix: 12 },
+    'f:oeufs': { nom: 'Œufs peints', fete: 'paques', prix: 12 },
+    'f:coeur': { nom: 'Cœur fleuri', fete: 'saint-valentin', prix: 15 },
+    'f:parasol': { nom: 'Parasol', fete: 'ete', prix: 15 },
+    'f:lampions': { nom: 'Lampions', fete: 'nouvel-an', prix: 12 }
+  };
+  function couleursFete(fete) { return (fete && fete.guirlande && fete.guirlande.length) ? fete.guirlande : ['#e03131', '#f4c430', '#4c6ef5']; }
+  // Une guirlande de fanions entre deux points de l'écran (elle pend un peu)
+  function fanions(a, b, cols, nuit, flou) {
+    var dx = b[0] - a[0], dy = b[1] - a[1], L = Math.sqrt(dx * dx + dy * dy), n = Math.max(3, Math.round(L / 13)), creux = Math.min(26, L * 0.12);
+    var pt2 = function (t) { return [a[0] + dx * t, a[1] + dy * t + creux * 4 * t * (1 - t)]; };
+    var s = '<path d="M' + pt(a) + ' Q' + n1(a[0] + dx / 2) + ' ' + n1(a[1] + dy / 2 + creux * 2) + ' ' + pt(b) + '" stroke="' + O + '" stroke-width="1" fill="none" opacity="0.7"/>';
+    for (var q = 1; q < n; q++) {
+      var p = pt2(q / n), c = cols[q % cols.length];
+      if (nuit) s += '<circle cx="' + n1(p[0]) + '" cy="' + n1(p[1] + 2) + '" r="2.6" fill="' + c + '"/><circle cx="' + n1(p[0]) + '" cy="' + n1(p[1] + 2) + '" r="6" fill="' + c + '" opacity="0.28"/>';
+      else s += '<path d="M' + n1(p[0] - 4.5) + ' ' + n1(p[1]) + ' L' + n1(p[0] + 4.5) + ' ' + n1(p[1]) + ' L' + n1(p[0]) + ' ' + n1(p[1] + 9) + 'Z" fill="' + c + '" stroke="' + O + '" stroke-width="0.7" stroke-linejoin="round"/>';
+    }
+    return s;
+  }
+  // Au-dessus de chaque place : les quatre côtés, de lanterne en lanterne
+  function guirlandesPlaces(Q, fete, nuit) {
+    var el = [], cols = couleursFete(fete);
+    Q.placettes.forEach(function (P) {
+      var a = P.i0, c = [[a + 8.5, 8.5], [a + 16.5, 8.5], [a + 16.5, 16.5], [a + 8.5, 16.5]];
+      for (var q = 0; q < 4; q++) {
+        var p1 = c[q], p2 = c[(q + 1) % 4];
+        el.push({ cle: (p1[0] + p2[0] + p1[1] + p2[1]) / 2 + 0.6, s: fanions(proj(p1[0], p1[1], 1.62), proj(p2[0], p2[1], 1.62), cols, nuit) });
+      }
+    });
+    return el;
+  }
+  // Les décorations de fête dessinées à plat sur l'écran, posées au point b (le pied), à l'échelle e
+  function objetFete(m, b, nuit, e, fete) {
+    e = e || 1; var x = b[0], y = b[1], s = '<g transform="translate(' + n1(x) + ' ' + n1(y) + ') scale(' + e + ')">', cols = couleursFete(fete);
+    var ombre = function (rx) { return '<ellipse cx="0" cy="0" rx="' + rx + '" ry="' + n1(rx * 0.45) + '" fill="#000" opacity="0.2"/>'; };
+    var R = function (cx, cy, r, f, sw) { return '<circle cx="' + n1(cx) + '" cy="' + n1(cy) + '" r="' + r + '" fill="' + f + '" stroke="' + O + '" stroke-width="' + (sw == null ? 0.9 : sw) + '"/>'; };
+    if (m === 'sapin') {
+      s += ombre(15) + '<rect x="-3" y="-9" width="6" height="9" fill="#7a4a26" stroke="' + O + '" stroke-width="1"/>';
+      [[-9, 17, 13], [-21, 14, 11], [-31, 10, 9]].forEach(function (t) { s += '<path d="M' + -t[1] + ' ' + t[0] + ' L0 ' + (t[0] - t[2] - 8) + ' L' + t[1] + ' ' + t[0] + 'Z" fill="#2f6b3a" stroke="' + O + '" stroke-width="1.2" stroke-linejoin="round"/><path d="M0 ' + (t[0] - t[2] - 8) + ' L' + t[1] + ' ' + t[0] + ' L' + n1(t[1] * 0.2) + ' ' + t[0] + 'Z" fill="#1f4d29" opacity="0.6"/>'; });
+      [[-8, -13], [7, -15], [-5, -24], [6, -27], [0, -35], [-11, -11]].forEach(function (p, q) { var c = ['#e03131', '#f4c430', '#4c6ef5'][q % 3]; s += R(p[0], p[1], 2.1, c, 0.6) + (nuit ? '<circle cx="' + p[0] + '" cy="' + p[1] + '" r="5" fill="' + c + '" opacity="0.35"/>' : ''); });
+      s += '<path d="M0 -55 l2.3 4.8 5.2 0.6 -3.9 3.5 1.1 5.1 -4.7 -2.6 -4.7 2.6 1.1 -5.1 -3.9 -3.5 5.2 -0.6z" fill="#fcc419" stroke="' + O + '" stroke-width="0.9"/>';
+    } else if (m === 'bonhomme') {
+      s += ombre(11) + R(0, -9, 10, '#fbfcfd', 1.2) + R(0, -24, 7, '#fbfcfd', 1.2);
+      s += '<path d="M-7 -18 Q0 -14 7 -18 L7 -15 Q0 -11 -7 -15Z M4 -16 l3 7 -3 0z" fill="#e03131" stroke="' + O + '" stroke-width="0.7"/>';
+      s += '<rect x="-6" y="-33" width="12" height="2.4" fill="#343a40"/><rect x="-4" y="-41" width="8" height="8" fill="#343a40" stroke="' + O + '" stroke-width="0.7"/>';
+      s += '<circle cx="-2.5" cy="-25.5" r="0.9" fill="' + O + '"/><circle cx="2.5" cy="-25.5" r="0.9" fill="' + O + '"/><path d="M0 -23.5 l6 1.2 -6 1.2z" fill="#f76707"/>';
+      s += R(0, -11, 1, O, 0) + R(0, -6, 1, O, 0) + '<path d="M-9 -12 l-7 -6 M9 -12 l7 -6" stroke="#7a4a26" stroke-width="1.6" stroke-linecap="round"/>';
+    } else if (m === 'citrouille' || m === 'citrouilles') {
+      var une = function (cx, cy, r) {
+        var t = '<ellipse cx="' + cx + '" cy="' + n1(cy - r * 0.8) + '" rx="' + n1(r * 1.25) + '" ry="' + n1(r * 0.85) + '" fill="#f76707" stroke="' + O + '" stroke-width="1.1"/>';
+        t += '<path d="M' + n1(cx - r * 0.45) + ' ' + n1(cy - r * 1.6) + ' Q' + n1(cx - r * 0.7) + ' ' + n1(cy - r * 0.8) + ' ' + n1(cx - r * 0.45) + ' ' + n1(cy) + ' M' + n1(cx + r * 0.45) + ' ' + n1(cy - r * 1.6) + ' Q' + n1(cx + r * 0.7) + ' ' + n1(cy - r * 0.8) + ' ' + n1(cx + r * 0.45) + ' ' + n1(cy) + '" stroke="#c2410c" stroke-width="1" fill="none"/>';
+        t += '<path d="M' + cx + ' ' + n1(cy - r * 1.6) + ' q1 -3 3 -4" stroke="#4f7a42" stroke-width="2" fill="none" stroke-linecap="round"/>';
+        var yeux = nuit ? '#ffe066' : '#5c2a00';
+        t += '<path d="M' + n1(cx - r * 0.6) + ' ' + n1(cy - r * 1.0) + ' l' + n1(r * 0.3) + ' -' + n1(r * 0.35) + ' l' + n1(r * 0.3) + ' ' + n1(r * 0.35) + 'z M' + n1(cx + r * 0.0) + ' ' + n1(cy - r * 1.0) + ' l' + n1(r * 0.3) + ' -' + n1(r * 0.35) + ' l' + n1(r * 0.3) + ' ' + n1(r * 0.35) + 'z M' + n1(cx - r * 0.55) + ' ' + n1(cy - r * 0.55) + ' q' + n1(r * 0.55) + ' ' + n1(r * 0.4) + ' ' + n1(r * 1.1) + ' 0 q-' + n1(r * 0.55) + ' ' + n1(r * 0.15) + ' -' + n1(r * 1.1) + ' 0z" fill="' + yeux + '"/>';
+        if (nuit) t += '<circle cx="' + cx + '" cy="' + n1(cy - r * 0.8) + '" r="' + n1(r * 2.2) + '" fill="#ffa94d" opacity="0.22"/>';
+        return t;
+      };
+      s += ombre(m === 'citrouilles' ? 17 : 10);
+      s += m === 'citrouilles' ? une(-8, -1, 6) + une(9, 0, 5.5) + une(1, -9, 6.5) : une(0, 0, 7);
+    } else if (m === 'oeufs') {
+      s += '<ellipse cx="0" cy="-2" rx="17" ry="6" fill="#c9a26b" stroke="' + O + '" stroke-width="1"/><path d="M-15 -3 q4 -3 8 0 q4 -3 8 0 q4 -3 8 0 q4 -3 7 0" stroke="#9b6a3e" stroke-width="1" fill="none"/>';
+      [[-8, -4, 5.5, '#f783ac'], [7, -4, 5.5, '#4dabf7'], [0, -6, 6.5, '#ffd43b']].forEach(function (o, q) {
+        s += '<ellipse cx="' + o[0] + '" cy="' + n1(o[1] - o[2]) + '" rx="' + n1(o[2] * 0.78) + '" ry="' + o[2] + '" fill="' + o[3] + '" stroke="' + O + '" stroke-width="1"/>';
+        s += '<path d="M' + n1(o[0] - o[2] * 0.72) + ' ' + n1(o[1] - o[2]) + ' q' + n1(o[2] * 0.36) + ' -2 ' + n1(o[2] * 0.72) + ' 0 q' + n1(o[2] * 0.36) + ' 2 ' + n1(o[2] * 0.72) + ' 0" stroke="#fff" stroke-width="1.4" fill="none"/>';
+      });
+    } else if (m === 'coeur') {
+      s += ombre(9) + '<path d="M-6 0 h12 l-2 -8 h-8z" fill="#c94a3f" stroke="' + O + '" stroke-width="1"/><path d="M0 -8 V-16" stroke="#4f7a42" stroke-width="2"/>';
+      s += '<path d="M0 -17 C-14 -26 -12 -40 -4 -38 Q0 -37 0 -32 Q0 -37 4 -38 C12 -40 14 -26 0 -17Z" fill="#f06595" stroke="' + O + '" stroke-width="1.2"/>';
+      [[-6, -31], [5, -30], [0, -24], [-3, -35]].forEach(function (p) { s += R(p[0], p[1], 1.6, '#fff0f6', 0.4); });
+    } else if (m === 'parasol') {
+      s += ombre(16) + '<path d="M0 0 V-38" stroke="' + O + '" stroke-width="2.6"/><path d="M0 0 V-38" stroke="#f3eadb" stroke-width="1.4"/>';
+      s += '<path d="M-22 -32 Q0 -52 22 -32 Q16 -35 11 -32 Q5.5 -35 0 -32 Q-5.5 -35 -11 -32 Q-16 -35 -22 -32Z" fill="#fff" stroke="' + O + '" stroke-width="1.2"/>';
+      s += '<path d="M-11 -32 Q-8 -46 0 -46 Q-3 -40 0 -32 Q-5.5 -35 -11 -32Z M11 -32 Q8 -46 0 -46 Q3 -40 0 -32 Q5.5 -35 11 -32Z" fill="' + cols[0] + '" opacity="0.9"/>';
+      s += '<path d="M-14 -2 l14 -5 l14 5 l-14 5z" fill="#4dabf7" stroke="' + O + '" stroke-width="0.8" opacity="0.9"/>';
+    } else if (m === 'lampions') {
+      s += ombre(8) + '<path d="M0 0 V-42 M-16 -38 Q0 -46 16 -38" stroke="' + O + '" stroke-width="2.4" fill="none"/><path d="M0 0 V-42" stroke="#7a4a26" stroke-width="1.3"/>';
+      [[-11, -36], [0, -40], [11, -36]].forEach(function (p, q) {
+        var c = cols[q % cols.length];
+        s += '<ellipse cx="' + p[0] + '" cy="' + (p[1] + 7) + '" rx="5" ry="6.5" fill="' + c + '" stroke="' + O + '" stroke-width="0.9"/><path d="M' + (p[0] - 5) + ' ' + (p[1] + 7) + ' h10 M' + (p[0] - 4) + ' ' + (p[1] + 3) + ' h8 M' + (p[0] - 4) + ' ' + (p[1] + 11) + ' h8" stroke="' + nuance(c, -0.3) + '" stroke-width="0.7"/>';
+        if (nuit) s += '<circle cx="' + p[0] + '" cy="' + (p[1] + 7) + '" r="11" fill="' + c + '" opacity="0.3"/>';
+      });
+    }
+    return s + '</g>';
+  }
+  // Le décor d'une porte, dans le repère de la façade (x = milieu de la porte, y = haut de la porte)
+  function decorPorte(type, x, y, cols) {
+    if (type === 'couronne') return '<circle cx="' + n1(x) + '" cy="' + n1(y + 10) + '" r="6.5" fill="none" stroke="#2f6b3a" stroke-width="3.6"/><circle cx="' + n1(x) + '" cy="' + n1(y + 10) + '" r="6.5" fill="none" stroke="' + O + '" stroke-width="0.6" stroke-dasharray="2 2"/><path d="M' + n1(x - 3) + ' ' + n1(y + 16) + ' l3 -2 3 2 -1 4 -2 -2 -2 2z" fill="#e03131" stroke="' + O + '" stroke-width="0.5"/>' + rond(x - 4, y + 6, 1.1, '#e03131', 0.3) + rond(x + 4.5, y + 8, 1.1, '#f4c430', 0.3);
+    if (type === 'coeur') return '<path d="M' + n1(x) + ' ' + n1(y + 16) + ' C' + n1(x - 9) + ' ' + n1(y + 10) + ' ' + n1(x - 7) + ' ' + n1(y + 2) + ' ' + n1(x - 2) + ' ' + n1(y + 3) + ' Q' + n1(x) + ' ' + n1(y + 4) + ' ' + n1(x) + ' ' + n1(y + 6) + ' Q' + n1(x) + ' ' + n1(y + 4) + ' ' + n1(x + 2) + ' ' + n1(y + 3) + ' C' + n1(x + 7) + ' ' + n1(y + 2) + ' ' + n1(x + 9) + ' ' + n1(y + 10) + ' ' + n1(x) + ' ' + n1(y + 16) + 'Z" fill="#f06595" stroke="' + O + '" stroke-width="0.9"/>';
+    if (type === 'trefle') return [[0, 5], [-3.6, 9], [3.6, 9]].map(function (p) { return rond(x + p[0], y + p[1], 3.4, '#2b8a3e', 0.7); }).join('') + '<path d="M' + n1(x) + ' ' + n1(y + 10) + ' q1 5 3 7" stroke="#2b8a3e" stroke-width="1.4" fill="none"/>';
+    if (type === 'oeuf') return '<ellipse cx="' + n1(x) + '" cy="' + n1(y + 10) + '" rx="5" ry="6.5" fill="#ffd43b" stroke="' + O + '" stroke-width="0.9"/><path d="M' + n1(x - 4.6) + ' ' + n1(y + 10) + ' q2.3 -2 4.6 0 q2.3 2 4.6 0" stroke="#f783ac" stroke-width="1.6" fill="none"/>';
+    if (type === 'note') return '<path d="M' + n1(x - 2) + ' ' + n1(y + 15) + ' V' + n1(y + 3) + ' l8 -2 V' + n1(y + 13) + '" stroke="' + O + '" stroke-width="1.6" fill="none"/>' + rond(x - 4, y + 15, 2.6, cols[0], 0.6) + rond(x + 4, y + 13, 2.6, cols[1 % cols.length], 0.6);
+    if (type === 'citrouille') return '';   // la citrouille se pose sur le perron (voir dessinerParcelle)
+    if (type === 'etoile') return '<path d="M' + n1(x) + ' ' + n1(y + 3) + ' l2 4.2 4.6 0.5 -3.4 3.1 1 4.5 -4.2 -2.3 -4.2 2.3 1 -4.5 -3.4 -3.1 4.6 -0.5z" fill="#fcc419" stroke="' + O + '" stroke-width="0.8"/>';
+    return '';
+  }
+  // Tout ce qu'il faut acheter pour une maison (le reste est gratuit ou déjà à soi) : { clé: nombre }
+  // Prix proposés par Claude (4.31), à confirmer : la base (colombages, tuiles, piquets, barrière) est gratuite,
+  // la couverture d'origine d'un style vient avec lui, les couleurs sont libres.
+  var PRIX = {
+    style: { colombages: 0, chaumiere: 30, pierre: 35, chalet: 40, briques: 35, bardage: 30 },
+    toit: { tuiles: 0, ardoise: 15, chaume: 20, bardeaux: 15 },
+    cloture: { piquets: 0, bois: 0, aucune: 0, haie: 10, muret: 15 },
+    arche: 10
+  };
+  function prixDe(cle) {
+    var p = cle.split(':');
+    if (p[0] === 'style' || p[0] === 'toit' || p[0] === 'cloture') return PRIX[p[0]][p[1]] || 0;
+    if (p[0] === 'arche') return PRIX.arche;
+    if (p[0] === 'objet') { var f = OBJETS_FETE[p.slice(1).join(':')]; return f ? f.prix : ((K.MEUBLES[p[1]] || {}).prix || 5); }
+    return 0;
+  }
+  function besoins(m0) {
+    var m = maison(m0), b = {}, S = STYLES[m.style];
+    var ajoute = function (c, n) { if (prixDe(c) > 0) b[c] = (b[c] || 0) + (n || 1); };
+    ajoute('style:' + m.style);
+    if (m.toit !== S.toit) ajoute('toit:' + m.toit);
+    ajoute('cloture:' + m.cloture);
+    if (m.arche) ajoute('arche');
+    m.jardin.forEach(function (o) { ajoute('objet:' + o.m); });
+    return b;
+  }
+  // Ce qui manque : { a: [{ cle, n, prix }], total }
+  function aPayer(m0, possede) {
+    var b = besoins(m0), a = [], total = 0;
+    Object.keys(b).forEach(function (c) { var n = b[c] - ((possede || {})[c] || 0); if (n > 0) { var p = prixDe(c) * n; a.push({ cle: c, n: n, prix: p }); total += p; } });
+    return { a: a, total: total };
+  }
+
   // ---------- Toute la scène ----------
   // habitants : [{ n (parcelle), nom, maison, present, courrier, cp (svg du compagnon devant chez lui), moi }]
   // Rend { defs, sol, elements: [{ cle, s, lueurs, x0, y0, x1, y1 }] } : la page trie et ne garde que ce qui est à l'écran
@@ -497,12 +665,12 @@ var QQ = (function () {
     var defs = {}, el = [], parLot = {};
     (habitants || []).forEach(function (h) { parLot[h.n] = h; });
     var solS = dessinerSol(Q, defs, op.nuit);
-    el = el.concat(decors(Q, defs, op.nuit));
+    el = el.concat(decors(Q, defs, op.nuit, op.fete));
+    if (op.fete) el = el.concat(guirlandesPlaces(Q, op.fete, op.nuit));
     Q.lots.forEach(function (L) {
       var h = parLot[L.n];
-      if (!h && L.placette === Q.placettes.length - 1 && L.n >= Q.nb) { el = el.concat(dessinerParcelle(L, null, {}, defs)); return; }
-      if (!h) return;
-      el = el.concat(dessinerParcelle(L, h.maison, { nom: h.nom, present: h.present, courrier: h.courrier, moi: h.moi, nuit: op.nuit, cp: h.cp, id: L.n }, defs));
+      if (!h) { el = el.concat(dessinerParcelle(L, null, {}, defs)); return; }
+      el = el.concat(dessinerParcelle(L, h.maison, { nom: h.nom, present: h.present, courrier: h.courrier, moi: h.moi, nuit: op.nuit, cp: h.cp, id: L.n, fete: op.fete }, defs));
     });
     return { defs: Object.keys(defs).map(function (k) { return defs[k]; }).join(''), sol: solS, elements: el };
   }
@@ -521,13 +689,41 @@ var QQ = (function () {
     });
     return s;
   }
+  function centreQuartier(Q) { return proj((Q.iMin + Q.iMax) / 2, TAILLE / 2 + 2); }
   function centreLot(L) { var c = versMonde(L, 2, 2.6); return proj(c[0], c[1]); }
+  // Le milieu du jardin de devant (la caméra s'y cale quand on arrange le jardin)
+  function centreJardin(L) { var c = versMonde(L, 1.6, 3.9); return proj(c[0], c[1]); }
+  // « Comme une table de poker » (4.31, demandé par l'utilisateur) : chacun choisit sa parcelle, et chez lui les autres
+  // se rangent autour : les plus proches (même placette d'abord) vont aux amis passés le plus récemment.
+  // autres : les habitants, déjà triés du plus présent au moins présent. Rend { n de l'habitant: n de la parcelle }.
+  function ranger(Q, maPlace, autres) {
+    var M = Q.lots[maPlace] || Q.lots[0], cM = versMonde(M, 2, 2.5);
+    var libres = Q.lots.filter(function (L) { return L.n !== M.n; }).map(function (L) {
+      var c = versMonde(L, 2, 2.5), d = Math.abs(c[0] - cM[0]) + Math.abs(c[1] - cM[1]);
+      return { L: L, d: d + (L.placette === M.placette ? 0 : 1000) };
+    }).sort(function (a, b) { return a.d - b.d || a.L.n - b.L.n; });
+    var r = {};
+    autres.forEach(function (h, k) { if (libres[k]) r[h.id] = libres[k].L.n; });
+    return r;
+  }
+  // Les repères des parcelles quand on choisit sa place (une épingle au-dessus de chaque parcelle)
+  function marquesPlaces(Q, mien) {
+    var s = '';
+    Q.lots.forEach(function (L) {
+      var c = versMonde(L, 2, 2.2), p = proj(c[0], c[1], 4.1), on = L.n === mien;
+      s += '<g data-choix="' + L.n + '" style="cursor:pointer"><path d="M' + n1(p[0]) + ' ' + n1(p[1] + 26) + ' l-11 -16 a13 13 0 1 1 22 0z" fill="' + (on ? '#e8590c' : '#fff8e7') + '" stroke="' + O + '" stroke-width="2"/>' +
+        '<circle cx="' + n1(p[0]) + '" cy="' + n1(p[1]) + '" r="6" fill="' + (on ? '#fff4e6' : '#c9a874') + '"/>' +
+        (on ? '<text x="' + n1(p[0]) + '" y="' + n1(p[1] - 22) + '" text-anchor="middle" font-family="Georgia, serif" font-weight="700" font-size="17" fill="#fff4e6" stroke="' + O + '" stroke-width="3" paint-order="stroke">Chez moi</text>' : '') + '</g>';
+    });
+    return s;
+  }
   // Point de l'écran → case du sol
   function caseEn(x, y) { var c = K.versSol(x, y); return { i: Math.floor(c.i), j: Math.floor(c.j) }; }
 
   return {
     LOT_W: LOT_W, LOT_D: LOT_D, COIN: COIN, TAILLE: TAILLE, PAS: PAS, RUE0: RUE0, RUE1: RUE1, BAS: BAS, STYLES: STYLES, TOITS: TOITS, CLOTURES: CLOTURES,
-    PLACES_JARDIN: PLACES_JARDIN, NOMS_PLACETTES: NOMS_PLACETTES,
+    PLACES_JARDIN: PLACES_JARDIN, NOMS_PLACETTES: NOMS_PLACETTES, FETES_DEHORS: FETES_DEHORS, OBJETS_FETE: OBJETS_FETE, PRIX: PRIX,
+    prixDe: prixDe, besoins: besoins, aPayer: aPayer, objetFete: objetFete, ranger: ranger, centreJardin: centreJardin, centreQuartier: centreQuartier, marquesPlaces: marquesPlaces,
     quartier: quartier, cases: cases, versMonde: versMonde, devantPorte: devantPorte, lotEn: lotEn, chemin: chemin4, maison: maison,
     scene: scene, compagnon: compagnon, caseEn: caseEn, proj: proj, vignetteMaison: vignetteMaison, reperesJardin: reperesJardin, centreLot: centreLot
   };
