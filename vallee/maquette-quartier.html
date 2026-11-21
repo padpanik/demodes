@@ -91,7 +91,16 @@
     .bourse-a { flex: none; display: flex; justify-content: space-between; gap: 6px; padding: 5px 10px; border-top: 1px solid #c9a874; font: 600 0.78em system-ui, sans-serif; color: #5c4532; }
     .bourse-a .trop { color: #c92a2a; }
     .onglets-a { grid-template-columns: repeat(5, 1fr) !important; }
-    .onglets-a button { font-size: 0.74em !important; }
+    .onglets-a { grid-template-columns: repeat(6, 1fr) !important; }
+    .onglets-a button { font-size: 0.7em !important; padding-left: 0 !important; padding-right: 0 !important; }
+    .seg-a button { flex: 0 1 auto; }
+    .qd-flotte { animation: qd-flotte 4s ease-in-out infinite; }
+    @keyframes qd-flotte { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(6px, -9px); } }
+    .qd-tombe { animation: qd-tombe 5s linear infinite; }
+    @keyframes qd-tombe { 0% { transform: translate(0, -30px); opacity: 0; } 15% { opacity: 1; } 85% { opacity: 1; } 100% { transform: translate(8px, 60px); opacity: 0; } }
+    .qd-feu { animation: qd-feu 3s ease-out infinite; transform-box: fill-box; transform-origin: center; }
+    @keyframes qd-feu { 0% { transform: scale(0.1); opacity: 0; } 15% { opacity: 1; } 60% { transform: scale(1.3); opacity: 0.9; } 100% { transform: scale(1.5); opacity: 0; } }
+    @media (prefers-reduced-motion: reduce) { .qd-flotte, .qd-tombe, .qd-feu { animation: none; } }
     .btn-rouille { background: linear-gradient(#c2551b, #9a3f12); border: 1.5px solid #6b2a07; color: #fff4e6; box-shadow: 0 2px 0 #4a1d05; }
     .btn-papier { background: #fff8ea; border: 1.5px solid #b08a5c; color: #5c3a1e; box-shadow: 0 2px 0 #b08a5c; }
   </style>
@@ -145,6 +154,18 @@
           <button :class="{ on: maMaison.arche }" @click="regler('arche', !maMaison.arche)">Arceau de roses<em class="prix-a" v-if="prix('arche')">{{ prix('arche') }}</em></button>
           <button :class="{ on: maMaison.fleurs !== false }" @click="regler('fleurs', maMaison.fleurs === false)">Fleurs aux fenêtres</button>
         </div>
+      </div>
+      <div class="contenu-a" v-else-if="arr.onglet === 'fetes'">
+        <p class="aide-a" v-if="fete">{{ fete.nom }} : ses décos sont en vente pendant la fête. Ce que tu achètes reste à toi : tu le sors ou le ranges quand tu veux.</p>
+        <p class="aide-a" v-else>Pas de fête en ce moment. {{ prochaine }} Les décos que tu as déjà sont ici.</p>
+        <template v-for="(nomZ, z) in ZONES_DECO">
+          <h4 :key="'h' + z">{{ nomZ }}</h4>
+          <div class="seg-a" :key="'s' + z">
+            <button :class="{ on: !maMaison.deco[z] }" @click="poserDeco(z, null)">Rien</button>
+            <button v-for="id in decosZone(z)" :key="id" :class="{ on: maMaison.deco[z] === id }" @click="poserDeco(z, id)">{{ DECOS_MAISON[z][id].nom }}<em class="prix-a" v-if="prix('deco:' + z + ':' + id)">{{ prix('deco:' + z + ':' + id) }}</em></button>
+          </div>
+        </template>
+        <p class="aide-a">Les objets de fête du jardin (sapin, citrouille…) sont dans l'onglet Jardin.</p>
       </div>
       <div class="contenu-a" v-else-if="arr.onglet === 'place'">
         <h4>Où veux-tu habiter ?</h4>
@@ -256,6 +277,7 @@
         var fe = CP.feteDu(Date.now());
         return {
           STYLES: QQ.STYLES, Q: Q, hab: hab, animal: a, OBJETS_FETE: QQ.OBJETS_FETE,
+          DECOS_MAISON: QQ.DECOS_MAISON, ZONES_DECO: QQ.ZONES_DECO,
           maPlace: sv.place != null && sv.place < Q.lots.length ? sv.place : 4,
           possede: sv.possede || QQ.besoins(moi.maison),   // la maison de départ est offerte
           bourse: sv.bourse != null ? sv.bourse : 200,      // maquette : une bourse à part, les vraies étoiles ne bougent pas
@@ -263,7 +285,7 @@
           CROIX: [{ c: 'hg', d: [-1, 0], ico: 'fl-hg' }, { c: 'hd', d: [0, -1], ico: 'fl-hd' }, { c: 'bg', d: [0, 1], ico: 'fl-bg' }, { c: 'bd', d: [1, 0], ico: 'fl-bd' }],
           pos: { i: -1, j: QQ.RUE0 + 1 }, gauche: false, chemin: [], dirTenue: null,
           arr: null, NUANCIER: CPM.NUANCIER, MEUBLES: CPM.MEUBLES, TOITS: QQ.TOITS, CLOTURES: QQ.CLOTURES, OBJETS_J: OBJETS_J,
-          ONGLETS_A: [{ id: 'maison', nom: 'Maison' }, { id: 'couleurs', nom: 'Couleurs' }, { id: 'cloture', nom: 'Clôture' }, { id: 'jardin', nom: 'Jardin' }, { id: 'place', nom: 'Ma place' }],
+          ONGLETS_A: [{ id: 'maison', nom: 'Maison' }, { id: 'couleurs', nom: 'Couleurs' }, { id: 'cloture', nom: 'Clôture' }, { id: 'jardin', nom: 'Jardin' }, { id: 'fetes', nom: 'Fêtes' }, { id: 'place', nom: 'Place' }],
           CIBLES_C: [{ id: 'mur', nom: 'Murs' }, { id: 'toitT', nom: 'Toit' }, { id: 'menuis', nom: 'Portes, volets' }],
           vignettes: (function () { var r = {}; Object.keys(QQ.STYLES).forEach(function (id) { r[id] = QQ.vignetteMaison({ style: id }, 76, 70); }); return r; })(),
           nuit: false, loin: false, W: 360, H: 560, camVite: true, fiche: null, annonce: '', v: 0
@@ -272,7 +294,8 @@
       computed: {
         scene: function () {
           var self = this, hab = this.hab.map(function (h) {
-            return { n: h.n, nom: h.nom, maison: h.maison, present: h.present, courrier: h.courrier, moi: h.moi,
+            var m = h.moi || !self.fete ? h.maison : self.decoExemple(h);
+            return { n: h.n, nom: h.nom, maison: m, present: h.present, courrier: h.courrier, moi: h.moi,
                      cp: h.present && !h.moi ? CP.dessin(h.a, 'content', false) : null };
           });
           return QQ.scene(this.Q, hab, { nuit: this.nuit, fete: this.fete });
@@ -306,6 +329,10 @@
         ech: function () {
           if (this.arr) return this.arr.onglet === 'jardin' ? 1.45 : this.arr.onglet === 'place' ? 0.34 : 1.15;
           return this.loin ? 0.45 : 0.9;
+        },
+        prochaine: function () {
+          var p = CP.prochaineFete && CP.prochaineFete(Date.now());
+          return p && p.debut ? 'Prochaine : ' + p.nom + ', dès le ' + new Date(p.debut).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' }) + '.' : '';
         },
         marques: function () { return QQ.marquesPlaces(this.Q, this.maPlace); },
         moiH: function () { return this.hab.filter(function (h) { return h.moi; })[0]; },
@@ -397,6 +424,24 @@
           if (QQ.OBJETS_FETE[m]) return '<svg viewBox="-30 -62 60 68" width="46" height="46">' + QQ.objetFete(m.slice(2), [0, 0], false, 1, this.fete) + '</svg>';
           return CPM.vignette(m, null, 46);
         },
+        // Maquette : les voisins d'exemple décorent (ou pas) leur maison pour la fête montrée, chacun à sa façon
+        decoExemple: function (h) {
+          var f = this.feteId, m = copie(h.maison), k = 0, D = QQ.DECOS_MAISON;
+          for (var c = 0; c < h.nom.length; c++) k = (k * 31 + h.nom.charCodeAt(c)) % 997;
+          m.deco = {};
+          if (k % 4 === 0) return m;   // celui-là n'a pas décoré
+          Object.keys(D).forEach(function (z, q) {
+            var l = Object.keys(D[z]).filter(function (id) { return D[z][id].fetes.indexOf(f) >= 0; });
+            if (l.length && (k >> q) % 3) m.deco[z] = l[(k + q) % l.length];
+          });
+          return m;
+        },
+        // Les décos d'une zone qu'on peut choisir : celles de la fête en cours, et celles déjà à moi
+        decosZone: function (z) {
+          var self = this, D = QQ.DECOS_MAISON[z];
+          return Object.keys(D).filter(function (id) { return D[id].fetes.indexOf(self.feteId) >= 0 || self.possede['deco:' + z + ':' + id] > 0 || self.maMaison.deco[z] === id; });
+        },
+        poserDeco: function (z, id) { var m = copie(this.maMaison); m.deco = m.deco || {}; if (id) m.deco[z] = id; else delete m.deco[z]; this.maj(m); },
         nomObjet: function (m) { return (QQ.OBJETS_FETE[m] || CPM.MEUBLES[m]).nom; },
         // Le prix affiché sur une tuile : rien si c'est gratuit ou déjà à moi
         prix: function (cle) {

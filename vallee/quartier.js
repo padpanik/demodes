@@ -53,7 +53,10 @@ var QQ = (function () {
       { m: 'banc', i: a + 11, j: 15, o: 0 }, { m: 'banc', i: a + 15, j: 11, o: 1 }
     ];
     var F = FETES_DEHORS[fete && fete.id];
-    if (F && F.place) l.push({ m: F.place, i: a + 8, j: 12, grand: true });   // le sapin de Noël, le tas de citrouilles…
+    if (F && F.place) {   // un petit décor devant, un grand au fond de la place (sapin et marché de Noël, kiosque…)
+      l.push({ m: F.place[0], i: a + 8, j: 12, grand: 2.1 });
+      l.push({ m: F.place[1], i: a + 12, j: 7, w: 2, d: 2, grand: 1.9, stand: F.stand });
+    }
     return l;
   }
   function cases(Q, fete) {
@@ -104,6 +107,8 @@ var QQ = (function () {
     var S = STYLES[(m && m.style) in STYLES ? m.style : 'colombages'], r = Object.assign({ style: 'colombages' }, m || {});
     r.mur = r.mur || S.murT; r.toit = r.toit || S.toit; r.toitT = r.toitT || S.toitT; r.menuis = r.menuis || S.menuis;
     r.cloture = r.cloture in CLOTURES ? r.cloture : 'piquets'; r.jardin = Array.isArray(r.jardin) ? r.jardin : [];
+    var d = r.deco && typeof r.deco === 'object' ? r.deco : {}; r.deco = {};
+    Object.keys(ZONES_DECO).forEach(function (z) { if (d[z] && DECOS_MAISON[z][d[z]]) r.deco[z] = d[z]; });
     return r;
   }
   // Places du jardin de devant (repère local de la parcelle) : l'allée est en u = 1, la boîte aux lettres en (0, 4)
@@ -224,6 +229,7 @@ var QQ = (function () {
     // fenêtre du côté et petite fenêtre du pignon
     var fc = fenetre2D(Wd / 2, Hu * 0.38, 16, 18, S, m, cMen, allume, op.nuit);
     cote += fc.s;
+    if (m.deco && m.deco.fenetres) cote += decoFenetre(m.deco.fenetres, Wd / 2, Hu * 0.38, 16, 18, op.nuit);
     cote += oeil(Wd / 2, -Ru * 0.42, m.style, cMen, allume);
     // socle de pierre
     cote += '<rect y="' + (Hu - 5) + '" width="' + Wd + '" height="5" fill="#9a948d"/><path d="M0 ' + (Hu - 5) + ' H' + Wd + '" stroke="' + O + '" stroke-width="0.8" opacity="0.5"/>';
@@ -244,8 +250,9 @@ var QQ = (function () {
     var fx = [[porteX - 31, 16], [porteX + 35, 18], [porteX + 68, 18]];
     fx.forEach(function (f) { var w = fenetre2D(f[0], Hu * 0.38, f[1], 19, S, m, cMen, allume, op.nuit); face += w.s; w.l.forEach(function (q) { fen.push(q); }); });
     face += porte2D(porteX, Hu, S, m, cMen, allume);
-    var FD = op.fete && FETES_DEHORS[op.fete.id];
-    if (FD && FD.porte) face += decorPorte(FD.porte, porteX, Hu - 5 - Math.min(38, Hu - 14), couleursFete(op.fete));
+    var FD = op.fete && FETES_DEHORS[op.fete.id], D = m.deco || {};
+    if (D.porte) face += decorPorte(D.porte, porteX, Hu - 5 - Math.min(38, Hu - 14), ['#e03131', '#f4c430', '#4c6ef5']);
+    if (D.fenetres) fx.forEach(function (f) { var w = decoFenetre(D.fenetres, f[0], Hu * 0.38, f[1], 19, op.nuit); face += w; if (op.nuit && /bougies|citrouilles/.test(D.fenetres)) fen.push([f[0], Hu * 0.38 + 12]); });
     // lanterne à côté de la porte
     face += '<path d="M' + n1(porteX + 15) + ' ' + n1(Hu - 44) + ' h4" stroke="' + O + '" stroke-width="1.5"/><rect x="' + n1(porteX + 16.5) + '" y="' + n1(Hu - 43) + '" width="5" height="7" rx="1" fill="' + (allume || op.nuit ? '#ffd77a' : '#e9dcc0') + '" stroke="' + O + '" stroke-width="1"/>';
     // jardinières de fleurs sous les fenêtres de droite
@@ -288,7 +295,7 @@ var QQ = (function () {
       s += '<path d="M' + pt(Nh1) + ' L' + pt(Nh2) + ' L' + bord.join(' L') + 'Z" fill="#f8fbff" stroke="#9fb4c7" stroke-width="0.9" stroke-linejoin="round" opacity="0.96"/>';
       for (var qg = 0.1; qg < 0.95; qg += 0.13) { var ga = [E1[0] + (E2[0] - E1[0]) * qg, E1[1] + (E2[1] - E1[1]) * qg + ep * 34]; s += '<path d="M' + n1(ga[0] - 1.6) + ' ' + n1(ga[1]) + ' l1.6 ' + (4 + (qg * 37 % 3)).toFixed(1) + ' 1.6 -' + (4 + (qg * 37 % 3)).toFixed(1) + 'z" fill="#e7f5ff" stroke="#9fb4c7" stroke-width="0.5"/>'; }
     }
-    if (FD) s += fanions([E1[0], E1[1] + ep * 34 + 1], [E2[0], E2[1] + ep * 34 + 1], couleursFete(op.fete), op.nuit);
+    if (D.toit) { var dt = decoToit(D.toit, [E1[0], E1[1] + ep * 34 + 1], [E2[0], E2[1] + ep * 34 + 1], [R2[0], R2[1] + ep * 34 + 1], op.nuit); s += dt.s; if (op.nuit) dt.l.forEach(function (q) { lueurs.push(q); }); }
     s += '</g>';
     el.push({ cle: cle(L, 2, 1.4), s: s, lueurs: op.nuit ? lueurs : [], lot: L.n });
     // --- clôture, portillon et nom ---
@@ -308,7 +315,7 @@ var QQ = (function () {
       var mm = K.MEUBLES[ob.m], lu = mm.w || 1, lv = mm.d || 1;
       el.push({ cle: cle(L, ob.u + lu / 2, ob.v + lv / 2), s: '<g class="qd-obj" data-lot="' + L.n + '">' + K.dessinObjet(x, 2.6, { nuit: op.nuit }) + '</g>', lueurs: op.nuit && mm.lumiere ? [P(ob.u + 0.5, ob.v + 0.5, mm.lumiere.z || 1)] : [] });
     });
-    if (FD && FD.porte === 'citrouille') el.push({ cle: cle(L, 2.6, 2.9), s: objetFete('citrouille', P(2.55, 2.85, 0), op.nuit, 0.85, op.fete), lueurs: op.nuit ? [P(2.55, 2.85, 0.4)] : [] });
+    if (D.porte === 'citrouille') el.push({ cle: cle(L, 2.6, 2.9), s: objetFete('citrouille', P(2.55, 2.85, 0), op.nuit, 0.85, op.fete), lueurs: op.nuit ? [P(2.55, 2.85, 0.4)] : [] });
     // --- son compagnon devant chez lui (s'il est là) ---
     if (op.cp) { var pc = versMonde(L, 2.45, 3.25); el.push({ cle: cle(L, 2.45, 3.25), cp: op.cp, i: pc[0], j: pc[1] }); }
     return el;
@@ -471,7 +478,11 @@ var QQ = (function () {
       }
       // la place : grande fontaine, massifs, lanternes, bancs
       decorsPlace(P, fete).forEach(function (d) {
-        if (d.grand) { add(d.i + d.j + 1, objetFete(d.m, proj(d.i + 0.5, d.j + 0.5), nuit, 2.1, fete), nuit && d.m === 'sapin' ? [proj(d.i + 0.5, d.j + 0.5, 1.6)] : []); return; }
+        if (d.grand) {
+          var ci = d.i + (d.w || 1) / 2, cj = d.j + (d.d || 1) / 2, lum = { sapin: 1.6, citrouilles: 0.4, lampions: 1.2, kiosque: 1.4, stand: 1.1, horloge: 2 }[d.m];
+          add(ci + cj, objetFete(d.m, proj(ci, cj), nuit, d.grand, fete, d.stand), nuit && lum ? [proj(ci, cj, lum)] : []);
+          return;
+        }
         if (d.m === 'fontaineG') { var c = proj(d.i + 1, d.j + 1); add(d.i + d.j + 2, echelle(K.dessinObjet({ m: 'fontaine', i: d.i + 0.5, j: d.j + 0.5, o: 0 }, 2.6, {}), c, 1.9)); return; }
         var mm = K.MEUBLES[d.m], ob = { m: d.m, i: d.i, j: d.j, o: d.o || 0, t: d.t };
         add(d.i + d.j + ((d.o ? mm.d : mm.w) || 1) / 2 + ((d.o ? mm.w : mm.d) || 1) / 2, K.dessinObjet(ob, 2.6, { nuit: nuit }), nuit && mm.lumiere ? [proj(d.i + 0.5, d.j + 0.5, mm.lumiere.z)] : []);
@@ -510,21 +521,54 @@ var QQ = (function () {
       '<svg x="' + n1(b[0] - w / 2) + '" y="' + n1(b[1] - h * 0.95) + '" width="' + n1(w) + '" height="' + n1(h) + '" viewBox="0 -6 200 216" overflow="visible"><g class="sens' + (extra && extra.gauche ? ' gauche' : '') + '">' + svg + '</g></svg></g>';
   }
 
-  // ---------- Les fêtes dehors (4.31, demandé par l'utilisateur) ----------
-  // Pendant une fête (CP.feteDu) : fanions aux couleurs de la fête au-dessus des places, sous l'avant-toit de chaque maison,
-  // une décoration sur la place (sapin, citrouilles…), un décor à chaque porte et, à Noël, de la neige sur les toits.
-  // `op.fete` = { id, guirlande } (l'objet de CP.feteDu suffit).
+  // ---------- Les fêtes dehors (4.31, revu en 4.32 à la demande de l'utilisateur) ----------
+  // La place se pare toute seule pendant une fête (CP.feteDu) : deux décors à elle (sapin et marché de Noël, kiosque à musique,
+  // épouvantail…) et un ciel animé (flocons, chauves-souris, notes, feux d'artifice…). Les maisons et les jardins, eux, ne changent
+  // que si leur habitant les décore (`maison.deco`, voir DECOS_MAISON) : chacun choisit sa déco.
+  // `op.fete` = { id, guirlande } (l'objet de CP.feteDu suffit). `neige` : le temps qu'il fait, pour tout le monde.
   var FETES_DEHORS = {
-    'nouvel-an': { place: 'lampions', porte: 'etoile' },
-    chandeleur: { place: 'lampions', porte: 'etoile' },
-    'saint-valentin': { place: 'coeur', porte: 'coeur' },
-    'saint-patrick': { place: 'lampions', porte: 'trefle' },
-    paques: { place: 'oeufs', porte: 'oeuf' },
-    musique: { place: 'lampions', porte: 'note' },
-    ete: { place: 'parasol', porte: null },
-    halloween: { place: 'citrouilles', porte: 'citrouille' },
-    noel: { place: 'sapin', porte: 'couronne', neige: true }
+    'nouvel-an': { place: ['lampions', 'horloge'], ciel: 'feux', neige: true },
+    chandeleur: { place: ['lampions', 'stand'], stand: 'crepes' },
+    'saint-valentin': { place: ['coeur', 'arche'], ciel: 'coeurs' },
+    'saint-patrick': { place: ['lampions', 'arcenciel'] },
+    paques: { place: ['oeufs', 'lapin'], ciel: 'papillons' },
+    musique: { place: ['lampions', 'kiosque'], ciel: 'notes' },
+    ete: { place: ['parasol', 'stand'], stand: 'glaces', ciel: 'papillons' },
+    halloween: { place: ['citrouilles', 'epouvantail'], ciel: 'chauves' },
+    noel: { place: ['sapin', 'stand'], stand: 'vin', ciel: 'flocons', neige: true }
   };
+  // La déco de fête d'une maison, choisie par son habitant : une pour la porte, une pour le toit, une pour les fenêtres.
+  // On l'achète pendant sa fête, on la garde ensuite ; elle reste en place tant qu'on ne la range pas.
+  var DECOS_MAISON = {
+    porte: {
+      couronne: { nom: 'Couronne de houx', fetes: ['noel'], prix: 6 },
+      etoile: { nom: 'Étoile dorée', fetes: ['nouvel-an', 'noel'], prix: 5 },
+      chandelle: { nom: 'Lanterne à bougie', fetes: ['chandeleur', 'noel'], prix: 5 },
+      coeur: { nom: 'Grand cœur', fetes: ['saint-valentin'], prix: 5 },
+      trefle: { nom: 'Trèfle porte-bonheur', fetes: ['saint-patrick'], prix: 5 },
+      oeuf: { nom: 'Œuf peint', fetes: ['paques'], prix: 5 },
+      note: { nom: 'Notes de musique', fetes: ['musique'], prix: 5 },
+      fleurs: { nom: 'Couronne de fleurs', fetes: ['ete', 'paques'], prix: 6 },
+      citrouille: { nom: 'Citrouille sculptée', fetes: ['halloween'], prix: 6 }
+    },
+    toit: {
+      lumieres: { nom: 'Guirlande lumineuse', fetes: ['noel', 'nouvel-an'], prix: 12 },
+      fanions: { nom: 'Fanions', fetes: ['musique', 'ete', 'saint-patrick'], prix: 8 },
+      chauves: { nom: 'Chauves-souris', fetes: ['halloween'], prix: 10 },
+      coeurs: { nom: 'Fil de cœurs', fetes: ['saint-valentin'], prix: 10 },
+      oeufs: { nom: 'Œufs suspendus', fetes: ['paques'], prix: 10 },
+      lampions: { nom: 'Lampions', fetes: ['chandeleur', 'nouvel-an', 'musique'], prix: 10 }
+    },
+    fenetres: {
+      bougies: { nom: 'Bougies', fetes: ['noel', 'chandeleur', 'nouvel-an'], prix: 8 },
+      etoiles: { nom: 'Étoiles de papier', fetes: ['noel', 'nouvel-an'], prix: 6 },
+      citrouilles: { nom: 'Citrouilles qui luisent', fetes: ['halloween'], prix: 8 },
+      coeurs: { nom: 'Cœurs aux carreaux', fetes: ['saint-valentin'], prix: 6 },
+      papillons: { nom: 'Papillons de papier', fetes: ['paques', 'ete', 'musique'], prix: 6 },
+      trefles: { nom: 'Trèfles aux carreaux', fetes: ['saint-patrick'], prix: 6 }
+    }
+  };
+  var ZONES_DECO = { porte: 'Porte', toit: 'Toit', fenetres: 'Fenêtres' };
   // Objets de fête pour le jardin : on les achète pendant leur fête, on les garde ensuite
   var OBJETS_FETE = {
     'f:sapin': { nom: 'Sapin de Noël', fete: 'noel', prix: 25 },
@@ -548,20 +592,34 @@ var QQ = (function () {
     }
     return s;
   }
-  // Au-dessus de chaque place : les quatre côtés, de lanterne en lanterne
-  function guirlandesPlaces(Q, fete, nuit) {
-    var el = [], cols = couleursFete(fete);
+  // Le ciel de la fête au-dessus de chaque place (animé par la page : classes qd-flotte, qd-tombe, qd-feu)
+  function cielFete(Q, fete, nuit) {
+    var F = FETES_DEHORS[fete.id], el = [];
+    if (!F || !F.ciel) return el;
+    var cols = couleursFete(fete);
     Q.placettes.forEach(function (P) {
-      var a = P.i0, c = [[a + 8.5, 8.5], [a + 16.5, 8.5], [a + 16.5, 16.5], [a + 8.5, 16.5]];
-      for (var q = 0; q < 4; q++) {
-        var p1 = c[q], p2 = c[(q + 1) % 4];
-        el.push({ cle: (p1[0] + p2[0] + p1[1] + p2[1]) / 2 + 0.6, s: fanions(proj(p1[0], p1[1], 1.62), proj(p2[0], p2[1], 1.62), cols, nuit) });
+      var a = P.i0, s = '';
+      for (var q = 0; q < 9; q++) {
+        var di = 7 + (q * 37 % 11), dj = 7 + (q * 53 % 11), h = 3.2 + (q * 29 % 7) * 0.45, p = proj(a + di, dj, h), d = ((q * 0.7) % 3).toFixed(1);
+        var c = cols[q % cols.length], t = '';
+        if (F.ciel === 'flocons') t = '<path d="M0 -5 V5 M-4.3 -2.5 L4.3 2.5 M-4.3 2.5 L4.3 -2.5" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/>';
+        else if (F.ciel === 'chauves') t = '<path d="M0 0 q-4 -5 -9 -3 q2 2 1 5 q3 -2 4 0 q2 -3 4 -2 q2 -1 4 2 q1 -2 4 0 q-1 -3 1 -5 q-5 -2 -9 3z" fill="#2b1d14"/>' + (nuit ? '<circle cx="-1.5" cy="-1" r="0.8" fill="#ffd43b"/><circle cx="1.5" cy="-1" r="0.8" fill="#ffd43b"/>' : '');
+        else if (F.ciel === 'coeurs') t = '<path d="M0 5 C-7 0 -6 -6 -2 -5 Q0 -4.5 0 -2.5 Q0 -4.5 2 -5 C6 -6 7 0 0 5Z" fill="' + (q % 2 ? '#f06595' : '#ff8fab') + '" stroke="' + O + '" stroke-width="0.7"/>';
+        else if (F.ciel === 'notes') t = '<path d="M-1 4 V-5 l6 -1.6 V2.6" stroke="' + O + '" stroke-width="1.4" fill="none"/>' + rond(-3, 4, 2.4, c, 0.6) + rond(3, 2.6, 2.4, c, 0.6);
+        else if (F.ciel === 'papillons') t = '<path d="M0 0 q-6 -7 -8 -1 q2 4 8 1 q6 3 8 -1 q-2 -6 -8 1z" fill="' + c + '" stroke="' + O + '" stroke-width="0.7"/><path d="M0 -3 V3" stroke="' + O + '" stroke-width="1"/>';
+        else if (F.ciel === 'feux') {
+          if (!nuit) t = '<rect x="-2" y="-1" width="4" height="2" fill="' + c + '" transform="rotate(' + (q * 40) + ')"/>';   // des confettis le jour
+          else { for (var r = 0; r < 10; r++) { var an = r * Math.PI / 5; t += '<path d="M' + n1(Math.cos(an) * 4) + ' ' + n1(Math.sin(an) * 4) + ' L' + n1(Math.cos(an) * 13) + ' ' + n1(Math.sin(an) * 13) + '" stroke="' + c + '" stroke-width="1.8" stroke-linecap="round"/>'; } t += '<circle r="2.5" fill="#fff"/>'; }
+        }
+        var cl = F.ciel === 'flocons' ? 'qd-tombe' : F.ciel === 'feux' && nuit ? 'qd-feu' : 'qd-flotte';
+        s += '<g transform="translate(' + n1(p[0]) + ' ' + n1(p[1]) + ')"><g class="' + cl + '" style="animation-delay:-' + d + 's">' + t + '</g></g>';
       }
+      el.push({ cle: a + 30, s: '<g pointer-events="none">' + s + '</g>' });
     });
     return el;
   }
   // Les décorations de fête dessinées à plat sur l'écran, posées au point b (le pied), à l'échelle e
-  function objetFete(m, b, nuit, e, fete) {
+  function objetFete(m, b, nuit, e, fete, stand) {
     e = e || 1; var x = b[0], y = b[1], s = '<g transform="translate(' + n1(x) + ' ' + n1(y) + ') scale(' + e + ')">', cols = couleursFete(fete);
     var ombre = function (rx) { return '<ellipse cx="0" cy="0" rx="' + rx + '" ry="' + n1(rx * 0.45) + '" fill="#000" opacity="0.2"/>'; };
     var R = function (cx, cy, r, f, sw) { return '<circle cx="' + n1(cx) + '" cy="' + n1(cy) + '" r="' + r + '" fill="' + f + '" stroke="' + O + '" stroke-width="' + (sw == null ? 0.9 : sw) + '"/>'; };
@@ -610,6 +668,52 @@ var QQ = (function () {
         s += '<ellipse cx="' + p[0] + '" cy="' + (p[1] + 7) + '" rx="5" ry="6.5" fill="' + c + '" stroke="' + O + '" stroke-width="0.9"/><path d="M' + (p[0] - 5) + ' ' + (p[1] + 7) + ' h10 M' + (p[0] - 4) + ' ' + (p[1] + 3) + ' h8 M' + (p[0] - 4) + ' ' + (p[1] + 11) + ' h8" stroke="' + nuance(c, -0.3) + '" stroke-width="0.7"/>';
         if (nuit) s += '<circle cx="' + p[0] + '" cy="' + (p[1] + 7) + '" r="11" fill="' + c + '" opacity="0.3"/>';
       });
+    } else if (m === 'stand') {   // un étal de marché : crêpes, vin chaud, glaces
+      var aw = stand === 'glaces' ? ['#4dabf7', '#fff'] : stand === 'crepes' ? ['#f59f00', '#fff'] : ['#c92a2a', '#fff'];
+      var txt = stand === 'glaces' ? 'Glaces' : stand === 'crepes' ? 'Crêpes' : 'Vin chaud';
+      s += ombre(26) + '<path d="M-24 0 V-16 L0 -10 V6Z" fill="#a0522d" stroke="' + O + '" stroke-width="1.1"/><path d="M0 -10 L24 -16 V0 L0 6Z" fill="#7a4a26" stroke="' + O + '" stroke-width="1.1"/>';
+      s += '<path d="M-24 -16 L0 -22 L24 -16 L0 -10Z" fill="#d9a066" stroke="' + O + '" stroke-width="1"/>';
+      // les marchandises sur le comptoir
+      if (stand === 'glaces') [[-10, -17], [-3, -19], [5, -18], [12, -16]].forEach(function (p, q) { s += '<path d="M' + (p[0] - 2.5) + ' ' + p[1] + ' l2.5 6 2.5 -6z" fill="#e8b36b" stroke="' + O + '" stroke-width="0.6"/>' + R(p[0], p[1] - 1.5, 3, ['#ff8fab', '#fff3bf', '#8ce99a', '#a5d8ff'][q], 0.7); });
+      else if (stand === 'crepes') [[-8, -17], [6, -17]].forEach(function (p) { s += '<ellipse cx="' + p[0] + '" cy="' + p[1] + '" rx="7" ry="3" fill="#ffd8a8" stroke="' + O + '" stroke-width="0.8"/><path d="M' + (p[0] - 4) + ' ' + p[1] + ' q4 -2 8 0" stroke="#e8590c" stroke-width="1" fill="none"/>'; });
+      else { s += '<ellipse cx="0" cy="-18" rx="7" ry="3" fill="#5c3a1e" stroke="' + O + '" stroke-width="0.8"/><path d="M-7 -18 v-6 a7 3 0 0 0 14 0 v6" fill="#868e96" stroke="' + O + '" stroke-width="0.8"/>' + [-14, 12].map(function (x) { return '<rect x="' + x + '" y="-22" width="3.6" height="5" rx="0.8" fill="#c92a2a" stroke="' + O + '" stroke-width="0.5"/>'; }).join('') + '<path d="M-2 -28 q-2 -4 1 -7 M2 -28 q2 -4 -1 -8" stroke="#fff" stroke-width="1.2" fill="none" opacity="0.7"/>'; }
+      // poteaux et auvent rayé
+      s += '<path d="M-22 -16 V-40 M22 -16 V-40" stroke="' + O + '" stroke-width="2.4"/><path d="M-22 -16 V-40 M22 -16 V-40" stroke="#c9a26b" stroke-width="1.2"/>';
+      for (var q = 0; q < 6; q++) { var x0 = -26 + q * 9; s += '<path d="M' + x0 + ' -38 L' + (x0 + 9) + ' -38 L' + (x0 + 8) + ' -48 L' + (x0 + 1) + ' -48Z" fill="' + aw[q % 2] + '"/>' + '<path d="M' + x0 + ' -38 q4.5 5 9 0" fill="' + aw[q % 2] + '" stroke="' + O + '" stroke-width="0.6"/>'; }
+      s += '<path d="M-26 -38 L28 -38 L27 -48 L-25 -48Z" fill="none" stroke="' + O + '" stroke-width="1.1"/>';
+      s += '<rect x="-17" y="-60" width="34" height="11" rx="2" fill="#fff8e7" stroke="' + O + '" stroke-width="1"/><text x="0" y="-51.6" text-anchor="middle" font-family="Georgia, serif" font-weight="700" font-size="7.6" fill="#7c2d12">' + txt + '</text>';
+      if (nuit) s += '<circle cx="0" cy="-36" r="3" fill="#ffd77a"/><circle cx="0" cy="-36" r="9" fill="#ffd77a" opacity="0.35"/>';
+    } else if (m === 'kiosque') {   // kiosque à musique
+      s += '<ellipse cx="0" cy="-2" rx="28" ry="12" fill="#c9c1b5" stroke="' + O + '" stroke-width="1.2"/><path d="M-28 -2 v5 a28 12 0 0 0 56 0 v-5" fill="#a8a29a" stroke="' + O + '" stroke-width="1.1"/>';
+      [-22, -8, 8, 22].forEach(function (x) { s += '<path d="M' + x + ' ' + (x === -8 || x === 8 ? 6 : 1) + ' V-34" stroke="' + O + '" stroke-width="3"/><path d="M' + x + ' ' + (x === -8 || x === 8 ? 6 : 1) + ' V-34" stroke="#f3eadb" stroke-width="1.6"/>'; });
+      s += '<path d="M-26 -38 L0 -62 L26 -38 Q0 -30 -26 -38Z" fill="' + cols[0] + '" stroke="' + O + '" stroke-width="1.3"/><path d="M-13 -36 L0 -62 L13 -36" stroke="' + nuance(cols[0], -0.3) + '" stroke-width="1" fill="none"/>';
+      s += '<path d="M-27 -37 q6 5 13 1 q7 4 14 0 q7 4 14 0 q6 4 13 -1" stroke="' + O + '" stroke-width="1" fill="' + (cols[1] || '#fff') + '"/>' + R(0, -64, 2.6, '#fcc419', 0.7);
+      s += '<path d="M-6 -10 V-24 l12 -3 V-13" stroke="' + O + '" stroke-width="1.8" fill="none"/>' + R(-8.5, -10, 3, O, 0) + R(3.5, -13, 3, O, 0);
+    } else if (m === 'arche') {   // arche de cœurs et de roses
+      s += ombre(20) + '<path d="M-20 0 V-30 Q-20 -54 0 -54 Q20 -54 20 -30 V0" stroke="' + O + '" stroke-width="5" fill="none"/><path d="M-20 0 V-30 Q-20 -54 0 -54 Q20 -54 20 -30 V0" stroke="#fff" stroke-width="3" fill="none"/>';
+      for (var t = 0; t <= 1.001; t += 0.1) { var an2 = Math.PI * (1 - t), x = Math.cos(an2) * 20, y = -30 - Math.sin(an2) * 24; s += '<path d="M' + n1(x - 2) + ' ' + n1(y) + ' q2 -3 4 0" fill="#4f7a42"/>' + R(x, y, 2.6, Math.round(t * 10) % 2 ? '#f06595' : '#ffdeeb', 0.6); }
+      [-26, -12].forEach(function (y) { s += R(-20, y, 2.6, '#f06595', 0.6) + R(20, y + 4, 2.6, '#f06595', 0.6); });
+      s += '<path d="M0 -36 C-9 -42 -8 -50 -3 -49 Q0 -48.5 0 -46 Q0 -48.5 3 -49 C8 -50 9 -42 0 -36Z" fill="#e03131" stroke="' + O + '" stroke-width="1"/>';
+    } else if (m === 'arcenciel') {   // arc-en-ciel et pot d'or
+      ['#e03131', '#f76707', '#fcc419', '#40c057', '#4dabf7', '#7048e8'].forEach(function (c, q) { var r = 34 - q * 3.2; s += '<path d="M' + n1(-r) + ' -8 A' + n1(r) + ' ' + n1(r * 0.9) + ' 0 0 1 ' + n1(r) + ' -8" stroke="' + c + '" stroke-width="3.4" fill="none" opacity="0.9"/>'; });
+      s += '<ellipse cx="-34" cy="-8" rx="9" ry="6" fill="#fff" opacity="0.9"/><ellipse cx="34" cy="-8" rx="9" ry="6" fill="#fff" opacity="0.9"/>';
+      s += ombre(10) + '<path d="M-8 -8 Q-10 2 0 3 Q10 2 8 -8Z" fill="#343a40" stroke="' + O + '" stroke-width="1.1"/><ellipse cx="0" cy="-8" rx="8.5" ry="3" fill="#fcc419" stroke="' + O + '" stroke-width="0.9"/>' + R(-3, -10, 2, '#ffe066', 0.5) + R(2, -11, 2, '#ffe066', 0.5) + R(5, -9, 1.8, '#ffe066', 0.5);
+    } else if (m === 'lapin') {   // lapin taillé dans une haie
+      s += ombre(14) + '<path d="M-10 0 h20 l-2 -8 h-16z" fill="#c94a3f" stroke="' + O + '" stroke-width="1"/>' + R(0, -18, 11, '#4f7a42', 1.2) + R(0, -33, 7.5, '#4f7a42', 1.2);
+      s += '<ellipse cx="-3.5" cy="-48" rx="2.8" ry="9" fill="#4f7a42" stroke="' + O + '" stroke-width="1.1"/><ellipse cx="3.5" cy="-47" rx="2.8" ry="9" fill="#4f7a42" stroke="' + O + '" stroke-width="1.1" transform="rotate(12 3.5 -47)"/>';
+      s += R(9, -14, 4, '#6c9a58', 1) + R(-2.5, -34, 0.9, O, 0) + R(2.5, -34, 0.9, O, 0) + R(-5, -22, 1.6, '#f783ac', 0.4) + R(4, -16, 1.6, '#ffd43b', 0.4);
+    } else if (m === 'epouvantail') {
+      s += ombre(10) + '<path d="M0 0 V-40 M-16 -28 H16" stroke="' + O + '" stroke-width="3.4"/><path d="M0 0 V-40 M-16 -28 H16" stroke="#9b6a3e" stroke-width="2"/>';
+      s += '<path d="M-14 -30 H14 L10 -12 H-10Z" fill="#5c7cfa" stroke="' + O + '" stroke-width="1.1"/><path d="M-5 -24 h4 v4 h-4z M3 -18 h4 v4 h-4z" fill="#ffa94d" stroke="' + O + '" stroke-width="0.5"/>';
+      s += '<path d="M-16 -28 l-3 5 M-16 -28 l-4 2 M16 -28 l3 5 M16 -28 l4 2 M-6 -12 l-2 5 M6 -12 l2 5" stroke="#e9c46a" stroke-width="1.4"/>';
+      s += '<ellipse cx="0" cy="-39" rx="8" ry="6.5" fill="#f76707" stroke="' + O + '" stroke-width="1.1"/><path d="M-4 -40 l1.5 -2 1.5 2z M1 -40 l1.5 -2 1.5 2z M-3.5 -37 q3.5 2 7 0" fill="' + (nuit ? '#ffe066' : '#5c2a00') + '" stroke="' + (nuit ? '#ffe066' : '#5c2a00') + '" stroke-width="0.6"/>';
+      s += '<path d="M-11 -43 H11 L5 -45 L3 -54 H-3 L-5 -45Z" fill="#343a40" stroke="' + O + '" stroke-width="1"/>';
+      if (nuit) s += '<circle cx="0" cy="-39" r="13" fill="#ffa94d" opacity="0.25"/>';
+    } else if (m === 'horloge') {   // horloge de la place, à minuit moins une
+      s += ombre(8) + '<path d="M0 0 V-46" stroke="' + O + '" stroke-width="4"/><path d="M0 0 V-46" stroke="#495057" stroke-width="2.4"/>' + R(0, -52, 10, '#fff8e7', 1.6);
+      s += '<path d="M0 -52 V-59 M0 -52 L-1 -58.5" stroke="' + O + '" stroke-width="1.4" stroke-linecap="round"/>';
+      for (var h2 = 0; h2 < 12; h2++) { var a3 = h2 * Math.PI / 6; s += R(Math.sin(a3) * 7.6, -52 - Math.cos(a3) * 7.6, 0.7, O, 0); }
+      s += '<path d="M-6 -41 q6 4 12 0 l-2 4 2 3 q-6 -3 -12 0 l2 -3z" fill="' + cols[0] + '" stroke="' + O + '" stroke-width="0.7"/>';
     }
     return s + '</g>';
   }
@@ -620,9 +724,53 @@ var QQ = (function () {
     if (type === 'trefle') return [[0, 5], [-3.6, 9], [3.6, 9]].map(function (p) { return rond(x + p[0], y + p[1], 3.4, '#2b8a3e', 0.7); }).join('') + '<path d="M' + n1(x) + ' ' + n1(y + 10) + ' q1 5 3 7" stroke="#2b8a3e" stroke-width="1.4" fill="none"/>';
     if (type === 'oeuf') return '<ellipse cx="' + n1(x) + '" cy="' + n1(y + 10) + '" rx="5" ry="6.5" fill="#ffd43b" stroke="' + O + '" stroke-width="0.9"/><path d="M' + n1(x - 4.6) + ' ' + n1(y + 10) + ' q2.3 -2 4.6 0 q2.3 2 4.6 0" stroke="#f783ac" stroke-width="1.6" fill="none"/>';
     if (type === 'note') return '<path d="M' + n1(x - 2) + ' ' + n1(y + 15) + ' V' + n1(y + 3) + ' l8 -2 V' + n1(y + 13) + '" stroke="' + O + '" stroke-width="1.6" fill="none"/>' + rond(x - 4, y + 15, 2.6, cols[0], 0.6) + rond(x + 4, y + 13, 2.6, cols[1 % cols.length], 0.6);
+    if (type === 'chandelle') return '<path d="M' + n1(x + 13) + ' ' + n1(y + 2) + ' h-3 v4" stroke="' + O + '" stroke-width="1.2" fill="none"/><rect x="' + n1(x + 7.6) + '" y="' + n1(y + 6) + '" width="5" height="7" rx="1" fill="#ffd77a" stroke="' + O + '" stroke-width="0.9"/><path d="M' + n1(x + 10.1) + ' ' + n1(y + 8) + ' v3" stroke="#e8590c" stroke-width="1.2"/>';
+    if (type === 'fleurs') { var f = ''; for (var q = 0; q < 10; q++) { var an = q * Math.PI / 5; f += rond(x + Math.cos(an) * 6.5, y + 10 + Math.sin(an) * 6.5, 2.1, ['#ff6b6b', '#ffd43b', '#f783ac', '#b197fc', '#69db7c'][q % 5], 0.4); } return f; }
     if (type === 'citrouille') return '';   // la citrouille se pose sur le perron (voir dessinerParcelle)
     if (type === 'etoile') return '<path d="M' + n1(x) + ' ' + n1(y + 3) + ' l2 4.2 4.6 0.5 -3.4 3.1 1 4.5 -4.2 -2.3 -4.2 2.3 1 -4.5 -3.4 -3.1 4.6 -0.5z" fill="#fcc419" stroke="' + O + '" stroke-width="0.8"/>';
     return '';
+  }
+  // Une déco dans une fenêtre (repère de la façade : x = milieu, y = haut du carreau)
+  function decoFenetre(type, x, y, w, h, nuit) {
+    var s = '', b = y + h;
+    if (type === 'bougies') [x - w * 0.28, x + w * 0.28].forEach(function (cx) { s += '<rect x="' + n1(cx - 1.4) + '" y="' + n1(b - 6) + '" width="2.8" height="5" fill="#fff8e7" stroke="' + O + '" stroke-width="0.5"/><path d="M' + n1(cx) + ' ' + n1(b - 6) + ' q-1.6 -2 0 -3.6 q1.6 1.6 0 3.6z" fill="#ffa94d"/>' + (nuit ? '<circle cx="' + n1(cx) + '" cy="' + n1(b - 8) + '" r="4" fill="#ffd77a" opacity="0.5"/>' : ''); });
+    else if (type === 'etoiles') s += '<path d="M' + n1(x - w * 0.25) + ' ' + n1(y) + ' v4 M' + n1(x + w * 0.25) + ' ' + n1(y) + ' v7" stroke="#fff" stroke-width="0.5"/>' + [[x - w * 0.25, y + 6.5, 3.2], [x + w * 0.25, y + 10, 2.6]].map(function (e) { return '<path d="' + etoile5(e[0], e[1], e[2]) + '" fill="#fcc419" stroke="' + O + '" stroke-width="0.5"/>'; }).join('');
+    else if (type === 'citrouilles') s += '<ellipse cx="' + n1(x) + '" cy="' + n1(b - 4) + '" rx="5.5" ry="4" fill="' + (nuit ? '#ff922b' : '#f76707') + '" stroke="' + O + '" stroke-width="0.7"/><path d="M' + n1(x - 3) + ' ' + n1(b - 5) + ' l1 -1.4 1 1.4z M' + n1(x + 1) + ' ' + n1(b - 5) + ' l1 -1.4 1 1.4z M' + n1(x - 2.5) + ' ' + n1(b - 3) + ' q2.5 1.4 5 0" fill="' + (nuit ? '#fff3bf' : '#5c2a00') + '" stroke="' + (nuit ? '#fff3bf' : '#5c2a00') + '" stroke-width="0.5"/>' + (nuit ? '<circle cx="' + n1(x) + '" cy="' + n1(b - 4) + '" r="8" fill="#ffa94d" opacity="0.4"/>' : '');
+    else if (type === 'coeurs') s += [[x - w * 0.24, y + 5.5], [x + w * 0.24, y + 13]].map(function (c) { return '<path d="M' + n1(c[0]) + ' ' + n1(c[1] + 3) + ' c-4.5 -3 -4 -6.5 -1.3 -6.3 q1.3 0.1 1.3 1.6 q0 -1.5 1.3 -1.6 c2.7 -0.2 3.2 3.3 -1.3 6.3z" fill="#f06595" stroke="' + O + '" stroke-width="0.5"/>'; }).join('');
+    else if (type === 'papillons') s += [[x - w * 0.24, y + 5, '#ffd43b'], [x + w * 0.22, y + 13, '#f783ac']].map(function (c) { return '<path d="M' + n1(c[0]) + ' ' + n1(c[1]) + ' q-3.6 -4 -4.6 -0.6 q1 2.4 4.6 0.6 q3.6 1.8 4.6 -0.6 q-1 -3.4 -4.6 0.6z" fill="' + c[2] + '" stroke="' + O + '" stroke-width="0.5"/>'; }).join('');
+    else if (type === 'trefles') s += [[x - w * 0.24, y + 6], [x + w * 0.24, y + 13]].map(function (c) { return [[0, -1.8], [-1.7, 0.6], [1.7, 0.6]].map(function (p) { return rond(c[0] + p[0], c[1] + p[1], 1.7, '#2b8a3e', 0.4); }).join(''); }).join('');
+    return s;
+  }
+  function etoile5(cx, cy, r) {
+    var d = '';
+    for (var q = 0; q < 10; q++) { var a = -Math.PI / 2 + q * Math.PI / 5, rr = q % 2 ? r * 0.45 : r; d += (q ? 'L' : 'M') + n1(cx + Math.cos(a) * rr) + ' ' + n1(cy + Math.sin(a) * rr); }
+    return d + 'Z';
+  }
+  // Une déco sous l'avant-toit (le long de l'égout a → b, puis de la rive b → c). Rend { s, l (lueurs la nuit) }
+  function decoToit(type, a, b, c, nuit) {
+    if (type === 'fanions') return { s: fanions(a, b, ['#e03131', '#fcc419', '#2f9e44', '#4c6ef5'], false), l: [] };
+    var s = '', l = [], segs = type === 'lumieres' ? [[a, b], [b, c]] : [[a, b]];
+    segs.forEach(function (sg) {
+      var p0 = sg[0], p1 = sg[1], dx = p1[0] - p0[0], dy = p1[1] - p0[1], L = Math.sqrt(dx * dx + dy * dy), cr = Math.min(9, L * 0.06);
+      var pt2 = function (t) { return [p0[0] + dx * t, p0[1] + dy * t + cr * 4 * t * (1 - t)]; };
+      s += '<path d="M' + pt(p0) + ' Q' + n1(p0[0] + dx / 2) + ' ' + n1(p0[1] + dy / 2 + cr * 2) + ' ' + pt(p1) + '" stroke="' + O + '" stroke-width="0.8" fill="none" opacity="0.75"/>';
+      var n = type === 'lumieres' ? Math.max(4, Math.round(L / 9)) : Math.max(3, Math.round(L / 20));
+      for (var q = 1; q < n; q++) {
+        var p = pt2(q / n), x = p[0], y = p[1];
+        if (type === 'lumieres') {
+          var col = ['#ff6b6b', '#ffd43b', '#69db7c', '#4dabf7', '#f783ac'][q % 5];
+          s += '<ellipse cx="' + n1(x) + '" cy="' + n1(y + 2.2) + '" rx="1.6" ry="2.2" fill="' + col + '" stroke="' + O + '" stroke-width="0.4"/>' + (nuit ? '<circle cx="' + n1(x) + '" cy="' + n1(y + 2.2) + '" r="4.5" fill="' + col + '" opacity="0.45"/>' : '');
+          if (nuit && q % 4 === 0) l.push([x, y + 2]);
+        } else {
+          var fil = '<path d="M' + n1(x) + ' ' + n1(y) + ' v' + (q % 2 ? 5 : 8) + '" stroke="' + O + '" stroke-width="0.5"/>', yy = y + (q % 2 ? 5 : 8);
+          if (type === 'chauves') s += fil + '<path d="M' + n1(x) + ' ' + n1(yy + 2) + ' q-3 -4 -7 -2 q2 1 1 4 q3 -2 3 0 q1 -2 3 -2 q2 0 3 2 q0 -2 3 0 q-1 -3 1 -4 q-4 -2 -7 2z" fill="#2b1d14"/>';
+          else if (type === 'coeurs') s += fil + '<path d="M' + n1(x) + ' ' + n1(yy + 6) + ' c-5 -3.4 -4.4 -7.4 -1.4 -7.2 q1.4 0.1 1.4 1.8 q0 -1.7 1.4 -1.8 c3 -0.2 3.6 3.8 -1.4 7.2z" fill="' + (q % 2 ? '#f06595' : '#e03131') + '" stroke="' + O + '" stroke-width="0.5"/>';
+          else if (type === 'oeufs') s += fil + '<ellipse cx="' + n1(x) + '" cy="' + n1(yy + 3.6) + '" rx="2.7" ry="3.6" fill="' + ['#f783ac', '#4dabf7', '#ffd43b', '#69db7c'][q % 4] + '" stroke="' + O + '" stroke-width="0.5"/><path d="M' + n1(x - 2.5) + ' ' + n1(yy + 3.6) + ' q1.2 -1 2.5 0 q1.2 1 2.5 0" stroke="#fff" stroke-width="0.8" fill="none"/>';
+          else if (type === 'lampions') { var cl = ['#ff6b6b', '#ffd43b', '#4dabf7', '#b197fc'][q % 4]; s += fil + '<ellipse cx="' + n1(x) + '" cy="' + n1(yy + 4) + '" rx="3.4" ry="4.2" fill="' + cl + '" stroke="' + O + '" stroke-width="0.5"/><path d="M' + n1(x - 3.4) + ' ' + n1(yy + 4) + ' h6.8" stroke="' + nuance(cl, -0.3) + '" stroke-width="0.5"/>' + (nuit ? '<circle cx="' + n1(x) + '" cy="' + n1(yy + 4) + '" r="7" fill="' + cl + '" opacity="0.35"/>' : ''); }
+        }
+      }
+    });
+    return { s: s, l: l };
   }
   // Tout ce qu'il faut acheter pour une maison (le reste est gratuit ou déjà à soi) : { clé: nombre }
   // Prix proposés par Claude (4.31), à confirmer : la base (colombages, tuiles, piquets, barrière) est gratuite,
@@ -637,6 +785,7 @@ var QQ = (function () {
     var p = cle.split(':');
     if (p[0] === 'style' || p[0] === 'toit' || p[0] === 'cloture') return PRIX[p[0]][p[1]] || 0;
     if (p[0] === 'arche') return PRIX.arche;
+    if (p[0] === 'deco') return ((DECOS_MAISON[p[1]] || {})[p[2]] || {}).prix || 0;
     if (p[0] === 'objet') { var f = OBJETS_FETE[p.slice(1).join(':')]; return f ? f.prix : ((K.MEUBLES[p[1]] || {}).prix || 5); }
     return 0;
   }
@@ -648,6 +797,7 @@ var QQ = (function () {
     ajoute('cloture:' + m.cloture);
     if (m.arche) ajoute('arche');
     m.jardin.forEach(function (o) { ajoute('objet:' + o.m); });
+    Object.keys(m.deco).forEach(function (z) { ajoute('deco:' + z + ':' + m.deco[z]); });
     return b;
   }
   // Ce qui manque : { a: [{ cle, n, prix }], total }
@@ -666,7 +816,7 @@ var QQ = (function () {
     (habitants || []).forEach(function (h) { parLot[h.n] = h; });
     var solS = dessinerSol(Q, defs, op.nuit);
     el = el.concat(decors(Q, defs, op.nuit, op.fete));
-    if (op.fete) el = el.concat(guirlandesPlaces(Q, op.fete, op.nuit));
+    if (op.fete) el = el.concat(cielFete(Q, op.fete, op.nuit));
     Q.lots.forEach(function (L) {
       var h = parLot[L.n];
       if (!h) { el = el.concat(dessinerParcelle(L, null, {}, defs)); return; }
@@ -722,7 +872,7 @@ var QQ = (function () {
 
   return {
     LOT_W: LOT_W, LOT_D: LOT_D, COIN: COIN, TAILLE: TAILLE, PAS: PAS, RUE0: RUE0, RUE1: RUE1, BAS: BAS, STYLES: STYLES, TOITS: TOITS, CLOTURES: CLOTURES,
-    PLACES_JARDIN: PLACES_JARDIN, NOMS_PLACETTES: NOMS_PLACETTES, FETES_DEHORS: FETES_DEHORS, OBJETS_FETE: OBJETS_FETE, PRIX: PRIX,
+    PLACES_JARDIN: PLACES_JARDIN, NOMS_PLACETTES: NOMS_PLACETTES, FETES_DEHORS: FETES_DEHORS, OBJETS_FETE: OBJETS_FETE, DECOS_MAISON: DECOS_MAISON, ZONES_DECO: ZONES_DECO, PRIX: PRIX,
     prixDe: prixDe, besoins: besoins, aPayer: aPayer, objetFete: objetFete, ranger: ranger, centreJardin: centreJardin, centreQuartier: centreQuartier, marquesPlaces: marquesPlaces,
     quartier: quartier, cases: cases, versMonde: versMonde, devantPorte: devantPorte, lotEn: lotEn, chemin: chemin4, maison: maison,
     scene: scene, compagnon: compagnon, caseEn: caseEn, proj: proj, vignetteMaison: vignetteMaison, reperesJardin: reperesJardin, centreLot: centreLot
