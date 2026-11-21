@@ -96,7 +96,6 @@ var Meteo = (function () {
       if (c >= 71 && c <= 77) a.neige = c === 75 ? 1 : c === 73 ? 0.7 : 0.4; else if (c === 85 || c === 86) a.neige = c === 86 ? 1 : 0.6;
       // Décrochage : près de Noël, la pluie froide tombe en neige ; partout, sous 1,5 °C aussi
       if (f && (D.temp <= 1.5 || (noel && D.temp <= 8))) a.neige = Math.max(a.neige, f); else a.pluie = f;
-      if (D.lever != null && D.coucher != null) a.nuit = min < D.lever || min > D.coucher;
     } else {
       // Sans météo : un temps de saison, le même toute la journée (tiré du jour)
       var r = graine(jourN);
@@ -105,7 +104,17 @@ var Meteo = (function () {
       else if (s === 'printemps') { a.couvert = 0.25; a.vent = 0.3; if (r < 0.2) a.pluie = 0.3; }
       else { a.couvert = 0.05; }
     }
-    if (a.nuit == null) { var h = d.getHours(); a.nuit = h >= 21 || h < 7; }
+    // Le soleil (4.34, demandé par l'utilisateur) : vrai lever et vrai coucher quand on a la météo, sinon une estimation
+    // pour la France selon la date (coucher de ~17 h en décembre à ~21 h 50 fin juin, heure légale) ; crépuscule = 40 min autour
+    var lev = reel && D.lever != null ? D.lever : null, cou = reel && D.coucher != null ? D.coucher : null;
+    if (lev == null || cou == null) {
+      var jA = Math.floor((d - new Date(d.getFullYear(), 0, 0)) / 86400000), ang = 2 * Math.PI * (jA - 80) / 365, ete = -d.getTimezoneOffset() / 60 - 1;
+      lev = Math.round((6.75 - 1.95 * Math.sin(ang) + ete) * 60); cou = Math.round((18.93 + 2.03 * Math.sin(ang) + ete) * 60);
+    }
+    a.lever = lev; a.coucher = cou;
+    if (a.nuit == null) a.nuit = min < lev || min > cou;
+    var ecart = Math.min(Math.abs(min - lev), Math.abs(min - cou));
+    a.crep = ecart < 40 ? 1 - ecart / 40 : 0;
     // Décrochages de saison, même s'il fait sec dehors
     if (noel) { a.solNeige = 1; if (!a.pluie && !a.neige && (a.couvert > 0.4 || a.nuit)) a.neige = 0.25; }   // un Noël blanc
     else if (s === 'hiver' && a.neige >= 0.4) a.solNeige = 0.6;
@@ -172,6 +181,11 @@ var Meteo = (function () {
     var lu = Math.round(a.lucioles * 12 * n);
     for (q = 0; q < lu; q++) s += '<i class="luciole" style="left:' + (r() * 95).toFixed(1) + '%;bottom:' + (5 + r() * 55).toFixed(1) + '%;animation-duration:' + (2 + r() * 3).toFixed(1) + 's;animation-delay:-' + (r() * 4).toFixed(1) + 's"></i>';
     if (a.orage) s += '<div class="eclair"></div>';
+    // La nuit et le crépuscule, pour les scènes qui n'ont pas leur propre nuit (Vallée)
+    if (op.voileNuit) {
+      if (a.nuit) s += '<div class="gris" style="background:radial-gradient(ellipse at 50% 50%,rgba(14,20,58,.42),rgba(8,12,40,.68) 75%);mix-blend-mode:normal"></div>';
+      if (a.crep) s += '<div class="gris" style="background:linear-gradient(rgba(255,120,60,.32),rgba(150,60,90,.22));mix-blend-mode:normal;opacity:' + a.crep.toFixed(2) + '"></div>';
+    }
     return s;
   }
   // Pour la vue d'une fenêtre (maison) : un mot suffit

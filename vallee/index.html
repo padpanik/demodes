@@ -757,7 +757,7 @@
       computed: {
         // La météo (4.33) : celle de chez moi si je l'ai activée, mêlée à la saison, sinon le temps de la saison
         ambiance: function() { this.meteoT; return Meteo.ambiance(Date.now()); },
-        calqueMeteo: function() { return Meteo.calque(this.ambiance); },
+        calqueMeteo: function() { return Meteo.calque(this.ambiance, { voileNuit: true }); },
         e: function() { this.v; return etat; },
         pouvoir: function() { return this.animal && VL.POUVOIR_ESPECE[this.animal.espece] || null; },
         ctx: function() { this.v; return { pouvoir: this.pouvoir, bossTotal: (lireStockage('donjon-stats') || {}).boss | 0, nom: this.animal ? this.animal.nom : '', jour: this.jour,

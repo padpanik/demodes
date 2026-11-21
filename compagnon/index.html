@@ -1339,7 +1339,8 @@
         phraseRepos: function() { return this.pieceVueId === this.ouEst ? (this.dort ? 'Chut… je dors.' : this.infoPieceVue.phrase) : 'Je suis ' + ({ salon: 'au salon', cuisine: 'à la cuisine', chambre: 'dans la chambre', jeux: 'dans la salle de jeux', trophees: 'dans la salle des trophées', jardin: 'au jardin' }[this.ouEst] || 'à côté') + '.'; },
         viewBox: function() { return this.zoom > 1 && this.centre ? CPM.camera(this.pieceM, this.zoom, this.centre.x, this.centre.y) : CPM.camera(this.pieceM, 1); },
         ratio: function() { var b = CPM.bornes(this.pieceM); return (b.x1 - b.x0) + ' / ' + (b.y1 - b.y0); },
-        nuitScene: function() { return this.arranger && this.moment !== 'heure' ? this.moment === 'nuit' : this.estNuit; },
+        // L'éclairage suit le vrai soleil (4.34) ; le sommeil du compagnon garde ses heures (21 h - 7 h, estNuit)
+        nuitScene: function() { return this.arranger && this.moment !== 'heure' ? this.moment === 'nuit' : this.ambiance.nuit; },
         // Les coupes : couleurs des plus récentes (vitrines), et celles posées sur l'étagère du salon
         coulCoupes: function() { var C = ['#c98d55', '#c0c6cc', '#e9b949']; return this.trophees.slice().reverse().slice(0, 12).map(t => C[t.niv] || C[0]); },
         coulEtagere: function() { var C = ['#c98d55', '#c0c6cc', '#e9b949']; return this.surEtagere.map(t => C[t.niv] || C[0]); },

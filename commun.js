@@ -3,12 +3,13 @@
 // Les clés de stockage gardent l'ancien préfixe "brillant-" : les réglages déjà faits sont conservés.
 
 // Numéro de version affiché (à augmenter à chaque mise en ligne, avec brilliant/index.html et sw.js)
-const VERSION = '4.33';
+const VERSION = '4.34';
 
 // ---------- Nouveautés (2.87, demandé par l'utilisateur) ----------
 // Une ligne très brève par mise en ligne (la plus récente en haut) : l'accueil les montre une seule fois, dans une petite fenêtre,
 // à qui n'a pas encore vu cette version. [version, jeu ou partie de l'appli, ce qui change]
 const NOUVEAUTES = [
+  ['4.34', 'Vallée et maison', 'La lumière suit le vrai lever et coucher du soleil : crépuscule doré, nuit bleue.'],
   ['4.33', 'Vallée et maison', 'La météo de chez toi (pluie, neige, brouillard, vent), mêlée à la saison : à activer dans les Options.'],
   ['4.28', 'Accueil', 'Mes amis : « vu il y a… » sur sa propre ligne.'],
   ['4.27', 'Mon compagnon', 'Visite la maison d\'un ami même absent, et laisse-lui une lettre, un câlin ou un cadeau.'],

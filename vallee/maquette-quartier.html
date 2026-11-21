@@ -377,7 +377,7 @@
         var self = this;
         this.mesurer(); window.addEventListener('resize', this.mesurer);
         Meteo.demarrer(); window.addEventListener('desdale-meteo', function () { self.maintenant = Date.now(); });
-        setInterval(function () { self.maintenant = Date.now(); }, 60000);
+        setInterval(function () { var n0 = self.ambiance.nuit; self.maintenant = Date.now(); if (!self.meteoForce && self.ambiance.nuit !== n0) self.nuit = self.ambiance.nuit; }, 60000);
         this.$nextTick(function () { self.placerMoi(); setTimeout(function () { self.camVite = false; }, 50); });
         window.addEventListener('keydown', function (e) {
           var d = { ArrowUp: [0, -1], ArrowRight: [1, 0], ArrowDown: [0, 1], ArrowLeft: [-1, 0] }[e.key];
