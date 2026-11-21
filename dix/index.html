@@ -77,6 +77,15 @@
     .vf-dx { margin: 4px 0 6px; padding-left: 20px; font-weight: 600; font-size: 0.86em; line-height: 1.22; color: #1d2b36; }
     .vf-dx li { margin-bottom: 3px; }
     .vf-dx b { white-space: nowrap; }
+    .doute-dx.ec { background: #fff5f5; }
+    .doute-dx .tag-ec { display: inline-block; font-size: 0.8em; font-weight: 800; color: #c92a2a; background: #ffe3e3; border-radius: 6px; padding: 0 5px; margin-left: 4px; }
+    .doute-dx .act { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; flex: none; }
+    .liens-q { display: flex; flex-wrap: wrap; justify-content: center; gap: 0 14px; }
+    .renom-voile { position: fixed; inset: 0; z-index: 60; background: rgba(20,28,36,0.45); display: flex; align-items: center; justify-content: center; padding: 16px; }
+    .renom-boite { background: #fff; border-radius: 16px; padding: 14px; width: 100%; max-width: 320px; box-shadow: 0 8px 30px rgba(0,0,0,0.25); }
+    .renom-boite input { width: 100%; box-sizing: border-box; font-size: 1.05em; padding: 9px 10px; border: 2px solid var(--c); border-radius: 10px; margin: 8px 0 10px; }
+    .renom-boite .boutons { display: flex; gap: 8px; } .renom-boite .boutons .btn { flex: 1; }
+    .crayon-dx { background: none; border: 0; padding: 0 2px; font-size: 0.9em; cursor: pointer; opacity: 0.7; }
     .doute-dx { display: flex; gap: 8px; justify-content: space-between; font-size: 0.85em; padding: 6px 0; border-bottom: 1px solid #eef0f2; }
     .points-dx { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin: 4px 0 2px; }
     .points-dx button { border: 2px solid var(--c); border-radius: 10px; padding: 5px 0; font: inherit; font-weight: 900; color: var(--c); background: #fff; cursor: pointer; }
@@ -201,7 +210,7 @@
           </section>
           <div v-for="k in pub.nb" :key="k" class="equipe-salle" :class="{ moi: monEquipeSalon === k - 1 }" :style="{ '--c': COULEURS[k - 1] }">
             <div style="flex:1;min-width:0">
-              <div class="nom-eq">{{ NOMS[k - 1] }}<span v-if="monEquipeSalon === k - 1" style="color:#5b6b78;font-weight:700"> · ton équipe</span></div>
+              <div class="nom-eq">{{ nomSalle(k - 1) }}<button v-if="peutRenommer(k - 1)" class="crayon-dx" @click="ouvrirRenom(k - 1)" aria-label="Changer le nom">✏️</button><span v-if="monEquipeSalon === k - 1" style="color:#5b6b78;font-weight:700"> · ton équipe</span></div>
               <div class="membres">
                 <template v-if="membresDe(k - 1).length"><span v-for="(m, j) in membresDe(k - 1)" :key="m" :class="{ absent: !estConnecteVue(m) }">{{ m }}{{ j < membresDe(k - 1).length - 1 ? ', ' : '' }}</span></template>
                 <i v-else>personne pour l'instant</i>
@@ -229,7 +238,7 @@
         <template v-else>
           <div class="scores-dx">
             <div v-for="(q, i) in e.equipes" :key="i" class="eq" :class="{ joue: i === e.tour && enJeu }" :style="{ '--c': q.couleur }">
-              <div class="l1"><span class="pastille-eq" :style="{ background: q.couleur }"></span><span class="n">{{ q.nom }}</span>{{ q.pos }}</div>
+              <div class="l1" @click="peutRenommer(i) && ouvrirRenom(i)"><span class="pastille-eq" :style="{ background: q.couleur }"></span><span class="n">{{ q.nom }}</span>{{ q.pos }}</div>
               <div class="role">{{ !enJeu ? (i === e.gagnant ? '🏆 gagne' : '') : i === e.tour ? '▶ joue' : i === lecteurI ? '📖 lit' : q.passe ? '⏸ passe' : (estSalon && monEquipeSalon === i ? '(toi)' : '') }}</div>
             </div>
           </div>
@@ -339,7 +348,10 @@
               </template>
               <button v-else-if="peut('voir')" class="btn principal" style="width:100%" @click="jouer({ type: 'voir' })">Voir la réponse</button>
               <div v-else class="reponse-cachee">{{ monRole === 'joue' ? '🗣️ Une seule réponse, à voix haute : les ' + lecteur.nom + ' jugent.' : '🤫 Réponse cachée : ' + lecteur.nom + ' jugent.' }}</div>
-              <button v-if="peut('autreQ')" class="lien-discret" @click="jouer({ type: 'autreQ' })">Question mal posée ? En tirer une autre</button>
+              <div class="liens-q" v-if="peut('autreQ')">
+                <button class="lien-discret" @click="jouer({ type: 'autreQ' })">{{ e.carte.finale ? 'Question mal posée ? En tirer une autre' : 'Question mal posée ? Changer de sujet' }}</button>
+                <button class="lien-discret" @click="ecarterEtChanger">🚫 Incomplète ou fausse : l'écarter pour toujours</button>
+              </div>
             </template>
 
             <template v-else-if="e.phase === 'challenge'">
@@ -382,7 +394,7 @@
             </template>
             <div class="journal-dx">{{ e.journal }}</div>
             <button v-if="e.avant && peut('annuler')" class="annuler-dx" @click="jouer({ type: 'annuler' })">↩ Annuler le jugement</button>
-            <div class="derniere-dx" v-if="e.derniere && e.phase === 'theme'"><div v-if="e.derniere.q" style="margin-bottom:2px">{{ e.derniere.q }}</div><template v-if="e.derniere.challenge">{{ e.derniere.n }} bonne{{ e.derniere.n > 1 ? 's' : '' }} réponse{{ e.derniere.n > 1 ? 's' : '' }}<template v-if="e.derniere.r"> · <b>{{ e.derniere.r }}</b></template><div v-for="(c, k) in e.derniere.cor" :key="k" style="margin-top:2px">{{ c }}</div></template><template v-else>{{ e.derniere.ok ? '✓' : '✗' }} Réponse : <b>{{ e.derniere.r || '—' }}</b></template><button class="lien-discret" @click="noterDoute">{{ douteNote ? '✓ Notée dans Réglages' : '⚠️ Question douteuse' }}</button></div>
+            <div class="derniere-dx" v-if="e.derniere && e.phase === 'theme'"><div v-if="e.derniere.q" style="margin-bottom:2px">{{ e.derniere.q }}</div><template v-if="e.derniere.challenge">{{ e.derniere.n }} bonne{{ e.derniere.n > 1 ? 's' : '' }} réponse{{ e.derniere.n > 1 ? 's' : '' }}<template v-if="e.derniere.r"> · <b>{{ e.derniere.r }}</b></template><div v-for="(c, k) in e.derniere.cor" :key="k" style="margin-top:2px">{{ c }}</div></template><template v-else>{{ e.derniere.ok ? '✓' : '✗' }} Réponse : <b>{{ e.derniere.r || '—' }}</b></template><div class="liens-q" v-if="e.derniere.q && !e.derniere.challenge"><button class="lien-discret" @click="noterDoute(false)">{{ douteNote ? '✓ Notée dans Réglages' : '⚠️ Question douteuse' }}</button><button class="lien-discret" @click="noterDoute(true)">{{ derniereEcartee ? '✓ Écartée pour toujours' : '🚫 L\'écarter pour toujours' }}</button></div><button v-else class="lien-discret" @click="noterDoute(false)">{{ douteNote ? '✓ Notée dans Réglages' : '⚠️ Question douteuse' }}</button></div>
           </div>
 
           <!-- Fin -->
@@ -405,9 +417,10 @@
         </section>
         <section class="carte">
           <div class="titre-carte">Questions douteuses ({{ doutes.length }})</div>
-          <div class="aide" v-if="!doutes.length">Après une question, touche « ⚠️ Question douteuse » : elle arrive ici.</div>
+          <div class="aide" v-if="!doutes.length">Après une question, touche « ⚠️ Question douteuse » : elle arrive ici. « 🚫 L'écarter pour toujours » : son sujet ne sort plus, jusqu'à ce que la question soit corrigée.</div>
           <template v-else>
-            <div v-for="(d, i) in doutes" :key="i" class="doute-dx"><div><b>{{ d.s }}{{ d.nv ? ' · niveau ' + d.nv : '' }}</b><br>{{ d.q }}<br><i>{{ d.r }}</i></div><button class="lien-discret" @click="retirerDoute(i)">✕</button></div>
+            <div class="aide" style="margin-top:0" v-if="nbEcartees">{{ nbEcartees }} écartée{{ nbEcartees > 1 ? 's' : '' }} : leur sujet ne sort plus tant que la question n'est pas corrigée.</div>
+            <div v-for="(d, i) in doutes" :key="i" class="doute-dx" :class="{ ec: d.ec }"><div><b>{{ d.s }}{{ d.nv ? ' · niveau ' + d.nv : '' }}</b><span v-if="d.ec" class="tag-ec">écartée</span><br>{{ d.q }}<br><i>{{ d.r }}</i></div><div class="act"><button class="lien-discret" @click="basculerEcart(i)">{{ d.ec ? 'Remettre' : '🚫 Écarter' }}</button><button class="lien-discret" @click="retirerDoute(i)">✕</button></div></div>
             <button class="btn principal" style="width:100%;margin-top:6px" @click="copierDoutes">{{ doutesCopies ? '✓ Liste copiée' : 'Copier la liste pour me l\'envoyer' }}</button>
           </template>
         </section>
@@ -432,6 +445,8 @@
             <li><strong>🎲 Superbe ou aïe</strong> : un bonus ou un malus, appliqué tout de suite. La carte déplace toujours le pion : on ne reste jamais sur cette case.</li>
             <li>Atteindre l'<strong>arrivée</strong> ne suffit pas : il faut encore répondre juste à une <strong>question finale</strong> de niveau 6 ou 7, au hasard. Raté : on retente au tour suivant.</li>
             <li>Une mise de 3 cache parfois un piège : une fois sur trois au hasard, la question est plus difficile, pour les mêmes 3 cases.</li>
+            <li>Question mal posée ? L'équipe qui lit peut <strong>changer de sujet</strong> avant de juger : l'équipe qui joue <strong>rechoisit son niveau</strong> (la question finale garde le sien). Question incomplète ou fausse : <strong>🚫 l'écarter pour toujours</strong> ; son sujet ne sort plus tant qu'elle n'est pas corrigée (liste dans Réglages).</li>
+            <li>Le <strong>nom d'une équipe</strong> se change en le touchant : ✏️ dans la salle d'attente, ou en haut de l'écran de jeu (ses joueurs ou l'hôte).</li>
             <li>Erreur de jugement ? L'équipe qui a jugé peut toucher <strong>↩ Annuler le jugement</strong>, tant que le tour suivant n'a pas tiré sa carte.</li>
             <li>Le pion d'une équipe est le compagnon de son premier joueur qui en a un, posé sur un socle à la couleur de l'équipe.</li>
             <li>Une équipe sans personne de connecté : les autres peuvent jouer à sa place (lire, juger, miser).</li>
@@ -440,6 +455,13 @@
         </section>
       </template>
     </fiche-jeu>
+    <div v-if="renom" class="renom-voile" @click.self="renom = null">
+      <div class="renom-boite" :style="{ '--c': COULEURS[renom.c] || '#1c7ed6' }">
+        <div class="titre-carte" style="margin:0">Nom de l'équipe</div>
+        <input ref="renomChamp" type="text" v-model="renom.nom" maxlength="16" :placeholder="NOMS[renom.c]" @keyup.enter="validerRenom">
+        <div class="boutons"><button class="btn" @click="renom = null">Annuler</button><button class="btn principal" @click="validerRenom">OK</button></div>
+      </div>
+    </div>
   </div>
 
   <script src="icones-jeux.js"></script>
@@ -502,8 +524,8 @@
     // ================== RÉSEAU (même principe que les autres jeux : étoile autour de l'hôte) ==================
     let peer = null, connections = [], connParPseudo = {}, hostConn = null, dernierMsgHote = 0, monPseudo = '';
     let pubHote = null, salle = { infos: {} };
-    // pub = { ordre: [pseudos], membres: { pseudo: équipe }, nb, longueur, e: partie ou null }
-    function nouvelEtatSalon(ordre) { return { ordre: ordre.slice(), membres: {}, nb: 2, longueur: 'normal', e: null }; }
+    // pub = { ordre: [pseudos], membres: { pseudo: équipe }, nb, longueur, noms (noms choisis des 4 équipes), e: partie ou null }
+    function nouvelEtatSalon(ordre) { return { ordre: ordre.slice(), membres: {}, nb: 2, longueur: 'normal', noms: NOMS.slice(), e: null }; }
 
     new Vue({
       el: '#app',
@@ -519,7 +541,7 @@
           reglage: [0, 1, 2, 3].map(i => ({ nom: (r.noms && r.noms[i]) || '' })),
           monEquipe: r.moi !== undefined ? r.moi : 0,
           longueur: r.longueur || 'normal',
-          doutes: lireStockage('dix-doutes') || [], doutesCopies: false, voirReponse: false, cochesCh: {}, cpEquipes: {}, posAff: [], maintenant: Date.now(), decalage: 0,
+          doutes: lireStockage('dix-doutes') || [], doutesCopies: false, renom: null, voirReponse: false, cochesCh: {}, cpEquipes: {}, posAff: [], maintenant: Date.now(), decalage: 0,
           // salon
           pub: null, joueurs: [], historique: [],
           pseudoInput: pseudoPour(CLE_SAUVEGARDE),
@@ -552,6 +574,8 @@
         questionCourante: function() { return this.sujetCourant.q[(this.e.carte.niveauQ || this.e.carte.niveau || 1) - 1] || ['', '']; },
         challenge: function() { return DX.CHALLENGES[this.e.carte.challenge] || {}; },
         douteNote: function() { var d = this.e && this.e.derniere; return !!d && this.doutes.some(x => x.q === d.q); },
+        derniereEcartee: function() { var d = this.e && this.e.derniere; return !!d && this.doutes.some(x => x.q === d.q && x.ec); },
+        nbEcartees: function() { return this.doutes.filter(d => d.ec).length; },
         nbCoches: function() { return Object.keys(this.cochesCh).filter(k => this.cochesCh[k]).length; },
         surprise: function() { return DX.SURPRISES[this.e.carte.surprise] || {}; },
         autresEquipes: function() { return this.e.equipes.map((q, i) => ({ q: q, i: i })).filter(x => x.i !== this.e.tour); },
@@ -622,15 +646,31 @@
         window.addEventListener('pageshow', () => this.auRetourPremierPlan());
       },
       methods: {
-        noterDoute: function() {
-          var d = this.e && this.e.derniere;
-          if (!d || this.douteNote) return;
-          this.doutes.push({ s: d.s || '', nv: d.nv || 0, q: d.q, r: d.r || '' });
+        // Noter une question dans la liste (ec : l'écarter pour toujours ; son sujet ne sort plus tant qu'elle n'est pas corrigée)
+        noter: function(d, ec) {
+          if (!d || !d.q) return;
+          var x = this.doutes.find(y => y.q === d.q);
+          if (!x) { x = { s: d.s || '', nv: d.nv || 0, q: d.q, r: d.r || '' }; this.doutes.push(x); }
+          if (ec && !x.ec) this.$set(x, 'ec', true);
           ecrireStockage('dix-doutes', this.doutes);
+          // En salon, c'est l'hôte qui tire les sujets : il doit le savoir aussi
+          if (ec && this.role && this.role !== 'hote' && this.connexion === 'ok') this.envoyerHote({ action: 'JEU', m: { type: 'ECARTER', d: { s: x.s, nv: x.nv, q: x.q, r: x.r } } });
         },
+        noterDoute: function(ec) { this.noter(this.e && this.e.derniere, ec); },
+        // Pendant la question : l'écarter, puis changer de sujet (l'équipe rechoisit son niveau)
+        ecarterEtChanger: function() {
+          var c = this.e.carte, q = this.questionCourante;
+          this.noter({ s: this.sujetCourant.nom, nv: c.niveauQ || c.niveau, q: q[0], r: q[1] }, true);
+          this.jouer({ type: 'autreQ' });
+        },
+        basculerEcart: function(i) {
+          var d = this.doutes[i];
+          if (d.ec) { this.$delete(d, 'ec'); ecrireStockage('dix-doutes', this.doutes); } else this.noter(d, true);
+        },
+        ecartees: function() { return this.doutes.filter(d => d.ec).map(d => d.q); },
         retirerDoute: function(i) { this.doutes.splice(i, 1); ecrireStockage('dix-doutes', this.doutes); },
         copierDoutes: function() {
-          var txt = this.doutes.map(d => d.s + (d.nv ? ' (niveau ' + d.nv + ')' : '') + ' : ' + d.q + ' → ' + d.r).join('\n');
+          var txt = this.doutes.map(d => (d.ec ? '[écartée] ' : '') + d.s + (d.nv ? ' (niveau ' + d.nv + ')' : '') + ' : ' + d.q + ' → ' + d.r).join('\n');
           navigator.clipboard.writeText(txt).then(() => { this.doutesCopies = true; setTimeout(() => { this.doutesCopies = false; }, 2500); });
         },
         son: function(nom) { if (this.sonActif) Sons.jouer(nom); },
@@ -638,7 +678,32 @@
         ouvrirProfil: function() { ouvrirProfilPortail(false); },
         ajouterLog: function(m, systeme) { this.historique.push({ m: m, s: !!systeme }); if (this.historique.length > 100) this.historique.splice(0, this.historique.length - 100); },
         retenirReglage: function() { ecrireStockage('dix-reglage', { nb: this.nbEquipes, noms: this.reglage.map(q => q.nom), moi: this.monEquipe, longueur: this.longueur }); },
-        nomEquipeSalon: function(k) { var e = this.pub && this.pub.e; return e ? (e.equipes[k] || {}).nom : NOMS[k]; },
+        nomEquipeSalon: function(k) { var e = this.pub && this.pub.e; return e ? (e.equipes[k] || {}).nom : this.nomSalle(k); },
+        nomSalle: function(k) { return (this.pub && this.pub.noms && this.pub.noms[k]) || NOMS[k]; },
+        // Changer le nom d'une équipe (demandé par l'utilisateur) : seul, tout le monde ; en salon, ses membres ou l'hôte.
+        // k = place dans la salle d'attente, ou rang dans la partie une fois lancée
+        peutRenommer: function(k) {
+          if (!this.role) return !!this.eTest;
+          if (this.connexion !== 'ok' || !this.pub) return false;
+          return this.estHote || this.monEquipeSalon === k;
+        },
+        ouvrirRenom: function(k) {
+          var e = this.e, enPartie = !!e, q = enPartie && e.equipes[k];
+          this.renom = { k: k, c: q ? (q.slot !== undefined ? q.slot : COULEURS.indexOf(q.couleur)) : k, nom: q ? q.nom : this.nomSalle(k), partie: enPartie };
+          this.$nextTick(() => { var c = this.$refs.renomChamp; if (c) { c.focus(); c.select(); } });
+        },
+        validerRenom: function() {
+          var r = this.renom; this.renom = null;
+          if (!r) return;
+          var nom = (r.nom || '').replace(/\s+/g, ' ').trim().slice(0, 16) || NOMS[r.c];
+          if (!this.role) {
+            if (!this.eTest || !this.eTest.equipes[r.k]) return;
+            this.eTest.equipes[r.k].nom = nom; this.sauverTest();
+            if (this.reglage[r.k]) this.reglage[r.k].nom = nom;
+            return;
+          }
+          this.envoyerJeu({ type: 'NOM', k: r.k, nom: nom, partie: r.partie });
+        },
         validerChallenge: function() { this._cochesAvant = Object.assign({}, this.cochesCh); this.jouer({ type: 'challenge', n: this.nbCoches }); },
         cocher: function(k) { this.$set(this.cochesCh, k, !this.cochesCh[k]); this.vibre(15); },
         // Le pion d'une équipe : le compagnon de son premier membre qui en a un (le même sur tous les téléphones), sinon la quille
@@ -709,7 +774,7 @@
         // Une action de jeu : jouée tout de suite en mode test, envoyée à l'hôte en salon
         jouer: function(a) {
           if (this.role) return this.envoyerJeu({ type: 'ACTION', a: a, n: this.e.n });
-          var x = copie(this.eTest), ctx = { vus: this.vus(), maintenant: Date.now() };
+          var x = copie(this.eTest), ctx = { vus: this.vus(), ecartees: this.ecartees(), maintenant: Date.now() };
           if (DX.agir(x, a, ctx)) return;
           if (ctx.tire) this.retenirVu(ctx.tire);
           var avant = this.eTest;
@@ -766,9 +831,29 @@
               var max = P.e ? P.e.equipes.length : P.nb, k = +m.k;
               if (!(k >= 0 && k < max)) return;
               P.membres[p] = k;
-              this.ajouterLog(p + ' rejoint les ' + (P.e ? P.e.equipes[k].nom : NOMS[k]) + '.', true);
+              this.ajouterLog(p + ' rejoint les ' + (P.e ? P.e.equipes[k].nom : (P.noms && P.noms[k]) || NOMS[k]) + '.', true);
               break;
             }
+            case 'NOM': {
+              var nom = String(m.nom || '').replace(/\s+/g, ' ').trim().slice(0, 16), j = +m.k;
+              if (!P.noms) P.noms = NOMS.slice();
+              if (!!m.partie !== !!P.e) return;
+              if (P.e) {
+                var eqN = P.e.equipes[j];
+                if (!eqN || (p !== monPseudo && P.membres[p] !== j)) return;
+                var avantN = eqN.nom; eqN.nom = nom || NOMS[eqN.slot] || avantN;
+                if (eqN.slot !== undefined) P.noms[eqN.slot] = eqN.nom;
+                P.e.journal = avantN + ' s\'appellent maintenant ' + eqN.nom + '.'; P.e.n++;
+              } else {
+                if (!(j >= 0 && j < 4) || (p !== monPseudo && P.membres[p] !== j)) return;
+                P.noms[j] = nom || NOMS[j];
+              }
+              break;
+            }
+            // Un joueur écarte une question pour toujours : l'hôte, qui tire les sujets, la retient aussi
+            case 'ECARTER':
+              if (m.d && typeof m.d.q === 'string') this.noter({ s: String(m.d.s || ''), nv: +m.d.nv || 0, q: m.d.q.slice(0, 300), r: String(m.d.r || '').slice(0, 200) }, true);
+              return;
             case 'REGLAGE':
               if (p !== monPseudo || P.e) return;
               if (m.nb >= 2 && m.nb <= 4) { P.nb = m.nb; Object.keys(P.membres).forEach(x => { if (P.membres[x] >= P.nb) delete P.membres[x]; }); }
@@ -778,7 +863,7 @@
               if (p !== monPseudo || P.e) return;
               var slots = [0, 1, 2, 3].slice(0, P.nb).filter(k => P.ordre.some(x => P.membres[x] === k));
               if (slots.length < 2) return;
-              P.e = DX.nouvellePartie(slots.map(k => ({ nom: NOMS[k], couleur: COULEURS[k], slot: k })), DX.LONGUEURS[P.longueur] || 40);
+              P.e = DX.nouvellePartie(slots.map(k => ({ nom: (P.noms && P.noms[k]) || NOMS[k], couleur: COULEURS[k], slot: k })), DX.LONGUEURS[P.longueur] || 40);
               Object.keys(P.membres).forEach(x => { var i = slots.indexOf(P.membres[x]); if (i === -1) delete P.membres[x]; else P.membres[x] = i; });
               this.ajouterLog('La partie commence.', true);
               break;
@@ -786,7 +871,7 @@
             case 'ACTION': {
               var e = P.e, a = m.a || {};
               if (!e || m.n !== e.n || !this.autorise(P, p, a.type, (x) => this.estConnecte(x))) return;
-              var ctx = { vus: this.vus(), maintenant: Date.now() };
+              var ctx = { vus: this.vus(), ecartees: this.ecartees(), maintenant: Date.now() };
               if (DX.agir(e, a, ctx)) return;
               if (ctx.tire) this.retenirVu(ctx.tire);
               break;

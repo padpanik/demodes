@@ -188,9 +188,12 @@ var DX = (function () {
 
   function melanger(t, h) { h = h || Math.random; t = t.slice(); for (var i = t.length - 1; i > 0; i--) { var j = Math.floor(h() * (i + 1)), x = t[i]; t[i] = t[j]; t[j] = x; } return t; }
   // Un sujet du thème, pas encore vu si possible (vus : identifiants déjà tirés, les plus récents à la fin)
-  function tirerSujet(theme, vus, h) {
+  // ecartees : textes de questions écartées pour toujours (demandé par l'utilisateur : question incomplète ou fausse) ;
+  // un sujet qui en contient une ne sort plus, tant que la question n'a pas été corrigée (texte changé = sujet revenu)
+  function tirerSujet(theme, vus, h, ecartees) {
     h = h || Math.random;
     var l = SUJETS.filter(s => !theme || s.theme === theme);
+    if (ecartees && ecartees.length) { var bons = l.filter(s => !s.q.some(q => ecartees.indexOf(q[0]) !== -1)); if (bons.length) l = bons; }
     var neufs = l.filter(s => (vus || []).indexOf(s.id) === -1);
     if (!neufs.length) {   // tout a été vu : le plus anciennement vu d'abord
       var ordre = l.slice().sort((a, b) => vus.indexOf(a.id) - vus.indexOf(b.id));
@@ -269,26 +272,26 @@ var DX = (function () {
         if (e.phase !== 'theme') return 'Pas maintenant.';
         var t = themeTour(e); e.chrono = null; e.derniere = null; delete e.avant;
         if (t === 'arrivee') {
-          var s = tirerSujet(null, ctx.vus, h); ctx.tire = s.id;
+          var s = tirerSujet(null, ctx.vus, h, ctx.ecartees); ctx.tire = s.id;
           e.carte = { theme: s.theme, sujet: s.id, niveau: NIVEAUX_FINALE[tirer(NIVEAUX_FINALE, h)], finale: true }; e.phase = 'question';
         } else if (t === 'challenge') { e.carte = { theme: 'challenge', challenge: tirerChallenge(e, h) }; e.phase = 'challenge'; }
         else if (t === 'surprise') { e.carte = { theme: 'surprise', surprise: tirer(SURPRISES, h) }; e.phase = 'surprise'; }
-        else { var s2 = tirerSujet(t, ctx.vus, h); ctx.tire = s2.id; e.carte = { theme: t, sujet: s2.id }; e.phase = 'mise'; }
+        else { var s2 = tirerSujet(t, ctx.vus, h, ctx.ecartees); ctx.tire = s2.id; e.carte = { theme: t, sujet: s2.id }; e.phase = 'mise'; }
         break;
       }
       case 'autre': {
         if (e.phase !== 'mise') return 'Pas maintenant.';
-        var s3 = tirerSujet(c.theme, (ctx.vus || []).concat([c.sujet]), h); ctx.tire = s3.id; c.sujet = s3.id;
+        var s3 = tirerSujet(c.theme, (ctx.vus || []).concat([c.sujet]), h, ctx.ecartees); ctx.tire = s3.id; c.sujet = s3.id;
         break;
       }
-      // Une autre question, même niveau (sujet déjà joué, question douteuse…), tant qu'elle n'est pas jugée
+      // Une autre question (sujet déjà joué, question mal posée…), tant qu'elle n'est pas jugée : autre sujet du même thème,
+      // et l'équipe qui joue rechoisit son niveau (demandé par l'utilisateur) ; la finale garde son niveau imposé
       case 'autreQ': {
         if (e.phase !== 'question' && e.phase !== 'reponse') return 'Pas maintenant.';
-        var s4 = tirerSujet(c.finale ? null : c.theme, (ctx.vus || []).concat([c.sujet]), h); ctx.tire = s4.id;
-        c.sujet = s4.id; if (c.finale) c.theme = s4.theme;
-        delete c.niveauQ; if (c.niveau === 3 && !c.finale && h() < PART_NIVEAU3_DUR) c.niveauQ = 4;
-        e.phase = 'question'; e.chrono = null;
-        e.journal = e.equipes[lecteur(e)].nom + ' tirent une autre question (niveau ' + c.niveau + ').';
+        var s4 = tirerSujet(c.finale ? null : c.theme, (ctx.vus || []).concat([c.sujet]), h, ctx.ecartees); ctx.tire = s4.id;
+        c.sujet = s4.id; delete c.niveauQ; e.chrono = null;
+        if (c.finale) { c.theme = s4.theme; e.phase = 'question'; e.journal = e.equipes[lecteur(e)].nom + ' tirent une autre question finale (niveau ' + c.niveau + ').'; }
+        else { delete c.niveau; e.phase = 'mise'; e.journal = e.equipes[lecteur(e)].nom + ' tirent un autre sujet : ' + q.nom + ' rechoisissent leur niveau.'; }
         break;
       }
       case 'miser':

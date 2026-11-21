@@ -3,12 +3,13 @@
 // Les clés de stockage gardent l'ancien préfixe "brillant-" : les réglages déjà faits sont conservés.
 
 // Numéro de version affiché (à augmenter à chaque mise en ligne, avec brilliant/index.html et sw.js)
-const VERSION = '4.36';
+const VERSION = '4.37';
 
 // ---------- Nouveautés (2.87, demandé par l'utilisateur) ----------
 // Une ligne très brève par mise en ligne (la plus récente en haut) : l'accueil les montre une seule fois, dans une petite fenêtre,
 // à qui n'a pas encore vu cette version. [version, jeu ou partie de l'appli, ce qui change]
 const NOUVEAUTES = [
+  ['4.37', 'Combien sur 10 ?', 'Noms d\'équipe modifiables, nouvelle mise quand on change de sujet, questions à écarter pour toujours.'],
   ['4.36', 'Vallée', 'Quartier : croix à gauche ou à droite, barres du téléphone cachées comme dans la Vallée (bouton Options).'],
   ['4.35', 'Vallée', 'Le quartier des amis s\'ouvre par un portail : de vraies maisons à arranger, celles de tes amis autour.'],
   ['4.34', 'Vallée et maison', 'La lumière suit le vrai lever et coucher du soleil : crépuscule doré, nuit bleue.'],
