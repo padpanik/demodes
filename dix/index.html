@@ -786,6 +786,8 @@
         reagir: function(a, x) {
           if (!a || !x || a.id !== x.id || a.n === x.n) return;
           if (!x.carte || !a.carte || x.carte.challenge !== a.carte.challenge || x.carte.sujet !== a.carte.sujet) { this.voirReponse = false; this.cochesCh = {}; }
+          // Sujet sorti : retenu sur chaque téléphone du salon, pour que le prochain hôte ne le ressorte pas
+          if (this.role === 'client' && x.carte && x.carte.sujet && (!a.carte || a.carte.sujet !== x.carte.sujet)) this.retenirVu(x.carte.sujet);
           if (a.phase === 'theme' && x.phase !== 'theme') this.son('toc');
           // Jugement annulé : le challenge revient avec les points que j'avais cochés
           if (a.avant && !x.avant && x.phase === 'challenge' && this._cochesAvant) this.cochesCh = this._cochesAvant;
@@ -799,6 +801,13 @@
           }
         },
         vus: function() { return lireStockage('dix-vus') || []; },
+        // Sujets déjà vus par un téléphone qui rejoint : ajoutés à ma mémoire comme les plus anciens (c'est l'hôte qui tire)
+        fusionnerVus: function(l) {
+          if (!Array.isArray(l) || !l.length) return;
+          var v = this.vus(), connus = {}; v.forEach(x => { connus[x] = 1; });
+          var neufs = l.slice(-500).filter(x => typeof x === 'string' && x.length < 80 && !connus[x] && (connus[x] = 1));
+          if (neufs.length) ecrireStockage('dix-vus', neufs.concat(v).slice(-500));
+        },
         retenirVu: function(id) { var v = this.vus().filter(x => x !== id); v.push(id); ecrireStockage('dix-vus', v.slice(-500)); },
 
         // ================== MODE TEST (un seul téléphone) ==================
@@ -1094,6 +1103,7 @@
               if (pubHote.ordre.indexOf(pseudo) !== -1) this.ajouterLog(pseudo + ' est revenu.', true);
               else { pubHote.ordre.push(pseudo); this.ajouterLog(pseudo + ' a rejoint le salon.', true); }
               this.adopterCopie(pseudo, data.copie);
+              this.fusionnerVus(data.vus);
               this.repriseAttente = false;
               this.publier();
               break;
@@ -1162,7 +1172,7 @@
               if (!reprise) { this.onglet = 'play'; this.finEntree(true); }
               // Notre copie de la partie : l'hôte la reprend si elle est plus avancée que la sienne (il a pu reprendre le salon avec une copie en retard)
               var cp = this.pub && this.pub.e ? { e: this.pub.e, m: this.pub.membres } : null;
-              conn.send({ action: 'REJOINDRE', pseudo: monPseudo, clientId: clientId, copie: cp });
+              conn.send({ action: 'REJOINDRE', pseudo: monPseudo, clientId: clientId, copie: cp, vus: this.vus() });
             });
             conn.on('data', (data) => { if (hostConn !== conn) return; dernierMsgHote = Date.now(); this.recevoirDeHote(data); });
             conn.on('close', () => { if (hostConn === conn) this.perteHote(); });
