@@ -683,4 +683,70 @@ Quelle lettre désigne souvent un angle ? | Thêta
 Quelle lettre désigne le micro ? | Mu
 Quelle lettre désigne la longueur d'onde ? | Lambda
 Quelle lettre désigne le nombre d'or ? | Phi
+# Le cœur et le sang
+Le cœur est-il rangé dans le pied ? | Non, dans la poitrine
+De quelle couleur est le sang qui coule d'une coupure ? | Rouge
+Comment appelle-t-on les vaisseaux qui emmènent le sang du cœur vers le reste du corps ? | Les artères
+Combien de cavités compte le cœur humain ? | Quatre (deux oreillettes, deux ventricules)
+Quelle est la plus grosse artère du corps humain ? | L'aorte
+Quel groupe sanguin est appelé « donneur universel » pour les globules rouges ? | O négatif
+Quelle protéine des globules rouges transporte l'oxygène ? | L'hémoglobine
+Quel médecin anglais a décrit la circulation du sang en 1628 ? | William Harvey
+Comment s'appelle le petit groupe de cellules qui donne au cœur son rythme, son « stimulateur naturel » ? | Le nœud sinusal (sino-atrial)
+Quel chirurgien sud-africain a réussi la première greffe de cœur humain en 1967 ? | Christiaan Barnard
+# La Lune
+La Lune est-elle faite de fromage ? | Non, de roche
+Comment appelle-t-on la Lune quand on la voit entièrement éclairée ? | La pleine lune
+Quel astronaute a été le premier à marcher sur la Lune ? | Neil Armstrong
+En quelle année l'homme a-t-il marché pour la première fois sur la Lune ? | 1969
+Quel phénomène des mers terrestres est surtout provoqué par l'attraction de la Lune ? | Les marées
+Combien de jours, environ, séparent deux pleines lunes ? | Environ 29,5 jours
+Combien d'astronautes au total ont marché sur la Lune ? | Douze
+Dans quelle « mer » lunaire Apollo 11 s'est-il posé ? | La mer de la Tranquillité
+Qui est le dernier homme à avoir marché sur la Lune, en 1972 ? | Eugene Cernan (Apollo 17)
+À quelle distance moyenne de la Terre se trouve la Lune, à 10 000 km près ? | Environ 384 400 km
+# Jeanne d'Arc
+Jeanne d'Arc était-elle boulangère ? | Non, une combattante
+Quel surnom donne-t-on à Jeanne d'Arc ? | La Pucelle d'Orléans
+Quelle ville Jeanne d'Arc a-t-elle délivrée du siège anglais en 1429 ? | Orléans
+Pendant quelle guerre Jeanne d'Arc a-t-elle combattu ? | La guerre de Cent Ans
+Dans quelle ville Jeanne d'Arc est-elle morte sur le bûcher ? | Rouen
+Quel roi Jeanne d'Arc a-t-elle fait sacrer à Reims ? | Charles VII
+Dans quel village Jeanne d'Arc est-elle née ? | Domrémy
+En quelle année Jeanne d'Arc a-t-elle été brûlée ? | 1431
+Quel évêque a présidé le procès de Jeanne d'Arc ? | Pierre Cauchon
+En quelle année l'Église a-t-elle fait de Jeanne d'Arc une sainte ? | 1920
+# Les surnoms des rois de France
+Louis XIV était-il surnommé le Roi-Lune ? | Non, le Roi-Soleil
+Quel roi de France était surnommé le Roi-Soleil ? | Louis XIV
+Quel roi de France est connu sous le nom de Saint Louis ? | Louis IX
+Quel surnom portait le roi Louis XV ? | Le Bien-Aimé
+Quel roi de France était surnommé le Vert-Galant ? | Henri IV
+Quel surnom portait Philippe IV, le roi qui fit arrêter les Templiers ? | Le Bel
+Quel roi de France était surnommé le Hutin ? | Louis X
+Quel roi de France était surnommé « l'universelle aragne » ? | Louis XI
+Quel roi carolingien était surnommé le Bègue ? | Louis II
+Quel roi carolingien était surnommé le Simple ? | Charles III
+# La ponctuation
+Le point d'interrogation sert-il à poser une question ? | Oui
+Quel signe met-on à la fin d'une phrase qui crie ou s'étonne ? | Le point d'exclamation
+Combien de points y a-t-il dans des points de suspension ? | Trois
+Quel signe de ponctuation est formé d'un point posé au-dessus d'une virgule ? | Le point-virgule
+Comment appelle-t-on les signes « » qui encadrent une citation en français ? | Les guillemets (guillemets français)
+En français, met-on une espace avant les deux-points ? | Oui (une espace insécable)
+Comment s'appelle le signe & ? | L'esperluette
+Comment s'appelle le tiret long qui ouvre une réplique de dialogue ? | Le tiret cadratin
+Comment s'appelle le signe ¶ qui marque un paragraphe ? | Le pied-de-mouche
+Comment s'appelle le signe ‽, mélange de point d'interrogation et de point d'exclamation ? | L'interrobang (point exclarrogatif)
+# Les continents et les océans
+L'Afrique est-elle un océan ? | Non, un continent
+Quel est le plus grand océan du monde ? | Le Pacifique
+Sur quel continent se trouve l'Égypte ? | L'Afrique
+Quel océan sépare l'Europe de l'Amérique ? | L'Atlantique
+Quel est le plus petit des continents ? | L'Océanie (l'Australie)
+Quel océan entoure l'Antarctique ? | L'océan Austral
+Quel est le plus petit des océans ? | L'océan Arctique
+Quelle est la fosse océanique la plus profonde du monde ? | La fosse des Mariannes
+Quel continent compte le plus de pays ? | L'Afrique (54)
+Comment s'appelle le point le plus profond de la fosse des Mariannes ? | Le Challenger Deep (gouffre Challenger)
 `;

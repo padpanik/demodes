@@ -925,4 +925,48 @@ Qui le produit ? | Steven Spielberg
 Qui en a écrit le scénario ? | Chris Columbus
 Comment s'appelle le gremlin chef ? | Stripe
 Quel acteur joue Billy ? | Zach Galligan
+# Jurassic Park
+Dans Jurassic Park, les dinosaures sont-ils des peluches ? | Non, de vrais dinosaures recréés
+Qui a réalisé le film Jurassic Park ? | Steven Spielberg
+En quelle année est sorti le premier film Jurassic Park ? | 1993
+Dans Jurassic Park, quel dinosaure fait trembler l'eau d'un verre en approchant ? | Le tyrannosaure (T. rex)
+Dans Jurassic Park, d'où vient l'ADN des dinosaures ? | Du sang de moustiques piégés dans l'ambre
+Quel écrivain a signé le roman Jurassic Park ? | Michael Crichton
+Sur quelle île imaginaire se trouve le parc de Jurassic Park ? | Isla Nublar
+Comment s'appelle le milliardaire qui a créé le parc de Jurassic Park ? | John Hammond
+Quel acteur joue le mathématicien Ian Malcolm dans Jurassic Park ? | Jeff Goldblum
+Dans Jurassic Park, avec l'ADN de quel animal comble-t-on les trous de l'ADN des dinosaures ? | La grenouille
+# Pac-Man
+Pac-Man est-il carré ? | Non, rond
+Que mange Pac-Man dans son labyrinthe ? | Des pac-gommes (des points)
+De quelle couleur est Pac-Man ? | Jaune
+Combien de fantômes poursuivent Pac-Man ? | Quatre
+Dans Pac-Man, que se passe-t-il quand Pac-Man avale une super pac-gomme ? | Les fantômes deviennent bleus et il peut les manger
+De quel pays vient le jeu Pac-Man ? | Du Japon
+En quelle année Pac-Man est-il sorti en salle d'arcade ? | 1980
+Quelle entreprise a créé Pac-Man ? | Namco
+Comment s'appelle le fantôme rouge de Pac-Man ? | Blinky
+Quel est le score parfait, le plus haut possible, à Pac-Man ? | 3 333 360 points
+# Les crêpes
+Une crêpe est-elle carrée ? | Non, ronde
+Quelle fête de février est la fête des crêpes ? | La Chandeleur
+Quelle région française est la plus célèbre pour ses crêpes ? | La Bretagne
+À quelle date tombe la Chandeleur ? | Le 2 février
+Selon la tradition, que tient-on dans l'autre main en faisant sauter la première crêpe, pour être riche toute l'année ? | Une pièce (d'or)
+Comment appelle-t-on la crêpe salée bretonne au sarrasin ? | La galette
+Comment appelle-t-on la galette garnie de jambon, d'œuf et de fromage ? | La complète
+Quelle crêpe flambée à l'orange et à la liqueur est un classique des restaurants ? | La crêpe Suzette
+Comment s'appelle la plaque en fonte bretonne pour cuire les crêpes ? | Le bilig (ou billig)
+Comment s'appelle le petit râteau en bois qui étale la pâte sur la plaque ? | Le rozell
+# Pirates des Caraïbes
+Jack Sparrow est-il un pirate ? | Oui
+Quel acteur joue Jack Sparrow ? | Johnny Depp
+Comment s'appelle le navire de Jack Sparrow ? | Le Black Pearl
+Quel grade Jack Sparrow exige-t-il qu'on ajoute devant son nom ? | Capitaine
+Quelle actrice joue Elizabeth Swann dans Pirates des Caraïbes ? | Keira Knightley
+Comment s'appelle le capitaine maudit joué par Geoffrey Rush dans le premier Pirates des Caraïbes ? | Barbossa
+De quelle attraction de parc la saga Pirates des Caraïbes est-elle tirée ? | Pirates of the Caribbean, à Disneyland
+Comment s'appelle le capitaine au visage de pieuvre du Hollandais volant ? | Davy Jones
+Quel guitariste des Rolling Stones joue le père de Jack Sparrow ? | Keith Richards
+Quel compositeur allemand signe la musique du premier Pirates des Caraïbes ? | Klaus Badelt
 `;

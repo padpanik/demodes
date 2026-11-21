@@ -815,4 +815,59 @@ Dans quel empire colonial le gin tonic a-t-il été popularisé ? | L'Empire bri
 Quel peintre a dessiné « La Rue du gin » ? | William Hogarth
 Dans quelle ville se passait cette folie du gin au XVIIIe siècle ? | Londres
 Quel style de gin sec porte le nom de cette ville ? | Le London Dry
+# Le déménagement
+Pour déménager, faut-il emporter la maison avec soi ? | Non, seulement ses affaires
+Avec quoi ferme-t-on les cartons de déménagement ? | Du ruban adhésif
+Comment s'appelle le document qui compare l'état d'un logement loué à l'arrivée et au départ ? | L'état des lieux
+Comment appelle-t-on l'échelle motorisée qui monte les meubles par la fenêtre ? | Le monte-meubles
+Quel préavis doit donner, en principe, le locataire d'un logement vide qui part ? | Trois mois
+Quel préavis doit donner le locataire d'un logement vide situé en zone tendue ? | Un mois
+Quel est le dépôt de garantie maximal pour un logement loué vide ? | Un mois de loyer hors charges
+Quel est le dépôt de garantie maximal pour un logement loué meublé ? | Deux mois de loyer hors charges
+En combien de temps le propriétaire doit-il rendre le dépôt de garantie quand l'état des lieux de sortie est conforme ? | Un mois
+En combien de temps le propriétaire doit-il rendre le dépôt de garantie quand l'état des lieux de sortie montre des dégâts ? | Deux mois
+# Les taches et la lessive
+Met-on la lessive dans le four ? | Non, dans la machine à laver
+Quel produit met-on dans la machine pour rendre le linge plus doux ? | L'adoucissant
+Sur l'étiquette d'un vêtement, que signifie une bassine avec une main dedans ? | Lavage à la main
+Sur l'étiquette d'un vêtement, que signifie un triangle barré d'une croix ? | Pas de blanchiment (pas d'eau de Javel)
+Sur l'étiquette d'un vêtement, que signifie un carré avec un cercle dedans ? | Le sèche-linge est permis
+Faut-il rincer une tache de sang frais à l'eau froide ou à l'eau chaude ? | À l'eau froide
+Quelle argile en poudre, venue du Gard, est réputée pour absorber les taches de gras ? | La terre de Sommières
+Sur l'étiquette d'un vêtement, que signifie un fer à repasser avec trois points ? | Repassage à température élevée (environ 200 °C)
+Sur l'étiquette d'un vêtement, que signifie un cercle seul ? | Nettoyage à sec, chez un professionnel
+Sur l'étiquette d'un vêtement, quel solvant de pressing désigne la lettre P dans un cercle ? | Le perchloroéthylène
+# Le Loto
+Au Loto, faut-il deviner les bons numéros ? | Oui
+Combien de numéros principaux coche-t-on sur une grille de Loto ? | Cinq
+Quelle entreprise organise le Loto en France ? | La Française des Jeux (FDJ)
+Comment s'appelle le numéro à part qu'on choisit en plus au Loto ? | Le numéro Chance
+Jusqu'à quel nombre peut-on choisir les cinq numéros du Loto ? | 49
+Jusqu'à quel nombre peut-on choisir le numéro Chance du Loto ? | 10
+Quel jeu de tirage européen se joue avec cinq numéros et deux étoiles ? | L'EuroMillions
+En quelle année a eu lieu le premier tirage du Loto en France ? | 1976
+Une grille de Loto a environ une chance sur combien de gagner le gros lot ? | Environ 1 sur 19 millions (19 068 840)
+Comment s'appelait la loterie d'État créée en 1933, ancêtre du Loto ? | La Loterie nationale
+# Les fruits et légumes de saison
+La fraise est-elle un légume ? | Non, un fruit
+En quelle saison mange-t-on traditionnellement la soupe au potiron ? | En automne
+Les asperges françaises sont-elles un légume de printemps ou d'automne ? | De printemps
+Quel fruit à noyau rouge arrive au début de l'été, souvent en juin ? | La cerise
+Quel petit agrume d'hiver arrive souvent de Corse avec ses feuilles ? | La clémentine
+Comment s'appelle la courge en forme de poire, à la chair orange, aussi appelée « doubeurre » ? | La butternut
+Quel légume d'hiver, au goût d'artichaut, ressemble à une racine de gingembre ? | Le topinambour
+Comment s'appelle le chou-fleur vert aux pointes en spirale ? | Le romanesco
+Comment s'appelle le fruit orange du plaqueminier, mangé en automne ? | Le kaki
+Quelle racine à peau noire, cuisinée en hiver, est souvent confondue avec le salsifis ? | La scorsonère
+# Le rasage
+Se rase-t-on avec une cuillère ? | Non, avec un rasoir
+Que met-on sur le visage avant de se raser pour que la lame glisse ? | De la mousse (ou du savon) à raser
+Comment appelle-t-on la lotion qu'on met sur la peau après s'être rasé ? | L'après-rasage (after-shave)
+Avec quel pinceau fait-on mousser le savon à barbe ? | Le blaireau
+Quelle marque américaine a rendu célèbre le rasoir de sûreté à lame jetable ? | Gillette
+Comment appelle-t-on le rasoir à longue lame qui se replie dans son manche ? | Le coupe-chou
+Quelle pierre passe-t-on sur les petites coupures du rasage ? | La pierre d'alun
+Sur quoi affûte-t-on traditionnellement la lame d'un coupe-chou ? | Sur un cuir (cuir à rasoir)
+Les poils d'un blaireau de rasage traditionnel viennent-ils vraiment de l'animal appelé blaireau ? | Oui
+En quelle année le brevet du rasoir à lame jetable de King Camp Gillette a-t-il été accordé ? | 1904
 `;
