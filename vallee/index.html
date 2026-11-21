@@ -954,7 +954,7 @@
         document.addEventListener('keydown', ev => { var d = touches[ev.key]; if (!d || this.fenetre) return; ev.preventDefault(); if (this.dir !== d) { this.dir = d; this.avancer(d); } });
         document.addEventListener('keyup', ev => { if (touches[ev.key] === this.dir) this.dir = null; });
         // Plein écran du navigateur (comme au Donjon) : demandé au premier toucher
-        document.addEventListener('pointerdown', () => { if (this.pleinEcran && !this._fsDemande) { this._fsDemande = true; this.pleinEcranNavigateur(); } }, true);
+        PleinEcran.suivre(() => this.pleinEcran);   // à la fin de chaque toucher, tant que le réglage le veut (commun.js, 4.36)
         // De retour d'une autre page (bouton « précédent ») : on enlève le voile noir et on relit ce qui a pu changer
         window.addEventListener('pageshow', () => { this.sortie = false; this.animal = lireStockage('compagnon-animal'); this.etoiles = Etoiles.solde(); if (VL.verifier(etat, this.ctx)) { this.sauver(); this.annoncer('⚔️ La garde a appris ta victoire ! Va voir le tableau de quêtes.'); } this.lireResultatBoss(); this.lireResultatFaille(); this.verifierSaison(); this.v++; });
         if (!lireStockage('vallee-accueil-vu')) {
@@ -1539,15 +1539,11 @@
         },
         discuter: function() { this.fermer(); try { SalonGlobal.ouvrir(); } catch (e) {} },
         inverser: function() { this.inverse = !this.inverse; ecrireStockage('donjon-inverse', this.inverse); },
-        pleinEcranNavigateur: function() {
-          var el = document.documentElement, f = el.requestFullscreen || el.webkitRequestFullscreen;
-          if (!f || document.fullscreenElement || document.webkitFullscreenElement) return;
-          try { var p = f.call(el, { navigationUI: 'hide' }); if (p && p.catch) p.catch(() => {}); } catch (e) {}
-        },
+        pleinEcranNavigateur: function() { PleinEcran.entrer(); },
         basculerPleinEcran: function() {
           this.pleinEcran = !this.pleinEcran; ecrireStockage('vallee-plein-ecran', this.pleinEcran);
           if (this.pleinEcran) this.pleinEcranNavigateur();
-          else { var f = document.exitFullscreen || document.webkitExitFullscreen; if (f && (document.fullscreenElement || document.webkitFullscreenElement)) try { var p = f.call(document); if (p && p.catch) p.catch(() => {}); } catch (e) {} }
+          else PleinEcran.sortir();
         }
       }
     });

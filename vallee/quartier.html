@@ -103,6 +103,12 @@
     @media (prefers-reduced-motion: reduce) { .qd-flotte, .qd-tombe, .qd-feu { animation: none; } }
     .btn-rouille { background: linear-gradient(#c2551b, #9a3f12); border: 1.5px solid #6b2a07; color: #fff4e6; box-shadow: 0 2px 0 #4a1d05; }
     .etoiles-q { display: inline-flex; align-items: center; gap: 3px; color: #ffd43b; font: 800 0.95em system-ui, sans-serif; background: #241a13; border: 1px solid #5c4532; border-radius: 99px; padding: 5px 9px; }
+    .bas-q.inverse { grid-template-columns: 1fr 132px; }
+    .bas-q.inverse .croix-q { order: 2; }
+    .options-q { flex: none; height: 140px; background: linear-gradient(#fdf4e3, #ecd6b0); border: 2px solid #6b4f36; border-radius: 12px; padding: 7px 9px; color: #3b2a1e;
+                 display: flex; flex-direction: column; gap: 5px; }
+    .options-q h3 { margin: 0; font: 700 0.95em Georgia, serif; color: #7c2d12; }
+    .options-q button { padding: 6px 8px; border-radius: 9px; font: 700 0.8em system-ui, sans-serif; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; }
     .btn-papier { background: #fff8ea; border: 1.5px solid #b08a5c; color: #5c3a1e; box-shadow: 0 2px 0 #b08a5c; }
   </style>
 </head>
@@ -113,6 +119,7 @@
       <div class="titre-q"><b>Le quartier</b><small>{{ sousTitre }}</small></div>
       <span class="etoiles-q" v-html="etoileP + ' ' + etoiles"></span>
       <button class="btn-bois" :class="{ on: loin }" @click="loin = !loin" v-html="ico('loupe', 18)" title="Vue d'ensemble"></button>
+      <button class="btn-bois" :class="{ on: options }" @click="options = !options" v-html="ico('reglages', 18)" title="Options"></button>
     </header>
 
     <div class="scene-q" ref="scene" @pointerdown="toucher">
@@ -193,7 +200,13 @@
       </div>
     </div>
 
-    <div class="bas-q" v-else>
+    <div class="options-q" v-if="options && !arr">
+      <h3>Options</h3>
+      <button class="btn-papier" @click="inverser" v-html="ico('croix4', 16) + 'Mettre la croix à ' + (inverse ? 'gauche' : 'droite')"></button>
+      <button class="btn-papier" @click="basculerPleinEcran" v-html="ico('plein', 16) + (pleinEcran ? 'Garder les barres du téléphone' : 'Cacher les barres du téléphone')"></button>
+      <button class="btn-rouille" @click="options = false">Fermer</button>
+    </div>
+    <div class="bas-q" :class="{ inverse: inverse }" v-else>
       <div class="croix-q">
         <div class="rond"></div>
         <button v-for="b in CROIX" :key="b.c" :class="[b.c, { appui: dirTenue === b.c }]" @pointerdown.prevent="tenir(b)" @pointerup="lacher" @pointercancel="lacher" @pointerleave="lacher" v-html="ico(b.ico, 22)"></button>
@@ -237,6 +250,9 @@
       lettre: '<rect x="3.5" y="6" width="17" height="12.5" rx="1.5"/><path d="M4 7l8 6.5L20 7"/>',
       coche: '<path d="M5 12.5l4.5 4.5L19 7.5"/>', croix: '<path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/>',
       porte: '<path d="M6 20.5V4.5h12v16"/><path d="M3.5 20.5h17"/><circle cx="14.5" cy="12.5" r="1"/>',
+      reglages: '<circle cx="12" cy="12" r="3"/><path d="M12 2.8v2.6M12 18.6v2.6M2.8 12h2.6M18.6 12h2.6M5.5 5.5l1.8 1.8M16.7 16.7l1.8 1.8M5.5 18.5l1.8-1.8M16.7 7.3l1.8-1.8"/>',
+      croix4: '<path d="M12 3v18M3 12h18"/><path d="M9 6l3-3 3 3M9 18l3 3 3-3M6 9l-3 3 3 3M18 9l3 3-3 3"/>',
+      plein: '<path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/>',
       nuage: '<path d="M7 18.5h10.5a4 4 0 0 0 .4-8 5.5 5.5 0 0 0-10.6 1.4A3.3 3.3 0 0 0 7 18.5z"/><path d="M9 21l-1 2M13 21l-1 2M17 21l-1 2"/>',
       fete: '<path d="M3 5.5c4 2.5 14 2.5 18 0"/><path d="M6 7.2l1.2 4 2.3-3.4M11 8l1 4.2 1.8-4.1M15.3 7.6l1.6 3.8 1.5-4.1"/><path d="M12 15.5l1.3 2.6 2.9.4-2.1 2 .5 2.9-2.6-1.4-2.6 1.4.5-2.9-2.1-2 2.9-.4z"/>'
     };
@@ -311,6 +327,7 @@
           ONGLETS_A: [{ id: 'maison', nom: 'Maison' }, { id: 'couleurs', nom: 'Couleurs' }, { id: 'cloture', nom: 'Clôture' }, { id: 'jardin', nom: 'Jardin' }, { id: 'fetes', nom: 'Fêtes' }, { id: 'place', nom: 'Place' }],
           CIBLES_C: [{ id: 'mur', nom: 'Murs' }, { id: 'toitT', nom: 'Toit' }, { id: 'menuis', nom: 'Portes, volets' }],
           vignettes: (function () { var r = {}; Object.keys(QQ.STYLES).forEach(function (id) { r[id] = QQ.vignetteMaison({ style: id }, 76, 70); }); return r; })(),
+          inverse: lireStockage('donjon-inverse') === true, pleinEcran: lireStockage('vallee-plein-ecran') !== false, options: false,
           meteoForce: null, maintenant: Date.now(), nuit: Meteo.ambiance().nuit, loin: false, sortie: false, W: 360, H: 560, camVite: true, fiche: null, annonce: '', v: 0
         };
       },
@@ -398,6 +415,8 @@
       mounted: function () {
         var self = this;
         this.mesurer(); window.addEventListener('resize', this.mesurer);
+        // Barres du téléphone cachées comme dans la Vallée (même réglage), redemandées à chaque toucher (commun.js)
+        PleinEcran.suivre(function () { return self.pleinEcran; });
         Meteo.demarrer(); window.addEventListener('desdale-meteo', function () { self.maintenant = Date.now(); });
         // Les voisins : le registre (relu au plus toutes les 10 min) et qui est connecté
         var maj = function () { self.majVoisins(); };
@@ -406,7 +425,7 @@
         window.addEventListener('pageshow', function () { self.etoiles = Etoiles.solde(); });
         // La bulle de discussion reste au-dessus de la fiche du bas
         var reserve = function () { try { if (window.SalonGlobal && SalonGlobal.reserverBas) SalonGlobal.reserverBas(self.arr ? 312 : 152); } catch (e) {} };
-        setTimeout(reserve, 300); this.$watch('arr', function () { self.$nextTick(reserve); });
+        setTimeout(reserve, 300); this.$watch('arr', function () { self.$nextTick(reserve); }); this.$watch('inverse', function () { self.$nextTick(reserve); });
         setInterval(function () { var n0 = self.ambiance.nuit; self.maintenant = Date.now(); if (!self.meteoForce && self.ambiance.nuit !== n0) self.nuit = self.ambiance.nuit; }, 60000);
         this.$nextTick(function () { self.placerMoi(); setTimeout(function () { self.camVite = false; }, 50); });
         window.addEventListener('keydown', function (e) {
@@ -416,6 +435,12 @@
       },
       methods: {
         ico: ico,
+        // Même réglages que la Vallée et le Donjon : côté de la croix, barres du téléphone
+        inverser: function () { this.inverse = !this.inverse; ecrireStockage('donjon-inverse', this.inverse); },
+        basculerPleinEcran: function () {
+          this.pleinEcran = !this.pleinEcran; ecrireStockage('vallee-plein-ecran', this.pleinEcran);
+          if (this.pleinEcran) PleinEcran.entrer(); else PleinEcran.sortir();
+        },
         majVoisins: function () {
           if (this.arr) return;   // pas pendant qu'on arrange : on attend
           var moi = this.moiH, v = voisins(), avant = this.hab.map(function (h) { return h.id + (h.present ? '+' : '') + JSON.stringify(h.maison); }).join('|');

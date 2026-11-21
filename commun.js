@@ -3,12 +3,13 @@
 // Les clés de stockage gardent l'ancien préfixe "brillant-" : les réglages déjà faits sont conservés.
 
 // Numéro de version affiché (à augmenter à chaque mise en ligne, avec brilliant/index.html et sw.js)
-const VERSION = '4.35';
+const VERSION = '4.36';
 
 // ---------- Nouveautés (2.87, demandé par l'utilisateur) ----------
 // Une ligne très brève par mise en ligne (la plus récente en haut) : l'accueil les montre une seule fois, dans une petite fenêtre,
 // à qui n'a pas encore vu cette version. [version, jeu ou partie de l'appli, ce qui change]
 const NOUVEAUTES = [
+  ['4.36', 'Vallée', 'Quartier : croix à gauche ou à droite, barres du téléphone cachées comme dans la Vallée (bouton Options).'],
   ['4.35', 'Vallée', 'Le quartier des amis s\'ouvre par un portail : de vraies maisons à arranger, celles de tes amis autour.'],
   ['4.34', 'Vallée et maison', 'La lumière suit le vrai lever et coucher du soleil : crépuscule doré, nuit bleue.'],
   ['4.33', 'Vallée et maison', 'La météo de chez toi (pluie, neige, brouillard, vent), mêlée à la saison : à activer dans les Options.'],
@@ -916,6 +917,42 @@ function ouvrirProfilPortail(manquant) {
 // La Vallée pose `desdale-vallee` dans sessionStorage en y entrant ; l'accueil l'efface.
 function depuisVallee() { try { return sessionStorage.getItem('desdale-vallee') === '1'; } catch (e) { return false; } }
 function adresseRetour() { return depuisVallee() ? 'vallee/' : 'index.html?choix'; }
+
+// ---------- Cacher les barres du téléphone (plein écran du navigateur), commun aux pages qui le proposent (4.36) ----------
+// Le navigateur n'accepte le plein écran qu'à la FIN d'un geste (pointerup, touchend, click ; pas pointerdown sur écran tactile),
+// et il en sort quand on change de page ou d'appli : on le redemande donc au toucher suivant, tant que le réglage le veut.
+// Chrome peut aussi réafficher ses barres en restant « en plein écran » : si la hauteur a nettement baissé, on sort pour redemander.
+// PleinEcran.suivre(actif) : actif() dit si on le veut maintenant. PleinEcran.entrer() / sortir() pour un bouton.
+var PleinEcran = (function () {
+  var demande = false, hFs = 0, actif = function () { return false; };
+  function dedans() { return !!(document.fullscreenElement || document.webkitFullscreenElement); }
+  function entrer() {
+    if (typeof document === 'undefined' || dedans()) return;
+    var el = document.documentElement, f = el.requestFullscreen || el.webkitRequestFullscreen;
+    if (!f) return;
+    demande = true;
+    try { var p = f.call(el, { navigationUI: 'hide' }); if (p && p.catch) p.catch(function () { demande = false; }); } catch (e) { demande = false; }
+  }
+  function sortir() {
+    var f = document.exitFullscreen || document.webkitExitFullscreen;
+    if (f && dedans()) try { var p = f.call(document); if (p && p.catch) p.catch(function () {}); } catch (e) {}
+  }
+  function suivre(fn) {
+    actif = fn || actif;
+    if (suivre._fait) return; suivre._fait = true;
+    var fin = function () { if (!dedans()) { demande = false; hFs = 0; } };
+    var barres = function () {
+      if (document.hidden || !actif() || !dedans()) return;
+      if (!hFs) { hFs = window.innerHeight; return; }
+      if (window.innerHeight < hFs - 30) { sortir(); demande = false; hFs = 0; }
+    };
+    ['fullscreenchange', 'webkitfullscreenchange'].forEach(function (t) { document.addEventListener(t, function () { fin(); setTimeout(barres, 400); }); });
+    document.addEventListener('visibilitychange', function () { fin(); setTimeout(barres, 400); });
+    window.addEventListener('resize', function () { setTimeout(barres, 300); });
+    ['pointerup', 'touchend', 'click'].forEach(function (t) { document.addEventListener(t, function () { if (actif() && !demande && !dedans()) entrer(); }, true); });
+  }
+  return { suivre: suivre, entrer: entrer, sortir: sortir, dedans: dedans };
+})();
 
 function vibrer(motif) {
   try { if (navigator.vibrate) navigator.vibrate(motif); } catch (e) {}
