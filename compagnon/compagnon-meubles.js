@@ -1416,7 +1416,11 @@ var CPM = (function () {
     proj: proj, versSol: versSol, versMur: versMur, nuance: nuance, teinte: teinte,
     emprise: emprise, placeLibre: placeLibre, caseOccupee: caseOccupee,
     bornes: bornes, camera: camera, scene: scene, vignette: vignette, tuile: tuile,
-    objetDeco: objetDeco, nomObjet: nomObjet, nomDeco: nomDeco, PICTO_DECO: PICTO_DECO
+    objetDeco: objetDeco, nomObjet: nomObjet, nomDeco: nomDeco, PICTO_DECO: PICTO_DECO,
+    // outils de dessin, prêtés au quartier de la Vallée (même trait que la maison)
+    dessinObjet: dessinObjet, motifMur: motifMur, motifSol: motifSol,
+    outils: { O: O, EP: EP, U: U, n1: n1, pt: pt, chemin: chemin, poly: poly, ligne: ligne, matrice: matrice, contexte: contexte, plan: plan,
+              boite: boite, coussin: coussin, cylindre: cylindre, ombreSol: ombreSol, rond: rond, face: face, BOIS: BOIS, BOIS_C: BOIS_C, BOIS_S: BOIS_S }
   };
   if (typeof CP !== 'undefined') CP.MEUBLES = kit;
   return kit;

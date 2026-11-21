@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <!-- Maquette du quartier des amis en isométrique (4.29) : page à part, sans lien depuis l'appli, voisins d'exemple -->
+  <base href="../">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Le quartier (maquette) · Désdale</title>
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <meta name="theme-color" content="#17110d">
+  <link rel="icon" type="image/png" href="favicon.png">
+  <script src="https://cdn.jsdelivr.net/npm/vue@2.7.16/dist/vue.min.js"></script>
+  <link rel="stylesheet" href="commun.css">
+  <style>
+    html, body { margin: 0; background: #17110d; overscroll-behavior: none; }
+    [v-cloak] { display: none; }
+    .mq { box-sizing: border-box; height: 100vh; height: 100dvh; display: flex; flex-direction: column; gap: 7px; padding: 8px 7px 8px;
+          background: radial-gradient(ellipse at 50% 0%, #2c211a 0%, #17110d 70%); color: #f1e6d6; font-family: system-ui, sans-serif; overflow: hidden;
+          user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
+    .mq * { box-sizing: border-box; }
+    .ico { display: block; }
+    .tete-q { display: flex; align-items: center; gap: 7px; background: linear-gradient(#3a2c22, #261c15); border: 1px solid #5c4532; border-radius: 12px; padding: 6px 7px;
+              box-shadow: inset 0 1px 0 rgba(255,255,255,0.06), 0 3px 8px rgba(0,0,0,0.4); flex: none; }
+    .btn-bois { display: inline-flex; align-items: center; justify-content: center; gap: 3px; background: #3f3026; border: 1px solid #8d6a3f; color: #ffd8a8; border-radius: 9px; padding: 6px 9px;
+                font: 700 0.85em system-ui, sans-serif; box-shadow: 0 2px 0 #120c09; cursor: pointer; min-width: 36px; }
+    .btn-bois.on { background: linear-gradient(#e8590c, #b8541a); border-color: #ffc078; color: #fff; }
+    .titre-q { flex: 1; min-width: 0; text-align: center; line-height: 1.15; }
+    .titre-q b { display: block; font: 700 1.05em Georgia, 'Times New Roman', serif; color: #ffe8cc; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .titre-q small { color: #c9a66b; font-size: 0.76em; }
+    /* ----- La scène ----- */
+    .scene-q { position: relative; flex: 1; min-height: 0; border: 2px solid #4b3a2c; border-radius: 14px; overflow: hidden; touch-action: none;
+               background: linear-gradient(#9fd0ea, #cfe8f0 55%, #e6efe0); box-shadow: inset 0 0 24px rgba(0,0,0,0.4), 0 6px 16px rgba(0,0,0,0.55); }
+    .nuit .scene-q { background: linear-gradient(#0f1633, #23305a 60%, #3a4466); }
+    .scene-q svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+    .cam { transform-origin: 0 0; transition: transform 0.22s linear; }
+    .cam.vite { transition: none; }
+    .moi { transition: transform 0.2s linear; }
+    .moi .sens.gauche { transform: scaleX(-1); transform-origin: 100px 100px; }
+    .qd-cp .sens.gauche { transform: scaleX(-1); transform-origin: 100px 100px; }
+    .qd-fumee circle { animation: fumee 3.2s ease-out infinite; transform-box: fill-box; transform-origin: center; }
+    .qd-fumee circle:nth-child(2) { animation-delay: 1s; } .qd-fumee circle:nth-child(3) { animation-delay: 2s; }
+    @keyframes fumee { 0% { opacity: 0; transform: translateY(6px) scale(0.6); } 30% { opacity: 0.7; } 100% { opacity: 0; transform: translateY(-14px) scale(1.4); } }
+    .choisi-q { filter: drop-shadow(0 0 2px #fff3bf) drop-shadow(0 0 5px #ffa94d); }
+    .lieu-q { position: absolute; left: 7px; top: 7px; background: rgba(28,20,15,0.82); border: 1px solid #5c4532; border-radius: 99px; padding: 3px 10px;
+              font: italic 700 0.74em Georgia, serif; color: #ffe8cc; white-space: nowrap; pointer-events: none; }
+    .annonce-q { position: absolute; left: 50%; bottom: 10px; transform: translateX(-50%); max-width: 92%; background: linear-gradient(#fdf4e3, #ecd6b0); border: 1.5px solid #6b4f36;
+                 color: #3b2a1e; border-radius: 10px; padding: 6px 11px; font: 600 0.82em/1.3 system-ui, sans-serif; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.4); pointer-events: none; }
+    /* ----- Le bas : la croix (en losange, comme les axes de la vue) et la fiche ----- */
+    .bas-q { flex: none; display: grid; grid-template-columns: 132px 1fr; gap: 8px; align-items: center; height: 140px; }
+    .croix-q { position: relative; width: 132px; height: 132px; }
+    .croix-q .rond { position: absolute; inset: 6px; border-radius: 50%; background: radial-gradient(circle at 50% 40%, #3a2c22, #1b130e); border: 2px solid #5c4532; }
+    .croix-q button { position: absolute; width: 50px; height: 50px; border-radius: 12px; border: 1.5px solid #8d6a3f; background: radial-gradient(circle at 50% 35%, #6b4f36, #3f3026);
+                      color: #ffd8a8; display: flex; align-items: center; justify-content: center; box-shadow: 0 3px 0 #120c09; touch-action: none; cursor: pointer; }
+    .croix-q button:active, .croix-q button.appui { background: linear-gradient(#e8590c, #b8541a); color: #fff; }
+    .croix-q .hd { left: 74px; top: 8px; } .croix-q .bd { left: 74px; top: 74px; } .croix-q .bg { left: 8px; top: 74px; } .croix-q .hg { left: 8px; top: 8px; }
+    .fiche-q { height: 132px; background: linear-gradient(#fdf4e3, #ecd6b0); border: 2px solid #6b4f36; border-radius: 12px; padding: 8px 10px; color: #3b2a1e; display: flex; flex-direction: column; gap: 4px; overflow: hidden; }
+    .fiche-q h3 { margin: 0; flex: none; font: 700 1em Georgia, serif; color: #7c2d12; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .fiche-q p { margin: 0; font: 600 0.76em/1.3 system-ui, sans-serif; color: #5c4532; }
+    .fiche-q p.ligne { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .fiche-q .etat { display: inline-flex; align-items: center; gap: 4px; font: 700 0.74em system-ui, sans-serif; }
+    .fiche-q .etat i { width: 8px; height: 8px; border-radius: 50%; background: #8a847f; display: inline-block; }
+    .fiche-q .etat i.on { background: #2f9e44; box-shadow: 0 0 0 2px #c3f0cc; }
+    .fiche-q .boutons { margin-top: auto; display: flex; gap: 6px; }
+    .fiche-q .boutons button { flex: 1; white-space: nowrap; padding: 8px 4px; border-radius: 9px; font: 700 0.82em system-ui, sans-serif; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 4px; }
+    .btn-rouille { background: linear-gradient(#c2551b, #9a3f12); border: 1.5px solid #6b2a07; color: #fff4e6; box-shadow: 0 2px 0 #4a1d05; }
+    .btn-papier { background: #fff8ea; border: 1.5px solid #b08a5c; color: #5c3a1e; box-shadow: 0 2px 0 #b08a5c; }
+  </style>
+</head>
+<body>
+  <div id="app" v-cloak class="mq" :class="{ nuit: nuit }">
+    <header class="tete-q">
+      <button class="btn-bois" @click="dire('Dans l\'appli, ce bouton ramènera dans la Vallée')" v-html="ico('retour', 16) + 'Vallée'"></button>
+      <div class="titre-q"><b>Le quartier des amis</b><small>Maquette</small></div>
+      <button class="btn-bois" :class="{ on: nuit }" @click="nuit = !nuit" v-html="ico(nuit ? 'lune' : 'soleil', 18)" title="Jour ou nuit"></button>
+      <button class="btn-bois" :class="{ on: loin }" @click="loin = !loin" v-html="ico('loupe', 18)" title="Vue d'ensemble"></button>
+    </header>
+
+    <div class="scene-q" ref="scene" @pointerdown="toucher">
+      <svg ref="svg" xmlns="http://www.w3.org/2000/svg" :view-box.camel="'0 0 ' + W + ' ' + H">
+        <defs><radialGradient id="qd-lueur"><stop offset="0" stop-color="#ffd77a" stop-opacity="0.95"/><stop offset="0.5" stop-color="#ffb347" stop-opacity="0.35"/><stop offset="1" stop-color="#ffb347" stop-opacity="0"/></radialGradient></defs>
+        <g class="cam" :class="{ vite: camVite }" :style="camStyle">
+          <g ref="monde" v-html="monde"></g>
+          <rect v-if="nuit" x="-4000" y="-4000" width="9000" height="9000" fill="#1d2552" opacity="0.58" style="mix-blend-mode:multiply" pointer-events="none"/>
+          <g v-if="nuit" v-html="lueurs" pointer-events="none" style="mix-blend-mode:screen"></g>
+        </g>
+      </svg>
+      <div class="lieu-q">{{ lieu }}</div>
+      <div v-if="annonce" class="annonce-q">{{ annonce }}</div>
+    </div>
+
+    <div class="bas-q">
+      <div class="croix-q">
+        <div class="rond"></div>
+        <button v-for="b in CROIX" :key="b.c" :class="[b.c, { appui: dirTenue === b.c }]" @pointerdown.prevent="tenir(b)" @pointerup="lacher" @pointercancel="lacher" @pointerleave="lacher" v-html="ico(b.ico, 22)"></button>
+      </div>
+      <div class="fiche-q" v-if="fiche">
+        <h3>{{ fiche.moi ? 'Ma maison' : 'Chez ' + fiche.nom }}</h3>
+        <span class="etat"><i :class="{ on: fiche.present }"></i>{{ fiche.moi ? 'C\'est chez toi' : fiche.present ? 'À la maison' : 'Absent · passé il y a ' + fiche.vu }}</span>
+        <p class="ligne">{{ STYLES[fiche.maison.style].nom }} · {{ placetteNom(fiche.n) }}</p>
+        <div class="boutons" v-if="fiche.moi">
+          <button class="btn-rouille" @click="dire('Étape 2 : Arranger ma parcelle (style, couleurs, jardin)')" v-html="ico('arranger', 16) + 'Arranger dehors'"></button>
+        </div>
+        <div class="boutons" v-else>
+          <button class="btn-papier" @click="dire('Dans l\'appli : une lettre dans sa boîte')" v-html="ico('lettre', 16) + 'Lettre'"></button>
+          <button class="btn-rouille" @click="dire('Dans l\'appli : on entre chez ' + fiche.nom)" v-html="ico('porte', 16) + 'Entrer'"></button>
+        </div>
+      </div>
+      <div class="fiche-q" v-else>
+        <h3>{{ lieu }}</h3>
+        <p>Promène-toi avec la croix, ou touche le sol pour y aller. Touche une maison pour savoir qui y habite.</p>
+      </div>
+    </div>
+  </div>
+
+  <script src="joueur.js"></script>
+  <script src="commun.js"></script>
+  <script src="compagnon/compagnon-commun.js"></script>
+  <script src="compagnon/compagnon-meubles.js"></script>
+  <script src="vallee/quartier.js"></script>
+  <script>
+    const TRAITS = {
+      retour: '<path d="M14.5 5.5L8 12l6.5 6.5"/>',
+      soleil: '<circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.5M12 19v2.5M2.5 12H5M19 12h2.5M5.3 5.3l1.8 1.8M16.9 16.9l1.8 1.8M5.3 18.7l1.8-1.8M16.9 7.1l1.8-1.8"/>',
+      lune: '<path d="M19.5 14.5A8 8 0 1 1 9.5 4.5a6.5 6.5 0 0 0 10 10z"/>',
+      loupe: '<circle cx="10.5" cy="10.5" r="6"/><path d="M15 15l5 5"/><path d="M8 10.5h5"/>',
+      fleche: '<path d="M12 19V5M6 11l6-6 6 6"/>',
+      arranger: '<path d="M4 20h7"/><path d="M15 4.5l4.5 4.5L9 19.5H4.5V15z"/><path d="M12.5 7l4.5 4.5"/>',
+      lettre: '<rect x="3.5" y="6" width="17" height="12.5" rx="1.5"/><path d="M4 7l8 6.5L20 7"/>',
+      porte: '<path d="M6 20.5V4.5h12v16"/><path d="M3.5 20.5h17"/><circle cx="14.5" cy="12.5" r="1"/>'
+    };
+    function ico(nom, t) {
+      var r = nom === 'fl-hd' ? 45 : nom === 'fl-bd' ? 135 : nom === 'fl-bg' ? 225 : nom === 'fl-hg' ? 315 : 0, n = r ? 'fleche' : nom;
+      return '<svg class="ico" viewBox="0 0 24 24" width="' + (t || 20) + '" height="' + (t || 20) + '" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"' +
+        (r ? ' style="transform:rotate(' + r + 'deg)"' : '') + '>' + TRAITS[n] + '</svg>';
+    }
+
+    // ----- Voisins d'exemple (la maquette ne lit ni le registre ni le salon) -----
+    function animalDe(espece, couleur, nom) {
+      var t = Date.now(), b = {}; ['repas', 'eau', 'toilette', 'calin'].forEach(function (k) { b[k] = { v: 90, t: t }; });
+      return { espece: espece, couleur: couleur, nom: nom, besoins: b, porte: {}, ne: t };
+    }
+    function exemples(moi) {
+      var J = function (m, u, v, t, o) { return { m: m, u: u, v: v, t: t, o: o }; };
+      return [
+        { nom: 'Léa', present: true, a: animalDe('chat', '#f0a04b', 'Mistigri'), maison: { style: 'colombages', mur: 'creme', menuis: 'foret', cloture: 'piquets', arche: true, jardin: [J('massif', 0, 3), J('nichoir', 3, 4), J('lanterne', 2, 4)] } },
+        { nom: 'Max', vu: '2 j', a: animalDe('chien', '#c8915a', 'Biscotte'), maison: { style: 'pierre', mur: 'sable', menuis: 'nuit', cloture: 'muret', jardin: [J('plante', 3, 4), J('massif', 2, 4, 'prune')] } },
+        { nom: 'Inès', present: true, courrier: true, a: animalDe('lapin', '#f4f1ec', 'Pompon'), maison: { style: 'chaumiere', mur: 'creme', menuis: 'sauge', cloture: 'haie', jardin: [J('nichoir', 3, 3), J('massif', 0, 3, 'moutarde'), J('massif', 2, 4)] } },
+        { nom: 'Tom', vu: '5 h', a: animalDe('panda', '#f6f4ee', 'Bambou'), maison: { style: 'briques', mur: 'brique', menuis: 'creme', cloture: 'piquets', jardin: [J('plante', 0, 3), J('massif', 3, 3), J('lanterne', 3, 4)] } },
+        moi,
+        { nom: 'Hugo', vu: '1 j', a: animalDe('dragon', '#5fbf8f', 'Flammèche'), maison: { style: 'chalet', mur: 'miel', menuis: 'brique', cloture: 'bois', jardin: [J('arbre', 3, 3, 'foret'), J('ballon', 2, 4)] } },
+        { nom: 'Nina', present: true, a: animalDe('tortue', '#8bc34a', 'Pistache'), maison: { style: 'bardage', mur: 'sauge', menuis: 'creme', toitT: 'ardoise', toit: 'ardoise', cloture: 'piquets', jardin: [J('fontaine', 3, 3), J('massif', 0, 3, 'brique')] } },
+        { nom: 'Paul', vu: '3 j', a: animalDe('singe', '#8d5b3a', 'Banjo'), maison: { style: 'colombages', mur: 'moutarde', menuis: 'brique', toitT: 'brique', cloture: 'bois', jardin: [J('arbre', 3, 3), J('massif', 2, 4, 'prune')] } },
+        { nom: 'Jade', vu: '8 h', a: animalDe('oie', '#f7f7f2', 'Capucine'), maison: { style: 'bardage', mur: 'nuit', menuis: 'creme', cloture: 'haie', fleurs: true, jardin: [J('plante', 0, 3), J('lanterne', 3, 3)] } },
+        { nom: 'Sam', present: true, a: animalDe('ecureuil', '#c96a2b', 'Noisette'), maison: { style: 'pierre', mur: 'ardoise', menuis: 'foret', toit: 'ardoise', cloture: 'muret', jardin: [J('massif', 3, 4, 'prune'), J('nichoir', 0, 3)] } }
+      ];
+    }
+
+    new Vue({
+      el: '#app',
+      data: function () {
+        var a = lireStockage('compagnon-animal');
+        if (!a || !a.espece) a = animalDe('renard', '#e8772e', 'Roux');
+        var moi = { nom: (lireStockage('desdale-profil') || {}).pseudo || 'Moi', moi: true, present: true, a: a,
+                    maison: { style: 'chaumiere', mur: 'creme', menuis: 'brique', toitT: 'moutarde', cloture: 'piquets', arche: true, jardin: [{ m: 'massif', u: 0, v: 3, t: 'prune' }, { m: 'plante', u: 3, v: 4 }, { m: 'lanterne', u: 2, v: 4 }] } };
+        var hab = exemples(moi).map(function (h, n) { h.n = n; h.maison = QQ.maison(h.maison); return h; });
+        var Q = QQ.quartier(hab.length);
+        return {
+          STYLES: QQ.STYLES, Q: Q, hab: hab, animal: a, ok: QQ.cases(Q),
+          CROIX: [{ c: 'hg', d: [-1, 0], ico: 'fl-hg' }, { c: 'hd', d: [0, -1], ico: 'fl-hd' }, { c: 'bg', d: [0, 1], ico: 'fl-bg' }, { c: 'bd', d: [1, 0], ico: 'fl-bd' }],
+          pos: { i: -1, j: QQ.RUE0 + 1 }, gauche: false, chemin: [], dirTenue: null,
+          nuit: false, loin: false, W: 360, H: 560, camVite: true, fiche: null, annonce: '', v: 0
+        };
+      },
+      computed: {
+        scene: function () {
+          var self = this, hab = this.hab.map(function (h) {
+            return { n: h.n, nom: h.nom, maison: h.maison, present: h.present, courrier: h.courrier, moi: h.moi,
+                     cp: h.present && !h.moi ? CP.dessin(h.a, 'content', false) : null };
+          });
+          return QQ.scene(this.Q, hab, { nuit: this.nuit });
+        },
+        // Le monde : sol, puis tous les éléments triés (mon compagnon est glissé à sa place dans le DOM, voir placerMoi)
+        monde: function () {
+          var S = this.scene, el = S.elements.slice().sort(function (a, b) { return a.cle - b.cle; });
+          this._cles = el.map(function (e) { return e.cle; });
+          return '<defs>' + S.defs + '</defs><g data-cle="-1e9">' + S.sol + '</g>' + el.map(function (e) {
+            var s = e.cp ? QQ.compagnon(e.i, e.j, e.cp, 0.3) : e.s;
+            return '<g data-cle="' + e.cle + '">' + s + '</g>';
+          }).join('');
+        },
+        lueurs: function () {
+          var s = '';
+          this.scene.elements.forEach(function (e) { (e.lueurs || []).forEach(function (p) { s += '<circle cx="' + p[0].toFixed(1) + '" cy="' + p[1].toFixed(1) + '" r="22" fill="url(#qd-lueur)"/>'; }); });
+          return s;
+        },
+        ech: function () { return this.loin ? 0.45 : 0.9; },
+        // Caméra : centrée sur moi, sans sortir du quartier
+        camStyle: function () {
+          var s = this.ech, p = QQ.proj(this.pos.i + 0.5, this.pos.j + 0.5), Q = this.Q;
+          var x0 = QQ.proj(Q.iMin - 2, Q.jMax)[0], x1 = QQ.proj(Q.iMax + 3, Q.jMin - 2)[0], y0 = QQ.proj(Q.iMin - 3, Q.jMin - 3)[1] - 150, y1 = QQ.proj(Q.iMax + 3, Q.jMax + 6)[1];
+          var tx = this.W / 2 - s * p[0], ty = this.H * 0.7 - s * (p[1] - 20);
+          var bx = function (t, a, b, L) { var lo = L - s * b, hi = -s * a; return lo > hi ? (lo + hi) / 2 : Math.min(hi, Math.max(lo, t)); };
+          tx = bx(tx, x0, x1, this.W); ty = bx(ty, y0, y1, this.H);
+          return { transform: 'translate(' + tx.toFixed(1) + 'px,' + ty.toFixed(1) + 'px) scale(' + s + ')' };
+        },
+        lieu: function () {
+          var p = Math.max(0, Math.min(this.Q.placettes.length - 1, Math.floor((this.pos.i + 1) / QQ.PAS)));
+          return this.pos.i < 1 && this.pos.j >= QQ.RUE0 ? 'La rue des amis' : this.Q.placettes[p].nom;
+        }
+      },
+      watch: {
+        monde: function () { this.$nextTick(this.placerMoi); },
+        pos: function () { this.placerMoi(); },
+        loin: function () { this.camVite = false; }
+      },
+      mounted: function () {
+        var self = this;
+        this.mesurer(); window.addEventListener('resize', this.mesurer);
+        this.$nextTick(function () { self.placerMoi(); setTimeout(function () { self.camVite = false; }, 50); });
+        window.addEventListener('keydown', function (e) {
+          var d = { ArrowUp: [0, -1], ArrowRight: [1, 0], ArrowDown: [0, 1], ArrowLeft: [-1, 0] }[e.key];
+          if (d) { e.preventDefault(); self.chemin = []; self.pas(d); }
+        });
+      },
+      methods: {
+        ico: ico,
+        dire: function (t) { var v = this; v.annonce = t; clearTimeout(v._ann); v._ann = setTimeout(function () { v.annonce = ''; }, 2400); },
+        mesurer: function () { var r = this.$refs.scene.getBoundingClientRect(); this.W = Math.round(r.width); this.H = Math.round(r.height); },
+        placetteNom: function (n) { var L = this.Q.lots[n]; return this.Q.placettes[L.placette].nom; },
+        // Mon compagnon : un nœud à part, glissé dans le monde juste avant le premier élément qui est devant lui
+        placerMoi: function () {
+          var g = this._moi, m = this.$refs.monde; if (!m) return;
+          if (!g || !g.isConnected) {
+            g = this._moi = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+            g.setAttribute('class', 'moi');
+            this._moiDessin = null;
+          }
+          var dessin = QQ.compagnon(0, 0, CP.dessin(this.animal, 'content', false), 0.32, { gauche: this.gauche });
+          if (this._moiDessin !== dessin) { g.innerHTML = dessin; this._moiDessin = dessin; }
+          var p = QQ.proj(this.pos.i + 0.5, this.pos.j + 0.5);
+          g.style.transform = 'translate(' + p[0].toFixed(1) + 'px,' + p[1].toFixed(1) + 'px)';
+          var cleMoi = this.pos.i + this.pos.j + 1, enfants = m.children, avant = null;
+          for (var k = 0; k < enfants.length; k++) { var c = enfants[k]; if (c !== g && +c.getAttribute('data-cle') > cleMoi) { avant = c; break; } }
+          if (g.nextSibling !== avant || g.parentNode !== m) m.insertBefore(g, avant);
+        },
+        // Un pas dans une direction (cases i, j) : marcher, ou frapper à une porte, ou repartir par le portail
+        pas: function (d) {
+          var i = this.pos.i + d[0], j = this.pos.j + d[1];
+          var x = QQ.proj(d[0], d[1])[0]; if (x) this.gauche = x < 0;
+          if (this.ok[i + ',' + j]) { this.pos = { i: i, j: j }; this.placerMoi(); return true; }
+          var L = QQ.lotEn(this.Q, this.pos.i, this.pos.j);
+          if (L) { var P = QQ.devantPorte(L); if (P.i === this.pos.i && P.j === this.pos.j && P.dir[0] === d[0] && P.dir[1] === d[1]) this.ouvrir(L.n); }
+          else if (i < -3) this.dire('Le portail ramène dans la Vallée');
+          this.placerMoi();
+          return false;
+        },
+        ouvrir: function (n) { var h = this.hab.filter(function (x) { return x.n === n; })[0]; this.fiche = h || null; if (!h) this.dire('Parcelle libre : un nouvel ami s\'installera ici'); },
+        // La croix : un pas tout de suite, puis un pas toutes les 0,2 s tant qu'on tient
+        tenir: function (b) {
+          var self = this; this.chemin = []; this.dirTenue = b.c; clearInterval(this._marche);
+          this.pas(b.d); this._marche = setInterval(function () { self.pas(b.d); }, 200);
+        },
+        lacher: function () { this.dirTenue = null; clearInterval(this._marche); },
+        // Toucher la scène : une maison = qui y habite (et on y va), le sol = on y va
+        toucher: function (ev) {
+          var g = ev.target.closest && ev.target.closest('[data-lot]');
+          var r = this.$refs.scene.getBoundingClientRect(), s = this.ech, t = this.$refs.monde.parentNode.getCTM();
+          if (g) { var n = +g.getAttribute('data-lot'); this.ouvrir(n); var P = QQ.devantPorte(this.Q.lots[n]); this.allerA(P); return; }
+          var pt = this.$refs.svg.createSVGPoint(); pt.x = ev.clientX; pt.y = ev.clientY;
+          var w = pt.matrixTransform(this.$refs.monde.getScreenCTM().inverse()), c = QQ.caseEn(w.x, w.y);
+          this.fiche = null;
+          this.allerA(c);
+        },
+        allerA: function (c) {
+          var self = this, ch = QQ.chemin(this.ok, this.pos, c);
+          if (!ch) return;
+          clearInterval(this._marche); this.chemin = ch;
+          this._marche = setInterval(function () {
+            var p = self.chemin.shift(); if (!p) { clearInterval(self._marche); return; }
+            self.pas([p.i - self.pos.i, p.j - self.pos.j]);
+          }, 200);
+        }
+      }
+    });
+  </script>
+</body>
+</html>
