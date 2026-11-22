@@ -186,3 +186,14 @@ Rappel pour un jeu du commerce : version maison, sans le nom de la marque ni ses
 - Sons fabriqués par le code (pas de fichiers audio), sauf la Bataille navale : sons enregistrés **libres de droits**
   dans `bataille/sons/` (sources dans `bataille/sons/LICENCES.txt`), choisis par l'utilisateur : plouf (à l'eau), explosion (touché),
   et pour un coulé l'explosion **puis** la sirène. Sons fabriqués par le code en secours. Sons et vibrations réglables séparément.
+
+## Plein écran de l'appli installée (4.42)
+
+Demandé par l'utilisateur : toute l'appli en plein écran, sans le message « faites glisser pour quitter » qui revenait sans cesse.
+Cause : `requestFullscreen()` (Vallée, Quartier, Donjon, Poker) redemandé au toucher après chaque changement de page ou d'appli, et la sortie
+volontaire quand les barres reviennent (Donjon 3.85) relançait le message au toucher suivant. Désormais les deux manifestes sont en
+`"display": "fullscreen"` (`display_override` : fullscreen puis standalone) : Android cache lui-même ses barres pour l'appli installée.
+`appliPleinEcran()` (`commun.js`) = `display-mode: fullscreen` sans plein écran du navigateur ; alors `PleinEcran.entrer`, `pleinEcranNavigateur`
+(Donjon) et `pleinEcran` (Poker) ne font rien, et les options « barres du téléphone » sont masquées (`appliPlein`). Poker en paysage : verrou
+d'orientation direct, ancien chemin si refusé. Accueil : `estInstallee` reconnaît aussi `fullscreen`. Dans Chrome (non installée), rien ne change.
+Un téléphone qui a déjà l'appli peut mettre jusqu'à un jour à prendre le nouveau manifeste ; sinon, la désinstaller et la réinstaller.

@@ -1198,7 +1198,7 @@
               <button class="btn" v-if="peutVibrer" @click="vibrationActive = !vibrationActive">{{ vibrationActive ? '📳 Vibrations activées' : '📴 Vibrations coupées' }}</button>
               <button class="btn" @click="inverse = !inverse">⇄ Mettre la croix {{ inverse ? 'à gauche' : 'à droite' }}</button>
               <button class="btn" @click="basculerPleinEcran">{{ immersionVoulue ? '↙️ Quitter le plein écran' : '↗️ Plein écran' }}</button>
-              <button class="btn" v-if="immersionVoulue" @click="basculerBarres">{{ barresCachees ? '📱 Montrer les barres du tél.' : '📱 Cacher les barres du tél.' }}</button>
+              <button class="btn" v-if="immersionVoulue && !appliPlein" @click="basculerBarres">{{ barresCachees ? '📱 Montrer les barres du tél.' : '📱 Cacher les barres du tél.' }}</button>
               <button class="btn" @click="menuJeu = false; onglet = 'regles'">📖 Règles du donjon</button>
               <button class="btn quitter-menu" @click="menuJeu = false; demandeQuitter = true">🏳️ Quitter le donjon</button>
             </div>
@@ -1427,8 +1427,8 @@
           <reglages-base :son.sync="sonActif" :vibration.sync="vibrationActive"></reglages-base>
           <label class="option-dj">Croix à droite (gaucher)<input type="checkbox" v-model="inverse"></label>
           <label class="option-dj">Plein écran pendant l'exploration<input type="checkbox" :checked="immersionVoulue" @change="basculerPleinEcran"></label>
-          <label class="option-dj" v-if="immersionVoulue">Cacher aussi les barres du téléphone<input type="checkbox" :checked="barresCachees" @change="basculerBarres"></label>
-          <p class="aide-dj" v-if="immersionVoulue" style="margin:4px 0 0;font-size:13px;color:#666">Avec les barres cachées, le téléphone affiche quelques secondes son message « faites glisser pour quitter le plein écran » : une page web ne peut pas l'empêcher. Barres visibles : plus de message.</p>
+          <label class="option-dj" v-if="immersionVoulue && !appliPlein">Cacher aussi les barres du téléphone<input type="checkbox" :checked="barresCachees" @change="basculerBarres"></label>
+          <p class="aide-dj" v-if="immersionVoulue && !appliPlein" style="margin:4px 0 0;font-size:13px;color:#666">Avec les barres cachées, le téléphone affiche quelques secondes son message « faites glisser pour quitter le plein écran » : une page web ne peut pas l'empêcher. Barres visibles : plus de message.</p>
         </section>
       </template>
 
@@ -1656,6 +1656,7 @@
         chatVisible: false,      // la discussion du salon est ouverte par-dessus le jeu (3.33)
         confirmePasser: false,   // « Passer » le butin demande un 2e toucher (3.33)             // horloge du voyant de liaison (3.32), avancée chaque seconde à plusieurs   // { id, rang, noms, t } : la fenêtre d'entrée en combat (3.31)
         immersionVoulue: lireStockage('donjon-plein-ecran') !== false,   // plein écran pendant l'exploration (par téléphone)
+        appliPlein: appliPleinEcran(),   // appli installée en plein écran : l'option des barres ne sert plus
         barresCachees: lireStockage('donjon-barres') !== false,   // en plein écran, cacher aussi les barres du téléphone (le navigateur affiche alors son message pour sortir)
         menuJeu: false,
         voirSac: false,
@@ -2314,7 +2315,7 @@
         // Le donjon couvre l'écran (CSS) ; en plus, on demande au navigateur de cacher ses barres (Android ; pas sur iPhone)
         pleinEcranNavigateur: function() {
           var d = document.documentElement, f = d.requestFullscreen || d.webkitRequestFullscreen;
-          if (!f || !this.barresCachees || document.fullscreenElement || document.webkitFullscreenElement) return;
+          if (!f || !this.barresCachees || document.fullscreenElement || document.webkitFullscreenElement || appliPleinEcran()) return;   // appli installée : déjà sans barres
           try { var p = f.call(d, { navigationUI: 'hide' }); if (p && p.catch) p.catch(() => { this._fsDemande = false; }); } catch (e) { this._fsDemande = false; }   // refusé : on réessaiera au toucher suivant
         },
         sortirPleinEcranNavigateur: function() {

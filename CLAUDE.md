@@ -81,6 +81,8 @@ Vue **2.7.16** (Options API, `new Vue`) et PeerJS **1.5.4** par CDN, versions fi
 - Réglages : `<reglages-base>` puis les réglages propres au jeu. **Pseudo unique choisi sur le portail** (`pseudoPortail()`, `pseudoPour()`), pas de champ pseudo dans les jeux.
 - **Geste retour** géré dans `commun.js` pour toutes les pages (fenêtre « Retour à la Vallée / à l'accueil / Rester ici ») : rien à faire dans un nouveau jeu.
   Sur l'accueil, le retour ferme l'appli : **ne pas ajouter de `pushState` sur l'accueil**, les départs se font en `location.replace`.
+- **Plein écran** : l'appli installée s'ouvre en `display: fullscreen` (manifestes) ; si `appliPleinEcran()` (`commun.js`), ne jamais appeler `requestFullscreen`
+  (son message reviendrait) ni montrer d'option « barres du téléphone ». Dans Chrome, `PleinEcran` (`commun.js`) garde l'ancien fonctionnement.
 - Toutes les pages Vue : `<div id="app" v-cloak>`. Penser **générique et commun** quand c'est possible (principe de l'utilisateur).
 
 ## Salon global (`salon-global.js`)

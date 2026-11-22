@@ -3,12 +3,13 @@
 // Les clés de stockage gardent l'ancien préfixe "brillant-" : les réglages déjà faits sont conservés.
 
 // Numéro de version affiché (à augmenter à chaque mise en ligne, avec brilliant/index.html et sw.js)
-const VERSION = '4.41';
+const VERSION = '4.42';
 
 // ---------- Nouveautés (2.87, demandé par l'utilisateur) ----------
 // Une ligne très brève par mise en ligne (la plus récente en haut) : l'accueil les montre une seule fois, dans une petite fenêtre,
 // à qui n'a pas encore vu cette version. [version, jeu ou partie de l'appli, ce qui change]
 const NOUVEAUTES = [
+  ['4.42', 'Désdale', 'L\'appli installée s\'ouvre en plein écran, sans barres ni message pour en sortir.'],
   ['4.41', 'Vallée', 'Quartier : les maisons s\'affichent tout de suite, et la tienne est près du portail.'],
   ['4.40', 'Combien sur 10 ?', '15 nouveaux sujets (Mr Bean, Rabbi Jacob, les yo-yos, le cidre, les Gaulois…).'],
   ['4.39', 'Combien sur 10 ?', '15 nouveaux sujets (la Lune, Jeanne d\'Arc, le Loto, Pac-Man, les crêpes…).'],
@@ -928,11 +929,16 @@ function adresseRetour() { return depuisVallee() ? 'vallee/' : 'index.html?choix
 // et il en sort quand on change de page ou d'appli : on le redemande donc au toucher suivant, tant que le réglage le veut.
 // Chrome peut aussi réafficher ses barres en restant « en plein écran » : si la hauteur a nettement baissé, on sort pour redemander.
 // PleinEcran.suivre(actif) : actif() dit si on le veut maintenant. PleinEcran.entrer() / sortir() pour un bouton.
+// 4.42 : l'appli installée s'ouvre en plein écran (manifeste en « fullscreen ») : le téléphone cache lui-même ses barres,
+// sans le message du navigateur. On ne demande alors plus jamais le plein écran du navigateur, qui afficherait ce message.
+function appliPleinEcran() {
+  try { return window.matchMedia('(display-mode: fullscreen)').matches && !(document.fullscreenElement || document.webkitFullscreenElement); } catch (e) { return false; }
+}
 var PleinEcran = (function () {
   var demande = false, hFs = 0, actif = function () { return false; };
   function dedans() { return !!(document.fullscreenElement || document.webkitFullscreenElement); }
   function entrer() {
-    if (typeof document === 'undefined' || dedans()) return;
+    if (typeof document === 'undefined' || dedans() || appliPleinEcran()) return;
     var el = document.documentElement, f = el.requestFullscreen || el.webkitRequestFullscreen;
     if (!f) return;
     demande = true;

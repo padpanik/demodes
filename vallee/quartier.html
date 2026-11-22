@@ -203,7 +203,7 @@
     <div class="options-q" v-if="options && !arr">
       <h3>Options</h3>
       <button class="btn-papier" @click="inverser" v-html="ico('croix4', 16) + 'Mettre la croix à ' + (inverse ? 'gauche' : 'droite')"></button>
-      <button class="btn-papier" @click="basculerPleinEcran" v-html="ico('plein', 16) + (pleinEcran ? 'Garder les barres du téléphone' : 'Cacher les barres du téléphone')"></button>
+      <button class="btn-papier" v-if="!appliPlein" @click="basculerPleinEcran" v-html="ico('plein', 16) + (pleinEcran ? 'Garder les barres du téléphone' : 'Cacher les barres du téléphone')"></button>
       <button class="btn-rouille" @click="options = false">Fermer</button>
     </div>
     <div class="bas-q" :class="{ inverse: inverse }" v-else>
@@ -330,7 +330,7 @@
           ONGLETS_A: [{ id: 'maison', nom: 'Maison' }, { id: 'couleurs', nom: 'Couleurs' }, { id: 'cloture', nom: 'Clôture' }, { id: 'jardin', nom: 'Jardin' }, { id: 'fetes', nom: 'Fêtes' }, { id: 'place', nom: 'Place' }],
           CIBLES_C: [{ id: 'mur', nom: 'Murs' }, { id: 'toitT', nom: 'Toit' }, { id: 'menuis', nom: 'Portes, volets' }],
           vignettes: (function () { var r = {}; Object.keys(QQ.STYLES).forEach(function (id) { r[id] = QQ.vignetteMaison({ style: id }, 76, 70); }); return r; })(),
-          inverse: lireStockage('donjon-inverse') === true, pleinEcran: lireStockage('vallee-plein-ecran') !== false, options: false,
+          inverse: lireStockage('donjon-inverse') === true, pleinEcran: lireStockage('vallee-plein-ecran') !== false, appliPlein: appliPleinEcran(), options: false,
           meteoForce: null, maintenant: Date.now(), nuit: Meteo.ambiance().nuit, loin: false, sortie: false, W: 360, H: 560, camVite: true, fiche: null, annonce: '', v: 0
         };
       },

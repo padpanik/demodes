@@ -658,7 +658,7 @@
         <div class="menu-liste">
           <button class="btn-vl" @click="sonActif = !sonActif"><i v-html="pic(sonActif ? 'son' : 'muet')"></i>Son : {{ sonActif ? 'oui' : 'non' }}</button>
           <button class="btn-vl" @click="inverser"><i v-html="pic('inverser')"></i>Croix à {{ inverse ? 'gauche' : 'droite' }}</button>
-          <button class="btn-vl" @click="basculerPleinEcran"><i v-html="pic('plein')"></i>{{ pleinEcran ? 'Garder les barres du téléphone' : 'Cacher les barres du téléphone' }}</button>
+          <button class="btn-vl" v-if="!appliPlein" @click="basculerPleinEcran"><i v-html="pic('plein')"></i>{{ pleinEcran ? 'Garder les barres du téléphone' : 'Cacher les barres du téléphone' }}</button>
           <button class="btn-vl" @click="basculerMeteo"><i v-html="pic('meteo')"></i>Météo de chez moi : {{ meteoActive ? 'oui' : 'non' }}<small v-if="meteoActive" class="mto-txt">{{ ambiance.texte }}</small></button>
           <button class="btn-vl" @click="discuter"><i v-html="pic('bulle')"></i>Discuter<span v-if="nonLus" class="pastille">{{ nonLus }}</span></button>
         </div>
@@ -755,6 +755,7 @@
         annonces: [], maintenant: Date.now(), carteAspect: 330 / 270, carteLarge: false, carteDec: { x: 0, y: 0 },
         inverse: lireStockage('donjon-inverse') === true,
         sonActif: lireStockage('brillant-son') !== false,
+        appliPlein: appliPleinEcran(),
         pleinEcran: lireStockage('vallee-plein-ecran') !== false
       },
       computed: {

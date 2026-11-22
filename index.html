@@ -669,7 +669,7 @@
         copie: false,
         logo: [B, J, R, V],
         installPossible: false,
-        estInstallee: window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true,
+        estInstallee: window.matchMedia('(display-mode: standalone)').matches || window.matchMedia('(display-mode: fullscreen)').matches || navigator.standalone === true,
         estIOS: /iphone|ipad|ipod/i.test(navigator.userAgent)
       },
       computed: {

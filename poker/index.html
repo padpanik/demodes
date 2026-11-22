@@ -634,7 +634,7 @@
           <button class="ligne" v-if="peutRecaverCash" @click="menuOuvert = false; caveOuverte = 'recave'">➕ Recaver<small>Compléter mon tapis (jusqu'à {{ caveMax }})</small></button>
           <button class="ligne" v-if="e.mode === 'cash' && monSiege && monSiege.statut === 'jeu'" @click="menuOuvert = false; seLever()">🚪 Me lever de la table<small>{{ e.opts.monnaie === 'poussieres' ? 'Mes jetons redeviennent des étoiles' : 'Je garde ma place pour plus tard' }}</small></button>
           <button class="ligne" v-if="e.mode === 'cash' && peutSAsseoir" @click="menuOuvert = false; caveOuverte = 'asseoir'">🪑 M'asseoir<small>Cave de {{ caveMin }} à {{ caveMax }}</small></button>
-          <button class="ligne" @click="basculerBarres">{{ barresCachees ? '☑' : '☐' }} Cacher les barres du téléphone<small>Plein écran, comme au Donjon</small></button>
+          <button class="ligne" v-if="!appliPlein" @click="basculerBarres">{{ barresCachees ? '☑' : '☐' }} Cacher les barres du téléphone<small>Plein écran, comme au Donjon</small></button>
           <button class="ligne" v-if="!paysageCourant" @click="menuOuvert = false; passerPaysage()">📱 Passer en paysage</button>
           <button class="ligne" v-else @click="menuOuvert = false; forcerPortrait = true; revenirPortrait()">📱 Revenir en portrait</button>
           <button class="ligne danger" v-if="estHote || solo" @click="menuOuvert = false; arreterOuvert = true">⏹ Arrêter la table<small>{{ e.mode === 'tournoi' && e.opts.monnaie === 'etoiles' ? 'Chacun retrouve sa mise' : 'Retour à la salle d\'attente' }}</small></button>
@@ -855,6 +855,7 @@
         nouvellesCartes: {}, annonceVue: null,
         nonLus: 0,
         bilanActif: lireStockage('poker-bilan') !== false, bilan: null,
+        appliPlein: appliPleinEcran(),   // appli installée en plein écran : l'option des barres ne sert plus
         barresCachees: lireStockage('poker-barres') !== false,   // à la table, cacher les barres du téléphone (plein écran, comme le Donjon)
         soldeEtoiles: Etoiles.solde(), reservePoussieres: Bourse.lire().reserve
       },
@@ -1379,7 +1380,7 @@
         // ---------- Barres du téléphone cachées à la table ----------
         pleinEcran: function() {
           var d = document.documentElement, f = d.requestFullscreen || d.webkitRequestFullscreen;
-          if (!f || document.fullscreenElement || document.webkitFullscreenElement) return;
+          if (!f || document.fullscreenElement || document.webkitFullscreenElement || appliPleinEcran()) return;   // appli installée : déjà sans barres
           try { var p = f.call(d, { navigationUI: 'hide' }); if (p && p.catch) p.catch(() => { this._fsDemande = false; }); } catch (x) { this._fsDemande = false; }   // refusé : nouvel essai au toucher suivant
         },
         sortirPleinEcran: function() {
@@ -1404,6 +1405,12 @@
           this._paysage = true;
           var d = document.documentElement, f = d.requestFullscreen || d.webkitRequestFullscreen;
           var tourner = () => { try { if (screen.orientation && screen.orientation.lock) screen.orientation.lock('landscape').catch(() => {}); } catch (x) {} };
+          // Appli installée en plein écran : la rotation se verrouille sans passer par le plein écran du navigateur (et son message) ;
+          // si le téléphone la refuse, on repasse par l'ancien chemin
+          if (appliPleinEcran() && screen.orientation && screen.orientation.lock) {
+            screen.orientation.lock('landscape').catch(() => { try { if (f) f.call(d).then(tourner).catch(tourner); } catch (x) {} });
+            return;
+          }
           try { if (f && !document.fullscreenElement) f.call(d).then(tourner).catch(tourner); else tourner(); } catch (x) { tourner(); }
         },
         // Retour en portrait : on rend la rotation et on quitte le plein écran demandé pour le paysage
@@ -1413,7 +1420,7 @@
           var garder = this.tableVisible && this.barresCachees;
           var sortir = () => { if (garder) return; try { if (document.fullscreenElement && document.exitFullscreen) document.exitFullscreen().catch(() => {}); } catch (x) {} };
           try {
-            if (screen.orientation && screen.orientation.lock && document.fullscreenElement) {
+            if (screen.orientation && screen.orientation.lock && (document.fullscreenElement || appliPleinEcran())) {
               screen.orientation.lock('portrait').catch(() => {}).then(() => { try { screen.orientation.unlock(); } catch (x) {} sortir(); });
               return;
             }
