@@ -268,6 +268,7 @@
     }
     const CLE_Q = 'vallee-facade';   // ma façade : { maison, place, possede } (publiée avec ma fiche du registre)
     const OBJETS_J = ['massif', 'plante', 'lanterne', 'nichoir', 'fontaine', 'arbre', 'ballon'];
+    const PLACE_DEPART = 5;   // B2 de la 1re placette : juste à côté du portail et de la rue
     const MAISON_DEPART = { style: 'colombages', mur: 'creme', menuis: 'foret', cloture: 'piquets', jardin: [{ m: 'massif', u: 0, v: 3 }, { m: 'plante', u: 3, v: 4 }] };
     function copie(x) { return JSON.parse(JSON.stringify(x)); }
     function quand(t) {
@@ -297,7 +298,7 @@
       return Object.keys(l).sort().map(function (id) {
         var h = l[id], a = h.a, t = Date.now(), b = {}; ['repas', 'eau', 'toilette', 'calin'].forEach(function (k) { b[k] = { v: 90, t: t }; });
         a.besoins = b;
-        return { id: id, nom: h.nom, present: !!h.present, appareil: h.appareil || '', vuT: h.t, vu: h.present ? '' : h.t ? quand(h.t) : '', a: a,
+        return { id: id, n: -1, nom: h.nom, present: !!h.present, appareil: h.appareil || '', vuT: h.t, vu: h.present ? '' : h.t ? quand(h.t) : '', a: a,
                  maison: QQ.maison(h.f && h.f.style ? h.f : maisonParDefaut(id)) };
       });
     }
@@ -309,7 +310,7 @@
         var sansCp = !a || !a.espece;
         if (sansCp) a = animalDe('renard', '#e8772e', 'Toi');
         var sv = lireStockage(CLE_Q) || {};
-        var moi = { id: 'moi', nom: (lireStockage('desdale-profil') || {}).pseudo || 'Moi', moi: true, present: true, a: a, maison: QQ.maison(sv.maison || MAISON_DEPART) };
+        var moi = { id: 'moi', n: 0, nom: (lireStockage('desdale-profil') || {}).pseudo || 'Moi', moi: true, present: true, a: a, maison: QQ.maison(sv.maison || MAISON_DEPART) };
         var hab = [moi].concat(voisins());
         var Q = QQ.quartier(hab.length);
         if (!sv.maison) { sv.possede = QQ.besoins(moi.maison); }
@@ -317,7 +318,9 @@
         return {
           STYLES: QQ.STYLES, Q: Q, hab: hab, animal: a, OBJETS_FETE: QQ.OBJETS_FETE,
           DECOS_MAISON: QQ.DECOS_MAISON, ZONES_DECO: QQ.ZONES_DECO,
-          maPlace: sv.place != null && sv.place < Q.lots.length ? sv.place : 0,
+          // Ma place par défaut (4.37) : la parcelle la plus proche du portail (B2, au bord de la rue) ; une place choisie dans Arranger est gardée (pc)
+          maPlace: sv.pc && sv.place != null && sv.place < Q.lots.length ? sv.place : PLACE_DEPART, placeChoisie: !!sv.pc,
+          cherche: (function () { try { var c = Registre.cache(); return !c.t || Date.now() - c.t > 10 * 60000; } catch (e) { return false; } })(),
           possede: sv.possede || QQ.besoins(moi.maison),   // la maison de départ est offerte
           etoiles: Etoiles.solde(), sansCp: sansCp, etoileP: VLP.svg('etoile', 16),
           feteId: fe && fe.id !== 'anniversaire' ? fe.id : null,
@@ -397,6 +400,7 @@
         },
         sousTitre: function () {
           var n = this.hab.length - 1, p = this.hab.filter(function (h) { return h.present && !h.moi; }).length;
+          if (!n && this.cherche) return 'On cherche tes voisins…';
           return n ? n + (n > 1 ? ' voisins' : ' voisin') + (p ? ' · ' + p + ' ici' : '') : 'Pas encore de voisin';
         },
         lieu: function () {
@@ -421,7 +425,9 @@
         // Les voisins : le registre (relu au plus toutes les 10 min) et qui est connecté
         var maj = function () { self.majVoisins(); };
         window.addEventListener('desdale-registre', maj); window.addEventListener('desdale-membres', function () { clearTimeout(self._mv); self._mv = setTimeout(maj, 400); });
-        try { Registre.lire(false).then(maj, function () {}); } catch (e) {}
+        var fini = function () { self.cherche = false; };
+        try { Registre.lire(false).then(function () { fini(); maj(); }, fini); } catch (e) { fini(); }
+        setTimeout(fini, 60000);
         window.addEventListener('pageshow', function () { self.etoiles = Etoiles.solde(); });
         // La bulle de discussion reste au-dessus de la fiche du bas
         var reserve = function () { try { if (window.SalonGlobal && SalonGlobal.reserverBas) SalonGlobal.reserverBas(self.arr ? 312 : 152); } catch (e) {} };
@@ -499,7 +505,7 @@
         // ----- Arranger dehors (ma parcelle) -----
         ouvrirArranger: function () {
           this.lacher(); this.chemin = []; clearInterval(this._marche);
-          this.arr = { onglet: 'maison', couleur: 'mur', place: null, avant: copie(this.maMaison), avantPlace: this.maPlace };
+          this.arr = { onglet: 'maison', couleur: 'mur', place: null, avant: copie(this.maMaison), avantPlace: this.maPlace, avantPc: this.placeChoisie };
           this.$nextTick(this.mesurer);
         },
         maj: function (m) { this.moiH.maison = QQ.maison(m); },
@@ -530,12 +536,14 @@
         replacer: function () {
           var autres = this.hab.filter(function (h) { return !h.moi; }).sort(function (a, b) { return (b.present ? 1e15 : b.vuT || 0) - (a.present ? 1e15 : a.vuT || 0) || (a.id < b.id ? -1 : 1); });
           var r = QQ.ranger(this.Q, this.maPlace, autres);
-          this.moiH.n = this.maPlace;
-          autres.forEach(function (h) { h.n = r[h.id]; });
+          // $set : la scène doit se redessiner tout de suite (4.37, signalé : maisons invisibles ~40 s, jusqu'à la réponse du registre)
+          var self = this;
+          this.$set(this.moiH, 'n', this.maPlace);
+          autres.forEach(function (h) { self.$set(h, 'n', r[h.id] != null ? r[h.id] : -1); });
         },
         choisirPlace: function (n) {
           if (n === this.maPlace) return;
-          this.maPlace = n; this.replacer();
+          this.maPlace = n; this.placeChoisie = true; this.replacer();
           this.dire('Ta maison est maintenant ' + this.placetteNom(n).replace('Placette', 'placette') + ' ; tes amis se rangent autour');
         },
         poser: function (mid) {
@@ -551,7 +559,7 @@
         },
         annuler: function () {
           this.maj(this.arr.avant);
-          if (this.maPlace !== this.arr.avantPlace) { this.maPlace = this.arr.avantPlace; this.replacer(); }
+          this.placeChoisie = this.arr.avantPc; if (this.maPlace !== this.arr.avantPlace) { this.maPlace = this.arr.avantPlace; this.replacer(); }
           this.fermerArranger();
         },
         valider: function () {
@@ -560,7 +568,7 @@
           if (f.total > this.etoiles) { this.dire('Il manque ' + (f.total - this.etoiles) + ' ⭐ : retire quelque chose, ou garde ce que tu as'); return; }
           f.a.forEach(function (x) { self.$set(self.possede, x.cle, (self.possede[x.cle] || 0) + x.n); });
           if (f.total) { Etoiles.ajouter(-f.total, 'Le quartier : ma maison'); this.etoiles = Etoiles.solde(); }
-          ecrireStockage(CLE_Q, { maison: copie(this.maMaison), place: this.maPlace, possede: this.possede });
+          ecrireStockage(CLE_Q, { maison: copie(this.maMaison), place: this.maPlace, pc: this.placeChoisie || undefined, possede: this.possede });
           try { Registre.publier(true).catch(function () {}); } catch (e) {}
           this.fermerArranger(); this.dire(f.total ? 'Acheté pour ' + f.total + ' ⭐ : tes amis verront ta maison' : 'C\'est enregistré : tes amis verront ta maison');
         },
