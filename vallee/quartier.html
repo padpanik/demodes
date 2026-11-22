@@ -14,7 +14,7 @@
   <style>
     html, body { margin: 0; background: #17110d; overscroll-behavior: none; }
     [v-cloak] { display: none; }
-    .mq { box-sizing: border-box; height: 100vh; height: 100dvh; display: flex; flex-direction: column; gap: 7px; padding: 8px 7px 8px;
+    .mq { box-sizing: border-box; position: fixed; inset: 0; display: flex; flex-direction: column; gap: 7px; padding: 8px 7px 8px;
           background: radial-gradient(ellipse at 50% 0%, #2c211a 0%, #17110d 70%); color: #f1e6d6; font-family: system-ui, sans-serif; overflow: hidden;
           user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
     .mq * { box-sizing: border-box; }
@@ -419,6 +419,8 @@
       mounted: function () {
         var self = this;
         this.mesurer(); window.addEventListener('resize', this.mesurer);
+        // Barres du téléphone qui reviennent un instant (geste depuis le bord) : la page suit la zone réellement visible (4.43)
+        if (window.visualViewport) window.visualViewport.addEventListener('resize', this.mesurer);
         // Barres du téléphone cachées comme dans la Vallée (même réglage), redemandées à chaque toucher (commun.js)
         PleinEcran.suivre(function () { return self.pleinEcran; });
         Meteo.demarrer(); window.addEventListener('desdale-meteo', function () { self.maintenant = Date.now(); });
