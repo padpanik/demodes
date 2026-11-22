@@ -126,6 +126,12 @@
 - **État de la connexion sur la bulle** (demandé par l'utilisateur, `etatConnexion`) : petit point vert en haut à gauche = connecté ; après 8 s sans
   connexion (pas de rôle, téléphone hors ligne, ou hôte coupé du serveur), pastille orange « ! » qui palpite et anneau orange ; le panneau dit pourquoi
   (« plus Internet », ou « nouvel essai tout seul… essaie la 4G »). Vérifié chaque seconde, événements `online` / `offline`.
+- **Deux serveurs, deux salons (4.44)** : un téléphone passé en secours (`Reseau`, 5 min sur le serveur public) tenait seul « son » salon global alors
+  que ses amis tenaient le leur chez Désdale : tout le monde « connecté » (point vert), personne ne voyait personne. Tant que l'hôte tient le salon
+  ailleurs que chez Désdale (`serveurPeer`), `sonder()` (toutes les 20 s) ouvre une connexion d'essai vers Désdale (`Reseau.creerDesdale()`) ; si le salon
+  y existe, `Reseau.finSecours()` puis `ouvrir()` : on le rejoint. Pas d'essai si le serveur public est choisi sur le téléphone (`Reseau.sondable()`).
+  Testé à deux téléphones avec deux serveurs `peer` locaux (secours, puis arrivée d'un ami sur Désdale) : réunis en ~12 s. Les salons de jeux ont le même
+  défaut en théorie (même `Reseau`), non traité : un ami en secours ne rejoindrait pas une partie tenue chez Désdale avant la fin de son secours.
 - Interface injectée par le module : bulle 💬 (déplaçable le long du bord droit, pastille rouge = non lus, verte = connectés ; une page peut réserver une bande en bas avec `SalonGlobal.reserverBas(px)`, la bulle reste au-dessus),
   panneau en haut de l'écran (ajusté au clavier), carte « En ligne » sur l'accueil (`#sg-ici`). Pas de notification appli fermée.
 

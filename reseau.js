@@ -61,6 +61,19 @@ var Reseau = (function () {
     return p;
   }
 
+  // Une connexion d'essai vers le serveur de Désdale, même pendant le secours (sert à voir si des amis y sont restés)
+  function creerDesdale() {
+    var c = config();
+    if (!c || !cle()) return null;
+    var o = { host: c.hote, port: c.port || 443, path: c.chemin || '/', secure: c.secure !== false, key: cle() };
+    var g = relais();
+    if (g) o.config = { iceServers: g };
+    return new Peer(o);
+  }
+  // Un essai a montré que le serveur de Désdale répond : on y revient tout de suite
+  function finSecours() { secoursJusqua = 0; echecs = 0; }
+  function sondable() { return !!(config() && cle()); }   // faux si le serveur public est choisi sur ce téléphone
+
   function etat() { return maison() ? 'desdale' : config() ? 'secours' : 'public'; }
   function forcePublic() { var o = lire('desdale-serveur'); return !!(o && o.public); }
   // Forcer (ou non) le serveur public sur ce téléphone ; il faut recharger la page pour changer de serveur
@@ -68,7 +81,7 @@ var Reseau = (function () {
     try { if (oui) ecrire('desdale-serveur', { public: true }); else if (forcePublic()) localStorage.removeItem('desdale-serveur'); } catch (e) {}
   }
   setTimeout(chargerRelais, 1500);
-  return { creer: creer, etat: etat, chargerRelais: chargerRelais, forcePublic: forcePublic, forcerPublic: forcerPublic, configure: function () { return !!RESEAU_DESDALE.hote; } };
+  return { creer: creer, creerDesdale: creerDesdale, finSecours: finSecours, sondable: sondable, etat: etat, chargerRelais: chargerRelais, forcePublic: forcePublic, forcerPublic: forcerPublic, configure: function () { return !!RESEAU_DESDALE.hote; } };
 })();
 
 function creerPeer(id) { return Reseau.creer(id); }

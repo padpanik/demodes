@@ -38,6 +38,7 @@ var SalonGlobal = (function () {
 
   var jeu = 'accueil';
   var peer = null, role = null, hostConn = null, conns = {}, dernierHote = 0, timerReco = null, echecs = 0;
+  var serveurPeer = '', sonde = null;   // serveur utilisé par la connexion en cours (« desdale », « secours » ou « public »), et connexion d'essai
   // État de la connexion, montré sur la bulle : 'ok' (point vert), 'attente' (on cherche, moins de 8 s), 'ko' (alerte rouge)
   var horsDepuis = Date.now(), etatCnx = '';
   function etatConnexion() {
@@ -126,6 +127,7 @@ var SalonGlobal = (function () {
     ouvrir();
     setInterval(battement, 5000);
     setInterval(verifierOu, 2500);
+    setInterval(sonder, 20000);
     setInterval(() => { if (maPos && Date.now() - posEnvoyee > 2900) position(maPos); }, 1000);   // la Vallée : ma position, même sans bouger
     document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') auRetour(); });
     window.addEventListener('online', auRetour);
@@ -140,6 +142,7 @@ var SalonGlobal = (function () {
   // On tente de tenir le salon ; s'il est déjà tenu, on le rejoint
   function ouvrir() {
     arreter();
+    serveurPeer = typeof Reseau !== 'undefined' ? Reseau.etat() : 'public';
     var p = peer = typeof creerPeer === 'function' ? creerPeer(idSalon()) : new Peer(idSalon());
     if (typeof veillerOuverture === 'function') veillerOuverture(p);
     p.on('open', () => {
@@ -161,6 +164,7 @@ var SalonGlobal = (function () {
   }
   function rejoindre() {
     arreter();
+    serveurPeer = typeof Reseau !== 'undefined' ? Reseau.etat() : 'public';
     var p = peer = typeof creerPeer === 'function' ? creerPeer() : new Peer();
     if (typeof veillerOuverture === 'function') veillerOuverture(p);
     p.on('open', () => {
@@ -190,6 +194,30 @@ var SalonGlobal = (function () {
   function planifier(ms) {
     clearTimeout(timerReco);
     timerReco = setTimeout(() => { echecs++; ouvrir(); }, Math.min(ms * (1 + echecs * 0.5), 20000));
+  }
+  // Deux serveurs, deux salons : un téléphone passé en secours (serveur public) tient « son » salon global, et les amis restés sur le
+  // serveur de Désdale tiennent le leur : chacun est connecté, personne ne voit personne. Tant qu'on tient le salon ailleurs que chez
+  // Désdale, on regarde toutes les 20 s s'il y a déjà un salon là-bas ; si oui, on revient s'y connecter (fin du secours).
+  function sonder() {
+    if (sonde || role !== 'hote' || serveurPeer === 'desdale' || typeof Reseau === 'undefined' || !Reseau.sondable()) return;
+    var s = Reseau.creerDesdale();
+    if (!s) return;
+    sonde = s;
+    var fini = false, delai;
+    function fin(trouve) {
+      if (fini) return;
+      fini = true; clearTimeout(delai);
+      try { s.destroy(); } catch (e) {}
+      sonde = null;
+      if (trouve && role === 'hote') { Reseau.finSecours(); ouvrir(); }
+    }
+    delai = setTimeout(() => fin(false), 10000);
+    s.on('error', () => fin(false));
+    s.on('open', () => {
+      var c = s.connect(idSalon(), { reliable: true });
+      c.on('open', () => fin(true));
+      c.on('error', () => fin(false));
+    });
   }
   function auRetour() {
     if (!peer || peer.destroyed) return ouvrir();
