@@ -97,13 +97,15 @@ mode invisible 👻, chat « Tous » et « Ce salon », état de la connexion su
 
 ## Les jeux (règles = choix de l'utilisateur, à ne pas changer sans lui)
 
-**Règles complètes des jeux ci-dessous : `notes/regles.md`.** Les lire avant de toucher au jeu.
+**Une note par jeu, `notes/<jeu>.md`** (règles complètes, détail du code, historique) : la lire avant de toucher au jeu. Notes : `brilliant`, `yams`,
+`backgammon`, `assaut`, `bataille`, `gribouille`, `petitbac`, `agents`, `quatre`, `dominos`, `chinchon`, `cieljo`, et les grands chantiers ci-dessous.
+Un jeu sans note (Combien sur 10 ?) en reçoit une dès qu'on y travaille.
 - Brilliant (règles du livret, 4 niveaux), Yams (**barème maison**), Backgammon (à deux), Assaut (pièces cachées, armée jamais envoyée en clair),
   Bataille navale (flotte gardée sur son téléphone, sons libres de droits), Gribouille, Petit bac, Agents secrets, Quatre en ligne,
   Dominos et Triominos, Chinchón, Cieljo, Combien sur 10 ? (questions maison).
 - Sons fabriqués par le code (sauf la Bataille navale) ; annonce vocale du tour seulement sur le téléphone du joueur concerné.
 
-**Les grands chantiers** (une note chacun, qui fait foi pour les règles comme pour le code) :
+**Les grands chantiers** (note plus longue, qui fait foi pour les règles comme pour le code) :
 - **Poker** (`notes/poker.md`) : Texas Hold'em d'abord (une règle = une entrée de `PK.VARIANTES`), tournoi gratuit ou en ⭐, cash game en poussières.
 - **Lettres croisées** (`notes/lettres.md`), **7 piliers** (`notes/piliers.md`), **Expédition** (`notes/expedition.md`).
 - **Donjon des compagnons** (`notes/donjon.md`) : donjon à cartes en solo, lieux à règle propre. **Après toute retouche de chiffres :
@@ -138,6 +140,6 @@ toutes faites (4.27) ; règle des Braises des Forges (1 pour toi, 3 pour les mon
 
 - **CLAUDE.md ne garde que ce qui sert à chaque conversation, et reste sous 25 Ko** : pas d'historique version par version, pas de mesures,
   pas de « signalé par… ». Une nouvelle règle commune s'y écrit en une ligne.
-- **Le détail va dans `notes/`** : `commun.md` (hébergement, réseau, présentation, salon global, tests), `regles.md` (règles des jeux),
-  `stockage.md`, `fichiers.md`, et une note par grand chantier. Nouveau grand chantier = nouvelle note, et une ligne ci-dessus.
+- **Le détail va dans `notes/`** : `commun.md` (hébergement, réseau, présentation, salon global, tests, choix communs), `stockage.md`,
+  `fichiers.md`, et **une note par jeu**. Nouveau jeu = nouvelle note, et son nom dans « Les jeux ».
 - `notes/` n'est pas publié et n'est pas chargé d'office : le lire ou y chercher avec `grep` au besoin.

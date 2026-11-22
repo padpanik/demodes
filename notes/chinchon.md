@@ -1,0 +1,7 @@
+# Désdale, Chinchón
+
+> Règles choisies par l'utilisateur, à ne pas changer sans lui. Lire cette note avant de toucher au jeu, et y consigner le détail de chaque nouvelle version.
+
+- **Choisi par l'utilisateur** : variantes en option de jeu (40 ou 48 cartes, sans joker ou 2 jokers ; `pubHote.opts`, réglées par l'hôte en salon) ; fermeture à **3 points ou moins** hors combinaisons ; **éliminé au-delà de 100 points**, le dernier en jeu gagne ; **chinchón** (7 cartes qui se suivent, même couleur, sans joker) = partie gagnée aussitôt ; solo et salon de 2 à 4.
+- **Valeurs par défaut prises par Claude, à confirmer avec l'utilisateur si besoin** : figures 10 points, joker seul 25 ; fermer sans carte seule −10 ; les autres posent automatiquement leurs cartes seules sur les combinaisons de celui qui ferme (`bilanAutre`, au mieux) ; interdit de rejeter la carte qu'on vient de prendre à la défausse ; une combinaison garde au moins 2 vraies cartes ; l'as ne suit pas le roi ; à 40 cartes le 7 est suivi du valet. Pioche épuisée trois fois : manche nulle.
+- Écran : main triable (Combinaisons, Couleur, Valeur ; barre de couleur sous les combinaisons), carte prise cerclée de bleu, cartes qui permettent de fermer cerclées de vert. Joueur absent : l'hôte peut jouer son tour. Hôte disparu : retour à la salle d'attente (les mains étaient chez lui). Ordinateur à un seul niveau (`CC.ordinateur`, il ne voit que sa main et la défausse). Testé en Node : 180 parties, toutes les variantes, 2 à 4 joueurs.
