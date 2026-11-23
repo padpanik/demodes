@@ -471,6 +471,23 @@ var PK = (function () {
     if (reste && l.length) l[l.length - 1].montant += reste;
     return l;
   }
+  // La meilleure main battue dont on connaît le jeu (4.45, demandé par l'utilisateur : « la main qui a gagné et contre quoi si on le sait ») :
+  // seulement à l'abattage, et parmi ceux qui ont montré leurs cartes (les mains jetées face cachée restent inconnues).
+  function perdantConnu(m) {
+    var R = m && m.resultat;
+    if (!R || !R.abattage || !R.pots[0]) return null;
+    var gagnants = R.pots[0].gagnants, meilleur = null;
+    Object.keys(R.mains).forEach(function (n) {
+      if (gagnants.indexOf(n) >= 0 || !m.montre[n]) return;
+      if (!meilleur || R.mains[n].score > R.mains[meilleur].score) meilleur = n;
+    });
+    return meilleur ? { nom: meilleur, main: R.mains[meilleur].nom, meme: R.mains[meilleur].nom === R.mains[gagnants[0]].nom } : null;
+  }
+  // « contre paire d'As (Octave) » ; si les deux mains portent le même nom, c'est la carte d'appoint qui a décidé
+  function contreTexte(m) {
+    var c = perdantConnu(m);
+    return c ? ' contre ' + c.main.charAt(0).toLowerCase() + c.main.slice(1) + ' (' + c.nom + ')' + (c.meme ? ', au kicker' : '') : '';
+  }
   function finMain(e, t) {
     var m = e.main, V = variante(e), vivants = enCourse(e), gains = {}, details = [];
     m.tour = null;
@@ -510,7 +527,9 @@ var PK = (function () {
     m.fini = true;
     Object.keys(m.mise).forEach(function (x) { m.mise[x] = 0; });
     var g = Object.keys(gains);
-    noter(e, g.map(function (n) { return n + ' gagne ' + gains[n] + (abattage ? ' (' + mains[n].nom.toLowerCase() + ')' : ''); }).join(', ') + '.');
+    // Journal : la main gagnante, et contre quoi si on a vu le jeu du perdant (4.45)
+    noter(e, g.map(function (n) { return n + ' gagne ' + gains[n] + (abattage ? ' (' + mains[n].nom.toLowerCase() + ')' : ''); }).join(', ')
+      + contreTexte(m) + '.');
     humeurApres(e);
     e.n++;
     apresMain(e, t);
@@ -933,7 +952,7 @@ var PK = (function () {
     RANGS: RANGS, COULEURS: COULEURS, NOMS_COULEURS: NOMS_COULEURS, CATEGORIES: CATEGORIES, VARIANTES: VARIANTES, NIVEAUX: NIVEAUX, STYLES: STYLES, styleDe: styleDe, DUREES: DUREES,
     BLINDES_CASH: BLINDES_CASH, CAVE: CAVE,
     copie: copie, rang: rang, couleur: couleur, rouge: rouge, paquet: paquet, melanger: melanger, nomCarte: nomCarte, nomRang: nomRang, nomMain: nomMain,
-    score: score, meilleureDe: meilleureDe, variante: variante,
+    score: score, meilleureDe: meilleureDe, variante: variante, perdantConnu: perdantConnu, contreTexte: contreTexte,
     structure: structure, profondeur: profondeur, minutesNiveau: minutesNiveau, repartition: repartition, partage: partage,
     normaliserOptions: normaliserOptions, blindesCash: blindesCash, payante: payante, robotsPermis: robotsPermis,
     tempsJeu: tempsJeu, montee: montee, parMains: parMains, mainsParNiveau: mainsParNiveau, mainsNiveau: mainsNiveau, arreterHorloge: arreterHorloge, lancerHorloge: lancerHorloge, niveauA: niveauA, blindesDe: blindesDe, recavePossible: recavePossible,

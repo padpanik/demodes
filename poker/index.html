@@ -1089,6 +1089,8 @@
           var g = Object.keys(R.gains).filter(n => R.gains[n] > 0);
           var titre = g.length > 1 && R.pots.length === 1 ? 'Partage : ' + g.join(' et ') : (g[0] === this.moiJ ? 'Tu gagnes ' : g[0] + ' gagne ') + this.fmt(R.gains[g[0]]);
           var sous = R.abattage ? p.main : 'Tout le monde s\'est couché';
+          // Contre quoi : la meilleure main battue dont on a vu les cartes (sinon on ne le sait pas, on ne dit rien)
+          if (R.abattage) sous += PK.contreTexte(m);
           if (R.pots.length > 1) sous += ' · ' + R.pots.length + ' pots';
           return { titre: titre, sous: sous, cle: m.n };
         },
@@ -1703,7 +1705,7 @@
           });
           lignes.sort((a, b) => b.net - a.net);
           var a = this.annonce;
-          return { n: m.n, titre: a ? a.titre : 'Main finie', sous: R.pots.length > 1 ? R.pots.length + ' pots' : '', pot: pot, tableau: m.tableau.slice(), lignes: lignes };
+          return { n: m.n, titre: a ? a.titre : 'Main finie', sous: a && a.sous && R.abattage ? a.sous : (R.pots.length > 1 ? R.pots.length + ' pots' : ''), pot: pot, tableau: m.tableau.slice(), lignes: lignes };
         },
         // Paie et encaisse ce que dit la table, une seule fois (voir Bourse)
         suivreArgent: function(pub) {
