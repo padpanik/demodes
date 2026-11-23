@@ -257,7 +257,8 @@ var PK = (function () {
     noter(e, opts.mode === 'tournoi' ? 'Le tournoi commence : ' + e.structure.tapis + ' jetons chacun.' : 'La table ouvre.');
     return e;
   }
-  function noter(e, txt) { e.journal.push(txt); if (e.journal.length > MAX_JOURNAL) e.journal.splice(0, e.journal.length - MAX_JOURNAL); }
+  // Une ligne du journal : un texte, ou { t, c, cc } avec les cartes de la main gagnante (c) et de la main battue (cc) (4.46)
+  function noter(e, txt, c, cc) { e.journal.push(c ? { t: txt, c: c, cc: cc || null } : txt); if (e.journal.length > MAX_JOURNAL) e.journal.splice(0, e.journal.length - MAX_JOURNAL); }
   function siege(e, nom) { for (var i = 0; i < e.sieges.length; i++) if (e.sieges[i].nom === nom) return e.sieges[i]; return null; }
   function indexSiege(e, nom) { for (var i = 0; i < e.sieges.length; i++) if (e.sieges[i].nom === nom) return i; return -1; }
   function assis(e) { return e.sieges.filter(function (s) { return s.statut === 'jeu' || s.statut === 'recave'; }); }
@@ -484,6 +485,12 @@ var PK = (function () {
     return meilleur ? { nom: meilleur, main: R.mains[meilleur].nom, meme: R.mains[meilleur].nom === R.mains[gagnants[0]].nom } : null;
   }
   // « contre paire d'As (Octave) » ; si les deux mains portent le même nom, c'est la carte d'appoint qui a décidé
+  // Les 5 cartes d'une main rangées pour l'œil : les groupes d'abord (carré, brelan, paires), puis par hauteur
+  function rangerCinq(cinq) {
+    var nb = {};
+    cinq.forEach(function (c) { nb[rang(c)] = (nb[rang(c)] || 0) + 1; });
+    return cinq.slice().sort(function (a, b) { return (nb[rang(b)] - nb[rang(a)]) || (rang(b) - rang(a)); });
+  }
   function contreTexte(m) {
     var c = perdantConnu(m);
     return c ? ' contre ' + c.main.charAt(0).toLowerCase() + c.main.slice(1) + ' (' + c.nom + ')' + (c.meme ? ', au kicker' : '') : '';
@@ -529,7 +536,9 @@ var PK = (function () {
     var g = Object.keys(gains);
     // Journal : la main gagnante, et contre quoi si on a vu le jeu du perdant (4.45)
     noter(e, g.map(function (n) { return n + ' gagne ' + gains[n] + (abattage ? ' (' + mains[n].nom.toLowerCase() + ')' : ''); }).join(', ')
-      + contreTexte(m) + '.');
+      + contreTexte(m) + '.',
+      abattage && details[0] ? rangerCinq(mains[details[0].gagnants[0]].cinq) : null,
+      abattage && perdantConnu(m) ? rangerCinq(mains[perdantConnu(m).nom].cinq) : null);
     humeurApres(e);
     e.n++;
     apresMain(e, t);
@@ -952,7 +961,7 @@ var PK = (function () {
     RANGS: RANGS, COULEURS: COULEURS, NOMS_COULEURS: NOMS_COULEURS, CATEGORIES: CATEGORIES, VARIANTES: VARIANTES, NIVEAUX: NIVEAUX, STYLES: STYLES, styleDe: styleDe, DUREES: DUREES,
     BLINDES_CASH: BLINDES_CASH, CAVE: CAVE,
     copie: copie, rang: rang, couleur: couleur, rouge: rouge, paquet: paquet, melanger: melanger, nomCarte: nomCarte, nomRang: nomRang, nomMain: nomMain,
-    score: score, meilleureDe: meilleureDe, variante: variante, perdantConnu: perdantConnu, contreTexte: contreTexte,
+    score: score, meilleureDe: meilleureDe, variante: variante, perdantConnu: perdantConnu, contreTexte: contreTexte, rangerCinq: rangerCinq,
     structure: structure, profondeur: profondeur, minutesNiveau: minutesNiveau, repartition: repartition, partage: partage,
     normaliserOptions: normaliserOptions, blindesCash: blindesCash, payante: payante, robotsPermis: robotsPermis,
     tempsJeu: tempsJeu, montee: montee, parMains: parMains, mainsParNiveau: mainsParNiveau, mainsNiveau: mainsNiveau, arreterHorloge: arreterHorloge, lancerHorloge: lancerHorloge, niveauA: niveauA, blindesDe: blindesDe, recavePossible: recavePossible,

@@ -227,6 +227,9 @@
     .pk-menu button.ligne.danger { color: #b02a2a; }
     .pk-journal { font-size: 0.84em; line-height: 1.5; color: #3b4b57; }
     .pk-journal div { border-bottom: 1px solid #eef1f3; padding: 3px 0; }
+    .pk-journal .pk-jcartes { display: flex; align-items: center; gap: 2px; margin: 3px 0 1px; }
+    .pk-journal .pk-jcartes .pk-carte { --ct: 22px; filter: drop-shadow(0 1px 1px rgba(0,0,0,0.3)); }
+    .pk-journal .pk-jcartes small { margin: 0 6px; color: #7a8a96; font-size: 0.85em; }
     .classement-pk { width: 100%; border-collapse: collapse; margin: 6px 0; }
     .classement-pk td { padding: 6px 4px; border-bottom: 1px solid #e9edf0; font-weight: 700; }
     .classement-pk td.r { width: 34px; color: #5b6b78; }
@@ -645,7 +648,7 @@
       <div v-if="journalOuvert" class="pk-voile" @click.self="journalOuvert = false">
         <div class="pk-feuille">
           <h2>Journal de la table</h2>
-          <div class="pk-journal"><div v-for="(l, k) in journalAff" :key="k">{{ l }}</div></div>
+          <div class="pk-journal"><div v-for="(l, k) in journalAff" :key="k">{{ l.t || l }}<span v-if="l.c" class="pk-jcartes"><span v-for="c in l.c" :key="c" class="pk-carte" v-html="carte(c)"></span><template v-if="l.cc"><small>contre</small><span v-for="c in l.cc" :key="'x' + c" class="pk-carte" v-html="carte(c)"></span></template></span></div></div>
           <button class="btn" @click="journalOuvert = false">Fermer</button>
         </div>
       </div>
