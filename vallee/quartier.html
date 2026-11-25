@@ -45,7 +45,7 @@
               font: italic 700 0.74em Georgia, serif; color: #ffe8cc; white-space: nowrap; pointer-events: none; }
     .annonce-q { position: absolute; z-index: 4; left: 50%; bottom: 10px; transform: translateX(-50%); max-width: 92%; background: linear-gradient(#fdf4e3, #ecd6b0); border: 1.5px solid #6b4f36;
                  color: #3b2a1e; border-radius: 10px; padding: 6px 11px; font: 600 0.82em/1.3 system-ui, sans-serif; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.4); pointer-events: none; }
-    /* ----- Le bas : la croix droite, comme dans la Vallée (droite = vers le haut à droite de la vue) et la fiche ----- */
+    /* ----- Le bas : la croix droite, comme dans la Vallée (droite = vers le bas à droite de la vue) et la fiche ----- */
     .bas-q { flex: none; display: grid; grid-template-columns: 132px 1fr; gap: 8px; align-items: center; height: 140px; }
     .croix-q { position: relative; width: 132px; height: 132px; touch-action: none; }
     .croix-q .rond { position: absolute; inset: 6px; border-radius: 50%; background: radial-gradient(circle at 50% 40%, #3a2c22, #1b130e); border: 2px solid #5c4532; }
@@ -324,8 +324,8 @@
           possede: sv.possede || QQ.besoins(moi.maison),   // la maison de départ est offerte
           etoiles: Etoiles.solde(), sansCp: sansCp, etoileP: VLP.svg('etoile', 16),
           feteId: fe && fe.id !== 'anniversaire' ? fe.id : null,
-          // Croix droite comme dans la Vallée, tournée d'un huitième de tour sur les axes de la vue : droite = vers le haut à droite
-          CROIX: [{ c: 'h', d: [-1, 0], ico: 'fl-h' }, { c: 'd', d: [0, -1], ico: 'fl-d' }, { c: 'b', d: [1, 0], ico: 'fl-b' }, { c: 'g', d: [0, 1], ico: 'fl-g' }],
+          // Croix droite comme dans la Vallée, tournée d'un huitième de tour sur les axes de la vue : droite = vers le bas à droite
+          CROIX: [{ c: 'h', d: [0, -1], ico: 'fl-h' }, { c: 'd', d: [1, 0], ico: 'fl-d' }, { c: 'b', d: [0, 1], ico: 'fl-b' }, { c: 'g', d: [-1, 0], ico: 'fl-g' }],
           pos: { i: 2, j: QQ.RUE0 + 1 }, gauche: false, chemin: [], dirTenue: null,
           arr: null, NUANCIER: CPM.NUANCIER, MEUBLES: CPM.MEUBLES, TOITS: QQ.TOITS, CLOTURES: QQ.CLOTURES, OBJETS_J: OBJETS_J,
           ONGLETS_A: [{ id: 'maison', nom: 'Maison' }, { id: 'couleurs', nom: 'Couleurs' }, { id: 'cloture', nom: 'Clôture' }, { id: 'jardin', nom: 'Jardin' }, { id: 'fetes', nom: 'Fêtes' }, { id: 'place', nom: 'Place' }],
@@ -438,7 +438,7 @@
         setInterval(function () { var n0 = self.ambiance.nuit; self.maintenant = Date.now(); if (!self.meteoForce && self.ambiance.nuit !== n0) self.nuit = self.ambiance.nuit; }, 60000);
         this.$nextTick(function () { self.placerMoi(); setTimeout(function () { self.camVite = false; }, 50); });
         window.addEventListener('keydown', function (e) {
-          var d = { ArrowUp: [-1, 0], ArrowRight: [0, -1], ArrowDown: [1, 0], ArrowLeft: [0, 1] }[e.key];
+          var d = { ArrowUp: [0, -1], ArrowRight: [1, 0], ArrowDown: [0, 1], ArrowLeft: [-1, 0] }[e.key];
           if (d) { e.preventDefault(); self.chemin = []; self.pas(d); }
         });
       },
